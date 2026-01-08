@@ -222,3 +222,4 @@ C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\re
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.pdb
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.genruntimeconfig.cache
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\ref\EG.ApiCore.dll
+C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.sourcelink.json
