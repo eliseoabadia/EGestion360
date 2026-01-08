@@ -1,0 +1,42 @@
+﻿﻿<AuthorizeView Roles="Admin">
+    <Authorized>
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+                <MudText Style="color: #333;">Inicio</MudText>
+            </MudNavLink>
+            <MudNavLink Href="/amenities" Icon="@Icons.Material.Filled.List">
+                <MudText Style="color: #333;">Amenities</MudText>
+            </MudNavLink>
+            <MudNavLink Href="/spaces" Icon="@Icons.Material.Filled.GridView">
+                <MudText Style="color: #333;">Espacios</MudText>
+            </MudNavLink>           
+           
+            <MudNavLink Href="/perfil" Icon="@Icons.Material.Filled.Person">
+                <MudText Style="color: #333;">Perfil</MudText>
+            </MudNavLink>           
+            <MudNavLink Href="/admin" Icon="@Icons.Material.Filled.ManageAccounts">
+                <MudText Style="color: #333;">Admin</MudText>
+            </MudNavLink>
+        </MudNavMenu>
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Customer">
+    <Authorized>
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+                <MudText Style="color: #333;">Inicio</MudText>
+            </MudNavLink>
+            <MudNavLink Href="/spaces" Icon="@Icons.Material.Filled.GridView">
+                <MudText Style="color: #333;">Espacios</MudText>
+            </MudNavLink>
+            <MudNavLink Href="/reservas" Icon="@Icons.Material.Filled.BookOnline">
+                <MudText Style="color: #333;">Mis Reservas</MudText>
+            </MudNavLink>
+           
+            <MudNavLink Href="/perfil" Icon="@Icons.Material.Filled.Person">
+                <MudText Style="color: #333;">Perfil</MudText>
+            </MudNavLink>            
+        </MudNavMenu>
+    </Authorized>
+</AuthorizeView>

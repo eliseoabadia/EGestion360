@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Nuevo perfil",
+    "Projects": [
+      {
+        "Path": "BackEnd\\EG.ApiCore\\EG.ApiCore.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "FrontEnd\\EG.Web\\EG.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

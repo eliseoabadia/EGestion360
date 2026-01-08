@@ -1,0 +1,357 @@
+[
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Account.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loginRequest",
+        "Type": "EG.Domain.DTOs.Requests.LoginRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "GetEmpresas",
+    "RelativePath": "api/Empresa",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Dommain.DTOs.Responses.EmpresaDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "CreateDept",
+    "RelativePath": "api/Empresa",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "GetEmpresa",
+    "RelativePath": "api/Empresa/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "UpdateEmpresa",
+    "RelativePath": "api/Empresa/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "UpdateUserEmpresa",
+    "RelativePath": "api/Empresa/{id}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "DeleteEmpresa",
+    "RelativePath": "api/Empresa/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Account.NavigateController",
+    "Method": "GetMenu",
+    "RelativePath": "api/Navigate/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Dommain.DTOs.Responses.spNodeMenuResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Account.NavigateController",
+    "Method": "Ping",
+    "RelativePath": "api/Navigate/ping",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loginRequest",
+        "Type": "EG.Domain.DTOs.Requests.LoginRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Boolean",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "GetAllUser",
+    "RelativePath": "api/UserProfile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IList\u00601[[EG.Dommain.DTOs.Responses.UsuarioResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "UploadImage",
+    "RelativePath": "api/UserProfile",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fotografia",
+        "Type": "EG.Dommain.DTOs.Responses.PerfilUsuarioResponse",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "GetProfileUser",
+    "RelativePath": "api/UserProfile/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Dommain.DTOs.Responses.UsuarioResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "CreateProfile",
+    "RelativePath": "api/UserProfile/CreateProfile",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "user",
+        "Type": "EG.Dommain.DTOs.Responses.UsuarioDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "DeleteProfile",
+    "RelativePath": "api/UserProfile/DeleteProfile/{id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "GetAllUserPaginado",
+    "RelativePath": "api/UserProfile/GetAllUserPaginado",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "_params",
+        "Type": "EG.Application.CommonModel.PagedRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IList\u00601[[EG.Dommain.DTOs.Responses.UsuarioResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "GetProfileImage",
+    "RelativePath": "api/UserProfile/GetProfileImage/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Dommain.DTOs.Responses.PerfilUsuarioResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
+    "Method": "SetProfile",
+    "RelativePath": "api/UserProfile/SetProfile/{id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "user",
+        "Type": "EG.Dommain.DTOs.Responses.UsuarioDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

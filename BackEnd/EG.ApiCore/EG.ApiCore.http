@@ -1,0 +1,6 @@
+@EG.ApiCore_HostAddress = http://localhost:5163
+
+GET {{EG.ApiCore_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

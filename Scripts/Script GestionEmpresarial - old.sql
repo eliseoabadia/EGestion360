@@ -1,0 +1,423 @@
+
+
+--create database GestionEmpresarial
+
+
+use GestionEmpresarial
+GO
+--drop database GestionEmpresarial
+
+CREATE SCHEMA SIS  --//Sistema
+GO
+CREATE SCHEMA NOM  --//Nómina
+GO
+CREATE SCHEMA ALM  --//Almacen
+GO
+CREATE SCHEMA CONTA  --//Contabilidad
+GO
+
+
+
+
+
+-- Eliminar si ya existe
+-- DROP TABLE SIS.Paises
+
+CREATE TABLE SIS.Paises (
+    PKIdPais INT NOT NULL,
+    Nombre VARCHAR(64) NOT NULL,
+    CONSTRAINT CONSTRAINT_PKIdPaises PRIMARY KEY CLUSTERED (PKIdPais)
+);
+
+INSERT INTO SIS.Paises (PKIdPais, Nombre) VALUES
+(1, 'México'),
+(2, 'Estados Unidos'),
+(3, 'Canadá'),
+(4, 'Brasil'),
+(5, 'Argentina'),
+(6, 'Colombia'),
+(7, 'Chile'),
+(8, 'Perú'),
+(9, 'España'),
+(10, 'Francia'),
+(11, 'Alemania'),
+(12, 'Italia'),
+(13, 'Reino Unido'),
+(14, 'Japón'),
+(15, 'China'),
+(16, 'India'),
+(17, 'Australia'),
+(18, 'Rusia'),
+(19, 'Sudáfrica'),
+(20, 'Egipto');
+
+--drop table SIS.Estados
+CREATE TABLE SIS.Estados (
+    PKIdEstado INT NOT NULL,
+    FKIdPais_SIS INT NOT NULL,
+    Nombre VARCHAR(64) NOT NULL,
+    CONSTRAINT CONSTRAINT_PK_Estados PRIMARY KEY CLUSTERED (PKIdEstado),
+    CONSTRAINT CONSTRAINT_FK_Estados_Paises FOREIGN KEY (FKIdPais_SIS)
+        REFERENCES SIS.Paises(PKIdPais)
+);
+
+INSERT INTO SIS.Estados (PKIdEstado,FKIdPais_SIS, Nombre) VALUES
+(1,1, 'Aguascalientes'),
+(2,1, 'Baja California'),
+(3,1, 'Baja California Sur'),
+(4,1, 'Campeche'),
+(5,1, 'Coahuila de Zaragoza'),
+(6,1, 'Colima'),
+(7,1, 'Chiapas'),
+(8,1, 'Chihuahua'),
+(9,1, 'Ciudad de México'),
+(10,1, 'Durango'),
+(11,1, 'Guanajuato'),
+(12,1, 'Guerrero'),
+(13,1, 'Hidalgo'),
+(14,1, 'Jalisco'),
+(15,1, 'México'),
+(16,1, 'Michoacán de Ocampo'),
+(17,1, 'Morelos'),
+(18,1, 'Nayarit'),
+(19,1, 'Nuevo León'),
+(20,1, 'Oaxaca'),
+(21,1, 'Puebla'),
+(22,1, 'Querétaro'),
+(23,1, 'Quintana Roo'),
+(24,1, 'San Luis Potosí'),
+(25,1, 'Sinaloa'),
+(26,1, 'Sonora'),
+(27,1, 'Tabasco'),
+(28,1, 'Tamaulipas'),
+(29,1, 'Tlaxcala'),
+(30,1, 'Veracruz'),
+(31,1, 'Yucatán'),
+(32,1, 'Zacatecas');
+
+
+-- Tabla de Empresa
+--drop table SIS.Empresa
+CREATE TABLE SIS.Empresa (
+    PKIdEmpresa INT IDENTITY(1,1) NOT NULL,
+    Nombre NVARCHAR(128) NOT NULL,
+    RFC NVARCHAR(13) NOT NULL,
+	Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT CONSTRAINT_PK_Empresa PRIMARY KEY CLUSTERED (PKIdEmpresa)
+);
+
+
+
+INSERT INTO SIS.Empresa ( Nombre, RFC) VALUES
+('TechNova S.A. de C.V.', 'TNV010101AAA'),
+('Grupo Constructora Delta', 'GCD020202BBB'),
+('Alimentos La Laguna', 'ALL030303CCC');
+
+-- Tabla de Departamento
+--drop table SIS.Departamento
+CREATE TABLE SIS.Departamento (
+    PKIdDepartamento  INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    Nombre NVARCHAR(128) NOT NULL,
+	Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT CONSTRAINT_PK_Departamento PRIMARY KEY CLUSTERED (PKIdDepartamento),
+    CONSTRAINT CONSTRAINT_FK_Departamento_Empresa FOREIGN KEY (FKIdEmpresa_SIS)
+        REFERENCES SIS.Empresa(PKIdEmpresa)
+);
+
+INSERT INTO SIS.Departamento (FKIdEmpresa_SIS, Nombre) VALUES
+(1, 'GERENTE GENERAL'),
+(1,'GERENTE DE OPERACIONES'),
+(1, 'GERENTE DE VENTAS'),
+(1,'RECURSOS HUMANOS')
+
+--update SIS.Departamento set Nombre = 'GERENTE GENERAL' where PKIdDepartamento = 1
+--update SIS.Departamento set Nombre = 'GERENTE DE OPERACIONES' where PKIdDepartamento = 2
+
+
+/*
+
+user: admon01
+ pws: Tecno.2025
+
+*/
+
+
+-- Tabla de Usuario
+--drop table SIS.Usuario
+CREATE TABLE SIS.Usuario (
+    PkIdUsuario INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    Nombre NVARCHAR(64) NOT NULL,
+    ApellidoPaterno NVARCHAR(64) NOT NULL,
+    ApellidoMaterno NVARCHAR(64) NOT NULL,
+    Iniciales NVARCHAR(3) NOT NULL,
+    PayrollID NVARCHAR(20) NOT NULL,
+    CodigoPostal NVARCHAR(9),
+    Telefono NVARCHAR(16) NOT NULL,
+    Direccion1 NVARCHAR(128) NOT NULL,
+    Direccion2 NVARCHAR(64) NOT NULL,
+
+	Mail nvarchar(60) NOT NULL,
+	NumeroSocial nvarchar(12) NOT NULL,
+	Gafete nvarchar(11) NOT NULL,
+	Sexo bit NOT NULL,
+
+    CONSTRAINT CONSTRAINT_PK_Usuario PRIMARY KEY CLUSTERED (PkIdUsuario),
+
+    CONSTRAINT CONSTRAINT_FK_Usuario_Empresa FOREIGN KEY (FKIdEmpresa_SIS)
+        REFERENCES SIS.Empresa(PKIdEmpresa)
+);
+
+
+INSERT INTO SIS.Usuario (
+    FKIdEmpresa_SIS, Nombre, ApellidoPaterno, ApellidoMaterno, Iniciales,
+    PayrollID, CodigoPostal, Telefono,
+    Direccion1, Direccion2,
+    Mail, NumeroSocial, Gafete, Sexo
+) VALUES
+(1, 'Administrador', '-', '-', 'CMR', 'EMP00123', '11000', '5512345678',
+ 'Calle Roble 101', 'Piso 2', 'eliseo_eae@htomail.com', 'NS1234567890', 'GF001A', 1),
+
+(2, 'Administrador', '-', '-', 'PZL', 'EMP00456', '76000', '4425678910',
+ 'Av. Universidad 45', 'Edif. B', 'eliseo_eae@htomail.com', 'NS0987654321', 'GF002B', 0),
+
+(3, 'Administrador', '-', '-', 'ESR', 'EMP00789', '80000', '6671234567',
+ 'Prol. Obregón 321', 'Int. 5', 'eliseo_eae@htomail.com', 'NS5678901234', 'GF003C', 1);
+
+
+ CREATE TABLE dbo.AspNetRoles
+(
+	Id nvarchar(128) NOT NULL,
+	Name nvarchar(256) NOT NULL,
+	Code nvarchar(10),
+	CONSTRAINT CONSTRAINT_PK_AspNetRoles PRIMARY KEY CLUSTERED (Id),
+	CONSTRAINT CONSTRAINT_UX_AspNetRoles_Name UNIQUE NONCLUSTERED (Name)
+)
+GO
+INSERT INTO [dbo].[AspNetRoles] ([Id],[Name],[Code]) VALUES ('71804e93-9753-4684-84fd-cf037349c111','SYSTEMADMIN',10000)
+INSERT INTO [dbo].[AspNetRoles] ([Id],[Name],[Code]) VALUES ('739CC754-488B-4BB4-B7FB-62F6BF3C26D0','SOPORTE',20000)
+INSERT INTO [dbo].[AspNetRoles] ([Id],[Name],[Code]) VALUES ('67A6E679-DBC4-402D-AE6E-7F28DDB11BD8','CONFIGURATION',30000)
+
+ CREATE TABLE dbo.AspNetClaimTypes (
+    Id INT IDENTITY(1,1) NOT NULL,
+    Name NVARCHAR(50) NOT NULL,
+    Created DATETIME NOT NULL,
+    CONSTRAINT CONSTRAINT_PK_AspNetClaimTypes PRIMARY KEY CLUSTERED (Id)
+);
+
+insert into AspNetClaimTypes values('Template',getdate())
+insert into AspNetClaimTypes values('Role',getdate())
+
+CREATE TABLE dbo.AspNetClaims (
+    Id INT IDENTITY(1,1) NOT NULL,
+    ClaimTypeId INT,
+    Name NVARCHAR(150) NOT NULL,
+    [Group] NVARCHAR(100),
+    RoleId NVARCHAR(128),
+    TokenFormat NVARCHAR(50),
+    Created DATETIME NOT NULL,
+    SubGroup NVARCHAR(100),
+    Code NVARCHAR(10),
+    Description NVARCHAR(200),
+    [Values] VARCHAR(MAX),
+    ReferenceId INT NOT NULL CONSTRAINT CONSTRAINT_DF_AspNetClaims_ReferenceId DEFAULT(0),
+    CONSTRAINT CONSTRAINT_PK_AspNetClaims PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT CONSTRAINT_FK_AspNetClaims_ClaimType FOREIGN KEY (ClaimTypeId)
+        REFERENCES dbo.AspNetClaimTypes(Id),
+    CONSTRAINT CONSTRAINT_FK_AspNetClaims_Role FOREIGN KEY (RoleId)
+        REFERENCES dbo.AspNetRoles(Id)
+);
+
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(1,'administration','administration',NULL,'app://{0}/{1}',GETDATE(),'administration','AD0001','Administracion','view,view-menu,delete,new,update',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(1,'support','support',NULL,'app://{0}/{1}',GETDATE(),'support','SO0001','Soporte','view,view-menu',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(1,'configuration','configuration',NULL,'app://{0}/{1}',GETDATE(),'configuration','CO0001','Configuracion','view,view-menu,delete,new,update',0)
+
+CREATE TABLE dbo.AspNetClaimValues (
+    Id INT IDENTITY NOT NULL,
+    ClaimId INT,
+    Value NVARCHAR(50) NOT NULL,
+    Created DATETIME NOT NULL CONSTRAINT CONSTRAINT_DF_AspNetClaimValues_Created DEFAULT GETDATE(),
+    CONSTRAINT CONSTRAINT_PK_AspNetClaimValues PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT CONSTRAINT_FK_AspNetClaimValues_Claim FOREIGN KEY (ClaimId)
+        REFERENCES dbo.AspNetClaims(Id)
+);
+
+
+EXEC spConfiguracionDeRolYClaims 'administration','administration','10000','view'
+EXEC spConfiguracionDeRolYClaims 'administration','administration','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'administration','administration','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'administration','administration','10000','new'
+EXEC spConfiguracionDeRolYClaims 'administration','administration','10000','update'
+EXEC spConfiguracionDeRolYClaims 'support','support','20000','view'
+EXEC spConfiguracionDeRolYClaims 'support','support','20000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'configuration','configuration','30000','view'
+EXEC spConfiguracionDeRolYClaims 'configuration','configuration','30000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'configuration','configuration','30000','delete'
+EXEC spConfiguracionDeRolYClaims 'configuration','configuration','30000','new'
+EXEC spConfiguracionDeRolYClaims 'configuration','configuration','30000','update'
+
+
+
+
+CREATE TABLE dbo.AspNetUsers (
+    Id NVARCHAR(128) NOT NULL,
+    Email NVARCHAR(256),
+    EmailConfirmed BIT NOT NULL,
+    PasswordHash NVARCHAR(MAX),
+    SecurityStamp NVARCHAR(MAX),
+    PhoneNumber NVARCHAR(MAX),
+    PhoneNumberConfirmed BIT NOT NULL,
+    TwoFactorEnabled BIT NOT NULL,
+    LockoutEndDateUtc DATETIME,
+    LockoutEnabled BIT NOT NULL,
+    AccessFailedCount INT NOT NULL,
+    ReferenceId INT,
+    AccessNumber NVARCHAR(25),
+    PkIdUsuario INT,
+    CONSTRAINT CONSTRAINT_PK_AspNetUsers PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT CONSTRAINT_FK_AspNetUsers_Usuario FOREIGN KEY (PkIdUsuario)
+        REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+/* user */
+INSERT INTO [dbo].[AspNetUsers]
+([Id],[Email],[EmailConfirmed],[PasswordHash],[SecurityStamp],[PhoneNumber],[PhoneNumberConfirmed],[TwoFactorEnabled],[LockoutEndDateUtc],[LockoutEnabled],[AccessFailedCount]
+,[ReferenceId],[AccessNumber],[PkIdUsuario])
+VALUES (NEWID(),'',1,'Z/Wj2RfwjXGlMM5iKyQNdg==','C5F91B8B-9E25-4576-96E7-CD3317F1AB87',null,0,0,null,0,0,10000,'0000010000',1)
+INSERT INTO [dbo].[AspNetUsers]
+([Id],[Email],[EmailConfirmed],[PasswordHash],[SecurityStamp],[PhoneNumber],[PhoneNumberConfirmed],[TwoFactorEnabled],[LockoutEndDateUtc],[LockoutEnabled],[AccessFailedCount]
+,[ReferenceId],[AccessNumber],[PkIdUsuario])
+VALUES (NEWID(),'',1,'Z/Wj2RfwjXGlMM5iKyQNdg==','C5F91B8B-9E25-4576-96E7-CD3317F1AB87',null,0,0,null,0,0,10000,'0000010000',2)
+INSERT INTO [dbo].[AspNetUsers]
+([Id],[Email],[EmailConfirmed],[PasswordHash],[SecurityStamp],[PhoneNumber],[PhoneNumberConfirmed],[TwoFactorEnabled],[LockoutEndDateUtc],[LockoutEnabled],[AccessFailedCount]
+,[ReferenceId],[AccessNumber],[PkIdUsuario])
+VALUES (NEWID(),'',1,'Z/Wj2RfwjXGlMM5iKyQNdg==','C5F91B8B-9E25-4576-96E7-CD3317F1AB87',null,0,0,null,0,0,10000,'0000010000',3)
+
+
+
+
+CREATE TABLE dbo.AspNetUserRoles (
+    UserId NVARCHAR(128) NOT NULL,
+    RoleId NVARCHAR(128) NOT NULL,
+    ExpireDate DATETIME,
+    CONSTRAINT CONSTRAINT_PK_AspNetUserRoles PRIMARY KEY CLUSTERED (UserId, RoleId),
+    CONSTRAINT CONSTRAINT_FK_AspNetUserRoles_User FOREIGN KEY (UserId)
+        REFERENCES dbo.AspNetUsers(Id),
+    CONSTRAINT CONSTRAINT_FK_AspNetUserRoles_Role FOREIGN KEY (RoleId)
+        REFERENCES dbo.AspNetRoles(Id)
+);
+
+/*  [dbo].[AspNetUserRoles]  */
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('1D6B410E-8191-4C57-ABBD-7741D5761BC6' ,'71804e93-9753-4684-84fd-cf037349c111' ,GETDATE())
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('698B548A-5C74-46AF-8298-E5CFA819F5E5' ,'739CC754-488B-4BB4-B7FB-62F6BF3C26D0' ,GETDATE())
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('6E01455A-C1FD-4675-8FD0-9C2FD4FE93F4' ,'67A6E679-DBC4-402D-AE6E-7F28DDB11BD8' ,GETDATE())
+
+
+
+
+---
+--- CREATE TABLE: dbo.StoreMenu
+--- drop table SIS.Menu
+CREATE TABLE SIS.Menu (
+    PKIdMenu BIGINT NOT NULL,
+    Nombre NVARCHAR(150) NOT NULL,
+    Tipo TINYINT NOT NULL,
+    FKIdMenu_SIS BIGINT NULL, -- Menú padre (auto-relación)
+    LegacyName NVARCHAR(80),
+    Ruta NVARCHAR(200),
+    ImageUrl NVARCHAR(120),
+    Lenguaje CHAR(3) NOT NULL,
+    [Orden] SMALLINT NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    CreatedByOperatorId INT,
+    CreatedDateTime DATETIME NOT NULL DEFAULT GETDATE(),
+    ModifiedByOperatorId INT,
+    ModifiedDateTime DATETIME,
+    CONSTRAINT CONSTRAINT_PK_Menu PRIMARY KEY CLUSTERED (PKIdMenu),
+    CONSTRAINT CONSTRAINT_FK_Menu_Padre FOREIGN KEY (FKIdMenu_SIS)
+        REFERENCES SIS.Menu(PKIdMenu)
+);
+GO
+
+--drop table  SIS.MenuRole
+CREATE TABLE SIS.MenuRole (
+    FKIdMenu_SIS BIGINT NOT NULL,
+    RoleId NVARCHAR(128) NOT NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    CreatedByOperatorId INT,
+    CreatedDateTime DATETIME NOT NULL DEFAULT GETDATE(),
+    ModifiedByOperatorId INT,
+    ModifiedDateTime DATETIME,
+    CONSTRAINT CONSTRAINT_PK_MenuRole PRIMARY KEY CLUSTERED (FKIdMenu_SIS, RoleId),
+    CONSTRAINT CONSTRAINT_FK_MenuRole_Menu FOREIGN KEY (FKIdMenu_SIS)
+        REFERENCES SIS.Menu(PKIdMenu),
+    CONSTRAINT CONSTRAINT_FK_MenuRole_Role FOREIGN KEY (RoleId)
+        REFERENCES dbo.AspNetRoles(Id)
+);
+
+
+
+
+MERGE INTO SIS.Menu AS TARGET
+	USING (VALUES
+	(1, N'Principal', 2, NULL, N'Principal', N'/', N'FaHome', 1, N'ESP',100,1000,getdate())
+	,(2, N'Configuración', 1, NULL, N'Configuración', N'/configuracion/', N'FaRegSun', 1, N'ESP',200,1000,getdate())
+	,(3, N'Perfil', 2, 2, N'Perfil', N'/settings/profile', N'FaUser', 1, N'ESP',201,1000,getdate())
+	,(4, N'Usuario', 2, 2, N'Usuario', N'/settings/users', N'FaRegUser', 1, N'ESP',202,1000,getdate())
+	,(5, N'Menu', 2, 2, N'Menu', N'/settings/menu', N'RiMenuLine', 1, N'ESP',203,1000,getdate())
+	,(6, N'Pedidos', 1, NULL, N'Pedidos', N'/orders', N'FaRegSun', 1, N'ESP',300,1000,getdate())
+	,(7, N'Orden', 2, 6, N'Orden', N'/orders/order', N'RiListCheck2', 1, N'ESP',301,1000,getdate())
+)
+	AS SOURCE (PKIdMenu, Nombre, [Tipo], [FKIdMenu_SIS], [LegacyName], Ruta, [ImageUrl], Activo, [Lenguaje], [Orden],[CreatedByOperatorId],[CreatedDateTime])
+	ON (TARGET.PKIdMenu=SOURCE.PKIdMenu)
+	WHEN MATCHED THEN
+				--UPDATES
+
+				UPDATE SET
+					TARGET.Nombre = SOURCE.Nombre
+					,TARGET.[Tipo] = SOURCE.[Tipo]
+					,TARGET.[FKIdMenu_SIS] = SOURCE.[FKIdMenu_SIS]
+					,TARGET.[LegacyName] = SOURCE.[LegacyName]
+					,TARGET.Ruta = SOURCE.Ruta
+					,TARGET.[ImageUrl] = SOURCE.[ImageUrl]
+					,TARGET.Activo = SOURCE.Activo
+					,TARGET.[Lenguaje] = SOURCE.[Lenguaje]
+					,TARGET.[Orden] = SOURCE.[Orden]
+					,TARGET.[CreatedByOperatorId] = SOURCE.[CreatedByOperatorId]
+					,TARGET.[CreatedDateTime] = SOURCE.[CreatedDateTime]
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (PKIdMenu, Nombre, [Tipo], [FKIdMenu_SIS], [LegacyName], Ruta, [ImageUrl], Activo, [Lenguaje], [Orden],[CreatedByOperatorId],[CreatedDateTime])
+		VALUES (PKIdMenu, Nombre, [Tipo], [FKIdMenu_SIS], [LegacyName], Ruta, [ImageUrl], Activo, [Lenguaje], [Orden],[CreatedByOperatorId],[CreatedDateTime]);
+
+
+	
+MERGE INTO SIS.MenuRole AS TARGET
+	USING (
+	SELECT M.PKIdMenu	,R.id AS [RoleId] ,M.Activo	,[CreatedByOperatorId] = 1 ,[CreatedDateTime] = getdate() --, M.IsActive
+	FROM dbo.aspnetroles AS R (NOLOCK) 
+	INNER JOIN [dbo].[AspNetUserRoles] AS UR (NOLOCK)  ON R.id = UR.RoleId
+	INNER JOIN [dbo].[AspNetUsers] AS U (NOLOCK)  ON u.id = UR.UserId
+	INNER JOIN [dbo].[AspNetClaims] AS C (NOLOCK)  ON C.RoleId = R.Id
+	INNER JOIN [dbo].[AspNetClaimValues] AS CV (NOLOCK)  ON C.Id = CV.ClaimId
+	INNER JOIN SIS.Menu AS M (NOLOCK)  ON M.Activo = 1 --OR M.IsActive = 0
+	WHERE CV.Value = 'view-menu'
+	
+)
+	AS SOURCE (FKIdMenu_SIS, [RoleId], Activo, [CreatedByOperatorId],[CreatedDateTime])
+	ON (TARGET.FKIdMenu_SIS=SOURCE.FKIdMenu_SIS AND TARGET.[RoleId]=SOURCE.[RoleId])
+	WHEN MATCHED THEN
+				--UPDATES
+
+				UPDATE SET
+					TARGET.Activo = SOURCE.Activo
+					,TARGET.[CreatedByOperatorId] = SOURCE.[CreatedByOperatorId]
+					,TARGET.[CreatedDateTime] = SOURCE.[CreatedDateTime]
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (FKIdMenu_SIS, [RoleId], Activo, [CreatedByOperatorId],[CreatedDateTime])
+		VALUES (FKIdMenu_SIS, [RoleId], Activo, [CreatedByOperatorId],[CreatedDateTime])
+	WHEN NOT MATCHED BY SOURCE 
+	THEN DELETE;

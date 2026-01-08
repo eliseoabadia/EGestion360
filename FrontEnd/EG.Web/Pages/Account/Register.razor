@@ -1,0 +1,102 @@
+﻿@page "/register"
+
+@* <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="25">
+        <MudIcon Icon="@Icons.Material.Filled.Business"
+                 Color="Color.Primary"
+                 Size="Size.Large"
+                 Class="mx-auto d-block mb-2" />
+        <MudText Typo="Typo.h4" Color="Color.Primary" Class="text-center mb-6">CoWorkSpace</MudText>
+        <MudText Typo="Typo.h6" Class="text-center mb-6">Registro de Usuario</MudText>
+
+        <!-- Campo Nombre -->
+        <MudTextField @bind-Value="user.Name" Label="Nombre" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" Required="true"
+                      HelperText="Por favor, ingresa tu nombre." />
+
+
+        <!-- Campo Email -->
+        <MudTextField @bind-Value="user.Email" Label="Correo Electrónico" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" InputType="InputType.Email"
+                      Required="true" HelperText="Por favor, ingresa un correo válido."
+                      Class="mt-4" />
+
+        <!-- Campo Contraseña -->
+        <MudTextField @bind-Value="user.Password" Label="Contraseña" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" InputType="@PasswordInput"
+                      Required="true" HelperText="Por favor, ingresa una contraseña segura."
+                      Class="mt-4" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon"
+                      OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" />
+
+        <!-- Campo Telefono -->
+        <MudTextField @bind-Value="user.PhoneNumber" Label="Telefono" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" Required="true"
+                      HelperText="Por favor, ingresa tu telefono." />
+
+
+        <!-- Botón Registrar -->
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-6 w-100"
+                   OnClick="HandleRegister">Registrar</MudButton>
+
+        <!-- Enlace para iniciar sesión -->
+        <MudText Class="text-center mt-4">
+            ¿Ya tienes cuenta? <MudLink Href="/login" Color="Color.Primary">Inicia sesión aquí</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private CreateUserDto user = new CreateUserDto();
+
+    public string Password { get; set; } = string.Empty;
+    private bool isShow;
+    private InputType PasswordInput = InputType.Password;
+    private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private HttpClient HttpClient { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Password = user.Password;
+    }
+
+    private void ButtonTestclick()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        user.Role = Role.Customer;
+        var url = "api/auth/register";
+        var response = await HttpClient.PostAsJsonAsync(url, user);
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Registro exitoso.", Severity.Success);
+            NavigationManager.NavigateTo("/login");
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            Snackbar.Add("El correo electrónico ya está en uso.", Severity.Warning);
+        }
+        else
+        {
+            Snackbar.Add("Error al registrar el usuario.", Severity.Error);
+        }
+    }
+}
+ *@

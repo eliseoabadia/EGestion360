@@ -1,0 +1,499 @@
+﻿@page "/users"
+@using System.ComponentModel.DataAnnotations
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text
+@using MiniExcelLibs
+
+@using MudBlazor
+
+
+@inject NavigationManager NavigationManager
+@inject IProfileService profileService
+@inject ISnackbar Snackbar
+@inject AuthService AuthService
+@inject IJSRuntime _jsRuntime
+
+@inject NavigationManager NavigationManager
+@inject IProfileService profileService
+
+@inject IJSRuntime _jsRuntime
+@inject ProfileService profileService
+
+<script>
+    function downloadFile(base64Data, fileName, contentType) {
+        try {
+            const link = document.createElement('a');
+            link.href = 'data:' + contentType + ';base64,' + base64Data;
+            link.download = fileName;
+            link.style.display = 'none';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            throw error;
+        }
+    }
+</script>
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+
+    <!-- Usando Card para el header -->
+    <MudCard Elevation="1" Class="mb-4">
+        <MudCardContent>
+            <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudItem>
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h4"
+                                 Color="Color.Primary"
+                                 Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt"
+                                     Color="Color.Primary"
+                                     Size="Size.Large" />
+                            Gestión de Usuarios
+                        </MudText>
+                        <MudText Typo="Typo.body2"
+                                 Color="Color.Tertiary"
+                                 Class="ml-6">
+                            Administra y mantén el registro de usuarios del sistema
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem>
+                    <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                        <MudTooltip Text="Nuevo Usuario">
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="CrearUsuario"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                        <MudTooltip Text="Refrescar...">
+                            <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                                       OnClick="OnSearchInput"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+
+        <MudTable ServerData="LoadServerData"
+                  RowsPerPage="@pageSize"
+                  Page="@currentPage"
+                  RowCount="@totalCount"
+                  @ref="mudTableRef"
+                  Dense="@dense"
+                  Hover="@hover"
+                  Loading="@loading"
+                  ReadOnly="@ronly"
+                  SortLabel="Sort By"
+                  InitialSortDirection="SortDirection.Descending"
+                  @bind-SelectedItem="selectedItem1"
+                  IsEditRowSwitchingBlocked="@blockSwitch"
+                  ApplyButtonPosition="@applyButtonPosition"
+                  EditButtonPosition="@editButtonPosition"
+                  EditTrigger="@editTrigger">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Lista de Usuarios</MudText>
+                <MudSpacer />
+                <!-- Botón de Exportar a Excel -->
+                <MudTooltip Text="Exportar a Excel">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="ExportarExcel"
+                               Size="Size.Small"
+                               Class="mr-2"
+                               Disabled="@loading">
+                        @if (loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Exportando...</span>
+                        }
+                        else
+                        {
+                            <span>Exportar Excel</span>
+                        }
+                    </MudButton>
+                </MudTooltip>
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Buscar por nombre, email o teléfono..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              @ref="txtSerch"
+                              OnKeyUp="HandleKeyUp"
+                              Class="mt-0">
+                </MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkIdUsuario" T="UsuarioResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="UsuarioResponse">Nombre Completo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Telefono" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Gafete</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudTooltip Text="Editar usuario">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditarUsuario(context.PkIdUsuario))" />
+                    </MudTooltip>
+
+                    <MudTooltip Text="Eliminar usuario">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EliminarUsuario(context.PkIdUsuario))" />
+                    </MudTooltip>
+                </MudTd>
+
+                <MudTd DataLabel="Nr">@context.PkIdUsuario</MudTd>
+                <MudTd DataLabel="Sign">@context.NombreCompleto</MudTd>
+                <MudTd DataLabel="Name">@context.Email</MudTd>
+                <MudTd DataLabel="Position">@context.Telefono</MudTd>
+                <MudTd DataLabel="Molar mass">@context.Gafete</MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>No se encontraron registros</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>Cargando...</MudText>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="Filas por página"
+                               FirstPageIcon="@Icons.Material.Filled.FirstPage"
+                               LastPageIcon="@Icons.Material.Filled.LastPage"
+                               NextPageIcon="@Icons.Material.Filled.NavigateNext"
+                               PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
+                               PageSizeOptions="new int[] { 5, 10, 20, 50 }"
+                               ShowFirstLastPage="true"
+                               ShowPageSizeSelector="true"
+                               ShowPaginationText="true"
+                               PaginationTextFormat="Página {0} de {1}" />
+            </PagerContent>
+
+        </MudTable>
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    private IList<UsuarioResponse> Elements = new List<UsuarioResponse>();
+    private int totalCount = 0;
+
+    [Inject] private IDialogService DialogService { get; set; } = null!;
+
+    private bool _isInitialized = false;
+
+    private bool dense = true;
+    private bool hover = true;
+    private bool ronly = true;
+    private bool blockSwitch = false;
+
+    private UsuarioResponse selectedItem1 = new UsuarioResponse();
+    private MudTable<UsuarioResponse> mudTableRef = new MudTable<UsuarioResponse>();
+
+    private MudTextField<string> txtSerch = new MudTextField<string>();
+
+    private string searchString = string.Empty;
+    private bool loading = true;
+    private int currentPage = 0;
+    private int pageSize = 10;
+    private int[] pageSizeOptions = new[] { 10, 25, 50, 100 };
+    private CancellationTokenSource searchCts = new CancellationTokenSource();
+
+    private HashSet<UsuarioResponse> selectedItems1 = new HashSet<UsuarioResponse>();
+    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+
+    private SortDirection sortDirection;
+    private string sortLabel = string.Empty;
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            await Task.Run(() =>
+           {
+               _isInitialized = true;
+               loading = false;
+           });
+        }
+    }
+
+    private async Task<TableData<UsuarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        loading = true;
+
+        try
+        {
+            currentPage = state.Page + 1; // MudBlazor uses 0-based index
+            pageSize = state.PageSize;
+            sortLabel = state.SortLabel == null ? "NombreCompleto" : state.SortLabel;
+            sortDirection = state.SortDirection;
+
+            (Elements, totalCount) = await profileService.GetAllUsuariosPaginadoAsync(
+                currentPage,
+                pageSize,
+                searchString,
+                sortLabel,
+                sortDirection
+            );
+
+            return new TableData<UsuarioResponse>
+            {
+                Items = Elements,
+                TotalItems = totalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar usuarios: {ex.Message}", Severity.Error);
+            return new TableData<UsuarioResponse>
+            {
+                Items = new List<UsuarioResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async void OnSearchInput()
+    {
+        // Cancelar búsqueda anterior si existe
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+
+        try
+        {
+            // Esperar 500ms para evitar múltiples llamadas mientras el usuario escribe
+            await Task.Delay(500, searchCts.Token);
+
+            if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
+            {
+                // Reiniciar a la primera página y recargar datos
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // La búsqueda fue cancelada por una nueva entrada, esto es normal
+            Console.WriteLine("Búsqueda cancelada");
+        }
+    }
+
+    private async void HandleKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await mudTableRef.ReloadServerData();
+        }
+    }
+
+    private async Task CrearUsuario()
+    {
+        try
+        {
+            var parameters = new DialogParameters();
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = false,
+                Position = DialogPosition.Center,
+                NoHeader = false,
+            };
+
+            var dialog = await DialogService.ShowAsync<Crear>("Crear Usuario", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                currentPage = 1;
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Ocurrió un error: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task EditarUsuario(int id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["UsuarioId"] = id };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+            };
+
+            var dialog = await DialogService.ShowAsync<Editar>("Editar Usuario", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error al editar usuario: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task EliminarUsuario(int id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["UsuarioId"] = id };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+            };
+
+            var dialog = await DialogService.ShowAsync<Eliminar>("Eliminar Usuario", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                if (Elements.Count == 1 && currentPage > 1)
+                {
+                    currentPage--;
+                }
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error al eliminar usuario: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task ExportarExcel()
+    {
+        try
+        {
+            // Mostrar un indicador de carga
+            loading = true;
+            StateHasChanged();
+
+            var _currentPage = -1; // MudBlazor uses 0-based index
+            // pageSize = state.PageSize;
+            // sortLabel = state.SortLabel == null ? "NombreCompleto" : state.SortLabel;
+            // sortDirection = state.SortDirection;
+
+            (Elements, totalCount) = await profileService.GetAllUsuariosPaginadoAsync(
+                _currentPage,
+                pageSize,
+                searchString,
+                sortLabel,
+                sortDirection
+            );
+
+            if (Elements == null || !Elements.Any())
+            {
+                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            // Preparar datos para Excel
+            var excelData = Elements.Select(u => new
+            {
+                ID = u.PkIdUsuario,
+                Nombre_Completo = u.NombreCompleto,
+                Email = u.Email,
+                Telefono = u.Telefono,
+                Gafete = u.Gafete,
+                //Fecha_Creacion = u.FechaCreacion.ToString("yyyy-MM-dd HH:mm:ss"),
+                Estado = u.Activo ? "Activo" : "Inactivo"
+            }).ToList();
+
+            // Generar Excel con MiniExcel
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var fileBytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(fileBytes);
+
+            await _jsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"Usuarios_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportación exitosa: {Elements.Count} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    // private string GenerateExcelContent(List<UsuarioResponse> usuarios)
+    // {
+    //     try
+    //     {
+    //         // Crear el contenido CSV (más simple que Excel puro)
+    //         var csvContent = new StringBuilder();
+
+    //         // Encabezados
+    //         csvContent.AppendLine("ID,Nombre Completo,Email,Teléfono,Gafete,Fecha Creación");
+
+    //         // Datos
+    //         foreach (var usuario in usuarios)
+    //         {
+    //             csvContent.AppendLine($"\"{usuario.PkIdUsuario}\",\"{usuario.NombreCompleto}\",\"{usuario.Email}\",\"{usuario.Telefono}\",\"{usuario.Gafete}\",\"{usuario.FechaCreacion:yyyy-MM-dd HH:mm:ss}\"");
+    //         }
+
+    //         return csvContent.ToString();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         throw new Exception($"Error al generar contenido Excel: {ex.Message}");
+    //     }
+    // }
+
+    // private async Task DownloadExcelFile(string content, string fileName)
+    // {
+    //     try
+    //     {
+    //         // Convertir a base64
+    //         var bytes = Encoding.UTF8.GetBytes(content);
+    //         var base64 = Convert.ToBase64String(bytes);
+
+    //         // Llamar JavaScript para descargar el archivo
+    //         await _jsRuntime.InvokeVoidAsync("downloadFile", base64, fileName, "text/csv;charset=utf-8;");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         throw new Exception($"Error al descargar archivo: {ex.Message}");
+    //     }
+    // }
+}
+

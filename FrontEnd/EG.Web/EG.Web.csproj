@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazorise.Snackbar" Version="1.8.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0" PrivateAssets="all" />
+    <PackageReference Include="MiniExcel" Version="1.42.0" />
+    <PackageReference Include="MudBlazor" Version="8.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BackEnd\EG.Common\EG.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\DTO\Configuration\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,109 @@
+﻿@page "/login"
+@using EG.Web.Auth
+@using EG.Web.Contracs
+@using EG.Web.Models
+@* @using EG.Web.Components.Layout *@
+@using EG.Web.Models.DTO
+@using EG.Web.Services
+@using MudBlazor
+
+
+@inject IJSRuntime _jsRuntime
+
+@* @inject LoginService LoginService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar *@
+
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="25">
+        <MudIcon Icon="@Icons.Material.Filled.Business"
+                 Color="Color.Primary"
+                 Size="Size.Large"
+                 Class="mx-auto d-block mb-2" />
+        <MudText Typo="Typo.h4" Color="Color.Primary" Class="text-center mb-6">CoWorkSpace</MudText>
+        <MudText Typo="Typo.h6" Class="text-center mb-6">Iniciar Sesión</MudText>
+        <MudTextField @bind-Value="login.Usuario" Label="Correo Electrónico" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" Required="true"
+                      HelperText="Por favor, ingresa tu correo electrónico." />
+
+        <MudTextField @bind-Value="login.Password" Label="Contraseña" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" InputType="@PasswordInput"
+                      Required="true" HelperText="Por favor, ingresa tu contraseña."
+                      Class="mt-4" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon"
+                      OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-6 w-100"
+                   OnClick="HandleLogin">Iniciar Sesión</MudButton>
+
+        <MudText Class="text-center mt-4">
+            ¿No tienes cuenta? <MudLink Href="/register" Color="Color.Primary">Regístrate aquí</MudLink>
+        </MudText>
+        <MudText Class="text-center mt-4">
+            ¿Olvidaste tu contraseña? <MudLink Href="/resetPassword" Color="Color.Primary">Recuperala aquí</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+
+@code {
+    private LoginDTO login = new();
+    public string Password { get; set; } = string.Empty;
+
+    [Inject] private HttpClient HttpClient { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    [Inject] private ILoginService LoginService { get; set; } = null!;
+
+    private bool isShow;
+    private InputType PasswordInput = InputType.Password;
+    private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    protected override void OnInitialized()
+    {
+        Password = login.Password;
+    }
+
+    private void ButtonTestclick()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+
+        UserResult result = await LoginService.LoginAsync(login.Usuario, login.Password);
+        if (!result.PayrollId.Equals("0"))
+        {
+            // Almacenar en localStorage (menos seguro que ProtectedLocalStorage)
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
+
+            Snackbar.Add("¡Bienvenido!", Severity.Success);
+
+            await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
+
+            NavigationManager.NavigateTo("/");
+            // Espera 100ms
+            await Task.Delay(100);
+
+            // Recarga la página usando JavaScript interop
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            Snackbar.Add("Correo o contraseña incorrectos.", Severity.Error);
+        }
+    }
+}

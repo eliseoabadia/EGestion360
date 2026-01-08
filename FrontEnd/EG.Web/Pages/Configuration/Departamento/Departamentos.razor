@@ -1,0 +1,23 @@
+﻿@page "/departamento"
+<h3>Hello Blazor!</h3>
+
+<p>Welcome to your first Blazor page 🎉</p>
+
+<button class="btn btn-primary" @onclick="ShowMessage">Click Me</button>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-success mt-3">
+        @message
+    </div>
+}
+
+@code {
+    private string? message;
+
+    private void ShowMessage()
+    {
+        message = "You clicked the button!";
+    }
+}
+

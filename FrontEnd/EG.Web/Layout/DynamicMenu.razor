@@ -1,0 +1,285 @@
+﻿@using EG.Web.Helpers
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using EG.Web.Contracs.Configuration
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components
+@using System.Collections.Generic
+@using EG.Web.Contracs
+
+@using MudBlazor
+
+@inject INavigateService NavigateService
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+
+@inject ISnackbar Snackbar
+@inject IJSRuntime _jsRuntime
+
+
+﻿﻿<AuthorizeView>
+    <Authorized>
+        <MudNavMenu>
+            @if (Items != null)
+            {
+                @foreach (var item in Items.OrderBy(m => m.Orden))
+                {
+                    if (item.Children?.Any() == true)
+                    {
+                        <MudNavGroup Title="@item.Nombre"
+                                     Icon="@GetIcon(item.ImageUrl)"
+                                     Expanded="@GetExpandedState(item.PKIdMenu)"
+                                     ExpandedChanged="@(v => SetExpandedState(item.PKIdMenu, v))">
+                            <NavMenuItems Items="@item.Children" GetIcon="GetIcon" />
+                        </MudNavGroup>
+                    }
+                    else
+                    {
+                        <MudNavLink Href="@item.Ruta"
+                                    Match="@(item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                                    Icon="@GetIcon(item.ImageUrl)">
+                            @item.Nombre
+                        </MudNavLink>
+                    }
+                }
+            }
+        </MudNavMenu>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+
+    private bool loading = false;
+    private bool _isInitialized = false;
+    private bool _isClientSide = false;
+    private int _userId;
+    private string _token = string.Empty;
+
+    [Parameter]
+    public List<MenuItem> Items { get; set; } = new();
+
+    private Dictionary<long, bool> expandedStates = new();
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            _isClientSide = true;
+            _isInitialized = true;
+
+            // Evitar ciclo: si ya estamos en la ruta de login no intentamos volver a navegar a /login
+            var uri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
+            if (string.Equals(uri, "login", StringComparison.OrdinalIgnoreCase) ||
+                uri.StartsWith("login?", StringComparison.OrdinalIgnoreCase) ||
+                string.IsNullOrEmpty(uri) && NavigationManager.Uri.EndsWith("/login", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            loading = true;
+            StateHasChanged(); // Force UI update to show loading
+
+            try
+            {
+                // Leer token desde localStorage con timeout para evitar bloqueos prolongados (p. ej. al depurar)
+                string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", timeoutMs: 2000);
+
+                if (string.IsNullOrWhiteSpace(rawToken))
+                {
+                    // No hay token: ir a login
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+
+                // Normalizar token: quitar comillas y prefijo Bearer
+                rawToken = rawToken.Trim();
+                if ((rawToken.StartsWith("\"") && rawToken.EndsWith("\"")) || (rawToken.StartsWith("'") && rawToken.EndsWith("'")))
+                {
+                    rawToken = rawToken.Substring(1, rawToken.Length - 2);
+                }
+                var tokenValue = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? rawToken.Substring("Bearer ".Length)
+                    : rawToken;
+
+                _token = tokenValue;
+
+                // Intentar obtener userId desde AuthenticationState
+                _userId = await AuthService.GetUserIdAsync();
+
+                // Si AuthenticationState no tiene userId, intentar extraer del token
+                if (_userId == 0)
+                {
+                    var parsed = ParseUserIdFromToken(tokenValue);
+                    if (parsed.HasValue)
+                    {
+                        _userId = parsed.Value;
+                    }
+                    else
+                    {
+                        // fallback a localStorage userId guardado por el flujo de login
+                        var stored = await GetLocalStorageItemWithTimeoutAsync("userId", timeoutMs: 1000);
+                        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId))
+                        {
+                            _userId = sId;
+                        }
+                    }
+                }
+
+                if (_userId == 0)
+                {
+                    // No podemos determinar userId -> forzar login
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+
+                // Llamar al servicio de menú con el userId obtenido
+                var result = await NavigateService.GetMenuAsync(_userId);
+
+                if (result?.Items?.Any() == true)
+                {
+                    Items = result.Items;
+                }
+                else
+                {
+                    // Si no regresa menú o API devuelve vacío, forzar login
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al cargar datos del usuario: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                loading = false;
+                StateHasChanged(); // Update UI again
+            }
+        }
+    }
+
+    // Helper: intenta una llamada JS que devuelve string y aplica timeout; hace fallback a cualquier extensión disponible.
+    private async Task<string?> GetLocalStorageItemWithTimeoutAsync(string key, int timeoutMs = 1500)
+    {
+        // Intento directo con localStorage.getItem
+        try
+        {
+            var primaryTask = _jsRuntime.InvokeAsync<string>("localStorage.getItem", key).AsTask();
+            var completed = await Task.WhenAny(primaryTask, Task.Delay(timeoutMs));
+            if (completed == primaryTask)
+            {
+                // si la tarea falló, esto propagará la excepción para atraparla en el catch
+                return await primaryTask;
+            }
+        }
+        catch
+        {
+            // Ignorar y probar fallback
+        }
+
+        // Fallback: si existe una extensión GetFromLocalStorage (ValueTask/Task), intentar con timeout también
+        try
+        {
+            // Si GetFromLocalStorage devuelve ValueTask<string> o Task<string>, AsTask() funcionará
+            var fallbackValueTask = _jsRuntime.GetFromLocalStorage(key);
+            var fallbackTask = fallbackValueTask.AsTask();
+            var completed2 = await Task.WhenAny(fallbackTask, Task.Delay(timeoutMs));
+            if (completed2 == fallbackTask)
+            {
+                return await fallbackTask;
+            }
+        }
+        catch
+        {
+            // Ignorar
+        }
+
+        return null;
+    }
+
+    // Extrae userId de un JWT (intento sencillo sin validar firma)
+    private static int? ParseUserIdFromToken(string jwt)
+    {
+        try
+        {
+            var parts = jwt.Split('.');
+            if (parts.Length < 2) return null;
+            string payload = parts[1];
+
+            // Base64 padding
+            int mod4 = payload.Length % 4;
+            if (mod4 > 0)
+            {
+                payload += new string('=', 4 - mod4);
+            }
+
+            var bytes = Convert.FromBase64String(payload);
+            var json = System.Text.Encoding.UTF8.GetString(bytes);
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Posibles claves que contienen el id (chequear de forma case-insensitive)
+            string[] keys = new[] { "UserId", "userId", "id", "Id", "sub", "nameid", "pkIdUsuario", "PkIdUsuario", "NameIdentifier" };
+            foreach (var k in keys)
+            {
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, k, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var val = prop.Value.GetString() ?? prop.Value.ToString();
+                        if (int.TryParse(val, out var numeric)) return numeric;
+
+                        // si viene con formato alfanumérico, extraer primeros dígitos
+                        var m = System.Text.RegularExpressions.Regex.Match(val ?? string.Empty, @"\d+");
+                        if (m.Success && int.TryParse(m.Value, out var numeric2)) return numeric2;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // ignore parse errors
+        }
+        return null;
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Inicializar estado expandido para cada grupo con hijos
+        foreach (var item in Items.Where(m => m.Children?.Any() == true))
+        {
+            if (item.PKIdMenu.HasValue && !expandedStates.ContainsKey(item.PKIdMenu.Value))
+            {
+                expandedStates[item.PKIdMenu.Value] = false;
+            }
+        }
+    }
+
+    private bool GetExpandedState(long? pkId)
+    {
+        return pkId.HasValue && expandedStates.TryGetValue(pkId.Value, out var state) ? state : false;
+    }
+
+    private void SetExpandedState(long? pkId, bool expanded)
+    {
+        if (pkId.HasValue)
+        {
+            expandedStates[pkId.Value] = expanded;
+        }
+    }
+
+    private string GetIcon(string imageUrl)
+    {
+        return imageUrl switch
+        {
+            "FaHome" => Icons.Material.Filled.Home,
+            "FaRegSun" => Icons.Material.Filled.Settings,
+            "FaUser" => Icons.Material.Filled.Person,
+            "FaRegUser" => Icons.Material.Filled.People,
+            "RiMenuLine" => Icons.Material.Filled.Menu,
+            "RiListCheck2" => Icons.Material.Filled.List,
+            _ => Icons.Material.Filled.Info
+        };
+    }
+
+}

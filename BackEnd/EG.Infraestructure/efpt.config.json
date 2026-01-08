@@ -1,0 +1,141 @@
+﻿{
+   "CodeGenerationMode": 6,
+   "ContextClassName": "EGestionContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1224",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "EG.Infraestructure",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[AspNetClaims]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetClaimTypes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetClaimValues]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetRoles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUserRoles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUsers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Departamento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Empresa]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Estados]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Menu]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[MenuRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[OrigenLogMessage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Paises]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[PerfilUsuario]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[SystemLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[SystemParamCatalog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[SystemParamValue]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Usuario]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[spConfiguracionDeRolYClaims]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[LoginInformationEmployee]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spGetClaimsByUser]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spNodeMenu]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[WriteSystemLog]",
+         "ObjectType": 1
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}

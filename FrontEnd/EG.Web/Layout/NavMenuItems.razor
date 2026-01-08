@@ -1,0 +1,35 @@
+﻿@using EG.Web.Models.Configuration
+@using MudBlazor
+
+@if (Items != null)
+{
+    @foreach (var item in Items.OrderBy(m => m.Orden))
+    {
+        @if (item.Children?.Any() == true)
+        {
+            <MudNavGroup Title="@item.Nombre" Icon="@GetIcon(item.ImageUrl)" @bind-Expanded="defaultExpanded">
+                >
+                <NavMenuItems Items="@item.Children" GetIcon="GetIcon" />
+            </MudNavGroup>
+        }
+        else
+        {
+            <MudNavLink Href="@item.Ruta"
+                        Match="@(item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                        Icon="@GetIcon(item.ImageUrl)">
+                @item.Nombre
+            </MudNavLink>
+        }
+    }
+}
+
+@code {
+    [Parameter]
+    public List<MenuItem> Items { get; set; } = new();
+
+    [Parameter]
+    public Func<string, string> GetIcon { get; set; } = _ => Icons.Material.Filled.Info;
+
+    private bool defaultExpanded = false; // <- contraído por defecto
+
+}

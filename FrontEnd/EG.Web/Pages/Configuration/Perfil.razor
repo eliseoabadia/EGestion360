@@ -1,0 +1,487 @@
+﻿@page "/profile"
+@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Helpers
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using EG.Web.Services.Configuration
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
+@using MudBlazor
+
+@inject IEmpresaService empresaService
+@inject NavigationManager NavigationManager
+@inject IProfileService profileService
+@inject ISnackbar Snackbar
+@inject AuthService AuthService
+@inject IJSRuntime _jsRuntime
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+
+    <!-- Usando Card para el header -->
+    <MudCard Elevation="1" Class="mb-2">
+        <MudCardContent>
+            <MudGrid Spacing="2" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
+                <MudItem>
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h4"
+                                 Color="Color.Primary"
+                                 Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt"
+                                     Color="Color.Primary"
+                                     Size="Size.Large" />
+                            Mi Perfil ...
+                        </MudText>
+                        <MudText Typo="Typo.body2"
+                                 Color="Color.Tertiary"
+                                 Class="mt-1" Style="opacity:0.85; max-width:56ch;">
+                            Administra la información de mi Perfil de Usuario
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <!-- Indicador de carga global -->
+    <MudOverlay Visible="@loading" Fixed="true" ZIndex="10">
+        <div class="d-flex flex-column align-center justify-center" style="height:100%">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Class="mt-4">Cargando...</MudText>
+        </div>
+    </MudOverlay>
+
+    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+        <MudGrid GutterSize="3">
+            <!-- Foto de perfil -->
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-2">Foto de Perfil</MudText>
+                    <MudDivider Class="mb-4" />
+                    <div class="d-flex justify-center">
+                        <MudAvatar Size="Size.Large">
+                            <img src="@userProfileFotografiaImg" style="width:100%; height:100%; object-fit:cover;" />
+                        </MudAvatar>
+                    </div>
+                    <div class="d-flex justify-center mt-4">
+                        <MudFileUpload T="IBrowserFile"
+                                       Accept="image/*"
+                                       FilesChanged="OnFileUpload"
+                                       Disabled="@loading">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.CameraAlt"
+                                           Disabled="@loading">
+                                    Cambiar foto
+                                </MudButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
+                    </div>
+                </MudCard>
+            </MudItem>
+
+            <!-- Información del usuario -->
+            <MudItem xs="12" md="8">
+                <MudForm @ref="form">
+                    <MudCard Elevation="3" Class="pa-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Información del Usuario</MudText>
+                        <MudDivider Class="mb-4" />
+
+                        <MudGrid GutterSize="2">
+                            <!-- Nombre completo -->
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Nombre"
+                                              @bind-Value="userProfile.Nombre"
+                                              Required="true"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Apellido Paterno"
+                                              @bind-Value="userProfile.ApellidoPaterno"
+                                              Required="true"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Apellido Materno"
+                                              @bind-Value="userProfile.ApellidoMaterno"
+                                              Disabled="@loading" />
+                            </MudItem>
+
+                            <!-- Empresa -->
+                            <MudItem xs="12" md="6">
+                                <MudSelect Label="Empresa"
+                                           @bind-Value="userProfile.FkidEmpresaSis"
+                                           Required="true"
+                                           Disabled="@loading">
+                                    <MudSelectItem Value="0">Seleccione una empresa</MudSelectItem>
+                                    @foreach (var empresa in listadoEmpresas.Where(e => e.Activo))
+                                    {
+                                        <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.Nombre</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <!-- Contacto -->
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Email"
+                                              @bind-Value="userProfile.Email"
+                                              InputType="InputType.Email"
+                                              Required="true"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Teléfono"
+                                              @bind-Value="userProfile.Telefono"
+                                              Disabled="@loading" />
+                            </MudItem>
+
+                            <!-- Dirección -->
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Dirección 1"
+                                              @bind-Value="userProfile.Direccion1"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Dirección 2"
+                                              @bind-Value="userProfile.Direccion2"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudTextField Label="Código Postal"
+                                              @bind-Value="userProfile.CodigoPostal"
+                                              Disabled="@loading" />
+                            </MudItem>
+
+                            <!-- Campos adicionales -->
+                            <MudItem xs="12" md="4">
+                                <MudTextField Label="Payroll ID"
+                                              @bind-Value="userProfile.PayrollId"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudTextField Label="Número Social"
+                                              @bind-Value="userProfile.NumeroSocial"
+                                              Disabled="@loading" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudTextField Label="Gafete"
+                                              @bind-Value="userProfile.Gafete"
+                                              Disabled="@loading" />
+                            </MudItem>
+
+                            <!-- Estado y Género -->
+                            <MudPaper Class="pa-4 mb-4" Elevation="2" Style="border-radius: 8px;">
+                                <MudText Class="mb-2">Estado del Usuario</MudText>
+                                <MudDivider Class="mb-3" />
+                                <MudRadioGroup @bind-Value="userProfile.Activo" Disabled="@loading">
+                                    <MudRadio Value="true" Color="Color.Primary" Dense="true">Activo</MudRadio>
+                                    <MudRadio Value="false" Color="Color.Secondary" Dense="false">Inactivo</MudRadio>
+                                </MudRadioGroup>
+                            </MudPaper>
+                            <MudPaper Class="pa-4 mb-4" Elevation="2" Style="border-radius: 8px;">
+                                <MudText Class="mb-2">Género</MudText>
+                                <MudDivider Class="mb-3" />
+                                <MudRadioGroup @bind-Value="userProfile.Sexo" Disabled="@loading">
+                                    <MudRadio Value="true" Color="Color.Primary" Dense="true">Femenino</MudRadio>
+                                    <MudRadio Value="false" Color="Color.Secondary" Dense="false">Masculino</MudRadio>
+                                </MudRadioGroup>
+                            </MudPaper>
+                        </MudGrid>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-end mt-6">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       OnClick="GuardarCambiosAsync"
+                                       Disabled="@loading">
+                                Guardar cambios
+                            </MudButton>
+                        </div>
+                    </MudCard>
+                </MudForm>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm form = new MudForm();
+    private bool loading = false;
+    public List<EmpresaResponse> listadoEmpresas { get; set; } = new();
+    public UsuarioResponse userProfile { get; set; } = new();
+    public FotografiaUsuarioResponse userProfileFotografia { get; set; } = new();
+    private string userProfileFotografiaImg = string.Empty;
+    private bool _isInitialized = false;
+    private bool _isClientSide = false;
+    private int _userId;
+    private string _token = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        try
+        {
+            // Cargar datos que no dependen de JS
+            listadoEmpresas = await empresaService.GetEmpresa();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+        // finally
+        // {
+        //     loading = false;
+        // }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            _isClientSide = true;
+            _isInitialized = true;
+
+            loading = true;
+            StateHasChanged(); // Forzar actualización UI para mostrar loading
+
+            try
+            {
+                // Leer token desde localStorage
+                string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", timeoutMs: 2000);
+
+                if (string.IsNullOrWhiteSpace(rawToken))
+                {
+                    // No hay token: ir a login
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+
+                // Normalizar token
+                rawToken = rawToken.Trim();
+                if ((rawToken.StartsWith("\"") && rawToken.EndsWith("\"")) ||
+                    (rawToken.StartsWith("'") && rawToken.EndsWith("'")))
+                {
+                    rawToken = rawToken.Substring(1, rawToken.Length - 2);
+                }
+
+                var tokenValue = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? rawToken.Substring("Bearer ".Length)
+                    : rawToken;
+
+                _token = tokenValue;
+
+                // Obtener userId desde AuthenticationState
+                _userId = await AuthService.GetUserIdAsync();
+
+                // Si AuthenticationState no tiene userId, intentar extraer del token
+                if (_userId == 0)
+                {
+                    var parsed = ParseUserIdFromToken(tokenValue);
+                    if (parsed.HasValue)
+                    {
+                        _userId = parsed.Value;
+                    }
+                    else
+                    {
+                        // fallback a localStorage userId
+                        var stored = await GetLocalStorageItemWithTimeoutAsync("userId", timeoutMs: 1000);
+                        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId))
+                        {
+                            _userId = sId;
+                        }
+                    }
+                }
+
+                if (_userId == 0)
+                {
+                    // No podemos determinar userId -> forzar login
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+
+                // Cargar datos dependientes de JS
+                await LoadUserProfileData();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al cargar datos del usuario: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                loading = false;
+                StateHasChanged(); // Actualizar UI
+            }
+        }
+    }
+
+    private async Task LoadUserProfileData()
+    {
+        try
+        {
+            // Cargar perfil de usuario
+            userProfile = await profileService.GetProfileUser(_userId);
+
+            // Cargar imagen de perfil
+            userProfileFotografia = await profileService.GetProfileImageUser();
+
+            // Actualizar imagen si existe
+            if (userProfileFotografia.Fotografia != null && userProfileFotografia.Fotografia.Length > 0)
+            {
+                userProfileFotografiaImg = $"data:image/jpeg;base64,{Convert.ToBase64String(userProfileFotografia.Fotografia)}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar el perfil: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            await form.Validate();
+
+            if (!form.IsValid)
+            {
+                Snackbar.Add("Por favor, completa todos los campos requeridos.", Severity.Warning);
+                return;
+            }
+
+            var (result, msg) = await profileService.SetProfileUser(userProfile, _userId);
+            Snackbar.Add(msg, result ? Severity.Success : Severity.Error);
+
+            // Recargar datos después de guardar
+            if (result)
+            {
+                await LoadUserProfileData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFileUpload(IBrowserFile file)
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await profileService.SetProfileImageUser(file);
+
+            if (result)
+            {
+                Snackbar.Add("Foto actualizada correctamente", Severity.Success);
+                // Recargar datos después de actualizar la foto
+                await LoadUserProfileData();
+            }
+            else
+            {
+                Snackbar.Add("Error al actualizar la foto", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al subir archivo: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    // Helper: obtener item de localStorage con timeout
+    private async Task<string?> GetLocalStorageItemWithTimeoutAsync(string key, int timeoutMs = 1500)
+    {
+        try
+        {
+            var primaryTask = _jsRuntime.InvokeAsync<string>("localStorage.getItem", key).AsTask();
+            var completed = await Task.WhenAny(primaryTask, Task.Delay(timeoutMs));
+
+            if (completed == primaryTask)
+            {
+                return await primaryTask;
+            }
+        }
+        catch
+        {
+            // Intentar fallback
+        }
+
+        try
+        {
+            var fallbackValueTask = _jsRuntime.GetFromLocalStorage(key);
+            var fallbackTask = fallbackValueTask.AsTask();
+            var completed2 = await Task.WhenAny(fallbackTask, Task.Delay(timeoutMs));
+
+            if (completed2 == fallbackTask)
+            {
+                return await fallbackTask;
+            }
+        }
+        catch
+        {
+            // Ignorar
+        }
+
+        return null;
+    }
+
+    // Extrae userId de un JWT
+    private static int? ParseUserIdFromToken(string jwt)
+    {
+        try
+        {
+            var parts = jwt.Split('.');
+            if (parts.Length < 2) return null;
+            string payload = parts[1];
+
+            int mod4 = payload.Length % 4;
+            if (mod4 > 0)
+            {
+                payload += new string('=', 4 - mod4);
+            }
+
+            var bytes = Convert.FromBase64String(payload);
+            var json = System.Text.Encoding.UTF8.GetString(bytes);
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            string[] keys = new[] { "UserId", "userId", "id", "Id", "sub", "nameid", "pkIdUsuario", "PkIdUsuario", "NameIdentifier" };
+
+            foreach (var k in keys)
+            {
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, k, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var val = prop.Value.GetString() ?? prop.Value.ToString();
+                        if (int.TryParse(val, out var numeric)) return numeric;
+
+                        var m = System.Text.RegularExpressions.Regex.Match(val ?? string.Empty, @"\d+");
+                        if (m.Success && int.TryParse(m.Value, out var numeric2)) return numeric2;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // ignore parse errors
+        }
+        return null;
+    }
+}
