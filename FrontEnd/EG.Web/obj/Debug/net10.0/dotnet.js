@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "EG.Web",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-ZqqptJ07RtMRZ7wDLzDlrPqZby0N5PkpPUxuyDpVXHE=",
+    "hash": "sha256-uE+QbX6ge2iCv/FYCB0pJ3x0FaNKeNdtXXiWGVq7r7g=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.cs8mcre4gh.js"
@@ -1109,25 +1109,25 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "EG.Common.wasm",
-        "name": "EG.Common.pbeu722f4p.wasm",
-        "integrity": "sha256-BTM6yBxh+KwwqjhKc/xlMx0Vw9qRQvTIIj9jd8UdCzc="
+        "name": "EG.Common.518zl213ne.wasm",
+        "integrity": "sha256-aWBh3CL0Atga5JCfIZ0M4QakgSwIpXoCKE/3qBAFdRs="
       },
       {
         "virtualPath": "EG.Web.wasm",
-        "name": "EG.Web.d25tby38s7.wasm",
-        "integrity": "sha256-G17QV/oe8fLeTXxI70BzxMdByZpxBNriyGExNHggJgU="
+        "name": "EG.Web.zh0oz1fmkl.wasm",
+        "integrity": "sha256-edCfRli8hxHPtYX3J4Oj8gwWIfgp0C9jvyl1G2HJxAs="
       }
     ],
     "pdb": [
       {
         "virtualPath": "EG.Common.pdb",
-        "name": "EG.Common.lwi9tibxe9.pdb",
-        "integrity": "sha256-9Xy7Sf2/ZhASiCC5jXxEA1Y+8sfxSxLJ8ADI+C+OSyU="
+        "name": "EG.Common.aqz0kxxhk1.pdb",
+        "integrity": "sha256-4ryrZBMbPOwnQIkFcXBjvXoLrINqcph30zjxMrUnP/c="
       },
       {
         "virtualPath": "EG.Web.pdb",
-        "name": "EG.Web.mkjjku0xuc.pdb",
-        "integrity": "sha256-KgoOClhMidCWnK5pUsm7rfS7OGNfGjG4OUcYsIl3vHY="
+        "name": "EG.Web.euv1230v54.pdb",
+        "integrity": "sha256-irqs/7Hr0k+/uJKGmE0scQJIcIbG909+wWFBd02FGbg="
       }
     ],
     "libraryInitializers": [

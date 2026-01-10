@@ -32,3 +32,4 @@ C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Infraestructure\obj\Debug\ne
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Infraestructure\obj\Debug\net10.0\refint\EG.Infraestructure.dll
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Infraestructure\obj\Debug\net10.0\EG.Infraestructure.pdb
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Infraestructure\obj\Debug\net10.0\ref\EG.Infraestructure.dll
+C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Infraestructure\obj\Debug\net10.0\EG.Infraestructure.sourcelink.json

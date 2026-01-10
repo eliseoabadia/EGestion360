@@ -28,3 +28,4 @@ C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Logger\obj\Debug\net10.0\EG.
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Logger\obj\Debug\net10.0\refint\EG.Logger.dll
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Logger\obj\Debug\net10.0\EG.Logger.pdb
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Logger\obj\Debug\net10.0\ref\EG.Logger.dll
+C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Logger\obj\Debug\net10.0\EG.Logger.sourcelink.json

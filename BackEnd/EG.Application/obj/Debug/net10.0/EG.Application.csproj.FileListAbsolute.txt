@@ -28,3 +28,4 @@ C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Application\obj\Debug\net10.
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Application\obj\Debug\net10.0\refint\EG.Application.dll
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Application\obj\Debug\net10.0\EG.Application.pdb
 C:\Desa\Desarrollo\FullStack\EGestion360\BackEnd\EG.Application\obj\Debug\net10.0\ref\EG.Application.dll
+C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Application\obj\Debug\net10.0\EG.Application.sourcelink.json
