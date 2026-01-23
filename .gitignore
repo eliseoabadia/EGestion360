@@ -6,3 +6,5 @@
 /.vs/ProjectEvaluation
 /.vs/EGestion360.slnx/FileContentIndex
 /.vs/EGestion360.slnx/DesignTimeBuild
+bin/ 
+obj/ 

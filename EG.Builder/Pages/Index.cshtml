@@ -1,0 +1,310 @@
+@page
+@using EG.Builder.Models
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<h2>Constructor de Pantallas</h2>
+
+<div class="mb-3">
+    <label for="tableSelector" class="form-label">Selecciona una tabla o vista</label>
+    <select id="tableSelector" class="form-select" aria-label="Selecciona una tabla o vista">
+        <option selected disabled value="">Selecciona una tabla o vista</option>
+        <!-- Las opciones se llenarán dinámicamente vía JS -->
+    </select>
+</div>
+
+<div class="mb-2">
+    <button id="buildBtn" class="btn btn-primary" onclick="onBuildScreen(false)">
+        <span class="btn-text">Construye código de la pantalla</span>
+        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+    </button>
+</div>
+<div class="mb-4">
+    <button id="saveBtn" class="btn btn-success" onclick="onBuildScreen(true)">
+        <span class="btn-text">Salva el código construido en GRP</span>
+        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+    </button>
+</div>
+
+<!-- Tabs para mostrar contenido generado -->
+<ul class="nav nav-tabs" id="codeTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">Controlador</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">Vista</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab">Service</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab4" type="button" role="tab">View Alta</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab5" type="button" role="tab">View Modificar</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab6" type="button" role="tab">View Elimnar</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab7" type="button" role="tab">Interface Controller</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab8" type="button" role="tab">Interface Services</button>
+    </li>
+</ul>
+
+<div class="tab-content mt-3">
+    <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab1Content')">Copy Code</button>
+            <pre><code id="tab1Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab2" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab2Content')">Copy Code</button>
+            <pre><code id="tab2Content" class="language-html"></code></pre>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab3" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab3Content')">Copy Code</button>
+            <pre><code id="tab3Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab4" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab4Content')">Copy Code</button>
+            <pre><code id="tab4Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab5" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab5Content')">Copy Code</button>
+            <pre><code id="tab5Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab6" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab6Content')">Copy Code</button>
+            <pre><code id="tab6Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab7" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab7Content')">Copy Code</button>
+            <pre><code id="tab7Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab8" role="tabpanel">
+        <div class="position-relative">
+            <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0" onclick="copyContent('tab8Content')">Copy Code</button>
+            <pre><code id="tab8Content" class="language-csharp"></code></pre>
+        </div>
+    </div>
+</div>
+
+<!-- Notificación -->
+<div id="notification" class="alert alert-dismissible fade d-none mt-3" role="alert">
+    <span id="notificationMessage"></span>
+    <button type="button" class="btn-close" onclick="hideNotification()"></button>
+</div>
+
+@section scripts {
+    <script>
+        // Variables globales
+        let selectedElement = null;
+        let isProcessing = false;
+
+        // Inicialización cuando el documento está listo
+        $(document).ready(function () {
+            loadTables();
+            setupEventListeners();
+        });
+
+        // Cargar tablas desde el servidor
+        function loadTables() {
+            showLoading(true, 'Cargando tablas...');
+
+            $.ajax({
+                url: '/Builder/GetTables',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    const selector = $('#tableSelector');
+                    data.forEach(item => {
+                        selector.append($('<option>', {
+                            value: item,
+                            text: item
+                        }));
+                    });
+                    hideNotification();
+                },
+                error: function (xhr, status, error) {
+                    showAlert('Error al cargar las tablas: ' + error, 'danger');
+                },
+                complete: function () {
+                    showLoading(false);
+                }
+            });
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            $('#tableSelector').on('change', function(e) {
+                selectedElement = $(this).val();
+            });
+        }
+
+        // Función principal para construir pantalla
+        function onBuildScreen(saveTheCode) {
+            if (isProcessing) return;
+
+            if (!selectedElement) {
+                showAlert("Debes seleccionar una tabla o vista", "warning");
+                return;
+            }
+
+            isProcessing = true;
+            setButtonsState(true);
+
+            console.log("onBuildScreen",JSON.stringify({
+                    selectedElement: selectedElement,
+                    saveTheCode: saveTheCode
+                }));
+
+            $.ajax({
+                url: '/Builder/BuildTheScreen/'+selectedElement+'/'+saveTheCode,
+                method: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    console.log("onBuildScreen response",response);
+                    $("#tab1Content").text(response.Tab1Content);
+                    $("#tab2Content").text(response.Tab2Content);
+                    $("#tab3Content").text(response.Tab3Content);
+                    $("#tab4Content").text(response.Tab4Content);
+                    $("#tab5Content").text(response.Tab5Content);
+                    $("#tab6Content").text(response.Tab6Content);
+                    $("#tab7Content").text(response.Tab7Content);
+                    $("#tab8Content").text(response.Tab8Content);
+
+                    // Resaltar sintaxis si está disponible
+                    if (typeof Prism !== 'undefined') {
+                        Prism.highlightAll();
+                    }
+
+                    showAlert(response.Message || "Operación completada con éxito", "success");
+                    hideNotification();
+
+                    isProcessing = false;
+                    setButtonsState(false);
+                },
+                error: function (xhr, status, error) {
+                    showAlert('Error al cargar las tablas: ' + error, 'danger');
+                },
+                complete: function () {
+                    showLoading(false);
+                }
+            });
+            // $.ajax({
+            //     url: '/Builder/BuildTheScreen',
+            //     method: 'POST',
+            //     contentType: 'application/json',
+            //     data: JSON.stringify({
+            //         selectedElement: selectedElement,
+            //         saveTheCode: saveTheCode
+            //     }),
+            //     success: function (response) {
+            //         if (response && response.Tab1Content !== undefined) {
+            //             $("#tab1Content").text(response.Tab1Content);
+            //             $("#tab2Content").text(response.Tab2Content);
+            //             $("#tab3Content").text(response.Tab3Content);
+
+            //             // Resaltar sintaxis si está disponible
+            //             if (typeof Prism !== 'undefined') {
+            //                 Prism.highlightAll();
+            //             }
+
+            //             showAlert(response.Message || "Operación completada con éxito", "success");
+            //         } else {
+            //             showAlert("Respuesta inválida del servidor", "danger");
+            //         }
+            //     },
+            //     error: function (xhr, status, error) {
+            //         let errorMessage = "Error occurred: " + error;
+            //         if (xhr.responseJSON && xhr.responseJSON.message) {
+            //             errorMessage = xhr.responseJSON.message;
+            //         }
+            //         showAlert(errorMessage, "danger");
+            //     },
+            //     complete: function () {
+            //         isProcessing = false;
+            //         setButtonsState(false);
+            //     }
+            // });
+        }
+
+        // Copiar contenido al portapapeles
+        function copyContent(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+
+                navigator.clipboard.writeText(text)
+            .then(() => showAlert("Copiado al portapapeles", "success"))
+            .catch(err => showAlert("Error al copiar: " + err, "danger"));
+        }
+
+        // Mostrar notificación
+        function showAlert(message, type) {
+            const notification = $("#notification");
+            const messageSpan = $("#notificationMessage");
+
+            notification.removeClass('alert-success alert-danger alert-warning alert-info')
+                       .addClass('alert-' + type)
+                       .removeClass('d-none')
+                       .addClass('show');
+
+            messageSpan.text(message);
+
+            // Auto-ocultar después de 5 segundos
+            setTimeout(hideNotification, 5000);
+        }
+
+        // Ocultar notificación
+        function hideNotification() {
+            $("#notification").removeClass('show').addClass('d-none');
+        }
+
+        // Mostrar/ocultar loading
+        function showLoading(show, message) {
+            if (show && message) {
+                showAlert(message, 'info');
+            }
+
+            $('body').css('cursor', show ? 'wait' : 'default');
+        }
+
+        // Habilitar/deshabilitar botones
+        function setButtonsState(disabled) {
+            $('#buildBtn, #saveBtn').prop('disabled', disabled);
+
+            // Mostrar/ocultar spinners
+            if (disabled) {
+                $('#buildBtn .btn-text, #saveBtn .btn-text').addClass('d-none');
+                $('#buildBtn .spinner-border, #saveBtn .spinner-border').removeClass('d-none');
+            } else {
+                $('#buildBtn .btn-text, #saveBtn .btn-text').removeClass('d-none');
+                $('#buildBtn .spinner-border, #saveBtn .spinner-border').addClass('d-none');
+            }
+        }
+
+        // Prevenir envío del formulario con Enter
+        $(document).on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

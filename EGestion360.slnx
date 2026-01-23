@@ -11,4 +11,5 @@
   <Folder Name="/FrontEnd/">
     <Project Path="FrontEnd/EG.Web/EG.Web.csproj" Id="206bc5a3-0a74-47c3-a6ab-15d141b48ed6" />
   </Folder>
+  <Project Path="EG.Builder/EG.Builder.csproj" />
 </Solution>
