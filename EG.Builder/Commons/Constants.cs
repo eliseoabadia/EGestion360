@@ -8,11 +8,14 @@
         public const string TABLENAME = "TABLENAME";
         public const string PRIMARYKEY = "PKIDENEITY";
         public const string COLUMNHEADERLIST = "SEARCHHEADERTABLE";
-         
+        public const string ROUTEPAGEMENU = "ROUTEPAGEMENU";
+        
+
         public const string DISPLAYNAMEFK = "DISPLAYNAMEFK";
         public const string COLPKHEADERNAME = "COLPKHEADERNAME";
         public const string PRIMARYFKKEY = "PRIMARYFKKEY";
         public const string COLUMNDETAILIST = "FUNCTIONSFKLIST";
+        public const string SEARCHHEADERTABLE = "SEARCHHEADERTABLE";
         public const string SEARCHDETAILTABLE = "SEARCHDETAILTABLE";
 
 

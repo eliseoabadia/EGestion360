@@ -5,6 +5,7 @@ using EG.Business.Interfaces;
 using EG.Business.Mapping;
 using EG.Business.Services;
 using EG.Common.Util;
+using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
 using EG.Domain.Interfaces;
 using EG.Filters;
@@ -45,33 +46,28 @@ public partial class Program
         builder.Services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
         builder.Services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
         builder.Services.AddScoped<IRepository<PerfilUsuario>, Repository<PerfilUsuario>>();
-        builder.Services.AddScoped<IRepository<Empresa>, Repository<Empresa>>();
-        // O si tienes una implementación específica para Empresa
+        //builder.Services.AddScoped<IRepository<Empresa>, Repository<Empresa>>();
 
 
+        builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
+       
 
-        //builder.Services.AddScoped<IRepository, Repository>();
-        //builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
-        //builder.Services.AddScoped<ISpaceRepository, SpaceRepository>();
-        //builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 
         //services (business / application)
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<ITokenService, TokenService>();
-        // Servicios adicionales implementados en la capa de negocio
-        builder.Services.AddScoped<IEmpresaService, EmpresaService>();
-        
+        //builder.Services.AddScoped<IEmpresaService, EmpresaService>();
         builder.Services.AddScoped<INavigateService, NavigateService>();
         builder.Services.AddScoped<IUserIpService, UserIpService>();
-
-        // Registrar servicios de negocio para inyección de dependencias
         builder.Services.AddScoped<IUserProfileService, UserProfileService>();
-        //builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-        //builder.Services.AddScoped<IAuthService, AuthService>();
-
-        // Registraciones añadidas: servicios de dominio/negocio usados por controladores
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-        //builder.Services.AddScoped<IEmpresaService, EmpresaService>();
+
+
+        // Registrar GenericService abierto (open generic)
+        builder.Services.AddScoped(typeof(GenericService<,,>));
+
+        // Registrar repositorios genéricos
+        builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         builder.Services.AddControllers().AddJsonOptions(options =>
         {

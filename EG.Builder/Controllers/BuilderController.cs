@@ -249,6 +249,10 @@ namespace EG.Builder.Controllers
                 .Replace(Const.CONTROLLERNAME, controllerName)
                 .Replace(Const.TABLENAME, tableName)
                 .Replace(Const.PRIMARYKEY, PK)
+                .Replace(Const.SEARCHHEADERTABLE, columnHeaderList)
+                .Replace(Const.SEARCHDETAILTABLE, columnDetailist)
+                .Replace(Const.ROUTEPAGEMENU, $"{tableName}s")
+                
                 .Replace(Const.COLUMNHEADERLIST, columnHeaderList)
                 .Replace(Const.COLUMNDETAILIST, columnDetailist);
 

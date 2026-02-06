@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿
 namespace EG.Dommain.DTOs.Responses;
 public class EmpresaDto
 {

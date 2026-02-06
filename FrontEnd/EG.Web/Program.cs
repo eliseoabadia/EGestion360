@@ -49,6 +49,8 @@ internal class Program
         builder.Services.AddScoped<EmpresaService>();
         builder.Services.AddScoped<IProfileService>(sp => sp.GetRequiredService<ProfileService>());
         builder.Services.AddScoped<ProfileService>();
+        builder.Services.AddScoped<IDepartamentoService>(sp => sp.GetRequiredService<DepartamentoService>());
+        builder.Services.AddScoped<DepartamentoService>();
         builder.Services.AddScoped<IRequestService, RequestService>();
 
         // Registrar servicios por interfaz (añadir donde están los otros builder.Services.AddScoped...)

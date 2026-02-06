@@ -209,7 +209,7 @@
 @code {
     private MudForm form = new MudForm();
     private bool loading = false;
-    public List<EmpresaResponse> listadoEmpresas { get; set; } = new();
+    private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
     public UsuarioResponse userProfile { get; set; } = new();
     public FotografiaUsuarioResponse userProfileFotografia { get; set; } = new();
     private string userProfileFotografiaImg = string.Empty;
@@ -224,7 +224,7 @@
         try
         {
             // Cargar datos que no dependen de JS
-            listadoEmpresas = await empresaService.GetEmpresa();
+            listadoEmpresas = await empresaService.GetAllEmpresas();
         }
         catch (Exception ex)
         {

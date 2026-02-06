@@ -1,7 +1,64 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\perfil.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\perfil.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\usuario\\editar.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\usuario\\editar.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\usuario\\crear.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\usuario\\crear.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\services\\configuration\\empresaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\services\\configuration\\empresaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\departamento\\creardepartamento.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\departamento\\creardepartamento.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\departamento\\eliminardepartamento.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\departamento\\eliminardepartamento.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\departamento\\editardepartamento.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\departamento\\editardepartamento.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\pages\\configuration\\departamento\\departamentos.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\pages\\configuration\\departamento\\departamentos.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\contracs\\configuration\\idepartamentoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\contracs\\configuration\\idepartamentoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\frontend\\eg.web\\services\\configuration\\departamentoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{206BC5A3-0A74-47C3-A6AB-15D141B48ED6}|FrontEnd\\EG.Web\\EG.Web.csproj|solutionrelative:frontend\\eg.web\\services\\configuration\\departamentoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{05D489EE-990E-3152-373D-3B1C5C27AF84}|BackEnd\\EG.ApiCore\\EG.ApiCore.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\backend\\eg.apicore\\controllers\\profile\\empresacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{05D489EE-990E-3152-373D-3B1C5C27AF84}|BackEnd\\EG.ApiCore\\EG.ApiCore.csproj|solutionrelative:backend\\eg.apicore\\controllers\\profile\\empresacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{05D489EE-990E-3152-373D-3B1C5C27AF84}|BackEnd\\EG.ApiCore\\EG.ApiCore.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\backend\\eg.apicore\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{05D489EE-990E-3152-373D-3B1C5C27AF84}|BackEnd\\EG.ApiCore\\EG.ApiCore.csproj|solutionrelative:backend\\eg.apicore\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{05D489EE-990E-3152-373D-3B1C5C27AF84}|BackEnd\\EG.ApiCore\\EG.ApiCore.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\backend\\eg.apicore\\controllers\\profile\\departamentocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{05D489EE-990E-3152-373D-3B1C5C27AF84}|BackEnd\\EG.ApiCore\\EG.ApiCore.csproj|solutionrelative:backend\\eg.apicore\\controllers\\profile\\departamentocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B95ED5A7-1AA0-98A1-22AF-76A205CE9048}|BackEnd\\EG.Business\\EG.Business.csproj|c:\\desarrollo\\desarrollo\\fullstack\\egestion360\\backend\\eg.business\\mapping\\mappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B95ED5A7-1AA0-98A1-22AF-76A205CE9048}|BackEnd\\EG.Business\\EG.Business.csproj|solutionrelative:backend\\eg.business\\mapping\\mappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 1,
@@ -9,12 +66,8 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 30,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:135:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
@@ -94,6 +147,199 @@
             {
               "$type": "Bookmark",
               "Name": "ST:421934398:0:{81164725-9a96-4ece-a4cb-440d8fd285e5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CrearDepartamento.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\CrearDepartamento.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\CrearDepartamento.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\CrearDepartamento.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\CrearDepartamento.razor",
+              "ViewState": "AgIAAFkAAAAAAAAAAAAgwHYAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T21:36:29.306Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "EliminarDepartamento.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EliminarDepartamento.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EliminarDepartamento.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EliminarDepartamento.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EliminarDepartamento.razor",
+              "ViewState": "AgIAAHUAAAAAAAAAAAAAAIAAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T21:36:07.829Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "IDepartamentoService.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Contracs\\Configuration\\IDepartamentoService.cs",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Contracs\\Configuration\\IDepartamentoService.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Contracs\\Configuration\\IDepartamentoService.cs",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Contracs\\Configuration\\IDepartamentoService.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAcwEsAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T21:31:25.722Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "EmpresaService.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Services\\Configuration\\EmpresaService.cs",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Services\\Configuration\\EmpresaService.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Services\\Configuration\\EmpresaService.cs",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Services\\Configuration\\EmpresaService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA8AAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T20:55:08.679Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Crear.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Crear.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Crear.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Crear.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Crear.razor",
+              "ViewState": "AgIAAGYAAAAAAAAAAAAgwIsAAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T20:58:01.51Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Editar.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Editar.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Editar.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Editar.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Usuario\\Editar.razor",
+              "ViewState": "AgIAAHIAAAAAAAAAAAAgwIkAAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T20:57:54.532Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Departamentos.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\Departamentos.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\Departamentos.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\Departamentos.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\Departamentos.razor",
+              "ViewState": "AgIAANgAAAAAAAAAAAAgwPEAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T20:23:31.4Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Perfil.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Perfil.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Perfil.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Perfil.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Perfil.razor",
+              "ViewState": "AgIAAMYAAAAAAAAAAAAAANMAAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T20:58:08.824Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "DepartamentoService.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Services\\Configuration\\DepartamentoService.cs",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Services\\Configuration\\DepartamentoService.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Services\\Configuration\\DepartamentoService.cs",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Services\\Configuration\\DepartamentoService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAJwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T21:19:01.26Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "DepartamentoController.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.ApiCore\\Controllers\\Profile\\DepartamentoController.cs",
+              "RelativeDocumentMoniker": "BackEnd\\EG.ApiCore\\Controllers\\Profile\\DepartamentoController.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.ApiCore\\Controllers\\Profile\\DepartamentoController.cs",
+              "RelativeToolTip": "BackEnd\\EG.ApiCore\\Controllers\\Profile\\DepartamentoController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T20:58:41.927Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "EditarDepartamento.razor",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EditarDepartamento.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EditarDepartamento.razor",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EditarDepartamento.razor",
+              "RelativeToolTip": "FrontEnd\\EG.Web\\Pages\\Configuration\\Departamento\\EditarDepartamento.razor",
+              "ViewState": "AgIAAFsAAAAAAAAAAAAgwGsAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-06T20:56:15.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "EmpresaController.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.ApiCore\\Controllers\\Profile\\EmpresaController.cs",
+              "RelativeDocumentMoniker": "BackEnd\\EG.ApiCore\\Controllers\\Profile\\EmpresaController.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.ApiCore\\Controllers\\Profile\\EmpresaController.cs",
+              "RelativeToolTip": "BackEnd\\EG.ApiCore\\Controllers\\Profile\\EmpresaController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAqwCYAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T20:58:27.408Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "MappingProfile.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.Business\\Mapping\\MappingProfile.cs",
+              "RelativeDocumentMoniker": "BackEnd\\EG.Business\\Mapping\\MappingProfile.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.Business\\Mapping\\MappingProfile.cs",
+              "RelativeToolTip": "BackEnd\\EG.Business\\Mapping\\MappingProfile.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAowC8AAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T21:11:07.742Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.ApiCore\\Program.cs",
+              "RelativeDocumentMoniker": "BackEnd\\EG.ApiCore\\Program.cs",
+              "ToolTip": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\BackEnd\\EG.ApiCore\\Program.cs",
+              "RelativeToolTip": "BackEnd\\EG.ApiCore\\Program.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAAgwDoAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-06T21:11:50.254Z",
+              "EditorCaption": ""
             }
           ]
         }

@@ -381,7 +381,7 @@ MERGE INTO SIS.Menu AS TARGET
 	,(3, N'Perfil de Usuario', 2, 2, N'Perfil de Usuario', N'/profile', N'FaUser', 1, N'ESP',201,1000,getdate())
 	,(4, N'Administración de Usuarios', 2, 2, N'Administración de Usuarios', N'/users', N'FaUser', 1, N'ESP',202,1000,getdate())
 	,(5, N'Empresa', 2, 2, N'Empresa', N'/empresa', N'FaRegUser', 1, N'ESP',203,1000,getdate())
-	,(6, N'Departamento', 2, 2, N'Departamento', N'/departamento', N'FaRegUser', 1, N'ESP',204,1000,getdate())
+	,(6, N'Departamento', 2, 2, N'Departamento', N'/departamentos', N'FaRegUser', 1, N'ESP',204,1000,getdate())
 	,(7, N'Menu', 2, 2, N'Menu', N'/settings/menu', N'RiMenuLine', 1, N'ESP',205,1000,getdate())
 	,(8, N'Pedidos', 1, NULL, N'Pedidos', N'orders', N'FaRegSun', 1, N'ESP',300,1000,getdate())
 	,(9, N'Orden', 2, 8, N'Orden', N'/orders/order', N'RiListCheck2', 1, N'ESP',301,1000,getdate())

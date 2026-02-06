@@ -1,0 +1,209 @@
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IDepartamentoService departamentoService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IEmpresaService empresaService
+
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
+    <DialogContent>
+        @if (loading)
+        {
+            <div class="d-flex justify-center align-center py-6">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                <MudText Class="ml-3">Cargando departamento...</MudText>
+            </div>
+        }
+        else
+        {
+            <MudForm @ref="form">
+                <MudGrid GutterSize="2">
+                    <!-- Nombre del departamento -->
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="departamento.Nombre"
+                                      Label="Nombre del Departamento"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      RequiredError="El nombre es requerido"
+                                      ValidationPattern="@nombrePattern"
+                                      ValidationError="El nombre debe tener al menos 3 caracteres"
+                                      Class="mb-4" />
+                    </MudItem>
+
+                    <!-- Empresa (solo lectura si ya tiene valor) -->
+                    <MudItem xs="12">
+                        @* @if (departamento.FkidEmpresaSis > 0)
+                        {
+                            <MudTextField Label="Empresa"
+                                          Variant="Variant.Outlined"
+                                          Value="@(GetNombreEmpresa(departamento.FkidEmpresaSis))"
+                                          ReadOnly="true"
+                                          Class="mb-4" />
+                        }
+                        else
+                        { *@
+                            <MudSelect Label="Empresa"
+                                       @bind-Value="departamento.FkidEmpresaSis"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="Debe seleccionar una empresa"
+                                       Class="mb-4">
+                                <MudSelectItem Value="0">Seleccione una empresa</MudSelectItem>
+                                @foreach (var empresa in empresas.Where(e => e.Activo))
+                                {
+                                    <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        @* } *@
+                    </MudItem>
+
+                    <!-- Estado -->
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-3 mb-4" Elevation="1" Style="border-radius: 8px;">
+                            <MudText Class="mb-2" Typo="Typo.body2" Color="Color.Default">Estado</MudText>
+                            <MudRadioGroup @bind-Value="departamento.Activo" Class="mt-2">
+                                <MudRadio Value="true" Color="Color.Success">Activo</MudRadio>
+                                <MudRadio Value="false" Color="Color.Error">Inactivo</MudRadio>
+                            </MudRadioGroup>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Text"
+                   Color="Color.Secondary"
+                   Disabled="@loading">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Guardar"
+                   Disabled="@loading"
+                   StartIcon="@Icons.Material.Filled.Save">
+            @if (loading)
+            {
+                <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
+                <span class="ml-2">Guardando...</span>
+            }
+            else
+            {
+                <span>Guardar Cambios</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public int? DepartamentoId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm form = new MudForm();
+    private DepartamentoResponse departamento = new DepartamentoResponse();
+    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
+    private bool loading = true;
+    private string nombrePattern = "^.{3,}$"; // Al menos 3 caracteres
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Cargar lista de empresas
+            empresas = await empresaService.GetAllEmpresas();
+
+            // Si hay ID, cargar el departamento
+            if (DepartamentoId.HasValue && DepartamentoId > 0)
+            {
+                departamento = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+
+                if (departamento == null)
+                {
+                    Snackbar.Add("Departamento no encontrado", Severity.Warning);
+                    Cancel();
+                    return;
+                }
+            }
+            else
+            {
+                // Si no hay ID, mostrar error
+                Snackbar.Add("No se proporcionó un ID de departamento válido", Severity.Error);
+                Cancel();
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar: {ex.Message}", Severity.Error);
+            Cancel();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private string GetNombreEmpresa(int empresaId)
+    {
+        var empresa = empresas.FirstOrDefault(e => e.PkidEmpresa == empresaId);
+        return empresa?.Nombre ?? "Empresa no encontrada";
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            loading = true;
+            StateHasChanged();
+
+            await form.Validate();
+
+            if (!form.IsValid)
+            {
+                Snackbar.Add("Por favor, complete todos los campos requeridos correctamente", Severity.Warning);
+                loading = false;
+                return;
+            }
+
+            // Validaciones adicionales
+            if (string.IsNullOrWhiteSpace(departamento.Nombre) || departamento.Nombre.Length < 3)
+            {
+                Snackbar.Add("El nombre del departamento debe tener al menos 3 caracteres", Severity.Warning);
+                loading = false;
+                return;
+            }
+
+            if (departamento.FkidEmpresaSis <= 0)
+            {
+                Snackbar.Add("Debe seleccionar una empresa válida", Severity.Warning);
+                loading = false;
+                return;
+            }
+
+            // Actualizar el departamento
+            var (success, message) = await departamentoService.UpdateDepartamentoAsync(departamento);
+
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+                loading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            loading = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

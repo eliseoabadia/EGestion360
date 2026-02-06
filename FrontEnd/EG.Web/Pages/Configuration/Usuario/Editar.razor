@@ -135,7 +135,7 @@
 
     private bool loading = false;
 
-    public List<EmpresaResponse> listadoEmpresas { get; set; } = new();
+    private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
 
     public UsuarioResponse userProfile { get; set; } = new();
 
@@ -170,7 +170,7 @@
     {
         userProfile = await profileService.GetProfileUser(UsuarioId);
 
-        listadoEmpresas = await empresaService.GetEmpresa();
+        listadoEmpresas = await empresaService.GetAllEmpresas();
     }
 
     private async Task GuardarCambiosAsync()

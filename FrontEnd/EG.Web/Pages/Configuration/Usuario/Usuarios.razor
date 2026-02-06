@@ -401,9 +401,6 @@
             StateHasChanged();
 
             var _currentPage = -1; // MudBlazor uses 0-based index
-            // pageSize = state.PageSize;
-            // sortLabel = state.SortLabel == null ? "NombreCompleto" : state.SortLabel;
-            // sortDirection = state.SortDirection;
 
             (Elements, totalCount) = await profileService.GetAllUsuariosPaginadoAsync(
                 _currentPage,
@@ -427,7 +424,6 @@
                 Email = u.Email,
                 Telefono = u.Telefono,
                 Gafete = u.Gafete,
-                //Fecha_Creacion = u.FechaCreacion.ToString("yyyy-MM-dd HH:mm:ss"),
                 Estado = u.Activo ? "Activo" : "Inactivo"
             }).ToList();
 
@@ -455,45 +451,5 @@
         }
     }
 
-    // private string GenerateExcelContent(List<UsuarioResponse> usuarios)
-    // {
-    //     try
-    //     {
-    //         // Crear el contenido CSV (más simple que Excel puro)
-    //         var csvContent = new StringBuilder();
-
-    //         // Encabezados
-    //         csvContent.AppendLine("ID,Nombre Completo,Email,Teléfono,Gafete,Fecha Creación");
-
-    //         // Datos
-    //         foreach (var usuario in usuarios)
-    //         {
-    //             csvContent.AppendLine($"\"{usuario.PkIdUsuario}\",\"{usuario.NombreCompleto}\",\"{usuario.Email}\",\"{usuario.Telefono}\",\"{usuario.Gafete}\",\"{usuario.FechaCreacion:yyyy-MM-dd HH:mm:ss}\"");
-    //         }
-
-    //         return csvContent.ToString();
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         throw new Exception($"Error al generar contenido Excel: {ex.Message}");
-    //     }
-    // }
-
-    // private async Task DownloadExcelFile(string content, string fileName)
-    // {
-    //     try
-    //     {
-    //         // Convertir a base64
-    //         var bytes = Encoding.UTF8.GetBytes(content);
-    //         var base64 = Convert.ToBase64String(bytes);
-
-    //         // Llamar JavaScript para descargar el archivo
-    //         await _jsRuntime.InvokeVoidAsync("downloadFile", base64, fileName, "text/csv;charset=utf-8;");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         throw new Exception($"Error al descargar archivo: {ex.Message}");
-    //     }
-    // }
 }
 

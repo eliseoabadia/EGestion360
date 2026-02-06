@@ -55,8 +55,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZWdpc3Rlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Desarrollo/Desarrollo/FullStack/EGestion360/FrontEnd/EG.Web/Pages/Configuration/Departamento/CrearDepartamento.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29uZmlndXJhdGlvblxEZXBhcnRhbWVudG9cQ3JlYXJEZXBhcnRhbWVudG8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Desarrollo/Desarrollo/FullStack/EGestion360/FrontEnd/EG.Web/Pages/Configuration/Departamento/Departamentos.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29uZmlndXJhdGlvblxEZXBhcnRhbWVudG9cRGVwYXJ0YW1lbnRvcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Desarrollo/Desarrollo/FullStack/EGestion360/FrontEnd/EG.Web/Pages/Configuration/Departamento/EditarDepartamento.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29uZmlndXJhdGlvblxEZXBhcnRhbWVudG9cRWRpdGFyRGVwYXJ0YW1lbnRvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Desarrollo/Desarrollo/FullStack/EGestion360/FrontEnd/EG.Web/Pages/Configuration/Departamento/EliminarDepartamento.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29uZmlndXJhdGlvblxEZXBhcnRhbWVudG9cRWxpbWluYXJEZXBhcnRhbWVudG8ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Desarrollo/Desarrollo/FullStack/EGestion360/FrontEnd/EG.Web/Pages/Configuration/Perfil.razor]

@@ -1,0 +1,197 @@
+@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+@inject IJSRuntime _jsRuntime
+
+@inject IDepartamentoService departamentoService
+@inject ISnackbar Snackbar
+@inject IEmpresaService empresaService
+
+<MudDialog MaxWidth="MaxWidth.Small">
+    <DialogContent>
+        @if (loading)
+        {
+            <div class="d-flex justify-center align-center py-4">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Small" />
+                <MudText Class="ml-3" Typo="Typo.body2">Cargando información del departamento...</MudText>
+            </div>
+        }
+        else if (departamento == null)
+        {
+            <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Error">
+                <MudText Typo="Typo.subtitle2">Departamento no encontrado</MudText>
+                <MudText Typo="Typo.body2">El departamento que intenta eliminar no existe o ya ha sido eliminado.</MudText>
+            </MudAlert>
+        }
+        else
+        {
+            <div class="text-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" 
+                         Color="Color.Warning" 
+                         Size="Size.Large"
+                         Class="mb-3" />
+                <MudText Typo="Typo.h6" Color="Color.Warning" Class="mb-3">
+                    ¿Eliminar Departamento?
+                </MudText>
+            </div>
+
+            <!-- Información del departamento -->
+            <MudPaper Class="pa-4 mb-4" Elevation="1" Style="border-radius: 8px; background-color: #f5f5f5;">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">
+                            <strong>Nombre:</strong>
+                        </MudText>
+                        <MudText Typo="Typo.body1" Class="ml-2">
+                            @departamento.Nombre
+                        </MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">
+                            <strong>Empresa:</strong>
+                        </MudText>
+                        <MudText Typo="Typo.body1" Class="ml-2">
+                            @(GetNombreEmpresa(departamento.FkidEmpresaSis))
+                        </MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">
+                            <strong>Estado:</strong>
+                        </MudText>
+                        <MudBadge Color="@(departamento.Activo ? Color.Success : Color.Error)" 
+                                  Variant="Variant.Filled"
+                                  Size="Size.Small"
+                                  Class="ml-2">
+                            @(departamento.Activo ? "Activo" : "Inactivo")
+                        </MudBadge>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <!-- Advertencias -->
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+                <MudText Typo="Typo.subtitle2" Class="mb-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="mr-1" />
+                    Esta acción es irreversible
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    Una vez eliminado, no podrá recuperar la información de este departamento.
+                </MudText>
+            </MudAlert>
+
+            @if (departamento.Activo)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    <MudText Typo="Typo.body2">
+                        <strong>Sugerencia:</strong> Si desea conservar el registro histórico, considere cambiar el estado a "Inactivo" en lugar de eliminar.
+                    </MudText>
+                </MudAlert>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" 
+                   Variant="Variant.Text" 
+                   Color="Color.Secondary"
+                   Disabled="@loading"
+                   Class="mr-2">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Error"
+                   OnClick="Eliminar"
+                   Disabled="loading || departamento == null"
+                   StartIcon="@Icons.Material.Filled.Delete">
+            @if (loading)
+            {
+                <MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true" />
+                <span class="ml-2">Eliminando...</span>
+            }
+            else
+            {
+                <span>Eliminar Departamento</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public int? DepartamentoId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private DepartamentoResponse? departamento;
+    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Cargar lista de empresas
+            empresas = await empresaService.GetAllEmpresas();
+            
+            // Cargar información del departamento si hay ID
+            if (DepartamentoId.HasValue && DepartamentoId > 0)
+            {
+                departamento = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+            }
+            else
+            {
+                Snackbar.Add("No se proporcionó un ID de departamento válido", Severity.Error);
+                Cancel();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar información: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private string GetNombreEmpresa(int empresaId)
+    {
+        var empresa = empresas.FirstOrDefault(e => e.PkidEmpresa == empresaId);
+        return empresa?.Nombre ?? $"Empresa ID: {empresaId}";
+    }
+
+    private async Task Eliminar()
+    {
+        try
+        {
+            if (!DepartamentoId.HasValue || departamento == null)
+                return;
+
+            loading = true;
+            StateHasChanged();
+
+            var (success, message) = await departamentoService.DeleteDepartamentoAsync(DepartamentoId.Value);
+
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+                loading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al eliminar: {ex.Message}", Severity.Error);
+            loading = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

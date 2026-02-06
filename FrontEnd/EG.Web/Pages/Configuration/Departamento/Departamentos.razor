@@ -1,23 +1,492 @@
-ï»¿@page "/departamento"
-<h3>Hello Blazor!</h3>
+@page "/departamentos"
+@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text
+@using MiniExcelLibs
+@using MudBlazor
 
-<p>Welcome to your first Blazor page ðŸŽ‰</p>
+@inject NavigationManager NavigationManager
+@inject IDepartamentoService departamentoService
+@inject ISnackbar Snackbar
+@inject AuthService AuthService
+@inject IJSRuntime _jsRuntime
+@inject IEmpresaService empresaService 
 
-<button class="btn btn-primary" @onclick="ShowMessage">Click Me</button>
+<script>
+    function downloadFile(base64Data, fileName, contentType) {
+        try {
+            const link = document.createElement('a');
+            link.href = 'data:' + contentType + ';base64,' + base64Data;
+            link.download = fileName;
+            link.style.display = 'none';
 
-@if (!string.IsNullOrEmpty(message))
-{
-    <div class="alert alert-success mt-3">
-        @message
-    </div>
-}
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            throw error;
+        }
+    }
+</script>
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+
+    <!-- Usando Card para el header -->
+    <MudCard Elevation="1" Class="mb-4">
+        <MudCardContent>
+            <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudItem>
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h4"
+                                 Color="Color.Primary"
+                                 Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Business"
+                                     Color="Color.Primary"
+                                     Size="Size.Large" />
+                            Gestión de Departamentos
+                        </MudText>
+                        <MudText Typo="Typo.body2"
+                                 Color="Color.Tertiary"
+                                 Class="ml-6">
+                            Administra y mantén el registro de departamentos del sistema
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem>
+                    <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                        <MudTooltip Text="Nuevo Departamento">
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="CrearDepartamento"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                        <MudTooltip Text="Refrescar...">
+                            <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                                       OnClick="OnSearchInput"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+
+        <MudTable ServerData="LoadServerData"
+                  RowsPerPage="@pageSize"
+                  Page="@currentPage"
+                  RowCount="@totalCount"
+                  @ref="mudTableRef"
+                  Dense="@dense"
+                  Hover="@hover"
+                  Loading="@loading"
+                  ReadOnly="@ronly"
+                  SortLabel="Sort By"
+                  InitialSortDirection="SortDirection.Descending"
+                  @bind-SelectedItem="selectedItem1"
+                  IsEditRowSwitchingBlocked="@blockSwitch"
+                  ApplyButtonPosition="@applyButtonPosition"
+                  EditButtonPosition="@editButtonPosition"
+                  EditTrigger="@editTrigger">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Lista de Departamentos</MudText>
+                <MudSpacer />
+                <!-- Botón de Exportar a Excel -->
+                <MudTooltip Text="Exportar a Excel">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="ExportarExcel"
+                               Size="Size.Small"
+                               Class="mr-2"
+                               Disabled="@loading">
+                        @if (loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Exportando...</span>
+                        }
+                        else
+                        {
+                            <span>Exportar Excel</span>
+                        }
+                    </MudButton>
+                </MudTooltip>
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Buscar por nombre..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              @ref="txtSerch"
+                              OnKeyUp="HandleKeyUp"
+                              Class="mt-0">
+                </MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkidDepartamento" T="DepartamentoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudTooltip Text="Editar departamento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditarDepartamento(context.PkidDepartamento))" />
+                    </MudTooltip>
+
+                    <MudTooltip Text="Eliminar departamento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EliminarDepartamento(context.PkidDepartamento))" />
+                    </MudTooltip>
+                </MudTd>
+
+                <MudTd DataLabel="ID">@context.PkidDepartamento</MudTd>
+                <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
+                <MudTd DataLabel="Empresa">@GetNombreEmpresa(context.FkidEmpresaSis)</MudTd>
+                <MudTd DataLabel="Estado">
+                    <MudBadge Color="@(context.Activo? Color.Success: Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(context.Activo ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>No se encontraron registros</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>Cargando...</MudText>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="Filas por página"
+                               FirstPageIcon="@Icons.Material.Filled.FirstPage"
+                               LastPageIcon="@Icons.Material.Filled.LastPage"
+                               NextPageIcon="@Icons.Material.Filled.NavigateNext"
+                               PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
+                               PageSizeOptions="new int[] { 5, 10, 20, 50 }"
+                               ShowFirstLastPage="true"
+                               ShowPageSizeSelector="true"
+                               ShowPaginationText="true"
+                               PaginationTextFormat="Página {0} de {1}" />
+            </PagerContent>
+
+        </MudTable>
+    </MudPaper>
+
+</MudContainer>
 
 @code {
-    private string? message;
+    private IList<DepartamentoResponse> Elements = new List<DepartamentoResponse>();
+    private List<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>(); // Lista de empresas para el combo
+    private int totalCount = 0;
 
-    private void ShowMessage()
+    [Inject] private IDialogService DialogService { get; set; } = null!;
+    //[Inject] private IEmpresaService empresaService { get; set; } = null!; // Servicio para obtener empresas
+
+    private bool _isInitialized = false;
+
+    private bool dense = true;
+    private bool hover = true;
+    private bool ronly = true;
+    private bool blockSwitch = false;
+
+    private DepartamentoResponse selectedItem1 = new DepartamentoResponse();
+    private MudTable<DepartamentoResponse> mudTableRef = new MudTable<DepartamentoResponse>();
+
+    private MudTextField<string> txtSerch = new MudTextField<string>();
+
+    private string searchString = string.Empty;
+    private bool loading = true;
+    private int currentPage = 0;
+    private int pageSize = 10;
+    private int[] pageSizeOptions = new[] { 10, 25, 50, 100 };
+    private CancellationTokenSource searchCts = new CancellationTokenSource();
+
+    private HashSet<DepartamentoResponse> selectedItems1 = new HashSet<DepartamentoResponse>();
+    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+
+    private SortDirection sortDirection;
+    private string sortLabel = string.Empty;
+
+    protected override async Task OnInitializedAsync()
     {
-        message = "You clicked the button!";
+        try
+        {
+            // Cargar la lista de empresas al inicializar el componente
+            await CargarEmpresas();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarEmpresas()
+    {
+        try
+        {
+            // Asumiendo que tienes un método para obtener todas las empresas
+            var resultado = await empresaService.GetAllEmpresas();
+            if (resultado != null)
+            {
+                listadoEmpresas = resultado.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private string GetNombreEmpresa(int? empresaId)
+    {
+        if (!empresaId.HasValue || empresaId.Value == 0)
+            return "No asignada";
+
+        var empresa = listadoEmpresas.FirstOrDefault(e => e.PkidEmpresa == empresaId.Value);
+        return empresa?.Nombre ?? $"ID: {empresaId.Value}";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            await Task.Run(() =>
+            {
+                _isInitialized = true;
+                loading = false;
+            });
+        }
+    }
+
+    private async Task<TableData<DepartamentoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        loading = true;
+
+        try
+        {
+            currentPage = state.Page + 1; // MudBlazor uses 0-based index
+            pageSize = state.PageSize;
+            sortLabel = state.SortLabel == null ? "Nombre" : state.SortLabel;
+            sortDirection = state.SortDirection;
+
+            (Elements, totalCount) = await departamentoService.GetAllDepartamentosPaginadoAsync(
+                currentPage,
+                pageSize,
+                searchString,
+                sortLabel,
+                sortDirection
+            );
+
+            return new TableData<DepartamentoResponse>
+            {
+                Items = Elements,
+                TotalItems = totalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar departamentos: {ex.Message}", Severity.Error);
+            return new TableData<DepartamentoResponse>
+            {
+                Items = new List<DepartamentoResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async void OnSearchInput()
+    {
+        // Cancelar búsqueda anterior si existe
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+
+        try
+        {
+            // Esperar 500ms para evitar múltiples llamadas mientras el usuario escribe
+            await Task.Delay(500, searchCts.Token);
+
+            if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
+            {
+                // Reiniciar a la primera página y recargar datos
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // La búsqueda fue cancelada por una nueva entrada, esto es normal
+            Console.WriteLine("Búsqueda cancelada");
+        }
+    }
+
+    private async void HandleKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await mudTableRef.ReloadServerData();
+        }
+    }
+
+    private async Task CrearDepartamento()
+    {
+        try
+        {
+            var parameters = new DialogParameters();
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = false,
+                Position = DialogPosition.Center,
+                NoHeader = false,
+            };
+
+            var dialog = await DialogService.ShowAsync<CrearDepartamento>("Crear Departamento", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                currentPage = 1;
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Ocurrió un error: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task EditarDepartamento(int? id)
+    {
+        if (!id.HasValue) return;
+
+        try
+        {
+            var parameters = new DialogParameters { ["DepartamentoId"] = id.Value };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+            };
+
+            var dialog = await DialogService.ShowAsync<EditarDepartamento>("Editar Departamento", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error al editar departamento: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task EliminarDepartamento(int? id)
+    {
+        if (!id.HasValue) return;
+
+        try
+        {
+            var parameters = new DialogParameters { ["DepartamentoId"] = id.Value };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+            };
+
+            var dialog = await DialogService.ShowAsync<EliminarDepartamento>("Eliminar Departamento", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                if (Elements.Count == 1 && currentPage > 1)
+                {
+                    currentPage--;
+                }
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error al eliminar departamento: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task ExportarExcel()
+    {
+        try
+        {
+            // Mostrar un indicador de carga
+            loading = true;
+            StateHasChanged();
+
+            var _currentPage = -1; // Obtener todos los registros
+
+            (Elements, totalCount) = await departamentoService.GetAllDepartamentosPaginadoAsync(
+                _currentPage,
+                pageSize,
+                searchString,
+                sortLabel,
+                sortDirection
+            );
+
+            if (Elements == null || !Elements.Any())
+            {
+                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            // Preparar datos para Excel
+            var excelData = Elements.Select(d => new
+            {
+                ID = d.PkidDepartamento,
+                Nombre = d.Nombre,
+                Empresa = GetNombreEmpresa(d.FkidEmpresaSis), // Usar el nombre de la empresa
+                Estado = d.Activo ? "Activo" : "Inactivo"
+            }).ToList();
+
+            // Generar Excel con MiniExcel
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var fileBytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(fileBytes);
+
+            await _jsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"Departamentos_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportación exitosa: {Elements.Count} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
 }
-

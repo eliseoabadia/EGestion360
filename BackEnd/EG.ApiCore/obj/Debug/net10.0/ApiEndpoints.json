@@ -16,6 +16,131 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "GetAll",
+    "RelativePath": "api/Departamento",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "Add",
+    "RelativePath": "api/Departamento",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.DepartamentoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "GetById",
+    "RelativePath": "api/Departamento/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.General.DepartamentoDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "Update",
+    "RelativePath": "api/Departamento/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.DepartamentoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "Delete",
+    "RelativePath": "api/Departamento/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "GetAllDepartamentosPaginado",
+    "RelativePath": "api/Departamento/GetAllDepartamentosPaginado",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "_params",
+        "Type": "EG.Application.CommonModel.PagedRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IList\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
     "Method": "GetEmpresas",
     "RelativePath": "api/Empresa",
@@ -37,7 +162,7 @@
   },
   {
     "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "CreateDept",
+    "Method": "Create",
     "RelativePath": "api/Empresa",
     "HttpMethod": "POST",
     "IsController": true,
@@ -79,7 +204,7 @@
   },
   {
     "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "UpdateEmpresa",
+    "Method": "Update",
     "RelativePath": "api/Empresa/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
@@ -100,9 +225,113 @@
   },
   {
     "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "UpdateUserEmpresa",
+    "Method": "Delete",
     "RelativePath": "api/Empresa/{id}",
-    "HttpMethod": "PATCH",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "Method": "GetAllEmpresasPaginado",
+    "RelativePath": "api/Empresa/GetAllDepartamentosPaginado",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "_params",
+        "Type": "EG.Application.CommonModel.PagedRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IList\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "Method": "GetAll",
+    "RelativePath": "api/Estado",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.EstadoDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "Method": "Add",
+    "RelativePath": "api/Estado",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.EstadoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "Method": "GetById",
+    "RelativePath": "api/Estado/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.General.EstadoDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "Method": "Update",
+    "RelativePath": "api/Estado/{id}",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -113,16 +342,214 @@
       },
       {
         "Name": "dto",
-        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "Type": "EG.Domain.DTOs.Responses.General.EstadoDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "DeleteEmpresa",
-    "RelativePath": "api/Empresa/{id}",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "Method": "Delete",
+    "RelativePath": "api/Estado/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuController",
+    "Method": "GetAll",
+    "RelativePath": "api/Menu",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.MenuDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuController",
+    "Method": "Add",
+    "RelativePath": "api/Menu",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.MenuDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuController",
+    "Method": "GetById",
+    "RelativePath": "api/Menu/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.General.MenuDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuController",
+    "Method": "Update",
+    "RelativePath": "api/Menu/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.MenuDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuController",
+    "Method": "Delete",
+    "RelativePath": "api/Menu/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuRoleController",
+    "Method": "GetAll",
+    "RelativePath": "api/MenuRole",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.MenuRoleDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuRoleController",
+    "Method": "Add",
+    "RelativePath": "api/MenuRole",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.MenuRoleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuRoleController",
+    "Method": "GetById",
+    "RelativePath": "api/MenuRole/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.General.MenuRoleDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuRoleController",
+    "Method": "Update",
+    "RelativePath": "api/MenuRole/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.MenuRoleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.MenuRoleController",
+    "Method": "Delete",
+    "RelativePath": "api/MenuRole/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -186,6 +613,105 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.PaiseController",
+    "Method": "GetAll",
+    "RelativePath": "api/Paise",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.PaiseDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.PaiseController",
+    "Method": "Add",
+    "RelativePath": "api/Paise",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.PaiseDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.PaiseController",
+    "Method": "GetById",
+    "RelativePath": "api/Paise/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.General.PaiseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.PaiseController",
+    "Method": "Update",
+    "RelativePath": "api/Paise/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EG.Domain.DTOs.Responses.General.PaiseDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.PaiseController",
+    "Method": "Delete",
+    "RelativePath": "api/Paise/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "EG.Api.Controllers.Account.UserProfileController",
