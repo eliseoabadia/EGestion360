@@ -25,7 +25,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -44,8 +44,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
-        "Type": "EG.Domain.DTOs.Responses.General.DepartamentoDto",
+        "Name": "viewDto",
+        "Type": "EG.Domain.Entities.VwEmpresaDepartamanto",
         "IsRequired": true
       }
     ],
@@ -67,7 +67,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "EG.Domain.DTOs.Responses.General.DepartamentoDto",
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -91,8 +91,8 @@
         "IsRequired": true
       },
       {
-        "Name": "dto",
-        "Type": "EG.Domain.DTOs.Responses.General.DepartamentoDto",
+        "Name": "viewDto",
+        "Type": "EG.Domain.Entities.VwEmpresaDepartamanto",
         "IsRequired": true
       }
     ],
@@ -113,6 +113,58 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "BuscarDepartamentos",
+    "RelativePath": "api/Departamento/buscar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EG.Domain.DTOs.Responses.BusquedaRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "GetByEmpresaId",
+    "RelativePath": "api/Departamento/empresa/{empresaId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empresaId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
@@ -130,7 +182,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IList\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -141,8 +193,55 @@
     ]
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "GetEmpresas",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "GetAllDepartamentosPaginadoPorEmpresa",
+    "RelativePath": "api/Departamento/GetAllDepartamentosPaginadoPorEmpresa/{empresaId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empresaId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "_params",
+        "Type": "EG.Application.CommonModel.PagedRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.DepartamentoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.DepartamentoController",
+    "Method": "ValidarDepartamento",
+    "RelativePath": "api/Departamento/validar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "viewDto",
+        "Type": "EG.Domain.Entities.VwEmpresaDepartamanto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
+    "Method": "GetAll",
     "RelativePath": "api/Empresa",
     "HttpMethod": "GET",
     "IsController": true,
@@ -150,7 +249,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Dommain.DTOs.Responses.EmpresaDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -161,8 +260,8 @@
     ]
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "Create",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
+    "Method": "Add",
     "RelativePath": "api/Empresa",
     "HttpMethod": "POST",
     "IsController": true,
@@ -177,8 +276,8 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
-    "Method": "GetEmpresa",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
+    "Method": "GetById",
     "RelativePath": "api/Empresa/{id}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -192,7 +291,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "Type": "EG.Domain.DTOs.Responses.General.EmpresaResponse",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -203,7 +302,7 @@
     ]
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
     "Method": "Update",
     "RelativePath": "api/Empresa/{id}",
     "HttpMethod": "PUT",
@@ -224,7 +323,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
     "Method": "Delete",
     "RelativePath": "api/Empresa/{id}",
     "HttpMethod": "DELETE",
@@ -240,9 +339,55 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "EG.Api.Controllers.Profile.EmpresaController",
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
+    "Method": "GetEmpresasActivas",
+    "RelativePath": "api/Empresa/activas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
+    "Method": "BuscarEmpresas",
+    "RelativePath": "api/Empresa/buscar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EG.Domain.DTOs.Responses.BusquedaRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
     "Method": "GetAllEmpresasPaginado",
-    "RelativePath": "api/Empresa/GetAllDepartamentosPaginado",
+    "RelativePath": "api/Empresa/GetAllEmpresasPaginado",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -255,7 +400,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IList\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

@@ -47,7 +47,7 @@
                             <strong>Nombre:</strong>
                         </MudText>
                         <MudText Typo="Typo.body1" Class="ml-2">
-                            @departamento.Nombre
+                            @departamento.DepartamentoNombre
                         </MudText>
                     </MudItem>
                     
@@ -56,7 +56,7 @@
                             <strong>Empresa:</strong>
                         </MudText>
                         <MudText Typo="Typo.body1" Class="ml-2">
-                            @(GetNombreEmpresa(departamento.FkidEmpresaSis))
+                            @(GetNombreEmpresa(departamento.PkidEmpresa.Value))
                         </MudText>
                     </MudItem>
                     
@@ -64,11 +64,11 @@
                         <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">
                             <strong>Estado:</strong>
                         </MudText>
-                        <MudBadge Color="@(departamento.Activo ? Color.Success : Color.Error)" 
+                        <MudBadge Color="@(departamento.DepartamentoActivo.Value ? Color.Success : Color.Error)" 
                                   Variant="Variant.Filled"
                                   Size="Size.Small"
                                   Class="ml-2">
-                            @(departamento.Activo ? "Activo" : "Inactivo")
+                            @(departamento.DepartamentoActivo.Value ? "Activo" : "Inactivo")
                         </MudBadge>
                     </MudItem>
                 </MudGrid>
@@ -85,7 +85,7 @@
                 </MudText>
             </MudAlert>
 
-            @if (departamento.Activo)
+            @if (departamento.DepartamentoActivo.Value)
             {
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
                     <MudText Typo="Typo.body2">
@@ -160,7 +160,7 @@
     private string GetNombreEmpresa(int empresaId)
     {
         var empresa = empresas.FirstOrDefault(e => e.PkidEmpresa == empresaId);
-        return empresa?.Nombre ?? $"Empresa ID: {empresaId}";
+        return empresa?.EmpresaNombre ?? $"Empresa ID: {empresaId}";
     }
 
     private async Task Eliminar()

@@ -216,10 +216,10 @@ C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net1
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\staticwebassets.development.json
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\swae.build.ex.cache
-C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.csproj.Up2Date
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.dll
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\refint\EG.ApiCore.dll
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.pdb
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\EG.ApiCore.genruntimeconfig.cache
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\ref\EG.ApiCore.dll
+C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.ApiCore\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

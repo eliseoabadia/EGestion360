@@ -13,5 +13,9 @@ public partial class Estado
 
     public string Nombre { get; set; }
 
+    public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
+
     public virtual Paise FkidPaisSisNavigation { get; set; }
+
+    public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 }

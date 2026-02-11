@@ -7,17 +7,19 @@ namespace EG.Domain.Entities;
 
 public partial class OrigenLogMessage
 {
-    public int PkIdOrigenLogMessage { get; set; }
+    public int PkidOrigenLogMessage { get; set; }
 
     public string Descripcion { get; set; }
 
-    public int CtCreateBy { get; set; }
+    public bool Activo { get; set; }
 
-    public DateTime CtCreateDate { get; set; }
+    public DateTime? FechaCreacion { get; set; }
 
-    public int? CtModifiedBy { get; set; }
+    public int UsuarioCreacion { get; set; }
 
-    public DateTime? CtModifiedDate { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 
-    public bool? CtLive { get; set; }
+    public int? UsuarioModificacion { get; set; }
+
+    public virtual ICollection<SystemLog> SystemLogs { get; set; } = new List<SystemLog>();
 }

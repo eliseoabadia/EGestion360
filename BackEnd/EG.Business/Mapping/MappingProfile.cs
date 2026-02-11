@@ -42,10 +42,75 @@ namespace EG.Business.Mapping
         private void RegisterManualMappings()
         {
 
-            CreateMap<Departamento, DepartamentoDto>().ReverseMap();
-            CreateMap<Departamento, DepartamentoResponse>().ReverseMap();
-            CreateMap<Empresa, EmpresaDto>().ReverseMap();
+            // Mapeo de Entidad a DTO básico
+            CreateMap<Empresa, EmpresaDto>()
+                .ReverseMap()
+                .ForMember(dest => dest.PkidEmpresa,
+                    opt => opt.MapFrom(src => src.PkidEmpresa));
+
+            // Mapeo de la vista a Response (si tienes una vista VwEmpresa)
+            CreateMap<VwEstadoEmpresa, EmpresaResponse>()
+                .ForMember(dest => dest.PkidEmpresa,
+                    opt => opt.MapFrom(src => src.PkidEmpresa))
+                .ForMember(dest => dest.EmpresaNombre,
+                    opt => opt.MapFrom(src => src.EmpresaNombre))
+                .ForMember(dest => dest.Rfc,
+                    opt => opt.MapFrom(src => src.Rfc))
+                .ForMember(dest => dest.EmpresaActivo,
+                    opt => opt.MapFrom(src => src.EmpresaActivo));
+
+            // Mapeo de Entidad a Response (para cuando necesitas relaciones)
+            CreateMap<Empresa, EmpresaResponse>()
+                .ForMember(dest => dest.PkidEmpresa,
+                    opt => opt.MapFrom(src => src.PkidEmpresa))
+                .ForMember(dest => dest.EmpresaNombre,
+                    opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.Rfc,
+                    opt => opt.MapFrom(src => src.Rfc))
+                .ForMember(dest => dest.EmpresaActivo,
+                    opt => opt.MapFrom(src => src.Activo))
+                // Si necesitas mapear información de estados
+                .ForMember(dest => dest.PkidEstado,
+                    opt => opt.MapFrom(src => src.EmpresaEstados.FirstOrDefault().FkidEstadoSis))
+                .ForMember(dest => dest.EstadoNombre,
+                    opt => opt.MapFrom(src => src.EmpresaEstados.FirstOrDefault().FkidEstadoSisNavigation.Nombre));
+
+            // Mapeo de Entidad a DTO básico
+            CreateMap<Departamento, DepartamentoDto>()
+                .ReverseMap()
+                .ForMember(dest => dest.PkidDepartamento,
+                    opt => opt.MapFrom(src => src.PkidDepartamento ?? 0));
+
+            // Mapeo de la vista a Response
+            CreateMap<VwEmpresaDepartamanto, DepartamentoResponse>();
+            // Mapeo de la vista a Response
+            CreateMap<VwEmpresaDepartamanto, Departamento>();
+
+            CreateMap<VwEmpresaDepartamanto, DepartamentoDto>()
+                .ForMember(dest => dest.PkidDepartamento, opt => opt.MapFrom(src => src.PkidDepartamento))
+                .ForMember(dest => dest.FkidEmpresaSis, opt => opt.MapFrom(src => src.PkidEmpresa))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.DepartamentoNombre))
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.DepartamentoActivo));
+
+            // Mapeo de Entidad + Empresa a Response
+            CreateMap<Departamento, DepartamentoResponse>()
+                .ForMember(dest => dest.PkidEmpresa,
+                    opt => opt.MapFrom(src => src.FkidEmpresaSisNavigation.PkidEmpresa))
+                .ForMember(dest => dest.EmpresaNombre,
+                    opt => opt.MapFrom(src => src.FkidEmpresaSisNavigation.Nombre))
+                .ForMember(dest => dest.Rfc,
+                    opt => opt.MapFrom(src => src.FkidEmpresaSisNavigation.Rfc))
+                .ForMember(dest => dest.PkidDepartamento,
+                    opt => opt.MapFrom(src => src.PkidDepartamento))
+                .ForMember(dest => dest.DepartamentoNombre,
+                    opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.DepartamentoActivo,
+                    opt => opt.MapFrom(src => src.Activo))
+                .ForMember(dest => dest.EmpresaActivo,
+                    opt => opt.MapFrom(src => src.FkidEmpresaSisNavigation.Activo));
+
             CreateMap<Empresa, EmpresaResponse>().ReverseMap();
+            CreateMap<Usuario, UsuarioResponse>().ReverseMap();
 
 
             CreateMap<LoginInformationEmployeeResult, UserResponse>().ReverseMap();

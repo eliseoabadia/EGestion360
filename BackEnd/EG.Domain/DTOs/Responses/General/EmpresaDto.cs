@@ -1,4 +1,6 @@
 ﻿
+using EG.Domain.Entities;
+
 namespace EG.Dommain.DTOs.Responses;
 public class EmpresaDto
 {
@@ -9,4 +11,5 @@ public class EmpresaDto
     public string Rfc { get; set; }
 
     public bool Activo { get; set; }
+
 }

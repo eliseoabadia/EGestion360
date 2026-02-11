@@ -1,4 +1,4 @@
-@page "/departamentos"
+Ôªø@page "/departamentos"
 @using System.ComponentModel.DataAnnotations
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
@@ -7,13 +7,14 @@
 @using System.Text
 @using MiniExcelLibs
 @using MudBlazor
+@using System.Reflection
 
 @inject NavigationManager NavigationManager
 @inject IDepartamentoService departamentoService
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
-@inject IEmpresaService empresaService 
+@inject IEmpresaService empresaService
 
 <script>
     function downloadFile(base64Data, fileName, contentType) {
@@ -47,12 +48,12 @@
                             <MudIcon Icon="@Icons.Material.Filled.Business"
                                      Color="Color.Primary"
                                      Size="Size.Large" />
-                            GestiÛn de Departamentos
+                            Gesti√≥n de Departamentos
                         </MudText>
                         <MudText Typo="Typo.body2"
                                  Color="Color.Tertiary"
                                  Class="ml-6">
-                            Administra y mantÈn el registro de departamentos del sistema
+                            Administra y mant√©n el registro de departamentos del sistema
                         </MudText>
                     </MudStack>
                 </MudItem>
@@ -76,6 +77,21 @@
     </MudCard>
 
     <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+        <!-- Agregar filtro por empresa -->
+        <MudGrid Spacing="2" Class="mb-4">
+            <MudItem xs="12" sm="6" md="4">
+                <MudSelect T="int?"
+                           Value="selectedEmpresaId"
+                           Variant="Variant.Outlined">
+                    <MudSelectItem T="int?" Value="@null">Todas las empresas</MudSelectItem>
+                    @foreach (var e in listadoEmpresas)
+                    {
+                        <MudSelectItem Value="@e.PkidEmpresa">@e.EmpresaNombre</MudSelectItem>
+                    }
+                </MudSelect> 
+                
+            </MudItem>
+        </MudGrid>
 
         <MudTable ServerData="LoadServerData"
                   RowsPerPage="@pageSize"
@@ -96,7 +112,7 @@
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Lista de Departamentos</MudText>
                 <MudSpacer />
-                <!-- BotÛn de Exportar a Excel -->
+                <!-- Bot√≥n de Exportar a Excel -->
                 <MudTooltip Text="Exportar a Excel">
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Success"
@@ -130,8 +146,8 @@
             <HeaderContent>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkidDepartamento" T="DepartamentoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="DepartamentoNombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
                 <MudTh>Estado</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -152,13 +168,13 @@
                 </MudTd>
 
                 <MudTd DataLabel="ID">@context.PkidDepartamento</MudTd>
-                <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
-                <MudTd DataLabel="Empresa">@GetNombreEmpresa(context.FkidEmpresaSis)</MudTd>
+                <MudTd DataLabel="Nombre">@context.DepartamentoNombre</MudTd>
+                <MudTd DataLabel="Empresa">@context.EmpresaNombre</MudTd>
                 <MudTd DataLabel="Estado">
-                    <MudBadge Color="@(context.Activo? Color.Success: Color.Error)"
+                    <MudBadge Color="@(context.DepartamentoActivo == true? Color.Success: Color.Error)"
                               Variant="Variant.Filled"
                               Size="Size.Small">
-                        @(context.Activo ? "Activo" : "Inactivo")
+                        @(context.DepartamentoActivo == true ? "Activo" : "Inactivo")
                     </MudBadge>
                 </MudTd>
             </RowTemplate>
@@ -169,7 +185,7 @@
                 <MudText>Cargando...</MudText>
             </LoadingContent>
             <PagerContent>
-                <MudTablePager RowsPerPageString="Filas por p·gina"
+                <MudTablePager RowsPerPageString="Filas por p√°gina"
                                FirstPageIcon="@Icons.Material.Filled.FirstPage"
                                LastPageIcon="@Icons.Material.Filled.LastPage"
                                NextPageIcon="@Icons.Material.Filled.NavigateNext"
@@ -178,7 +194,7 @@
                                ShowFirstLastPage="true"
                                ShowPageSizeSelector="true"
                                ShowPaginationText="true"
-                               PaginationTextFormat="P·gina {0} de {1}" />
+                               PaginationTextFormat="P√°gina {0} de {1}" />
             </PagerContent>
 
         </MudTable>
@@ -188,11 +204,11 @@
 
 @code {
     private IList<DepartamentoResponse> Elements = new List<DepartamentoResponse>();
-    private List<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>(); // Lista de empresas para el combo
+    private List<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
+    private CancellationTokenSource _cancellationTokenSource = new();
     private int totalCount = 0;
 
     [Inject] private IDialogService DialogService { get; set; } = null!;
-    //[Inject] private IEmpresaService empresaService { get; set; } = null!; // Servicio para obtener empresas
 
     private bool _isInitialized = false;
 
@@ -207,6 +223,9 @@
     private MudTextField<string> txtSerch = new MudTextField<string>();
 
     private string searchString = string.Empty;
+    private int? selectedEmpresaId;
+
+    private EstadoFiltro? selectedEstado = null; // Filtro por estado (ahora usando el enum)
     private bool loading = true;
     private int currentPage = 0;
     private int pageSize = 10;
@@ -221,16 +240,36 @@
     private SortDirection sortDirection;
     private string sortLabel = string.Empty;
 
+
+
+    // Definir el enum
+    public enum EstadoFiltro
+    {
+        [Display(Name = "Todos los estados")]
+        Todos,
+
+        [Display(Name = "Activo")]
+        Activo,
+
+        [Display(Name = "Inactivo")]
+        Inactivo
+    }
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Cargar la lista de empresas al inicializar el componente
             await CargarEmpresas();
+            //await CargarDepartamentos();
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isInitialized = true;
+            loading = false;
         }
     }
 
@@ -238,57 +277,79 @@
     {
         try
         {
-            // Asumiendo que tienes un mÈtodo para obtener todas las empresas
             var resultado = await empresaService.GetAllEmpresas();
             if (resultado != null)
             {
                 listadoEmpresas = resultado.ToList();
+
+                // Si solo hay una empresa, seleccionarla autom√°ticamente
+                if (listadoEmpresas.Count == 1)
+                {
+                    selectedEmpresaId = listadoEmpresas.First().PkidEmpresa;
+                }
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+            listadoEmpresas = new List<EmpresaResponse>();
         }
-    }
-
-    private string GetNombreEmpresa(int? empresaId)
-    {
-        if (!empresaId.HasValue || empresaId.Value == 0)
-            return "No asignada";
-
-        var empresa = listadoEmpresas.FirstOrDefault(e => e.PkidEmpresa == empresaId.Value);
-        return empresa?.Nombre ?? $"ID: {empresaId.Value}";
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_isInitialized)
+        finally
         {
-            await Task.Run(() =>
-            {
-                _isInitialized = true;
-                loading = false;
-            });
+            StateHasChanged();
         }
     }
+
+    //protected override async Task OnParametersSetAsync()
+    // private async Task CargarDepartamentos()
+    // {
+    //     if (listadoEmpresas.Any())
+    //     {
+    //         var resultado = await empresaService.GetAllEmpresas();
+    //         if (resultado != null)
+    //         {
+    //             listadoEmpresas = resultado.ToList();
+
+    //             // Si solo hay una empresa, seleccionarla autom√°ticamente
+    //             if (listadoEmpresas.Count == 1)
+    //             {
+    //                 selectedEmpresaId = listadoEmpresas.First().PkidEmpresa;
+    //             }
+    //             StateHasChanged();
+    //         }
+    //     }
+    // }
 
     private async Task<TableData<DepartamentoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         loading = true;
+        StateHasChanged();
 
         try
         {
-            currentPage = state.Page + 1; // MudBlazor uses 0-based index
+            currentPage = state.Page + 1;
             pageSize = state.PageSize;
             sortLabel = state.SortLabel == null ? "Nombre" : state.SortLabel;
             sortDirection = state.SortDirection;
 
+            // Convertir el enum a string para el servicio
+            string estadoFiltro = selectedEstado switch
+            {
+                EstadoFiltro.Activo => "true",
+                EstadoFiltro.Inactivo => "false",
+                EstadoFiltro.Todos or null => null,
+                _ => null
+            };
+
+            // Llamar al servicio con los filtros adicionales
             (Elements, totalCount) = await departamentoService.GetAllDepartamentosPaginadoAsync(
                 currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
-                sortDirection
+                sortDirection,
+                selectedEmpresaId, // Filtro por empresa
+                estadoFiltro // Filtro por estado (convertido)
             );
 
             return new TableData<DepartamentoResponse>
@@ -309,30 +370,53 @@
         finally
         {
             loading = false;
+            StateHasChanged();
         }
     }
 
     private async void OnSearchInput()
     {
-        // Cancelar b˙squeda anterior si existe
         searchCts?.Cancel();
         searchCts = new CancellationTokenSource();
 
         try
         {
-            // Esperar 500ms para evitar m˙ltiples llamadas mientras el usuario escribe
             await Task.Delay(500, searchCts.Token);
 
             if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
             {
-                // Reiniciar a la primera p·gina y recargar datos
+                currentPage = 0; // Reiniciar a la primera p√°gina
                 await mudTableRef.ReloadServerData();
             }
         }
         catch (TaskCanceledException)
         {
-            // La b˙squeda fue cancelada por una nueva entrada, esto es normal
-            Console.WriteLine("B˙squeda cancelada");
+            Console.WriteLine("B√∫squeda cancelada");
+        }
+    }
+
+    private async Task OnEmpresaChanged(int? empresaId)
+    {
+        selectedEmpresaId = empresaId;
+
+        // Aqu√≠ llamas tu m√©todo de carga o filtrado
+        currentPage = 0; // Reiniciar a la primera p√°gina
+        if (mudTableRef != null)
+            await mudTableRef.ReloadServerData();
+
+        StateHasChanged();
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        searchString = string.Empty;
+        selectedEmpresaId = null;
+        selectedEstado = null; // Limpiar el enum
+
+        currentPage = 0;
+        if (mudTableRef != null)
+        {
+            await mudTableRef.ReloadServerData();
         }
     }
 
@@ -340,6 +424,7 @@
     {
         if (args.Key == "Enter")
         {
+            currentPage = 0;
             await mudTableRef.ReloadServerData();
         }
     }
@@ -363,13 +448,13 @@
 
             if (!result!.Canceled)
             {
-                currentPage = 1;
+                currentPage = 0;
                 await mudTableRef.ReloadServerData();
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add("OcurriÛ un error: " + ex.Message, Severity.Error);
+            Snackbar.Add("Ocurri√≥ un error: " + ex.Message, Severity.Error);
         }
     }
 
@@ -420,7 +505,7 @@
 
             if (!result!.Canceled)
             {
-                if (Elements.Count == 1 && currentPage > 1)
+                if (Elements.Count == 1 && currentPage > 0)
                 {
                     currentPage--;
                 }
@@ -437,36 +522,46 @@
     {
         try
         {
-            // Mostrar un indicador de carga
             loading = true;
             StateHasChanged();
 
-            var _currentPage = -1; // Obtener todos los registros
+            var _currentPage = -1;
+
+            // Convertir el enum a string para la exportaci√≥n
+            string estadoFiltro = selectedEstado switch
+            {
+                EstadoFiltro.Activo => "true",
+                EstadoFiltro.Inactivo => "false",
+                EstadoFiltro.Todos or null => null,
+                _ => null
+            };
 
             (Elements, totalCount) = await departamentoService.GetAllDepartamentosPaginadoAsync(
                 _currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
-                sortDirection
+                sortDirection,
+                selectedEmpresaId,
+                estadoFiltro
             );
 
             if (Elements == null || !Elements.Any())
             {
                 Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                loading = false;
+                StateHasChanged();
                 return;
             }
 
-            // Preparar datos para Excel
             var excelData = Elements.Select(d => new
             {
                 ID = d.PkidDepartamento,
-                Nombre = d.Nombre,
-                Empresa = GetNombreEmpresa(d.FkidEmpresaSis), // Usar el nombre de la empresa
-                Estado = d.Activo ? "Activo" : "Inactivo"
+                Nombre = d.DepartamentoNombre,
+                Empresa = d.EmpresaNombre,
+                Estado = (d.DepartamentoActivo == true) ? "Activo" : "Inactivo"
             }).ToList();
 
-            // Generar Excel con MiniExcel
             using var memoryStream = new MemoryStream();
             await memoryStream.SaveAsAsync(excelData);
 
@@ -477,7 +572,7 @@
                 $"Departamentos_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"ExportaciÛn exitosa: {Elements.Count} registros", Severity.Success);
+            Snackbar.Add($"Exportaci√≥n exitosa: {Elements.Count} registros", Severity.Success);
         }
         catch (Exception ex)
         {
@@ -489,4 +584,21 @@
             StateHasChanged();
         }
     }
+
+    private static string GetDisplayName(Enum value)
+    {
+        var field = value.GetType().GetField(value.ToString());
+        if (field == null) return value.ToString();
+
+        var attribute = field.GetCustomAttribute<DisplayAttribute>();
+        return attribute?.Name ?? value.ToString();
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
+

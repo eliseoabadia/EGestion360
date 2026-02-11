@@ -26,9 +26,13 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<AspNetUserRole> AspNetUserRoles { get; set; }
 
+    public virtual DbSet<CatTipoSucursal> CatTipoSucursals { get; set; }
+
     public virtual DbSet<Departamento> Departamentos { get; set; }
 
     public virtual DbSet<Empresa> Empresas { get; set; }
+
+    public virtual DbSet<EmpresaEstado> EmpresaEstados { get; set; }
 
     public virtual DbSet<Estado> Estados { get; set; }
 
@@ -42,6 +46,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<PerfilUsuario> PerfilUsuarios { get; set; }
 
+    public virtual DbSet<Sucursal> Sucursals { get; set; }
+
     public virtual DbSet<SystemLog> SystemLogs { get; set; }
 
     public virtual DbSet<SystemParamCatalog> SystemParamCatalogs { get; set; }
@@ -49,6 +55,12 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<SystemParamValue> SystemParamValues { get; set; }
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
+
+    public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
+
+    public virtual DbSet<VwEmpresaDepartamanto> VwEmpresaDepartamantos { get; set; }
+
+    public virtual DbSet<VwEstadoEmpresa> VwEstadoEmpresas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -149,6 +161,22 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("CONSTRAINT_FK_AspNetUserRoles_User");
         });
 
+        modelBuilder.Entity<CatTipoSucursal>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoSucursal).HasName("PK_TipoSucursal");
+
+            entity.ToTable("CatTipoSucursal", "SIS");
+
+            entity.Property(e => e.PkidTipoSucursal)
+                .ValueGeneratedNever()
+                .HasColumnName("PKIdTipoSucursal");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<Departamento>(entity =>
         {
             entity.HasKey(e => e.PkidDepartamento).HasName("CONSTRAINT_PK_Departamento");
@@ -157,6 +185,7 @@ public partial class EGestionContext : DbContext
 
             entity.Property(e => e.PkidDepartamento).HasColumnName("PKIdDepartamento");
             entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.Nombre)
                 .IsRequired()
@@ -176,6 +205,7 @@ public partial class EGestionContext : DbContext
 
             entity.Property(e => e.PkidEmpresa).HasColumnName("PKIdEmpresa");
             entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
             entity.Property(e => e.Nombre)
                 .IsRequired()
                 .HasMaxLength(128);
@@ -183,6 +213,28 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(13)
                 .HasColumnName("RFC");
+        });
+
+        modelBuilder.Entity<EmpresaEstado>(entity =>
+        {
+            entity.HasKey(e => new { e.FkidEmpresaSis, e.FkidEstadoSis }).HasName("CONSTRAINT_PK_EmpresaEstado_Empresa_Estado");
+
+            entity.ToTable("EmpresaEstado", "SIS");
+
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstadoSis).HasColumnName("FKIdEstado_SIS");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.EmpresaEstados)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_EmpresaEstado_Empresa");
+
+            entity.HasOne(d => d.FkidEstadoSisNavigation).WithMany(p => p.EmpresaEstados)
+                .HasForeignKey(d => d.FkidEstadoSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_EmpresaEstado_Estados");
         });
 
         modelBuilder.Entity<Estado>(entity =>
@@ -265,23 +317,16 @@ public partial class EGestionContext : DbContext
 
         modelBuilder.Entity<OrigenLogMessage>(entity =>
         {
-            entity.HasKey(e => e.PkIdOrigenLogMessage);
+            entity.HasKey(e => e.PkidOrigenLogMessage).HasName("CONSTRAINT_PK_OrigenLogMessage");
 
             entity.ToTable("OrigenLogMessage", "SIS");
 
-            entity.Property(e => e.PkIdOrigenLogMessage)
+            entity.Property(e => e.PkidOrigenLogMessage)
                 .ValueGeneratedNever()
-                .HasColumnName("PK_IdOrigenLogMessage");
-            entity.Property(e => e.CtCreateBy).HasColumnName("CT_CreateBy");
-            entity.Property(e => e.CtCreateDate)
-                .HasColumnType("datetime")
-                .HasColumnName("CT_CreateDate");
-            entity.Property(e => e.CtLive).HasColumnName("CT_LIVE");
-            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
-            entity.Property(e => e.CtModifiedDate)
-                .HasColumnType("datetime")
-                .HasColumnName("CT_ModifiedDate");
+                .HasColumnName("PKIdOrigenLogMessage");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Descripcion).HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
         });
 
         modelBuilder.Entity<Paise>(entity =>
@@ -301,7 +346,7 @@ public partial class EGestionContext : DbContext
 
         modelBuilder.Entity<PerfilUsuario>(entity =>
         {
-            entity.HasKey(e => e.FkidUsuarioSis).HasName("PK__PerfilUs__98F09D6BCC30750D");
+            entity.HasKey(e => e.FkidUsuarioSis).HasName("PK__PerfilUs__98F09D6BA589FA1F");
 
             entity.ToTable("PerfilUsuario", "SIS");
 
@@ -313,30 +358,81 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
             entity.Property(e => e.FileExtension).HasMaxLength(8);
             entity.Property(e => e.FileName).HasMaxLength(64);
-            entity.Property(e => e.UsuarioCreacion).HasMaxLength(100);
-            entity.Property(e => e.UsuarioModificacion).HasMaxLength(100);
 
             entity.HasOne(d => d.FkidUsuarioSisNavigation).WithOne(p => p.PerfilUsuario)
                 .HasForeignKey<PerfilUsuario>(d => d.FkidUsuarioSis)
-                .HasConstraintName("FK__PerfilUsu__Usuar__70DDC3D8");
+                .HasConstraintName("FK__PerfilUsu__Usuar__10566F31");
+        });
+
+        modelBuilder.Entity<Sucursal>(entity =>
+        {
+            entity.HasKey(e => e.PkidSucursal).HasName("CONSTRAINT_PK_Sucursal");
+
+            entity.ToTable("Sucursal", "SIS");
+
+            entity.HasIndex(e => e.CodigoSucursal, "IX_Sucursal_Codigo").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidEmpresaSis, "IX_Sucursal_Empresa").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidEstadoSis, "IX_Sucursal_Estado").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => new { e.FkidEmpresaSis, e.EsMatriz }, "IX_Sucursal_Matriz").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.TipoSucursal, "IX_Sucursal_Tipo").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.CodigoSucursal, "UQ__Sucursal__E9A9A1029EB4253B").IsUnique();
+
+            entity.Property(e => e.PkidSucursal).HasColumnName("PKIdSucursal");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Alias).HasMaxLength(50);
+            entity.Property(e => e.Ciudad).HasMaxLength(100);
+            entity.Property(e => e.CodigoPostal).HasMaxLength(10);
+            entity.Property(e => e.CodigoSucursal)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Colonia).HasMaxLength(100);
+            entity.Property(e => e.Direccion)
+                .IsRequired()
+                .HasMaxLength(256);
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.EsActiva).HasDefaultValue(true);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstadoSis).HasColumnName("FKIdEstado_SIS");
+            entity.Property(e => e.Latitud).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Longitud).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.MetrosCuadrados).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.TelefonoPrincipal).HasMaxLength(20);
+            entity.Property(e => e.TelefonoSecundario).HasMaxLength(20);
+            entity.Property(e => e.TipoSucursal).HasDefaultValue(1);
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Sucursals)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_Sucursal_Empresa");
+
+            entity.HasOne(d => d.FkidEstadoSisNavigation).WithMany(p => p.Sucursals)
+                .HasForeignKey(d => d.FkidEstadoSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_Sucursal_Estado");
         });
 
         modelBuilder.Entity<SystemLog>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("SystemLog", "SIS");
+            entity.HasKey(e => e.PkidSystemLog).HasName("CONSTRAINT_PK_SystemLog");
 
-            entity.HasIndex(e => new { e.ProgName, e.Date }, "IX_SystemLog_Category_LogDate_LogTime");
+            entity.ToTable("SystemLog", "SIS");
 
-            entity.HasIndex(e => e.Date, "IX_SystemLog_LogDate");
-
+            entity.Property(e => e.PkidSystemLog).HasColumnName("PKIdSystemLog");
             entity.Property(e => e.Category).HasMaxLength(24);
             entity.Property(e => e.Context).HasMaxLength(10);
-            entity.Property(e => e.Date).HasColumnType("datetime");
+            entity.Property(e => e.Date).HasDefaultValueSql("(sysdatetime())");
             entity.Property(e => e.EmployeeNo).HasMaxLength(24);
             entity.Property(e => e.Exception).HasMaxLength(4000);
-            entity.Property(e => e.FkIdOrigenLogMessageSis).HasColumnName("FK_IdOrigenLogMessage__SIS");
+            entity.Property(e => e.FkidOrigenLogMessageSis).HasColumnName("FKIdOrigenLogMessage_SIS");
             entity.Property(e => e.HostName).HasMaxLength(32);
             entity.Property(e => e.Ipclient)
                 .HasMaxLength(24)
@@ -352,37 +448,32 @@ public partial class EGestionContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.MethodName).HasMaxLength(200);
             entity.Property(e => e.Parameters).HasMaxLength(4000);
-            entity.Property(e => e.PkIdSystemLog)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("PK_IdSystemLog");
             entity.Property(e => e.ProgName).HasMaxLength(256);
             entity.Property(e => e.Thread)
                 .HasMaxLength(255)
                 .IsUnicode(false);
             entity.Property(e => e.Type).HasMaxLength(24);
+
+            entity.HasOne(d => d.FkidOrigenLogMessageSisNavigation).WithMany(p => p.SystemLogs)
+                .HasForeignKey(d => d.FkidOrigenLogMessageSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_SystemLog_OrigenLogMessage");
         });
 
         modelBuilder.Entity<SystemParamCatalog>(entity =>
         {
-            entity.HasKey(e => e.PkIdSystemParamCatalog);
+            entity.HasKey(e => e.PkidSystemParamCatalog).HasName("CONSTRAINT_PK_SystemParamCatalog");
 
             entity.ToTable("SystemParamCatalog", "SIS");
 
-            entity.Property(e => e.PkIdSystemParamCatalog)
+            entity.Property(e => e.PkidSystemParamCatalog)
                 .ValueGeneratedNever()
-                .HasColumnName("PK_IdSystemParamCatalog");
+                .HasColumnName("PKIdSystemParamCatalog");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Code)
                 .IsRequired()
                 .HasMaxLength(50);
-            entity.Property(e => e.CtCreateBy).HasColumnName("CT_CreateBy");
-            entity.Property(e => e.CtCreateDate)
-                .HasColumnType("datetime")
-                .HasColumnName("CT_CreateDate");
-            entity.Property(e => e.CtLive).HasColumnName("CT_LIVE");
-            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
-            entity.Property(e => e.CtModifiedDate)
-                .HasColumnType("datetime")
-                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(100)
@@ -391,31 +482,26 @@ public partial class EGestionContext : DbContext
 
         modelBuilder.Entity<SystemParamValue>(entity =>
         {
-            entity.HasKey(e => new { e.PkIdSystemParamValue, e.FkIdSystemParamCatalogSis });
+            entity.HasKey(e => e.PkidSystemParamValue).HasName("CONSTRAINT_PK_SystemParamValue");
 
             entity.ToTable("SystemParamValue", "SIS");
 
-            entity.Property(e => e.PkIdSystemParamValue).HasColumnName("PK_IdSystemParamValue");
-            entity.Property(e => e.FkIdSystemParamCatalogSis).HasColumnName("FK_IdSystemParamCatalog__SIS");
-            entity.Property(e => e.CtCreateBy).HasColumnName("CT_CreateBy");
-            entity.Property(e => e.CtCreateDate)
-                .HasColumnType("datetime")
-                .HasColumnName("CT_CreateDate");
-            entity.Property(e => e.CtLive).HasColumnName("CT_LIVE");
-            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
-            entity.Property(e => e.CtModifiedDate)
-                .HasColumnType("datetime")
-                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.PkidSystemParamValue)
+                .ValueGeneratedNever()
+                .HasColumnName("PKIdSystemParamValue");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Descripcion)
                 .IsRequired()
                 .HasMaxLength(128)
                 .IsUnicode(false);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidSystemParamCatalogSis).HasColumnName("FKIdSystemParamCatalog_SIS");
             entity.Property(e => e.Value).IsRequired();
 
-            entity.HasOne(d => d.FkIdSystemParamCatalogSisNavigation).WithMany(p => p.SystemParamValues)
-                .HasForeignKey(d => d.FkIdSystemParamCatalogSis)
+            entity.HasOne(d => d.FkidSystemParamCatalogSisNavigation).WithMany(p => p.SystemParamValues)
+                .HasForeignKey(d => d.FkidSystemParamCatalogSis)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__SystemPar__FK_Id__07C12930");
+                .HasConstraintName("CONSTRAINT_FK_SystemParamCatalog_SystemParamValue");
         });
 
         modelBuilder.Entity<Usuario>(entity =>
@@ -462,13 +548,90 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Telefono)
                 .IsRequired()
                 .HasMaxLength(16);
-            entity.Property(e => e.UsuarioCreacion).HasMaxLength(100);
-            entity.Property(e => e.UsuarioModificacion).HasMaxLength(100);
 
             entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Usuarios)
                 .HasForeignKey(d => d.FkidEmpresaSis)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("CONSTRAINT_FK_Usuario_Empresa");
+        });
+
+        modelBuilder.Entity<UsuarioSucursal>(entity =>
+        {
+            entity.HasKey(e => new { e.FkidUsuarioSis, e.FkidSucursalSis }).HasName("CONSTRAINT_PK_UsuarioSucursal");
+
+            entity.ToTable("UsuarioSucursal", "SIS");
+
+            entity.HasIndex(e => e.FkidDepartamentoSis, "IX_UsuarioSucursal_Departamento").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidSucursalSis, "IX_UsuarioSucursal_Sucursal").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => new { e.FkidUsuarioSis, e.PuedeAcceder }, "IX_UsuarioSucursal_UsuarioAcceso").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.FkidUsuarioSis).HasColumnName("FKIdUsuario_SIS");
+            entity.Property(e => e.FkidSucursalSis).HasColumnName("FKIdSucursal_SIS");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.FechaAsignacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidDepartamentoSis).HasColumnName("FKIdDepartamento_SIS");
+            entity.Property(e => e.PuedeAcceder).HasDefaultValue(true);
+            entity.Property(e => e.PuedeOperar).HasDefaultValue(true);
+            entity.Property(e => e.UsuarioCreacion).HasMaxLength(100);
+            entity.Property(e => e.UsuarioModificacion).HasMaxLength(100);
+
+            entity.HasOne(d => d.FkidDepartamentoSisNavigation).WithMany(p => p.UsuarioSucursals)
+                .HasForeignKey(d => d.FkidDepartamentoSis)
+                .HasConstraintName("CONSTRAINT_FK_UsuarioSucursal_Departamento");
+
+            entity.HasOne(d => d.FkidSucursalSisNavigation).WithMany(p => p.UsuarioSucursals)
+                .HasForeignKey(d => d.FkidSucursalSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_UsuarioSucursal_Sucursal");
+
+            entity.HasOne(d => d.FkidUsuarioSisNavigation).WithMany(p => p.UsuarioSucursals)
+                .HasForeignKey(d => d.FkidUsuarioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONSTRAINT_FK_UsuarioSucursal_Usuario");
+        });
+
+        modelBuilder.Entity<VwEmpresaDepartamanto>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_EmpresaDepartamanto", "SIS");
+
+            entity.Property(e => e.DepartamentoNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.EmpresaNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.PkidDepartamento).HasColumnName("PKIdDepartamento");
+            entity.Property(e => e.PkidEmpresa).HasColumnName("PKIdEmpresa");
+            entity.Property(e => e.Rfc)
+                .IsRequired()
+                .HasMaxLength(13)
+                .HasColumnName("RFC");
+        });
+
+        modelBuilder.Entity<VwEstadoEmpresa>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_EstadoEmpresa", "SIS");
+
+            entity.Property(e => e.EmpresaNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.EstadoNombre)
+                .IsRequired()
+                .HasMaxLength(64)
+                .IsUnicode(false);
+            entity.Property(e => e.PkidEmpresa).HasColumnName("PKIdEmpresa");
+            entity.Property(e => e.PkidEstado).HasColumnName("PKIdEstado");
+            entity.Property(e => e.Rfc)
+                .IsRequired()
+                .HasMaxLength(13)
+                .HasColumnName("RFC");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -5,7 +5,7 @@
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "IrregularWords": null,
-   "MinimumProductVersion": "2.6.1224",
+   "MinimumProductVersion": "2.6.1301",
    "ModelNamespace": null,
    "OutputContextPath": null,
    "OutputPath": "Models",
@@ -43,11 +43,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[CatTipoSucursal]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Departamento]",
          "ObjectType": 0
       },
       {
          "Name": "[SIS].[Empresa]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[EmpresaEstado]",
          "ObjectType": 0
       },
       {
@@ -75,6 +83,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Sucursal]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[SystemLog]",
          "ObjectType": 0
       },
@@ -89,6 +101,18 @@
       {
          "Name": "[SIS].[Usuario]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[UsuarioSucursal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[VW_EmpresaDepartamanto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[VW_EstadoEmpresa]",
+         "ObjectType": 3
       },
       {
          "Name": "[dbo].[spConfiguracionDeRolYClaims]",

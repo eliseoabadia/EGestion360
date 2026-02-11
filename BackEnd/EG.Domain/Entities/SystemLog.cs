@@ -3,15 +3,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace EG.Infraestructure.Models;
+namespace EG.Domain.Entities;
 
 public partial class SystemLog
 {
-    public int PkIdSystemLog { get; set; }
+    public int PkidSystemLog { get; set; }
 
-    public int FkIdOrigenLogMessageSis { get; set; }
+    public int FkidOrigenLogMessageSis { get; set; }
 
-    public DateTime Date { get; set; }
+    public DateTime? Date { get; set; }
 
     public string Type { get; set; }
 
@@ -42,4 +42,6 @@ public partial class SystemLog
     public string Parameters { get; set; }
 
     public int? ExecutionTime { get; set; }
+
+    public virtual OrigenLogMessage FkidOrigenLogMessageSisNavigation { get; set; }
 }

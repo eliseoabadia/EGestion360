@@ -333,6 +333,426 @@
         }
       }
     },
+    "/api/Departamento": {
+      "get": {
+        "tags": [
+          "Departamento"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Departamento"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Departamento/{id}": {
+      "get": {
+        "tags": [
+          "Departamento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Departamento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Departamento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Departamento/empresa/{empresaId}": {
+      "get": {
+        "tags": [
+          "Departamento"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DepartamentoResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DepartamentoResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DepartamentoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Departamento/GetAllDepartamentosPaginado": {
+      "post": {
+        "tags": [
+          "Departamento"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Departamento/GetAllDepartamentosPaginadoPorEmpresa/{empresaId}": {
+      "post": {
+        "tags": [
+          "Departamento"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Departamento/buscar": {
+      "post": {
+        "tags": [
+          "Departamento"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusquedaRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusquedaRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusquedaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfDepartamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Departamento/validar": {
+      "post": {
+        "tags": [
+          "Departamento"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VwEmpresaDepartamanto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Empresa": {
       "get": {
         "tags": [
@@ -346,7 +766,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EmpresaDto"
+                    "$ref": "#/components/schemas/EmpresaResponse"
                   }
                 }
               },
@@ -354,7 +774,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EmpresaDto"
+                    "$ref": "#/components/schemas/EmpresaResponse"
                   }
                 }
               },
@@ -362,7 +782,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EmpresaDto"
+                    "$ref": "#/components/schemas/EmpresaResponse"
                   }
                 }
               }
@@ -427,17 +847,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/EmpresaDto"
+                  "$ref": "#/components/schemas/EmpresaResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EmpresaDto"
+                  "$ref": "#/components/schemas/EmpresaResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EmpresaDto"
+                  "$ref": "#/components/schemas/EmpresaResponse"
                 }
               }
             }
@@ -515,7 +935,45 @@
         }
       }
     },
-    "/api/Empresa/GetAllDepartamentosPaginado": {
+    "/api/Empresa/activas": {
+      "get": {
+        "tags": [
+          "Empresa"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmpresaResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmpresaResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmpresaResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Empresa/GetAllEmpresasPaginado": {
       "post": {
         "tags": [
           "Empresa"
@@ -546,26 +1004,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmpresaResponse"
-                  }
+                  "$ref": "#/components/schemas/PagedResultOfEmpresaResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmpresaResponse"
-                  }
+                  "$ref": "#/components/schemas/PagedResultOfEmpresaResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmpresaResponse"
-                  }
+                  "$ref": "#/components/schemas/PagedResultOfEmpresaResponse"
                 }
               }
             }
@@ -573,208 +1022,26 @@
         }
       }
     },
-    "/api/Departamento": {
-      "get": {
-        "tags": [
-          "Departamento"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DepartamentoDto"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DepartamentoDto"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DepartamentoDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
+    "/api/Empresa/buscar": {
       "post": {
         "tags": [
-          "Departamento"
+          "Empresa"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DepartamentoDto"
+                "$ref": "#/components/schemas/BusquedaRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/DepartamentoDto"
+                "$ref": "#/components/schemas/BusquedaRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/DepartamentoDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Departamento/{id}": {
-      "get": {
-        "tags": [
-          "Departamento"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/DepartamentoDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DepartamentoDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DepartamentoDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Departamento"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepartamentoDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepartamentoDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepartamentoDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Departamento"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Departamento/GetAllDepartamentosPaginado": {
-      "post": {
-        "tags": [
-          "Departamento"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PagedRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PagedRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/PagedRequest"
+                "$ref": "#/components/schemas/BusquedaRequest"
               }
             }
           },
@@ -786,26 +1053,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DepartamentoResponse"
-                  }
+                  "$ref": "#/components/schemas/PagedResultOfEmpresaResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DepartamentoResponse"
-                  }
+                  "$ref": "#/components/schemas/PagedResultOfEmpresaResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DepartamentoResponse"
-                  }
+                  "$ref": "#/components/schemas/PagedResultOfEmpresaResponse"
                 }
               }
             }
@@ -1669,37 +1927,63 @@
   },
   "components": {
     "schemas": {
-      "DepartamentoDto": {
+      "BusquedaRequest": {
         "type": "object",
         "properties": {
-          "pkidDepartamento": {
+          "page": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "terminoBusqueda": {
             "type": [
               "null",
-              "integer",
               "string"
-            ],
-            "format": "int32"
+            ]
           },
-          "fkidEmpresaSis": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+          "sortLabel": {
             "type": [
-              "integer",
+              "null",
               "string"
-            ],
-            "format": "int32"
+            ]
           },
-          "nombre": {
-            "type": "string"
-          },
-          "activo": {
-            "type": "boolean"
+          "sortDirection": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
       "DepartamentoResponse": {
         "type": "object",
         "properties": {
+          "pkidEmpresa": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "empresaNombre": {
+            "type": "string"
+          },
+          "rfc": {
+            "type": "string"
+          },
           "pkidDepartamento": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
@@ -1709,19 +1993,20 @@
             ],
             "format": "int32"
           },
-          "fkidEmpresaSis": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "nombre": {
+          "departamentoNombre": {
             "type": "string"
           },
-          "activo": {
-            "type": "boolean"
+          "departamentoActivo": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "empresaActivo": {
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
@@ -1750,6 +2035,17 @@
       "EmpresaResponse": {
         "type": "object",
         "properties": {
+          "pkidEstado": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "estadoNombre": {
+            "type": "string"
+          },
           "pkidEmpresa": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
@@ -1758,13 +2054,13 @@
             ],
             "format": "int32"
           },
-          "nombre": {
+          "empresaNombre": {
             "type": "string"
           },
           "rfc": {
             "type": "string"
           },
-          "activo": {
+          "empresaActivo": {
             "type": "boolean"
           }
         }
@@ -1907,6 +2203,82 @@
           },
           "sortDirection": {
             "type": "string"
+          }
+        }
+      },
+      "PagedResultOfDepartamentoResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DepartamentoResponse"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepartamentoResponse"
+            }
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "PagedResultOfEmpresaResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EmpresaResponse"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmpresaResponse"
+            }
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -2200,6 +2572,51 @@
             ]
           }
         }
+      },
+      "VwEmpresaDepartamanto": {
+        "type": "object",
+        "properties": {
+          "pkidEmpresa": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "empresaNombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rfc": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pkidDepartamento": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "departamentoNombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "departamentoActivo": {
+            "type": "boolean"
+          },
+          "empresaActivo": {
+            "type": "boolean"
+          }
+        }
       }
     }
   },
@@ -2208,10 +2625,10 @@
       "name": "UserProfile"
     },
     {
-      "name": "Empresa"
+      "name": "Departamento"
     },
     {
-      "name": "Departamento"
+      "name": "Empresa"
     },
     {
       "name": "Estado"

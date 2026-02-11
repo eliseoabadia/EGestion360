@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EG.Application.CommonModel;
 using EG.Business.Interfaces;
+using EG.Domain.DTOs.Responses;
 using EG.Domain.Entities;
 using EG.Domain.Interfaces;
 using EG.Dommain.DTOs.Responses;
@@ -107,7 +108,7 @@ namespace EG.Business.Services
 
             emp.Activo = false;
             emp.FechaModificacion = System.DateTime.Now;
-            emp.UsuarioModificacion = "1";
+            emp.UsuarioModificacion = 1;
 
             await _repository.UpdateAsync(emp);
             return true;

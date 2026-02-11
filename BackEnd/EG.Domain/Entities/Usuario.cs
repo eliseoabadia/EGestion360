@@ -41,15 +41,17 @@ public partial class Usuario
 
     public DateTime? FechaCreacion { get; set; }
 
-    public string UsuarioCreacion { get; set; }
+    public int UsuarioCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 
-    public string UsuarioModificacion { get; set; }
+    public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual PerfilUsuario PerfilUsuario { get; set; }
+
+    public virtual ICollection<UsuarioSucursal> UsuarioSucursals { get; set; } = new List<UsuarioSucursal>();
 }

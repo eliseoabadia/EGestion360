@@ -7,21 +7,21 @@ namespace EG.Domain.Entities;
 
 public partial class SystemParamCatalog
 {
-    public int PkIdSystemParamCatalog { get; set; }
+    public int PkidSystemParamCatalog { get; set; }
 
     public string Code { get; set; }
 
     public string Name { get; set; }
 
-    public int CtCreateBy { get; set; }
+    public bool Activo { get; set; }
 
-    public DateTime CtCreateDate { get; set; }
+    public DateTime? FechaCreacion { get; set; }
 
-    public int? CtModifiedBy { get; set; }
+    public int UsuarioCreacion { get; set; }
 
-    public DateTime? CtModifiedDate { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 
-    public bool? CtLive { get; set; }
+    public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<SystemParamValue> SystemParamValues { get; set; } = new List<SystemParamValue>();
 }

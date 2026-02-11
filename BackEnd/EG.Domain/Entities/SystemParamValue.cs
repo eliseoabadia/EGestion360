@@ -7,23 +7,23 @@ namespace EG.Domain.Entities;
 
 public partial class SystemParamValue
 {
-    public int PkIdSystemParamValue { get; set; }
+    public int PkidSystemParamValue { get; set; }
 
-    public int FkIdSystemParamCatalogSis { get; set; }
+    public int FkidSystemParamCatalogSis { get; set; }
 
     public string Value { get; set; }
 
     public string Descripcion { get; set; }
 
-    public int CtCreateBy { get; set; }
+    public bool Activo { get; set; }
 
-    public DateTime CtCreateDate { get; set; }
+    public DateTime? FechaCreacion { get; set; }
 
-    public int? CtModifiedBy { get; set; }
+    public int UsuarioCreacion { get; set; }
 
-    public DateTime? CtModifiedDate { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 
-    public bool? CtLive { get; set; }
+    public int? UsuarioModificacion { get; set; }
 
-    public virtual SystemParamCatalog FkIdSystemParamCatalogSisNavigation { get; set; }
+    public virtual SystemParamCatalog FkidSystemParamCatalogSisNavigation { get; set; }
 }

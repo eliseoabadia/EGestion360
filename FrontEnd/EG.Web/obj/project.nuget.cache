@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Lp1SxC/Rot0=",
+  "dgSpecHash": "wvBSpvqDPUE=",
   "success": true,
   "projectFilePath": "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\FrontEnd\\EG.Web\\EG.Web.csproj",
   "expectedPackageFiles": [
@@ -21,7 +21,7 @@
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.3.0\\microsoft.aspnetcore.http.features.2.3.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.aspnetcore.metadata\\10.0.0\\microsoft.aspnetcore.metadata.10.0.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.aspnetcore.webutilities\\2.3.0\\microsoft.aspnetcore.webutilities.2.3.0.nupkg.sha512",
-    "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.dotnet.hotreload.webassembly.browser\\10.0.102\\microsoft.dotnet.hotreload.webassembly.browser.10.0.102.nupkg.sha512",
+    "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.dotnet.hotreload.webassembly.browser\\10.0.200-preview.0.26103.119\\microsoft.dotnet.hotreload.webassembly.browser.10.0.200-preview.0.26103.119.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.0\\microsoft.extensions.configuration.10.0.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.0\\microsoft.extensions.configuration.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.extensions.configuration.binder\\10.0.0\\microsoft.extensions.configuration.binder.10.0.0.nupkg.sha512",
@@ -47,10 +47,10 @@
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.jsinterop.webassembly\\10.0.0\\microsoft.jsinterop.webassembly.10.0.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.net.http.headers\\2.3.0\\microsoft.net.http.headers.2.3.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.2\\microsoft.net.illink.tasks.10.0.2.nupkg.sha512",
-    "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.net.sdk.webassembly.pack\\10.0.2\\microsoft.net.sdk.webassembly.pack.10.0.2.nupkg.sha512",
+    "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.net.sdk.webassembly.pack\\10.0.3\\microsoft.net.sdk.webassembly.pack.10.0.3.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\miniexcel\\1.42.0\\miniexcel.1.42.0.nupkg.sha512",
     "C:\\Users\\Eliseo\\.nuget\\packages\\mudblazor\\8.15.0\\mudblazor.8.15.0.nupkg.sha512",
-    "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.netcore.app.runtime.mono.browser-wasm\\10.0.2\\microsoft.netcore.app.runtime.mono.browser-wasm.10.0.2.nupkg.sha512"
+    "C:\\Users\\Eliseo\\.nuget\\packages\\microsoft.netcore.app.runtime.mono.browser-wasm\\10.0.3\\microsoft.netcore.app.runtime.mono.browser-wasm.10.0.3.nupkg.sha512"
   ],
   "logs": []
 }

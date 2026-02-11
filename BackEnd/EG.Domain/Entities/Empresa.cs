@@ -15,7 +15,19 @@ public partial class Empresa
 
     public bool Activo { get; set; }
 
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
+
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
+
+    public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
+
+    public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
 }

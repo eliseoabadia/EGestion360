@@ -52,9 +52,9 @@
                                     <MudItem xs="12" md="6">
                                         <MudSelect Label="Empresa" @bind-Value="userProfile.FkidEmpresaSis" Required="true">
                                             <MudSelectItem Value="0">Seleccione una empresa</MudSelectItem>
-                                            @foreach (var empresa in listadoEmpresas.Where(e => e.Activo))
+                                            @foreach (var empresa in listadoEmpresas)
                                             {
-                                                <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.Nombre</MudSelectItem>
+                                                <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
                                             }
                                         </MudSelect>
                                     </MudItem>

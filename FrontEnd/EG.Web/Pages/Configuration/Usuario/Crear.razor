@@ -53,9 +53,9 @@
                                                ValidationPattern="@validationPattern"
                                                ValidationError="Debe seleccionar una empresa válida">
                                         <MudSelectItem Value="0">Seleccione una empresa</MudSelectItem>
-                                        @foreach (var empresa in listadoEmpresas.Where(e => e.Activo))
+                                        @foreach (var empresa in listadoEmpresas)
                                         {
-                                            <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.Nombre</MudSelectItem>
+                                            <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
