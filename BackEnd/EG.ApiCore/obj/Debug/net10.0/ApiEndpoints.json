@@ -268,8 +268,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
-        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "Name": "viewDto",
+        "Type": "EG.Domain.DTOs.Responses.General.EmpresaResponse",
         "IsRequired": true
       }
     ],
@@ -315,8 +315,8 @@
         "IsRequired": true
       },
       {
-        "Name": "dto",
-        "Type": "EG.Dommain.DTOs.Responses.EmpresaDto",
+        "Name": "viewDto",
+        "Type": "EG.Domain.DTOs.Responses.General.EmpresaResponse",
         "IsRequired": true
       }
     ],
@@ -337,52 +337,6 @@
       }
     ],
     "ReturnTypes": []
-  },
-  {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
-    "Method": "GetEmpresasActivas",
-    "RelativePath": "api/Empresa/activas",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
-    "Method": "BuscarEmpresas",
-    "RelativePath": "api/Empresa/buscar",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "EG.Domain.DTOs.Responses.BusquedaRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "EG.Domain.DTOs.Responses.PagedResult\u00601[[EG.Domain.DTOs.Responses.General.EmpresaResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
   },
   {
     "ContainingType": "EG.ApiCore.Controllers.Profile.EmpresaController",
@@ -411,7 +365,7 @@
     ]
   },
   {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "ContainingType": "EG.ApiCore.Controllers.EstadoController",
     "Method": "GetAll",
     "RelativePath": "api/Estado",
     "HttpMethod": "GET",
@@ -420,7 +374,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.EstadoDto, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[EG.Domain.DTOs.Responses.General.EstadoResponse, EG.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -431,15 +385,15 @@
     ]
   },
   {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
-    "Method": "Add",
+    "ContainingType": "EG.ApiCore.Controllers.EstadoController",
+    "Method": "Create",
     "RelativePath": "api/Estado",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
+        "Name": "estadoDto",
         "Type": "EG.Domain.DTOs.Responses.General.EstadoDto",
         "IsRequired": true
       }
@@ -447,7 +401,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "ContainingType": "EG.ApiCore.Controllers.EstadoController",
     "Method": "GetById",
     "RelativePath": "api/Estado/{id}",
     "HttpMethod": "GET",
@@ -462,7 +416,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "EG.Domain.DTOs.Responses.General.EstadoDto",
+        "Type": "EG.Domain.DTOs.Responses.General.EstadoResponse",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -473,7 +427,7 @@
     ]
   },
   {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "ContainingType": "EG.ApiCore.Controllers.EstadoController",
     "Method": "Update",
     "RelativePath": "api/Estado/{id}",
     "HttpMethod": "PUT",
@@ -486,7 +440,7 @@
         "IsRequired": true
       },
       {
-        "Name": "dto",
+        "Name": "estadoDto",
         "Type": "EG.Domain.DTOs.Responses.General.EstadoDto",
         "IsRequired": true
       }
@@ -494,7 +448,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "EG.ApiCore.Controllers.Profile.EstadoController",
+    "ContainingType": "EG.ApiCore.Controllers.EstadoController",
     "Method": "Delete",
     "RelativePath": "api/Estado/{id}",
     "HttpMethod": "DELETE",

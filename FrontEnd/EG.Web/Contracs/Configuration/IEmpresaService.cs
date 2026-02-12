@@ -1,64 +1,63 @@
-﻿
-
-using EG.Web.Models.Configuration;
-using MudBlazor;
+﻿using EG.Web.Models.Configuration;
+using SortDirection = MudBlazor.SortDirection;
 
 namespace EG.Web.Contracs.Configuration
 {
+    /// <summary>
+    /// Servicio para la gestión de empresas
+    /// </summary>
     public interface IEmpresaService
     {
-        //Task<List<EmpresaResponse>> GetEmpresa(int id);
-        //Task<List<EmpresaResponse>> GetAllEmpresa();
         /// <summary>
-        /// Obtiene todos los Empresas
+        /// Obtiene todas las empresas
         /// </summary>
-        /// <returns>Lista de Empresas</returns>
+        /// <returns>Lista de empresas</returns>
         Task<IList<EmpresaResponse>> GetAllEmpresas();
 
         /// <summary>
-        /// Obtiene Empresas paginados con filtros y ordenamiento
+        /// Obtiene una empresa por su ID
         /// </summary>
-        /// <param name="page">Número de página (base 1)</param>
+        /// <param name="empresaId">ID de la empresa</param>
+        /// <returns>Empresa encontrada o nueva instancia</returns>
+        Task<EmpresaResponse> GetEmpresaByIdAsync(int empresaId);
+
+        /// <summary>
+        /// Obtiene empresas paginadas con filtros
+        /// </summary>
+        /// <param name="page">Número de página</param>
         /// <param name="pageSize">Tamaño de página</param>
-        /// <param name="filtro">Texto para filtrar</param>
-        /// <param name="sortLabel">Campo para ordenar</param>
+        /// <param name="filtro">Texto de búsqueda</param>
+        /// <param name="sortLabel">Campo de ordenamiento</param>
         /// <param name="sortDirection">Dirección del ordenamiento</param>
-        /// <returns>Tupla con lista de Empresas y total de registros</returns>
+        /// <param name="estado">Filtro por estado (Activo/Inactivo)</param>
+        /// <returns>Lista paginada de empresas y total de registros</returns>
         Task<(List<EmpresaResponse> Empresas, int TotalCount)> GetAllEmpresasPaginadoAsync(
             int page = 1,
             int pageSize = 10,
             string filtro = "",
             string sortLabel = "",
-            SortDirection sortDirection = SortDirection.Ascending);
+            SortDirection sortDirection = SortDirection.Ascending,
+            string? estado = null);
 
         /// <summary>
-        /// Obtiene un Empresa por su ID
+        /// Crea una nueva empresa
         /// </summary>
-        /// <param name="EmpresaId">ID del Empresa</param>
-        /// <returns>Empresa encontrado</returns>
-        Task<EmpresaResponse> GetEmpresaByIdAsync(int EmpresaId);
+        /// <param name="empresa">Datos de la empresa</param>
+        /// <returns>Resultado de la operación y mensaje</returns>
+        Task<(bool resultado, string mensaje)> CreateEmpresaAsync(EmpresaResponse empresa);
 
         /// <summary>
-        /// Crea un nuevo Empresa
+        /// Actualiza una empresa existente
         /// </summary>
-        /// <param name="Empresa">Datos del Empresa a crear</param>
-        /// <returns>Tupla con resultado y mensaje</returns>
-        Task<(bool resultado, string mensaje)> CreateEmpresaAsync(EmpresaResponse Empresa);
+        /// <param name="empresa">Datos actualizados de la empresa</param>
+        /// <returns>Resultado de la operación y mensaje</returns>
+        Task<(bool resultado, string mensaje)> UpdateEmpresaAsync(EmpresaResponse empresa);
 
         /// <summary>
-        /// Actualiza un Empresa existente
+        /// Elimina una empresa por su ID
         /// </summary>
-        /// <param name="Empresa">Datos del Empresa a actualizar</param>
-        /// <returns>Tupla con resultado y mensaje</returns>
-        Task<(bool resultado, string mensaje)> UpdateEmpresaAsync(EmpresaResponse Empresa);
-
-        /// <summary>
-        /// Elimina un Empresa
-        /// </summary>
-        /// <param name="EmpresaId">ID del Empresa a eliminar</param>
-        /// <returns>Tupla con resultado y mensaje</returns>
-        Task<(bool resultado, string mensaje)> DeleteEmpresaAsync(int EmpresaId);
-
-
+        /// <param name="empresaId">ID de la empresa a eliminar</param>
+        /// <returns>Resultado de la operación y mensaje</returns>
+        Task<(bool resultado, string mensaje)> DeleteEmpresaAsync(int empresaId);
     }
 }

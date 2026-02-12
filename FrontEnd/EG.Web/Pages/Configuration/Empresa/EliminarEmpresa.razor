@@ -1,0 +1,80 @@
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IEmpresaService empresaService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (loading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudText>¿Está seguro de que desea eliminar esta empresa?</MudText>
+            <MudText Color="Color.Warning" Class="mt-4"><strong>@empresa?.EmpresaNombre</strong></MudText>
+            <MudAlert Severity="Severity.Warning" Class="mt-4">
+                Esta acción no se puede deshacer.
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Eliminar" Disabled="@loading">
+            Eliminar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public int EmpresaId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private EmpresaResponse? empresa;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            empresa = await empresaService.GetEmpresaByIdAsync(EmpresaId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        try
+        {
+            loading = true;
+            var (success, message) = await empresaService.DeleteEmpresaAsync(EmpresaId);
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+                loading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            loading = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

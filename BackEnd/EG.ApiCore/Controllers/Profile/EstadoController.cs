@@ -1,52 +1,64 @@
+using AutoMapper;
 using EG.Business.Services;
+using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCore.Controllers.Profile
+namespace EG.ApiCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[RequiredScope(RequiredScopesConfigurationKey = "AzureAdB2C:Scopes:Read")]
     [Authorize]
-    public class EstadoController(GenericService<Estado, EstadoDto> service) : ControllerBase
+    public class EstadoController : ControllerBase
     {
-        private readonly GenericService<Estado, EstadoDto> _service = service;
+        private readonly GenericService<Estado, EstadoDto, EstadoResponse> _service;
+        private readonly IMapper _mapper;
+
+        public EstadoController(
+            GenericService<Estado, EstadoDto, EstadoResponse> service,
+            IMapper mapper)
+        {
+            _service = service;
+            _mapper = mapper;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EstadoDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<EstadoResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<EstadoDto>> GetById(int id)
+        public async Task<ActionResult<EstadoResponse>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            return result == null ? NotFound() : Ok(result);
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PKIdEstado");
+            if (result == null)
+                return NotFound();
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Add(EstadoDto dto)
+        public async Task<ActionResult> Create([FromBody] EstadoDto estadoDto)
         {
-            await _service.AddAsync(dto);
-            return CreatedAtAction(nameof(GetById), dto);
+            await _service.AddAsync(estadoDto);
+            return Ok();
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, EstadoDto dto)
+        public async Task<ActionResult> Update(int id, [FromBody] EstadoDto estadoDto)
         {
-            await _service.UpdateAsync(id, dto);
-            return NoContent();
+            await _service.UpdateAsync(id, estadoDto);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
-            return NoContent();
+            return Ok();
         }
     }
 }

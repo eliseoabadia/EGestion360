@@ -1,0 +1,340 @@
+@page "/empresas"
+@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text
+@using MiniExcelLibs
+@using MudBlazor
+@using System.Reflection
+
+
+@inject NavigationManager NavigationManager
+@inject IEmpresaService empresaService
+@inject ISnackbar Snackbar
+@inject AuthService AuthService
+@inject IJSRuntime _jsRuntime
+@inject IDialogService DialogService
+
+<script>
+    function downloadFile(base64Data, fileName, contentType) {
+        try {
+            const link = document.createElement('a');
+            link.href = 'data:' + contentType + ';base64,' + base64Data;
+            link.download = fileName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            throw error;
+        }
+    }
+</script>
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+
+    <MudCard Elevation="1" Class="mb-4">
+        <MudCardContent>
+            <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudItem>
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Size="Size.Large" />
+                            Gestión de Empresas
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="ml-6">
+                            Administra y mantén el registro de empresas del sistema
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem>
+                    <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                        <MudTooltip Text="Nueva Empresa">
+                            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="CrearEmpresa" Size="Size.Small" />
+                        </MudTooltip>
+                        <MudTooltip Text="Refrescar...">
+                            <MudButton StartIcon="@Icons.Material.Filled.Refresh" OnClick="OnSearchInput" Size="Size.Small" />
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+        <MudTable ServerData="LoadServerData"
+                  RowsPerPage="@pageSize"
+                  Page="@currentPage"
+                  RowCount="@totalCount"
+                  @ref="mudTableRef"
+                  Dense="@dense"
+                  Hover="@hover"
+                  Loading="@loading"
+                  ReadOnly="@ronly"
+                  SortLabel="Sort By"
+                  InitialSortDirection="SortDirection.Descending"
+                  @bind-SelectedItem="selectedItem"
+                  IsEditRowSwitchingBlocked="@blockSwitch"
+                  ApplyButtonPosition="@applyButtonPosition"
+                  EditButtonPosition="@editButtonPosition"
+                  EditTrigger="@editTrigger">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Lista de Empresas</MudText>
+                <MudSpacer />
+                <MudTooltip Text="Exportar a Excel">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="ExportarExcel" Size="Size.Small" Class="mr-2" Disabled="@loading">
+                        @if (loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Exportando...</span>
+                        }
+                        else
+                        {
+                            <span>Exportar Excel</span>
+                        }
+                    </MudButton>
+                </MudTooltip>
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Buscar por nombre o RFC..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              @ref="txtSearch"
+                              OnKeyUp="HandleKeyUp"
+                              Class="mt-0">
+                </MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkidEmpresa" T="EmpresaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="EmpresaResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EstadoNombre" T="EmpresaResponse">Entidad</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Rfc" T="EmpresaResponse">RFC</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudTooltip Text="Editar empresa">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditarEmpresa(context.PkidEmpresa.Value))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar empresa">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarEmpresa(context.PkidEmpresa.Value))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd DataLabel="ID">@context.PkidEmpresa</MudTd>
+                <MudTd DataLabel="Nombre">@context.EmpresaNombre</MudTd>
+                <MudTd DataLabel="RFC">@context.EstadoNombre</MudTd>
+                <MudTd DataLabel="RFC">@context.Rfc</MudTd>
+                <MudTd DataLabel="Estado">
+                    <MudBadge Color="@(context.EmpresaActivo == true? Color.Success: Color.Error)" Variant="Variant.Filled" Size="Size.Small">
+                        @(context.EmpresaActivo == true ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>No se encontraron registros</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>Cargando...</MudText>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="Filas por página"
+                               FirstPageIcon="@Icons.Material.Filled.FirstPage"
+                               LastPageIcon="@Icons.Material.Filled.LastPage"
+                               NextPageIcon="@Icons.Material.Filled.NavigateNext"
+                               PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
+                               PageSizeOptions="new int[] { 5, 10, 20, 50 }"
+                               ShowFirstLastPage="true"
+                               ShowPageSizeSelector="true"
+                               ShowPaginationText="true"
+                               PaginationTextFormat="Página {0} de {1}" />
+            </PagerContent>
+        </MudTable>
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    private IList<EmpresaResponse> Elements = new List<EmpresaResponse>();
+    private int totalCount = 0;
+    private bool _isInitialized = false;
+    private bool dense = true;
+    private bool hover = true;
+    private bool ronly = true;
+    private bool blockSwitch = false;
+
+    private EmpresaResponse selectedItem = new EmpresaResponse();
+    private MudTable<EmpresaResponse> mudTableRef = new MudTable<EmpresaResponse>();
+    private MudTextField<string> txtSearch = new MudTextField<string>();
+
+    private string searchString = string.Empty;
+    private EstadoFiltro? selectedEstado = null;
+    private bool loading = true;
+    private int currentPage = 0;
+    private int pageSize = 10;
+    private CancellationTokenSource searchCts = new CancellationTokenSource();
+    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    private SortDirection sortDirection;
+    private string sortLabel = string.Empty;
+
+    public enum EstadoFiltro
+    {
+        [Display(Name = "Todos los estados")]
+        Todos,
+        [Display(Name = "Activo")]
+        Activo,
+        [Display(Name = "Inactivo")]
+        Inactivo
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            _isInitialized = true;
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<TableData<EmpresaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            currentPage = state.Page + 1;
+            pageSize = state.PageSize;
+            sortLabel = state.SortLabel == null ? "Nombre" : state.SortLabel;
+            sortDirection = state.SortDirection;
+
+            string estadoFiltro = selectedEstado switch
+            {
+                EstadoFiltro.Activo => "true",
+                EstadoFiltro.Inactivo => "false",
+                EstadoFiltro.Todos or null => null,
+                _ => null
+            };
+
+            (Elements, totalCount) = await empresaService.GetAllEmpresasPaginadoAsync(
+                currentPage, pageSize, searchString, sortLabel, sortDirection, estadoFiltro);
+
+            return new TableData<EmpresaResponse> { Items = Elements, TotalItems = totalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            return new TableData<EmpresaResponse> { Items = new List<EmpresaResponse>(), TotalItems = 0 };
+        }
+        finally { loading = false; StateHasChanged(); }
+    }
+
+    private async void OnSearchInput()
+    {
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(500, searchCts.Token);
+            if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
+                await mudTableRef.ReloadServerData();
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private async void HandleKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            await mudTableRef.ReloadServerData();
+    }
+
+    private async Task CrearEmpresa()
+    {
+        try
+        {
+            var dialog = await DialogService.ShowAsync<CrearEmpresa>("Crear Empresa", 
+                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+            var result = await dialog.Result;
+            if (!result!.Canceled) await mudTableRef.ReloadServerData();
+        }
+        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
+    }
+
+    private async Task EditarEmpresa(int id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["EmpresaId"] = id };
+            var dialog = await DialogService.ShowAsync<EditarEmpresa>("Editar Empresa", parameters,
+                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+            var result = await dialog.Result;
+            if (!result!.Canceled) await mudTableRef.ReloadServerData();
+        }
+        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
+    }
+
+    private async Task EliminarEmpresa(int id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["EmpresaId"] = id };
+            var dialog = await DialogService.ShowAsync<EliminarEmpresa>("Eliminar Empresa", parameters,
+                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+                if (Elements.Count == 1 && currentPage > 1) currentPage--;
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
+    }
+
+    private async Task ExportarExcel()
+    {
+        try
+        {
+            loading = true;
+            StateHasChanged();
+
+            (Elements, totalCount) = await empresaService.GetAllEmpresasPaginadoAsync(
+                -1, pageSize, searchString, sortLabel, sortDirection);
+
+            if (Elements == null || !Elements.Any())
+            {
+                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            var excelData = Elements.Select(e => new
+            {
+                ID = e.PkidEmpresa,
+                Nombre = e.EmpresaNombre,
+                RFC = e.Rfc,
+                Estado = e.EmpresaActivo.Value ? "Activo" : "Inactivo"
+            }).ToList();
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var fileBytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(fileBytes);
+
+            await _jsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"Empresas_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportación exitosa: {Elements.Count} registros", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        finally { loading = false; StateHasChanged(); }
+    }
+}

@@ -6,32 +6,45 @@ using SortDirection = MudBlazor.SortDirection;
 
 namespace EG.Web.Services.Configuration
 {
-    public class EmpresaService : BaseService, IEmpresaService
+    public class EstadoService : BaseService, IEstadoService
     {
-        public EmpresaService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
+        public EstadoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
             : base(httpClient, jsRuntime, application)
         {
         }
 
-        public async Task<IList<EmpresaResponse>> GetAllEmpresas()
+        // ============ CONSULTAS ============
+
+        public async Task<IList<EstadoResponse>> GetAllEstadosAsync()
         {
             if (!IsClientSide())
-                return new List<EmpresaResponse>();
+                return new List<EstadoResponse>();
 
-            var result = await GetAsync<PagedResult<EmpresaResponse>>("api/Empresa/");
-            return result.Items ?? new List<EmpresaResponse>();
+            var result = await GetAsync<List<EstadoResponse>>("api/Estado/");
+            return result ?? new List<EstadoResponse>();
         }
 
-        public async Task<(List<EmpresaResponse> Empresas, int TotalCount)> GetAllEmpresasPaginadoAsync(
+        public async Task<EstadoResponse> GetEstadoByIdAsync(int estadoId)
+        {
+            if (!IsClientSide())
+                return new EstadoResponse();
+
+            var result = await GetAsync<EstadoResponse>($"api/Estado/{estadoId}");
+            return result ?? new EstadoResponse();
+        }
+
+        // ============ PAGINACIÓN ============
+
+        public async Task<(List<EstadoResponse> Estados, int TotalCount)> GetAllEstadosPaginadoAsync(
             int page = 1,
             int pageSize = 10,
             string filtro = "",
             string sortLabel = "",
             SortDirection _sortDirection = SortDirection.Ascending,
-            string estado = null)
+            string? estado = null)
         {
             if (!IsClientSide())
-                return (new List<EmpresaResponse>(), 0);
+                return (new List<EstadoResponse>(), 0);
 
             string sortDirection = _sortDirection.ToString().Contains("Descending") ? "Descending" : "Ascending";
 
@@ -45,8 +58,8 @@ namespace EG.Web.Services.Configuration
                 estado = estado
             };
 
-            var result = await PostAsync<PagedResult<EmpresaResponse>>(
-                "api/Empresa/GetAllEmpresasPaginado/",
+            var result = await PostAsync<PagedResult<EstadoResponse>>(
+                "api/Estado/GetAllEstadosPaginado/",
                 jsonParams,
                 useBaseUrl: false);
 
@@ -55,64 +68,57 @@ namespace EG.Web.Services.Configuration
                 return (result.Items, result.TotalCount);
             }
 
-            return (new List<EmpresaResponse>(), 0);
+            return (new List<EstadoResponse>(), 0);
         }
 
-        public async Task<EmpresaResponse> GetEmpresaByIdAsync(int empresaId)
-        {
-            if (!IsClientSide())
-                return new EmpresaResponse();
+        // ============ CRUD ============
 
-            var result = await GetAsync<EmpresaResponse>($"api/Empresa/{empresaId}");
-            return result ?? new EmpresaResponse();
-        }
-
-        public async Task<(bool resultado, string mensaje)> CreateEmpresaAsync(EmpresaResponse empresa)
+        public async Task<(bool resultado, string mensaje)> CreateEstadoAsync(EstadoResponse estado)
         {
             var operationResult = await ExecuteOperationAsync(async () =>
             {
                 var (result, success, message) = await SendRequestWithMessageAsync<bool>(
                     HttpMethod.Post,
-                    "api/Empresa/",
-                    empresa,
+                    "api/Estado/",
+                    estado,
                     useBaseUrl: false);
 
-                return (success, success ? "Empresa creado correctamente" : message);
+                return (success, success ? "Estado creado correctamente" : message);
             });
 
             return (operationResult.Result, operationResult.Message);
         }
 
-        public async Task<(bool resultado, string mensaje)> UpdateEmpresaAsync(EmpresaResponse empresa)
+        public async Task<(bool resultado, string mensaje)> UpdateEstadoAsync(EstadoResponse estado)
         {
-            if (!empresa.PkidEmpresa.HasValue || empresa.PkidEmpresa <= 0)
-                return (false, "ID de Empresa no válido");
+            if (estado.PkidEstado <= 0)
+                return (false, "ID de estado no válido");
 
             var operationResult = await ExecuteOperationAsync(async () =>
             {
                 var (result, success, message) = await SendRequestWithMessageAsync<bool>(
                     HttpMethod.Put,
-                    $"api/Empresa/{empresa.PkidEmpresa}/",
-                    empresa,
+                    $"api/Estado/{estado.PkidEstado}/",
+                    estado,
                     useBaseUrl: false);
 
-                return (success, success ? "Empresa actualizado correctamente" : message);
+                return (success, success ? "Estado actualizado correctamente" : message);
             });
 
             return (operationResult.Result, operationResult.Message);
         }
 
-        public async Task<(bool resultado, string mensaje)> DeleteEmpresaAsync(int empresaId)
+        public async Task<(bool resultado, string mensaje)> DeleteEstadoAsync(int estadoId)
         {
             var operationResult = await ExecuteOperationAsync(async () =>
             {
                 var (result, success, message) = await SendRequestWithMessageAsync<bool>(
                     HttpMethod.Delete,
-                    $"api/Empresa/{empresaId}/",
-                    empresaId,
+                    $"api/Estado/{estadoId}/",
+                    estadoId,
                     useBaseUrl: false);
 
-                return (success, success ? "Empresa eliminado correctamente" : message);
+                return (success, success ? "Estado eliminado correctamente" : message);
             });
 
             return (operationResult.Result, operationResult.Message);

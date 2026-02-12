@@ -1,0 +1,393 @@
+@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using EG.Web.Services.Configuration
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+@inject IJSRuntime _jsRuntime
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IEmpresaService empresaService
+@inject IEstadoService estadoService
+
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true" CloseOnEscapeKey="false">
+    <DialogContent>
+        <!-- Indicador de carga -->
+        <MudOverlay Visible="@loading" Fixed="true" ZIndex="10">
+            <div class="d-flex flex-column align-center justify-center" style="height:100%">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="mt-4">Cargando...</MudText>
+            </div>
+        </MudOverlay>
+        
+        <MudPaper Class="pa-6 my-6" Elevation="6">
+            <MudGrid GutterSize="2">
+                <MudForm @ref="form">
+                    <MudCard Elevation="2" Class="pa-2">
+                        <MudCardHeader>
+                            <MudCardHeaderContent>
+                                <MudText Typo="Typo.h5" Color="Color.Primary">
+                                    @(isEditMode ? "Editar Empresa" : "Nueva Empresa")
+                                </MudText>
+                            </MudCardHeaderContent>
+                        </MudCardHeader>
+                        <MudDivider Class="mb-4" />
+                        
+                        <MudForm>
+                            <MudGrid GutterSize="2">
+                                <!-- Nombre de la empresa -->
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="empresa.EmpresaNombre"
+                                                  Label="Nombre de la Empresa"
+                                                  Variant="Variant.Outlined"
+                                                  Required="true"
+                                                  RequiredError="El nombre de la empresa es requerido"
+                                                  ValidationPattern="@nombrePattern"
+                                                  ValidationError="El nombre debe tener al menos 3 caracteres"
+                                                  For="@(() => empresa.EmpresaNombre)" />
+                                </MudItem>
+
+                                <!-- RFC -->
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="empresa.Rfc"
+                                                  Label="RFC"
+                                                  Variant="Variant.Outlined"
+                                                  Required="true"
+                                                  RequiredError="El RFC es requerido"
+                                                  Validation="@ValidarRFC"
+                                                  For="@(() => empresa.Rfc)" />
+                                </MudItem>
+
+                                <!-- Estado (Entidad Federativa) -->
+                                <MudItem xs="12">
+                                    @if (isEditMode)
+                                    {
+                                        <!-- En modo edición: Solo lectura -->
+                                        <MudSelect Label="Estado (Entidad Federativa)"
+                                                   Variant="Variant.Outlined"
+                                                   T="int?"
+                                                   Immediate="true"
+                                                   For="@(() => empresa.PkidEstado)"
+                                                   Value="@empresa.PkidEstado"
+                                                   Disabled="true"
+                                                   Required="true"
+                                                   RequiredError="Debe seleccionar un estado"
+                                                   Class="mb-4"
+                                                   Dense="true">
+                                            @foreach (var estado in estados.Where(e => e.PkidEstado == empresa.PkidEstado))
+                                            {
+                                                <MudSelectItem T="int?" Value="@estado.PkidEstado">@estado.Nombre</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        <!-- En modo creación: Seleccionable -->
+                                        <MudSelect Label="Estado (Entidad Federativa)"
+                                                   Variant="Variant.Outlined"
+                                                   T="int?"
+                                                   Immediate="true"
+                                                   For="@(() => empresa.PkidEstado)"
+                                                   Value="@empresa.PkidEstado"
+                                                   ValueChanged="@OnEstadoChanged"
+                                                   Required="true"
+                                                   RequiredError="Debe seleccionar un estado"
+                                                   Class="mb-4"
+                                                   Dense="true">
+                                            <MudSelectItem T="int?" Value="@((int?)null)">Seleccione un estado</MudSelectItem>
+                                            @foreach (var estado in estados)
+                                            {
+                                                <MudSelectItem T="int?" Value="@estado.PkidEstado">@estado.Nombre</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                </MudItem>
+
+                                <!-- Estado Activo/Inactivo -->
+                                <MudItem xs="12">
+                                    <MudPaper Class="pa-3 mb-4" Elevation="1" Style="border-radius: 8px;">
+                                        <MudText Class="mb-2" Typo="Typo.body2" Color="Color.Default">Estatus de la Empresa</MudText>
+                                        
+                                        @if (isEditMode)
+                                        {
+                                            <!-- En modo edición: Switch para activar/desactivar -->
+                                            <div class="d-flex align-center">
+                                                <MudSwitch @bind-Value="empresa.EmpresaActivo" 
+                                                           Color="Color.Primary"
+                                                           ThumbIcon="@(empresa.EmpresaActivo == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                                    <MudText>@(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")</MudText>
+                                                </MudSwitch>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <!-- En modo creación: Solo lectura y siempre Activo -->
+                                            <div class="d-flex align-center">
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Activa</MudChip>
+                                                <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                                    (Las nuevas empresas se crean activas)
+                                                </MudText>
+                                            </div>
+                                            <input type="hidden" @bind="empresa.EmpresaActivo" />
+                                        }
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+
+                            <!-- Botones -->
+                            <div class="d-flex justify-end mt-6">
+                                <MudButton Variant="Variant.Text" 
+                                           Color="Color.Secondary" 
+                                           Class="mr-2" 
+                                           OnClick="Cancelar"
+                                           Disabled="@loading">
+                                    Cancelar
+                                </MudButton> 
+                                <MudButton Variant="Variant.Filled" 
+                                           Color="Color.Primary" 
+                                           StartIcon="@Icons.Material.Filled.Save" 
+                                           OnClick="GuardarCambiosAsync"
+                                           Disabled="@loading">
+                                    @if (loading)
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
+                                        <span class="ml-2">Guardando...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@(isEditMode ? "Actualizar" : "Crear") Empresa</span>
+                                    }
+                                </MudButton>
+                            </div>
+                        </MudForm>
+                    </MudCard>
+                </MudForm>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public int? EmpresaId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm form = new MudForm();
+    private bool loading = false;
+    private bool isEditMode => EmpresaId.HasValue && EmpresaId > 0;
+
+    private EmpresaResponse empresa { get; set; } = new EmpresaResponse();
+    private IList<EstadoResponse> estados = new List<EstadoResponse>();
+
+    private string nombrePattern = "^.{3,}$"; // Al menos 3 caracteres
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        try
+        {
+            await LoadEstados();
+            
+            if (isEditMode)
+            {
+                await LoadEmpresaData();
+            }
+            else
+            {
+                InitializeNewEmpresa();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Cancelar();
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void InitializeNewEmpresa()
+    {
+        empresa = new EmpresaResponse
+        {
+            EmpresaActivo = true, // Siempre activa en creación
+            EmpresaNombre = string.Empty,
+            Rfc = string.Empty,
+            PkidEstado = null // Sin estado seleccionado
+        };
+
+        Console.WriteLine("✅ Modo creación: Nueva empresa inicializada (siempre activa)");
+    }
+
+    private async Task LoadEstados()
+    {
+        try
+        {
+            // Necesitas crear este servicio
+            estados = await estadoService.GetAllEstadosAsync();
+            
+            if (estados == null || estados.Count == 0)
+            {
+                Console.WriteLine("⚠️ No se cargaron estados");
+                Snackbar.Add("Advertencia: No hay estados disponibles", Severity.Warning);
+                estados = new List<EstadoResponse>();
+            }
+            else
+            {
+                Console.WriteLine($"✓ Se cargaron {estados.Count} estados");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar estados: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task LoadEmpresaData()
+    {
+        try
+        {
+            if (EmpresaId.HasValue)
+            {
+                var emp = await empresaService.GetEmpresaByIdAsync(EmpresaId.Value);
+
+                if (emp == null)
+                {
+                    Snackbar.Add("Empresa no encontrada", Severity.Warning);
+                    Cancelar();
+                    return;
+                }
+
+                empresa = emp;
+                Console.WriteLine($"✅ Empresa cargada: ID {empresa.PkidEmpresa}, " +
+                                $"Nombre: {empresa.EmpresaNombre}, " +
+                                $"Estado ID: {empresa.PkidEstado}, " +
+                                $"Estatus: {(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar empresa: {ex.Message}", Severity.Error);
+            throw;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        // Validaciones previas
+        if (!await ValidarFormulario())
+            return;
+
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            bool result;
+            string message;
+
+            if (isEditMode)
+            {
+                // Actualizar empresa existente
+                (result, message) = await empresaService.UpdateEmpresaAsync(empresa);
+                Console.WriteLine($"📝 Actualizando empresa ID: {empresa.PkidEmpresa}");
+            }
+            else
+            {
+                // Crear nueva empresa - siempre activa
+                empresa.EmpresaActivo = true; // Aseguramos que sea activa
+                empresa.PkidEmpresa = 0; // Aseguramos que el ID sea 0 para creación
+                (result, message) = await empresaService.CreateEmpresaAsync(empresa);
+                Console.WriteLine($"➕ Creando nueva empresa: {empresa.EmpresaNombre} (Activa)");
+            }
+
+            if (result)
+            {
+                Snackbar.Add(message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+                loading = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar empresa: {ex.Message}", Severity.Error);
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<bool> ValidarFormulario()
+    {
+        await form.Validate();
+
+        if (!form.IsValid)
+        {
+            Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            return false;
+        }
+
+        // Validar nombre de la empresa
+        if (string.IsNullOrWhiteSpace(empresa.EmpresaNombre) || 
+            empresa.EmpresaNombre.Length < 3)
+        {
+            Snackbar.Add("El nombre de la empresa debe tener al menos 3 caracteres", Severity.Warning);
+            return false;
+        }
+
+        // Validar RFC
+        if (string.IsNullOrWhiteSpace(empresa.Rfc))
+        {
+            Snackbar.Add("El RFC es requerido", Severity.Warning);
+            return false;
+        }
+
+        if (empresa.Rfc.Length != 12 && empresa.Rfc.Length != 13)
+        {
+            Snackbar.Add("El RFC debe tener 12 caracteres (Persona Moral) o 13 caracteres (Persona Física)", Severity.Warning);
+            return false;
+        }
+
+        // Validar que se haya seleccionado un estado
+        if (!empresa.PkidEstado.HasValue || empresa.PkidEstado.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un estado (entidad federativa)", Severity.Warning);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task OnEstadoChanged(int? estadoId)
+    {
+        Console.WriteLine($"Estado seleccionado ID: {estadoId}");
+        empresa.PkidEstado = estadoId;
+        await Task.CompletedTask;
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    // Validación personalizada para RFC
+    private IEnumerable<string> ValidarRFC(string rfc)
+    {
+        if (string.IsNullOrWhiteSpace(rfc))
+        {
+            yield return "El RFC es requerido";
+            yield break;
+        }
+
+        if (rfc.Length != 12 && rfc.Length != 13)
+        {
+            yield return "El RFC debe tener 12 caracteres (Persona Moral) o 13 caracteres (Persona Física)";
+        }
+    }
+}

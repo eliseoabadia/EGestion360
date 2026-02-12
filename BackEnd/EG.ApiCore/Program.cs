@@ -3,6 +3,7 @@ using EG.Application.Interfaces;
 using EG.Application.Services;
 using EG.Business.Interfaces;
 using EG.Business.Mapping;
+using EG.Business.Mappings;
 using EG.Business.Services;
 using EG.Common.Util;
 using EG.Domain.DTOs.Responses.General;
@@ -23,7 +24,13 @@ public partial class Program
         var builder = WebApplication.CreateBuilder(args);
 
         //automapper
-        builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+        //builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+        builder.Services.AddAutoMapper(cfg =>
+        {
+            cfg.AddProfile<EmpresaMappingProfile>();
+            cfg.AddProfile<DepartamentoMappingProfile>();
+            cfg.AddProfile<GeneralMappingProfile>();
+        }, typeof(Program).Assembly);
 
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
 
@@ -49,6 +56,7 @@ public partial class Program
         //builder.Services.AddScoped<IRepository<Empresa>, Repository<Empresa>>();
 
 
+        
         builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
        
 
