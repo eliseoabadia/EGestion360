@@ -248,24 +248,24 @@ namespace EG.ApiCore.Controllers.General
             });
         }
 
-        [HttpGet("sucursal/{sucursalId}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetBySucursalId(int sucursalId)
-        {
-            var result = await _serviceView.GetAllPaginadoAsync(
-                new PagedRequest { Page = 1, PageSize = 1000 },
-                u => u.PkidSucursal == sucursalId && u.RelacionActiva);
+        //[HttpGet("sucursal/{sucursalId}")]
+        //public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetBySucursalId(int sucursalId)
+        //{
+        //    var result = await _serviceView.GetAllPaginadoAsync(
+        //        new PagedRequest { Page = 1, PageSize = 1000 },
+        //        u => u.PkidSucursal == sucursalId && u.RelacionActiva);
 
-            var response = _mapper.Map<List<UsuarioResponse>>(result.Items);
+        //    var response = _mapper.Map<List<UsuarioResponse>>(result.Items);
 
-            return Ok(new PagedResult<UsuarioResponse>
-            {
-                Success = true,
-                Message = "Usuarios por sucursal obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = response,
-                TotalCount = result.TotalCount
-            });
-        }
+        //    return Ok(new PagedResult<UsuarioResponse>
+        //    {
+        //        Success = true,
+        //        Message = "Usuarios por sucursal obtenidos correctamente",
+        //        Code = "SUCCESS",
+        //        Items = response,
+        //        TotalCount = result.TotalCount
+        //    });
+        //}
 
         [HttpPost]
         public async Task<ActionResult<PagedResult<UsuarioResponse>>> Add([FromBody] VwUsuarioSucursal viewDto)

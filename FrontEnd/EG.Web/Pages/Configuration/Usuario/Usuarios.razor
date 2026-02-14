@@ -134,9 +134,9 @@
                 <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="UsuarioResponse">Nombre Completo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Telefono" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Departamento</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Id</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Sucursal</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">NSS</MudTableSortLabel></MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd>
@@ -158,10 +158,10 @@
                 <MudTd DataLabel="Nr">@context.PkIdUsuario</MudTd>
                 <MudTd DataLabel="Sign">@context.NombreCompleto</MudTd>
                 <MudTd DataLabel="Name">@context.Email</MudTd>
-                <MudTd DataLabel="Position">@context.TelefonoPrincipal</MudTd>
-                <MudTd DataLabel="Molar mass">@context.NombreDepartamento</MudTd>
+                <MudTd DataLabel="Position">@context.TelefonoUsuario</MudTd>
+                <MudTd DataLabel="Molar mass">@context.PayrollId</MudTd>
                 <MudTd DataLabel="Molar mass">@context.NombreEmpresa</MudTd>
-                <MudTd DataLabel="Molar mass">@context.NombreSucursal</MudTd>
+                <MudTd DataLabel="Molar mass">@context.NumeroSocial</MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <MudText>No se encontraron registros</MudText>

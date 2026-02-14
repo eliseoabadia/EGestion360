@@ -32,7 +32,7 @@ namespace EG.Business.Mapping.Entidades
                 .ForMember(dest => dest.UsuarioActivo, opt => opt.MapFrom(src => src.UsuarioActivo))
                 .ForMember(dest => dest.UsuarioFechaCreacion, opt => opt.MapFrom(src => src.UsuarioFechaCreacion))
                 .ForMember(dest => dest.UsuarioCreadorId, opt => opt.MapFrom(src => src.UsuarioCreadorId))
-                .ForMember(dest => dest.PkidSucursal, opt => opt.MapFrom(src => src.PkidSucursal))
+                /*.ForMember(dest => dest.PkidSucursal, opt => opt.MapFrom(src => src.PkidSucursal))
                 .ForMember(dest => dest.NombreSucursal, opt => opt.MapFrom(src => src.NombreSucursal))
                 .ForMember(dest => dest.CodigoSucursal, opt => opt.MapFrom(src => src.CodigoSucursal))
                 .ForMember(dest => dest.AliasSucursal, opt => opt.MapFrom(src => src.AliasSucursal))
@@ -69,7 +69,7 @@ namespace EG.Business.Mapping.Entidades
                 .ForMember(dest => dest.FechaFinAsignacion, opt => opt.MapFrom(src => src.FechaFinAsignacion))
                 .ForMember(dest => dest.RelacionActiva, opt => opt.MapFrom(src => src.RelacionActiva))
                 .ForMember(dest => dest.RolUsuario, opt => opt.MapFrom(src => src.RolUsuario))
-                .ForMember(dest => dest.NivelAcceso, opt => opt.MapFrom(src => src.NivelAcceso));
+                .ForMember(dest => dest.NivelAcceso, opt => opt.MapFrom(src => src.NivelAcceso))*/;
 
             // Mapeo de Request a Entity (para operaciones de escritura)
             CreateMap<UsuarioDto, Usuario>()

@@ -644,58 +644,32 @@ public partial class EGestionContext : DbContext
                 .HasNoKey()
                 .ToView("VW_UsuarioSucursal", "SIS");
 
-            entity.Property(e => e.AliasSucursal).HasMaxLength(50);
             entity.Property(e => e.ApellidoMaterno)
                 .IsRequired()
                 .HasMaxLength(64);
             entity.Property(e => e.ApellidoPaterno)
                 .IsRequired()
                 .HasMaxLength(64);
-            entity.Property(e => e.Ciudad).HasMaxLength(100);
-            entity.Property(e => e.CodigoPostalSucursal).HasMaxLength(10);
             entity.Property(e => e.CodigoPostalUsuario).HasMaxLength(9);
-            entity.Property(e => e.CodigoSucursal)
-                .IsRequired()
-                .HasMaxLength(20);
-            entity.Property(e => e.Colonia).HasMaxLength(100);
             entity.Property(e => e.Direccion1)
                 .IsRequired()
                 .HasMaxLength(128);
             entity.Property(e => e.Direccion2)
                 .IsRequired()
                 .HasMaxLength(64);
-            entity.Property(e => e.DireccionSucursal)
-                .IsRequired()
-                .HasMaxLength(256);
             entity.Property(e => e.Email)
                 .IsRequired()
                 .HasMaxLength(60);
-            entity.Property(e => e.EmailSucursal).HasMaxLength(100);
             entity.Property(e => e.Gafete)
                 .IsRequired()
                 .HasMaxLength(11);
             entity.Property(e => e.Iniciales)
                 .IsRequired()
                 .HasMaxLength(3);
-            entity.Property(e => e.Latitud).HasColumnType("decimal(9, 6)");
-            entity.Property(e => e.Longitud).HasColumnType("decimal(9, 6)");
-            entity.Property(e => e.MetrosCuadrados).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.NivelAcceso)
-                .IsRequired()
-                .HasMaxLength(13)
-                .IsUnicode(false);
             entity.Property(e => e.NombreCompleto)
                 .IsRequired()
                 .HasMaxLength(194);
-            entity.Property(e => e.NombreDepartamento).HasMaxLength(128);
             entity.Property(e => e.NombreEmpresa)
-                .IsRequired()
-                .HasMaxLength(128);
-            entity.Property(e => e.NombreEstado)
-                .IsRequired()
-                .HasMaxLength(64)
-                .IsUnicode(false);
-            entity.Property(e => e.NombreSucursal)
                 .IsRequired()
                 .HasMaxLength(128);
             entity.Property(e => e.NombreUsuario)
@@ -708,31 +682,16 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(20)
                 .HasColumnName("PayrollID");
-            entity.Property(e => e.PkidEstado).HasColumnName("PKIdEstado");
-            entity.Property(e => e.PkidSucursal).HasColumnName("PKIdSucursal");
-            entity.Property(e => e.RelacionUsuarioCreacion).HasMaxLength(100);
-            entity.Property(e => e.RelacionUsuarioModificacion).HasMaxLength(100);
             entity.Property(e => e.RfcEmpresa)
                 .IsRequired()
                 .HasMaxLength(13);
-            entity.Property(e => e.RolUsuario)
-                .IsRequired()
-                .HasMaxLength(10)
-                .IsUnicode(false);
             entity.Property(e => e.SexoDescripcion)
                 .IsRequired()
                 .HasMaxLength(9)
                 .IsUnicode(false);
-            entity.Property(e => e.TelefonoPrincipal).HasMaxLength(20);
-            entity.Property(e => e.TelefonoSecundario).HasMaxLength(20);
             entity.Property(e => e.TelefonoUsuario)
                 .IsRequired()
                 .HasMaxLength(16);
-            entity.Property(e => e.TipoSucursalDescripcion).HasMaxLength(50);
-            entity.Property(e => e.TipoSucursalLabel)
-                .IsRequired()
-                .HasMaxLength(8)
-                .IsUnicode(false);
         });
 
         modelBuilder.Entity<VwUsuarioSucursalSimplificadum>(entity =>
