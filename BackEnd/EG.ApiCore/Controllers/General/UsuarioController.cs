@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Azure;
+using EG.ApiCore.Services;
 using EG.Application.CommonModel;
 using EG.Business.Services;
 using EG.Domain.DTOs.Requests;
@@ -20,6 +21,7 @@ namespace EG.ApiCore.Controllers.General
     [Authorize]
     public class UsuarioController : ControllerBase
     {
+        private readonly IUserContextService _userContext;
         private readonly GenericService<Usuario, UsuarioDto, UsuarioResponse> _service;
         private readonly GenericService<VwUsuarioSucursal, UsuarioDto, UsuarioResponse> _serviceView;
         private readonly IMapper _mapper;
@@ -27,11 +29,13 @@ namespace EG.ApiCore.Controllers.General
         public UsuarioController(
             GenericService<Usuario, UsuarioDto, UsuarioResponse> service,
             GenericService<VwUsuarioSucursal, UsuarioDto, UsuarioResponse> serviceView,
-            IMapper mapper)
+            IMapper mapper,
+            IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
             _mapper = mapper;
+            _userContext = userContext;
 
             ConfigureService();
             ConfigureValidations();
@@ -300,7 +304,7 @@ namespace EG.ApiCore.Controllers.General
                 // Mapear y preparar el DTO
                 var dto = _mapper.Map<UsuarioDto>(viewDto);
                 dto.FechaCreacion = DateTime.Now;
-                dto.UsuarioCreacion = GetCurrentUserId();
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.Activo = true;
 
                 // Asegurar que el email esté en minúsculas para consistencia
@@ -440,7 +444,7 @@ namespace EG.ApiCore.Controllers.General
                 var dto = _mapper.Map<UsuarioDto>(viewDto);
                 dto.PkIdUsuario = id;
                 dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = GetCurrentUserId();
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
 
                 // Asegurar que el email esté en minúsculas para consistencia
                 if (!string.IsNullOrWhiteSpace(dto.Email))
@@ -614,7 +618,7 @@ namespace EG.ApiCore.Controllers.General
                 var dto = _mapper.Map<UsuarioDto>(usuario);
                 dto.Activo = activo;
                 dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = GetCurrentUserId();
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
 
                 await _service.UpdateAsync(id, dto);
 
@@ -638,22 +642,6 @@ namespace EG.ApiCore.Controllers.General
             }
         }
 
-        private int GetCurrentUserId()
-        {
-            // Busca primero el claim "UserId"
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
 
-            // Si no existe, intenta con "sub" (usado en JWT estándar)
-            if (userIdClaim == null)
-                userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub");
-
-            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-            {
-                return userId;
-            }
-
-            // Si no se encuentra, lanza excepción o devuelve 0 en lugar de un valor fijo
-            throw new InvalidOperationException("No se pudo obtener el ID del usuario autenticado.");
-        }
     }
 }

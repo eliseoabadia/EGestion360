@@ -1,4 +1,5 @@
-﻿using EG.Application.CommonModel;
+﻿using EG.ApiCore.Services;
+using EG.Application.CommonModel;
 using EG.Application.Interfaces;
 using EG.Application.Services;
 using EG.Business.Interfaces;
@@ -57,8 +58,9 @@ public partial class Program
 
         
         builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
-       
 
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IUserContextService, UserContextService>();
 
         //services (business / application)
         builder.Services.AddScoped<IAuthService, AuthService>();
