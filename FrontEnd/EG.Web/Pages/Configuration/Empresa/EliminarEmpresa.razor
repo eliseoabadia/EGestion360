@@ -40,10 +40,27 @@
     {
         try
         {
-            empresa = await empresaService.GetEmpresaByIdAsync(EmpresaId);
+            var response = await empresaService.GetEmpresaByIdAsync(EmpresaId);
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                empresa = response.Data;
+                Console.WriteLine($"✅ Empresa cargada: ID {empresa.PkidEmpresa}, " +
+                                  $"Nombre: {empresa.EmpresaNombre}, " +
+                                  $"Estado ID: {empresa.PkidEstado}, " +
+                                  $"Estatus: {(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")}");
+            }
+            else
+            {
+                var errorMessage = response?.Message ?? "Error al cargar la empresa";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+                MudDialog.Close(DialogResult.Ok(false));
+            }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al inicializar: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
         finally
@@ -57,20 +74,29 @@
         try
         {
             loading = true;
-            var (success, message) = await empresaService.DeleteEmpresaAsync(EmpresaId);
-            if (success)
+            var response = await empresaService.DeleteEmpresaAsync(EmpresaId);
+
+            if (response != null && response.Success)
             {
+                var message = !string.IsNullOrEmpty(response.Message)
+                    ? response.Message
+                    : $"✅ Empresa eliminada correctamente: ID {EmpresaId}";
+
+                Console.WriteLine(message);
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(message, Severity.Error);
+                var errorMessage = response?.Message ?? "Error al eliminar la empresa";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
                 loading = false;
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al eliminar empresa: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
             loading = false;
         }

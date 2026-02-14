@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using EG.Domain.DTOs.Responses;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
-using EG.Dommain.DTOs.Responses;
 
-namespace EG.Business.Mappings
+namespace EG.Business.Mapping.Entidades
 {
     public class DepartamentoMappingProfile : Profile
     {

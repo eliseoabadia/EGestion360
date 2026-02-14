@@ -1,4 +1,5 @@
-﻿using EG.Web.Models.Configuration;
+﻿using EG.Web.Models;
+using EG.Web.Models.Configuration;
 using SortDirection = MudBlazor.SortDirection;
 
 namespace EG.Web.Contracs.Configuration
@@ -6,9 +7,9 @@ namespace EG.Web.Contracs.Configuration
     public interface IEstadoService
     {
         // ============ CONSULTAS ============
-        Task<IList<EstadoResponse>> GetAllEstadosAsync();
+        Task<ApiResponse<EstadoResponse>> GetAllEstadosAsync();
 
-        Task<EstadoResponse> GetEstadoByIdAsync(int estadoId);
+        Task<ApiResponse<EstadoResponse>> GetEstadoByIdAsync(int estadoId);
 
         // ============ PAGINACIÓN ============
         Task<(List<EstadoResponse> Estados, int TotalCount)> GetAllEstadosPaginadoAsync(

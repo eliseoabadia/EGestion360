@@ -45,7 +45,7 @@ namespace EG.Web.Services
             };
 
             var result = await PostAsync<PagedResult<UsuarioResponse>>(
-                "api/UserProfile/GetAllUserPaginado/",
+                "api/Usuario/GetAllUsuariosPaginado/",
                 jsonParams,
                 useBaseUrl: false);
 
@@ -62,7 +62,7 @@ namespace EG.Web.Services
             if (!IsClientSide())
                 return new UsuarioResponse();
 
-            var result = await GetAsync<UsuarioResponse>($"api/UserProfile/{_userId}");
+            var result = await GetAsync<UsuarioResponse>($"api/Usuario/{_userId}");
             return result ?? new UsuarioResponse();
         }
 

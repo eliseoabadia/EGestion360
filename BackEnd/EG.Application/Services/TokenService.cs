@@ -1,6 +1,6 @@
 ﻿using EG.Application.CommonModel;
 using EG.Application.Interfaces;
-using EG.Domain.DTOs.Responses.Auth;
+using EG.Domain.DTOs.Requests.Auth;
 using EG.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;

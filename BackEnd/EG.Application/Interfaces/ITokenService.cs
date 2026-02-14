@@ -1,5 +1,5 @@
 ﻿using EG.Application.CommonModel;
-using EG.Domain.DTOs.Responses.Auth;
+using EG.Domain.DTOs.Requests.Auth;
 using EG.Domain.Entities;
 using System.Security.Claims;
 

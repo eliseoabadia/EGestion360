@@ -1,4 +1,4 @@
-﻿using EG.Dommain.DTOs.Responses;
+﻿using EG.Domain.DTOs.Requests.General;
 
 namespace EG.Business.Interfaces
 {

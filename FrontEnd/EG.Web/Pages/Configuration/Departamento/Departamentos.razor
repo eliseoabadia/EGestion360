@@ -204,7 +204,7 @@
 
 @code {
     private IList<DepartamentoResponse> Elements = new List<DepartamentoResponse>();
-    private List<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
+    private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
     private CancellationTokenSource _cancellationTokenSource = new();
     private int totalCount = 0;
 
@@ -277,15 +277,19 @@
     {
         try
         {
-            var resultado = await empresaService.GetAllEmpresas();
-            if (resultado != null)
+            var _result = await empresaService.GetAllEmpresasAsync();
+            if (_result != null)
             {
-                listadoEmpresas = resultado.ToList();
-
-                // Si solo hay una empresa, seleccionarla automáticamente
-                if (listadoEmpresas.Count == 1)
+                if (_result.Success)
                 {
-                    selectedEmpresaId = listadoEmpresas.First().PkidEmpresa;
+
+                    listadoEmpresas = _result.Items;
+
+                    // Si solo hay una empresa, seleccionarla automáticamente
+                    if (listadoEmpresas.Count == 1)
+                    {
+                        selectedEmpresaId = listadoEmpresas.First().PkidEmpresa;
+                    }
                 }
             }
         }
@@ -300,26 +304,7 @@
         }
     }
 
-    //protected override async Task OnParametersSetAsync()
-    // private async Task CargarDepartamentos()
-    // {
-    //     if (listadoEmpresas.Any())
-    //     {
-    //         var resultado = await empresaService.GetAllEmpresas();
-    //         if (resultado != null)
-    //         {
-    //             listadoEmpresas = resultado.ToList();
-
-    //             // Si solo hay una empresa, seleccionarla automáticamente
-    //             if (listadoEmpresas.Count == 1)
-    //             {
-    //                 selectedEmpresaId = listadoEmpresas.First().PkidEmpresa;
-    //             }
-    //             StateHasChanged();
-    //         }
-    //     }
-    // }
-
+    
     private async Task<TableData<DepartamentoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         loading = true;
@@ -329,10 +314,9 @@
         {
             currentPage = state.Page + 1;
             pageSize = state.PageSize;
-            sortLabel = state.SortLabel == null ? "Nombre" : state.SortLabel;
+            sortLabel = state.SortLabel ?? "Nombre";
             sortDirection = state.SortDirection;
 
-            // Convertir el enum a string para el servicio
             string estadoFiltro = selectedEstado switch
             {
                 EstadoFiltro.Activo => "true",
@@ -341,16 +325,27 @@
                 _ => null
             };
 
-            // Llamar al servicio con los filtros adicionales
-            (Elements, totalCount) = await departamentoService.GetAllDepartamentosPaginadoAsync(
+            var response = await departamentoService.GetAllDepartamentosPaginadoAsync(
                 currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
                 sortDirection,
-                selectedEmpresaId, // Filtro por empresa
-                estadoFiltro // Filtro por estado (convertido)
+                selectedEmpresaId,
+                estadoFiltro
             );
+
+            if (response != null && response.Success)
+            {
+                Elements = response.Items;
+                totalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements = new List<DepartamentoResponse>();
+                totalCount = 0;
+                Snackbar.Add(response?.Message ?? "Error al cargar departamentos", Severity.Error);
+            }
 
             return new TableData<DepartamentoResponse>
             {
@@ -536,7 +531,7 @@
                 _ => null
             };
 
-            (Elements, totalCount) = await departamentoService.GetAllDepartamentosPaginadoAsync(
+            var response = await departamentoService.GetAllDepartamentosPaginadoAsync(
                 _currentPage,
                 pageSize,
                 searchString,
@@ -546,13 +541,16 @@
                 estadoFiltro
             );
 
-            if (Elements == null || !Elements.Any())
+            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
             {
-                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
                 loading = false;
                 StateHasChanged();
                 return;
             }
+
+            Elements = response.Items;
+            totalCount = response.TotalCount;
 
             var excelData = Elements.Select(d => new
             {

@@ -212,10 +212,10 @@ INSERT INTO SIS.Usuario (
  'Calle Roble 101', 'Piso 2', 'eliseo_eae@htomail.com', 'NS1234567890', 'GF001A', 1, 1),
 
 (2, 'Administrador', '-', '-', 'PZL', 'admon02', '76000', '4425678910',
- 'Av. Universidad 45', 'Edif. B', 'eliseo_eae@htomail.com', 'NS0987654321', 'GF002B', 0,1 ),
+ 'Av. Universidad 45', 'Edif. B', 'eliseo2_eae@htomail.com', 'NS0987654321', 'GF002B', 0,1 ),
 
 (3, 'Administrador', '-', '-', 'ESR', 'admon03', '80000', '6671234567',
- 'Prol. Obregón 321', 'Int. 5', 'eliseo_eae@htomail.com', 'NS5678901234', 'GF003C', 1,1);
+ 'Prol. Obregón 321', 'Int. 5', 'eliseo3_eae@htomail.com', 'NS5678901234', 'GF003C', 1,1);
 
 
 -- Tabla de Sucursal (reemplaza Tienda)
@@ -555,8 +555,8 @@ MERGE INTO SIS.Menu AS TARGET
 	USING (VALUES
 	(1, N'Principal', 2, NULL, N'Principal', N'/', N'FaHome', 1, N'ESP',100,1000,getdate())
 	,(2, N'Configuración', 1, NULL, N'Configuración', N'configuration', N'FaRegSun', 1, N'ESP',200,1000,getdate())
-	,(3, N'Perfil de Usuario', 2, 2, N'Perfil de Usuario', N'/profile', N'FaUser', 1, N'ESP',201,1000,getdate())
-	,(4, N'Administración de Usuarios', 2, 2, N'Administración de Usuarios', N'/users', N'FaUser', 1, N'ESP',202,1000,getdate())
+	,(3, N'Mi Perfíl', 2, 2, N'Perfil de Usuario', N'/profile', N'FaUser', 1, N'ESP',201,1000,getdate())
+	,(4, N'Usuario', 2, 2, N'Administración de Usuarios', N'/users', N'FaUser', 1, N'ESP',202,1000,getdate())
 	,(5, N'Empresa', 2, 2, N'Empresa', N'/empresas', N'FaRegUser', 1, N'ESP',203,1000,getdate())
 	,(6, N'Departamento', 2, 2, N'Departamento', N'/departamentos', N'FaRegUser', 1, N'ESP',204,1000,getdate())
 	,(7, N'Menu', 2, 2, N'Menu', N'/settings/menu', N'RiMenuLine', 1, N'ESP',205,1000,getdate())

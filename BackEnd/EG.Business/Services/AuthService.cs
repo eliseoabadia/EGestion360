@@ -4,7 +4,7 @@ using EG.Application.Interfaces;
 using EG.Business.Interfaces;
 using EG.Common;
 using EG.Domain.DTOs.Requests;
-using EG.Domain.DTOs.Responses.Auth;
+using EG.Domain.DTOs.Requests.Auth;
 using EG.Domain.Entities;
 using EG.Domain.Interfaces;
 using Microsoft.Data.SqlClient;

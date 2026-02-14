@@ -1,5 +1,6 @@
 ﻿@page "/users"
 @using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
@@ -10,16 +11,10 @@
 
 
 @inject NavigationManager NavigationManager
-@inject IProfileService profileService
+@inject IUsuarioService usuarioService
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
-
-@inject NavigationManager NavigationManager
-@inject IProfileService profileService
-
-@inject IJSRuntime _jsRuntime
-@inject ProfileService profileService
 
 <script>
     function downloadFile(base64Data, fileName, contentType) {
@@ -139,7 +134,9 @@
                 <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="UsuarioResponse">Nombre Completo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Telefono" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Gafete</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Departamento</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Sucursal</MudTableSortLabel></MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd>
@@ -161,8 +158,10 @@
                 <MudTd DataLabel="Nr">@context.PkIdUsuario</MudTd>
                 <MudTd DataLabel="Sign">@context.NombreCompleto</MudTd>
                 <MudTd DataLabel="Name">@context.Email</MudTd>
-                <MudTd DataLabel="Position">@context.Telefono</MudTd>
-                <MudTd DataLabel="Molar mass">@context.Gafete</MudTd>
+                <MudTd DataLabel="Position">@context.TelefonoPrincipal</MudTd>
+                <MudTd DataLabel="Molar mass">@context.NombreDepartamento</MudTd>
+                <MudTd DataLabel="Molar mass">@context.NombreEmpresa</MudTd>
+                <MudTd DataLabel="Molar mass">@context.NombreSucursal</MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <MudText>No se encontraron registros</MudText>
@@ -238,21 +237,39 @@
     private async Task<TableData<UsuarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         loading = true;
+        StateHasChanged();
 
         try
         {
-            currentPage = state.Page + 1; // MudBlazor uses 0-based index
+            currentPage = state.Page + 1; // MudBlazor usa índice basado en 0
             pageSize = state.PageSize;
-            sortLabel = state.SortLabel == null ? "NombreCompleto" : state.SortLabel;
+            sortLabel = state.SortLabel ?? "NombreCompleto";
             sortDirection = state.SortDirection;
 
-            (Elements, totalCount) = await profileService.GetAllUsuariosPaginadoAsync(
+            var response = await usuarioService.GetAllUsuariosPaginadoAsync(
                 currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
                 sortDirection
             );
+
+            if (response != null && response.Success && response.Items != null)
+            {
+                Elements = response.Items;
+                totalCount = response.TotalCount;
+
+                Console.WriteLine($"✓ Usuarios cargados: {Elements.Count} de {totalCount} en total");
+            }
+            else
+            {
+                Elements = new List<UsuarioResponse>();
+                totalCount = 0;
+
+                var errorMessage = response?.Message ?? "Error al cargar usuarios";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+            }
 
             return new TableData<UsuarioResponse>
             {
@@ -262,7 +279,9 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al cargar usuarios: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al cargar usuarios: {ex.Message}", Severity.Error);
+
             return new TableData<UsuarioResponse>
             {
                 Items = new List<UsuarioResponse>(),
@@ -272,6 +291,7 @@
         finally
         {
             loading = false;
+            StateHasChanged();
         }
     }
 
@@ -321,7 +341,7 @@
                 NoHeader = false,
             };
 
-            var dialog = await DialogService.ShowAsync<Crear>("Crear Usuario", parameters, options);
+            var dialog = await DialogService.ShowAsync<CrearUsuario>("Crear Usuario", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
@@ -348,7 +368,7 @@
                 FullWidth = true,
             };
 
-            var dialog = await DialogService.ShowAsync<Editar>("Editar Usuario", parameters, options);
+            var dialog = await DialogService.ShowAsync<EditarUsuario>("Editar Usuario", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
@@ -374,7 +394,7 @@
                 FullWidth = true,
             };
 
-            var dialog = await DialogService.ShowAsync<Eliminar>("Eliminar Usuario", parameters, options);
+            var dialog = await DialogService.ShowAsync<EliminarUsuario>("Eliminar Usuario", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
@@ -400,21 +420,24 @@
             loading = true;
             StateHasChanged();
 
-            var _currentPage = -1; // MudBlazor uses 0-based index
-
-            (Elements, totalCount) = await profileService.GetAllUsuariosPaginadoAsync(
-                _currentPage,
+            var response = await usuarioService.GetAllUsuariosPaginadoAsync(
+                -1, // -1 para traer todos los registros
                 pageSize,
                 searchString,
                 sortLabel,
                 sortDirection
             );
 
-            if (Elements == null || !Elements.Any())
+            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
             {
-                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                var errorMessage = response?.Message ?? "No hay datos para exportar";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Warning);
                 return;
             }
+
+            Elements = response.Items;
+            totalCount = response.TotalCount;
 
             // Preparar datos para Excel
             var excelData = Elements.Select(u => new
@@ -422,9 +445,10 @@
                 ID = u.PkIdUsuario,
                 Nombre_Completo = u.NombreCompleto,
                 Email = u.Email,
-                Telefono = u.Telefono,
-                Gafete = u.Gafete,
-                Estado = u.Activo ? "Activo" : "Inactivo"
+                Telefono = u.TelefonoPrincipal,
+                Departamento = u.NombreDepartamento,
+                Empresa = u.NombreEmpresa,
+                Sucursal = u.NombreSucursal
             }).ToList();
 
             // Generar Excel con MiniExcel
@@ -438,10 +462,13 @@
                 $"Usuarios_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"Exportación exitosa: {Elements.Count} registros", Severity.Success);
+            var successMessage = $"✅ Exportación exitosa: {Elements.Count} registros";
+            Console.WriteLine(successMessage);
+            Snackbar.Add(successMessage, Severity.Success);
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al exportar usuarios: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
         }
         finally

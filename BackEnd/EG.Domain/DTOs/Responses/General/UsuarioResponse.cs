@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EG.Dommain.DTOs.Responses;
 
@@ -13,9 +8,15 @@ public partial class UsuarioResponse
     [Required]
     public int PkIdUsuario { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
+    public int IdEmpresa { get; set; }
 
-    public string Nombre { get; set; }
+    public string NombreEmpresa { get; set; }
+
+    public string RfcEmpresa { get; set; }
+
+    public string NombreCompleto { get; set; }
+
+    public string NombreUsuario { get; set; }
 
     public string ApellidoPaterno { get; set; }
 
@@ -25,9 +26,9 @@ public partial class UsuarioResponse
 
     public string PayrollId { get; set; }
 
-    public string CodigoPostal { get; set; }
+    public string CodigoPostalUsuario { get; set; }
 
-    public string Telefono { get; set; }
+    public string TelefonoUsuario { get; set; }
 
     public string Direccion1 { get; set; }
 
@@ -39,12 +40,92 @@ public partial class UsuarioResponse
 
     public string Gafete { get; set; }
 
+    public string SexoDescripcion { get; set; }
+
     public bool Sexo { get; set; }
 
-    public bool Activo { get; set; }
+    public bool UsuarioActivo { get; set; }
 
-    // Auxiliar opcional
-    public string NombreCompleto => $"{Nombre} {ApellidoPaterno} {ApellidoMaterno}";
+    public DateTime? UsuarioFechaCreacion { get; set; }
+
+    public int UsuarioCreadorId { get; set; }
+
+    public int PkidSucursal { get; set; }
+
+    public string NombreSucursal { get; set; }
+
+    public string CodigoSucursal { get; set; }
+
+    public string AliasSucursal { get; set; }
+
+    public int TipoSucursal { get; set; }
+
+    public string TipoSucursalDescripcion { get; set; }
+
+    public string DireccionSucursal { get; set; }
+
+    public string Colonia { get; set; }
+
+    public string Ciudad { get; set; }
+
+    public string CodigoPostalSucursal { get; set; }
+
+    public string TelefonoPrincipal { get; set; }
+
+    public string TelefonoSecundario { get; set; }
+
+    public string EmailSucursal { get; set; }
+
+    public TimeOnly? HorarioApertura { get; set; }
+
+    public TimeOnly? HorarioCierre { get; set; }
+
+    public bool EsMatriz { get; set; }
+
+    public string TipoSucursalLabel { get; set; }
+
+    public bool EsActiva { get; set; }
+
+    public decimal? Latitud { get; set; }
+
+    public decimal? Longitud { get; set; }
+
+    public decimal? MetrosCuadrados { get; set; }
+
+    public int? CapacidadPersonas { get; set; }
+
+    public bool SucursalActivo { get; set; }
+
+    public int PkidEstado { get; set; }
+
+    public string NombreEstado { get; set; }
+
+    public int? IdDepartamento { get; set; }
+
+    public string NombreDepartamento { get; set; }
+
+    public bool EsGerente { get; set; }
+
+    public bool EsSupervisor { get; set; }
+
+    public bool PuedeAcceder { get; set; }
+
+    public bool PuedeConfigurar { get; set; }
+
+    public bool PuedeOperar { get; set; }
+
+    public bool PuedeReportes { get; set; }
+
+    public DateTime? FechaAsignacion { get; set; }
+
+    public DateTime? FechaFinAsignacion { get; set; }
+
+    public bool RelacionActiva { get; set; }
+
+    public string RolUsuario { get; set; }
+
+    public string NivelAcceso { get; set; }
+
 
 }
 public class FotografiaUsuarioResponse

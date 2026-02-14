@@ -1,5 +1,6 @@
 @using System.ComponentModel.DataAnnotations
 @using EG.Web.Contracs.Configuration
+@using EG.Web.Models
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using EG.Web.Services.Configuration
@@ -227,23 +228,31 @@
     {
         try
         {
-            // Necesitas crear este servicio
-            estados = await estadoService.GetAllEstadosAsync();
-            
-            if (estados == null || estados.Count == 0)
+            var response = await estadoService.GetAllEstadosAsync();
+
+            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
             {
                 Console.WriteLine("⚠️ No se cargaron estados");
-                Snackbar.Add("Advertencia: No hay estados disponibles", Severity.Warning);
+                Snackbar.Add(response?.Message ?? "Advertencia: No hay estados disponibles", Severity.Warning);
                 estados = new List<EstadoResponse>();
             }
             else
             {
+                estados = response.Items;
                 Console.WriteLine($"✓ Se cargaron {estados.Count} estados");
+
+                // // Log detallado de cada estado cargado
+                // foreach (var e in estados)
+                // {
+                //     Console.WriteLine($"  - ID: {e.PkidEstado}, Nombre: {e.EstadoNombre}, " +
+                //                       $"Activo: {(e.EstadoActivo == true ? "Sí" : "No")}");
+                // }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error al cargar estados: {ex.Message}");
+            Console.WriteLine($"❌ Error al cargar estados: {ex.Message}\n{ex.StackTrace}");
+            Snackbar.Add($"Error al cargar estados: {ex.Message}", Severity.Error);
             throw;
         }
     }
@@ -254,24 +263,26 @@
         {
             if (EmpresaId.HasValue)
             {
-                var emp = await empresaService.GetEmpresaByIdAsync(EmpresaId.Value);
+                var response = await empresaService.GetEmpresaByIdAsync(EmpresaId.Value);
 
-                if (emp == null)
+                if (response == null || !response.Success || response.Data == null)
                 {
-                    Snackbar.Add("Empresa no encontrada", Severity.Warning);
+                    Console.WriteLine("⚠️ Empresa no encontrada");
+                    Snackbar.Add(response?.Message ?? "Empresa no encontrada", Severity.Warning);
                     Cancelar();
                     return;
                 }
 
-                empresa = emp;
+                empresa = response.Data;
                 Console.WriteLine($"✅ Empresa cargada: ID {empresa.PkidEmpresa}, " +
-                                $"Nombre: {empresa.EmpresaNombre}, " +
-                                $"Estado ID: {empresa.PkidEstado}, " +
-                                $"Estatus: {(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")}");
+                                  $"Nombre: {empresa.EmpresaNombre}, " +
+                                  $"Estado ID: {empresa.PkidEstado}, " +
+                                  $"Estatus: {(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")}");
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al cargar empresa: {ex.Message}");
             Snackbar.Add($"Error al cargar empresa: {ex.Message}", Severity.Error);
             throw;
         }
@@ -279,7 +290,6 @@
 
     private async Task GuardarCambiosAsync()
     {
-        // Validaciones previas
         if (!await ValidarFormulario())
             return;
 
@@ -288,39 +298,48 @@
 
         try
         {
-            bool result;
-            string message;
+            ApiResponse<EmpresaResponse> response;
 
             if (isEditMode)
             {
-                // Actualizar empresa existente
-                (result, message) = await empresaService.UpdateEmpresaAsync(empresa);
                 Console.WriteLine($"📝 Actualizando empresa ID: {empresa.PkidEmpresa}");
+                response = await empresaService.UpdateEmpresaAsync(empresa);
             }
             else
             {
                 // Crear nueva empresa - siempre activa
-                empresa.EmpresaActivo = true; // Aseguramos que sea activa
-                empresa.PkidEmpresa = 0; // Aseguramos que el ID sea 0 para creación
-                empresa.EstadoNombre = string.Empty; // Aseguramos que el ID sea 0 para creación
-                (result, message) = await empresaService.CreateEmpresaAsync(empresa);
+                empresa.EmpresaActivo = true;
+                empresa.PkidEmpresa = 0;
+                empresa.EstadoNombre = string.Empty;
+
                 Console.WriteLine($"➕ Creando nueva empresa: {empresa.EmpresaNombre} (Activa)");
+                response = await empresaService.CreateEmpresaAsync(empresa);
             }
 
-            if (result)
+            if (response != null && response.Success)
             {
+                var message = !string.IsNullOrEmpty(response.Message)
+                    ? response.Message
+                    : $"✅ Empresa {(isEditMode ? "actualizada" : "creada")}: ID {empresa.PkidEmpresa}, " +
+                      $"Nombre: {empresa.EmpresaNombre}, " +
+                      $"Estado: {(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")}";
+
+                Console.WriteLine(message);
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(message, Severity.Error);
+                var errorMessage = response?.Message ?? "Error al guardar empresa";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
                 loading = false;
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al guardar empresa: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al guardar empresa: {ex.Message}", Severity.Error);
             loading = false;
             StateHasChanged();

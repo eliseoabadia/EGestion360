@@ -106,17 +106,17 @@
         try
         {
             // Cargar lista de empresas
-            empresas = await empresaService.GetAllEmpresas();
-            
-            // Debug: Verificar si se cargaron empresas
-            if (empresas == null || empresas.Count == 0)
+            var responseEmpresas = await empresaService.GetAllEmpresasAsync();
+
+            if (responseEmpresas == null || !responseEmpresas.Success || responseEmpresas.Items == null || !responseEmpresas.Items.Any())
             {
                 Console.WriteLine("⚠️ No se cargaron empresas");
-                Snackbar.Add("Advertencia: No hay empresas disponibles", Severity.Warning);
+                Snackbar.Add(responseEmpresas?.Message ?? "Advertencia: No hay empresas disponibles", Severity.Warning);
                 empresas = new List<EmpresaResponse>();
             }
             else
             {
+                empresas = responseEmpresas.Items;
                 Console.WriteLine($"✓ Se cargaron {empresas.Count} empresas");
                 foreach (var e in empresas)
                 {
@@ -127,14 +127,16 @@
             // Si hay ID, cargar el departamento
             if (DepartamentoId.HasValue && DepartamentoId > 0)
             {
-                departamento = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+                var responseDepartamento = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
 
-                if (departamento == null)
+                if (responseDepartamento == null || !responseDepartamento.Success || responseDepartamento.Data == null)
                 {
-                    Snackbar.Add("Departamento no encontrado", Severity.Warning);
+                    Snackbar.Add(responseDepartamento?.Message ?? "Departamento no encontrado", Severity.Warning);
                     Cancel();
                     return;
                 }
+
+                departamento = responseDepartamento.Data;
             }
             else
             {
@@ -185,29 +187,42 @@
                 return;
             }
 
-            if (departamento.PkidEmpresa.Value <= 0)
+            if (!departamento.PkidEmpresa.HasValue || departamento.PkidEmpresa.Value <= 0)
             {
                 Snackbar.Add("Debe seleccionar una empresa válida", Severity.Warning);
                 loading = false;
                 return;
             }
 
-            // Actualizar el departamento
-            var (success, message) = await departamentoService.UpdateDepartamentoAsync(departamento);
+            // Actualizar el departamento usando ApiResponse
+            var response = await departamentoService.UpdateDepartamentoAsync(departamento);
 
-            if (success)
+            if (response != null && response.Success)
             {
+                // Construir mensaje detallado
+                var message = !string.IsNullOrEmpty(response.Message)
+                    ? response.Message
+                    : $"✅ Departamento actualizado: ID {departamento.PkidDepartamento}, " +
+                      $"Nombre: {departamento.DepartamentoNombre}, " +
+                      $"Estado: {(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")}";
+
+                // Escribir en consola y mostrar en Snackbar
+                Console.WriteLine(message);
                 Snackbar.Add(message, Severity.Success);
+
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(message, Severity.Error);
+                var errorMessage = response?.Message ?? "Error al actualizar departamento";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
                 loading = false;
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al guardar: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
             loading = false;
         }

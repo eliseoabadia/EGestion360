@@ -1,4 +1,4 @@
-@using System.ComponentModel.DataAnnotations
+﻿@using System.ComponentModel.DataAnnotations
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
@@ -17,7 +17,7 @@
         {
             <div class="d-flex justify-center align-center py-4">
                 <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Small" />
-                <MudText Class="ml-3" Typo="Typo.body2">Cargando informaci�n del departamento...</MudText>
+                <MudText Class="ml-3" Typo="Typo.body2">Cargando información del departamento...</MudText>
             </div>
         }
         else if (departamento == null)
@@ -35,11 +35,11 @@
                          Size="Size.Large"
                          Class="mb-3" />
                 <MudText Typo="Typo.h6" Color="Color.Warning" Class="mb-3">
-                    �Eliminar Departamento?
+                    ¿Eliminar Departamento?
                 </MudText>
             </div>
 
-            <!-- Informaci�n del departamento -->
+            <!-- Información del departamento -->
             <MudPaper Class="pa-4 mb-4" Elevation="1" Style="border-radius: 8px; background-color: #f5f5f5;">
                 <MudGrid>
                     <MudItem xs="12">
@@ -78,10 +78,10 @@
             <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
                 <MudText Typo="Typo.subtitle2" Class="mb-1">
                     <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="mr-1" />
-                    Esta acci�n es irreversible
+                    Esta acción es irreversible
                 </MudText>
                 <MudText Typo="Typo.body2">
-                    Una vez eliminado, no podr� recuperar la informaci�n de este departamento.
+                    Una vez eliminado, no podrá recuperar la información de este departamento.
                 </MudText>
             </MudAlert>
 
@@ -89,7 +89,7 @@
             {
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
                     <MudText Typo="Typo.body2">
-                        <strong>Sugerencia:</strong> Si desea conservar el registro hist�rico, considere cambiar el estado a "Inactivo" en lugar de eliminar.
+                        <strong>Sugerencia:</strong> Si desea conservar el registro histórico, considere cambiar el estado a "Inactivo" en lugar de eliminar.
                     </MudText>
                 </MudAlert>
             }
@@ -134,22 +134,54 @@
         try
         {
             // Cargar lista de empresas
-            empresas = await empresaService.GetAllEmpresas();
-            
-            // Cargar informaci�n del departamento si hay ID
-            if (DepartamentoId.HasValue && DepartamentoId > 0)
+            var responseEmpresas = await empresaService.GetAllEmpresasAsync();
+
+            if (responseEmpresas != null && responseEmpresas.Success && responseEmpresas.Items != null && responseEmpresas.Items.Any())
             {
-                departamento = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+                empresas = responseEmpresas.Items;
+                Console.WriteLine($"✓ Se cargaron {empresas.Count} empresas");
             }
             else
             {
-                Snackbar.Add("No se proporcion� un ID de departamento v�lido", Severity.Error);
+                var errorMessage = responseEmpresas?.Message ?? "Error al cargar las empresas";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Warning);
+                empresas = new List<EmpresaResponse>();
+            }
+
+            // Cargar información del departamento si hay ID
+            if (DepartamentoId.HasValue && DepartamentoId > 0)
+            {
+                var responseDepto = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+
+                if (responseDepto != null && responseDepto.Success && responseDepto.Data != null)
+                {
+                    departamento = responseDepto.Data;
+                    Console.WriteLine($"✅ Departamento cargado: ID {departamento.PkidDepartamento}, " +
+                                      $"Nombre: {departamento.DepartamentoNombre}, " +
+                                      $"Empresa ID: {departamento.PkidEmpresa}, " +
+                                      $"Estatus: {(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")}");
+                }
+                else
+                {
+                    var errorMessage = responseDepto?.Message ?? "Error al cargar el departamento";
+                    Console.WriteLine($"⚠️ {errorMessage}");
+                    Snackbar.Add(errorMessage, Severity.Error);
+                    MudDialog.Close(DialogResult.Ok(false));
+                }
+            }
+            else
+            {
+                var errorMessage = "No se proporcionó un ID de departamento válido";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
                 Cancel();
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar informaci�n: {ex.Message}", Severity.Error);
+            Console.WriteLine($"❌ Error al cargar información: {ex.Message}\n{ex.StackTrace}");
+            Snackbar.Add($"Error al cargar información: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -173,21 +205,29 @@
             loading = true;
             StateHasChanged();
 
-            var (success, message) = await departamentoService.DeleteDepartamentoAsync(DepartamentoId.Value);
+            var response = await departamentoService.DeleteDepartamentoAsync(DepartamentoId.Value);
 
-            if (success)
+            if (response != null && response.Success)
             {
+                var message = !string.IsNullOrEmpty(response.Message)
+                    ? response.Message
+                    : $"✅ Departamento eliminado correctamente: ID {DepartamentoId.Value}";
+
+                Console.WriteLine(message);
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(message, Severity.Error);
+                var errorMessage = response?.Message ?? "Error al eliminar el departamento";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
                 loading = false;
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al eliminar departamento: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al eliminar: {ex.Message}", Severity.Error);
             loading = false;
         }

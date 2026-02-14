@@ -1,5 +1,6 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using EG.Web.Contracs.Configuration
+@using EG.Web.Models
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using EG.Web.Services.Configuration
@@ -212,23 +213,26 @@
     {
         try
         {
-            empresas = await empresaService.GetAllEmpresas();
+            var response = await empresaService.GetAllEmpresasAsync();
 
-            if (empresas == null || empresas.Count == 0)
+            if (response != null && response.Success && response.Items != null && response.Items.Any())
             {
-                Console.WriteLine("⚠️ No se cargaron empresas");
-                Snackbar.Add("Advertencia: No hay empresas disponibles", Severity.Warning);
-                empresas = new List<EmpresaResponse>();
+                empresas = response.Items;
+                Console.WriteLine($"✓ Se cargaron {empresas.Count} empresas");
             }
             else
             {
-                Console.WriteLine($"✓ Se cargaron {empresas.Count} empresas");
+                var errorMessage = response?.Message ?? "No se cargaron empresas";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Warning);
+                empresas = new List<EmpresaResponse>();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error al cargar empresas: {ex.Message}");
-            throw;
+            Console.WriteLine($"❌ Error al cargar empresas: {ex.Message}\n{ex.StackTrace}");
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+            empresas = new List<EmpresaResponse>();
         }
     }
 
@@ -238,31 +242,40 @@
         {
             if (DepartamentoId.HasValue)
             {
-                var depto = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+                var response = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
 
-                if (depto == null)
+                if (response != null && response.Success && response.Data != null)
                 {
-                    Snackbar.Add("Departamento no encontrado", Severity.Warning);
-                    Cancelar();
-                    return;
+                    departamento = response.Data;
+                    Console.WriteLine($"✅ Departamento cargado: ID {departamento.PkidDepartamento}, " +
+                                      $"Nombre: {departamento.DepartamentoNombre}, " +
+                                      $"Estado: {(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")}");
                 }
-
-                departamento = depto;
-                Console.WriteLine($"✅ Departamento cargado: ID {departamento.PkidDepartamento}, " +
-                                $"Nombre: {departamento.DepartamentoNombre}, " +
-                                $"Estado: {(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")}");
+                else
+                {
+                    var errorMessage = response?.Message ?? "Departamento no encontrado";
+                    Console.WriteLine($"⚠️ {errorMessage}");
+                    Snackbar.Add(errorMessage, Severity.Warning);
+                    Cancelar();
+                }
+            }
+            else
+            {
+                var errorMessage = "No se proporcionó un ID de departamento válido";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+                Cancelar();
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al cargar departamento: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al cargar departamento: {ex.Message}", Severity.Error);
-            throw;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        // Validaciones previas
         if (!await ValidarFormulario())
             return;
 
@@ -271,40 +284,48 @@
 
         try
         {
-            bool result;
-            string message;
+            ApiResponse<DepartamentoResponse> response;
 
             if (isEditMode)
             {
-                // Actualizar departamento existente
-                (result, message) = await departamentoService.UpdateDepartamentoAsync(departamento);
                 Console.WriteLine($"📝 Actualizando departamento ID: {departamento.PkidDepartamento}");
+                response = await departamentoService.UpdateDepartamentoAsync(departamento);
             }
             else
             {
-                // Crear nuevo departamento - siempre activo
-                departamento.DepartamentoActivo = true; // Aseguramos que sea activo
+                departamento.DepartamentoActivo = true;
                 departamento.Rfc = string.Empty;
                 departamento.EmpresaActivo = true;
                 departamento.PkidDepartamento = 0;
-                (result, message) = await departamentoService.CreateDepartamentoAsync(departamento);
+
                 Console.WriteLine($"➕ Creando nuevo departamento: {departamento.DepartamentoNombre} (Activo)");
+                response = await departamentoService.CreateDepartamentoAsync(departamento);
             }
 
-            if (result)
+            if (response != null && response.Success)
             {
+                var message = !string.IsNullOrEmpty(response.Message)
+                    ? response.Message
+                    : $"✅ Departamento {(isEditMode ? "actualizado" : "creado")}: ID {departamento.PkidDepartamento}, " +
+                      $"Nombre: {departamento.DepartamentoNombre}, " +
+                      $"Estado: {(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")}";
+
+                Console.WriteLine(message);
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(message, Severity.Error);
+                var errorMessage = response?.Message ?? "Error al guardar departamento";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
                 loading = false;
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al guardar departamento: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error al guardar departamento: {ex.Message}", Severity.Error);
             loading = false;
             StateHasChanged();

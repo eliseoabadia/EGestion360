@@ -14,22 +14,21 @@ namespace EG.Web.Services.Configuration
         {
         }
 
-        public async Task<IList<DepartamentoResponse>> GetAllDepartamentos()
+        public async Task<ApiResponse<DepartamentoResponse>> GetAllDepartamentosAsync()
         {
             if (!IsClientSide())
-                return new List<DepartamentoResponse>();
+                return new ApiResponse<DepartamentoResponse>();
 
             var response = await GetAsync<ApiResponse<DepartamentoResponse>>("api/Departamento/", useBaseUrl: false);
-
-            if (response != null && response.Success && response.Items != null)
+            return response ?? new ApiResponse<DepartamentoResponse>
             {
-                return response.Items;
-            }
-
-            return new List<DepartamentoResponse>();
+                Success = false,
+                Message = "Error al obtener departamentos",
+                Code = "ERROR"
+            };
         }
 
-        public async Task<(List<DepartamentoResponse> Departamentos, int TotalCount)> GetAllDepartamentosPaginadoAsync(
+        public async Task<ApiResponse<DepartamentoResponse>> GetAllDepartamentosPaginadoAsync(
             int page = 1,
             int pageSize = 10,
             string filtro = "",
@@ -39,125 +38,127 @@ namespace EG.Web.Services.Configuration
             string estado = null)
         {
             if (!IsClientSide())
-                return (new List<DepartamentoResponse>(), 0);
+                return new ApiResponse<DepartamentoResponse>();
 
-            string sortDirection = _sortDirection.ToString().Contains("Descending") ? "Descending" : "Ascending";
+            string sortDirection = _sortDirection == SortDirection.Descending ? "Descending" : "Ascending";
 
             var jsonParams = new
             {
-                page = page,
-                pageSize = pageSize,
+                page,
+                pageSize,
                 filtro = filtro ?? "",
                 sortLabel = sortLabel ?? string.Empty,
-                sortDirection = sortDirection,
-                empresaId = empresaId,
-                estado = estado
+                sortDirection,
+                empresaId,
+                estado
             };
 
-            // ✅ CORREGIDO: ApiResponse que contiene PagedResponse<DepartamentoResponse>
             var response = await PostAsync<ApiResponse<DepartamentoResponse>>(
                 "api/Departamento/GetAllDepartamentosPaginado/",
                 jsonParams,
                 useBaseUrl: false);
 
-            if (response != null && response.Success && response.Items != null)
+            return response ?? new ApiResponse<DepartamentoResponse>
             {
-                return (response.Items.ToList(), response.TotalCount);
-            }
-
-            return (new List<DepartamentoResponse>(), 0);
+                Success = false,
+                Message = "Error al obtener departamentos paginados",
+                Code = "ERROR"
+            };
         }
 
-        public async Task<DepartamentoResponse> GetDepartamentoByIdAsync(int departamentoId)
+        public async Task<ApiResponse<DepartamentoResponse>> GetDepartamentoByIdAsync(int departamentoId)
         {
             if (!IsClientSide())
-                return new DepartamentoResponse();
+                return new ApiResponse<DepartamentoResponse>();
 
-            var response = await GetAsync<ApiResponse<DepartamentoResponse>>($"api/Departamento/{departamentoId}", useBaseUrl: false);
+            var response = await GetAsync<ApiResponse<DepartamentoResponse>>(
+                $"api/Departamento/{departamentoId}",
+                useBaseUrl: false);
 
-            if (response != null && response.Success && response.Data != null)
+            return response ?? new ApiResponse<DepartamentoResponse>
             {
-                return response.Data;
-            }
-
-            return new DepartamentoResponse();
+                Success = false,
+                Message = "Error al obtener departamento",
+                Code = "ERROR"
+            };
         }
 
-        public async Task<(bool resultado, string mensaje)> CreateDepartamentoAsync(DepartamentoResponse departamento)
+        public async Task<ApiResponse<DepartamentoResponse>> CreateDepartamentoAsync(DepartamentoResponse departamento)
         {
-            var operationResult = await ExecuteOperationAsync(async () =>
+            if (!IsClientSide())
+                return new ApiResponse<DepartamentoResponse>();
+
+            var response = await PostAsync<ApiResponse<DepartamentoResponse>>(
+                "api/Departamento/",
+                departamento,
+                useBaseUrl: false);
+
+            return response ?? new ApiResponse<DepartamentoResponse>
             {
-                var response = await PostAsync<ApiResponse<DepartamentoResponse>>(
-                    "api/Departamento/",
-                    departamento,
-                    useBaseUrl: false);
-
-                if (response != null && response.Success)
-                {
-                    return (true, response.Message ?? "Departamento creado correctamente");
-                }
-
-                return (false, response?.Message ?? "Error al crear departamento");
-            });
-
-            return (operationResult.Result, operationResult.Message);
+                Success = false,
+                Message = "Error al crear departamento",
+                Code = "ERROR"
+            };
         }
 
-        public async Task<(bool resultado, string mensaje)> UpdateDepartamentoAsync(DepartamentoResponse departamento)
+        public async Task<ApiResponse<DepartamentoResponse>> UpdateDepartamentoAsync(DepartamentoResponse departamento)
         {
+            if (!IsClientSide())
+                return new ApiResponse<DepartamentoResponse>();
+
             if (!departamento.PkidDepartamento.HasValue || departamento.PkidDepartamento <= 0)
-                return (false, "ID de departamento no válido");
-
-            var operationResult = await ExecuteOperationAsync(async () =>
-            {
-                var response = await PutAsync<ApiResponse<DepartamentoResponse>>(
-                    $"api/Departamento/{departamento.PkidDepartamento}/",
-                    departamento,
-                    useBaseUrl: false);
-
-                if (response != null && response.Success)
+                return new ApiResponse<DepartamentoResponse>
                 {
-                    return (true, response.Message ?? "Departamento actualizado correctamente");
-                }
+                    Success = false,
+                    Message = "ID de departamento no válido",
+                    Code = "INVALID_ID"
+                };
 
-                return (false, response?.Message ?? "Error al actualizar departamento");
-            });
+            var response = await PutAsync<ApiResponse<DepartamentoResponse>>(
+                $"api/Departamento/{departamento.PkidDepartamento}/",
+                departamento,
+                useBaseUrl: false);
 
-            return (operationResult.Result, operationResult.Message);
+            return response ?? new ApiResponse<DepartamentoResponse>
+            {
+                Success = false,
+                Message = "Error al actualizar departamento",
+                Code = "ERROR"
+            };
         }
 
-        public async Task<(bool resultado, string mensaje)> DeleteDepartamentoAsync(int departamentoId)
-        {
-            var operationResult = await ExecuteOperationAsync(async () =>
-            {
-                var response = await DeleteAsync<ApiResponse<object>>(
-                    $"api/Departamento/{departamentoId}/",
-                    useBaseUrl: false);
-
-                if (response != null && response.Success)
-                {
-                    return (true, response.Message ?? "Departamento eliminado correctamente");
-                }
-
-                return (false, response?.Message ?? "Error al eliminar departamento");
-            });
-
-            return (operationResult.Result, operationResult.Message);
-        }
-
-        public async Task<IList<DepartamentoResponse>> GetDepartamentosPorEmpresaAsync(int empresaId)
+        public async Task<ApiResponse<DepartamentoResponse>> DeleteDepartamentoAsync(int departamentoId)
         {
             if (!IsClientSide())
-                return new List<DepartamentoResponse>();
+                return new ApiResponse<DepartamentoResponse>();
 
-            var response = await GetAsync<ApiResponse<DepartamentoResponse>>($"api/Departamento/empresa/{empresaId}", useBaseUrl: false);
+            var response = await DeleteAsync<ApiResponse<DepartamentoResponse>>(
+                $"api/Departamento/{departamentoId}/",
+                useBaseUrl: false);
 
-            if (response != null && response.Success && response.Items != null)
+            return response ?? new ApiResponse<DepartamentoResponse>
             {
-                return response.Items;
-            }
+                Success = false,
+                Message = "Error al eliminar departamento",
+                Code = "ERROR"
+            };
+        }
 
-            return new List<DepartamentoResponse>();
+        public async Task<ApiResponse<DepartamentoResponse>> GetDepartamentosPorEmpresaAsync(int empresaId)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<DepartamentoResponse>();
+
+            var response = await GetAsync<ApiResponse<DepartamentoResponse>>(
+                $"api/Departamento/empresa/{empresaId}",
+                useBaseUrl: false);
+
+            return response ?? new ApiResponse<DepartamentoResponse>
+            {
+                Success = false,
+                Message = "Error al obtener departamentos por empresa",
+                Code = "ERROR"
+            };
         }
     }
 }

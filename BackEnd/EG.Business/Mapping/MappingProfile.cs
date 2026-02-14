@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using EG.Business.Mappings;
+
 
 namespace EG.Business.Mapping
 {

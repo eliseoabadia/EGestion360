@@ -9,9 +9,10 @@
 @using System.IO
 @using MudBlazor
 
-@inject IEmpresaService empresaService
+@inject ISucursalService sucursalService
 @inject NavigationManager NavigationManager
-@inject IProfileService profileService
+@inject IUsuarioService usuarioService
+@inject ProfileService profileService
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
@@ -92,32 +93,22 @@
                             <!-- Nombre completo -->
                             <MudItem xs="12" md="6">
                                 <MudTextField Label="Nombre"
-                                              @bind-Value="userProfile.Nombre"
+                                              @bind-Value="userProfile.NombreUsuario"
                                               Required="true"
                                               Disabled="@loading" />
                             </MudItem>
-                            <MudItem xs="12" md="6">
-                                <MudTextField Label="Apellido Paterno"
-                                              @bind-Value="userProfile.ApellidoPaterno"
-                                              Required="true"
-                                              Disabled="@loading" />
-                            </MudItem>
-                            <MudItem xs="12" md="6">
-                                <MudTextField Label="Apellido Materno"
-                                              @bind-Value="userProfile.ApellidoMaterno"
-                                              Disabled="@loading" />
-                            </MudItem>
+                            
 
                             <!-- Empresa -->
                             <MudItem xs="12" md="6">
                                 <MudSelect Label="Empresa"
-                                           @bind-Value="userProfile.FkidEmpresaSis"
+                                           @bind-Value="userProfile.PkidSucursal"
                                            Required="true"
                                            Disabled="@loading">
-                                    <MudSelectItem Value="0">Seleccione una empresa</MudSelectItem>
-                                    @foreach (var empresa in listadoEmpresas)
+                                    <MudSelectItem Value="0">Seleccione la sucursal</MudSelectItem>
+                                    @foreach (var empresa in listadoSucursales)
                                     {
-                                        <MudSelectItem Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                                        <MudSelectItem Value="@empresa.PkidSucursal">@empresa.Nombre</MudSelectItem>
                                     }
                                 </MudSelect>
                             </MudItem>
@@ -132,7 +123,7 @@
                             </MudItem>
                             <MudItem xs="12" md="6">
                                 <MudTextField Label="Teléfono"
-                                              @bind-Value="userProfile.Telefono"
+                                              @bind-Value="userProfile.TelefonoPrincipal"
                                               Disabled="@loading" />
                             </MudItem>
 
@@ -149,7 +140,7 @@
                             </MudItem>
                             <MudItem xs="12" md="4">
                                 <MudTextField Label="Código Postal"
-                                              @bind-Value="userProfile.CodigoPostal"
+                                              @bind-Value="userProfile.CodigoPostalUsuario"
                                               Disabled="@loading" />
                             </MudItem>
 
@@ -174,7 +165,7 @@
                             <MudPaper Class="pa-4 mb-4" Elevation="2" Style="border-radius: 8px;">
                                 <MudText Class="mb-2">Estado del Usuario</MudText>
                                 <MudDivider Class="mb-3" />
-                                <MudRadioGroup @bind-Value="userProfile.Activo" Disabled="@loading">
+                                <MudRadioGroup @bind-Value="userProfile.UsuarioActivo" Disabled="@loading">
                                     <MudRadio Value="true" Color="Color.Primary" Dense="true">Activo</MudRadio>
                                     <MudRadio Value="false" Color="Color.Secondary" Dense="false">Inactivo</MudRadio>
                                 </MudRadioGroup>
@@ -209,7 +200,7 @@
 @code {
     private MudForm form = new MudForm();
     private bool loading = false;
-    private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
+    private IList<SucursalResponse> listadoSucursales = new List<SucursalResponse>();
     public UsuarioResponse userProfile { get; set; } = new();
     public FotografiaUsuarioResponse userProfileFotografia { get; set; } = new();
     private string userProfileFotografiaImg = string.Empty;
@@ -223,8 +214,13 @@
         loading = true;
         try
         {
-            // Cargar datos que no dependen de JS
-            listadoEmpresas = await empresaService.GetAllEmpresas();
+            var _res = await sucursalService.GetAllSucursales();
+            if (!_res.Success)
+            {
+                Snackbar.Add($"Error al cargar sucursales: {_res.Message}", Severity.Error);
+                return;
+            }
+            listadoSucursales = _res.Items;
         }
         catch (Exception ex)
         {
@@ -321,7 +317,22 @@
         try
         {
             // Cargar perfil de usuario
-            userProfile = await profileService.GetProfileUser(_userId);
+            var responseUserById = await usuarioService.GetUsuarioByIdAsync(_userId);
+
+            if (responseUserById == null || !responseUserById.Success || responseUserById.Data == null)
+            {
+                var errorMessage = responseUserById?.Message ?? "Error al cargar perfil";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+                return;
+            }
+            else
+            {
+                userProfile = responseUserById.Data;
+                Console.WriteLine($"✅ Perfil cargado: ID {userProfile.PkIdUsuario}, " +
+                                  $"Nombre: {userProfile.NombreCompleto}, " +
+                                  $"Iniciales: {userProfile.Iniciales}");
+            }
 
             // Cargar imagen de perfil
             userProfileFotografia = await profileService.GetProfileImageUser();
@@ -353,14 +364,27 @@
                 return;
             }
 
-            var (result, msg) = await profileService.SetProfileUser(userProfile, _userId);
-            Snackbar.Add(msg, result ? Severity.Success : Severity.Error);
+            var response = await usuarioService.UpdateUsuarioAsync(userProfile);
+
+            if (response == null || !response.Success)
+            {
+                var errorMessage = response?.Message ?? "Error al guardar cambios: respuesta nula";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+                return;
+            }
+
+            userProfile = response.Data;
+
+            var successMessage = !string.IsNullOrEmpty(response.Message)
+                ? response.Message
+                : $"✅ Usuario actualizado: ID {userProfile.PkIdUsuario}, Nombre: {userProfile.NombreCompleto}, Iniciales: {userProfile.Iniciales}";
+
+            Console.WriteLine(successMessage);
+            Snackbar.Add(successMessage, Severity.Success);
 
             // Recargar datos después de guardar
-            if (result)
-            {
-                await LoadUserProfileData();
-            }
+            await LoadUserProfileData();
         }
         catch (Exception ex)
         {

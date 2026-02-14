@@ -1,5 +1,6 @@
 ﻿using EG.Common.Helper;
 using EG.Web.Contracs.Configuration;
+using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
 using SortDirection = MudBlazor.SortDirection;
@@ -15,22 +16,20 @@ namespace EG.Web.Services.Configuration
 
         // ============ CONSULTAS ============
 
-        public async Task<IList<EstadoResponse>> GetAllEstadosAsync()
+        public async Task<ApiResponse<EstadoResponse>> GetAllEstadosAsync()
         {
             if (!IsClientSide())
-                return new List<EstadoResponse>();
+                return new ApiResponse<EstadoResponse>();
 
-            var result = await GetAsync<List<EstadoResponse>>("api/Estado/");
-            return result ?? new List<EstadoResponse>();
+            return await GetAsync<ApiResponse<EstadoResponse>>("api/Estado/");
         }
 
-        public async Task<EstadoResponse> GetEstadoByIdAsync(int estadoId)
+        public async Task<ApiResponse<EstadoResponse>> GetEstadoByIdAsync(int estadoId)
         {
             if (!IsClientSide())
-                return new EstadoResponse();
+                return new ApiResponse<EstadoResponse>();
 
-            var result = await GetAsync<EstadoResponse>($"api/Estado/{estadoId}");
-            return result ?? new EstadoResponse();
+            return await GetAsync<ApiResponse<EstadoResponse>>($"api/Estado/{estadoId}");
         }
 
         // ============ PAGINACIÓN ============

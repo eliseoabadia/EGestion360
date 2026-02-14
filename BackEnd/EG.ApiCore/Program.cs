@@ -2,18 +2,15 @@
 using EG.Application.Interfaces;
 using EG.Application.Services;
 using EG.Business.Interfaces;
-using EG.Business.Mapping;
-using EG.Business.Mappings;
+using EG.Business.Mapping.Entidades;
 using EG.Business.Services;
 using EG.Common.Util;
-using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
 using EG.Domain.Interfaces;
 using EG.Filters;
 using EG.Infrastructure;
 using EG.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -30,6 +27,8 @@ public partial class Program
             cfg.AddProfile<EmpresaMappingProfile>();
             cfg.AddProfile<DepartamentoMappingProfile>();
             cfg.AddProfile<GeneralMappingProfile>();
+            cfg.AddProfile<UsuarioMappingProfile>();
+            cfg.AddProfile<SucursalMappingProfile>();
         }, typeof(Program).Assembly);
 
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));

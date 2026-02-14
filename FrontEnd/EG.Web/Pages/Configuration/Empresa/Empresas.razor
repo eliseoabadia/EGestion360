@@ -213,7 +213,7 @@
         {
             currentPage = state.Page + 1;
             pageSize = state.PageSize;
-            sortLabel = state.SortLabel == null ? "Nombre" : state.SortLabel;
+            sortLabel = state.SortLabel ?? "Nombre";
             sortDirection = state.SortDirection;
 
             string estadoFiltro = selectedEstado switch
@@ -224,17 +224,54 @@
                 _ => null
             };
 
-            (Elements, totalCount) = await empresaService.GetAllEmpresasPaginadoAsync(
-                currentPage, pageSize, searchString, sortLabel, sortDirection, estadoFiltro);
+            var response = await empresaService.GetAllEmpresasPaginadoAsync(
+                currentPage,
+                pageSize,
+                searchString,
+                sortLabel,
+                sortDirection,
+                estadoFiltro
+            );
 
-            return new TableData<EmpresaResponse> { Items = Elements, TotalItems = totalCount };
+            if (response != null && response.Success && response.Items != null)
+            {
+                Elements = response.Items;
+                totalCount = response.TotalCount;
+
+                Console.WriteLine($"✓ Empresas cargadas: {Elements.Count} de {totalCount} en total");
+            }
+            else
+            {
+                Elements = new List<EmpresaResponse>();
+                totalCount = 0;
+
+                var errorMessage = response?.Message ?? "Error al cargar empresas";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+            }
+
+            return new TableData<EmpresaResponse>
+            {
+                Items = Elements,
+                TotalItems = totalCount
+            };
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error al cargar empresas: {ex.Message}\n{ex.StackTrace}");
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-            return new TableData<EmpresaResponse> { Items = new List<EmpresaResponse>(), TotalItems = 0 };
+
+            return new TableData<EmpresaResponse>
+            {
+                Items = new List<EmpresaResponse>(),
+                TotalItems = 0
+            };
         }
-        finally { loading = false; StateHasChanged(); }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
 
     private async void OnSearchInput()
@@ -305,21 +342,27 @@
             loading = true;
             StateHasChanged();
 
-            (Elements, totalCount) = await empresaService.GetAllEmpresasPaginadoAsync(
-                -1, pageSize, searchString, sortLabel, sortDirection);
+            var response = await empresaService.GetAllEmpresasPaginadoAsync(
+                -1, pageSize, searchString, sortLabel, sortDirection, selectedEstado?.ToString()
+            );
 
-            if (Elements == null || !Elements.Any())
+            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
             {
-                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                var errorMessage = response?.Message ?? "No hay datos para exportar";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Warning);
                 return;
             }
+
+            Elements = response.Items;
+            totalCount = response.TotalCount;
 
             var excelData = Elements.Select(e => new
             {
                 ID = e.PkidEmpresa,
                 Nombre = e.EmpresaNombre,
                 RFC = e.Rfc,
-                Estado = e.EmpresaActivo.Value ? "Activo" : "Inactivo"
+                Estado = e.EmpresaActivo.HasValue && e.EmpresaActivo.Value ? "Activo" : "Inactivo"
             }).ToList();
 
             using var memoryStream = new MemoryStream();
@@ -332,9 +375,19 @@
                 $"Empresas_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"Exportación exitosa: {Elements.Count} registros", Severity.Success);
+            var successMessage = $"✅ Exportación exitosa: {Elements.Count} registros";
+            Console.WriteLine(successMessage);
+            Snackbar.Add(successMessage, Severity.Success);
         }
-        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
-        finally { loading = false; StateHasChanged(); }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al exportar: {ex.Message}\n{ex.StackTrace}");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
 }

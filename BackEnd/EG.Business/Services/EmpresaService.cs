@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using EG.Business.Interfaces;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.Entities;
 using EG.Domain.Interfaces;
-using EG.Dommain.DTOs.Responses;
 
 
 namespace EG.Business.Services
