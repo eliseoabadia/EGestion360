@@ -14,7 +14,35 @@
                        OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3 app-title">GE.WebApp</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+
+        <!-- Selector único con las tres opciones -->
+        <MudMenu Icon="@Icons.Material.Filled.ColorLens"
+                 Color="Color.Inherit"
+                 AnchorOrigin="Origin.TopRight"
+                 TransformOrigin="Origin.TopRight"
+                 Class="theme-menu">
+            @foreach (var option in Enum.GetValues<ThemeOption>())
+            {
+                <MudMenuItem OnClick="@(() => SelectThemeOption(option))">
+                    <div class="d-flex align-center">
+                        @if (option == ThemeOption.Claro)
+                        {
+                            <MudIcon Icon="@Icons.Material.Outlined.LightMode" Class="mr-2" Size="Size.Small" />
+                        }
+                        else if (option == ThemeOption.Oscuro)
+                        {
+                            <MudIcon Icon="@Icons.Material.Outlined.DarkMode" Class="mr-2" Size="Size.Small" />
+                        }
+                        else if (option == ThemeOption.Morena)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Park" Class="mr-2" Size="Size.Small" Style="color: #8B4513;" />
+                        }
+                        @option.ToString()
+                    </div>
+                </MudMenuItem>
+            }
+        </MudMenu>
+
         <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopRight">
             <MudMenuItem OnClick="@Logout">Cerrar sesión</MudMenuItem>
         </MudMenu>
@@ -42,9 +70,20 @@
 </div>
 
 @code {
+    // Enumerador con las tres opciones
+    public enum ThemeOption
+    {
+        Claro,
+        Oscuro,
+        Morena
+    }
+
+    private ThemeOption _selectedThemeOption { get; set; } = ThemeOption.Oscuro; // Cambiado a Oscuro por defecto
+
     private bool _drawerOpen = true;
-    private bool _isDarkMode = true;
-    private MudTheme? _theme = null;
+    private bool _isDarkMode = true; // true = oscuro, false = claro
+    private string _selectedTheme = "default"; // "default" o "morena"
+    private MudTheme _theme = new MudTheme(); // Inicializamos aquí
 
     private async Task Logout()
     {
@@ -52,14 +91,47 @@
         await Task.CompletedTask;
     }
 
+    private async Task SelectThemeOption(ThemeOption option)
+    {
+        _selectedThemeOption = option;
+        OnThemeOptionChanged(); // Llama al método que tiene la lógica de cambio
+        StateHasChanged();
+    }
+
+    private void OnThemeOptionChanged()
+    {
+        switch (_selectedThemeOption)
+        {
+            case ThemeOption.Claro:
+                _isDarkMode = false;
+                _selectedTheme = "default";
+                break;
+            case ThemeOption.Oscuro:
+                _isDarkMode = true;
+                _selectedTheme = "default";
+                break;
+            case ThemeOption.Morena:
+                _isDarkMode = true; // Morena usa modo oscuro por defecto para mejor contraste
+                _selectedTheme = "morena";
+                break;
+        }
+
+        LoadTheme();
+    }
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        // Inicializar con el tema por defecto (Oscuro)
+        OnThemeOptionChanged();
+    }
 
+    private void LoadTheme()
+    {
         _theme = new()
         {
-            PaletteLight = _lightPalette,
-            PaletteDark = _darkPalette,
+            PaletteLight = GetLightPalette(),
+            PaletteDark = GetDarkPalette(),
             LayoutProperties = new LayoutProperties()
             {
                 DefaultBorderRadius = "10px"
@@ -90,78 +162,126 @@
         };
     }
 
-    private readonly PaletteLight _lightPalette = new()
+    private PaletteLight GetLightPalette()
     {
-        Primary = "#4A6EF1",
-        Secondary = "#F5A623",
-        Tertiary = "#50C878",
-        Background = "#F9FAFB",
-        Surface = "#FFFFFF",
-        AppbarBackground = "#FFFFFFCC",
-        AppbarText = "#1F2937",
-        DrawerBackground = "#F3F4F6",
-        DrawerText = "#1F2937",
-        DrawerIcon = "#4A6EF1",
-        TextPrimary = "#1F2937",
-        TextSecondary = "#6B7280",
-        ActionDefault = "#4A6EF1",
-        ActionDisabled = "#D1D5DB",
-        ActionDisabledBackground = "#E5E7EB",
-        Divider = "#E5E7EB",
-        LinesDefault = "#E5E7EB",
-        TableLines = "#E5E7EB",
-        Info = "#3B82F6",
-        Success = "#10B981",
-        Warning = "#F59E0B",
-        Error = "#EF4444",
-        GrayLight = "#E5E7EB",
-        GrayLighter = "#F9FAFB",
-    };
+        // Para el modo claro solo aplica si es tema default
+        if (_selectedTheme == "default" && _selectedThemeOption == ThemeOption.Claro)
+        {
+            return new PaletteLight()
+            {
+                Primary = "#4A6EF1",
+                Secondary = "#F5A623",
+                Tertiary = "#50C878",
+                Background = "#F9FAFB",
+                Surface = "#FFFFFF",
+                AppbarBackground = "#FFFFFFCC",
+                AppbarText = "#1F2937",
+                DrawerBackground = "#F3F4F6",
+                DrawerText = "#1F2937",
+                DrawerIcon = "#4A6EF1",
+                TextPrimary = "#1F2937",
+                TextSecondary = "#6B7280",
+                ActionDefault = "#4A6EF1",
+                ActionDisabled = "#D1D5DB",
+                ActionDisabledBackground = "#E5E7EB",
+                Divider = "#E5E7EB",
+                LinesDefault = "#E5E7EB",
+                TableLines = "#E5E7EB",
+                Info = "#3B82F6",
+                Success = "#10B981",
+                Warning = "#F59E0B",
+                Error = "#EF4444",
+                GrayLight = "#E5E7EB",
+                GrayLighter = "#F9FAFB",
+            };
+        }
 
-    private readonly PaletteDark _darkPalette = new()
-    {
-        Primary = "#4A6EF1",
-        Secondary = "#F5A623",
-        Tertiary = "#50C878",
-        Background = "#111827",
-        Surface = "#1F2937",
-        AppbarBackground = "#1F2937CC",
-        AppbarText = "#F9FAFB",
-        DrawerBackground = "#1F2937",
-        DrawerText = "#F9FAFB",
-        DrawerIcon = "#4A6EF1",
-        TextPrimary = "#F9FAFB",
-        TextSecondary = "#9CA3AF",
-        ActionDefault = "#4A6EF1",
-        ActionDisabled = "#4B5563",
-        ActionDisabledBackground = "#374151",
-        Divider = "#374151",
-        LinesDefault = "#374151",
-        TableLines = "#374151",
-        Info = "#60A5FA",
-        Success = "#34D399",
-        Warning = "#FBBF24",
-        Error = "#F87171",
-        GrayLight = "#374151",
-        GrayLighter = "#1F2937",
-        OverlayLight = "#1F293780",
-    };
+        // Si no es modo claro, retornamos una paleta por defecto (no se usará)
+        return new PaletteLight();
+    }
 
-    public string DarkLightModeButtonIcon => _isDarkMode switch
+    private PaletteDark GetDarkPalette()
     {
-        true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode,
-    };
+        if (_selectedTheme == "morena")
+        {
+            // Tema Morena (siempre en modo oscuro)
+            return new PaletteDark()
+            {
+                Primary = "#CD853F", // Café claro
+                Secondary = "#8B4513", // Café silla
+                Tertiary = "#D2691E", // Chocolate
+
+                Background = "#2D1B0F", // Café muy oscuro
+                Surface = "#3D2A1C", // Café oscuro
+
+                AppbarBackground = "#3D2A1CCC", // Café oscuro con transparencia
+                AppbarText = "#F4E4C1", // Beige claro
+
+                DrawerBackground = "#2D1B0F", // Café muy oscuro
+                DrawerText = "#F4E4C1", // Beige claro
+                DrawerIcon = "#CD853F", // Café claro
+
+                TextPrimary = "#F4E4C1", // Beige claro
+                TextSecondary = "#DEB887", // Madera
+
+                ActionDefault = "#CD853F", // Café claro
+                ActionDisabled = "#5D3A1A", // Café oscuro
+                ActionDisabledBackground = "#3D2A1C", // Café oscuro
+
+                Divider = "#5D3A1A", // Café oscuro
+                LinesDefault = "#5D3A1A", // Café oscuro
+                TableLines = "#5D3A1A", // Café oscuro
+
+                Info = "#5F9EA0", // Azul cadete
+                Success = "#6B8E23", // Verde oliva
+                Warning = "#CD853F", // Café claro
+                Error = "#B22222", // Rojo ladrillo
+
+                GrayLight = "#5D3A1A", // Café oscuro
+                GrayLighter = "#3D2A1C", // Café oscuro
+                OverlayLight = "#2D1B0F80", // Café muy oscuro con transparencia
+            };
+        }
+        else if (_selectedThemeOption == ThemeOption.Oscuro || _selectedThemeOption == ThemeOption.Morena)
+        {
+            // Tema Oscuro default
+            return new PaletteDark()
+            {
+                Primary = "#4A6EF1",
+                Secondary = "#F5A623",
+                Tertiary = "#50C878",
+                Background = "#111827",
+                Surface = "#1F2937",
+                AppbarBackground = "#1F2937CC",
+                AppbarText = "#F9FAFB",
+                DrawerBackground = "#1F2937",
+                DrawerText = "#F9FAFB",
+                DrawerIcon = "#4A6EF1",
+                TextPrimary = "#F9FAFB",
+                TextSecondary = "#9CA3AF",
+                ActionDefault = "#4A6EF1",
+                ActionDisabled = "#4B5563",
+                ActionDisabledBackground = "#374151",
+                Divider = "#374151",
+                LinesDefault = "#374151",
+                TableLines = "#374151",
+                Info = "#60A5FA",
+                Success = "#34D399",
+                Warning = "#FBBF24",
+                Error = "#F87171",
+                GrayLight = "#374151",
+                GrayLighter = "#1F2937",
+                OverlayLight = "#1F293780",
+            };
+        }
+
+        // Default (no debería llegar aquí)
+        return new PaletteDark();
+    }
 
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
-    }
-
-    private void DarkModeToggle()
-    {
-        _isDarkMode = !_isDarkMode;
-        StateHasChanged();
     }
 }
 
@@ -181,7 +301,7 @@
 
     /* Drawer con altura corregida */
     .custom-drawer {
-        height: calc(100vh - 64px) !important; /* Resta la altura del AppBar */
+        height: calc(100vh - 64px) !important;
         top: 64px !important;
         overflow-y: auto;
     }
@@ -206,7 +326,7 @@
     /* Contenido principal */
     .main-content {
         position: absolute !important;
-        top: 64px !important; /* Altura del AppBar */
+        top: 64px !important;
         left: 0;
         right: 0;
         bottom: 0;
@@ -217,29 +337,45 @@
 
     /* Ajuste de posición cuando el drawer está abierto */
     .mud-drawer--open ~ .main-content {
-        left: 10px !important; /* Mismo ancho que el drawer */
+        left: 8px !important; /* Cambiado de 10px a 220px para que coincida con el ancho del drawer */
     }
 
-    /* Wrapper del contenido - Ocupa todo el espacio disponible */
+    /* Wrapper del contenido */
     .content-wrapper {
         height: 100%;
         width: 100%;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        padding: 16px; /* Espaciado interno opcional */
+        padding: 16px; /* Aumentado de 10px a 16px */
         box-sizing: border-box;
     }
 
-    /* Título de la app más compacto */
+    /* Título de la app */
     .app-title {
         font-size: 1.2rem !important;
     }
 
+    /* Estilos para el menú de temas */
+    ::deep .theme-menu {
+        color: var(--mud-palette-appbar-text) !important;
+        margin-right: 8px;
+    }
+
+        ::deep .theme-menu .mud-menu-item {
+            min-width: 120px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+            ::deep .theme-menu .mud-menu-item:hover {
+                background-color: rgba(0,0,0,0.1);
+            }
+
     /* Para pantallas pequeñas */
     @@media (max-width: 600px) {
         .main-content {
-            top: 56px !important; /* Altura del AppBar en móvil */
+            top: 56px !important;
         }
 
         .custom-drawer {
@@ -256,7 +392,7 @@
         }
     }
 
-    /* Para que la tabla ocupe todo el ancho disponible */
+    /* Estilos para tablas */
     ::deep .mud-table-container {
         overflow-x: auto;
         overflow-y: visible;
@@ -266,9 +402,8 @@
         width: 100%;
     }
 
-    /* Ajuste para el contenedor de la tabla */
     .table-container {
-        height: calc(100% - 180px); /* Ajusta según el espacio que ocupen los filtros */
+        height: calc(100% - 180px);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -286,12 +421,10 @@
         overflow: auto;
     }
 
-    /* Campo de búsqueda más pequeño */
     .search-field {
         width: 250px;
     }
 
-    /* Responsive */
     @@media (max-width: 600px) {
         .search-field {
             width: 100%;
