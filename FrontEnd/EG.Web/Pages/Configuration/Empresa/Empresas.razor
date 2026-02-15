@@ -1,5 +1,6 @@
 @page "/empresas"
 @using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
@@ -11,7 +12,7 @@
 
 
 @inject NavigationManager NavigationManager
-@inject IEmpresaService empresaService
+@inject IGenericCrudService<EmpresaResponse> _service
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
@@ -224,13 +225,13 @@
                 _ => null
             };
 
-            var response = await empresaService.GetAllEmpresasPaginadoAsync(
+            var response = await _service.GetAllPaginadoAsync(
                 currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
                 sortDirection,
-                estadoFiltro
+                null//estadoFiltro
             );
 
             if (response != null && response.Success && response.Items != null)
@@ -342,8 +343,8 @@
             loading = true;
             StateHasChanged();
 
-            var response = await empresaService.GetAllEmpresasPaginadoAsync(
-                -1, pageSize, searchString, sortLabel, sortDirection, selectedEstado?.ToString()
+            var response = await _service.GetAllPaginadoAsync(
+                -1, pageSize, searchString, sortLabel, sortDirection, null
             );
 
             if (response == null || !response.Success || response.Items == null || !response.Items.Any())

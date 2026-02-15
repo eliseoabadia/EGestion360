@@ -1,4 +1,5 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
@@ -7,7 +8,7 @@
 
 @inject IJSRuntime _jsRuntime
 
-@inject IDepartamentoService departamentoService
+@inject IGenericCrudService<DepartamentoResponse> _service
 @inject ISnackbar Snackbar
 @inject IEmpresaService empresaService
 
@@ -152,7 +153,7 @@
             // Cargar información del departamento si hay ID
             if (DepartamentoId.HasValue && DepartamentoId > 0)
             {
-                var responseDepto = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+                var responseDepto = await _service.GetByIdAsync(DepartamentoId.Value);
 
                 if (responseDepto != null && responseDepto.Success && responseDepto.Data != null)
                 {
@@ -205,7 +206,7 @@
             loading = true;
             StateHasChanged();
 
-            var response = await departamentoService.DeleteDepartamentoAsync(DepartamentoId.Value);
+            var response = await _service.DeleteAsync(DepartamentoId.Value);
 
             if (response != null && response.Success)
             {

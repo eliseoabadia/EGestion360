@@ -5,11 +5,8 @@ using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
-using EG.Dommain.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCore.Controllers.General
 {
@@ -281,6 +278,23 @@ namespace EG.ApiCore.Controllers.General
 
         [HttpPost("GetAllDepartamentosPaginado")]
         public async Task<ActionResult<PagedResult<DepartamentoResponse>>> GetAllDepartamentosPaginado([FromBody] PagedRequest _params)
+        {
+            _serviceView.ClearConfiguration();
+            ConfigureService();
+
+            var result = await _serviceView.GetAllPaginadoAsync(_params);
+            return Ok(new PagedResult<DepartamentoResponse>
+            {
+                Success = true,
+                Message = "Departamentos obtenidos correctamente",
+                Code = "SUCCESS",
+                Items = result.Items,
+                TotalCount = result.TotalCount
+            });
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
         {
             _serviceView.ClearConfiguration();
             ConfigureService();

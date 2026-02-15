@@ -1,11 +1,13 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 
 @inject IJSRuntime _jsRuntime
-@inject IUsuarioService usuarioService
+@inject IGenericCrudService<UsuarioResponse> _service
 
 <MudDialog>
     <DialogContent>
@@ -36,7 +38,7 @@
 
         try
         {
-            var response = await usuarioService.DeleteUsuarioAsync(UsuarioId);
+            var response = await _service.DeleteAsync(UsuarioId);
 
             if (response != null && response.Success)
             {

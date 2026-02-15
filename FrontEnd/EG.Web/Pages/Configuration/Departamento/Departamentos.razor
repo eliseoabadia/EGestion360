@@ -1,5 +1,6 @@
 ﻿@page "/departamentos"
 @using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
@@ -10,7 +11,7 @@
 @using System.Reflection
 
 @inject NavigationManager NavigationManager
-@inject IDepartamentoService departamentoService
+@inject IGenericCrudService<DepartamentoResponse> _service
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
@@ -317,22 +318,21 @@
             sortLabel = state.SortLabel ?? "Nombre";
             sortDirection = state.SortDirection;
 
-            string estadoFiltro = selectedEstado switch
-            {
-                EstadoFiltro.Activo => "true",
-                EstadoFiltro.Inactivo => "false",
-                EstadoFiltro.Todos or null => null,
-                _ => null
-            };
+            // string estadoFiltro = selectedEstado switch
+            // {
+            //     EstadoFiltro.Activo => "true",
+            //     EstadoFiltro.Inactivo => "false",
+            //     EstadoFiltro.Todos or null => null,
+            //     _ => null
+            // };
 
-            var response = await departamentoService.GetAllDepartamentosPaginadoAsync(
+            var response = await _service.GetAllPaginadoAsync(
                 currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
                 sortDirection,
-                selectedEmpresaId,
-                estadoFiltro
+                null
             );
 
             if (response != null && response.Success)
@@ -531,14 +531,13 @@
                 _ => null
             };
 
-            var response = await departamentoService.GetAllDepartamentosPaginadoAsync(
+            var response = await _service.GetAllPaginadoAsync(
                 _currentPage,
                 pageSize,
                 searchString,
                 sortLabel,
                 sortDirection,
-                selectedEmpresaId,
-                estadoFiltro
+                null//estadoFiltro
             );
 
             if (response == null || !response.Success || response.Items == null || !response.Items.Any())

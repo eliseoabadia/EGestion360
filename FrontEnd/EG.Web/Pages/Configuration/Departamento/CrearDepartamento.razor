@@ -1,4 +1,5 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models
 @using EG.Web.Models.Configuration
@@ -10,8 +11,8 @@
 @inject IJSRuntime _jsRuntime
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
-@inject EmpresaService empresaService
-@inject IDepartamentoService departamentoService
+@inject IEmpresaService empresaService
+@inject IGenericCrudService<DepartamentoResponse> _service
 
 <MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true" CloseOnEscapeKey="false">
     <DialogContent>
@@ -242,7 +243,7 @@
         {
             if (DepartamentoId.HasValue)
             {
-                var response = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+                var response = await _service.GetByIdAsync(DepartamentoId.Value);
 
                 if (response != null && response.Success && response.Data != null)
                 {
@@ -289,7 +290,7 @@
             if (isEditMode)
             {
                 Console.WriteLine($"📝 Actualizando departamento ID: {departamento.PkidDepartamento}");
-                response = await departamentoService.UpdateDepartamentoAsync(departamento);
+                response = await _service.UpdateAsync(departamento, departamento.PkidDepartamento.Value);
             }
             else
             {
@@ -299,7 +300,7 @@
                 departamento.PkidDepartamento = 0;
 
                 Console.WriteLine($"➕ Creando nuevo departamento: {departamento.DepartamentoNombre} (Activo)");
-                response = await departamentoService.CreateDepartamentoAsync(departamento);
+                response = await _service.CreateAsync(departamento);
             }
 
             if (response != null && response.Success)

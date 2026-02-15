@@ -1,4 +1,5 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
@@ -10,7 +11,7 @@
 @inject IJSRuntime _jsRuntime
 
 @inject ISucursalService sucursalService
-@inject IUsuarioService usuarioService
+@inject IGenericCrudService<UsuarioResponse> _service
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
@@ -171,7 +172,7 @@
     {
         try
         {
-            var usuarioResponse = await usuarioService.GetUsuarioByIdAsync(UsuarioId);
+            var usuarioResponse = await _service.GetByIdAsync(UsuarioId);
 
             if (usuarioResponse == null || !usuarioResponse.Success || usuarioResponse.Data == null)
             {
@@ -222,7 +223,7 @@
 
             try
             {
-                var response = await usuarioService.UpdateUsuarioAsync(userProfile);
+                var response = await _service.UpdateAsync(userProfile, userProfile.PkIdUsuario);
 
                 if (response != null && response.Success)
                 {

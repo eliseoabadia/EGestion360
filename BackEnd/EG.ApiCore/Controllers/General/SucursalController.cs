@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using EG.Application.CommonModel;
 using EG.Business.Services;
-using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.Entities;
 using EG.Dommain.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCore.Controllers.General
 {

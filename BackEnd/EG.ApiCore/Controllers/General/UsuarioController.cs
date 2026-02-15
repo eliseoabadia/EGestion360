@@ -1,18 +1,13 @@
 ﻿using AutoMapper;
-using Azure;
 using EG.ApiCore.Services;
 using EG.Application.CommonModel;
 using EG.Business.Services;
-using EG.Domain.DTOs.Requests;
 using EG.Domain.DTOs.Responses;
-using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
 using EG.Dommain.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace EG.ApiCore.Controllers.General
 {
@@ -231,6 +226,23 @@ namespace EG.ApiCore.Controllers.General
                 Message = "Usuarios por empresa obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = response,
+                TotalCount = result.TotalCount
+            });
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
+        {
+            _serviceView.ClearConfiguration();
+            ConfigureService();
+
+            var result = await _serviceView.GetAllPaginadoAsync(_params);
+            return Ok(new PagedResult<UsuarioResponse>
+            {
+                Success = true,
+                Message = "Usuarios obtenidos correctamente",
+                Code = "SUCCESS",
+                Items = result.Items,
                 TotalCount = result.TotalCount
             });
         }

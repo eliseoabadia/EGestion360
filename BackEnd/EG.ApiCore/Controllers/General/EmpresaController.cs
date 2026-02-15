@@ -213,6 +213,24 @@ namespace EG.ApiCore.Controllers.General
             });
         }
 
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<EmpresaResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
+        {
+            _serviceView.ClearConfiguration();
+            ConfigureService();
+
+            var result = await _serviceView.GetAllPaginadoAsync(_params);
+
+            return Ok(new PagedResult<EmpresaResponse>
+            {
+                Success = true,
+                Message = "Empresas obtenidas correctamente",
+                Code = "SUCCESS",
+                Items = result.Items,
+                TotalCount = result.TotalCount
+            });
+        }
+
         // Clases auxiliares para los endpoints específicos
 
     }

@@ -1,4 +1,5 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
@@ -10,7 +11,7 @@
 @inject IJSRuntime _jsRuntime
 
 @inject ISucursalService sucursalService
-@inject IUsuarioService usuarioService
+@inject IGenericCrudService<UsuarioResponse> _service
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
@@ -214,7 +215,7 @@
             {
                 userProfile.Iniciales = GetIniciales(userProfile);
 
-                var response = await usuarioService.CreateUsuarioAsync(userProfile);
+                var response = await _service.CreateAsync(userProfile);
 
                 if (response != null && response.Success)
                 {

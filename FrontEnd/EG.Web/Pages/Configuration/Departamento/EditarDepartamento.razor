@@ -1,9 +1,10 @@
-﻿@using EG.Web.Contracs.Configuration
+﻿@using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using MudBlazor
 
-@inject IDepartamentoService departamentoService
+@inject IGenericCrudService<DepartamentoResponse> _service
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IEmpresaService empresaService
@@ -127,7 +128,7 @@
             // Si hay ID, cargar el departamento
             if (DepartamentoId.HasValue && DepartamentoId > 0)
             {
-                var responseDepartamento = await departamentoService.GetDepartamentoByIdAsync(DepartamentoId.Value);
+                var responseDepartamento = await _service.GetByIdAsync(DepartamentoId.Value);
 
                 if (responseDepartamento == null || !responseDepartamento.Success || responseDepartamento.Data == null)
                 {
@@ -195,7 +196,7 @@
             }
 
             // Actualizar el departamento usando ApiResponse
-            var response = await departamentoService.UpdateDepartamentoAsync(departamento);
+            var response = await _service.UpdateAsync(departamento, departamento.PkidDepartamento.Value);
 
             if (response != null && response.Success)
             {

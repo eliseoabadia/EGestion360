@@ -1,9 +1,10 @@
+@using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using MudBlazor
 
-@inject IEmpresaService empresaService
+@inject IGenericCrudService<EmpresaResponse> _service
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -40,23 +41,7 @@
     {
         try
         {
-            var response = await empresaService.GetEmpresaByIdAsync(EmpresaId);
-
-            if (response != null && response.Success && response.Data != null)
-            {
-                empresa = response.Data;
-                Console.WriteLine($"✅ Empresa cargada: ID {empresa.PkidEmpresa}, " +
-                                  $"Nombre: {empresa.EmpresaNombre}, " +
-                                  $"Estado ID: {empresa.PkidEstado}, " +
-                                  $"Estatus: {(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")}");
-            }
-            else
-            {
-                var errorMessage = response?.Message ?? "Error al cargar la empresa";
-                Console.WriteLine($"⚠️ {errorMessage}");
-                Snackbar.Add(errorMessage, Severity.Error);
-                MudDialog.Close(DialogResult.Ok(false));
-            }
+            Console.WriteLine($"✅ Iniciando Eliminar page");
         }
         catch (Exception ex)
         {
@@ -74,7 +59,7 @@
         try
         {
             loading = true;
-            var response = await empresaService.DeleteEmpresaAsync(EmpresaId);
+            var response = await _service.DeleteAsync(EmpresaId);
 
             if (response != null && response.Success)
             {
