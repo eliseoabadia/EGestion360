@@ -30,7 +30,7 @@ WHERE T.Activo = 1 ;
 GO
 
 
-CREATE VIEW SIS.VW_UsuarioSucursal
+CREATE or ALTER VIEW SIS.VW_UsuarioSucursal
 AS
 SELECT 
     -- Datos del Usuario
@@ -55,90 +55,90 @@ SELECT
     u.Sexo,
     u.Activo AS UsuarioActivo,
     u.FechaCreacion AS UsuarioFechaCreacion,
-    u.UsuarioCreacion AS UsuarioCreadorId,
+    u.UsuarioCreacion AS UsuarioCreadorId
     
     -- Datos de la Sucursal
-    s.PKIdSucursal,
-    s.Nombre AS NombreSucursal,
-    s.CodigoSucursal,
-    s.Alias AS AliasSucursal,
-    s.TipoSucursal,
-    ct.Descripcion AS TipoSucursalDescripcion,
-    s.Direccion AS DireccionSucursal,
-    s.Colonia,
-    s.Ciudad,
-    s.CodigoPostal AS CodigoPostalSucursal,
-    s.TelefonoPrincipal,
-    s.TelefonoSecundario,
-    s.Email AS EmailSucursal,
-    s.HorarioApertura,
-    s.HorarioCierre,
-    s.EsMatriz,
-    CASE WHEN s.EsMatriz = 1 THEN 'Matriz' ELSE 'Sucursal' END AS TipoSucursalLabel,
-    s.EsActiva,
-    s.Latitud,
-    s.Longitud,
-    s.MetrosCuadrados,
-    s.CapacidadPersonas,
-    s.Activo AS SucursalActivo,
+    --s.PKIdSucursal,
+    --s.Nombre AS NombreSucursal,
+    --s.CodigoSucursal,
+    --s.Alias AS AliasSucursal,
+    --s.TipoSucursal,
+    --ct.Descripcion AS TipoSucursalDescripcion,
+    --s.Direccion AS DireccionSucursal,
+    --s.Colonia,
+    --s.Ciudad,
+    --s.CodigoPostal AS CodigoPostalSucursal,
+    --s.TelefonoPrincipal,
+    --s.TelefonoSecundario,
+    --s.Email AS EmailSucursal,
+    --s.HorarioApertura,
+    --s.HorarioCierre,
+    --s.EsMatriz,
+    --CASE WHEN s.EsMatriz = 1 THEN 'Matriz' ELSE 'Sucursal' END AS TipoSucursalLabel,
+    --s.EsActiva,
+    --s.Latitud,
+    --s.Longitud,
+    --s.MetrosCuadrados,
+    --s.CapacidadPersonas,
+    --s.Activo AS SucursalActivo,
     
-    -- Datos del Estado - CORREGIDO: Usar solo columnas que existen
-    est.PKIdEstado,
-    est.Nombre AS NombreEstado,
-    -- Eliminadas: Clave, PaisId, NombrePais (no existen en tu tabla)
+    ---- Datos del Estado - CORREGIDO: Usar solo columnas que existen
+    --est.PKIdEstado,
+    --est.Nombre AS NombreEstado,
+    ---- Eliminadas: Clave, PaisId, NombrePais (no existen en tu tabla)
     
-    -- Datos de la Relación Usuario-Sucursal
-    us.FKIdDepartamento_SIS AS IdDepartamento,
-    d.Nombre AS NombreDepartamento,
-    us.EsGerente,
-    us.EsSupervisor,
-    us.PuedeAcceder,
-    us.PuedeConfigurar,
-    us.PuedeOperar,
-    us.PuedeReportes,
-    us.FechaAsignacion,
-    us.FechaFinAsignacion,
-    us.Activo AS RelacionActiva,
+    ---- Datos de la Relación Usuario-Sucursal
+    --us.FKIdDepartamento_SIS AS IdDepartamento,
+    --d.Nombre AS NombreDepartamento,
+    --us.EsGerente,
+    --us.EsSupervisor,
+    --us.PuedeAcceder,
+    --us.PuedeConfigurar,
+    --us.PuedeOperar,
+    --us.PuedeReportes,
+    --us.FechaAsignacion,
+    --us.FechaFinAsignacion,
+    --us.Activo AS RelacionActiva,
     
-    -- Información adicional
-    CASE 
-        WHEN us.EsGerente = 1 THEN 'Gerente'
-        WHEN us.EsSupervisor = 1 THEN 'Supervisor'
-        ELSE 'Operador'
-    END AS RolUsuario,
+    ---- Información adicional
+    --CASE 
+    --    WHEN us.EsGerente = 1 THEN 'Gerente'
+    --    WHEN us.EsSupervisor = 1 THEN 'Supervisor'
+    --    ELSE 'Operador'
+    --END AS RolUsuario,
     
-    CASE 
-        WHEN us.PuedeAcceder = 1 AND us.PuedeConfigurar = 1 AND us.PuedeReportes = 1 THEN 'Acceso Total'
-        WHEN us.PuedeAcceder = 1 AND us.PuedeOperar = 1 THEN 'Operador'
-        WHEN us.PuedeAcceder = 1 AND us.PuedeReportes = 1 THEN 'Consultor'
-        WHEN us.PuedeAcceder = 1 THEN 'Acceso Básico'
-        ELSE 'Sin Acceso'
-    END AS NivelAcceso,
+    --CASE 
+    --    WHEN us.PuedeAcceder = 1 AND us.PuedeConfigurar = 1 AND us.PuedeReportes = 1 THEN 'Acceso Total'
+    --    WHEN us.PuedeAcceder = 1 AND us.PuedeOperar = 1 THEN 'Operador'
+    --    WHEN us.PuedeAcceder = 1 AND us.PuedeReportes = 1 THEN 'Consultor'
+    --    WHEN us.PuedeAcceder = 1 THEN 'Acceso Básico'
+    --    ELSE 'Sin Acceso'
+    --END AS NivelAcceso,
     
-    -- Auditoría de la relación
-    us.FechaCreacion AS RelacionFechaCreacion,
-    us.UsuarioCreacion AS RelacionUsuarioCreacion,
-    us.FechaModificacion AS RelacionFechaModificacion,
-    us.UsuarioModificacion AS RelacionUsuarioModificacion
+    ---- Auditoría de la relación
+    --us.FechaCreacion AS RelacionFechaCreacion,
+    --us.UsuarioCreacion AS RelacionUsuarioCreacion,
+    --us.FechaModificacion AS RelacionFechaModificacion,
+    --us.UsuarioModificacion AS RelacionUsuarioModificacion
 
 FROM SIS.Usuario u
 INNER JOIN SIS.Empresa e ON u.FKIdEmpresa_SIS = e.PKIdEmpresa
-INNER JOIN SIS.UsuarioSucursal us ON u.PkIdUsuario = us.FKIdUsuario_SIS
-INNER JOIN SIS.Sucursal s ON us.FKIdSucursal_SIS = s.PKIdSucursal
-INNER JOIN SIS.Estados est ON s.FKIdEstado_SIS = est.PKIdEstado
-LEFT JOIN SIS.CatTipoSucursal ct ON s.TipoSucursal = ct.PKIdTipoSucursal
-LEFT JOIN SIS.Departamento d ON us.FKIdDepartamento_SIS = d.PKIdDepartamento
+--INNER JOIN SIS.UsuarioSucursal us ON u.PkIdUsuario = us.FKIdUsuario_SIS
+--INNER JOIN SIS.Sucursal s ON us.FKIdSucursal_SIS = s.PKIdSucursal
+--INNER JOIN SIS.Estados est ON s.FKIdEstado_SIS = est.PKIdEstado
+--LEFT JOIN SIS.CatTipoSucursal ct ON s.TipoSucursal = ct.PKIdTipoSucursal
+--LEFT JOIN SIS.Departamento d ON us.FKIdDepartamento_SIS = d.PKIdDepartamento
 WHERE 
     u.Activo = 1 
-    AND s.Activo = 1 
-    AND us.Activo = 1;
+    /*AND s.Activo = 1 
+    AND us.Activo = 1*/;
 GO
 
 -- Permisos
 GRANT SELECT ON SIS.VW_UsuarioSucursal TO PUBLIC;
 GO
 
-CREATE VIEW SIS.VW_UsuarioSucursal_Simplificada
+CREATE OR ALTER VIEW SIS.VW_UsuarioSucursal_Simplificada
 AS
 SELECT 
     -- Usuario
@@ -200,3 +200,95 @@ GO
 GRANT SELECT ON SIS.VW_UsuarioSucursal_Simplificada TO PUBLIC;
 GO
 
+-- Vista principal
+CREATE OR ALTER VIEW SIS.vw_Menu AS
+WITH MenuJerarquico AS (
+    SELECT 
+        m.PKIdMenu,
+        m.Nombre,
+        m.Tipo,
+        -- Descripción del tipo
+        CASE m.Tipo
+            WHEN 1 THEN 'Contenedor (tiene submenús)'
+            WHEN 2 THEN 'Item final'
+            ELSE 'Desconocido'
+        END AS TipoDescripcion,
+        m.FKIdMenu_SIS,
+        -- Nombre del menú padre
+        p.Nombre AS NombreMenuPadre,
+        -- Tipo del menú padre
+        p.Tipo AS TipoMenuPadre,
+        CASE p.Tipo
+            WHEN 1 THEN 'Contenedor'
+            WHEN 2 THEN 'Item final'
+            ELSE 'Desconocido'
+        END AS TipoMenuPadreDescripcion,
+        m.LegacyName,
+        m.Ruta,
+        m.ImageUrl,
+        m.Lenguaje,
+        m.Orden,
+        m.Activo,
+        -- Estado del menú
+        CASE m.Activo
+            WHEN 1 THEN 'Activo'
+            ELSE 'Inactivo'
+        END AS Estado,
+        m.CreatedByOperatorId,
+        m.CreatedDateTime,
+        m.ModifiedByOperatorId,
+        m.ModifiedDateTime,
+        -- Nivel jerárquico
+        CASE 
+            WHEN m.FKIdMenu_SIS IS NULL THEN 0
+            ELSE 1
+        END AS NivelJerarquico,
+        -- Ruta completa del menú (para breadcrumbs)
+        CASE 
+            WHEN m.FKIdMenu_SIS IS NOT NULL AND p.Nombre IS NOT NULL 
+                THEN p.Nombre + ' > ' + m.Nombre
+            ELSE m.Nombre
+        END AS RutaCompleta,
+        -- Indicador si tiene submenús (solo aplica para Tipo=1)
+        CASE 
+            WHEN m.Tipo = 1 AND EXISTS (SELECT 1 FROM SIS.Menu h WHERE h.FKIdMenu_SIS = m.PKIdMenu) 
+            THEN 1 
+            ELSE 0 
+        END AS TieneSubmenus,
+        -- Validación de consistencia
+        CASE 
+            WHEN m.Tipo = 2 AND EXISTS (SELECT 1 FROM SIS.Menu h WHERE h.FKIdMenu_SIS = m.PKIdMenu) 
+            THEN 'INCONSISTENCIA: Item final tiene submenús'
+            WHEN m.Tipo = 1 AND m.Ruta IS NOT NULL AND EXISTS (SELECT 1 FROM SIS.Menu h WHERE h.FKIdMenu_SIS = m.PKIdMenu) 
+            THEN 'INCONSISTENCIA: Contenedor con ruta y submenús'
+            ELSE 'OK'
+        END AS ValidacionEstructura
+    FROM SIS.Menu m
+    LEFT JOIN SIS.Menu p ON m.FKIdMenu_SIS = p.PKIdMenu
+)
+SELECT 
+    PKIdMenu,
+    Nombre,
+    Tipo,
+    TipoDescripcion,
+    FKIdMenu_SIS,
+    NombreMenuPadre,
+    TipoMenuPadre,
+    TipoMenuPadreDescripcion,
+    LegacyName,
+    Ruta,
+    ImageUrl,
+    Lenguaje,
+    Orden,
+    Activo,
+    Estado,
+    CreatedByOperatorId,
+    CreatedDateTime,
+    ModifiedByOperatorId,
+    ModifiedDateTime,
+    NivelJerarquico,
+    RutaCompleta,
+    TieneSubmenus,
+    ValidacionEstructura
+FROM MenuJerarquico;
+GO

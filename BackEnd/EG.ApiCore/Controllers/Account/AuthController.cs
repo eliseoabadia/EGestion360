@@ -2,7 +2,7 @@
 using EG.Business.Interfaces;
 using EG.Common.Enums;
 using EG.Domain.DTOs.Requests;
-using EG.Filters;
+//using EG.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace EG.ApiCore.Controllers.Account
 {
     [Route("api/[controller]")]
-    [ServiceFilter(typeof(InitializeUserFilter))]
+    //[ServiceFilter(typeof(InitializeUserFilter))]
     [ApiController]
     public class AuthController(IOptions<JwtSettings> jwtSettings, IAuthService authService) : BaseController
     {

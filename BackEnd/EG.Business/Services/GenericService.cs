@@ -204,30 +204,42 @@ namespace EG.Business.Services
 
         public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest _params)
         {
-            var query = GetQueryWithIncludes();
-
-            if (!string.IsNullOrWhiteSpace(_params.Filtro))
+            try
             {
-                query = ApplyFilterWithRelations(query, _params.Filtro);
+                var query = GetQueryWithIncludes();
+
+                if (!string.IsNullOrWhiteSpace(_params.Filtro))
+                {
+                    query = ApplyFilterWithRelations(query, _params.Filtro);
+                }
+
+                query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
+
+                var totalCount = query.Count();
+                if (_params.Page < 1)
+                    _params.Page = 1;
+
+                var pagedQuery = query
+                    .Skip((_params.Page - 1) * _params.PageSize)
+                    .Take(_params.PageSize);
+
+                var entities = pagedQuery.ToList();
+                var mapped = _mapper.Map<IList<TResponse>>(entities);
+
+                return new PagedResult<TResponse>
+                {
+                    Items = mapped,
+                    TotalCount = totalCount
+                };
             }
-
-            query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
-
-            var totalCount = query.Count();
-            if (_params.Page < 1)
-                _params.Page = 1;
-
-            var pagedQuery = query
-                .Skip((_params.Page - 1) * _params.PageSize)
-                .Take(_params.PageSize);
-
-            var entities = pagedQuery.ToList();
-            var mapped = _mapper.Map<IList<TResponse>>(entities);
-
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
             return new PagedResult<TResponse>
             {
-                Items = mapped,
-                TotalCount = totalCount
+                Items = null,
+                TotalCount = 0
             };
         }
 

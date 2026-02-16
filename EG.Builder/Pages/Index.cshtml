@@ -26,6 +26,13 @@
     </button>
 </div>
 
+<div class="mb-4">
+    <button id="saveBtn" class="btn btn-success" onclick="onChangueNameSpace(true)">
+        <span class="btn-text">Ajustar El NameSpace de la entidad</span>
+        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+    </button>
+</div>
+
 <!-- Tabs para mostrar contenido generado -->
 <ul class="nav nav-tabs" id="codeTabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -208,42 +215,44 @@
                     showLoading(false);
                 }
             });
-            // $.ajax({
-            //     url: '/Builder/BuildTheScreen',
-            //     method: 'POST',
-            //     contentType: 'application/json',
-            //     data: JSON.stringify({
-            //         selectedElement: selectedElement,
-            //         saveTheCode: saveTheCode
-            //     }),
-            //     success: function (response) {
-            //         if (response && response.Tab1Content !== undefined) {
-            //             $("#tab1Content").text(response.Tab1Content);
-            //             $("#tab2Content").text(response.Tab2Content);
-            //             $("#tab3Content").text(response.Tab3Content);
+        }
 
-            //             // Resaltar sintaxis si está disponible
-            //             if (typeof Prism !== 'undefined') {
-            //                 Prism.highlightAll();
-            //             }
+        
+         // Función principal para construir pantalla
+        function onChangueNameSpace(saveTheCode) {
+            if (isProcessing) return;
 
-            //             showAlert(response.Message || "Operación completada con éxito", "success");
-            //         } else {
-            //             showAlert("Respuesta inválida del servidor", "danger");
-            //         }
-            //     },
-            //     error: function (xhr, status, error) {
-            //         let errorMessage = "Error occurred: " + error;
-            //         if (xhr.responseJSON && xhr.responseJSON.message) {
-            //             errorMessage = xhr.responseJSON.message;
-            //         }
-            //         showAlert(errorMessage, "danger");
-            //     },
-            //     complete: function () {
-            //         isProcessing = false;
-            //         setButtonsState(false);
-            //     }
-            // });
+            
+
+            isProcessing = true;
+            setButtonsState(true);
+
+            console.log("onBuildScreen",JSON.stringify({
+                    selectedElement: selectedElement,
+                    saveTheCode: saveTheCode
+                }));
+
+            $.ajax({
+                url: '/Builder/onChangueNameSpace/'+selectedElement+'/'+saveTheCode,
+                method: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    console.log("onChangueNameSpace response",response);
+                    
+
+                    showAlert(response.Message || "Operación completada con éxito", "success");
+                    hideNotification();
+
+                    isProcessing = false;
+                    setButtonsState(false);
+                },
+                error: function (xhr, status, error) {
+                    showAlert('Error al cargar las tablas: ' + error, 'danger');
+                },
+                complete: function () {
+                    showLoading(false);
+                }
+            });
         }
 
         // Copiar contenido al portapapeles

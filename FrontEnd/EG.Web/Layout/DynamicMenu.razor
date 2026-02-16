@@ -28,8 +28,8 @@
                     {
                         <MudNavGroup Title="@item.Nombre"
                                      Icon="@GetIcon(item.ImageUrl)"
-                                     Expanded="@GetExpandedState(item.PKIdMenu)"
-                                     ExpandedChanged="@(v => SetExpandedState(item.PKIdMenu, v))">
+                                     Expanded="@GetExpandedState(item.PkidMenu)"
+                                     ExpandedChanged="@(v => SetExpandedState(item.PkidMenu, v))">
                             <NavMenuItems Items="@item.Children" GetIcon="GetIcon" />
                         </MudNavGroup>
                     }
@@ -248,9 +248,9 @@
         // Inicializar estado expandido para cada grupo con hijos
         foreach (var item in Items.Where(m => m.Children?.Any() == true))
         {
-            if (item.PKIdMenu.HasValue && !expandedStates.ContainsKey(item.PKIdMenu.Value))
+            if ( !expandedStates.ContainsKey(item.PkidMenu))
             {
-                expandedStates[item.PKIdMenu.Value] = false;
+                expandedStates[item.PkidMenu] = false;
             }
         }
     }

@@ -6,13 +6,13 @@ namespace EG.Domain.DTOs.Requests.General
 {
     public class MenuDto
     {
-        public long PkidMenu { get; set; }
+        public int PkidMenu { get; set; }
 
         public string Nombre { get; set; }
 
-        public byte Tipo { get; set; }
+        public int Tipo { get; set; }
 
-        public long? FkidMenuSis { get; set; }
+        public int? FkidMenuSis { get; set; }
 
         public string LegacyName { get; set; }
 
@@ -22,7 +22,7 @@ namespace EG.Domain.DTOs.Requests.General
 
         public string Lenguaje { get; set; }
 
-        public short? Orden { get; set; }
+        public int? Orden { get; set; }
 
         public bool Activo { get; set; }
     }

@@ -13,7 +13,7 @@ namespace EG.Dommain.DTOs.Responses
         [StringLength(150)]
         public string Nombre { get; set; }
         public byte? Tipo { get; set; }
-        public long? FKIdMenu_SIS { get; set; }
+        public long? FkidMenuSis { get; set; }
         [StringLength(80)]
         public string LegacyName { get; set; }
         [StringLength(200)]

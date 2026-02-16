@@ -62,6 +62,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwEstadoEmpresa> VwEstadoEmpresas { get; set; }
 
+    public virtual DbSet<VwMenu> VwMenus { get; set; }
+
     public virtual DbSet<VwUsuarioSucursal> VwUsuarioSucursals { get; set; }
 
     public virtual DbSet<VwUsuarioSucursalSimplificadum> VwUsuarioSucursalSimplificada { get; set; }
@@ -636,6 +638,47 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(13)
                 .HasColumnName("RFC");
+        });
+
+        modelBuilder.Entity<VwMenu>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_Menu", "SIS");
+
+            entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.Estado)
+                .IsRequired()
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidMenuSis).HasColumnName("FKIdMenu_SIS");
+            entity.Property(e => e.ImageUrl).HasMaxLength(120);
+            entity.Property(e => e.LegacyName).HasMaxLength(80);
+            entity.Property(e => e.Lenguaje)
+                .IsRequired()
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.ModifiedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.NombreMenuPadre).HasMaxLength(150);
+            entity.Property(e => e.PkidMenu).HasColumnName("PKIdMenu");
+            entity.Property(e => e.Ruta).HasMaxLength(200);
+            entity.Property(e => e.RutaCompleta).HasMaxLength(303);
+            entity.Property(e => e.TipoDescripcion)
+                .IsRequired()
+                .HasMaxLength(27)
+                .IsUnicode(false);
+            entity.Property(e => e.TipoMenuPadreDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.ValidacionEstructura)
+                .IsRequired()
+                .HasMaxLength(46)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<VwUsuarioSucursal>(entity =>

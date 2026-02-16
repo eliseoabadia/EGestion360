@@ -1,0 +1,619 @@
+﻿@page "/menus"
+@using System.ComponentModel.DataAnnotations
+@using EG.Domain.DTOs.Responses
+@using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.Configuration
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text
+@using MiniExcelLibs
+@using MudBlazor
+@using System.Reflection
+
+@inject NavigationManager NavigationManager
+@inject IGenericCrudService<MenuItemsResponse> _service
+@inject ISnackbar Snackbar
+@inject AuthService AuthService
+@inject IJSRuntime _jsRuntime
+@inject IDialogService DialogService
+
+<MudContainer Class="d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+
+    <!-- Header Card -->
+    <MudCard Elevation="1" Class="mb-4">
+        <MudCardContent>
+            <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudItem>
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h4"
+                                 Color="Color.Primary"
+                                 Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Menu"
+                                     Color="Color.Primary"
+                                     Size="Size.Large" />
+                            Gestión de Menús
+                        </MudText>
+                        <MudText Typo="Typo.body2"
+                                 Color="Color.Tertiary"
+                                 Class="ml-6">
+                            Administra la estructura de navegación del sistema
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem>
+                    <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                        <MudTooltip Text="Nuevo Menú">
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="CrearMenu"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                        <MudTooltip Text="Refrescar">
+                            <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                                       OnClick="OnSearchInput"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+        <!-- Filtros -->
+        <MudGrid Spacing="2" Class="mb-4">
+            @* <MudItem xs="12" sm="6" md="3">
+                <MudSelect T="byte?"
+                           @bind-Value="selectedTipo"
+                           Label="Tipo de menú"
+                           Variant="Variant.Outlined"
+                           Clearable="true"
+                           AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem T="byte?" Value="@null">Todos los tipos</MudSelectItem>
+                    <MudSelectItem Value="1">Contenedor (con submenús)</MudSelectItem>
+                    <MudSelectItem Value="2">Item final</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            
+            
+            <MudItem xs="12" sm="6" md="3">
+                <MudSelect T="EstadoFiltro?"
+                           @bind-Value="selectedEstado"
+                           Label="Estado"
+                           Variant="Variant.Outlined"
+                           Clearable="true"
+                           AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem T="EstadoFiltro?" Value="@null">Todos los estados</MudSelectItem>
+                    <MudSelectItem Value="EstadoFiltro.Activo">Activo</MudSelectItem>
+                    <MudSelectItem Value="EstadoFiltro.Inactivo">Inactivo</MudSelectItem>
+                </MudSelect>
+            </MudItem> *@
+            
+           @*  <MudItem xs="12" sm="6" md="3" Class="d-flex align-center">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Default"
+                           StartIcon="@Icons.Material.Filled.Clear"
+                           OnClick="LimpiarFiltros"
+                           Class="mr-2">
+                    Limpiar
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Search"
+                           OnClick="AplicarFiltros">
+                    Buscar
+                </MudButton>
+            </MudItem> *@
+        </MudGrid>
+
+        <!-- Tabla -->
+        <MudTable ServerData="LoadServerData"
+                  RowsPerPage="@pageSize"
+                  Page="@currentPage"
+                  RowCount="@totalCount"
+                  @ref="mudTableRef"
+                  Dense="@dense"
+                  Hover="@hover"
+                  Loading="@loading"
+                  ReadOnly="@ronly"
+                  SortLabel="Ordenar por"
+                  @bind-SelectedItem="selectedItem"
+                  FixedHeader="true"
+                  Height="500px"
+                  Class="mt-4">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Lista de Menús</MudText>
+                <MudSpacer />
+                
+                <!-- Botón de Exportar a Excel -->
+                <MudTooltip Text="Exportar a Excel">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="ExportarExcel"
+                               Size="Size.Small"
+                               Class="mr-2"
+                               Disabled="@loading">
+                        @if (loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Exportando...</span>
+                        }
+                        else
+                        {
+                            <span>Exportar Excel</span>
+                        }
+                    </MudButton>
+                </MudTooltip>
+                
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Buscar por nombre..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              @ref="txtSearch"
+                              OnKeyUp="HandleKeyUp"
+                              Class="mt-0"
+                              Variant="Variant.Outlined"
+                              Style="width: 300px;">
+                </MudTextField>
+            </ToolBarContent>
+            
+            <HeaderContent>
+                <MudTh Style="width: 120px;">Acciones</MudTh>
+                <MudTh Style="width: 80px;"><MudTableSortLabel SortLabel="PkidMenu" T="MenuItemsResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="MenuItemsResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="Tipo" T="MenuItemsResponse">Tipo</MudTableSortLabel></MudTh>
+                <MudTh Style="width: 200px;"><MudTableSortLabel SortLabel="MenuPadre" T="MenuItemsResponse">Menú Padre</MudTableSortLabel></MudTh>
+                <MudTh Style="width: 100px;"><MudTableSortLabel SortLabel="Orden" T="MenuItemsResponse">Orden</MudTableSortLabel></MudTh>
+                <MudTh Style="width: 120px;"><MudTableSortLabel SortLabel="Activo" T="MenuItemsResponse">Estado</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            
+            <RowTemplate>
+                <MudTd>
+                    <MudTooltip Text="Editar menú">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditarMenu(context.PkidMenu))" />
+                    </MudTooltip>
+
+                    <MudTooltip Text="Eliminar menú">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EliminarMenu(context.PkidMenu))" />
+                    </MudTooltip>
+                    
+                    @* @if (context.Tipo == 1 && context.TieneSubmenus == 1)
+                    {
+                        <MudTooltip Text="Ver hijos">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => VerHijos(context.PkidMenu))" />
+                        </MudTooltip>
+                    } *@
+                </MudTd>
+
+                <MudTd DataLabel="ID">@context.PkidMenu</MudTd>
+                <MudTd DataLabel="Nombre">
+                    @if (context.Tipo == 1)
+                    {
+                        <MudText Style="font-weight: 500;">
+                            <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Warning" Class="mr-1" />
+                            @context.Nombre
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Info" Class="mr-1" />
+                            @context.Nombre
+                        </MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
+                <MudTd DataLabel="Menú Padre">@(context.NombreMenuPadre ?? "-")</MudTd>
+                <MudTd DataLabel="Orden">@context.Orden</MudTd>
+                <MudTd DataLabel="Estado">
+                    <MudBadge Color="@(context.Activo ? Color.Success : Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(context.Activo ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </RowTemplate>
+            
+            <NoRecordsContent>
+                <MudText Align="Align.Center" Class="py-4">No se encontraron menús</MudText>
+            </NoRecordsContent>
+            
+            <LoadingContent>
+                <MudText Align="Align.Center">Cargando menús...</MudText>
+            </LoadingContent>
+            
+            <PagerContent>
+                <MudTablePager RowsPerPageString="Filas por página"
+                               PageSizeOptions="new int[] { 10, 20, 50, 100 }"
+                               ShowFirstLastPage="true"
+                               ShowPageSizeSelector="true"
+                               PaginationTextFormat="Página {0} de {1}" />
+            </PagerContent>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<MenuItemsResponse> Elements = new();
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private int totalCount = 0;
+
+    private bool dense = true;
+    private bool hover = true;
+    private bool ronly = true;
+
+    private MenuItemsResponse selectedItem = new();
+    private MudTable<MenuItemsResponse> mudTableRef = new();
+
+    private MudTextField<string> txtSearch = new();
+
+    private string searchString = string.Empty;
+    private byte? selectedTipo;
+    private long? selectedMenuPadreId;
+    private EstadoFiltro? selectedEstado;
+    private bool loading = true;
+    private int currentPage = 0;
+    private int pageSize = 10;
+    private CancellationTokenSource searchCts = new();
+
+    private SortDirection sortDirection;
+    private string sortLabel = string.Empty;
+
+    public enum EstadoFiltro
+    {
+        [Display(Name = "Activo")]
+        Activo,
+        [Display(Name = "Inactivo")]
+        Inactivo
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //await CargarMenusPadre();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos iniciales: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // private async Task CargarMenusPadre()
+    // {
+    //     try
+    //     {
+    //         listadoMenusPadre = await _service.GetMenusPadreAsync() ?? new();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Snackbar.Add($"Error al cargar menús padre: {ex.Message}", Severity.Error);
+    //         listadoMenusPadre = new();
+    //     }
+    //     finally
+    //     {
+    //         StateHasChanged();
+    //     }
+    // }
+
+    private async Task<TableData<MenuItemsResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            currentPage = state.Page + 1;
+            pageSize = state.PageSize;
+            sortLabel = state.SortLabel ?? "Orden";
+            sortDirection = state.SortDirection;
+
+            // Construir filtros adicionales
+            // var filtros = new Dictionary<string, object>();
+            // if (selectedTipo.HasValue)
+            //     filtros.Add("Tipo", selectedTipo.Value);
+            // if (selectedMenuPadreId.HasValue)
+            //     filtros.Add("FKIdMenu_SIS", selectedMenuPadreId.Value);
+            // if (selectedEstado.HasValue)
+            //     filtros.Add("Activo", selectedEstado.Value == EstadoFiltro.Activo);
+
+            var response = await _service.GetAllPaginadoAsync(
+                currentPage,
+                pageSize,
+                searchString,
+                sortLabel,
+                sortDirection,
+                null//,filtros
+            );
+
+            if (response != null && response.Success)
+            {
+                Elements = response.Items?.ToList() ?? new();
+                totalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements = new();
+                totalCount = 0;
+                if (response != null)
+                    Snackbar.Add(response.Message ?? "Error al cargar menús", Severity.Error);
+            }
+
+            return new TableData<MenuItemsResponse>
+            {
+                Items = Elements,
+                TotalItems = totalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar menús: {ex.Message}", Severity.Error);
+            return new TableData<MenuItemsResponse>
+            {
+                Items = new List<MenuItemsResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async void OnSearchInput()
+    {
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(500, searchCts.Token);
+
+            if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
+            {
+                currentPage = 0;
+                await mudTableRef.ReloadServerData();
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // Búsqueda cancelada
+        }
+    }
+
+    private async void HandleKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            currentPage = 0;
+            await mudTableRef.ReloadServerData();
+        }
+    }
+
+    private async Task AplicarFiltros()
+    {
+        currentPage = 0;
+        if (mudTableRef != null)
+            await mudTableRef.ReloadServerData();
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        searchString = string.Empty;
+        selectedTipo = null;
+        selectedMenuPadreId = null;
+        selectedEstado = null;
+
+        currentPage = 0;
+        if (mudTableRef != null)
+        {
+            await mudTableRef.ReloadServerData();
+        }
+    }
+
+    private async Task CrearMenu()
+    {
+        try
+        {
+            var parameters = new DialogParameters();
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                Position = DialogPosition.Center,
+            };
+
+            var dialog = await DialogService.ShowAsync<CrearMenu>("Crear Menú", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                //await CargarMenusPadre(); // Recargar lista de padres
+                currentPage = 0;
+                await mudTableRef.ReloadServerData();
+                Snackbar.Add("Menú creado exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al crear menú: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task EditarMenu(long id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["MenuId"] = id };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+            };
+
+            var dialog = await DialogService.ShowAsync<EditarMenu>("Editar Menú", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                //await CargarMenusPadre(); // Recargar lista de padres
+                await mudTableRef.ReloadServerData();
+                Snackbar.Add("Menú actualizado exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al editar menú: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task EliminarMenu(long id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["MenuId"] = id };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+            };
+
+            var dialog = await DialogService.ShowAsync<EliminarMenu>("Eliminar Menú", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                if (Elements.Count == 1 && currentPage > 0)
+                {
+                    currentPage--;
+                }
+                //await CargarMenusPadre(); // Recargar lista de padres
+                await mudTableRef.ReloadServerData();
+                Snackbar.Add("Menú eliminado exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al eliminar menú: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // private async Task VerHijos(long padreId)
+    // {
+    //     var parameters = new DialogParameters { ["PadreId"] = padreId };
+    //     var options = new DialogOptions
+    //     {
+    //         CloseButton = true,
+    //         MaxWidth = MaxWidth.Medium,
+    //         FullWidth = true,
+    //         FullScreen = false
+    //     };
+
+    //     await DialogService.ShowAsync<VerHijosMenu>("Submenús", parameters, options);
+    // }
+
+    // private async Task VerArbolMenus()
+    // {
+    //     var options = new DialogOptions
+    //     {
+    //         CloseButton = true,
+    //         MaxWidth = MaxWidth.Large,
+    //         FullWidth = true,
+    //         FullScreen = false
+    //     };
+
+    //     await DialogService.ShowAsync<ArbolMenus>("Árbol de Menús", options);
+    // }
+
+    private async Task ExportarExcel()
+    {
+        try
+        {
+            loading = true;
+            StateHasChanged();
+
+            var filtros = new Dictionary<string, object>();
+            // if (selectedTipo.HasValue)
+            //     filtros.Add("Tipo", selectedTipo.Value);
+            // if (selectedMenuPadreId.HasValue)
+            //     filtros.Add("FKIdMenu_SIS", selectedMenuPadreId.Value);
+            // if (selectedEstado.HasValue)
+                filtros.Add("Activo", selectedEstado.Value == EstadoFiltro.Activo);
+
+            var response = await _service.GetAllPaginadoAsync(
+                -1, // Todas las páginas
+                10000, // Límite alto
+                searchString,
+                sortLabel,
+                sortDirection,
+                filtros
+            );
+
+            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            var items = response.Items.ToList();
+            var excelData = items.Select(m => new
+            {
+                ID = m.PkidMenu,
+                Nombre = m.Nombre,
+                Tipo = m.TipoDescripcion,
+                MenuPadre = m.NombreMenuPadre ?? "-",
+                Ruta = m.Ruta ?? "-",
+                Orden = m.Orden,
+                //Estado = m.Estado,
+                Validacion = m.ValidacionEstructura
+            }).ToList();
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var fileBytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(fileBytes);
+
+            await _jsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"Menus_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportación exitosa: {items.Count} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        searchCts?.Cancel();
+        searchCts?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

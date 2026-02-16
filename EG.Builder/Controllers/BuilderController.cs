@@ -23,6 +23,8 @@ namespace EG.Builder.Controllers
         private readonly IConfiguration _configuration ;
         private readonly EGestionContext _context;
 
+        
+
         public BuilderController(IConfiguration configuration, EGestionContext context)
         {
             _configuration = configuration;
@@ -64,6 +66,61 @@ namespace EG.Builder.Controllers
             });
 
             return Json(result);
+        }
+
+        
+        [HttpGet("onChangueNameSpace/{selectedElement}/{saveTheCode}")]
+        public async Task<IActionResult> onChangueNameSpace(string selectedElement, bool saveTheCode = false)
+        {
+            string itemService = string.Empty;
+            string iitemService = string.Empty;
+            string controllerTemplate = string.Empty;
+            string iControllerTemplate = string.Empty;
+            string viewTemplate = string.Empty;
+            string viewCrearTemplate = string.Empty;
+            string viewEdithTemplate = string.Empty;
+            string viewDeleteTemplate = string.Empty;
+            string controllerName = string.Empty;
+            string message = string.Empty;
+
+            await Task.Run(() =>
+            {
+                string carpeta = @"C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Domain\Entities\";
+                string namespaceAntiguo = "EG.Infraestructure.Models";
+                string namespaceNuevo = "EG.Domain.Entities";
+
+                // Buscar todos los archivos .cs en la carpeta y subcarpetas
+                string[] archivos = Directory.GetFiles(carpeta, "*.cs", SearchOption.AllDirectories);
+
+                foreach (var archivo in archivos)
+                {
+                    string contenido = System.IO.File.ReadAllText(archivo);
+
+                    // Reemplazar el namespace
+                    if (contenido.Contains($"namespace {namespaceAntiguo}"))
+                    {
+                        contenido = contenido.Replace($"namespace {namespaceAntiguo}", $"namespace {namespaceNuevo}");
+                        System.IO.File.WriteAllText(archivo, contenido);
+                        Console.WriteLine($"Namespace cambiado en: {archivo}");
+                    }
+                }
+
+
+                message = saveTheCode ? "Código salvado correctamente" : "Código construido correctamente";
+            });
+            //itemService, iitemService, controllerTemplate, iControllerTemplate, viewTemplate, viewCrearTemplate, viewEdithTemplate, viewDeleteTemplate
+            return Json(new
+            {
+                Tab1Content = controllerTemplate,
+                Tab2Content = viewTemplate,
+                Tab3Content = itemService,
+                Tab4Content = viewCrearTemplate,
+                Tab5Content = viewEdithTemplate,
+                Tab6Content = viewDeleteTemplate,
+                Tab7Content = iControllerTemplate,
+                Tab8Content = iitemService,
+                Message = message
+            });
         }
 
         [HttpGet("BuildTheScreen/{selectedElement}/{saveTheCode}")]

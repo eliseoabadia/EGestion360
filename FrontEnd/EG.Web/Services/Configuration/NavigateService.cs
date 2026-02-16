@@ -108,11 +108,11 @@ namespace EG.Web.Services
 
         private List<MenuItem> BuildMenuTree(List<MenuItem> flatItems)
         {
-            var lookup = flatItems.ToLookup(item => item.FKIdMenu_SIS);
+            var lookup = flatItems.ToLookup(item => item.FkidMenuSis);
 
             foreach (var item in flatItems)
             {
-                item.Children.AddRange(lookup[item.FKIdMenu_SIS].OrderBy(x => x.Orden));
+                item.Children.AddRange(lookup[item.FkidMenuSis].OrderBy(x => x.Orden));
             }
 
             return lookup[0].OrderBy(x => x.Orden).ToList();
@@ -120,12 +120,12 @@ namespace EG.Web.Services
 
         public static List<MenuItem> BuildMenuTreeV2(List<MenuItem> flatMenuList)
         {
-            var menuLookup = flatMenuList.ToDictionary(m => m.PKIdMenu);
+            var menuLookup = flatMenuList.ToDictionary(m => m.PkidMenu);
             var rootMenus = new List<MenuItem>();
 
             foreach (var menuItem in flatMenuList)
             {
-                if (menuItem.FKIdMenu_SIS.Value == 0)
+                if ((!menuItem.FkidMenuSis.HasValue || menuItem.FkidMenuSis.Value == 0))
                 {
                     // Es un menú raíz
                     rootMenus.Add(menuItem);
@@ -133,8 +133,10 @@ namespace EG.Web.Services
                 else
                 {
                     // Es un hijo, lo agregamos al padre correspondiente
-                    var parentMenu = menuLookup[menuItem.FKIdMenu_SIS.Value];
-                    parentMenu.Children.Add(menuItem);
+                    if (menuLookup.TryGetValue(menuItem.FkidMenuSis.Value, out var parentMenu))
+                    {
+                        parentMenu.Children.Add(menuItem);
+                    }
                 }
             }
 
