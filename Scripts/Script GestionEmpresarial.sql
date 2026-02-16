@@ -512,15 +512,15 @@ INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('
 --- CREATE TABLE: dbo.StoreMenu
 --- drop table SIS.Menu
 CREATE TABLE SIS.Menu (
-    PKIdMenu BIGINT NOT NULL,
+    PKIdMenu INT NOT NULL,
     Nombre NVARCHAR(150) NOT NULL,
-    Tipo TINYINT NOT NULL,
-    FKIdMenu_SIS BIGINT NULL, -- Menú padre (auto-relación)
+    Tipo INT NOT NULL,
+    FKIdMenu_SIS INT NULL, -- Menú padre (auto-relación)
     LegacyName NVARCHAR(80),
     Ruta NVARCHAR(200),
     ImageUrl NVARCHAR(120),
     Lenguaje CHAR(3) NOT NULL,
-    [Orden] SMALLINT NULL,
+    [Orden] INT NULL,
     Activo BIT NOT NULL DEFAULT 1,
     CreatedByOperatorId INT,
     CreatedDateTime DATETIME NOT NULL DEFAULT GETDATE(),
@@ -534,7 +534,7 @@ GO
 
 --drop table  SIS.MenuRole
 CREATE TABLE SIS.MenuRole (
-    FKIdMenu_SIS BIGINT NOT NULL,
+    FKIdMenu_SIS INT NOT NULL,
     RoleId NVARCHAR(128) NOT NULL,
     Activo BIT NOT NULL DEFAULT 1,
     CreatedByOperatorId INT,
@@ -559,7 +559,7 @@ MERGE INTO SIS.Menu AS TARGET
 	,(4, N'Usuario', 2, 2, N'Administración de Usuarios', N'/users', N'FaUser', 1, N'ESP',202,1000,getdate())
 	,(5, N'Empresa', 2, 2, N'Empresa', N'/empresas', N'FaRegUser', 1, N'ESP',203,1000,getdate())
 	,(6, N'Departamento', 2, 2, N'Departamento', N'/departamentos', N'FaRegUser', 1, N'ESP',204,1000,getdate())
-	,(7, N'Menu', 2, 2, N'Menu', N'/settings/menu', N'RiMenuLine', 1, N'ESP',205,1000,getdate())
+	,(7, N'Menu', 2, 2, N'Menu', N'/menus', N'RiMenuLine', 1, N'ESP',205,1000,getdate())
 	,(8, N'Pedidos', 1, NULL, N'Pedidos', N'orders', N'FaRegSun', 1, N'ESP',300,1000,getdate())
 	,(9, N'Orden', 2, 8, N'Orden', N'/orders/order', N'RiListCheck2', 1, N'ESP',301,1000,getdate())
 )
