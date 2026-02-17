@@ -1,0 +1,343 @@
+﻿@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Image" Color="Color.Primary" Class="mr-2" />
+            Seleccionar Icono Material
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="filtro"
+                              Label="Buscar icono..."
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              Clearable="true"
+                              Class="mb-4" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">
+                    Iconos Material (@iconosFiltrados.Count() disponibles)
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Style="max-height: 400px; overflow-y: auto;" Elevation="1">
+                    <MudGrid Spacing="2">
+                        @foreach (var icono in iconosFiltrados)
+                        {
+                            <MudItem xs="4" sm="3" md="2">
+                                <MudPaper @onclick="() => SeleccionarIcono(icono)"
+                                          Class="@($"d-flex flex-column align-center pa-2 icono-item {(iconoSeleccionado == icono ? "selected" : "")}")"
+                                          Elevation="1"
+                                          Style="cursor: pointer; transition: all 0.2s;">
+                                    <MudIcon Icon="@icono" Size="Size.Large" Color="Color.Primary" />
+                                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-2 text-truncate" Style="max-width: 100%;">
+                                        @ObtenerNombreIcono(icono)
+                                    </MudText>
+                                    @if (iconoSeleccionado == icono)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" Style="position: absolute; top: 5px; right: 5px;" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-2">
+                    <MudText>
+                        Icono seleccionado: 
+                        @if (!string.IsNullOrEmpty(iconoSeleccionado))
+                        {
+                            <MudIcon Icon="@iconoSeleccionado" Size="Size.Small" Class="ml-2" />
+                            <strong>@ObtenerNombreIcono(iconoSeleccionado)</strong>
+                        }
+                        else
+                        {
+                            <em>Ninguno</em>
+                        }
+                    </MudText>
+                </MudAlert>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   OnClick="Cancelar">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Confirmar"
+                   Disabled="@(string.IsNullOrEmpty(iconoSeleccionado))"
+                   StartIcon="@Icons.Material.Filled.Check">
+            Seleccionar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .icono-item {
+        position: relative;
+        border-radius: 8px;
+        border: 1px solid transparent;
+    }
+    .icono-item:hover {
+        background-color: var(--mud-palette-action-default-hover);
+        border-color: var(--mud-palette-primary);
+        transform: scale(1.05);
+    }
+    .icono-item.selected {
+        background-color: var(--mud-palette-primary-hover);
+        border-color: var(--mud-palette-primary);
+    }
+</style>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public string? IconoInicial { get; set; }
+
+    private string? iconoSeleccionado;
+    private string filtro = string.Empty;
+
+    private List<string> iconosMaterial = new()
+    {
+        // Home y Dashboard
+        Icons.Material.Filled.Home,
+        Icons.Material.Filled.House,
+        Icons.Material.Filled.Dashboard,
+        Icons.Material.Filled.DashboardCustomize,
+        Icons.Material.Filled.SpaceDashboard,
+        
+        // Menús
+        Icons.Material.Filled.Menu,
+        Icons.Material.Filled.MenuOpen,
+        Icons.Material.Filled.MenuBook,
+        
+        // Archivos y carpetas
+        Icons.Material.Filled.Folder,
+        Icons.Material.Filled.FolderOpen,
+        Icons.Material.Filled.FolderShared,
+        Icons.Material.Filled.Description,
+        Icons.Material.Filled.FilePresent,
+        Icons.Material.Filled.InsertDriveFile,
+        Icons.Material.Filled.Note,
+        Icons.Material.Filled.NoteAlt,
+        Icons.Material.Filled.Article,
+        
+        // Usuarios
+        Icons.Material.Filled.Person,
+        Icons.Material.Filled.People,
+        Icons.Material.Filled.Group,
+        Icons.Material.Filled.Groups,
+        Icons.Material.Filled.AccountCircle,
+        Icons.Material.Filled.AccountBox,
+        Icons.Material.Filled.AdminPanelSettings,
+        Icons.Material.Filled.SupervisedUserCircle,
+        
+        // Configuración
+        Icons.Material.Filled.Settings,
+        Icons.Material.Filled.SettingsApplications,
+        Icons.Material.Filled.Tune,
+        Icons.Material.Filled.Build,
+        Icons.Material.Filled.Construction,
+        Icons.Material.Filled.Handyman,
+        
+        // Reportes y estadísticas
+        Icons.Material.Filled.Analytics,
+        Icons.Material.Filled.Insights,
+        Icons.Material.Filled.QueryStats,
+        Icons.Material.Filled.BarChart,
+        Icons.Material.Filled.PieChart,
+        Icons.Material.Filled.ShowChart,
+        Icons.Material.Filled.TableChart,
+        Icons.Material.Filled.TableRows,
+        
+        // Acciones comunes
+        Icons.Material.Filled.Add,
+        Icons.Material.Filled.AddCircle,
+        Icons.Material.Filled.Edit,
+        Icons.Material.Filled.EditNote,
+        Icons.Material.Filled.Delete,
+        Icons.Material.Filled.DeleteForever,
+        Icons.Material.Filled.Save,
+        Icons.Material.Filled.SaveAs,
+        Icons.Material.Filled.Search,
+        Icons.Material.Filled.FilterAlt,
+        Icons.Material.Filled.Download,
+        Icons.Material.Filled.Upload,
+        Icons.Material.Filled.Print,
+        Icons.Material.Filled.Share,
+        Icons.Material.Filled.Refresh,
+        Icons.Material.Filled.Sync,
+        
+        // Navegación
+        Icons.Material.Filled.ArrowBack,
+        Icons.Material.Filled.ArrowForward,
+        Icons.Material.Filled.ArrowUpward,
+        Icons.Material.Filled.ArrowDownward,
+        Icons.Material.Filled.ChevronLeft,
+        Icons.Material.Filled.ChevronRight,
+        //Icons.Material.Filled.ChevronUp,
+        //Icons.Material.Filled.ChevronDown,
+        Icons.Material.Filled.FirstPage,
+        Icons.Material.Filled.LastPage,
+        
+        // Alertas y notificaciones
+        Icons.Material.Filled.Notifications,
+        Icons.Material.Filled.NotificationsActive,
+        Icons.Material.Filled.Email,
+        Icons.Material.Filled.MarkEmailRead,
+        Icons.Material.Filled.Message,
+        Icons.Material.Filled.Chat,
+        Icons.Material.Filled.ChatBubble,
+        Icons.Material.Filled.Info,
+        Icons.Material.Filled.Warning,
+        Icons.Material.Filled.Error,
+        Icons.Material.Filled.CheckCircle,
+        Icons.Material.Filled.Verified,
+        
+        // Calendario y tiempo
+        Icons.Material.Filled.CalendarMonth,
+        Icons.Material.Filled.CalendarToday,
+        Icons.Material.Filled.Event,
+        Icons.Material.Filled.Schedule,
+        Icons.Material.Filled.AccessTime,
+        Icons.Material.Filled.HourglassEmpty,
+        
+        // Base de datos y sistema
+        Icons.Material.Filled.Storage,
+        //Icons.Material.Filled.Database,
+        Icons.Material.Filled.Cloud,
+        Icons.Material.Filled.CloudDone,
+        Icons.Material.Filled.CloudSync,
+        
+        // Seguridad
+        Icons.Material.Filled.Lock,
+        Icons.Material.Filled.LockOpen,
+        Icons.Material.Filled.LockReset,
+        Icons.Material.Filled.Key,
+        Icons.Material.Filled.VpnKey,
+        Icons.Material.Filled.Security,
+        
+        // Varios útiles
+        Icons.Material.Filled.Tag,
+        //Icons.Material.Filled.Tags,
+        Icons.Material.Filled.Bookmark,
+        Icons.Material.Filled.BookmarkBorder,
+        Icons.Material.Filled.Star,
+        Icons.Material.Filled.StarBorder,
+        Icons.Material.Filled.Favorite,
+        Icons.Material.Filled.FavoriteBorder,
+        Icons.Material.Filled.Flag,
+        Icons.Material.Filled.FlagCircle,
+        Icons.Material.Filled.Label,
+        Icons.Material.Filled.LabelImportant,
+        
+        // Check y X
+        Icons.Material.Filled.Check,
+        Icons.Material.Filled.CheckCircle,
+        Icons.Material.Filled.CheckBox,
+        Icons.Material.Filled.Close,
+        Icons.Material.Filled.Cancel,
+        Icons.Material.Filled.Clear,
+        
+        // Apps y módulos
+        Icons.Material.Filled.Apps,
+        Icons.Material.Filled.Widgets,
+        Icons.Material.Filled.Category,
+        Icons.Material.Filled.ViewModule,
+        Icons.Material.Filled.ViewAgenda,
+        Icons.Material.Filled.ViewList,
+        Icons.Material.Filled.ViewTimeline,
+        
+        // Auth y usuarios
+        Icons.Material.Filled.Login,
+        Icons.Material.Filled.Logout,
+        Icons.Material.Filled.AppRegistration,
+        Icons.Material.Filled.HowToReg,
+        Icons.Material.Filled.AssignmentInd,
+        
+        // Documentos
+        Icons.Material.Filled.Receipt,
+        Icons.Material.Filled.ReceiptLong,
+        Icons.Material.Filled.List,
+        Icons.Material.Filled.Task,
+        Icons.Material.Filled.TaskAlt,
+        Icons.Material.Filled.Assignment,
+        Icons.Material.Filled.AssignmentTurnedIn,
+        
+        // Comunicación
+        Icons.Material.Filled.Phone,
+        Icons.Material.Filled.Mail,
+        Icons.Material.Filled.Contacts,
+        Icons.Material.Filled.ContactMail,
+        Icons.Material.Filled.ContactPhone,
+        
+        // Dispositivos
+        Icons.Material.Filled.Computer,
+        Icons.Material.Filled.Laptop,
+        Icons.Material.Filled.PhoneAndroid,
+        Icons.Material.Filled.Tablet,
+        Icons.Material.Filled.Print,
+        Icons.Material.Filled.Scanner,
+        
+        // Extras
+        Icons.Material.Filled.Lightbulb,
+        //Icons.Material.Filled.LightbulbOutline,
+        Icons.Material.Filled.Help,
+        Icons.Material.Filled.HelpOutline,
+        Icons.Material.Filled.QuestionMark,
+        Icons.Material.Filled.NewReleases,
+        Icons.Material.Filled.Update,
+        Icons.Material.Filled.Upgrade,
+        Icons.Material.Filled.Downloading,
+        Icons.Material.Filled.UploadFile,
+        Icons.Material.Filled.DownloadForOffline,
+    };
+
+    private IEnumerable<string> iconosFiltrados => string.IsNullOrWhiteSpace(filtro)
+        ? iconosMaterial
+        : iconosMaterial.Where(i => i.Contains(filtro, StringComparison.OrdinalIgnoreCase) || 
+                                   ObtenerNombreIcono(i).Contains(filtro, StringComparison.OrdinalIgnoreCase))
+                       .Take(100); // Limitar resultados para mejor rendimiento
+
+    protected override void OnInitialized()
+    {
+        iconoSeleccionado = IconoInicial;
+    }
+
+    private string ObtenerNombreIcono(string icono)
+    {
+        // Extraer el nombre del icono de la cadena completa
+        var partes = icono.Split('.');
+        return partes.Length > 0 ? partes.Last() : icono;
+    }
+
+    private void SeleccionarIcono(string icono)
+    {
+        iconoSeleccionado = icono;
+    }
+
+    private void Confirmar()
+    {
+        MudDialog.Close(DialogResult.Ok(iconoSeleccionado));
+    }
+
+    private void Cancelar()
+    {
+        MudDialog.Cancel();
+    }
+}

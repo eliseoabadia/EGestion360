@@ -162,7 +162,7 @@
             </ToolBarContent>
             
             <HeaderContent>
-                <MudTh Style="width: 120px;">Acciones</MudTh>
+                <MudTh Style="width: 160px;">Acciones</MudTh>
                 <MudTh Style="width: 80px;"><MudTableSortLabel SortLabel="PkidMenu" T="MenuItemsResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Nombre" T="MenuItemsResponse">Nombre</MudTableSortLabel></MudTh>
                 <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="Tipo" T="MenuItemsResponse">Tipo</MudTableSortLabel></MudTh>
@@ -173,6 +173,14 @@
             
             <RowTemplate>
                 <MudTd>
+                    <MudTooltip Text="Agregar menú">
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => CrearHijoMenu(context.PkidMenu, context.Nombre))" />
+                    </MudTooltip>
+
+
                     <MudTooltip Text="Editar menú">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
@@ -187,15 +195,7 @@
                                        OnClick="@(() => EliminarMenu(context.PkidMenu))" />
                     </MudTooltip>
                     
-                    @* @if (context.Tipo == 1 && context.TieneSubmenus == 1)
-                    {
-                        <MudTooltip Text="Ver hijos">
-                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                           Color="Color.Info"
-                                           Size="Size.Small"
-                                           OnClick="@(() => VerHijos(context.PkidMenu))" />
-                        </MudTooltip>
-                    } *@
+                    
                 </MudTd>
 
                 <MudTd DataLabel="ID">@context.PkidMenu</MudTd>
@@ -262,7 +262,7 @@
 
     private string searchString = string.Empty;
     private byte? selectedTipo;
-    private long? selectedMenuPadreId;
+    private int? selectedMenuPadreId;
     private EstadoFiltro? selectedEstado;
     private bool loading = true;
     private int currentPage = 0;
@@ -455,7 +455,38 @@
         }
     }
 
-    private async Task EditarMenu(long id)
+    
+    private async Task CrearHijoMenu(int id, string NombreMenuPadre)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["MenuIdPadre"] = id, ["NombreMenuPadre"] = NombreMenuPadre };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                Position = DialogPosition.Center,
+            };
+
+            var dialog = await DialogService.ShowAsync<CrearMenu>("Crear Menú", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                //await CargarMenusPadre(); // Recargar lista de padres
+                currentPage = 0;
+                await mudTableRef.ReloadServerData();
+                Snackbar.Add("Menú creado exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al crear menú: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task EditarMenu(int id)
     {
         try
         {
@@ -483,7 +514,7 @@
         }
     }
 
-    private async Task EliminarMenu(long id)
+    private async Task EliminarMenu(int id)
     {
         try
         {

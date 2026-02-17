@@ -1,5 +1,215 @@
-﻿<h3>CrearMenu</h3>
+﻿@using EG.Domain.DTOs.Responses
+@using EG.Web.Contracs
+@using EG.Web.Extensions
+@using EG.Web.Models.Configuration
+@using EG.Web.Pages.Configuration.Menu
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+@inject IGenericCrudService<MenuItemsResponse> _service
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Class="mr-2" />
+            Crear Nuevo Menú @(!string.IsNullOrEmpty(NombreMenuPadre) ? $"(Submenú de: {NombreMenuPadre})" : "(Menú Principal)")
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudGrid Spacing="3" Class="mt-2">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="menu.Nombre"
+                              Label="Nombre del Menú *"
+                              Variant="Variant.Outlined"
+                              For="@(() => menu.Nombre)"
+                              Required="true"
+                              RequiredError="El nombre es requerido"
+                              MaxLength="100"
+                              Immediate="true" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="menu.Ruta"
+                              Label="Ruta / Route *"
+                              Variant="Variant.Outlined"
+                              For="@(() => menu.Ruta)"
+                              Required="true"
+                              RequiredError="La ruta es requerida (/ruta)"
+                              MaxLength="100"
+                              Immediate="true" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="menu.Orden"
+                                 Label="Orden *"
+                                 Variant="Variant.Outlined"
+                                 Min="0"
+                                 Max="999"
+                                 Required="true"
+                                 RequiredError="El orden es requerido"
+                                 HelperText="Número de orden de visualización" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Class="mb-1">Icono</MudText>
+
+                <MudAutocomplete T="IconosDisponibles.IconoItem"
+                                 @bind-Value="iconoSeleccionado"
+                                 Label="Buscar o seleccionar icono..."
+                                 Variant="Variant.Outlined"
+                                 SearchFunc="@BuscarIconos"
+                                 ToStringFunc="@(i => i?.Nombre ?? "")"
+                                 AdornmentIcon="@Icons.Material.Filled.Image"
+                                 AdornmentColor="Color.Primary"
+                                 Clearable="true"
+                                 CoerceText="true"
+                                 CoerceValue="true"
+                                 ResetValueOnEmptyText="true"
+                                 ShowProgressIndicator="false"
+                                 MaxItems="50"
+                                 AnchorOrigin="Origin.BottomCenter">
+
+                    <ItemTemplate>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@context.MaterialIcon" Size="Size.Small" Color="Color.Primary" />
+                            <MudText Class="flex-grow-1">@context.Nombre</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">@context.Valor</MudText>
+                        </MudStack>
+                    </ItemTemplate>
+
+                    <ItemSelectedTemplate>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@context.MaterialIcon" Size="Size.Small" Color="Color.Primary" />
+                            <MudText>@context.Nombre</MudText>
+                        </MudStack>
+                    </ItemSelectedTemplate>
+                </MudAutocomplete>
+
+                <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mt-1">
+                    Selecciona un icono para el menú
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudSwitch @bind-Value="menu.Activo"
+                           Color="Color.Success"
+                           Label="Activo" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="menu.ValidacionEstructura"
+                              Label="Validación"
+                              Variant="Variant.Outlined"
+                              MaxLength="500"
+                              HelperText="Reglas de validación (opcional)" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   OnClick="Cancelar">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Guardar"
+                   StartIcon="@Icons.Material.Filled.Save">
+            Guardar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
+    [Parameter] public int? MenuIdPadre { get; set; } = null;
+    [Parameter] public string? NombreMenuPadre { get; set; } = null;
 
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MenuItemsResponse menu = new()
+    {
+        Nombre = string.Empty,
+        Ruta = string.Empty,
+        ImageUrl = string.Empty,
+        ValidacionEstructura = string.Empty,
+        Tipo = 1,
+        Orden = 0,
+        Activo = true,
+        FkidMenuSis = null
+    };
+
+    private IconosDisponibles.IconoItem? iconoSeleccionado;
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(menu.ImageUrl))
+        {
+            iconoSeleccionado = IconosDisponibles.Lista.FirstOrDefault(i => i.Valor == menu.ImageUrl);
+        }
+    }
+
+    private Task<IEnumerable<IconosDisponibles.IconoItem>> BuscarIconos(string value, CancellationToken token)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Task.FromResult(IconosDisponibles.Lista.AsEnumerable());
+            }
+
+            var resultados = IconosDisponibles.Lista
+                .Where(i => i.Nombre.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+                           i.Valor.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+                           i.Categoria.Contains(value, StringComparison.OrdinalIgnoreCase))
+                .AsEnumerable();
+
+            return Task.FromResult(resultados);
+        }
+        catch (Exception)
+        {
+            return Task.FromResult(Enumerable.Empty<IconosDisponibles.IconoItem>());
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(menu.Nombre))
+            {
+                Snackbar.Add("El nombre del menú es requerido", Severity.Warning);
+                return;
+            }
+
+            if (iconoSeleccionado != null)
+            {
+                menu.ImageUrl = iconoSeleccionado.Valor;
+            }
+
+            menu.FkidMenuSis = MenuIdPadre;
+            var response = await _service.CreateAsync(menu);
+            if (response != null && response.Success)
+            {
+                Snackbar.Add("Menú creado exitosamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al crear el menú", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancelar()
+    {
+        MudDialog.Cancel();
+    }
 }

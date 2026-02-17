@@ -3,6 +3,7 @@ using EG.Application.CommonModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.Interfaces;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace EG.Business.Services
 {
@@ -103,24 +104,55 @@ namespace EG.Business.Services
         public virtual async Task<IEnumerable<TResponse>> GetAllAsync()
         {
             var query = GetQueryWithIncludes();
-            var entities = await Task.FromResult(query.ToList());
+            var entities = await Task.Run(() => query.ToList());
             return _mapper.Map<IEnumerable<TResponse>>(entities);
         }
 
         public virtual async Task<TResponse?> GetByIdAsync(int id)
         {
             var query = GetQueryWithIncludes();
-            var entity = await Task.FromResult(query.FirstOrDefault(e => GetIdValue(e) == id));
+
+            // Obtener la propiedad ID de forma estática para la expresión
+            var idProperty = typeof(TEntity).GetProperties()
+                .FirstOrDefault(p => p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase) &&
+                                    (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
+
+            if (idProperty == null)
+                return null;
+
+            // Construir la expresión lambda de forma estática
+            var parameter = Expression.Parameter(typeof(TEntity), "e");
+            var propertyAccess = Expression.Property(parameter, idProperty);
+            var constant = Expression.Constant(id);
+
+            Expression equality;
+            if (idProperty.PropertyType == typeof(int?))
+            {
+                var convertedConstant = Expression.Convert(constant, typeof(int?));
+                equality = Expression.Equal(propertyAccess, convertedConstant);
+            }
+            else
+            {
+                equality = Expression.Equal(propertyAccess, constant);
+            }
+
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
+
+            // Usar ToList() primero (menos eficiente pero funciona sin EF Core)
+            var entities = await Task.Run(() => query.ToList());
+            var entity = entities.FirstOrDefault(lambda.Compile());
+
             return entity != null ? _mapper.Map<TResponse>(entity) : null;
         }
 
+        // Versión con parámetros personalizados - CORREGIDA
         public virtual async Task<TResponse?> GetByIdAsync(int id,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? customQuery = null,
             string idPropertyName = null)
         {
             var query = customQuery != null ? customQuery(GetQueryWithIncludes()) : GetQueryWithIncludes();
 
-            System.Reflection.PropertyInfo keyProperty;
+            PropertyInfo keyProperty;
 
             if (!string.IsNullOrEmpty(idPropertyName))
             {
@@ -142,10 +174,25 @@ namespace EG.Business.Services
             var parameter = Expression.Parameter(typeof(TEntity), "e");
             var propertyAccess = Expression.Property(parameter, keyProperty);
             var constant = Expression.Constant(id);
-            var equality = Expression.Equal(propertyAccess, constant);
+
+            // Manejar propiedades nullable vs no nullable
+            Expression equality;
+            if (keyProperty.PropertyType == typeof(int?))
+            {
+                var convertedConstant = Expression.Convert(constant, typeof(int?));
+                equality = Expression.Equal(propertyAccess, convertedConstant);
+            }
+            else
+            {
+                equality = Expression.Equal(propertyAccess, constant);
+            }
+
             var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
 
-            var entity = query.FirstOrDefault(lambda);
+            // CORRECCIÓN: Usar Task.Run con ToList() en lugar de FirstOrDefaultAsync
+            var entities = await Task.Run(() => query.ToList());
+            var entity = entities.FirstOrDefault(lambda.Compile());
+
             return entity != null ? _mapper.Map<TResponse>(entity) : null;
         }
 
@@ -215,7 +262,7 @@ namespace EG.Business.Services
 
                 query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
-                var totalCount = query.Count();
+                var totalCount = await Task.Run(() => query.Count());
                 if (_params.Page < 1)
                     _params.Page = 1;
 
@@ -223,7 +270,7 @@ namespace EG.Business.Services
                     .Skip((_params.Page - 1) * _params.PageSize)
                     .Take(_params.PageSize);
 
-                var entities = pagedQuery.ToList();
+                var entities = await Task.Run(() => pagedQuery.ToList());
                 var mapped = _mapper.Map<IList<TResponse>>(entities);
 
                 return new PagedResult<TResponse>
@@ -256,7 +303,7 @@ namespace EG.Business.Services
 
             query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
-            var totalCount = query.Count();
+            var totalCount = await Task.Run(() => query.Count());
             if (_params.Page < 1)
                 _params.Page = 1;
 
@@ -264,7 +311,7 @@ namespace EG.Business.Services
                 .Skip((_params.Page - 1) * _params.PageSize)
                 .Take(_params.PageSize);
 
-            var entities = pagedQuery.ToList();
+            var entities = await Task.Run(() => pagedQuery.ToList());
             var mapped = _mapper.Map<IList<TResponse>>(entities);
 
             return new PagedResult<TResponse>

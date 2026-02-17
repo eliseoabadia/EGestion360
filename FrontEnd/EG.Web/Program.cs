@@ -4,16 +4,13 @@ using EG.Web.Auth;
 using EG.Web.Contracs;
 using EG.Web.Contracs.Configuration;
 using EG.Web.Extensions;
-using EG.Web.Models.Configuration;
 using EG.Web.Services;
 using EG.Web.Services.Configuration;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Net.Http;
 
 internal class Program
 {

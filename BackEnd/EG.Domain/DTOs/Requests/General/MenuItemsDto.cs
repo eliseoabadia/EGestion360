@@ -21,5 +21,13 @@
         public int? Orden { get; set; }
 
         public bool Activo { get; set; }
+
+        public int? CreatedByOperatorId { get; set; }
+
+        public DateTime CreatedDateTime { get; set; }
+
+        public int? ModifiedByOperatorId { get; set; }
+
+        public DateTime? ModifiedDateTime { get; set; }
     }
 }

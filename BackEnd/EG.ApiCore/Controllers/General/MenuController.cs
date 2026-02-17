@@ -1,4 +1,5 @@
 using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Application.CommonModel;
 using EG.Business.Services;
 using EG.Domain.DTOs.Requests.General;
@@ -16,6 +17,7 @@ namespace EG.ApiCore.Controllers.General
     [Authorize]
     public class MenuController : ControllerBase
     {
+        private readonly IUserContextService _userContext;
         private readonly GenericService<Menu, MenuItemsDto, MenuItemsResponse> _service;
         private readonly GenericService<VwMenu, MenuItemsDto, MenuItemsResponse> _serviceView;
         private readonly IMapper _mapper;
@@ -23,11 +25,13 @@ namespace EG.ApiCore.Controllers.General
         public MenuController(
             GenericService<Menu, MenuItemsDto, MenuItemsResponse> service,
             GenericService<VwMenu, MenuItemsDto, MenuItemsResponse> serviceView,
-            IMapper mapper)
+            IMapper mapper,
+            IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
             _mapper = mapper;
+            _userContext = userContext;
 
             ConfigureService();
         }
@@ -244,22 +248,30 @@ namespace EG.ApiCore.Controllers.General
         //}
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<MenuItemsResponse>>> Add([FromBody] MenuItemsDto dto)
+        public async Task<ActionResult<PagedResult<MenuItemsResponse>>> Add([FromBody] VwMenu viewDto)
         {
             try
             {
                 ConfigureValidations();
 
-                if (!await _service.CanAddAsync(dto))
+                var dto = _mapper.Map<MenuItemsDto>(viewDto);
+
+                dto.CreatedDateTime = DateTime.Now;
+                dto.CreatedByOperatorId = _userContext.GetCurrentUserId();
+                dto.LegacyName = dto.Nombre;
+                dto.Lenguaje = "ESP";
+                dto.Tipo = 2;
+
+                //Poner al padre como Tipo = 1 Ruta = '/'
+                if (dto.FkidMenuSis.HasValue)
                 {
-                    return Conflict(new PagedResult<MenuItemsResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe un menú activo con ese nombre en el mismo nivel",
-                        Code = "DUPLICATE_MENU",
-                        TotalCount = 0
-                    });
+                    var _padre = await GetParentDtoAsync(dto.FkidMenuSis);
+                    _padre.Tipo = 1;
+                    _padre.Ruta = "/";
+                    await _service.UpdateAsync(dto.FkidMenuSis.Value, _padre);
                 }
+
+                //var _dto = _mapper.Map<MenuItemsDto>(viewDto);
 
                 await _service.AddAsync(dto);
 
@@ -285,12 +297,18 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<MenuItemsResponse>>> Update(int id, [FromBody] MenuItemsDto dto)
+        public async Task<ActionResult<PagedResult<MenuItemsResponse>>> Update(int id, [FromBody] VwMenu viewDto)
         {
             try
             {
                 ConfigureValidations();
-                dto.PkidMenu = id;
+                //dto.PkidMenu = id;
+
+                var dto = _mapper.Map<MenuItemsDto>(viewDto);
+
+                dto.ModifiedDateTime = DateTime.Now;
+                dto.ModifiedByOperatorId = _userContext.GetCurrentUserId();
+
 
                 if (!await _service.CanUpdateAsync(id, dto))
                 {
@@ -561,6 +579,17 @@ namespace EG.ApiCore.Controllers.General
                     TotalCount = 0
                 });
             }
+        }
+
+        private async Task<MenuItemsDto?> GetParentDtoAsync(int? parentId)
+        {
+            if (!parentId.HasValue)
+                return null;
+
+            var parentEntity = await _service.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(m => m.PkidMenu == parentId.Value && m.Activo);
+
+            return parentEntity is null ? null : _mapper.Map<MenuItemsDto>(parentEntity);
         }
     }
 }
