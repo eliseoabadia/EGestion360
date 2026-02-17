@@ -1,4 +1,5 @@
-﻿@using EG.Web.Helpers
+﻿@using EG.Web.Extensions
+@using EG.Web.Helpers
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using EG.Web.Contracs.Configuration
@@ -268,18 +269,18 @@
         }
     }
 
+    private static readonly Dictionary<string, string> _iconMap = IconosDisponibles.Lista
+    .GroupBy(x => x.Valor)
+    .ToDictionary(g => g.Key, g => g.First().MaterialIcon);
+
     private string GetIcon(string imageUrl)
     {
-        return imageUrl switch
-        {
-            "FaHome" => Icons.Material.Filled.Home,
-            "FaRegSun" => Icons.Material.Filled.Settings,
-            "FaUser" => Icons.Material.Filled.Person,
-            "FaRegUser" => Icons.Material.Filled.People,
-            "RiMenuLine" => Icons.Material.Filled.Menu,
-            "RiListCheck2" => Icons.Material.Filled.List,
-            _ => Icons.Material.Filled.Info
-        };
+        if (string.IsNullOrEmpty(imageUrl))
+            return Icons.Material.Filled.Info;
+
+        return _iconMap.TryGetValue(imageUrl, out var icon)
+            ? icon
+            : Icons.Material.Filled.Info;
     }
 
 }

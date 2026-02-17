@@ -25,6 +25,8 @@ namespace EG.Web.Models.Configuration
 
         public bool Activo { get; set; }
 
+        public bool AbrirEnNuevaVentana { get; set; }
+
         public List<MenuItem> Children { get; set; } = new List<MenuItem>();
     }
 
