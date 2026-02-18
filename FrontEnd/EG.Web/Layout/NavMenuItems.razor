@@ -1,15 +1,20 @@
 ﻿@using EG.Web.Models.Configuration
 @using MudBlazor
 
-@if (Items != null)
+@if (Items != null && Items.Any())
 {
     @foreach (var item in Items.OrderBy(m => m.Orden))
     {
         @if (item.Children?.Any() == true)
         {
-            <MudNavGroup Title="@item.Nombre" Icon="@GetIcon(item.ImageUrl)" @bind-Expanded="defaultExpanded">
-                >
-                <NavMenuItems Items="@item.Children" GetIcon="GetIcon" />
+            <MudNavGroup Title="@item.Nombre"
+                         Icon="@GetIcon(item.ImageUrl)"
+                         Expanded="@GetExpandedState(item.PkidMenu)"
+                         ExpandedChanged="@(EventCallback.Factory.Create<bool>(this, (v) => OnExpandedChanged.InvokeAsync((item.PkidMenu, v))))">
+                <NavMenuItems Items="@item.Children"
+                              GetIcon="GetIcon"
+                              ExpandedStates="ExpandedStates"
+                              OnExpandedChanged="OnExpandedChanged" />
             </MudNavGroup>
         }
         else
@@ -30,6 +35,14 @@
     [Parameter]
     public Func<string, string> GetIcon { get; set; } = _ => Icons.Material.Filled.Info;
 
-    private bool defaultExpanded = false; // <- contraído por defecto
+    [Parameter]
+    public Dictionary<long, bool> ExpandedStates { get; set; } = new();
 
+    [Parameter]
+    public EventCallback<(long?, bool)> OnExpandedChanged { get; set; }
+
+    private bool GetExpandedState(long? pkId)
+    {
+        return pkId.HasValue && ExpandedStates.TryGetValue(pkId.Value, out var state) ? state : false;
+    }
 }

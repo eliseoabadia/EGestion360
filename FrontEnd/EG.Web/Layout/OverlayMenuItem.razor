@@ -1,0 +1,107 @@
+﻿@using EG.Web.Models.Configuration
+@using MudBlazor
+
+<div class="nav-item-with-children"
+     @onmouseenter="() => OpenOverlay()"
+     @onmouseleave="() => CloseOverlay()">
+
+    @if (Item.Children?.Any() == true)
+    {
+        <button class="nav-parent-btn" @onclick="ToggleOverlay">
+            <span class="nav-parent-content">
+                <span class="nav-parent-left">
+                    <MudIcon Icon="@GetIcon(Item.ImageUrl)" Class="nav-parent-icon" Size="Size.Small" />
+                    <span class="nav-parent-text">@Item.Nombre</span>
+                </span>
+                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowRight"
+                         Class="@($"nav-parent-chevron {(_isOpen ? "open" : "")}")"
+                         Size="Size.Small" />
+            </span>
+        </button>
+
+        @if (_isOpen)
+        {
+            <div class="submenu-overlay">
+                @foreach (var child in Item.Children.OrderBy(m => m.Orden))
+                {
+                    if (child.Children?.Any() == true)
+                    {
+                        <OverlayMenuItem Item="child"
+                                         GetIcon="GetIcon"
+                                         ExpandedStates="ExpandedStates"
+                                         OnExpandedChanged="OnExpandedChanged" />
+                    }
+                    else
+                    {
+                        <a href="@child.Ruta"
+                           class="overlay-nav-link"
+                           target="@(child.AbrirEnNuevaVentana ? "_blank" : "_self")">
+                            <MudIcon Icon="@GetIcon(child.ImageUrl)" Size="Size.Small" />
+                            <span class="overlay-nav-text">@child.Nombre</span>
+                            @if (child.AbrirEnNuevaVentana)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-2" />
+                            }
+                        </a>
+                    }
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <a href="@Item.Ruta"
+           class="nav-link"
+           target="@(Item.AbrirEnNuevaVentana ? "_blank" : "_self")">
+            <MudIcon Icon="@GetIcon(Item.ImageUrl)" Size="Size.Small" />
+            <span class="nav-link-text">@Item.Nombre</span>
+            @if (Item.AbrirEnNuevaVentana)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-2" />
+            }
+        </a>
+    }
+</div>
+
+@code {
+    [Parameter] public MenuItem Item { get; set; } = new();
+    [Parameter] public Func<string, string> GetIcon { get; set; } = _ => Icons.Material.Filled.Info;
+    [Parameter] public Dictionary<long, bool> ExpandedStates { get; set; } = new();
+    [Parameter] public EventCallback<(long?, bool)> OnExpandedChanged { get; set; }
+
+    private bool _isOpen = false;
+    private Timer? _closeTimer;
+
+    private void OpenOverlay()
+    {
+        _closeTimer?.Dispose();
+        _closeTimer = null;
+        _isOpen = true;
+        OnExpandedChanged.InvokeAsync((Item.PkidMenu, true));
+        StateHasChanged();
+    }
+
+    private void CloseOverlay()
+    {
+        // Pequeño delay para permitir mover el mouse al submenú
+        _closeTimer = new Timer(_ =>
+        {
+            _isOpen = false;
+            OnExpandedChanged.InvokeAsync((Item.PkidMenu, false));
+            StateHasChanged();
+        }, null, 200, Timeout.Infinite);
+    }
+
+    private void ToggleOverlay()
+    {
+        if (_isOpen)
+            CloseOverlay();
+        else
+            OpenOverlay();
+    }
+
+    public void Dispose()
+    {
+        _closeTimer?.Dispose();
+    }
+}

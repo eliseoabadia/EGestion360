@@ -56,6 +56,9 @@ internal class Program
         builder.Services.AddScoped<ISucursalService, SucursalService>(); 
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
+        // En Program.cs o Startup.cs
+        builder.Services.AddScoped<MenuStateService>();
+
         // Registrar servicios por interfaz (añadir donde están los otros builder.Services.AddScoped...)
         //builder.Services.AddScoped<ProfileService>();
         //builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
