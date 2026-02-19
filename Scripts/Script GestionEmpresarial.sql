@@ -414,11 +414,11 @@ CREATE TABLE dbo.AspNetClaims (
 
 
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(1,'administration','administration',NULL,'app://{0}/{1}',GETDATE(),'administration','AD0001','Administracion','view,view-menu,delete,new,update',0)
+				VALUES(2,'administration','administration',NULL,'app://{0}/{1}',GETDATE(),'administration','AD0001','Administracion','view,view-menu,delete,new,update',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(1,'support','support',NULL,'app://{0}/{1}',GETDATE(),'support','SO0001','Soporte','view,view-menu',0)
+				VALUES(2,'support','support',NULL,'app://{0}/{1}',GETDATE(),'support','SO0001','Soporte','view,view-menu',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(1,'configuration','configuration',NULL,'app://{0}/{1}',GETDATE(),'configuration','CO0001','Configuracion','view,view-menu,delete,new,update',0)
+				VALUES(2,'configuration','configuration',NULL,'app://{0}/{1}',GETDATE(),'configuration','CO0001','Configuracion','view,view-menu,delete,new,update',0)
 
 CREATE TABLE dbo.AspNetClaimValues (
     Id INT IDENTITY NOT NULL,

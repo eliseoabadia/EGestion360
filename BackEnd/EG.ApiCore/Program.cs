@@ -31,6 +31,8 @@ public partial class Program
             cfg.AddProfile<UsuarioMappingProfile>();
             cfg.AddProfile<SucursalMappingProfile>();
             cfg.AddProfile<MenuMappingProfile>();
+            cfg.AddProfile<AspNetRoleMappingProfile>();
+            
 
 
         }, typeof(Program).Assembly);
