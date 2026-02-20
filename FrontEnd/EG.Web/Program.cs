@@ -65,10 +65,9 @@ internal class Program
         // Program.cs
         builder.Services.AddApiServices();
 
-
         // Authentication provider y dependencias
-        builder.Services.AddScoped<AuthenticationProviderJWT>();
         builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProviderJWT>(sp => sp.GetRequiredService<AuthenticationProviderJWT>());
+        builder.Services.AddScoped<AuthenticationProviderJWT>();
         builder.Services.AddScoped<AuthService>();
 
         await builder.Build().RunAsync();

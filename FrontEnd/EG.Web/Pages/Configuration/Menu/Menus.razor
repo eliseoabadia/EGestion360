@@ -1,6 +1,6 @@
-﻿@page "/menus"
+﻿@page "/configuracion/menus"
 @using System.ComponentModel.DataAnnotations
-@using EG.Domain.DTOs.Responses
+@using EG.Web.Auth
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
@@ -17,53 +17,83 @@
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
 @inject IDialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudContainer Class="d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    @if (!_isInitialized)
+    {
+        <!-- Loading inicial -->
+        <MudOverlay Visible="true" Fixed="true" ZIndex="10">
+            <div class="d-flex flex-column align-center justify-center" style="height:100%">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="mt-4">Cargando...</MudText>
+            </div>
+        </MudOverlay>
+    }
+    else if (!_hasAccess)
+    {
+        <!-- Acceso denegado -->
+        <MudCard Elevation="3" Class="mt-8">
+            <MudCardContent>
+                <div class="d-flex flex-column align-center justify-center" style="min-height: 400px;">
+                    <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
+                    <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">
+                        No tienes permisos para acceder a esta página.
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NavigateToHome" Class="mt-6">
+                        Volver al inicio
+                    </MudButton>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <!-- Header Card -->
+        <MudCard Elevation="1" Class="mb-4">
+            <MudCardContent>
+                <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <MudItem>
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.h4"
+                            Color="Color.Primary"
+                            Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Menu"
+                                Color="Color.Primary"
+                                Size="Size.Large" />
+                                Gestión de Menús
+                            </MudText>
+                            <MudText Typo="Typo.body2"
+                            Color="Color.Tertiary"
+                            Class="ml-6">
+                                Administra la estructura de navegación del sistema
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
 
-    <!-- Header Card -->
-    <MudCard Elevation="1" Class="mb-4">
-        <MudCardContent>
-            <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                <MudItem>
-                    <MudStack Spacing="2">
-                        <MudText Typo="Typo.h4"
-                                 Color="Color.Primary"
-                                 Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
-                            <MudIcon Icon="@Icons.Material.Filled.Menu"
-                                     Color="Color.Primary"
-                                     Size="Size.Large" />
-                            Gestión de Menús
-                        </MudText>
-                        <MudText Typo="Typo.body2"
-                                 Color="Color.Tertiary"
-                                 Class="ml-6">
-                            Administra la estructura de navegación del sistema
-                        </MudText>
-                    </MudStack>
-                </MudItem>
+                    <MudItem>
+                        <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                            <MudTooltip Text="Nuevo Menú" Visible="_canCreate">
+                                <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                OnClick="CrearMenu"
+                                Size="Size.Small" />
+                            </MudTooltip>
+                            <MudTooltip Text="Refrescar">
+                                <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                                OnClick="OnSearchInput"
+                                Size="Size.Small" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
 
-                <MudItem>
-                    <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
-                        <MudTooltip Text="Nuevo Menú">
-                            <MudButton StartIcon="@Icons.Material.Filled.Add"
-                                       OnClick="CrearMenu"
-                                       Size="Size.Small" />
-                        </MudTooltip>
-                        <MudTooltip Text="Refrescar">
-                            <MudButton StartIcon="@Icons.Material.Filled.Refresh"
-                                       OnClick="OnSearchInput"
-                                       Size="Size.Small" />
-                        </MudTooltip>
-                    </MudButtonGroup>
-                </MudItem>
-            </MudGrid>
-        </MudCardContent>
-    </MudCard>
-
-    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
-        <!-- Filtros -->
-        <MudGrid Spacing="2" Class="mb-4">
-            @* <MudItem xs="12" sm="6" md="3">
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+            <!-- Filtros -->
+            <MudGrid Spacing="2" Class="mb-4">
+                @* <MudItem xs="12" sm="6" md="3">
                 <MudSelect T="byte?"
                            @bind-Value="selectedTipo"
                            Label="Tipo de menú"
@@ -75,8 +105,8 @@
                     <MudSelectItem Value="2">Item final</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            
-            
+
+
             <MudItem xs="12" sm="6" md="3">
                 <MudSelect T="EstadoFiltro?"
                            @bind-Value="selectedEstado"
@@ -89,8 +119,8 @@
                     <MudSelectItem Value="EstadoFiltro.Inactivo">Inactivo</MudSelectItem>
                 </MudSelect>
             </MudItem> *@
-            
-           @*  <MudItem xs="12" sm="6" md="3" Class="d-flex align-center">
+
+                @*  <MudItem xs="12" sm="6" md="3" Class="d-flex align-center">
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Default"
                            StartIcon="@Icons.Material.Filled.Clear"
@@ -105,155 +135,173 @@
                     Buscar
                 </MudButton>
             </MudItem> *@
-        </MudGrid>
+            </MudGrid>
 
-        <!-- Tabla -->
-        <MudTable ServerData="LoadServerData"
-                  RowsPerPage="@pageSize"
-                  Page="@currentPage"
-                  RowCount="@totalCount"
-                  @ref="mudTableRef"
-                  Dense="@dense"
-                  Hover="@hover"
-                  Loading="@loading"
-                  ReadOnly="@ronly"
-                  SortLabel="Ordenar por"
-                  @bind-SelectedItem="selectedItem"
-                  FixedHeader="true"
-                  Height="500px"
-                  Class="mt-4">
-            <ToolBarContent>
-                <MudText Typo="Typo.h6">Lista de Menús</MudText>
-                <MudSpacer />
-                
-                <!-- Botón de Exportar a Excel -->
-                <MudTooltip Text="Exportar a Excel">
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Success"
-                               StartIcon="@Icons.Material.Filled.FileDownload"
-                               OnClick="ExportarExcel"
-                               Size="Size.Small"
-                               Class="mr-2"
-                               Disabled="@loading">
-                        @if (loading)
+            <!-- Tabla -->
+            <MudTable ServerData="LoadServerData"
+            RowsPerPage="@pageSize"
+            Page="@currentPage"
+            RowCount="@totalCount"
+            @ref="mudTableRef"
+            Dense="@dense"
+            Hover="@hover"
+            Loading="@loading"
+            ReadOnly="@ronly"
+            SortLabel="Ordenar por"
+            @bind-SelectedItem="selectedItem"
+            FixedHeader="true"
+            Height="500px"
+            Class="mt-4">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Lista de Menús</MudText>
+                    <MudSpacer />
+
+                    <!-- Botón de Exportar a Excel -->
+                    <MudTooltip Text="Exportar a Excel">
+                        <MudButton Variant="Variant.Filled"
+                        Color="Color.Success"
+                        StartIcon="@Icons.Material.Filled.FileDownload"
+                        Visible="_canExport"
+                        OnClick="ExportarExcel"
+                        Size="Size.Small"
+                        Class="mr-2"
+                        Disabled="@loading">
+                            @if (loading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Exportando...</span>
+                            }
+                            else
+                            {
+                                <span>Exportar Excel</span>
+                            }
+                        </MudButton>
+                    </MudTooltip>
+
+                    <MudTextField @bind-Value="searchString"
+                    Placeholder="Buscar por nombre..."
+                    Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Search"
+                    IconSize="Size.Medium"
+                    Immediate="true"
+                    @ref="txtSearch"
+                    OnKeyUp="HandleKeyUp"
+                    Class="mt-0"
+                    Variant="Variant.Outlined"
+                    Style="width: 300px;">
+                    </MudTextField>
+                </ToolBarContent>
+
+                <HeaderContent>
+                    <MudTh Style="width: 160px;">Acciones</MudTh>
+                    <MudTh Style="width: 80px;"><MudTableSortLabel SortLabel="PkidMenu" T="MenuItemsResponse">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="MenuItemsResponse">Nombre</MudTableSortLabel></MudTh>
+                    <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="Tipo" T="MenuItemsResponse">Tipo</MudTableSortLabel></MudTh>
+                    <MudTh Style="width: 200px;"><MudTableSortLabel SortLabel="MenuPadre" T="MenuItemsResponse">Menú Padre</MudTableSortLabel></MudTh>
+                    <MudTh Style="width: 100px;"><MudTableSortLabel SortLabel="Orden" T="MenuItemsResponse">Orden</MudTableSortLabel></MudTh>
+                    <MudTh Style="width: 120px;"><MudTableSortLabel SortLabel="Activo" T="MenuItemsResponse">Estado</MudTableSortLabel></MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd>
+                        <MudTooltip Text="Agregar menú">
+                            <MudIconButton Icon="@Icons.Material.Filled.Add"
+                            Color="Color.Error"
+                            Size="Size.Small"
+                            Visible="_canCreate"
+                            OnClick="@(() => CrearHijoMenu(context.PkidMenu, context.Nombre))" />
+                        </MudTooltip>
+
+
+                        <MudTooltip Text="Editar menú">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                            Color="Color.Primary"
+                            Size="Size.Small"
+                                           Visible="_canUpdate"
+                            OnClick="@(() => EditarMenu(context.PkidMenu))" />
+                        </MudTooltip>
+
+                        <MudTooltip Text="Eliminar menú">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                            Color="Color.Error"
+                            Size="Size.Small"
+                            Visible="_canDelete"
+                            OnClick="@(() => EliminarMenu(context.PkidMenu))" />
+                        </MudTooltip>
+
+
+                    </MudTd>
+
+                    <MudTd DataLabel="ID">@context.PkidMenu</MudTd>
+                    <MudTd DataLabel="Nombre">
+                        @if (context.Tipo == 1)
                         {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            <span>Exportando...</span>
+                            <MudText Style="font-weight: 500;">
+                                <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Warning" Class="mr-1" />
+                                @context.Nombre
+                            </MudText>
                         }
                         else
                         {
-                            <span>Exportar Excel</span>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Info" Class="mr-1" />
+                                @context.Nombre
+                            </MudText>
                         }
-                    </MudButton>
-                </MudTooltip>
-                
-                <MudTextField @bind-Value="searchString"
-                              Placeholder="Buscar por nombre..."
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              IconSize="Size.Medium"
-                              Immediate="true"
-                              @ref="txtSearch"
-                              OnKeyUp="HandleKeyUp"
-                              Class="mt-0"
-                              Variant="Variant.Outlined"
-                              Style="width: 300px;">
-                </MudTextField>
-            </ToolBarContent>
-            
-            <HeaderContent>
-                <MudTh Style="width: 160px;">Acciones</MudTh>
-                <MudTh Style="width: 80px;"><MudTableSortLabel SortLabel="PkidMenu" T="MenuItemsResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="MenuItemsResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="Tipo" T="MenuItemsResponse">Tipo</MudTableSortLabel></MudTh>
-                <MudTh Style="width: 200px;"><MudTableSortLabel SortLabel="MenuPadre" T="MenuItemsResponse">Menú Padre</MudTableSortLabel></MudTh>
-                <MudTh Style="width: 100px;"><MudTableSortLabel SortLabel="Orden" T="MenuItemsResponse">Orden</MudTableSortLabel></MudTh>
-                <MudTh Style="width: 120px;"><MudTableSortLabel SortLabel="Activo" T="MenuItemsResponse">Estado</MudTableSortLabel></MudTh>
-            </HeaderContent>
-            
-            <RowTemplate>
-                <MudTd>
-                    <MudTooltip Text="Agregar menú">
-                        <MudIconButton Icon="@Icons.Material.Filled.Add"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => CrearHijoMenu(context.PkidMenu, context.Nombre))" />
-                    </MudTooltip>
+                    </MudTd>
+                    <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
+                    <MudTd DataLabel="Menú Padre">@(context.NombreMenuPadre ?? "-")</MudTd>
+                    <MudTd DataLabel="Orden">@context.Orden</MudTd>
+                    <MudTd DataLabel="Estado">
+                        <MudBadge Color="@(context.Activo ? Color.Success : Color.Error)"
+                        Variant="Variant.Filled"
+                        Size="Size.Small">
+                            @(context.Activo ? "Activo" : "Inactivo")
+                        </MudBadge>
+                    </MudTd>
+                </RowTemplate>
 
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Class="py-4">No se encontraron menús</MudText>
+                </NoRecordsContent>
 
-                    <MudTooltip Text="Editar menú">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditarMenu(context.PkidMenu))" />
-                    </MudTooltip>
+                <LoadingContent>
+                    <MudText Align="Align.Center">Cargando menús...</MudText>
+                </LoadingContent>
 
-                    <MudTooltip Text="Eliminar menú">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EliminarMenu(context.PkidMenu))" />
-                    </MudTooltip>
-                    
-                    
-                </MudTd>
-
-                <MudTd DataLabel="ID">@context.PkidMenu</MudTd>
-                <MudTd DataLabel="Nombre">
-                    @if (context.Tipo == 1)
-                    {
-                        <MudText Style="font-weight: 500;">
-                            <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Warning" Class="mr-1" />
-                            @context.Nombre
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Info" Class="mr-1" />
-                            @context.Nombre
-                        </MudText>
-                    }
-                </MudTd>
-                <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
-                <MudTd DataLabel="Menú Padre">@(context.NombreMenuPadre ?? "-")</MudTd>
-                <MudTd DataLabel="Orden">@context.Orden</MudTd>
-                <MudTd DataLabel="Estado">
-                    <MudBadge Color="@(context.Activo ? Color.Success : Color.Error)"
-                              Variant="Variant.Filled"
-                              Size="Size.Small">
-                        @(context.Activo ? "Activo" : "Inactivo")
-                    </MudBadge>
-                </MudTd>
-            </RowTemplate>
-            
-            <NoRecordsContent>
-                <MudText Align="Align.Center" Class="py-4">No se encontraron menús</MudText>
-            </NoRecordsContent>
-            
-            <LoadingContent>
-                <MudText Align="Align.Center">Cargando menús...</MudText>
-            </LoadingContent>
-            
-            <PagerContent>
-                <MudTablePager RowsPerPageString="Filas por página"
-                               PageSizeOptions="new int[] { 10, 20, 50, 100 }"
-                               ShowFirstLastPage="true"
-                               ShowPageSizeSelector="true"
-                               PaginationTextFormat="Página {0} de {1}" />
-            </PagerContent>
-        </MudTable>
-    </MudPaper>
-</MudContainer>
+                <PagerContent>
+                    <MudTablePager RowsPerPageString="Filas por página"
+                    PageSizeOptions="new int[] { 10, 20, 50, 100 }"
+                    ShowFirstLastPage="true"
+                    ShowPageSizeSelector="true"
+                    PaginationTextFormat="Página {0} de {1}" />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    }
+    </MudContainer>
 
 @code {
+    [Inject]
+    private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
+
     private List<MenuItemsResponse> Elements = new();
     private CancellationTokenSource _cancellationTokenSource = new();
     private int totalCount = 0;
+    private bool _isInitialized = false;
+    private bool _hasAccess = false;
+
+    // Permisos específicos para esta página
+    private bool _canView = false;
+    private bool _canCreate = false;
+    private bool _canUpdate = false;
+    private bool _canDelete = false;
+    private bool _canExport = false;
 
     private bool dense = true;
     private bool hover = true;
     private bool ronly = true;
+    private bool blockSwitch = false;
 
     private MenuItemsResponse selectedItem = new();
     private MudTable<MenuItemsResponse> mudTableRef = new();
@@ -284,7 +332,42 @@
     {
         try
         {
-            //await CargarMenusPadre();
+            await Task.Run(() =>
+           {
+               _isInitialized = true;
+               try
+               {
+                   // Verificar permisos usando AuthenticationProviderJWT
+                   _canView = AuthProvider.HasPermission("configuracion", "menus", "view");
+
+                   if (!_canView)
+                   {
+                       _hasAccess = false;
+                       StateHasChanged();
+                       // Redirigir al home después de un pequeño delay
+                       Task.Delay(2000);
+                       NavigationManager.NavigateTo("/", forceLoad: true);
+                       return;
+                   }
+
+                   // Si tiene acceso, verificar permisos específicos
+                   _canCreate = AuthProvider.HasPermission("configuracion", "menus", "new");
+                   _canUpdate = AuthProvider.HasPermission("configuracion", "menus", "update");
+                   _canDelete = AuthProvider.HasPermission("configuracion", "menus", "delete");
+                   _canExport = AuthProvider.HasPermission("configuracion", "menus", "CanExportToExcel");
+
+                   _hasAccess = true;
+                   loading = false;
+                   StateHasChanged();
+               }
+               catch (Exception ex)
+               {
+                   Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
+                   Task.Delay(1000);
+                   NavigationManager.NavigateTo("/", forceLoad: true);
+               }
+               loading = false;
+           });
         }
         catch (Exception ex)
         {
@@ -395,6 +478,11 @@
         }
     }
 
+    private async void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
     private async void HandleKeyUp(KeyboardEventArgs args)
     {
         if (args.Key == "Enter")
@@ -429,6 +517,12 @@
     {
         try
         {
+            if (!_canCreate)
+            {
+                Snackbar.Add("No tienes permisos para crear menú", Severity.Warning);
+                return;
+            }
+
             var parameters = new DialogParameters();
             var options = new DialogOptions
             {
@@ -490,6 +584,12 @@
     {
         try
         {
+            if (!_canUpdate)
+            {
+                Snackbar.Add("No tienes permisos para editar menú", Severity.Warning);
+                return;
+            }
+
             var parameters = new DialogParameters { ["MenuId"] = id };
             var options = new DialogOptions
             {
@@ -518,6 +618,11 @@
     {
         try
         {
+            if (!_canDelete)
+            {
+                Snackbar.Add("No tienes permisos para eliminar menú", Severity.Warning);
+                return;
+            }
             var parameters = new DialogParameters { ["MenuId"] = id };
             var options = new DialogOptions
             {
@@ -577,6 +682,12 @@
     {
         try
         {
+            if (!_canExport)
+            {
+                Snackbar.Add("No tienes permisos para exportar datos", Severity.Warning);
+                return;
+            }
+
             loading = true;
             StateHasChanged();
 

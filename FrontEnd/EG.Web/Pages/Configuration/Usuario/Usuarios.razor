@@ -1,5 +1,6 @@
-﻿@page "/users"
+﻿@page "/configuracion/usuarios"
 @using System.ComponentModel.DataAnnotations
+@using EG.Web.Auth
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
@@ -7,8 +8,8 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Text
 @using MiniExcelLibs
-
 @using MudBlazor
+@using System.Reflection
 
 
 @inject NavigationManager NavigationManager
@@ -16,6 +17,7 @@
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <script>
     function downloadFile(base64Data, fileName, contentType) {
@@ -36,165 +38,210 @@
 </script>
 
 <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-
-    <!-- Usando Card para el header -->
-    <MudCard Elevation="1" Class="mb-4">
-        <MudCardContent>
-            <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                <MudItem>
-                    <MudStack Spacing="2">
-                        <MudText Typo="Typo.h4"
-                                 Color="Color.Primary"
-                                 Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
-                            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt"
-                                     Color="Color.Primary"
-                                     Size="Size.Large" />
-                            Gestión de Usuarios
-                        </MudText>
-                        <MudText Typo="Typo.body2"
-                                 Color="Color.Tertiary"
-                                 Class="ml-6">
-                            Administra y mantén el registro de usuarios del sistema
-                        </MudText>
-                    </MudStack>
-                </MudItem>
-
-                <MudItem>
-                    <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
-                        <MudTooltip Text="Nuevo Usuario">
-                            <MudButton StartIcon="@Icons.Material.Filled.Add"
-                                       OnClick="CrearUsuario"
-                                       Size="Size.Small" />
-                        </MudTooltip>
-                        <MudTooltip Text="Refrescar...">
-                            <MudButton StartIcon="@Icons.Material.Filled.Refresh"
-                                       OnClick="OnSearchInput"
-                                       Size="Size.Small" />
-                        </MudTooltip>
-                    </MudButtonGroup>
-                </MudItem>
-            </MudGrid>
-        </MudCardContent>
-    </MudCard>
-
-    <MudPaper Elevation="2" Class="pa-4 rounded-lg">
-
-        <MudTable ServerData="LoadServerData"
-                  RowsPerPage="@pageSize"
-                  Page="@currentPage"
-                  RowCount="@totalCount"
-                  @ref="mudTableRef"
-                  Dense="@dense"
-                  Hover="@hover"
-                  Loading="@loading"
-                  ReadOnly="@ronly"
-                  SortLabel="Sort By"
-                  InitialSortDirection="SortDirection.Descending"
-                  @bind-SelectedItem="selectedItem1"
-                  IsEditRowSwitchingBlocked="@blockSwitch"
-                  ApplyButtonPosition="@applyButtonPosition"
-                  EditButtonPosition="@editButtonPosition"
-                  EditTrigger="@editTrigger">
-            <ToolBarContent>
-                <MudText Typo="Typo.h6">Lista de Usuarios</MudText>
-                <MudSpacer />
-                <!-- Botón de Exportar a Excel -->
-                <MudTooltip Text="Exportar a Excel">
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Success"
-                               StartIcon="@Icons.Material.Filled.FileDownload"
-                               OnClick="ExportarExcel"
-                               Size="Size.Small"
-                               Class="mr-2"
-                               Disabled="@loading">
-                        @if (loading)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            <span>Exportando...</span>
-                        }
-                        else
-                        {
-                            <span>Exportar Excel</span>
-                        }
+    @if (!_isInitialized)
+    {
+        <!-- Loading inicial -->
+        <MudOverlay Visible="true" Fixed="true" ZIndex="10">
+            <div class="d-flex flex-column align-center justify-center" style="height:100%">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="mt-4">Cargando...</MudText>
+            </div>
+        </MudOverlay>
+    }
+    else if (!_hasAccess)
+    {
+        <!-- Acceso denegado -->
+        <MudCard Elevation="3" Class="mt-8">
+            <MudCardContent>
+                <div class="d-flex flex-column align-center justify-center" style="min-height: 400px;">
+                    <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
+                    <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">
+                        No tienes permisos para acceder a esta página.
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NavigateToHome" Class="mt-6">
+                        Volver al inicio
                     </MudButton>
-                </MudTooltip>
-                <MudTextField @bind-Value="searchString"
-                              Placeholder="Buscar por nombre, email o teléfono..."
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              IconSize="Size.Medium"
-                              Immediate="true"
-                              @ref="txtSerch"
-                              OnKeyUp="HandleKeyUp"
-                              Class="mt-0">
-                </MudTextField>
-            </ToolBarContent>
-            <HeaderContent>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkIdUsuario" T="UsuarioResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="UsuarioResponse">Nombre Completo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Telefono" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Usuario</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">NSS</MudTableSortLabel></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>
-                    <MudTooltip Text="Editar usuario">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditarUsuario(context.PkIdUsuario))" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <!-- Usando Card para el header -->
+        <MudCard Elevation="1" Class="mb-4">
+            <MudCardContent>
+                <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <MudItem>
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.h4"
+                            Color="Color.Primary"
+                            Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                                <MudIcon Icon="@Icons.Material.Filled.PeopleAlt"
+                                Color="Color.Primary"
+                                Size="Size.Large" />
+                                Gestión de Usuarios
+                            </MudText>
+                            <MudText Typo="Typo.body2"
+                            Color="Color.Tertiary"
+                            Class="ml-6">
+                                Administra y mantén el registro de usuarios del sistema
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem>
+                        <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                            <MudTooltip Text="Nuevo Usuario">
+                                <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                Visible="_canCreate"
+                                OnClick="CrearUsuario"
+                                Size="Size.Small" />
+                            </MudTooltip>
+                            <MudTooltip Text="Refrescar...">
+                                <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                                OnClick="OnSearchInput"
+                                Size="Size.Small" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+
+            <MudTable ServerData="LoadServerData"
+            RowsPerPage="@pageSize"
+            Page="@currentPage"
+            RowCount="@totalCount"
+            @ref="mudTableRef"
+            Dense="@dense"
+            Hover="@hover"
+            Loading="@loading"
+            ReadOnly="@ronly"
+            SortLabel="Sort By"
+            InitialSortDirection="SortDirection.Descending"
+            @bind-SelectedItem="selectedItem1"
+            IsEditRowSwitchingBlocked="@blockSwitch"
+            ApplyButtonPosition="@applyButtonPosition"
+            EditButtonPosition="@editButtonPosition"
+            EditTrigger="@editTrigger">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Lista de Usuarios</MudText>
+                    <MudSpacer />
+                    <!-- Botón de Exportar a Excel -->
+                    <MudTooltip Text="Exportar a Excel">
+                        <MudButton Variant="Variant.Filled"
+                        Color="Color.Success"
+                        StartIcon="@Icons.Material.Filled.FileDownload"
+                        Visible="_canExport"
+                        OnClick="ExportarExcel"
+                        Size="Size.Small"
+                        Class="mr-2"
+                        Disabled="@loading">
+                            @if (loading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Exportando...</span>
+                            }
+                            else
+                            {
+                                <span>Exportar Excel</span>
+                            }
+                        </MudButton>
                     </MudTooltip>
+                    <MudTextField @bind-Value="searchString"
+                    Placeholder="Buscar por nombre, email o teléfono..."
+                    Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Search"
+                    IconSize="Size.Medium"
+                    Immediate="true"
+                    @ref="txtSerch"
+                    OnKeyUp="HandleKeyUp"
+                    Class="mt-0">
+                    </MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkIdUsuario" T="UsuarioResponse">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="UsuarioResponse">Nombre Completo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Telefono" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Usuario</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Gafete" T="UsuarioResponse">NSS</MudTableSortLabel></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudTooltip Text="Editar usuario">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                            Color="Color.Primary"
+                            Size="Size.Small"
+                            Visible="_canUpdate"
+                            OnClick="@(() => EditarUsuario(context.PkIdUsuario))" />
+                        </MudTooltip>
 
-                    <MudTooltip Text="Eliminar usuario">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EliminarUsuario(context.PkIdUsuario))" />
-                    </MudTooltip>
-                </MudTd>
+                        <MudTooltip Text="Eliminar usuario">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                            Color="Color.Error"
+                            Size="Size.Small"
+                                           Visible="_canDelete"
+                            OnClick="@(() => EliminarUsuario(context.PkIdUsuario))" />
+                        </MudTooltip>
+                    </MudTd>
 
-                <MudTd DataLabel="Nr">@context.PkIdUsuario</MudTd>
-                <MudTd DataLabel="Sign">@context.NombreCompleto</MudTd>
-                <MudTd DataLabel="Name">@context.Email</MudTd>
-                <MudTd DataLabel="Position">@context.TelefonoUsuario</MudTd>
-                <MudTd DataLabel="Molar mass">@context.PayrollId</MudTd>
-                <MudTd DataLabel="Molar mass">@context.NombreEmpresa</MudTd>
-                <MudTd DataLabel="Molar mass">@context.NumeroSocial</MudTd>
-            </RowTemplate>
-            <NoRecordsContent>
-                <MudText>No se encontraron registros</MudText>
-            </NoRecordsContent>
-            <LoadingContent>
-                <MudText>Cargando...</MudText>
-            </LoadingContent>
-            <PagerContent>
-                <MudTablePager RowsPerPageString="Filas por página"
-                               FirstPageIcon="@Icons.Material.Filled.FirstPage"
-                               LastPageIcon="@Icons.Material.Filled.LastPage"
-                               NextPageIcon="@Icons.Material.Filled.NavigateNext"
-                               PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
-                               PageSizeOptions="new int[] { 5, 10, 20, 50 }"
-                               ShowFirstLastPage="true"
-                               ShowPageSizeSelector="true"
-                               ShowPaginationText="true"
-                               PaginationTextFormat="Página {0} de {1}" />
-            </PagerContent>
+                    <MudTd DataLabel="Nr">@context.PkIdUsuario</MudTd>
+                    <MudTd DataLabel="Sign">@context.NombreCompleto</MudTd>
+                    <MudTd DataLabel="Name">@context.Email</MudTd>
+                    <MudTd DataLabel="Position">@context.TelefonoUsuario</MudTd>
+                    <MudTd DataLabel="Molar mass">@context.PayrollId</MudTd>
+                    <MudTd DataLabel="Molar mass">@context.NombreEmpresa</MudTd>
+                    <MudTd DataLabel="Molar mass">@context.NumeroSocial</MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>No se encontraron registros</MudText>
+                </NoRecordsContent>
+                <LoadingContent>
+                    <MudText>Cargando...</MudText>
+                </LoadingContent>
+                <PagerContent>
+                    <MudTablePager RowsPerPageString="Filas por página"
+                    FirstPageIcon="@Icons.Material.Filled.FirstPage"
+                    LastPageIcon="@Icons.Material.Filled.LastPage"
+                    NextPageIcon="@Icons.Material.Filled.NavigateNext"
+                    PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
+                    PageSizeOptions="new int[] { 5, 10, 20, 50 }"
+                    ShowFirstLastPage="true"
+                    ShowPageSizeSelector="true"
+                    ShowPaginationText="true"
+                    PaginationTextFormat="Página {0} de {1}" />
+                </PagerContent>
 
-        </MudTable>
-    </MudPaper>
-
-</MudContainer>
+            </MudTable>
+        </MudPaper>
+    }
+    </MudContainer>
 
 @code {
+    [Inject]
+    private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
+
     private IList<UsuarioResponse> Elements = new List<UsuarioResponse>();
     private int totalCount = 0;
 
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private bool _isInitialized = false;
+
+    private bool _hasAccess = false;
+
+    // Permisos específicos para esta página
+    private bool _canView = false;
+    private bool _canCreate = false;
+    private bool _canUpdate = false;
+    private bool _canDelete = false;
+    private bool _canExport = false;
 
     private bool dense = true;
     private bool hover = true;
@@ -227,9 +274,40 @@
     {
         if (firstRender && !_isInitialized)
         {
-            await Task.Run(() =>
+           await Task.Run(() =>
            {
                _isInitialized = true;
+               try
+               {
+                   // Verificar permisos usando AuthenticationProviderJWT
+                    _canView = AuthProvider.HasPermission("configuracion", "usuarios", "view");
+
+                   if (!_canView)
+                   {
+                       _hasAccess = false;
+                       StateHasChanged();
+                       // Redirigir al home después de un pequeño delay
+                       Task.Delay(2000);
+                       NavigationManager.NavigateTo("/", forceLoad: true);
+                       return;
+                   }
+
+                   // Si tiene acceso, verificar permisos específicos
+                    _canCreate = AuthProvider.HasPermission("configuracion", "usuarios", "new");
+                    _canUpdate = AuthProvider.HasPermission("configuracion", "usuarios", "update");
+                    _canDelete = AuthProvider.HasPermission("configuracion", "usuarios", "delete");
+                    _canExport = AuthProvider.HasPermission("configuracion", "usuarios", "CanExportToExcel");
+
+                   _hasAccess = true;
+                   loading = false;
+                   StateHasChanged();
+               }
+               catch (Exception ex)
+               {
+                   Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
+                   Task.Delay(1000);
+                   NavigationManager.NavigateTo("/", forceLoad: true);
+               }
                loading = false;
            });
         }
@@ -296,6 +374,11 @@
         }
     }
 
+    private async void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
     private async void OnSearchInput()
     {
         // Cancelar búsqueda anterior si existe
@@ -332,6 +415,11 @@
     {
         try
         {
+            if (!_canCreate)
+            {
+                Snackbar.Add("No tienes permisos para crear usuarios", Severity.Warning);
+                return;
+            }
             var parameters = new DialogParameters();
             var options = new DialogOptions
             {
@@ -361,6 +449,12 @@
     {
         try
         {
+            if (!_canUpdate)
+            {
+                Snackbar.Add("No tienes permisos para editar usuarios", Severity.Warning);
+                return;
+            }
+
             var parameters = new DialogParameters { ["UsuarioId"] = id };
             var options = new DialogOptions
             {
@@ -387,6 +481,12 @@
     {
         try
         {
+            if (!_canDelete)
+            {
+                Snackbar.Add("No tienes permisos para eliminar usuarios", Severity.Warning);
+                return;
+            }
+
             var parameters = new DialogParameters { ["UsuarioId"] = id };
             var options = new DialogOptions
             {
@@ -417,6 +517,12 @@
     {
         try
         {
+            if (!_canExport)
+            {
+                Snackbar.Add("No tienes permisos para exportar datos", Severity.Warning);
+                return;
+            }
+
             // Mostrar un indicador de carga
             loading = true;
             StateHasChanged();
