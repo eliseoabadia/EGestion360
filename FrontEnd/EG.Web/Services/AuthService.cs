@@ -84,5 +84,81 @@ namespace EG.Web.Services
 
             return 0;
         }
+
+        public bool HasPermission(string module, string submodule, string permission)
+        {
+            try
+            {
+                var authState = _authenticationStateProvider.GetAuthenticationStateAsync().Result;
+                var user = authState.User;
+
+                if (!user.Identity?.IsAuthenticated ?? true)
+                    return false;
+
+                // Verificar si es SuperAdmin (tiene todos los permisos)
+                if (user.IsInRole("SuperAdmin") || user.HasClaim(c => c.Type == "role" && c.Value == "SuperAdmin"))
+                    return true;
+
+                // Formato del claim: "permiso:configuracion.empresas.view"
+                var permissionClaim = $"permiso:{module}.{submodule}.{permission}";
+                var anyPermissionClaim = $"permiso:{module}.{submodule}.*";
+                var modulePermissionClaim = $"permiso:{module}.*.*";
+
+                return user.HasClaim(c => c.Type == "permission" &&
+                    (c.Value == permissionClaim ||
+                     c.Value == anyPermissionClaim ||
+                     c.Value == modulePermissionClaim));
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> HasPermissionAsync(string module, string submodule, string permission)
+        {
+            try
+            {
+                var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+                var user = authState.User;
+
+                if (!user.Identity?.IsAuthenticated ?? true)
+                    return false;
+
+                if (user.IsInRole("SuperAdmin") || user.HasClaim(c => c.Type == "role" && c.Value == "SuperAdmin"))
+                    return true;
+
+                var permissionClaim = $"permiso:{module}.{submodule}.{permission}";
+                var anyPermissionClaim = $"permiso:{module}.{submodule}.*";
+                var modulePermissionClaim = $"permiso:{module}.*.*";
+
+                return user.HasClaim(c => c.Type == "permission" &&
+                    (c.Value == permissionClaim ||
+                     c.Value == anyPermissionClaim ||
+                     c.Value == modulePermissionClaim));
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<List<string>> GetUserPermissionsAsync()
+        {
+            var permissions = new List<string>();
+            try
+            {
+                var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+                var user = authState.User;
+
+                var permissionClaims = user.FindAll(c => c.Type == "permission");
+                permissions.AddRange(permissionClaims.Select(c => c.Value));
+            }
+            catch (Exception)
+            {
+                // Log error
+            }
+            return permissions;
+        }
     }
 }

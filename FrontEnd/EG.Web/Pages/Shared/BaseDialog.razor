@@ -1,0 +1,58 @@
+﻿@using MudBlazor
+
+<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="false">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudOverlay Visible="@Loading" Fixed="true" ZIndex="10">
+            <div class="d-flex flex-column align-center justify-center" style="height:100%">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="mt-4">@LoadingMessage</MudText>
+            </div>
+        </MudOverlay>
+
+        @ChildContent
+    </DialogContent>
+
+    <DialogActions>
+        @if (ShowActions)
+        {
+            <MudButton OnClick="OnCancel" Disabled="@Loading">@CancelText</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="@ActionColor"
+                       OnClick="OnConfirm"
+                       Disabled="@(Loading || !CanConfirm)">
+                @if (Loading)
+                {
+                    <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
+                    <span class="ml-2">@LoadingActionText</span>
+                }
+                else
+                {
+                    @ActionText
+                }
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Confirmar";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = null!;
+    
+    [Parameter] public MaxWidth MaxWidth { get; set; } = MaxWidth.Small;
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string LoadingMessage { get; set; } = "Cargando...";
+    [Parameter] public bool ShowActions { get; set; } = true;
+    [Parameter] public string CancelText { get; set; } = "Cancelar";
+    [Parameter] public string ActionText { get; set; } = "Confirmar";
+    [Parameter] public string LoadingActionText { get; set; } = "Procesando...";
+    [Parameter] public Color ActionColor { get; set; } = Color.Primary;
+    [Parameter] public bool CanConfirm { get; set; } = true;
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    
+    protected void OnCancel() => MudDialog.Cancel();
+}

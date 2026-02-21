@@ -1,0 +1,59 @@
+﻿@using MudBlazor
+@typeparam TItem
+
+<BaseDialog Title="Confirmar Eliminación"
+            MaxWidth="MaxWidth.Small"
+            Loading="@Loading"
+            LoadingMessage="Eliminando..."
+            ActionText="Eliminar"
+            ActionColor="Color.Error"
+            CanConfirm="!Loading"
+            OnConfirm="Delete">
+    <MudText>@Message</MudText>
+    @if (!string.IsNullOrEmpty(ItemName))
+    {
+        <MudText Color="Color.Warning" Class="mt-4"><strong>@ItemName</strong></MudText>
+    }
+    <MudAlert Severity="Severity.Warning" Class="mt-4">
+        @WarningMessage
+    </MudAlert>
+</BaseDialog>
+
+@code {
+    [Parameter] public string Message { get; set; } = "¿Está seguro de que desea eliminar este elemento?";
+    [Parameter] public string WarningMessage { get; set; } = "Esta acción no se puede deshacer.";
+    [Parameter] public string? ItemName { get; set; }
+    [Parameter] public Func<Task<bool>> DeleteFunc { get; set; } = null!;
+
+    [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = null!; // ¡Esta línea es importante!
+
+    private bool Loading { get; set; }
+
+    private async Task Delete()
+    {
+        if (DeleteFunc != null)
+        {
+            Loading = true;
+            StateHasChanged();
+            try
+            {
+                var success = await DeleteFunc();
+                if (success)
+                {
+                    MudDialog.Close(DialogResult.Ok(true)); // Ahora funciona porque tenemos la instancia
+                }
+                else
+                {
+                    Loading = false;
+                    StateHasChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                Loading = false;
+                StateHasChanged();
+                // El error ya debería manejarse en DeleteFunc
+            }
+        }
+    }
+}

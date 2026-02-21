@@ -1,0 +1,39 @@
+﻿@using MudBlazor
+
+@if (!IsInitialized)
+{
+    <MudOverlay Visible="true" Fixed="true" ZIndex="10">
+        <div class="d-flex flex-column align-center justify-center" style="height:100%">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Class="mt-4">Cargando...</MudText>
+        </div>
+    </MudOverlay>
+}
+else if (!HasAccess)
+{
+    <MudCard Elevation="3" Class="mt-8">
+        <MudCardContent>
+            <div class="d-flex flex-column align-center justify-center" style="min-height: 400px;">
+                <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
+                <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">
+                    No tienes permisos para acceder a esta página.
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NavigateToHome" Class="mt-6">
+                    Volver al inicio
+                </MudButton>
+            </div>
+        </MudCardContent>
+    </MudCard>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool IsInitialized { get; set; }
+    [Parameter] public bool HasAccess { get; set; }
+    [Parameter] public EventCallback NavigateToHome { get; set; }
+}

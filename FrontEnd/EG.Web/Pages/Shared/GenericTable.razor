@@ -1,0 +1,151 @@
+﻿@typeparam TItem
+@using MudBlazor
+
+<MudPaper Elevation="2" Class="pa-4 rounded-lg">
+    <MudTable ServerData="LoadServerData"
+              RowsPerPage="@PageSize"
+              Page="@CurrentPage"
+              RowCount="@TotalCount"
+              @ref="mudTableRef"
+              Dense="@Dense"
+              Hover="@Hover"
+              Loading="@Loading"
+              ReadOnly="@ReadOnly"
+              SortLabel="Ordenar por"
+              InitialSortDirection="@InitialSortDirection"
+              @bind-SelectedItem="SelectedItem"
+              IsEditRowSwitchingBlocked="@BlockSwitch"
+              ApplyButtonPosition="TableApplyButtonPosition.End"
+              EditButtonPosition="TableEditButtonPosition.End"
+              EditTrigger="TableEditTrigger.RowClick">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">@Title</MudText>
+            <MudSpacer />
+
+            @if (ShowExportButton)
+            {
+                <MudTooltip Text="Exportar a Excel">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="ExportToExcel"
+                               Size="Size.Small"
+                               Class="mr-2"
+                               Disabled="@Loading">
+                        @if (Loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Exportando...</span>
+                        }
+                        else
+                        {
+                            <span>Exportar Excel</span>
+                        }
+                    </MudButton>
+                </MudTooltip>
+            }
+
+            <MudTextField @bind-Value="SearchString"
+                          Placeholder="@SearchPlaceholder"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Immediate="true"
+                          @ref="searchField"
+                          OnKeyUp="HandleKeyUp"
+                          Class="mt-0" />
+        </ToolBarContent>
+
+        <HeaderContent>
+            @Header
+        </HeaderContent>
+
+        <RowTemplate>
+            @Row(context)
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText>No se encontraron registros</MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText>Cargando...</MudText>
+        </LoadingContent>
+
+        <PagerContent>
+            <MudTablePager RowsPerPageString="Filas por página"
+                           FirstPageIcon="@Icons.Material.Filled.FirstPage"
+                           LastPageIcon="@Icons.Material.Filled.LastPage"
+                           NextPageIcon="@Icons.Material.Filled.NavigateNext"
+                           PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
+                           PageSizeOptions="@PageSizeOptions"
+                           ShowFirstLastPage="true"
+                           ShowPageSizeSelector="true"
+                           ShowPaginationText="true"
+                           PaginationTextFormat="Página {0} de {1}" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
+    [Parameter] public bool ShowExportButton { get; set; } = true;
+    [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
+
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public int CurrentPage { get; set; } = 0;
+    [Parameter] public int TotalCount { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Dense { get; set; } = true;
+    [Parameter] public bool Hover { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; } = true;
+    [Parameter] public bool BlockSwitch { get; set; }
+    [Parameter] public SortDirection InitialSortDirection { get; set; } = SortDirection.Descending;
+    [Parameter] public TItem? SelectedItem { get; set; }
+
+    [Parameter] public string SearchString { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SearchStringChanged { get; set; }
+    [Parameter] public EventCallback OnSearch { get; set; }
+
+    [Parameter] public RenderFragment Header { get; set; } = null!;
+    [Parameter] public RenderFragment<TItem> Row { get; set; } = null!;
+    [Parameter] public Func<TableState, CancellationToken, Task<TableData<TItem>>> ServerDataFunc { get; set; } = null!;
+    [Parameter] public Func<Task> ExportFunc { get; set; } = null!;
+
+    private MudTable<TItem> mudTableRef = new();
+    private MudTextField<string> searchField = new();
+
+    private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (ServerDataFunc != null)
+        {
+            return await ServerDataFunc(state, cancellationToken);
+        }
+        return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+    }
+
+    private async void HandleKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await SearchStringChanged.InvokeAsync(SearchString);
+            await OnSearch.InvokeAsync();
+            await mudTableRef.ReloadServerData();
+        }
+    }
+
+    private async Task ExportToExcel()
+    {
+        if (ExportFunc != null)
+        {
+            await ExportFunc();
+        }
+    }
+
+    public async Task ReloadData()
+    {
+        await mudTableRef.ReloadServerData();
+    }
+}

@@ -1,496 +1,110 @@
 @page "/configuracion/empresas"
-@using System.ComponentModel.DataAnnotations
-@using EG.Web.Auth
-@using EG.Web.Contracs
-@using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
-@using EG.Web.Services
-@using Microsoft.AspNetCore.Components.Forms
-@using System.Text
-@using MiniExcelLibs
-@using MudBlazor
-@using System.Reflection
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<EmpresaResponse, EmpresaResponse>
 
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Gestión de Empresas"
+                    Subtitle="Administra y mantén el registro de empresas del sistema"
+                    Icon="@Icons.Material.Filled.Business"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
 
-@inject NavigationManager NavigationManager
-@inject IGenericCrudService<EmpresaResponse> _service
-@inject ISnackbar Snackbar
-@inject AuthService AuthService
-@inject IJSRuntime _jsRuntime
-@inject IDialogService DialogService
-@inject AuthenticationStateProvider AuthenticationStateProvider
+        <GenericTable TItem="EmpresaResponse"
+                      @ref="table"
+                      Title="Lista de Empresas"
+                      SearchPlaceholder="Buscar por nombre o RFC..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
 
-<script>
-    function downloadFile(base64Data, fileName, contentType) {
-        try {
-            const link = document.createElement('a');
-            link.href = 'data:' + contentType + ';base64,' + base64Data;
-            link.download = fileName;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error downloading file:', error);
-            throw error;
-        }
-    }
-</script>
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidEmpresa" T="EmpresaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="EmpresaResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EstadoNombre" T="EmpresaResponse">Entidad</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Rfc" T="EmpresaResponse">RFC</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
 
-<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-    @if (!_isInitialized)
-    {
-        <!-- Loading inicial -->
-        <MudOverlay Visible="true" Fixed="true" ZIndex="10">
-            <div class="d-flex flex-column align-center justify-center" style="height:100%">
-                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-                <MudText Class="mt-4">Cargando...</MudText>
-            </div>
-        </MudOverlay>
-    }
-    else if (!_hasAccess)
-    {
-        <!-- Acceso denegado -->
-        <MudCard Elevation="3" Class="mt-8">
-            <MudCardContent>
-                <div class="d-flex flex-column align-center justify-center" style="min-height: 400px;">
-                    <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
-                    <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">
-                        No tienes permisos para acceder a esta página.
-                    </MudText>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NavigateToHome" Class="mt-6">
-                        Volver al inicio
-                    </MudButton>
-                </div>
-            </MudCardContent>
-        </MudCard>
-    }
-    else
-    {
-        <MudCard Elevation="1" Class="mb-4">
-            <MudCardContent>
-                <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                    <MudItem>
-                        <MudStack Spacing="2">
-                            <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Size="Size.Large" />
-                                Gestión de Empresas
-                            </MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="ml-6">
-                                Administra y mantén el registro de empresas del sistema
-                            </MudText>
-                        </MudStack>
-                    </MudItem>
-
-                    <MudItem>
-                        <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
-                            <MudTooltip Text="Nueva Empresa">
-                                <MudButton StartIcon="@Icons.Material.Filled.Add" Visible="_canCreate" OnClick="CrearEmpresa" Size="Size.Small" />
-                            </MudTooltip>
-                            <MudTooltip Text="Refrescar...">
-                                <MudButton StartIcon="@Icons.Material.Filled.Refresh" OnClick="OnSearchInput" Size="Size.Small" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
-
-        <MudPaper Elevation="2" Class="pa-4 rounded-lg">
-            <MudTable ServerData="LoadServerData"
-            RowsPerPage="@pageSize"
-            Page="@currentPage"
-            RowCount="@totalCount"
-            @ref="mudTableRef"
-            Dense="@dense"
-            Hover="@hover"
-            Loading="@loading"
-            ReadOnly="@ronly"
-            SortLabel="Sort By"
-            InitialSortDirection="SortDirection.Descending"
-            @bind-SelectedItem="selectedItem"
-            IsEditRowSwitchingBlocked="@blockSwitch"
-            ApplyButtonPosition="@applyButtonPosition"
-            EditButtonPosition="@editButtonPosition"
-            EditTrigger="@editTrigger">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Lista de Empresas</MudText>
-                    <MudSpacer />
-                    <MudTooltip Text="Exportar a Excel">
-                        <MudButton Variant="Variant.Filled" Visible="_canExport" Color="Color.Success" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="ExportarExcel" Size="Size.Small" Class="mr-2" Disabled="@loading">
-                            @if (loading)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                <span>Exportando...</span>
-                            }
-                            else
-                            {
-                                <span>Exportar Excel</span>
-                            }
-                        </MudButton>
+            <Row Context="empresa">
+                <MudTd>
+                    <MudTooltip Text="Editar empresa">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(empresa.PkidEmpresa!.Value))" />
                     </MudTooltip>
-                    <MudTextField @bind-Value="searchString"
-                    Placeholder="Buscar por nombre o RFC..."
-                    Adornment="Adornment.Start"
-                    AdornmentIcon="@Icons.Material.Filled.Search"
-                    IconSize="Size.Medium"
-                    Immediate="true"
-                    @ref="txtSearch"
-                    OnKeyUp="HandleKeyUp"
-                    Class="mt-0">
-                    </MudTextField>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkidEmpresa" T="EmpresaResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="EmpresaResponse">Nombre</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="EstadoNombre" T="EmpresaResponse">Entidad</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Rfc" T="EmpresaResponse">RFC</MudTableSortLabel></MudTh>
-                    <MudTh>Estado</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>
-                        <MudTooltip Text="Editar empresa">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="_canUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditarEmpresa(context.PkidEmpresa.Value))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar empresa">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="_canDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarEmpresa(context.PkidEmpresa.Value))" />
-                        </MudTooltip>
-                    </MudTd>
-                    <MudTd DataLabel="ID">@context.PkidEmpresa</MudTd>
-                    <MudTd DataLabel="Nombre">@context.EmpresaNombre</MudTd>
-                    <MudTd DataLabel="RFC">@context.EstadoNombre</MudTd>
-                    <MudTd DataLabel="RFC">@context.Rfc</MudTd>
-                    <MudTd DataLabel="Estado">
-                        <MudBadge Color="@(context.EmpresaActivo == true? Color.Success: Color.Error)" Variant="Variant.Filled" Size="Size.Small">
-                            @(context.EmpresaActivo == true ? "Activo" : "Inactivo")
-                        </MudBadge>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText>No se encontraron registros</MudText>
-                </NoRecordsContent>
-                <LoadingContent>
-                    <MudText>Cargando...</MudText>
-                </LoadingContent>
-                <PagerContent>
-                    <MudTablePager RowsPerPageString="Filas por página"
-                    FirstPageIcon="@Icons.Material.Filled.FirstPage"
-                    LastPageIcon="@Icons.Material.Filled.LastPage"
-                    NextPageIcon="@Icons.Material.Filled.NavigateNext"
-                    PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
-                    PageSizeOptions="new int[] { 5, 10, 20, 50 }"
-                    ShowFirstLastPage="true"
-                    ShowPageSizeSelector="true"
-                    ShowPaginationText="true"
-                    PaginationTextFormat="Página {0} de {1}" />
-                </PagerContent>
-            </MudTable>
-        </MudPaper>
-    }
+                    <MudTooltip Text="Eliminar empresa">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(empresa.PkidEmpresa!.Value))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@empresa.PkidEmpresa</MudTd>
+                <MudTd>@empresa.EmpresaNombre</MudTd>
+                <MudTd>@empresa.EstadoNombre</MudTd>
+                <MudTd>@empresa.Rfc</MudTd>
+                <MudTd>
+                    <MudBadge Color="@(empresa.EmpresaActivo == true ? Color.Success : Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(empresa.EmpresaActivo == true ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </Row>
+        </GenericTable>
     </MudContainer>
+</AccessVerification>
 
 @code {
+    private GenericTable<EmpresaResponse> table = null!;
 
-    [Inject]
-    private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
+    protected override string ModuleName => "configuracion";
+    protected override string SubModuleName => "empresas";
+    protected override Type CreateDialogType => typeof(CrearEmpresa);
+    protected override Type EditDialogType => typeof(EditarEmpresa);
+    protected override Type DeleteDialogType => typeof(EliminarEmpresa);
 
-    private IList<EmpresaResponse> Elements = new List<EmpresaResponse>();
-    private int totalCount = 0;
-    private bool _isInitialized = false;
-    private bool _hasAccess = false;
+    protected override string GetDefaultSortLabel() => "EmpresaNombre";
 
-    // Permisos específicos para esta página
-    private bool _canView = false;
-    private bool _canCreate = false;
-    private bool _canUpdate = false;
-    private bool _canDelete = false;
-    private bool _canExport = false;
-
-    private bool dense = true;
-    private bool hover = true;
-    private bool ronly = true;
-    private bool blockSwitch = false;
-
-    private EmpresaResponse selectedItem = new EmpresaResponse();
-    private MudTable<EmpresaResponse> mudTableRef = new MudTable<EmpresaResponse>();
-    private MudTextField<string> txtSearch = new MudTextField<string>();
-
-    private string searchString = string.Empty;
-    private EstadoFiltro? selectedEstado = null;
-    private bool loading = true;
-    private int currentPage = 0;
-    private int pageSize = 10;
-    private CancellationTokenSource searchCts = new CancellationTokenSource();
-    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
-    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
-    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
-    private SortDirection sortDirection;
-    private string sortLabel = string.Empty;
-
-    public enum EstadoFiltro
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EmpresaResponse> items)
     {
-        [Display(Name = "Todos los estados")]
-        Todos,
-        [Display(Name = "Activo")]
-        Activo,
-        [Display(Name = "Inactivo")]
-        Inactivo
+        return items.Select(e => new
+        {
+            ID = e.PkidEmpresa,
+            Nombre = e.EmpresaNombre,
+            RFC = e.Rfc,
+            Estado = e.EmpresaActivo == true ? "Activo" : "Inactivo"
+        });
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task CreateItem()
     {
-        if (firstRender && !_isInitialized)
-        {
-            _isInitialized = true;
-            try
-            {
-                // Verificar permisos usando AuthenticationProviderJWT
-                _canView = AuthProvider.HasPermission("configuracion", "empresas", "view");
-
-                if (!_canView)
-                {
-                    _hasAccess = false;
-                    StateHasChanged();
-                    // Redirigir al home después de un pequeño delay
-                    await Task.Delay(2000);
-                    NavigationManager.NavigateTo("/", forceLoad: true);
-                    return;
-                }
-
-                // Si tiene acceso, verificar permisos específicos
-                _canCreate = AuthProvider.HasPermission("configuracion", "empresas", "new");
-                _canUpdate = AuthProvider.HasPermission("configuracion", "empresas", "update");
-                _canDelete = AuthProvider.HasPermission("configuracion", "empresas", "delete");
-                _canExport = AuthProvider.HasPermission("configuracion", "empresas", "CanExportToExcel");
-
-                _hasAccess = true;
-                loading = false;
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
-                await Task.Delay(1000);
-                NavigationManager.NavigateTo("/", forceLoad: true);
-            }
-            loading = false;
-            StateHasChanged();
-        }
+        await base.CreateItem();
+        await table.ReloadData();
     }
 
-    private async Task<TableData<EmpresaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    protected override async Task EditItem(int id)
     {
-        loading = true;
-        StateHasChanged();
-
-        try
-        {
-            currentPage = state.Page + 1;
-            pageSize = state.PageSize;
-            sortLabel = state.SortLabel ?? "Nombre";
-            sortDirection = state.SortDirection;
-
-            string estadoFiltro = selectedEstado switch
-            {
-                EstadoFiltro.Activo => "true",
-                EstadoFiltro.Inactivo => "false",
-                EstadoFiltro.Todos or null => null,
-                _ => null
-            };
-
-            var response = await _service.GetAllPaginadoAsync(
-                currentPage,
-                pageSize,
-                searchString,
-                sortLabel,
-                sortDirection,
-                null//estadoFiltro
-            );
-
-            if (response != null && response.Success && response.Items != null)
-            {
-                Elements = response.Items;
-                totalCount = response.TotalCount;
-
-                Console.WriteLine($"✓ Empresas cargadas: {Elements.Count} de {totalCount} en total");
-            }
-            else
-            {
-                Elements = new List<EmpresaResponse>();
-                totalCount = 0;
-
-                var errorMessage = response?.Message ?? "Error al cargar empresas";
-                Console.WriteLine($"⚠️ {errorMessage}");
-                Snackbar.Add(errorMessage, Severity.Error);
-            }
-
-            return new TableData<EmpresaResponse>
-            {
-                Items = Elements,
-                TotalItems = totalCount
-            };
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error al cargar empresas: {ex.Message}\n{ex.StackTrace}");
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-
-            return new TableData<EmpresaResponse>
-            {
-                Items = new List<EmpresaResponse>(),
-                TotalItems = 0
-            };
-        }
-        finally
-        {
-            loading = false;
-            StateHasChanged();
-        }
+        await base.EditItem(id);
+        await table.ReloadData();
     }
 
-    private async void NavigateToHome()
+    protected override async Task DeleteItem(int id)
     {
-        NavigationManager.NavigateTo("/");
-    }
-
-    private async void OnSearchInput()
-    {
-        searchCts?.Cancel();
-        searchCts = new CancellationTokenSource();
-        try
-        {
-            await Task.Delay(500, searchCts.Token);
-            if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
-                await mudTableRef.ReloadServerData();
-        }
-        catch (TaskCanceledException) { }
-    }
-
-    private async void HandleKeyUp(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter")
-            await mudTableRef.ReloadServerData();
-    }
-
-    private async Task CrearEmpresa()
-    {
-        try
-        {
-            if (!_canCreate)
-            {
-                Snackbar.Add("No tienes permisos para crear empresas", Severity.Warning);
-                return;
-            }
-            var dialog = await DialogService.ShowAsync<CrearEmpresa>("Crear Empresa", 
-                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
-            var result = await dialog.Result;
-            if (!result!.Canceled) await mudTableRef.ReloadServerData();
-        }
-        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
-    }
-
-    private async Task EditarEmpresa(int id)
-    {
-        try
-        {
-            if (!_canUpdate)
-            {
-                Snackbar.Add("No tienes permisos para editar empresas", Severity.Warning);
-                return;
-            }
-
-            var parameters = new DialogParameters { ["EmpresaId"] = id };
-            var dialog = await DialogService.ShowAsync<EditarEmpresa>("Editar Empresa", parameters,
-                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
-            var result = await dialog.Result;
-            if (!result!.Canceled) await mudTableRef.ReloadServerData();
-        }
-        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
-    }
-
-    private async Task EliminarEmpresa(int id)
-    {
-        try
-        {
-            if (!_canDelete)
-            {
-                Snackbar.Add("No tienes permisos para eliminar empresas", Severity.Warning);
-                return;
-            }
-            var parameters = new DialogParameters { ["EmpresaId"] = id };
-            var dialog = await DialogService.ShowAsync<EliminarEmpresa>("Eliminar Empresa", parameters,
-                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
-            var result = await dialog.Result;
-            if (!result!.Canceled)
-            {
-                if (Elements.Count == 1 && currentPage > 1) currentPage--;
-                await mudTableRef.ReloadServerData();
-            }
-        }
-        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
-    }
-
-    private async Task ExportarExcel()
-    {
-        try
-        {
-            if (!_canExport)
-            {
-                Snackbar.Add("No tienes permisos para exportar datos", Severity.Warning);
-                return;
-            }
-
-            loading = true;
-            StateHasChanged();
-
-            var response = await _service.GetAllPaginadoAsync(
-                -1, pageSize, searchString, sortLabel, sortDirection, null
-            );
-
-            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
-            {
-                var errorMessage = response?.Message ?? "No hay datos para exportar";
-                Console.WriteLine($"⚠️ {errorMessage}");
-                Snackbar.Add(errorMessage, Severity.Warning);
-                return;
-            }
-
-            Elements = response.Items;
-            totalCount = response.TotalCount;
-
-            var excelData = Elements.Select(e => new
-            {
-                ID = e.PkidEmpresa,
-                Nombre = e.EmpresaNombre,
-                RFC = e.Rfc,
-                Estado = e.EmpresaActivo.HasValue && e.EmpresaActivo.Value ? "Activo" : "Inactivo"
-            }).ToList();
-
-            using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
-
-            var fileBytes = memoryStream.ToArray();
-            var base64 = Convert.ToBase64String(fileBytes);
-
-            await _jsRuntime.InvokeVoidAsync("downloadFile", base64,
-                $"Empresas_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-            var successMessage = $"✅ Exportación exitosa: {Elements.Count} registros";
-            Console.WriteLine(successMessage);
-            Snackbar.Add(successMessage, Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error al exportar: {ex.Message}\n{ex.StackTrace}");
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            loading = false;
-            StateHasChanged();
-        }
+        await base.DeleteItem(id);
+        await table.ReloadData();
     }
 }

@@ -1,0 +1,53 @@
+﻿@using MudBlazor
+
+<MudCard Elevation="1" Class="mb-4">
+    <MudCardContent>
+        <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudItem>
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h4"
+                             Color="Color.Primary"
+                             Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
+                        <MudIcon Icon="@Icon" Color="Color.Primary" Size="Size.Large" />
+                        @Title
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="ml-6">
+                        @Subtitle
+                    </MudText>
+                </MudStack>
+            </MudItem>
+
+            <MudItem>
+                <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                    @if (ShowCreateButton)
+                    {
+                        <MudTooltip Text="@CreateTooltip">
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       Visible="@CanCreate"
+                                       OnClick="OnCreate"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                    }
+                    <MudTooltip Text="Refrescar...">
+                        <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                                   OnClick="OnRefresh"
+                                   Size="Size.Small" />
+                    </MudTooltip>
+                    @AdditionalButtons
+                </MudButtonGroup>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Business;
+    [Parameter] public bool ShowCreateButton { get; set; } = true;
+    [Parameter] public string CreateTooltip { get; set; } = "Nuevo";
+    [Parameter] public bool CanCreate { get; set; } = true;
+    [Parameter] public EventCallback OnCreate { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
+    [Parameter] public RenderFragment? AdditionalButtons { get; set; }
+}
