@@ -1,0 +1,266 @@
+﻿@using MudBlazor
+@using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Services.Configuration
+@inject IEstadoService estadoService
+@inject IGenericCrudService<EmpresaResponse> _service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EmpresaResponse"
+                @ref="dialog"
+                MaxWidth="MaxWidth.Small"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos de la empresa..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="EmpresaResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <!-- Nombre de la empresa -->
+            <MudItem xs="12">
+                <MudTextField @bind-Value="empresa.EmpresaNombre"
+                              Label="Nombre de la Empresa"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El nombre de la empresa es requerido"
+                              Validation="@(new Func<string, IEnumerable<string>>(ValidarNombre))"
+                              For="@(() => empresa.EmpresaNombre)" />
+            </MudItem>
+
+            <!-- RFC -->
+            <MudItem xs="12">
+                <MudTextField @bind-Value="empresa.Rfc"
+                              Label="RFC"
+                              Variant="Variant.Outlined"
+                              Validation="@(new Func<string, IEnumerable<string>>(ValidarRFC))" Required="true"
+                              RequiredError="Password is required!"
+                              For="@(() => empresa.Rfc)" />
+            </MudItem>
+
+            <!-- Estado (Entidad Federativa) -->
+            <MudItem xs="12">
+                <MudSelect Label="Estado (Entidad Federativa)"
+                           @bind-Value="empresa.PkidEstado"
+                           T="int?"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar un estado"
+                           Disabled="@(Id.HasValue && estados.Count == 1)"
+                           For="@(() => empresa.PkidEstado)">
+                    <MudSelectItem T="int?" Value="null">Seleccione un estado</MudSelectItem>
+                    @foreach (var estado in estados)
+                    {
+                        <MudSelectItem T="int?" Value="@estado.PkidEstado">@estado.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Estado Activo/Inactivo -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus de la Empresa</MudText>
+                    <MudDivider Class="mb-3" />
+
+                    @if (Id.HasValue)
+                    {
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="empresa.EmpresaActivo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(empresa.EmpresaActivo == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(empresa.EmpresaActivo == true ? "Activa" : "Inactiva")</MudText>
+                            </MudSwitch>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-center">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Activa</MudChip>
+                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                (Las nuevas empresas se crean activas)
+                            </MudText>
+                        </div>
+                        <input type="hidden" @bind="empresa.EmpresaActivo" />
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }  // CORREGIDO: Ahora usa Id
+
+    private BaseCrudDialog<EmpresaResponse> dialog = null!;
+    private BaseEntityForm<EmpresaResponse> form = null!;
+    private EmpresaResponse empresa = new() { EmpresaActivo = true };
+    private IList<EstadoResponse> estados = new List<EstadoResponse>();
+
+    private string dialogTitle => Id.HasValue ? "Editar Empresa" : "Nueva Empresa";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    private Converter<string> rfcConverter = new Converter<string>
+    {
+        SetFunc = value => value?.ToUpperInvariant()
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEstados();
+
+        if (Id.HasValue)  // CORREGIDO
+        {
+            await CargarEmpresa();
+        }
+    }
+
+    private async Task CargarEstados()
+    {
+        try
+        {
+            var response = await estadoService.GetAllEstadosAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                estados = response.Items.ToList();
+                Console.WriteLine($"✅ Cargados {estados.Count} estados");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No se pudieron cargar los estados");
+                Snackbar.Add(response?.Message ?? "Error al cargar estados", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error cargando estados: {ex.Message}");
+            Snackbar.Add($"Error al cargar estados: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarEmpresa()
+    {
+        try
+        {
+            var response = await _service.GetByIdAsync(Id!.Value);  // CORREGIDO
+            if (response?.Success == true && response.Data != null)
+            {
+                empresa = response.Data;
+                Console.WriteLine($"✅ Empresa cargada: {empresa.EmpresaNombre}, Estado ID: {empresa.PkidEstado}");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No se pudo cargar la empresa");
+                Snackbar.Add(response?.Message ?? "Error al cargar empresa", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error cargando empresa: {ex.Message}");
+            Snackbar.Add($"Error al cargar empresa: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private IEnumerable<string> ValidarNombre(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            yield return "El nombre de la empresa es requerido";
+            yield break;
+        }
+
+        nombre = nombre.Trim();
+
+        if (nombre.Length < 3)
+            yield return "El nombre debe tener al menos 3 caracteres";
+
+        if (nombre.Length > 100)
+            yield return "El nombre no puede exceder los 100 caracteres";
+    }
+
+    private IEnumerable<string> ValidarRFC(string? rfc)
+    {
+        // 1. Si es null o vacío, dejamos que 'Required="true"' maneje el error.
+        // Retornamos vacío aquí para no duplicar mensajes ni causar errores de null.
+        if (string.IsNullOrWhiteSpace(rfc))
+        {
+            yield break;
+        }
+
+        rfc = rfc.ToUpperInvariant().Trim();
+
+        // 2. Validaciones de longitud
+        if (rfc.Length < 12 || rfc.Length > 13)
+        {
+            yield return "El RFC debe tener 12 o 13 caracteres";
+        }
+
+        // 3. Validación de formato
+        if (!System.Text.RegularExpressions.Regex.IsMatch(rfc, "^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{2,3}$"))
+        {
+            yield return "El formato del RFC no es válido";
+        }
+    }
+
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            return;
+        }
+
+        if (!empresa.PkidEstado.HasValue || empresa.PkidEstado.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un estado (entidad federativa)", Severity.Warning);
+            return;
+        }
+
+        if (!Id.HasValue)  // CORREGIDO
+        {
+            empresa.EmpresaActivo = true;
+            empresa.PkidEmpresa = 0;
+        }
+
+        try
+        {
+            ApiResponse<EmpresaResponse> response;
+
+            if (Id.HasValue)  // CORREGIDO
+            {
+                Console.WriteLine($"📝 Actualizando empresa ID: {empresa.PkidEmpresa}");
+                response = await _service.UpdateAsync(empresa, empresa.PkidEmpresa!.Value);
+            }
+            else
+            {
+                empresa.EstadoNombre = string.Empty;
+                Console.WriteLine($"➕ Creando nueva empresa: {empresa.EmpresaNombre}");
+                response = await _service.CreateAsync(empresa);
+            }
+
+            if (response?.Success == true)
+            {
+                var message = response.Message ??
+                    $"✅ Empresa {(Id.HasValue ? "actualizada" : "creada")} exitosamente";
+
+                Snackbar.Add(message, Severity.Success);
+                dialog.Close(true);
+            }
+            else
+            {
+                var errorMessage = response?.Message ?? "Error en la operación";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+}

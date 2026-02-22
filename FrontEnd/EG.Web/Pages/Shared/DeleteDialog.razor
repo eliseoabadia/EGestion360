@@ -1,0 +1,58 @@
+﻿@using MudBlazor
+@typeparam TItem
+
+<BaseCrudDialog TItem="TItem"
+                MaxWidth="MaxWidth.Small"
+                ActionColor="Color.Error"
+                ActionIcon="@Icons.Material.Filled.Delete"
+                ActionText="Eliminar"
+                ProcessingText="Eliminando..."
+                LoadingMessage="Cargando..."
+                CanConfirm="!isDeleted"
+                OnConfirm="Eliminar">
+
+    <MudText Typo="Typo.h6" GutterBottom="true">¿Confirmar eliminación?</MudText>
+
+    @if (!string.IsNullOrEmpty(ItemName))
+    {
+        <MudText Color="Color.Warning" Class="my-4">
+            <strong>@ItemName</strong>
+        </MudText>
+    }
+
+    <MudAlert Severity="Severity.Warning">
+        Esta acción no se puede deshacer.
+    </MudAlert>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int Id { get; set; }  // Cambiado de int? a int (no nullable)
+    [Parameter] public string? ItemName { get; set; }
+    [Parameter] public Func<int, Task<bool>>? DeleteFunc { get; set; }  // Ahora recibe int no nullable
+
+    private bool isDeleted = false;
+
+    private async Task Eliminar()
+    {
+        // Verificar que DeleteFunc no sea null
+        if (DeleteFunc == null)
+        {
+            Console.WriteLine("❌ Error: DeleteFunc no está configurado");
+            return;
+        }
+
+        try
+        {
+            var result = await DeleteFunc(Id);
+            if (result)
+            {
+                isDeleted = true;
+                // El diálogo se cerrará automáticamente desde BaseCrudDialog
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al eliminar: {ex.Message}");
+        }
+    }
+}

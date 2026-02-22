@@ -71,9 +71,11 @@
 
     protected override string ModuleName => "configuracion";
     protected override string SubModuleName => "usuarios";
-    protected override Type CreateDialogType => typeof(CrearUsuario);
-    protected override Type EditDialogType => typeof(EditarUsuario);
-    protected override Type DeleteDialogType => typeof(EliminarUsuario);
+
+    // Usando los nuevos diálogos
+    protected override Type CreateDialogType => typeof(UsuarioDialog);
+    protected override Type EditDialogType => typeof(UsuarioDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<UsuarioResponse>);
 
     protected override string GetDefaultSortLabel() => "NombreCompleto";
 
@@ -89,23 +91,5 @@
             Empresa = u.NombreEmpresa,
             Sucursal = u.NombreSucursal
         });
-    }
-
-    protected override async Task CreateItem()
-    {
-        await base.CreateItem();
-        await table.ReloadData();
-    }
-
-    protected override async Task EditItem(int id)
-    {
-        await base.EditItem(id);
-        await table.ReloadData();
-    }
-
-    protected override async Task DeleteItem(int id)
-    {
-        await base.DeleteItem(id);
-        await table.ReloadData();
     }
 }

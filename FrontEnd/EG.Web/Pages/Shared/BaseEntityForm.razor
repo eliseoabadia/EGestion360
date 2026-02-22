@@ -1,0 +1,71 @@
+﻿@using MudBlazor
+@typeparam TEntity where TEntity : class, new()
+
+<MudForm @ref="mudForm">
+    <MudCard Elevation="2" Class="pa-2">
+        @if (ShowHeader)
+        {
+            <MudCardHeader>
+                <MudCardHeaderContent>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        @HeaderTitle
+                    </MudText>
+                </MudCardHeaderContent>
+            </MudCardHeader>
+            <MudDivider Class="mb-4" />
+        }
+        
+        <MudCardContent>
+            @ChildContent
+        </MudCardContent>
+    </MudCard>
+</MudForm>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public string HeaderTitle { get; set; } = string.Empty;
+    
+    [CascadingParameter(Name = "BaseDialog")] 
+    private object? BaseDialog { get; set; }
+    
+    private MudForm mudForm = new();
+    
+    // Propiedades para acceder al estado del formulario
+    public bool IsValid => mudForm.IsValid;
+    public IEnumerable<string> Errors => mudForm.Errors;
+    
+    protected override void OnInitialized()
+    {
+        // Registrar este formulario en el diálogo base
+        if (BaseDialog != null)
+        {
+            var dialogType = BaseDialog.GetType();
+            var method = dialogType.GetMethod("RegisterComponent", new[] { typeof(object) });
+            method?.Invoke(BaseDialog, new[] { this });
+        }
+    }
+    
+    // Métodos públicos para interactuar con el formulario
+    public async Task<bool> ValidateAsync()
+    {
+        await mudForm.Validate();
+        return mudForm.IsValid;
+    }
+    
+    public void ResetValidation()
+    {
+        mudForm.ResetValidation();
+    }
+    
+    // Método para validación asíncrona personalizada
+    public async Task<bool> ValidateWithCustomRules(Func<Task<bool>> customValidation)
+    {
+        await mudForm.Validate();
+        
+        if (!mudForm.IsValid)
+            return false;
+            
+        return await customValidation();
+    }
+}

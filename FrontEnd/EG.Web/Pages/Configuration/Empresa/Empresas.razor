@@ -73,9 +73,10 @@
 
     protected override string ModuleName => "configuracion";
     protected override string SubModuleName => "empresas";
-    protected override Type CreateDialogType => typeof(CrearEmpresa);
-    protected override Type EditDialogType => typeof(EditarEmpresa);
-    protected override Type DeleteDialogType => typeof(EliminarEmpresa);
+
+    protected override Type CreateDialogType => typeof(EmpresaDialog);
+    protected override Type EditDialogType => typeof(EmpresaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EmpresaResponse>);
 
     protected override string GetDefaultSortLabel() => "EmpresaNombre";
 
@@ -90,21 +91,22 @@
         });
     }
 
+    // SOBRESCRIBIR métodos para recargar la tabla
     protected override async Task CreateItem()
     {
         await base.CreateItem();
-        await table.ReloadData();
+        await table.ReloadData();  // Recargar después de crear
     }
 
     protected override async Task EditItem(int id)
     {
         await base.EditItem(id);
-        await table.ReloadData();
+        await table.ReloadData();  // Recargar después de editar
     }
 
     protected override async Task DeleteItem(int id)
     {
         await base.DeleteItem(id);
-        await table.ReloadData();
+        await table.ReloadData();  // Recargar después de eliminar
     }
 }

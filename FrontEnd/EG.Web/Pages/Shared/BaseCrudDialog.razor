@@ -1,0 +1,150 @@
+﻿@using MudBlazor
+@typeparam TItem
+
+<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="false">
+    <DialogContent>
+        <!-- Overlay de carga global -->
+        <MudOverlay Visible="@loading" Fixed="true" ZIndex="10">
+            <div class="d-flex flex-column align-center justify-center" style="height:100%">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="mt-4">@LoadingMessage</MudText>
+            </div>
+        </MudOverlay>
+
+        @if (!loading)
+        {
+            <CascadingValue Value="this" Name="BaseDialog">
+                <MudPaper Class="pa-6 my-6" Elevation="6">
+                    @ChildContent
+
+                    <div class="d-flex justify-end mt-6">
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Secondary"
+                                   Class="mr-2"
+                                   OnClick="Cancelar"
+                                   Disabled="@isProcessing">
+                            Cancelar
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="@ActionColor"
+                                   StartIcon="@ActionIcon"
+                                   OnClick="OnConfirmar"
+                                   Disabled="@(isProcessing || !CanConfirm)">
+                            @if (isProcessing)
+                            {
+                                <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
+                                <span class="ml-2">@ProcessingText</span>
+                            }
+                            else
+                            {
+                                @ActionText
+                            }
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </CascadingValue>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public MaxWidth MaxWidth { get; set; } = MaxWidth.Medium;
+    [Parameter] public Color ActionColor { get; set; } = Color.Primary;
+    [Parameter] public string ActionIcon { get; set; } = Icons.Material.Filled.Save;
+    [Parameter] public string ActionText { get; set; } = "Guardar";
+    [Parameter] public string ProcessingText { get; set; } = "Guardando...";
+    [Parameter] public string LoadingMessage { get; set; } = "Cargando...";
+    [Parameter] public bool CanConfirm { get; set; } = true;
+    [Parameter] public EventCallback OnConfirm { get; set; }  // Este es el parámetro importante
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private bool loading = true;
+    private bool isProcessing = false;
+    private Dictionary<string, object> _registeredComponents = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error en diálogo: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected virtual Task LoadDataAsync() => Task.CompletedTask;
+
+    protected async Task OnConfirmar()
+    {
+        // Verificar que OnConfirm tiene un handler
+        if (!OnConfirm.HasDelegate)
+        {
+            Console.WriteLine("⚠️ OnConfirm no tiene un handler asignado");
+            // Cerrar el diálogo de todas formas?
+            Close(true);
+            return;
+        }
+
+        isProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            await OnConfirm.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error en OnConfirm: {ex.Message}");
+            // Manejar el error si es necesario
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Cancelar() => MudDialog.Cancel();
+
+    public void Close(bool success = true)
+    {
+        if (success)
+            MudDialog.Close(DialogResult.Ok(true));
+        else
+            MudDialog.Close(DialogResult.Cancel());
+    }
+
+    public void RegisterComponent(string key, object component)
+    {
+        _registeredComponents[key] = component;
+    }
+
+    public TComponent? GetComponent<TComponent>(string key) where TComponent : class
+    {
+        return _registeredComponents.TryGetValue(key, out var component)
+            ? component as TComponent
+            : null;
+    }
+
+    private object? _lastRegistered;
+
+    public void RegisterComponent(object component)
+    {
+        _lastRegistered = component;
+    }
+
+    public TComponent? GetComponent<TComponent>() where TComponent : class
+    {
+        return _lastRegistered as TComponent;
+    }
+}
