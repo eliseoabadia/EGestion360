@@ -72,7 +72,6 @@
     protected override string ModuleName => "configuracion";
     protected override string SubModuleName => "usuarios";
 
-    // Usando los nuevos diálogos
     protected override Type CreateDialogType => typeof(UsuarioDialog);
     protected override Type EditDialogType => typeof(UsuarioDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<UsuarioResponse>);
@@ -91,5 +90,109 @@
             Empresa = u.NombreEmpresa,
             Sucursal = u.NombreSucursal
         });
+    }
+
+    // Sobrescribir DeleteItem para manejar la eliminación de usuarios
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            // Mostrar indicador de carga
+            Loading = true;
+            StateHasChanged();
+
+            // Obtener el nombre del usuario para mostrarlo en el diálogo
+            var response = await Service.GetByIdAsync(id);
+            var usuarioNombre = response?.Data?.NombreCompleto ?? "el usuario";
+
+            var parameters = new DialogParameters
+            {
+                ["Id"] = id,
+                ["ItemName"] = usuarioNombre,
+                ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
+                {
+                    try
+                    {
+                        Console.WriteLine($"🗑️ Ejecutando eliminación de usuario ID: {deleteId}");
+
+                        var deleteResponse = await Service.DeleteAsync(deleteId);
+
+                        if (deleteResponse?.Success == true)
+                        {
+                            var message = deleteResponse.Message ?? "Usuario eliminado correctamente";
+                            Console.WriteLine($"✅ {message}");
+                            Snackbar.Add(message, Severity.Success);
+
+                            // Recargar la tabla después de eliminar
+                            await table.ReloadData();
+
+                            return true;
+                        }
+                        else
+                        {
+                            var errorMessage = deleteResponse?.Message ?? "Error al eliminar el usuario";
+                            Console.WriteLine($"❌ {errorMessage}");
+                            Snackbar.Add(errorMessage, Severity.Error);
+                            return false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Error en DeleteFunc: {ex.Message}");
+                        Snackbar.Add($"Error al eliminar: {ex.Message}", Severity.Error);
+                        return false;
+                    }
+                })
+            };
+
+            Console.WriteLine($"📤 Mostrando diálogo de eliminación para usuario ID: {id}");
+
+            var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
+                new DialogOptions
+                {
+                    CloseButton = true,
+                    MaxWidth = MaxWidth.Small,
+                    FullWidth = true,
+                    Position = DialogPosition.Center
+                });
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                Console.WriteLine("✅ Usuario eliminado correctamente");
+            }
+            else
+            {
+                Console.WriteLine("❌ Eliminación cancelada por el usuario");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error en DeleteItem: {ex.Message}");
+            Snackbar.Add($"Error al preparar eliminación: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    // Método auxiliar para recargar la tabla (opcional)
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            Console.WriteLine("🔄 Recargando tabla de usuarios...");
+            await table.ReloadData();
+            StateHasChanged();
+        }
     }
 }

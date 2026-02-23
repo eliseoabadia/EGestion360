@@ -91,22 +91,83 @@
         });
     }
 
-    // SOBRESCRIBIR métodos para recargar la tabla
+    // Sobrescribir para obtener el nombre de la empresa
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.EmpresaNombre ?? "la empresa";
+        }
+        catch
+        {
+            return "la empresa";
+        }
+    }
+
+    // Sobrescribir para recargar la tabla
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            Console.WriteLine("🔄 Recargando tabla de empresas...");
+            await table.ReloadData();
+            StateHasChanged(); // Forzar actualización de la UI
+        }
+        else
+        {
+            Console.WriteLine("⚠️ table es null en ReloadData");
+        }
+    }
+
+    // Opcional: Sobrescribir métodos individuales para más control
     protected override async Task CreateItem()
     {
         await base.CreateItem();
-        await table.ReloadData();  // Recargar después de crear
+        // ReloadData ya se llama en base.CreateItem
     }
 
     protected override async Task EditItem(int id)
     {
         await base.EditItem(id);
-        await table.ReloadData();  // Recargar después de editar
+        // ReloadData ya se llama en base.EditItem
     }
 
     protected override async Task DeleteItem(int id)
     {
-        await base.DeleteItem(id);
-        await table.ReloadData();  // Recargar después de eliminar
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(id);
+        var empresaNombre = response?.Data?.EmpresaNombre ?? "la empresa";
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = empresaNombre,
+            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
+            {
+                var deleteResponse = await Service.DeleteAsync(deleteId);
+                if (deleteResponse?.Success == true)
+                {
+                    Snackbar.Add(deleteResponse.Message ?? "Empresa eliminada correctamente", Severity.Success);
+                    await table.ReloadData(); // Recargar aquí mismo
+                    return true;
+                }
+                else
+                {
+                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
+                    return false;
+                }
+            })
+        };
+
+        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        await dialog.Result;
     }
 }

@@ -1,0 +1,228 @@
+﻿@using MudBlazor
+@using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Services.Configuration
+@inject IEmpresaService empresaService
+@inject IGenericCrudService<DepartamentoResponse> _service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="DepartamentoResponse"
+                @ref="dialog"
+                MaxWidth="MaxWidth.Small"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos del departamento..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="DepartamentoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <!-- Nombre del departamento -->
+            <MudItem xs="12">
+                <MudTextField @bind-Value="departamento.DepartamentoNombre"
+                              Label="Nombre del Departamento"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El nombre del departamento es requerido"
+                              Validation="@(new Func<string, IEnumerable<string>>(ValidarNombre))"
+                              For="@(() => departamento.DepartamentoNombre)" />
+            </MudItem>
+
+            <!-- Empresa -->
+            <MudItem xs="12">
+                <MudSelect Label="Empresa"
+                           @bind-Value="departamento.PkidEmpresa"
+                           T="int?"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar una empresa"
+                           Disabled="@(Id.HasValue && empresas.Count == 1)"
+                           For="@(() => departamento.PkidEmpresa)">
+                    <MudSelectItem T="int?" Value="null">Seleccione una empresa</MudSelectItem>
+                    @foreach (var empresa in empresas)
+                    {
+                        <MudSelectItem T="int?" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Estado Activo/Inactivo -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus del Departamento</MudText>
+                    <MudDivider Class="mb-3" />
+
+                    @if (Id.HasValue)
+                    {
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="departamento.DepartamentoActivo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(departamento.DepartamentoActivo == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-center">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Activo</MudChip>
+                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                (Los nuevos departamentos se crean activos)
+                            </MudText>
+                        </div>
+                        <input type="hidden" @bind="departamento.DepartamentoActivo" />
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private BaseCrudDialog<DepartamentoResponse> dialog = null!;
+    private BaseEntityForm<DepartamentoResponse> form = null!;
+    private DepartamentoResponse departamento = new() { DepartamentoActivo = true };
+    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
+
+    private string dialogTitle => Id.HasValue ? "Editar Departamento" : "Nuevo Departamento";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEmpresas();
+
+        if (Id.HasValue)
+        {
+            await CargarDepartamento();
+        }
+    }
+
+    private async Task CargarEmpresas()
+    {
+        try
+        {
+            var response = await empresaService.GetAllEmpresasAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                empresas = response.Items.ToList();
+                Console.WriteLine($"✅ Cargadas {empresas.Count} empresas");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No se pudieron cargar las empresas");
+                Snackbar.Add(response?.Message ?? "Error al cargar empresas", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error cargando empresas: {ex.Message}");
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarDepartamento()
+    {
+        try
+        {
+            var response = await _service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                departamento = response.Data;
+                Console.WriteLine($"✅ Departamento cargado: {departamento.DepartamentoNombre}, Empresa ID: {departamento.PkidEmpresa}");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No se pudo cargar el departamento");
+                Snackbar.Add(response?.Message ?? "Error al cargar departamento", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error cargando departamento: {ex.Message}");
+            Snackbar.Add($"Error al cargar departamento: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private IEnumerable<string> ValidarNombre(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            yield return "El nombre del departamento es requerido";
+            yield break;
+        }
+
+        nombre = nombre.Trim();
+
+        if (nombre.Length < 3)
+            yield return "El nombre debe tener al menos 3 caracteres";
+
+        if (nombre.Length > 100)
+            yield return "El nombre no puede exceder los 100 caracteres";
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            return;
+        }
+
+        if (!departamento.PkidEmpresa.HasValue || departamento.PkidEmpresa.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar una empresa", Severity.Warning);
+            return;
+        }
+
+        if (!Id.HasValue)
+        {
+            departamento.DepartamentoActivo = true;
+            departamento.PkidDepartamento = 0;
+            departamento.Rfc = string.Empty;
+            departamento.EmpresaActivo = true;
+            departamento.EmpresaNombre = string.Empty;
+        }
+
+        try
+        {
+            ApiResponse<DepartamentoResponse> response;
+
+            if (Id.HasValue)
+            {
+                Console.WriteLine($"📝 Actualizando departamento ID: {departamento.PkidDepartamento}");
+                response = await _service.UpdateAsync(departamento, departamento.PkidDepartamento!.Value);
+            }
+            else
+            {
+                Console.WriteLine($"➕ Creando nuevo departamento: {departamento.DepartamentoNombre}");
+                response = await _service.CreateAsync(departamento);
+            }
+
+            if (response?.Success == true)
+            {
+                var message = response.Message ??
+                    $"✅ Departamento {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
+
+                Snackbar.Add(message, Severity.Success);
+                dialog.Close(true);
+            }
+            else
+            {
+                var errorMessage = response?.Message ?? "Error en la operación";
+                Console.WriteLine($"❌ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+}

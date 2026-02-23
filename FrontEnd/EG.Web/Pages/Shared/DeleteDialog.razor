@@ -2,6 +2,7 @@
 @typeparam TItem
 
 <BaseCrudDialog TItem="TItem"
+                @ref="dialog"
                 MaxWidth="MaxWidth.Small"
                 ActionColor="Color.Error"
                 ActionIcon="@Icons.Material.Filled.Delete"
@@ -26,33 +27,37 @@
 </BaseCrudDialog>
 
 @code {
-    [Parameter] public int Id { get; set; }  // Cambiado de int? a int (no nullable)
+    [Parameter] public int Id { get; set; }
     [Parameter] public string? ItemName { get; set; }
-    [Parameter] public Func<int, Task<bool>>? DeleteFunc { get; set; }  // Ahora recibe int no nullable
+    [Parameter] public Func<int, Task<bool>>? DeleteFunc { get; set; }
 
+    private BaseCrudDialog<TItem> dialog = null!;
     private bool isDeleted = false;
 
     private async Task Eliminar()
     {
-        // Verificar que DeleteFunc no sea null
+        Console.WriteLine("🗑️ Eliminar llamado");
         if (DeleteFunc == null)
         {
-            Console.WriteLine("❌ Error: DeleteFunc no está configurado");
+            Console.WriteLine("❌ DeleteFunc es null");
             return;
         }
 
         try
         {
             var result = await DeleteFunc(Id);
+            Console.WriteLine($"📊 Resultado eliminación: {result}");
+
             if (result)
             {
+                Console.WriteLine("✅ Eliminación exitosa, cerrando diálogo");
                 isDeleted = true;
-                // El diálogo se cerrará automáticamente desde BaseCrudDialog
+                dialog.Close(true);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error al eliminar: {ex.Message}");
+            Console.WriteLine($"❌ Error en Eliminar: {ex.Message}");
         }
     }
 }

@@ -81,6 +81,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(150);
+            entity.Property(e => e.ReferenceId).HasAnnotation("Relational:DefaultConstraintName", "CONSTRAINT_DF_AspNetClaims_ReferenceId");
             entity.Property(e => e.RoleId).HasMaxLength(128);
             entity.Property(e => e.SubGroup).HasMaxLength(100);
             entity.Property(e => e.TokenFormat).HasMaxLength(50);
@@ -110,7 +111,8 @@ public partial class EGestionContext : DbContext
             entity.HasKey(e => e.Id).HasName("CONSTRAINT_PK_AspNetClaimValues");
 
             entity.Property(e => e.Created)
-                .HasDefaultValueSql("(getdate())", "CONSTRAINT_DF_AspNetClaimValues_Created")
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "CONSTRAINT_DF_AspNetClaimValues_Created")
                 .HasColumnType("datetime");
             entity.Property(e => e.Value)
                 .IsRequired()

@@ -319,6 +319,12 @@ namespace EG.ApiCore.Controllers.General
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.Activo = true;
 
+                var _sepNombre = SepararNombre(viewDto.NombreCompleto);
+                dto.Nombre = _sepNombre.Nombre;
+                dto.ApellidoPaterno = _sepNombre.ApellidoPaterno;
+                dto.ApellidoMaterno = _sepNombre.ApellidoMaterno;
+                dto.Telefono = viewDto.TelefonoUsuario ?? "";
+
                 // Asegurar que el email esté en minúsculas para consistencia
                 if (!string.IsNullOrWhiteSpace(dto.Email))
                     dto.Email = dto.Email.ToLower().Trim();
@@ -654,6 +660,32 @@ namespace EG.ApiCore.Controllers.General
             }
         }
 
+        private (string Nombre, string ApellidoPaterno, string ApellidoMaterno) SepararNombre(string nombreCompleto)
+        {
+            if (string.IsNullOrWhiteSpace(nombreCompleto))
+                return (string.Empty, string.Empty, string.Empty);
 
+            var partes = nombreCompleto.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (partes.Length == 1)
+            {
+                // Solo un nombre, sin apellidos
+                return (partes[0], string.Empty, string.Empty);
+            }
+            else if (partes.Length == 2)
+            {
+                // Nombre y un solo apellido
+                return (partes[0], partes[1], string.Empty);
+            }
+            else
+            {
+                // Caso típico: Nombre(s) + Apellido paterno + Apellido materno
+                var apellidoMaterno = partes[^1];       // último elemento
+                var apellidoPaterno = partes[^2];       // penúltimo elemento
+                var nombres = string.Join(" ", partes.Take(partes.Length - 2));
+
+                return (nombres, apellidoPaterno, apellidoMaterno);
+            }
+        }
     }
 }

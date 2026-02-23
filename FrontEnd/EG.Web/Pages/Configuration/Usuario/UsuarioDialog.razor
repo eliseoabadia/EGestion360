@@ -8,7 +8,7 @@
 
 <BaseCrudDialog TItem="UsuarioResponse"
                 @ref="dialog"
-                MaxWidth="MaxWidth.Medium"
+                MaxWidth="MaxWidth.Large"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos del usuario..."
@@ -20,8 +20,8 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            <!-- Datos personales -->
-            <MudItem xs="12" md="6">
+            <!-- Datos personales - Fila 1 -->
+            <MudItem xs="12" md="8">
                 <MudTextField @bind-Value="usuario.NombreCompleto"
                               Label="Nombre completo"
                               Variant="Variant.Outlined"
@@ -32,7 +32,7 @@
             </MudItem>
 
             <!-- Sucursal -->
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="4">
                 <MudSelect Label="Sucursal"
                            @bind-Value="usuario.IdEmpresa"
                            T="int"
@@ -48,7 +48,7 @@
                 </MudSelect>
             </MudItem>
 
-            <!-- Contacto -->
+            <!-- Contacto - Fila 2 -->
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.Email"
                               Label="Email"
@@ -64,11 +64,11 @@
                 <MudTextField @bind-Value="usuario.TelefonoPrincipal"
                               Label="Teléfono"
                               Variant="Variant.Outlined"
-                              Mask="@(new PatternMask("(##) ####-####"))"
                               Placeholder="(99) 9999-9999" />
+                @* Sin Mask para permitir edición libre *@
             </MudItem>
 
-            <!-- Dirección -->
+            <!-- Dirección - Fila 3 -->
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.Direccion1"
                               Label="Dirección 1"
@@ -81,55 +81,100 @@
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <!-- Código Postal -->
-            <MudItem xs="12" md="4">
+            <!-- Fila 4: 4 columnas -->
+            <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.CodigoPostalUsuario"
                               Label="Código Postal"
                               Variant="Variant.Outlined"
-                              Mask="@(new PatternMask("#####"))"
                               Placeholder="12345" />
+                @* Sin Mask para permitir edición libre *@
             </MudItem>
 
-            <!-- Campos adicionales -->
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.PayrollId"
                               Label="Payroll ID"
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.NumeroSocial"
                               Label="Número Social"
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.Gafete"
                               Label="Gafete"
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <!-- Estado del Usuario -->
+            <!-- Fila 5: Estado y Género en la misma línea -->
             <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px; height: 100%;">
                     <MudText Class="mb-2" Typo="Typo.subtitle2">Estado del Usuario</MudText>
                     <MudDivider Class="mb-3" />
-                    <MudRadioGroup @bind-Value="usuario.UsuarioActivo" Dense="true">
-                        <MudRadio Value="true" Color="Color.Success">Activo</MudRadio>
-                        <MudRadio Value="false" Color="Color.Error">Inactivo</MudRadio>
-                    </MudRadioGroup>
+
+                    @if (Id.HasValue && usuario.UsuarioActivo == true)
+                    {
+                        <!-- Caso 1: Edición - Usuario ACTIVO (puede dar de baja) -->
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="usuario.UsuarioActivo"
+                                       Color="Color.Error"
+                                       ThumbIcon="@Icons.Material.Filled.PowerOff">
+                                <MudText>Dar de baja</MudText>
+                            </MudSwitch>
+                            <MudTooltip Text="Los usuarios inactivos no podrán acceder al sistema">
+                                <MudIcon Icon="@Icons.Material.Filled.Info"
+                                         Size="Size.Small"
+                                         Class="ml-2"
+                                         Color="Color.Info" />
+                            </MudTooltip>
+                        </div>
+                    }
+                    else if (Id.HasValue && usuario.UsuarioActivo == false)
+                    {
+                        <!-- Caso 2: Edición - Usuario INACTIVO (solo lectura) -->
+                        <div class="d-flex align-center">
+                            <MudBadge Color="Color.Error"
+                                      Variant="Variant.Filled"
+                                      Size="Size.Small">
+                                Inactivo
+                            </MudBadge>
+                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                (Usuario dado de baja)
+                            </MudText>
+                        </div>
+                        <input type="hidden" @bind="usuario.UsuarioActivo" />
+                    }
+                    else
+                    {
+                        <!-- Caso 3: Alta - Nuevo usuario (siempre activo) -->
+                        <div class="d-flex align-center">
+                            <MudBadge Color="Color.Success"
+                                      Variant="Variant.Filled"
+                                      Size="Size.Small">
+                                Activo
+                            </MudBadge>
+                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                (Los nuevos usuarios se crean activos)
+                            </MudText>
+                        </div>
+                        <input type="hidden" @bind="usuario.UsuarioActivo" />
+                    }
                 </MudPaper>
             </MudItem>
 
             <!-- Género -->
             <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px; height: 100%;">
                     <MudText Class="mb-2" Typo="Typo.subtitle2">Género</MudText>
                     <MudDivider Class="mb-3" />
-                    <MudRadioGroup @bind-Value="usuario.Sexo" Dense="true">
-                        <MudRadio Value="true" Color="Color.Primary">Femenino</MudRadio>
-                        <MudRadio Value="false" Color="Color.Primary">Masculino</MudRadio>
-                    </MudRadioGroup>
+                    <div class="d-flex align-center" style="min-height: 36px;">
+                        <MudRadioGroup @bind-Value="usuario.Sexo" Dense="true" Class="d-flex">
+                            <MudRadio Value="true" Color="Color.Primary">Femenino</MudRadio>
+                            <MudRadio Value="false" Color="Color.Primary" Class="ml-4">Masculino</MudRadio>
+                        </MudRadioGroup>
+                    </div>
                 </MudPaper>
             </MudItem>
         </MudGrid>
@@ -137,7 +182,7 @@
 </BaseCrudDialog>
 
 @code {
-    [Parameter] public int? Id { get; set; }  // CORREGIDO: Ahora usa Id en lugar de UsuarioId
+    [Parameter] public int? Id { get; set; }
 
     private BaseCrudDialog<UsuarioResponse> dialog = null!;
     private BaseEntityForm<UsuarioResponse> form = null!;
@@ -152,7 +197,7 @@
     {
         await CargarSucursales();
 
-        if (Id.HasValue)  // CORREGIDO
+        if (Id.HasValue)
         {
             await CargarUsuario();
         }
@@ -185,11 +230,11 @@
     {
         try
         {
-            var response = await _service.GetByIdAsync(Id!.Value);  // CORREGIDO
+            var response = await _service.GetByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 usuario = response.Data;
-                Console.WriteLine($"✅ Usuario cargado: {usuario.NombreCompleto}");
+                Console.WriteLine($"✅ Usuario cargado: {usuario.NombreCompleto}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
             }
             else
             {
@@ -229,14 +274,14 @@
             yield break;
         }
 
-        email = email.Trim();
+        email = email.Trim().ToLowerInvariant();
 
         if (!email.Contains("@") || !email.Contains("."))
         {
             yield return "El email no tiene un formato válido";
+            yield break;
         }
 
-        // Validación más estricta con regex
         if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
             yield return "El formato del email no es válido";
@@ -252,21 +297,18 @@
         if (palabras.Length == 0)
             return string.Empty;
 
-        // Tomar primera letra de cada palabra (máximo 3 caracteres)
         var iniciales = string.Concat(palabras.Select(p => char.ToUpper(p[0])));
         return iniciales.Length > 3 ? iniciales.Substring(0, 3) : iniciales;
     }
 
     private async Task GuardarCambiosAsync()
     {
-        // Validar el formulario
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
             return;
         }
 
-        // Validar selección de sucursal
         if (usuario.IdEmpresa <= 0)
         {
             Snackbar.Add("Debe seleccionar una sucursal", Severity.Warning);
@@ -275,19 +317,20 @@
 
         try
         {
-            // Generar iniciales automáticamente
             usuario.Iniciales = GenerarIniciales();
+
+            Console.WriteLine($"📝 Estado final del usuario: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
 
             ApiResponse<UsuarioResponse> response;
 
-            if (Id.HasValue)  // CORREGIDO
+            if (Id.HasValue)
             {
-                Console.WriteLine($"📝 Actualizando usuario ID: {usuario.PkIdUsuario}");
+                Console.WriteLine($"📝 Actualizando usuario ID: {usuario.PkIdUsuario}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
                 response = await _service.UpdateAsync(usuario, usuario.PkIdUsuario);
             }
             else
             {
-                Console.WriteLine($"➕ Creando nuevo usuario: {usuario.NombreCompleto}");
+                Console.WriteLine($"➕ Creando nuevo usuario: {usuario.NombreCompleto} (Activo)");
                 response = await _service.CreateAsync(usuario);
             }
 

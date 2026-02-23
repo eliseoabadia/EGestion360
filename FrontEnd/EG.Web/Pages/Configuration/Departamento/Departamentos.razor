@@ -1,520 +1,159 @@
 ﻿@page "/configuracion/departamentos"
-@using System.ComponentModel.DataAnnotations
-@using EG.Web.Auth
-@using EG.Web.Contracs
-@using EG.Web.Contracs.Configuration
 @using EG.Web.Models.Configuration
-@using EG.Web.Services
-@using Microsoft.AspNetCore.Components.Forms
-@using System.Text
-@using MiniExcelLibs
-@using MudBlazor
-@using System.Reflection
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<DepartamentoResponse, DepartamentoResponse>
 
-@inject NavigationManager NavigationManager
-@inject IGenericCrudService<DepartamentoResponse> _service
-@inject ISnackbar Snackbar
-@inject IJSRuntime _jsRuntime
-@inject IDialogService DialogService
-@inject AuthenticationStateProvider AuthenticationStateProvider
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Gestión de Departamentos"
+                    Subtitle="Administra y mantén el registro de departamentos del sistema"
+                    Icon="@Icons.Material.Filled.Domain"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
 
-<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <GenericTable TItem="DepartamentoResponse"
+                      @ref="table"
+                      Title="Lista de Departamentos"
+                      SearchPlaceholder="Buscar por nombre..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
 
-    @if (!_isInitialized)
-    {
-        <!-- Loading inicial -->
-        <MudOverlay Visible="true" Fixed="true" ZIndex="10">
-            <div class="d-flex flex-column align-center justify-center" style="height:100%">
-                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-                <MudText Class="mt-4">Cargando...</MudText>
-            </div>
-        </MudOverlay>
-    }
-    else if (!_hasAccess)
-    {
-        <!-- Acceso denegado -->
-        <MudCard Elevation="3" Class="mt-8">
-            <MudCardContent>
-                <div class="d-flex flex-column align-center justify-center" style="min-height: 400px;">
-                    <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
-                    <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">
-                        No tienes permisos para acceder a esta página.
-                    </MudText>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NavigateToHome" Class="mt-6">
-                        Volver al inicio
-                    </MudButton>
-                </div>
-            </MudCardContent>
-        </MudCard>
-    }
-    else
-    {
-        <!-- Contenido original de Departamentos -->
-        <MudCard Elevation="1" Class="mb-4">
-            <MudCardContent>
-                <MudGrid Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                    <MudItem>
-                        <MudStack Spacing="2">
-                            <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Domain" Color="Color.Primary" Size="Size.Large" />
-                                Gestión de Departamentos
-                            </MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="ml-6">
-                                Administra los departamentos del sistema
-                            </MudText>
-                        </MudStack>
-                    </MudItem>
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidDepartamento" T="DepartamentoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="DepartamentoNombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
 
-                    <MudItem>
-                        <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
-                            @if (_canCreate)
-                            {
-                                <MudTooltip Text="Nuevo Departamento">
-                                    <MudButton StartIcon="@Icons.Material.Filled.Add" Visible="_canCreate" OnClick="CrearDepartamento" Size="Size.Small" />
-                                </MudTooltip>
-                            }
-                            <MudTooltip Text="Refrescar...">
-                                <MudButton StartIcon="@Icons.Material.Filled.Refresh" OnClick="OnSearchInput" Size="Size.Small" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
-
-        <MudPaper Elevation="2" Class="pa-4 rounded-lg">
-            <MudTable ServerData="LoadServerData"
-                      RowsPerPage="@pageSize"
-                      Page="@currentPage"
-                      RowCount="@totalCount"
-                      @ref="mudTableRef"
-                      Dense="@dense"
-                      Hover="@hover"
-                      Loading="@loading"
-                      ReadOnly="@ronly"
-                      SortLabel="Sort By"
-                      InitialSortDirection="SortDirection.Descending"
-                      @bind-SelectedItem="selectedItem"
-                      IsEditRowSwitchingBlocked="@blockSwitch"
-                      ApplyButtonPosition="@applyButtonPosition"
-                      EditButtonPosition="@editButtonPosition"
-                      EditTrigger="@editTrigger">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Lista de Departamentos</MudText>
-                    <MudSpacer />
-                    @if (_canExport)
-                    {
-                        <MudTooltip Text="Exportar a Excel">
-                            <MudButton Variant="Variant.Filled" 
-                                Color="Color.Success" 
-                                StartIcon="@Icons.Material.Filled.FileDownload" 
-                                Visible="_canExport"
-                                OnClick="ExportarExcel" 
-                                Size="Size.Small" 
-                                Class="mr-2" 
-                                Disabled="@loading">
-                                @if (loading)
-                                {
-                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                    <span>Exportando...</span>
-                                }
-                                else
-                                {
-                                    <span>Exportar Excel</span>
-                                }
-                            </MudButton>
-                        </MudTooltip>
-                    }
-                    <MudTextField @bind-Value="searchString"
-                                  Placeholder="Buscar por nombre..."
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Search"
-                                  IconSize="Size.Medium"
-                                  Immediate="true"
-                                  @ref="txtSearch"
-                                  OnKeyUp="HandleKeyUp"
-                                  Class="mt-0">
-                    </MudTextField>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="PkidDepartamento" T="DepartamentoResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="DepartamentoNombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
-                    <MudTh>Estado</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>
-                        <MudTooltip Text="Editar departamento">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           Visible="_canUpdate"
-                                           OnClick="@(() => EditarDepartamento(context.PkidDepartamento.Value))" />
-                        </MudTooltip>
-
-                        <MudTooltip Text="Eliminar departamento" >
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           Visible="_canDelete"
-                                           OnClick="@(() => EliminarDepartamento(context.PkidDepartamento.Value))" />
-                        </MudTooltip>
-                    </MudTd>
-
-                    <MudTd DataLabel="ID">@context.PkidDepartamento</MudTd>
-                    <MudTd DataLabel="Nombre">@context.DepartamentoNombre</MudTd>
-                    <MudTd DataLabel="Empresa">@context.EmpresaNombre</MudTd>
-                    <MudTd DataLabel="Estado">
-                        <MudBadge Color="@(context.DepartamentoActivo == true ? Color.Success : Color.Error)"
-                                  Variant="Variant.Filled"
-                                  Size="Size.Small">
-                            @(context.DepartamentoActivo == true ? "Activo" : "Inactivo")
-                        </MudBadge>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText>No se encontraron registros</MudText>
-                </NoRecordsContent>
-                <LoadingContent>
-                    <MudText>Cargando...</MudText>
-                </LoadingContent>
-                <PagerContent>
-                    <MudTablePager RowsPerPageString="Filas por página"
-                                   FirstPageIcon="@Icons.Material.Filled.FirstPage"
-                                   LastPageIcon="@Icons.Material.Filled.LastPage"
-                                   NextPageIcon="@Icons.Material.Filled.NavigateNext"
-                                   PreviousPageIcon="@Icons.Material.Filled.NavigateBefore"
-                                   PageSizeOptions="new int[] { 5, 10, 20, 50 }"
-                                   ShowFirstLastPage="true"
-                                   ShowPageSizeSelector="true"
-                                   ShowPaginationText="true"
-                                   PaginationTextFormat="Página {0} de {1}" />
-                </PagerContent>
-            </MudTable>
-        </MudPaper>
-    }
-
-</MudContainer>
+            <Row Context="departamento">
+                <MudTd>
+                    <MudTooltip Text="Editar departamento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(departamento.PkidDepartamento!.Value))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar departamento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(departamento.PkidDepartamento!.Value))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@departamento.PkidDepartamento</MudTd>
+                <MudTd>@departamento.DepartamentoNombre</MudTd>
+                <MudTd>@departamento.EmpresaNombre</MudTd>
+                <MudTd>
+                    <MudBadge Color="@(departamento.DepartamentoActivo == true ? Color.Success : Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
 
 @code {
-    // Inyectar AuthenticationProviderJWT para acceder a métodos de permisos
-    [Inject]
-    private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
+    private GenericTable<DepartamentoResponse> table = null!;
 
-    private CancellationTokenSource _cancellationTokenSource = new();
+    protected override string ModuleName => "configuracion";
+    protected override string SubModuleName => "departamentos";
 
-    private IList<DepartamentoResponse> Elements = new List<DepartamentoResponse>();
-    private int totalCount = 0;
-    private bool _isInitialized = false;
-    private bool _hasAccess = false;
+    protected override Type CreateDialogType => typeof(DepartamentoDialog);
+    protected override Type EditDialogType => typeof(DepartamentoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<DepartamentoResponse>);
 
-    // Permisos específicos para esta página
-    private bool _canView = false;
-    private bool _canCreate = false;
-    private bool _canUpdate = false;
-    private bool _canDelete = false;
-    private bool _canExport = false;
+    protected override string GetDefaultSortLabel() => "DepartamentoNombre";
 
-    private bool dense = true;
-    private bool hover = true;
-    private bool ronly = true;
-    private bool blockSwitch = false;
-
-    private DepartamentoResponse selectedItem = new DepartamentoResponse();
-    private MudTable<DepartamentoResponse> mudTableRef = new MudTable<DepartamentoResponse>();
-    private MudTextField<string> txtSearch = new MudTextField<string>();
-
-    private string searchString = string.Empty;
-    private EstadoFiltro? selectedEstado = null;
-    private bool loading = true;
-    private int currentPage = 0;
-    private int pageSize = 10;
-    private CancellationTokenSource searchCts = new CancellationTokenSource();
-
-    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
-    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
-    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
-    private SortDirection sortDirection;
-    private string sortLabel = string.Empty;
-
-    public enum EstadoFiltro
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<DepartamentoResponse> items)
     {
-        [Display(Name = "Todos los estados")]
-        Todos,
-        [Display(Name = "Activo")]
-        Activo,
-        [Display(Name = "Inactivo")]
-        Inactivo
+        return items.Select(d => new
+        {
+            ID = d.PkidDepartamento,
+            Nombre = d.DepartamentoNombre,
+            Empresa = d.EmpresaNombre,
+            Estado = d.DepartamentoActivo == true ? "Activo" : "Inactivo"
+        });
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    // Obtener el nombre del departamento para eliminar
+    protected override async Task<string> GetItemNameForDelete(int id)
     {
-        if (firstRender && !_isInitialized)
+        try
         {
-            _isInitialized = true;
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.DepartamentoNombre ?? "el departamento";
+        }
+        catch
+        {
+            return "el departamento";
+        }
+    }
 
-            try
+    // Recargar la tabla
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            Console.WriteLine("🔄 Recargando tabla de departamentos...");
+            await table.ReloadData();
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("⚠️ table es null en ReloadData");
+        }
+    }
+
+    // Personalizar la eliminación para usar el diálogo genérico
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(id);
+        var departamentoNombre = response?.Data?.DepartamentoNombre ?? "el departamento";
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = departamentoNombre,
+            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
             {
-                // Verificar permisos usando AuthenticationProviderJWT
-                _canView = AuthProvider.HasPermission("configuracion", "departamentos", "view");
-
-                if (!_canView)
+                var deleteResponse = await Service.DeleteAsync(deleteId);
+                if (deleteResponse?.Success == true)
                 {
-                    _hasAccess = false;
-                    StateHasChanged();
-                    // Redirigir al home después de un pequeño delay
-                    await Task.Delay(2000);
-                    NavigationManager.NavigateTo("/", forceLoad: true);
-                    return;
+                    Snackbar.Add(deleteResponse.Message ?? "Departamento eliminado correctamente", Severity.Success);
+                    await table.ReloadData();
+                    return true;
                 }
+                else
+                {
+                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
+                    return false;
+                }
+            })
+        };
 
-                // Si tiene acceso, verificar permisos específicos
-                _canCreate = AuthProvider.HasPermission("configuracion", "departamentos", "new");
-                _canUpdate = AuthProvider.HasPermission("configuracion", "departamentos", "update");
-                _canDelete = AuthProvider.HasPermission("configuracion", "departamentos", "delete");
-                _canExport = AuthProvider.HasPermission("configuracion", "departamentos", "CanExportToExcel");
+        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
-                _hasAccess = true;
-                loading = false;
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
-                await Task.Delay(1000);
-                NavigationManager.NavigateTo("/", forceLoad: true);
-            }
-        }
-    }
-
-    private async Task<TableData<DepartamentoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
-    {
-        loading = true;
-        StateHasChanged();
-
-        try
-        {
-            currentPage = state.Page + 1;
-            pageSize = state.PageSize;
-            sortLabel = state.SortLabel ?? "Nombre";
-            sortDirection = state.SortDirection;
-
-            // string estadoFiltro = selectedEstado switch
-            // {
-            //     EstadoFiltro.Activo => "true",
-            //     EstadoFiltro.Inactivo => "false",
-            //     EstadoFiltro.Todos or null => null,
-            //     _ => null
-            // };
-
-            var response = await _service.GetAllPaginadoAsync(
-                currentPage,
-                pageSize,
-                searchString,
-                sortLabel,
-                sortDirection,
-                null
-            );
-
-            if (response != null && response.Success)
-            {
-                Elements = response.Items;
-                totalCount = response.TotalCount;
-            }
-            else
-            {
-                Elements = new List<DepartamentoResponse>();
-                totalCount = 0;
-                Snackbar.Add(response?.Message ?? "Error al cargar departamentos", Severity.Error);
-            }
-
-            return new TableData<DepartamentoResponse>
-            {
-                Items = Elements,
-                TotalItems = totalCount
-            };
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al cargar departamentos: {ex.Message}", Severity.Error);
-            return new TableData<DepartamentoResponse>
-            {
-                Items = new List<DepartamentoResponse>(),
-                TotalItems = 0
-            };
-        }
-        finally
-        {
-            loading = false;
-            StateHasChanged();
-        }
-    }
-
-    private async void NavigateToHome()
-    {
-        NavigationManager.NavigateTo("/");
-    }
-
-    private async void OnSearchInput()
-    {
-        searchCts?.Cancel();
-        searchCts = new CancellationTokenSource();
-        try
-        {
-            await Task.Delay(500, searchCts.Token);
-            if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
-                await mudTableRef.ReloadServerData();
-        }
-        catch (TaskCanceledException) { }
-    }
-
-    private async void HandleKeyUp(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter")
-            await mudTableRef.ReloadServerData();
-    }
-
-    private async Task CrearDepartamento()
-    {
-        if (!_canCreate)
-        {
-            Snackbar.Add("No tienes permisos para crear departamentos", Severity.Warning);
-            return;
-        }
-
-        try
-        {
-            var dialog = await DialogService.ShowAsync<CrearDepartamento>("Crear Departamento",
-                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
-            var result = await dialog.Result;
-            if (!result!.Canceled) await mudTableRef.ReloadServerData();
-        }
-        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
-    }
-
-    private async Task EditarDepartamento(int id)
-    {
-        if (!_canUpdate)
-        {
-            Snackbar.Add("No tienes permisos para editar departamentos", Severity.Warning);
-            return;
-        }
-
-        try
-        {
-            var parameters = new DialogParameters { ["DepartamentoId"] = id };
-            var dialog = await DialogService.ShowAsync<EditarDepartamento>("Editar Departamento", parameters,
-                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
-            var result = await dialog.Result;
-            if (!result!.Canceled) await mudTableRef.ReloadServerData();
-        }
-        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
-    }
-
-    private async Task EliminarDepartamento(int id)
-    {
-        if (!_canDelete)
-        {
-            Snackbar.Add("No tienes permisos para eliminar departamentos", Severity.Warning);
-            return;
-        }
-
-        try
-        {
-            var parameters = new DialogParameters { ["DepartamentoId"] = id };
-            var dialog = await DialogService.ShowAsync<EliminarDepartamento>("Eliminar Departamento", parameters,
-                new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
-            var result = await dialog.Result;
-            if (!result!.Canceled)
-            {
-                if (Elements.Count == 1 && currentPage > 1) currentPage--;
-                await mudTableRef.ReloadServerData();
-            }
-        }
-        catch (Exception ex) { Snackbar.Add("Error: " + ex.Message, Severity.Error); }
-    }
-
-    private async Task ExportarExcel()
-    {
-        try
-        {
-            if (!_canExport)
-            {
-                Snackbar.Add("No tienes permisos para exportar datos", Severity.Warning);
-                return;
-            }
-
-            loading = true;
-            StateHasChanged();
-
-            var _currentPage = -1;
-
-            // Convertir el enum a string para la exportación
-            string estadoFiltro = selectedEstado switch
-            {
-                EstadoFiltro.Activo => "true",
-                EstadoFiltro.Inactivo => "false",
-                EstadoFiltro.Todos or null => null,
-                _ => null
-            };
-
-            var response = await _service.GetAllPaginadoAsync(
-                _currentPage,
-                pageSize,
-                searchString,
-                sortLabel,
-                sortDirection,
-                null//estadoFiltro
-            );
-
-            if (response == null || !response.Success || response.Items == null || !response.Items.Any())
-            {
-                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
-                loading = false;
-                StateHasChanged();
-                return;
-            }
-
-            Elements = response.Items;
-            totalCount = response.TotalCount;
-
-            var excelData = Elements.Select(d => new
-            {
-                ID = d.PkidDepartamento,
-                Nombre = d.DepartamentoNombre,
-                Empresa = d.EmpresaNombre,
-                Estado = (d.DepartamentoActivo == true) ? "Activo" : "Inactivo"
-            }).ToList();
-
-            using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
-
-            var fileBytes = memoryStream.ToArray();
-            var base64 = Convert.ToBase64String(fileBytes);
-
-            await _jsRuntime.InvokeVoidAsync("downloadFile", base64,
-                $"Departamentos_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-            Snackbar.Add($"Exportación exitosa: {Elements.Count} registros", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            loading = false;
-            StateHasChanged();
-        }
-    }
-
-    public void Dispose()
-    {
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        GC.SuppressFinalize(this);
+        await dialog.Result;
     }
 }

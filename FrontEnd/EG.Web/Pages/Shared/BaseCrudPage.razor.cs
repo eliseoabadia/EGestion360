@@ -15,8 +15,6 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     [Inject] protected ISnackbar Snackbar { get; set; } = null!;
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] protected IDialogService DialogService { get; set; } = null!;
-    //[Inject] protected AuthService AuthService { get; set; } = null!;
-
     [Inject] private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
     [Inject] protected IGenericCrudService<TResponse> Service { get; set; } = null!;
 
@@ -160,11 +158,13 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             await Task.Delay(500, SearchCts.Token);
             if (!SearchCts.Token.IsCancellationRequested)
             {
-                // Método para recargar - será implementado en las páginas hijas
+                await ReloadData();
             }
         }
         catch (TaskCanceledException) { }
     }
+
+    // ==================== MÉTODOS CRUD MEJORADOS ====================
 
     protected virtual async Task CreateItem()
     {
@@ -180,7 +180,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
-            // Método para recargar - será implementado en las páginas hijas
+            await ReloadData();
         }
     }
 
@@ -199,7 +199,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
-            // Método para recargar - será implementado en las páginas hijas
+            await ReloadData();
         }
     }
 
@@ -211,16 +211,77 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        var parameters = new DialogParameters { ["Id"] = id };
+        // Obtener el nombre del item para mostrarlo en el diálogo
+        var itemName = await GetItemNameForDelete(id);
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = itemName,
+            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
+            {
+                var result = await ExecuteDelete(deleteId);
+                if (result)
+                {
+                    // FORZAR recarga inmediata
+                    await ReloadData();
+                }
+                return result;
+            })
+        };
+
         var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
             new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
-        var result = await dialog.Result;
-        if (!result!.Canceled)
+        await dialog.Result;
+    }
+
+    // Método para obtener el nombre del item (sobrescribir en cada página)
+    protected virtual Task<string> GetItemNameForDelete(int id)
+    {
+        return Task.FromResult(string.Empty);
+    }
+
+    // Método que ejecuta la eliminación real
+    private async Task<bool> ExecuteDelete(int id)
+    {
+        try
         {
-            // Método para recargar - será implementado en las páginas hijas
+            Loading = true;
+            StateHasChanged();
+
+            var response = await Service.DeleteAsync(id);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Elemento eliminado correctamente", Severity.Success);
+                return true;
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al eliminar", Severity.Error);
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            return false;
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
         }
     }
+
+    // Método para recargar datos (sobrescribir en las páginas hijas)
+    protected virtual async Task ReloadData()
+    {
+        // Este método será sobrescrito en las páginas hijas
+        await Task.CompletedTask;
+    }
+
+    // ==================== FIN MÉTODOS CRUD ====================
 
     protected virtual async Task ExportToExcel()
     {
