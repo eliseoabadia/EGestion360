@@ -5,25 +5,15 @@ using System.Collections.Generic;
 
 namespace EG.Domain.Entities;
 
-public partial class UsuarioSucursal
+public partial class UsuarioDepartamento
 {
     public int FkidUsuarioSis { get; set; }
 
-    public int FkidSucursalSis { get; set; }
+    public int FkidDepartamentoSis { get; set; }
 
-    public bool PuedeAcceder { get; set; }
+    public bool EsJefe { get; set; }
 
-    public bool PuedeConfigurar { get; set; }
-
-    public bool PuedeOperar { get; set; }
-
-    public bool PuedeReportes { get; set; }
-
-    public bool EsGerente { get; set; }
-
-    public bool EsSupervisor { get; set; }
-
-    public DateTime? FechaAsignacion { get; set; }
+    public DateTime FechaAsignacion { get; set; }
 
     public DateTime? FechaFinAsignacion { get; set; }
 
@@ -37,7 +27,7 @@ public partial class UsuarioSucursal
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual Sucursal FkidSucursalSisNavigation { get; set; }
+    public virtual Departamento FkidDepartamentoSisNavigation { get; set; }
 
     public virtual Usuario FkidUsuarioSisNavigation { get; set; }
 }

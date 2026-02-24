@@ -18,7 +18,9 @@ public partial class SucursalResponse
 
     public string Alias { get; set; }
 
-    public int TipoSucursal { get; set; }
+    public int FkidTipoSucursal { get; set; }
+
+    public int? FkidMonedaLocalSis { get; set; }
 
     public string Direccion { get; set; }
 
@@ -46,18 +48,13 @@ public partial class SucursalResponse
 
     public decimal? Longitud { get; set; }
 
-    public decimal? MetrosCuadrados { get; set; }
+    public string NombreEmpresa { get; set; }
 
-    public int? CapacidadPersonas { get; set; }
+    public string Rfc { get; set; }
 
-    public bool Activo { get; set; }
+    public string NombreEstado { get; set; }
 
-    public DateTime? FechaCreacion { get; set; }
+    public string CodigoEstado { get; set; }
 
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
-
-    public int? UsuarioModificacion { get; set; }
-
+    public string NombrePais { get; set; }
 }

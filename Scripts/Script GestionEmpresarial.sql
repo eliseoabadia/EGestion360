@@ -1,245 +1,135 @@
 
-/*
 --create database test
 
 
-use test
+use [GestionEmpresarial]
 GO
 --drop database GestionEmpresarial
-
-CREATE SCHEMA SIS  --//Sistema
+-- =============================================
+-- ESQUEMAS
+-- =============================================
+-- =============================================
+CREATE SCHEMA SIS  -- Sistema (catálogos generales)
 GO
-CREATE SCHEMA NOM  --//Nómina
+CREATE SCHEMA NOM  -- Nómina
 GO
-CREATE SCHEMA ALM  --//Almacen
+CREATE SCHEMA ALM  -- Almacén
 GO
-CREATE SCHEMA CONTA  --//Contabilidad
+CREATE SCHEMA CONTA  -- Contabilidad
 GO
 
+-- =============================================
+-- CATÁLOGOS BASE
+-- =============================================
 
-
-*/
-
--- Eliminar si ya existe
--- DROP TABLE SIS.Paises
-
-CREATE TABLE SIS.Paises (
-    PKIdPais INT NOT NULL,
-    Nombre VARCHAR(64) NOT NULL,
-    CONSTRAINT CONSTRAINT_PKIdPaises PRIMARY KEY CLUSTERED (PKIdPais)
+-- Tabla de Idiomas
+CREATE TABLE SIS.Idioma (
+    PKIdIdioma INT IDENTITY(1,1) NOT NULL,
+    Nombre NVARCHAR(50) NOT NULL,
+    CodigoISO639_1 CHAR(2) NOT NULL,
+    NombreNativo NVARCHAR(50) NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_Idioma PRIMARY KEY CLUSTERED (PKIdIdioma),
+    CONSTRAINT UQ_Idioma_Codigo UNIQUE (CodigoISO639_1)
 );
 
-INSERT INTO SIS.Paises (PKIdPais, Nombre) VALUES
-(1, 'México'),
-(2, 'Estados Unidos'),
-(3, 'Canadá'),
-(4, 'Brasil'),
-(5, 'Argentina'),
-(6, 'Colombia'),
-(7, 'Chile'),
-(8, 'Perú'),
-(9, 'España'),
-(10, 'Francia'),
-(11, 'Alemania'),
-(12, 'Italia'),
-(13, 'Reino Unido'),
-(14, 'Japón'),
-(15, 'China'),
-(16, 'India'),
-(17, 'Australia'),
-(18, 'Rusia'),
-(19, 'Sudáfrica'),
-(20, 'Egipto');
+-- Tabla de Monedas
+CREATE TABLE SIS.Moneda (
+    PKIdMoneda INT IDENTITY(1,1) NOT NULL,
+    Nombre NVARCHAR(50) NOT NULL,
+    CodigoISO4217 CHAR(3) NOT NULL,
+    Simbolo NVARCHAR(5) NOT NULL,
+    Decimales INT NOT NULL DEFAULT 2,
+    Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_Moneda PRIMARY KEY CLUSTERED (PKIdMoneda),
+    CONSTRAINT UQ_Moneda_Codigo UNIQUE (CodigoISO4217)
+);
 
---drop table SIS.Estados
+-- Tabla de Países
+CREATE TABLE SIS.Paises (
+    PKIdPais INT IDENTITY(1,1) NOT NULL,
+    Nombre VARCHAR(64) NOT NULL,
+    CodigoISO2 CHAR(2) NOT NULL,
+    CodigoISO3 CHAR(3) NOT NULL,
+    FKIdIdiomaPrincipal_SIS INT NULL,
+    FKIdMonedaPrincipal_SIS INT NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_Paises PRIMARY KEY CLUSTERED (PKIdPais),
+    CONSTRAINT FK_Paises_Idioma FOREIGN KEY (FKIdIdiomaPrincipal_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
+    CONSTRAINT FK_Paises_Moneda FOREIGN KEY (FKIdMonedaPrincipal_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
+    CONSTRAINT UQ_Paises_CodigoISO2 UNIQUE (CodigoISO2),
+    CONSTRAINT UQ_Paises_CodigoISO3 UNIQUE (CodigoISO3)
+);
+
+-- Tabla de Estados
 CREATE TABLE SIS.Estados (
-    PKIdEstado INT NOT NULL,
+    PKIdEstado INT IDENTITY(1,1) NOT NULL,
     FKIdPais_SIS INT NOT NULL,
     Nombre VARCHAR(64) NOT NULL,
-    CONSTRAINT CONSTRAINT_PK_Estados PRIMARY KEY CLUSTERED (PKIdEstado),
-    CONSTRAINT CONSTRAINT_FK_Estados_Paises FOREIGN KEY (FKIdPais_SIS)
-        REFERENCES SIS.Paises(PKIdPais)
+    CodigoEstado VARCHAR(10) NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_Estados PRIMARY KEY CLUSTERED (PKIdEstado),
+    CONSTRAINT FK_Estados_Paises FOREIGN KEY (FKIdPais_SIS) REFERENCES SIS.Paises(PKIdPais),
+    CONSTRAINT UQ_Estados_Pais_Nombre UNIQUE (FKIdPais_SIS, Nombre)
 );
 
-INSERT INTO SIS.Estados (PKIdEstado,FKIdPais_SIS, Nombre) VALUES
-(1,1, 'Aguascalientes'),
-(2,1, 'Baja California'),
-(3,1, 'Baja California Sur'),
-(4,1, 'Campeche'),
-(5,1, 'Coahuila de Zaragoza'),
-(6,1, 'Colima'),
-(7,1, 'Chiapas'),
-(8,1, 'Chihuahua'),
-(9,1, 'Ciudad de México'),
-(10,1, 'Durango'),
-(11,1, 'Guanajuato'),
-(12,1, 'Guerrero'),
-(13,1, 'Hidalgo'),
-(14,1, 'Jalisco'),
-(15,1, 'México'),
-(16,1, 'Michoacán de Ocampo'),
-(17,1, 'Morelos'),
-(18,1, 'Nayarit'),
-(19,1, 'Nuevo León'),
-(20,1, 'Oaxaca'),
-(21,1, 'Puebla'),
-(22,1, 'Querétaro'),
-(23,1, 'Quintana Roo'),
-(24,1, 'San Luis Potosí'),
-(25,1, 'Sinaloa'),
-(26,1, 'Sonora'),
-(27,1, 'Tabasco'),
-(28,1, 'Tamaulipas'),
-(29,1, 'Tlaxcala'),
-(30,1, 'Veracruz'),
-(31,1, 'Yucatán'),
-(32,1, 'Zacatecas');
-
+-- =============================================
+-- ESTRUCTURA DE EMPRESA
+-- =============================================
 
 -- Tabla de Empresa
---drop table SIS.Empresa
 CREATE TABLE SIS.Empresa (
     PKIdEmpresa INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(128) NOT NULL,
     RFC NVARCHAR(13) NOT NULL,
-	Activo BIT NOT NULL DEFAULT 1,						-- borrado lógico
-	FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),      -- cuándo fue creado
-    UsuarioCreacion INT NOT NULL,                      -- quién lo creó
-    FechaModificacion DATETIME2 NULL,                   -- última modificación
-    UsuarioModificacion INT NULL              -- quién modificó
-    CONSTRAINT CONSTRAINT_PK_Empresa PRIMARY KEY CLUSTERED (PKIdEmpresa)
+    RazonSocial NVARCHAR(255) NULL,
+    Giro NVARCHAR(100) NULL,
+    FKIdMonedaBase_SIS INT NOT NULL,
+    FKIdIdiomaPreferido_SIS INT NULL,
+    Logo VARBINARY(MAX) NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Empresa PRIMARY KEY CLUSTERED (PKIdEmpresa),
+    CONSTRAINT FK_Empresa_Moneda FOREIGN KEY (FKIdMonedaBase_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
+    CONSTRAINT FK_Empresa_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
+    CONSTRAINT UQ_Empresa_RFC UNIQUE (RFC)
 );
 
-
-
-INSERT INTO SIS.Empresa ( Nombre, RFC, UsuarioCreacion) VALUES
-('TechNova S.A. de C.V.', 'TNV010101AAA', 1),
-('Grupo Constructora Delta', 'GCD020202BBB', 1),
-('Alimentos La Laguna', 'ALL030303CCC', 1);
-
+-- Tabla de relación Empresa-Estado (dónde opera la empresa)
 CREATE TABLE SIS.EmpresaEstado (
-    FKIdEmpresa_SIS INT  NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
     FKIdEstado_SIS INT NOT NULL,
-	Activo BIT NOT NULL DEFAULT 1,						-- borrado lógico
-	FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),      -- cuándo fue creado
-    UsuarioCreacion INT NOT NULL,                      -- quién lo creó
-    FechaModificacion DATETIME2 NULL,                   -- última modificación
-    UsuarioModificacion INT NULL              -- quién modificó
-    CONSTRAINT CONSTRAINT_PK_EmpresaEstado_Empresa_Estado PRIMARY KEY CLUSTERED (FKIdEmpresa_SIS, FKIdEstado_SIS),
-    CONSTRAINT CONSTRAINT_FK_EmpresaEstado_Empresa FOREIGN KEY (FKIdEmpresa_SIS)
-        REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT CONSTRAINT_FK_EmpresaEstado_Estados FOREIGN KEY (FKIdEstado_SIS)
-        REFERENCES SIS.Estados(PKIdEstado)
+    FechaApertura DATE NULL,
+    EsOficinaPrincipal BIT NOT NULL DEFAULT 0,
+    Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_EmpresaEstado PRIMARY KEY CLUSTERED (FKIdEmpresa_SIS, FKIdEstado_SIS),
+    CONSTRAINT FK_EmpresaEstado_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_EmpresaEstado_Estado FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado)
 );
 
-INSERT INTO SIS.EmpresaEstado ( FKIdEmpresa_SIS, FKIdEstado_SIS,UsuarioCreacion) VALUES
-(1,15,1),
-(1,9,1),
-(1,21,1);
-
--- Tabla de Departamento
---drop table SIS.Departamento
-CREATE TABLE SIS.Departamento (
-    PKIdDepartamento  INT IDENTITY(1,1) NOT NULL,
-    FKIdEmpresa_SIS INT NOT NULL,
-    Nombre NVARCHAR(128) NOT NULL,
-	Activo BIT NOT NULL DEFAULT 1,						-- borrado lógico
-	FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),      -- cuándo fue creado
-    UsuarioCreacion INT NOT NULL,                      -- quién lo creó
-    FechaModificacion DATETIME2 NULL,                   -- última modificación
-    UsuarioModificacion INT NULL              -- quién modificó
-    CONSTRAINT CONSTRAINT_PK_Departamento PRIMARY KEY CLUSTERED (PKIdDepartamento),
-    CONSTRAINT CONSTRAINT_FK_Departamento_Empresa FOREIGN KEY (FKIdEmpresa_SIS)
-        REFERENCES SIS.Empresa(PKIdEmpresa)
-);
-
-INSERT INTO SIS.Departamento (FKIdEmpresa_SIS, Nombre,UsuarioCreacion) VALUES
-(1, 'GERENTE GENERAL',1),
-(1,'GERENTE DE OPERACIONES',1),
-(1, 'GERENTE DE VENTAS',1),
-(1,'RECURSOS HUMANOS',1)
-
---update SIS.Departamento set Nombre = 'GERENTE GENERAL' where PKIdDepartamento = 1
---update SIS.Departamento set Nombre = 'GERENTE DE OPERACIONES' where PKIdDepartamento = 2
-
-/*
-pws: Tecno.2025
-*/
-
---update SIS.Usuario set Sexo = 0 where PkIdUsuario = 1
-
--- Tabla de Usuario
---drop table SIS.Usuario
---select * from SIS.Usuario
-CREATE TABLE SIS.Usuario (
-    PkIdUsuario INT IDENTITY(1,1) NOT NULL,
-    FKIdEmpresa_SIS INT NOT NULL,
-    Nombre NVARCHAR(64) NOT NULL,
-    ApellidoPaterno NVARCHAR(64) NOT NULL,
-    ApellidoMaterno NVARCHAR(64) NOT NULL,
-    Iniciales NVARCHAR(3) NOT NULL,
-    PayrollID NVARCHAR(20) NOT NULL,
-    CodigoPostal NVARCHAR(9),
-    Telefono NVARCHAR(16) NOT NULL,
-    Direccion1 NVARCHAR(128) NOT NULL,
-    Direccion2 NVARCHAR(64) NOT NULL,
-
-	Email nvarchar(60) NOT NULL,
-	NumeroSocial nvarchar(12) NOT NULL,
-	Gafete nvarchar(11) NOT NULL,
-	Sexo bit NOT NULL,
-
-	Activo BIT NOT NULL DEFAULT 1,						-- borrado lógico
-	FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),      -- cuándo fue creado
-    UsuarioCreacion INT NOT NULL,                      -- quién lo creó
-    FechaModificacion DATETIME2 NULL,                   -- última modificación
-    UsuarioModificacion INT NULL              -- quién modificó
-
-    CONSTRAINT CONSTRAINT_PK_Usuario PRIMARY KEY CLUSTERED (PkIdUsuario),
-
-    CONSTRAINT CONSTRAINT_FK_Usuario_Empresa FOREIGN KEY (FKIdEmpresa_SIS)
-        REFERENCES SIS.Empresa(PKIdEmpresa)
-);
-
-
-INSERT INTO SIS.Usuario (
-    FKIdEmpresa_SIS, Nombre, ApellidoPaterno, ApellidoMaterno, Iniciales,
-    PayrollID, CodigoPostal, Telefono,
-    Direccion1, Direccion2,
-    Email, NumeroSocial, Gafete, Sexo,UsuarioCreacion
-) VALUES
-(1, 'Administrador', '-', '-', 'CMR', 'admon01', '11000', '5512345678',
- 'Calle Roble 101', 'Piso 2', 'eliseo_eae@htomail.com', 'NS1234567890', 'GF001A', 1, 1),
-
-(2, 'Administrador', '-', '-', 'PZL', 'admon02', '76000', '4425678910',
- 'Av. Universidad 45', 'Edif. B', 'eliseo2_eae@htomail.com', 'NS0987654321', 'GF002B', 0,1 ),
-
-(3, 'Administrador', '-', '-', 'ESR', 'admon03', '80000', '6671234567',
- 'Prol. Obregón 321', 'Int. 5', 'eliseo3_eae@htomail.com', 'NS5678901234', 'GF003C', 1,1);
-
-
--- Tabla de Sucursal (reemplaza Tienda)
--- Tabla para tipos de sucursal (catálogo)
+-- Catálogo de Tipos de Sucursal
 CREATE TABLE SIS.CatTipoSucursal (
-    PKIdTipoSucursal INT NOT NULL,
+    PKIdTipoSucursal INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
-    Activo BIT NOT NULL DEFAULT 1,						-- borrado lógico
-	FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),      -- cuándo fue creado
-    UsuarioCreacion int NOT NULL,                      -- quién lo creó
-    FechaModificacion DATETIME2 NULL,                   -- última modificación
-    UsuarioModificacion INT NULL              -- quién modificó
-    CONSTRAINT PK_TipoSucursal PRIMARY KEY (PKIdTipoSucursal)
+    Activo BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_TipoSucursal PRIMARY KEY CLUSTERED (PKIdTipoSucursal),
+    CONSTRAINT UQ_TipoSucursal_Descripcion UNIQUE (Descripcion)
 );
 
-
+-- Tabla de Sucursal
 CREATE TABLE SIS.Sucursal (
     PKIdSucursal INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
     FKIdEstado_SIS INT NOT NULL,
     Nombre NVARCHAR(128) NOT NULL,
-    CodigoSucursal NVARCHAR(20) NOT NULL UNIQUE,
-    Alias NVARCHAR(50) NULL,                           -- Nombre corto o alias
-    TipoSucursal INT NOT NULL DEFAULT 1,                -- 1=Comercial, 2=Almacén, 3=Oficina, etc.
+    CodigoSucursal NVARCHAR(20) NOT NULL,
+    Alias NVARCHAR(50) NULL,
+    FKIdTipoSucursal INT NOT NULL DEFAULT 2,
+    FKIdMonedaLocal_SIS INT NULL,
     Direccion NVARCHAR(256) NOT NULL,
     Colonia NVARCHAR(100) NULL,
     Ciudad NVARCHAR(100) NULL,
@@ -250,124 +140,159 @@ CREATE TABLE SIS.Sucursal (
     HorarioApertura TIME NULL,
     HorarioCierre TIME NULL,
     EsMatriz BIT NOT NULL DEFAULT 0,
-    EsActiva BIT NOT NULL DEFAULT 1,                    -- Si está operando actualmente
+    EsActiva BIT NOT NULL DEFAULT 1,
     Latitud DECIMAL(9,6) NULL,
     Longitud DECIMAL(9,6) NULL,
-    MetrosCuadrados DECIMAL(10,2) NULL,                 -- Tamaño físico
-    CapacidadPersonas INT NULL,                         -- Capacidad de atención
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Sucursal PRIMARY KEY CLUSTERED (PKIdSucursal),
+    CONSTRAINT FK_Sucursal_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_Sucursal_Estado FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado),
+    CONSTRAINT FK_Sucursal_Tipo FOREIGN KEY (FKIdTipoSucursal) REFERENCES SIS.CatTipoSucursal(PKIdTipoSucursal),
+    CONSTRAINT FK_Sucursal_Moneda FOREIGN KEY (FKIdMonedaLocal_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
+    CONSTRAINT UQ_Sucursal_Codigo UNIQUE (CodigoSucursal)
+);
+
+-- Tabla de Departamento
+CREATE TABLE SIS.Departamento (
+    PKIdDepartamento INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    FKIdSucursal_SIS INT NULL,  -- NULL = departamento corporativo
+    Nombre NVARCHAR(128) NOT NULL,
+    Descripcion NVARCHAR(255) NULL,
+    NivelJerarquico INT DEFAULT 1,
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Departamento PRIMARY KEY CLUSTERED (PKIdDepartamento),
+    CONSTRAINT FK_Departamento_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_Departamento_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal)
+);
+
+-- =============================================
+-- USUARIOS (Integración con ASP.NET Identity)
+-- =============================================
+
+-- Tabla de Usuario (se sincroniza con AspNetUsers)
+CREATE TABLE SIS.Usuario (
+    PkIdUsuario INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,  -- Relación directa con empresa
+    AspNetUserId NVARCHAR(450) NOT NULL,  -- ID del usuario en AspNetUsers
+    Nombre NVARCHAR(64) NOT NULL,
+    ApellidoPaterno NVARCHAR(64) NOT NULL,
+    ApellidoMaterno NVARCHAR(64) NULL,
+    Iniciales NVARCHAR(3) NOT NULL,
+    PayrollID NVARCHAR(20) NOT NULL,
+    CodigoPostal NVARCHAR(9) NULL,
+    Telefono NVARCHAR(16) NOT NULL,
+    Direccion1 NVARCHAR(128) NOT NULL,
+    Direccion2 NVARCHAR(64) NULL,
+    Email nvarchar(60) NOT NULL,
+    NumeroSocial nvarchar(12) NOT NULL,
+    Gafete nvarchar(11) NOT NULL,
+    Sexo bit NOT NULL,
+    FechaIngreso DATE NULL,
+    FKIdIdiomaPreferido_SIS INT NULL,
+    FKIdMonedaPreferida_SIS INT NULL,
+    EsAdministrador BIT NOT NULL DEFAULT 0,  -- Usuario con permisos globales
     Activo BIT NOT NULL DEFAULT 1,
     FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
     FechaModificacion DATETIME2 NULL,
     UsuarioModificacion INT NULL,
     
-    CONSTRAINT CONSTRAINT_PK_Sucursal PRIMARY KEY CLUSTERED (PKIdSucursal),
-    CONSTRAINT CONSTRAINT_FK_Sucursal_Empresa FOREIGN KEY (FKIdEmpresa_SIS)
-        REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT CONSTRAINT_FK_Sucursal_Estado FOREIGN KEY (FKIdEstado_SIS)
-        REFERENCES SIS.Estados(PKIdEstado),
-    CONSTRAINT CHK_TipoSucursal CHECK (TipoSucursal IN (1,2,3,4,5)) -- Puedes definir más tipos
+    CONSTRAINT PK_Usuario PRIMARY KEY CLUSTERED (PkIdUsuario),
+    CONSTRAINT FK_Usuario_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_Usuario_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
+    CONSTRAINT FK_Usuario_Moneda FOREIGN KEY (FKIdMonedaPreferida_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
+    CONSTRAINT UQ_Usuario_Email UNIQUE (Email),
+    CONSTRAINT UQ_Usuario_PayrollID UNIQUE (PayrollID),
+    CONSTRAINT UQ_Usuario_Gafete UNIQUE (Gafete),
+    CONSTRAINT UQ_Usuario_AspNetUserId UNIQUE (AspNetUserId)
 );
 
+-- =============================================
+-- RELACIONES USUARIO-SUCURSAL-DEPARTAMENTO
+-- =============================================
 
--- Tabla de relación Usuario-Sucursal
+-- Relación Usuario-Sucursal (acceso directo a sucursales)
 CREATE TABLE SIS.UsuarioSucursal (
     FKIdUsuario_SIS INT NOT NULL,
     FKIdSucursal_SIS INT NOT NULL,
-    FKIdDepartamento_SIS INT NULL,                      -- Departamento al que pertenece en esta sucursal
-    EsGerente BIT NOT NULL DEFAULT 0,
-    EsSupervisor BIT NOT NULL DEFAULT 0,
+    -- Los permisos van aquí, NO en UsuarioDepartamento
     PuedeAcceder BIT NOT NULL DEFAULT 1,
     PuedeConfigurar BIT NOT NULL DEFAULT 0,
     PuedeOperar BIT NOT NULL DEFAULT 1,
     PuedeReportes BIT NOT NULL DEFAULT 0,
+    EsGerente BIT NOT NULL DEFAULT 0,
+    EsSupervisor BIT NOT NULL DEFAULT 0,
     FechaAsignacion DATETIME2 DEFAULT SYSDATETIME(),
-    FechaFinAsignacion DATETIME2 NULL,                  -- Para rotaciones de personal
+    FechaFinAsignacion DATETIME2 NULL,
     Activo BIT NOT NULL DEFAULT 1,
     FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion NVARCHAR(100),
+    UsuarioCreacion INT NOT NULL,
     FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion NVARCHAR(100) NULL,
+    UsuarioModificacion INT NULL,
     
-    CONSTRAINT CONSTRAINT_PK_UsuarioSucursal PRIMARY KEY (FKIdUsuario_SIS, FKIdSucursal_SIS),
-    CONSTRAINT CONSTRAINT_FK_UsuarioSucursal_Usuario FOREIGN KEY (FKIdUsuario_SIS)
-        REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT CONSTRAINT_FK_UsuarioSucursal_Sucursal FOREIGN KEY (FKIdSucursal_SIS)
-        REFERENCES SIS.Sucursal(PKIdSucursal),
-    CONSTRAINT CONSTRAINT_FK_UsuarioSucursal_Departamento FOREIGN KEY (FKIdDepartamento_SIS)
-        REFERENCES SIS.Departamento(PKIdDepartamento)
+    CONSTRAINT PK_UsuarioSucursal PRIMARY KEY (FKIdUsuario_SIS, FKIdSucursal_SIS),
+    CONSTRAINT FK_UsuarioSucursal_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_UsuarioSucursal_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal)
 );
 
--- Índices para Sucursal
-CREATE INDEX IX_Sucursal_Empresa ON SIS.Sucursal(FKIdEmpresa_SIS) WHERE Activo = 1;
-CREATE INDEX IX_Sucursal_Estado ON SIS.Sucursal(FKIdEstado_SIS) WHERE Activo = 1;
-CREATE INDEX IX_Sucursal_Codigo ON SIS.Sucursal(CodigoSucursal) WHERE Activo = 1;
-CREATE INDEX IX_Sucursal_Matriz ON SIS.Sucursal(FKIdEmpresa_SIS, EsMatriz) WHERE Activo = 1;
-CREATE INDEX IX_Sucursal_Tipo ON SIS.Sucursal(TipoSucursal) WHERE Activo = 1;
+-- Relación Usuario-Departamento (solo relación, SIN permisos duplicados)
+CREATE TABLE SIS.UsuarioDepartamento (
+    FKIdUsuario_SIS INT NOT NULL,
+    FKIdDepartamento_SIS INT NOT NULL,
+    EsJefe BIT NOT NULL DEFAULT 0,  -- Indica si es jefe del departamento
+    -- NOTA: Los permisos de acceso (PuedeAcceder, PuedeConfigurar, etc.) 
+    -- se heredan de UsuarioSucursal o se definen por el departamento/sucursal
+    FechaAsignacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaFinAsignacion DATETIME2 NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    
+    CONSTRAINT PK_UsuarioDepartamento PRIMARY KEY (FKIdUsuario_SIS, FKIdDepartamento_SIS, FechaAsignacion),
+    CONSTRAINT FK_UsuarioDepartamento_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_UsuarioDepartamento_Departamento FOREIGN KEY (FKIdDepartamento_SIS) REFERENCES SIS.Departamento(PKIdDepartamento)
+);
 
--- Índices para UsuarioSucursal
-CREATE INDEX IX_UsuarioSucursal_Sucursal ON SIS.UsuarioSucursal(FKIdSucursal_SIS) WHERE Activo = 1;
-CREATE INDEX IX_UsuarioSucursal_UsuarioAcceso ON SIS.UsuarioSucursal(FKIdUsuario_SIS, PuedeAcceder) WHERE Activo = 1;
-CREATE INDEX IX_UsuarioSucursal_Departamento ON SIS.UsuarioSucursal(FKIdDepartamento_SIS) WHERE Activo = 1;
+-- =============================================
+-- ÍNDICES PARA OPTIMIZACIÓN
+-- =============================================
+
+CREATE INDEX IX_Usuario_Empresa ON SIS.Usuario(FKIdEmpresa_SIS) INCLUDE (Nombre, ApellidoPaterno, Email) WHERE Activo = 1;
+CREATE INDEX IX_Usuario_AspNetUserId ON SIS.Usuario(AspNetUserId) INCLUDE (PkIdUsuario, FKIdEmpresa_SIS);
+CREATE INDEX IX_Usuario_Email ON SIS.Usuario(Email) INCLUDE (Activo) WHERE Activo = 1;
+
+CREATE INDEX IX_UsuarioSucursal_Usuario ON SIS.UsuarioSucursal(FKIdUsuario_SIS) INCLUDE (FKIdSucursal_SIS, PuedeAcceder) WHERE Activo = 1;
+CREATE INDEX IX_UsuarioSucursal_Sucursal ON SIS.UsuarioSucursal(FKIdSucursal_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
+
+CREATE INDEX IX_UsuarioDepartamento_Usuario ON SIS.UsuarioDepartamento(FKIdUsuario_SIS) INCLUDE (FKIdDepartamento_SIS, EsJefe) WHERE Activo = 1;
+CREATE INDEX IX_UsuarioDepartamento_Departamento ON SIS.UsuarioDepartamento(FKIdDepartamento_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
+
+CREATE INDEX IX_Sucursal_Empresa ON SIS.Sucursal(FKIdEmpresa_SIS) INCLUDE (Nombre, CodigoSucursal, Ciudad) WHERE Activo = 1;
+CREATE INDEX IX_Departamento_Empresa ON SIS.Departamento(FKIdEmpresa_SIS) INCLUDE (Nombre) WHERE Activo = 1;
+CREATE INDEX IX_Departamento_Sucursal ON SIS.Departamento(FKIdSucursal_SIS) INCLUDE (Nombre) WHERE Activo = 1;
 
 
--- Insertar tipos de sucursal primero
-INSERT INTO SIS.CatTipoSucursal (PKIdTipoSucursal, Descripcion, UsuarioCreacion) VALUES
-(1, 'Matriz/Central',1),
-(2, 'Sucursal Comercial',1),
-(3, 'Almacén',1),
-(4, 'Oficina Regional',1),
-(5, 'Punto de Venta',1);
+/*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
+/*
+user:ADM001
+pasword: Tecno.2025
+*/
+/*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
 
--- Insertar sucursales para TechNova
-INSERT INTO SIS.Sucursal (
-    FKIdEmpresa_SIS, FKIdEstado_SIS, Nombre, CodigoSucursal, 
-    Alias, TipoSucursal, Direccion, Ciudad, TelefonoPrincipal, 
-    Email, EsMatriz, EsActiva, UsuarioCreacion
-) VALUES
--- Sucursal Matriz
-(1, 15, 'TechNova Matriz Santa Fe', 'TECH-MAT-001', 
- 'Matriz Santa Fe', 1, 'Av. Santa Fe 501, Santa Fe', 'Ciudad de México',
- '555-100-2000', 'matriz@technova.com', 1, 1,1),
-
--- Sucursales Comerciales
-(1, 15, 'TechNova Sucursal Satélite', 'TECH-SAT-001',
- 'Satélite', 2, 'Plaza Satélite Local 45', 'Naucalpan',
- '555-123-4567', 'satelite@technova.com', 0, 1,1),
-
-(1, 9, 'TechNova Sucursal Polanco', 'TECH-POL-001',
- 'Polanco', 2, 'Av. Presidente Masaryk 456', 'Ciudad de México',
- '555-456-7890', 'polanco@technova.com', 0, 1,1),
-
-(1, 21, 'TechNova Sucursal Puebla', 'TECH-PUE-001',
- 'Puebla Centro', 2, 'Av. Juárez 789', 'Puebla',
- '222-345-6789', 'puebla@technova.com', 0, 1,1),
-
--- Almacén
-(1, 15, 'TechNova Almacén Central', 'TECH-ALM-001',
- 'Almacén Toluca', 3, 'Bodega 45, Parque Industrial', 'Toluca',
- '722-111-2233', 'almacen@technova.com', 0, 1,1),
-
--- Oficina Regional
-(1, 19, 'TechNova Oficina Monterrey', 'TECH-OFI-001',
- 'Oficina MTY', 4, 'Av. Constitución 123', 'Monterrey',
- '818-999-8888', 'monterrey@technova.com', 0, 1,1);
-
--- Asignar sucursales al usuario administrador
-INSERT INTO SIS.UsuarioSucursal (
-    FKIdUsuario_SIS, FKIdSucursal_SIS, FKIdDepartamento_SIS,
-    EsGerente, PuedeConfigurar, PuedeReportes, UsuarioCreacion
-) VALUES
--- Administrador tiene acceso total a todas las sucursales
-(1, 1, 1, 1, 1, 1, 1),  -- Matriz - Gerente General
-(1, 2, 1, 1, 1, 1, 1),  -- Satélite
-(1, 3, 1, 1, 1, 1, 1),  -- Polanco
-(1, 4, 1, 1, 1, 1, 1),  -- Puebla
-(1, 5, 1, 1, 1, 1, 1),  -- Almacén
-(1, 6, 1, 1, 1, 1, 1);  -- Monterrey
 
 /*  ROLES*/
- CREATE TABLE dbo.AspNetRoles
+CREATE TABLE dbo.AspNetRoles
 (
 	Id nvarchar(128) NOT NULL,
 	Name nvarchar(256) NOT NULL,
@@ -552,9 +477,9 @@ CREATE TABLE dbo.AspNetUserRoles (
 );
 
 /*  [dbo].[AspNetUserRoles]  */
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('5163E20B-5978-4AD8-BC38-A534F6FF6006' ,'71804e93-9753-4684-84fd-cf037349c111' ,GETDATE())
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('D0C8D24D-5817-4027-AF61-683C567C47AA' ,'739CC754-488B-4BB4-B7FB-62F6BF3C26D0' ,GETDATE())
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('D10FAE89-732F-48DF-AA76-1E6B01CA5A3F' ,'67A6E679-DBC4-402D-AE6E-7F28DDB11BD8' ,GETDATE())
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('3E3B05E8-0A87-49DF-97D3-A5FA7AF97825' ,'71804e93-9753-4684-84fd-cf037349c111' ,GETDATE())
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('A06C2BE9-5070-46B3-9759-D3ACDFBB00B4' ,'739CC754-488B-4BB4-B7FB-62F6BF3C26D0' ,GETDATE())
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('F567D8EC-47C1-4B34-827B-20F0FF182BAF' ,'67A6E679-DBC4-402D-AE6E-7F28DDB11BD8' ,GETDATE())
 
 --select a.Id,b.Id,dateadd(day,29,GETDATE())
 --from dbo.AspNetUsers as a
@@ -641,7 +566,7 @@ MERGE INTO SIS.Menu AS TARGET
 	
 MERGE INTO SIS.MenuRole AS TARGET
 	USING (
-	SELECT M.PKIdMenu	,R.id AS [RoleId] ,M.Activo	,[CreatedByOperatorId] = 1 ,[CreatedDateTime] = getdate() --, M.IsActive
+	SELECT DISTINCT M.PKIdMenu	,R.id AS [RoleId] ,M.Activo	,[CreatedByOperatorId] = 1 ,[CreatedDateTime] = getdate() --, M.IsActive
 	FROM dbo.aspnetroles AS R (NOLOCK) 
 	INNER JOIN [dbo].[AspNetUserRoles] AS UR (NOLOCK)  ON R.id = UR.RoleId
 	INNER JOIN [dbo].[AspNetUsers] AS U (NOLOCK)  ON u.id = UR.UserId

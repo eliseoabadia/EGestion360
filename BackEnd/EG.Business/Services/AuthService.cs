@@ -28,20 +28,23 @@ namespace EG.Business.Services
 
             LoginResponseDto resultUser = new LoginResponseDto();
 
-            var user = await _repository.GetAllWithIncludes2Async(
-                u => u.PayrollId == loginRequest.Email
-            );
+            var param = new SqlParameter("@PayrollID", loginRequest.Email);
+            var result = await _repositorySP.ExecuteStoredProcedureAsync<LoginInformationEmployeeResult>("SIS.LoginInformationEmployee", param);
 
-            if (user.Any())
+            //var user = await _repository.GetAllWithIncludes2Async(
+            //    u => u.PayrollId == loginRequest.Email
+            //);
+
+            if (result.Any())
             {
 
-                int usuario = user.First().PkIdUsuario;
+                //int usuario = user.First().PkIdUsuario;
 
-                var param1 = new SqlParameter("@PayrollID", loginRequest.Email);
-                var result = await _repositorySP.ExecuteStoredProcedureAsync<LoginInformationEmployeeResult>("SIS.LoginInformationEmployee", param1);
+                //var param1 = new SqlParameter("@PayrollID", loginRequest.Email);
+                //var result = await _repositorySP.ExecuteStoredProcedureAsync<LoginInformationEmployeeResult>("SIS.LoginInformationEmployee", param1);
 
-                if (result.Any())
-                {
+                //if (result.Any())
+                //{
                     var _usuarioSP = result.First();
                     if (_usuarioSP.PasswordHash == _password)
                     {
@@ -56,7 +59,7 @@ namespace EG.Business.Services
 
                         return resultUser;
                     }
-                }
+                //}
             }
 
 

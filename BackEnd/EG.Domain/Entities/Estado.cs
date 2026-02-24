@@ -13,6 +13,10 @@ public partial class Estado
 
     public string Nombre { get; set; }
 
+    public string CodigoEstado { get; set; }
+
+    public bool Activo { get; set; }
+
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
 
     public virtual Paise FkidPaisSisNavigation { get; set; }

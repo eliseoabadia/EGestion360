@@ -1,4 +1,5 @@
-﻿using EG.Application.CommonModel;
+﻿using Azure;
+using EG.Application.CommonModel;
 using EG.Business.Interfaces;
 using EG.Common.Enums;
 using EG.Domain.DTOs.Requests;
@@ -22,21 +23,30 @@ namespace EG.ApiCore.Controllers.Account
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
         {
-            if (loginRequest == null)
+            try
             {
-                return BadRequest("Invalid login request");
+                if (loginRequest == null)
+                {
+                    return BadRequest("Invalid login request");
+                }
+                var response = await _authService.Login(loginRequest, _jwtSettings.Value);
+                if (response.IsAuthenticated.Value)
+                {
+                    _logger.LogMessage(LogLevelGRP.Info, $"Log Login {ControllerName} {loginRequest.Email}", (byte)SystemLogTypes.Information, "Login", UserId.ToString(), IpAddress);
+                    return Ok(response);
+                }
+                else
+                {
+                    _logger.LogMessage(LogLevelGRP.Info, $"Log Login {ControllerName} {loginRequest.Email}", (byte)SystemLogTypes.Error, "Login", UserId.ToString(), IpAddress);
+                    return Unauthorized(response.Message);
+                }
             }
-            var response = await _authService.Login(loginRequest, _jwtSettings.Value);
-            if (response.IsAuthenticated.Value)
-            {
-                _logger.LogMessage(LogLevelGRP.Info, $"Log Login {ControllerName} {loginRequest.Email}", (byte)SystemLogTypes.Information, "Login", UserId.ToString(), IpAddress);
-                return Ok(response);
-            }
-            else
+            catch (Exception ex)
             {
                 _logger.LogMessage(LogLevelGRP.Info, $"Log Login {ControllerName} {loginRequest.Email}", (byte)SystemLogTypes.Error, "Login", UserId.ToString(), IpAddress);
-                return Unauthorized(response.Message);
+                return Unauthorized(ex.Message);
             }
+            
         }
 
         //[HttpPost("register")]

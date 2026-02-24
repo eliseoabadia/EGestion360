@@ -18,12 +18,12 @@ namespace EG.ApiCore.Controllers.General
     {
         private readonly IUserContextService _userContext;
         private readonly GenericService<Usuario, UsuarioDto, UsuarioResponse> _service;
-        private readonly GenericService<VwUsuarioSucursal, UsuarioDto, UsuarioResponse> _serviceView;
+        private readonly GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> _serviceView;
         private readonly IMapper _mapper;
 
         public UsuarioController(
             GenericService<Usuario, UsuarioDto, UsuarioResponse> service,
-            GenericService<VwUsuarioSucursal, UsuarioDto, UsuarioResponse> serviceView,
+            GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> serviceView,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -284,7 +284,7 @@ namespace EG.ApiCore.Controllers.General
         //}
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Add([FromBody] VwUsuarioSucursal viewDto)
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Add([FromBody] VwUsuarioEmpresa viewDto)
         {
             try
             {
@@ -430,7 +430,7 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] VwUsuarioSucursal viewDto)
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] VwUsuarioEmpresa viewDto)
         {
             try
             {

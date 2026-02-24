@@ -12,7 +12,7 @@
 @using MudBlazor
 @using System.Reflection
 
-@inject ISucursalService sucursalService
+@inject IEmpresaService empresaService
 @inject NavigationManager NavigationManager
 @inject IUsuarioService usuarioService
 @inject ProfileService profileService
@@ -126,7 +126,7 @@
                                 <!-- Nombre completo -->
                                 <MudItem xs="12" md="6">
                                     <MudTextField Label="Nombre"
-                                    @bind-Value="userProfile.NombreUsuario"
+                                    @bind-Value="userProfile.Nombre"
                                     Required="true"
                                     Disabled="@loading" />
                                 </MudItem>
@@ -135,6 +135,16 @@
                                 <!-- Empresa -->
                                 <MudItem xs="12" md="6">
                                     <MudSelect Label="Empresa"
+                                               @bind-Value="userProfile.PkidEmpresa"
+                                               Required="true"
+                                               Disabled="@loading">
+                                        <MudSelectItem T="int?" Value="@((int?)null)">Seleccione una empresa</MudSelectItem>
+                                        @foreach (var empresa in empresas)
+                                        {
+                                            <MudSelectItem T="int?" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    @* <MudSelect Label="Empresa"
                                     @bind-Value="userProfile.PkidSucursal"
                                     Required="true"
                                     Disabled="@loading">
@@ -143,7 +153,7 @@
                                         {
                                             <MudSelectItem Value="@empresa.PkidSucursal">@empresa.Nombre</MudSelectItem>
                                         }
-                                    </MudSelect>
+                                    </MudSelect> *@
                                 </MudItem>
 
                                 <!-- Contacto -->
@@ -156,7 +166,7 @@
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField Label="Teléfono"
-                                    @bind-Value="userProfile.TelefonoPrincipal"
+                                    @bind-Value="userProfile.TelefonoUsuario"
                                     Disabled="@loading" />
                                 </MudItem>
 
@@ -238,7 +248,7 @@
 
     private MudForm form = new MudForm();
     private bool loading = false;
-    private IList<SucursalResponse> listadoSucursales = new List<SucursalResponse>();
+    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
     public UsuarioResponse userProfile { get; set; } = new();
     public FotografiaUsuarioResponse userProfileFotografia { get; set; } = new();
     private string userProfileFotografiaImg = string.Empty;
@@ -303,13 +313,21 @@
                loading = false;
            });
 
-            var _res = await sucursalService.GetAllSucursales();
-            if (!_res.Success)
+            // Cargar lista de empresas
+            var responseEmpresas = await empresaService.GetAllEmpresasAsync();
+
+            if (responseEmpresas != null && responseEmpresas.Success && responseEmpresas.Items != null && responseEmpresas.Items.Any())
             {
-                Snackbar.Add($"Error al cargar sucursales: {_res.Message}", Severity.Error);
-                return;
+                empresas = responseEmpresas.Items;
+                Console.WriteLine($"✓ Se cargaron {empresas.Count} empresas");
             }
-            listadoSucursales = _res.Items;
+            else
+            {
+                var errorMessage = responseEmpresas?.Message ?? "Error al cargar las empresas";
+                Console.WriteLine($"⚠️ {errorMessage}");
+                Snackbar.Add(errorMessage, Severity.Warning);
+                empresas = new List<EmpresaResponse>();
+            }
 
             loading = false;
             StateHasChanged();

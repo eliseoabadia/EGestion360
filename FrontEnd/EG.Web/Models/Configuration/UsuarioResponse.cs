@@ -9,15 +9,13 @@ public partial class UsuarioResponse
     [Required]
     public int PkIdUsuario { get; set; }
 
+    public string AspNetUserId { get; set; }
+
     public int IdEmpresa { get; set; }
-
-    public string NombreEmpresa { get; set; }
-
-    public string RfcEmpresa { get; set; }
 
     public string NombreCompleto { get; set; }
 
-    public string NombreUsuario { get; set; }
+    public string Nombre { get; set; }
 
     public string ApellidoPaterno { get; set; }
 
@@ -45,87 +43,75 @@ public partial class UsuarioResponse
 
     public bool Sexo { get; set; }
 
+    public DateOnly? FechaIngreso { get; set; }
+
+    public string FechaIngresoFormat { get; set; }
+
+    public int? AntigüedadAños { get; set; }
+
+    public int? IdIdiomaPreferido { get; set; }
+
+    public string IdiomaPreferido { get; set; }
+
+    public int? IdMonedaPreferida { get; set; }
+
+    public string MonedaPreferida { get; set; }
+
+    public string SimboloMoneda { get; set; }
+
+    public bool EsAdministrador { get; set; }
+
     public bool UsuarioActivo { get; set; }
 
     public DateTime? UsuarioFechaCreacion { get; set; }
 
+    public string UsuarioFechaCreacionFormat { get; set; }
+
     public int UsuarioCreadorId { get; set; }
 
-    public int PkidSucursal { get; set; }
+    public int PkidEmpresa { get; set; }
 
-    public string NombreSucursal { get; set; }
+    public string NombreEmpresa { get; set; }
 
-    public string CodigoSucursal { get; set; }
+    public string RfcEmpresa { get; set; }
 
-    public string AliasSucursal { get; set; }
+    public string RazonSocialEmpresa { get; set; }
 
-    public int TipoSucursal { get; set; }
+    public string GiroEmpresa { get; set; }
 
-    public string TipoSucursalDescripcion { get; set; }
+    public int IdMonedaBaseEmpresa { get; set; }
 
-    public string DireccionSucursal { get; set; }
+    public string MonedaBaseEmpresa { get; set; }
 
-    public string Colonia { get; set; }
+    public string SimboloMonedaBase { get; set; }
 
-    public string Ciudad { get; set; }
+    public bool EmpresaActiva { get; set; }
 
-    public string CodigoPostalSucursal { get; set; }
+    public DateTime? EmpresaFechaCreacion { get; set; }
 
-    public string TelefonoPrincipal { get; set; }
+    public string ListaDepartamentos { get; set; }
 
-    public string TelefonoSecundario { get; set; }
+    public int? TotalDepartamentos { get; set; }
 
-    public string EmailSucursal { get; set; }
+    public int EsJefeAlgunDepartamento { get; set; }
 
-    public TimeOnly? HorarioApertura { get; set; }
+    public string DepartamentosComoJefe { get; set; }
 
-    public TimeOnly? HorarioCierre { get; set; }
+    public string ListaSucursales { get; set; }
 
-    public bool EsMatriz { get; set; }
+    public int TotalSucursales { get; set; }
 
-    public string TipoSucursalLabel { get; set; }
+    public string SucursalMatrizAsignada { get; set; }
 
-    public bool EsActiva { get; set; }
+    public string RolPrincipal { get; set; }
 
-    public decimal? Latitud { get; set; }
+    public string CoberturaSucursales { get; set; }
 
-    public decimal? Longitud { get; set; }
+    public int? UltimoAcceso { get; set; }
 
-    public decimal? MetrosCuadrados { get; set; }
+    public string NumeroEmpleado { get; set; }
 
-    public int? CapacidadPersonas { get; set; }
-
-    public bool SucursalActivo { get; set; }
-
-    public int PkidEstado { get; set; }
-
-    public string NombreEstado { get; set; }
-
-    public int? IdDepartamento { get; set; }
-
-    public string NombreDepartamento { get; set; }
-
-    public bool EsGerente { get; set; }
-
-    public bool EsSupervisor { get; set; }
-
-    public bool PuedeAcceder { get; set; }
-
-    public bool PuedeConfigurar { get; set; }
-
-    public bool PuedeOperar { get; set; }
-
-    public bool PuedeReportes { get; set; }
-
-    public DateTime? FechaAsignacion { get; set; }
-
-    public DateTime? FechaFinAsignacion { get; set; }
-
-    public bool RelacionActiva { get; set; }
-
-    public string RolUsuario { get; set; }
-
-    public string NivelAcceso { get; set; }
+    public string InicialesNombre { get; set; }
 
 }
 public class FotografiaUsuarioResponse

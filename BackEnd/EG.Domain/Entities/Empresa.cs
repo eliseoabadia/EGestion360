@@ -13,6 +13,16 @@ public partial class Empresa
 
     public string Rfc { get; set; }
 
+    public string RazonSocial { get; set; }
+
+    public string Giro { get; set; }
+
+    public int FkidMonedaBaseSis { get; set; }
+
+    public int? FkidIdiomaPreferidoSis { get; set; }
+
+    public byte[] Logo { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime? FechaCreacion { get; set; }
@@ -26,6 +36,10 @@ public partial class Empresa
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
+
+    public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
+
+    public virtual Monedum FkidMonedaBaseSisNavigation { get; set; }
 
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 

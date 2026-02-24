@@ -11,15 +11,11 @@ public partial class EmpresaEstado
 
     public int FkidEstadoSis { get; set; }
 
+    public DateOnly? FechaApertura { get; set; }
+
+    public bool EsOficinaPrincipal { get; set; }
+
     public bool Activo { get; set; }
-
-    public DateTime? FechaCreacion { get; set; }
-
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
-
-    public int? UsuarioModificacion { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

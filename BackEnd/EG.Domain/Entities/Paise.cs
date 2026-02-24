@@ -11,5 +11,21 @@ public partial class Paise
 
     public string Nombre { get; set; }
 
+    public string CodigoIso2 { get; set; }
+
+    public string CodigoIso3 { get; set; }
+
+    public int? FkidIdiomaPrincipalSis { get; set; }
+
+    public int? FkidMonedaPrincipalSis { get; set; }
+
+    public bool Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
     public virtual ICollection<Estado> Estados { get; set; } = new List<Estado>();
+
+    public virtual Idioma FkidIdiomaPrincipalSisNavigation { get; set; }
+
+    public virtual Monedum FkidMonedaPrincipalSisNavigation { get; set; }
 }

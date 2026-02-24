@@ -1,6 +1,6 @@
-﻿namespace EG.Dommain.DTOs.Responses;
+namespace EG.Domain.Entities;
 
-public partial class SucursalDto
+public partial class VwSucursalEmpresaEstado
 {
     public int PkidSucursal { get; set; }
 
@@ -44,14 +44,13 @@ public partial class SucursalDto
 
     public decimal? Longitud { get; set; }
 
-    public bool Activo { get; set; }
+    public string NombreEmpresa { get; set; }
 
-    public DateTime? FechaCreacion { get; set; }
+    public string Rfc { get; set; }
 
-    public int UsuarioCreacion { get; set; }
+    public string NombreEstado { get; set; }
 
-    public DateTime? FechaModificacion { get; set; }
+    public string CodigoEstado { get; set; }
 
-    public int? UsuarioModificacion { get; set; }
-
+    public string NombrePais { get; set; }
 }

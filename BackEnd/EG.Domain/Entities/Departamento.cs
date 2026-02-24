@@ -11,7 +11,13 @@ public partial class Departamento
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidSucursalSis { get; set; }
+
     public string Nombre { get; set; }
+
+    public string Descripcion { get; set; }
+
+    public int? NivelJerarquico { get; set; }
 
     public bool Activo { get; set; }
 
@@ -25,5 +31,7 @@ public partial class Departamento
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
-    public virtual ICollection<UsuarioSucursal> UsuarioSucursals { get; set; } = new List<UsuarioSucursal>();
+    public virtual Sucursal FkidSucursalSisNavigation { get; set; }
+
+    public virtual ICollection<UsuarioDepartamento> UsuarioDepartamentos { get; set; } = new List<UsuarioDepartamento>();
 }
