@@ -2,6 +2,7 @@
 using EG.ApiCore.Services;
 using EG.Application.CommonModel;
 using EG.Business.Services;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.Entities;
 using EG.Dommain.DTOs.Responses;
@@ -324,6 +325,7 @@ namespace EG.ApiCore.Controllers.General
                 dto.ApellidoPaterno = _sepNombre.ApellidoPaterno;
                 dto.ApellidoMaterno = _sepNombre.ApellidoMaterno;
                 dto.Telefono = viewDto.TelefonoUsuario ?? "";
+                dto.AspNetUserId = viewDto.PayrollId;
 
                 // Asegurar que el email esté en minúsculas para consistencia
                 if (!string.IsNullOrWhiteSpace(dto.Email))

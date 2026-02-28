@@ -1,6 +1,5 @@
-﻿using EG.Domain.Entities;
+﻿namespace EG.Domain.DTOs.Requests.General;
 
-namespace EG.Domain.DTOs.Requests.General;
 public class EmpresaDto
 {
     public int PkidEmpresa { get; set; }

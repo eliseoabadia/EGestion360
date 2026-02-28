@@ -16,6 +16,7 @@ namespace EG.Infraestructure.Models
     {
         Task<List<LoginInformationEmployeeResult>> LoginInformationEmployeeAsync(string payrollID, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<spConfiguracionDeRolYClaimsResult>> spConfiguracionDeRolYClaimsAsync(string group, string subgroup, string code, string values, string description, string rolName, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
+        Task<List<spEliminarUsuarioSucursalResult>> spEliminarUsuarioSucursalAsync(int? fkidUsuarioSis, int? fkidSucursalSis, string usuarioModificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<spGetClaimsByUserResult>> spGetClaimsByUserAsync(int? pkIdUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<spNodeMenuResult>> spNodeMenuAsync(int? noEmploye, string lenguaje, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<int> WriteSystemLogAsync(string fK_IdOrigenLogMessage__SIS, string date, string _Type, string progName, string employeeNo, string category, string iPClient, string hostName, string thread, string level, string logger, string message, string exception, string context, string methodName, string parameters, string executionTime, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);

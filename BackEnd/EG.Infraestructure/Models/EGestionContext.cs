@@ -74,6 +74,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwUsuarioEmpresa> VwUsuarioEmpresas { get; set; }
 
+    public virtual DbSet<VwUsuarioSucursal> VwUsuarioSucursals { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AspNetClaim>(entity =>
@@ -960,6 +962,78 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(16);
             entity.Property(e => e.UsuarioFechaCreacionFormat).HasMaxLength(4000);
+        });
+
+        modelBuilder.Entity<VwUsuarioSucursal>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_UsuarioSucursal", "SIS");
+
+            entity.Property(e => e.ApellidoMaterno).HasMaxLength(64);
+            entity.Property(e => e.ApellidoPaterno)
+                .IsRequired()
+                .HasMaxLength(64);
+            entity.Property(e => e.AspNetUserId)
+                .IsRequired()
+                .HasMaxLength(450);
+            entity.Property(e => e.CodigoPostalUsuario).HasMaxLength(9);
+            entity.Property(e => e.CodigoSucursal)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Direccion1)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.Direccion2).HasMaxLength(64);
+            entity.Property(e => e.DireccionSucursal)
+                .IsRequired()
+                .HasMaxLength(256);
+            entity.Property(e => e.Email)
+                .IsRequired()
+                .HasMaxLength(60);
+            entity.Property(e => e.FechaIngresoFormat).HasMaxLength(4000);
+            entity.Property(e => e.Gafete)
+                .IsRequired()
+                .HasMaxLength(11);
+            entity.Property(e => e.GiroEmpresa).HasMaxLength(100);
+            entity.Property(e => e.IdiomaPreferido).HasMaxLength(50);
+            entity.Property(e => e.Iniciales)
+                .IsRequired()
+                .HasMaxLength(3);
+            entity.Property(e => e.InicialesNombre).HasMaxLength(2);
+            entity.Property(e => e.MonedaBaseEmpresa).HasMaxLength(50);
+            entity.Property(e => e.MonedaPreferida).HasMaxLength(50);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(64);
+            entity.Property(e => e.NombreCompleto)
+                .IsRequired()
+                .HasMaxLength(194);
+            entity.Property(e => e.NombreEmpresa)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.NombreSucursal)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.NumeroSocial)
+                .IsRequired()
+                .HasMaxLength(12);
+            entity.Property(e => e.PayrollId)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.RazonSocialEmpresa).HasMaxLength(255);
+            entity.Property(e => e.RfcEmpresa)
+                .IsRequired()
+                .HasMaxLength(13);
+            entity.Property(e => e.SexoDescripcion)
+                .IsRequired()
+                .HasMaxLength(9)
+                .IsUnicode(false);
+            entity.Property(e => e.SimboloMoneda).HasMaxLength(5);
+            entity.Property(e => e.SimboloMonedaBase).HasMaxLength(5);
+            entity.Property(e => e.TelefonoUsuario)
+                .IsRequired()
+                .HasMaxLength(16);
         });
 
         OnModelCreatingPartial(modelBuilder);

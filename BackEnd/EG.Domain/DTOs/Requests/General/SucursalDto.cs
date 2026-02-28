@@ -1,4 +1,4 @@
-﻿namespace EG.Dommain.DTOs.Responses;
+﻿namespace EG.Domain.DTOs.Requests.General;
 
 public partial class SucursalDto
 {

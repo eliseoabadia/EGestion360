@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EG.Application.CommonModel;
 using EG.Business.Interfaces;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.Entities;
 using EG.Domain.Interfaces;

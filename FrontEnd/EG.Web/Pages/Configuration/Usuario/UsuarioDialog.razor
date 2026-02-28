@@ -2,7 +2,7 @@
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Services.Configuration
-@inject ISucursalService sucursalService
+@inject IEmpresaService empresaService
 @inject IGenericCrudService<UsuarioResponse> _service
 @inject ISnackbar Snackbar
 
@@ -40,10 +40,10 @@
                            Required="true"
                            RequiredError="Debe seleccionar una sucursal"
                            For="@(() => usuario.IdEmpresa)">
-                    <MudSelectItem T="int" Value="0">Seleccione una sucursal</MudSelectItem>
-                    @foreach (var sucursal in listadoSucursales)
+                    <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                    @foreach (var empresa in listadoEmpresas)
                     {
-                        <MudSelectItem T="int" Value="@sucursal.PkidSucursal">@sucursal.Nombre</MudSelectItem>
+                        <MudSelectItem T="int" Value="@empresa.PkidEmpresa.Value">@empresa.EmpresaNombre</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -187,7 +187,7 @@
     private BaseCrudDialog<UsuarioResponse> dialog = null!;
     private BaseEntityForm<UsuarioResponse> form = null!;
     private UsuarioResponse usuario = new() { UsuarioActivo = true };
-    private IList<SucursalResponse> listadoSucursales = new List<SucursalResponse>();
+    private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
 
     private string dialogTitle => Id.HasValue ? "Editar Usuario" : "Nuevo Usuario";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -207,11 +207,11 @@
     {
         try
         {
-            var response = await sucursalService.GetAllSucursales();
+            var response = await empresaService.GetAllEmpresasAsync();
             if (response?.Success == true && response.Items != null)
             {
-                listadoSucursales = response.Items.ToList();
-                Console.WriteLine($"✅ Cargadas {listadoSucursales.Count} sucursales");
+                listadoEmpresas = response.Items.ToList();
+                Console.WriteLine($"✅ Cargadas {listadoEmpresas.Count} sucursales");
             }
             else
             {

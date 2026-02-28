@@ -29,6 +29,52 @@ WHERE T.Activo = 1 ;
 
 GO
 
+CREATE OR ALTER VIEW [SIS].[VW_SucursalEmpresaEstado]
+AS
+SELECT 
+    s.PKIdSucursal,
+    s.FKIdEmpresa_SIS,
+    s.FKIdEstado_SIS,
+    s.Nombre,
+    s.CodigoSucursal,
+    s.Alias,
+    s.FKIdTipoSucursal,
+    s.FKIdMonedaLocal_SIS,
+    s.Direccion,
+    s.Colonia,
+    s.Ciudad,
+    s.CodigoPostal,
+    s.TelefonoPrincipal,
+    s.TelefonoSecundario,
+    s.Email,
+    s.HorarioApertura,
+    s.HorarioCierre,
+    s.EsMatriz,
+    s.EsActiva,
+    s.Latitud,
+    s.Longitud,
+    -- Información adicional de la empresa
+    e.Nombre AS NombreEmpresa,
+    e.RFC,
+    -- Información del estado
+    est.Nombre AS NombreEstado,
+    est.CodigoEstado,
+    p.Nombre AS NombrePais
+FROM [SIS].Sucursal s WITH (NOLOCK)
+INNER JOIN [SIS].Empresa e WITH (NOLOCK) 
+    ON s.FKIdEmpresa_SIS = e.PKIdEmpresa 
+    AND e.Activo = 1
+INNER JOIN [SIS].Estados est WITH (NOLOCK) 
+    ON s.FKIdEstado_SIS = est.PKIdEstado 
+    AND est.Activo = 1
+INNER JOIN [SIS].Paises p WITH (NOLOCK) 
+    ON est.FKIdPais_SIS = p.PKIdPais 
+    AND p.Activo = 1
+WHERE s.Activo = 1;
+GO
+
+GO
+
 
 -- Vista principal
 CREATE OR ALTER VIEW SIS.vw_Menu AS
@@ -293,3 +339,150 @@ LEFT JOIN SucursalesConsolidadas sc ON u.PkIdUsuario = sc.IdUsuario
 
 WHERE u.Activo = 1;
 GO
+
+
+
+
+-- =============================================
+-- VISTA: VwUsuarioSucursal
+-- Descripción: Vista completa de usuarios con sus sucursales asignadas y permisos
+-- =============================================
+CREATE OR ALTER VIEW SIS.Vw_UsuarioSucursal
+AS
+SELECT 
+    -- Datos del Usuario
+    u.PkIdUsuario,
+    u.AspNetUserId,
+    u.FKIdEmpresa_SIS AS IdEmpresa,
+    u.Nombre,
+    u.ApellidoPaterno,
+    u.ApellidoMaterno,
+    CONCAT(u.Nombre, ' ', u.ApellidoPaterno, ' ', ISNULL(u.ApellidoMaterno, '')) AS NombreCompleto,
+    u.Iniciales,
+    UPPER(LEFT(u.Nombre, 1) + LEFT(u.ApellidoPaterno, 1)) AS InicialesNombre,
+    u.PayrollID AS PayrollId,
+    u.CodigoPostal AS CodigoPostalUsuario,
+    u.Telefono AS TelefonoUsuario,
+    u.Direccion1,
+    u.Direccion2,
+    u.Email,
+    u.NumeroSocial,
+    u.Gafete,
+    u.Sexo,
+    CASE WHEN u.Sexo = 1 THEN 'Masculino' ELSE 'Femenino' END AS SexoDescripcion,
+    u.FechaIngreso,
+    FORMAT(u.FechaIngreso, 'dd/MM/yyyy') AS FechaIngresoFormat,
+    DATEDIFF(YEAR, u.FechaIngreso, GETDATE()) AS AntigüedadAños,
+    
+    -- Idioma preferido
+    u.FKIdIdiomaPreferido_SIS AS IdIdiomaPreferido,
+    i.Nombre AS IdiomaPreferido,
+    
+    -- Moneda preferida
+    u.FKIdMonedaPreferida_SIS AS IdMonedaPreferida,
+    m.Nombre AS MonedaPreferida,
+    m.Simbolo AS SimboloMoneda,
+    
+    -- Datos de usuario
+    u.EsAdministrador,
+    u.Activo AS UsuarioActivo,
+    --u.FechaCreacion AS UsuarioFechaCreacion,
+    --FORMAT(u.FechaCreacion, 'dd/MM/yyyy HH:mm') AS UsuarioFechaCreacionFormat,
+    --u.UsuarioCreacion AS UsuarioCreadorId,
+    --u.FechaModificacion AS UsuarioFechaModificacion,
+    --u.UsuarioModificacion,
+    
+    -- Datos de la Empresa
+    e.PKIdEmpresa AS PkidEmpresa,
+    e.Nombre AS NombreEmpresa,
+    e.RFC AS RfcEmpresa,
+    e.RazonSocial AS RazonSocialEmpresa,
+    e.Giro AS GiroEmpresa,
+    e.FKIdMonedaBase_SIS AS IdMonedaBaseEmpresa,
+    mb.Nombre AS MonedaBaseEmpresa,
+    mb.Simbolo AS SimboloMonedaBase,
+    --e.Activa AS EmpresaActiva,
+    e.FechaCreacion AS EmpresaFechaCreacion,
+    
+    -- Datos de la Sucursal asignada
+    s.PKIdSucursal AS IdSucursal,
+    s.Nombre AS NombreSucursal,
+    s.CodigoSucursal,
+    s.Direccion AS DireccionSucursal,
+    --s.Telefono AS TelefonoSucursal,
+    s.EsMatriz,
+    --s.Activa AS SucursalActiva,
+    
+    -- Permisos específicos de la asignación
+    us.PuedeAcceder,
+    us.PuedeConfigurar,
+    us.PuedeOperar,
+    us.PuedeReportes,
+    us.EsGerente,
+    us.EsSupervisor,
+    --us.FechaAsignacion,
+    --FORMAT(us.FechaAsignacion, 'dd/MM/yyyy') AS FechaAsignacionFormat,
+    --us.FechaFinAsignacion,
+    --FORMAT(us.FechaFinAsignacion, 'dd/MM/yyyy') AS FechaFinAsignacionFormat,
+    us.Activo AS AsignacionActiva,
+    
+    ---- Indicadores adicionales
+    --CASE 
+    --    WHEN us.EsGerente = 1 THEN 'Gerente'
+    --    WHEN us.EsSupervisor = 1 THEN 'Supervisor'
+    --    ELSE 'Empleado'
+    --END AS RolEnSucursal,
+    
+    --CASE 
+    --    WHEN us.FechaFinAsignacion IS NOT NULL AND us.FechaFinAsignacion < GETDATE() THEN 'Vencida'
+    --    WHEN us.Activo = 0 THEN 'Inactiva'
+    --    ELSE 'Activa'
+    --END AS EstadoAsignacion,
+    
+    ---- Conteo de departamentos en esta sucursal donde participa
+    --(
+    --    SELECT COUNT(DISTINCT ud.FKIdDepartamento_SIS)
+    --    FROM SIS.UsuarioDepartamento ud
+    --    INNER JOIN SIS.Departamento d ON ud.FKIdDepartamento_SIS = d.PKIdDepartamento
+    --    WHERE ud.FKIdUsuario_SIS = u.PkIdUsuario
+    --    AND d.FKIdSucursal_SIS = s.PKIdSucursal
+    --    AND ud.Activo = 1
+    --    AND (ud.FechaFinAsignacion IS NULL OR ud.FechaFinAsignacion >= GETDATE())
+    --) AS TotalDepartamentosEnSucursal,
+    
+    ---- Lista de departamentos en esta sucursal
+    --STUFF((
+    --    SELECT ', ' + d.Nombre
+    --    FROM SIS.UsuarioDepartamento ud
+    --    INNER JOIN SIS.Departamento d ON ud.FKIdDepartamento_SIS = d.PKIdDepartamento
+    --    WHERE ud.FKIdUsuario_SIS = u.PkIdUsuario
+    --    AND d.FKIdSucursal_SIS = s.PKIdSucursal
+    --    AND ud.Activo = 1
+    --    AND (ud.FechaFinAsignacion IS NULL OR ud.FechaFinAsignacion >= GETDATE())
+    --    FOR XML PATH('')
+    --), 1, 2, '') AS DepartamentosEnSucursal,
+    
+    -- Indicador de si es jefe en algún departamento de esta sucursal
+    CASE 
+        WHEN EXISTS (
+            SELECT 1
+            FROM SIS.UsuarioDepartamento ud
+            INNER JOIN SIS.Departamento d ON ud.FKIdDepartamento_SIS = d.PKIdDepartamento
+            WHERE ud.FKIdUsuario_SIS = u.PkIdUsuario
+            AND d.FKIdSucursal_SIS = s.PKIdSucursal
+            AND ud.EsJefe = 1
+            AND ud.Activo = 1
+            AND (ud.FechaFinAsignacion IS NULL OR ud.FechaFinAsignacion >= GETDATE())
+        ) THEN 1 ELSE 0 
+    END AS EsJefeEnSucursal
+
+FROM SIS.Usuario u
+INNER JOIN SIS.Empresa e ON u.FKIdEmpresa_SIS = e.PKIdEmpresa
+LEFT JOIN SIS.Idioma i ON u.FKIdIdiomaPreferido_SIS = i.PKIdIdioma
+LEFT JOIN SIS.Moneda m ON u.FKIdMonedaPreferida_SIS = m.PKIdMoneda
+LEFT JOIN SIS.Moneda mb ON e.FKIdMonedaBase_SIS = mb.PKIdMoneda
+INNER JOIN SIS.UsuarioSucursal us ON u.PkIdUsuario = us.FKIdUsuario_SIS
+INNER JOIN SIS.Sucursal s ON us.FKIdSucursal_SIS = s.PKIdSucursal
+WHERE us.Activo = 1 
+  AND (us.FechaFinAsignacion IS NULL OR us.FechaFinAsignacion >= GETDATE())
+  AND u.Activo = 1;

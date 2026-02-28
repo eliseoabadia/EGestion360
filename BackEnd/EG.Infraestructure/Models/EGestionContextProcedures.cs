@@ -133,6 +133,45 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<spEliminarUsuarioSucursalResult>> spEliminarUsuarioSucursalAsync(int? fkidUsuarioSis, int? fkidSucursalSis, string usuarioModificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "FkidUsuarioSis",
+                    Value = fkidUsuarioSis ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkidSucursalSis",
+                    Value = fkidSucursalSis ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioModificacion",
+                    Size = 100,
+                    Value = usuarioModificacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spEliminarUsuarioSucursalResult>("EXEC @returnValue = [SIS].[spEliminarUsuarioSucursal] @FkidUsuarioSis = @FkidUsuarioSis, @FkidSucursalSis = @FkidSucursalSis, @UsuarioModificacion = @UsuarioModificacion", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spGetClaimsByUserResult>> spGetClaimsByUserAsync(int? pkIdUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

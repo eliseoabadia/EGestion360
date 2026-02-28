@@ -32,6 +32,7 @@ public partial class Program
             cfg.AddProfile<SucursalMappingProfile>();
             cfg.AddProfile<MenuMappingProfile>();
             cfg.AddProfile<AspNetRoleMappingProfile>();
+            cfg.AddProfile<UsuarioSucursalMappingProfile>();
             
 
 
@@ -56,6 +57,7 @@ public partial class Program
         //repositories
         builder.Services.AddScoped<IRepository<Usuario>, Repository<Usuario>>();
         builder.Services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
+        builder.Services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
         builder.Services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
         builder.Services.AddScoped<IRepository<PerfilUsuario>, Repository<PerfilUsuario>>();
         //builder.Services.AddScoped<IRepository<Empresa>, Repository<Empresa>>();

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.Entities;
 using EG.Dommain.DTOs.Responses;
 
@@ -10,7 +11,9 @@ namespace EG.Business.Mapping.Entidades
         public SucursalMappingProfile()
         {
             // Mapeo de Entidad a DTO (para crear/actualizar)
-            CreateMap<Sucursal, SucursalDto>()
+            CreateMap<Sucursal, SucursalDto>().ReverseMap(); 
+            // Mapeo de Entidad a DTO (para crear/actualizar)
+            CreateMap<Sucursal, SucursalResponse>()
                 .ReverseMap(); // Permite mapeo bidireccional
 
             // MAPPER SOLICITADO: VwSucursalEmpresaEstado a SucursalResponse

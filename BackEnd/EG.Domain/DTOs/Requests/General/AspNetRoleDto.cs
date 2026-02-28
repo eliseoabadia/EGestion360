@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EG.Domain.DTOs.Responses.General;
+namespace EG.Domain.DTOs.Requests.General;
 
 public partial class AspNetRoleDto
 {

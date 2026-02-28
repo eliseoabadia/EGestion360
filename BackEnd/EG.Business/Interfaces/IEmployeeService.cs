@@ -1,4 +1,5 @@
 ﻿using EG.Application.CommonModel;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
 using EG.Dommain.DTOs.Responses;
 

@@ -1,0 +1,337 @@
+﻿@using MudBlazor
+@using EG.Web.Models.Configuration
+@using EG.Web.Helpers
+
+@inject NavigationManager NavigationManager
+@inject IGenericCrudService<UsuarioResponse> _service
+@inject IGenericCrudService<UsuarioSucursalResponse> _serviceUsuarioSucursal
+@inject IGenericCrudService<SucursalResponse> _serviceSucursal
+@inject ISnackbar MudSnackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    @if (_loading)
+    {
+        <div class="d-flex justify-center ma-16">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <MudText Typo="Typo.h5" Class="mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Class="mr-2" />
+            Asignar Sucursales - @_usuario?.NombreCompleto
+        </MudText>
+
+        <MudDropContainer T="SucursalItem"
+                          Items="_items"
+                          ItemsSelector="@((item, dropzone) => item.Zona == dropzone)"
+                          ItemDropped="@((dropInfo) => OnItemDropped(dropInfo))">
+            <ChildContent>
+                <MudGrid>
+                    <!-- Zona No Asignadas -->
+                    <MudItem xs="12" md="6">
+                        <MudPaper Class="pa-4" Elevation="2" Style="height: 600px; display: flex; flex-direction: column;">
+                            <MudText Typo="Typo.h6" Class="mb-4">
+                                <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                                Disponibles (@ContarItemsEnZona("no-asignadas"))
+                            </MudText>
+
+                            <div style="flex: 1; overflow-y: auto; min-height: 0;">
+                                <MudDropZone T="SucursalItem"
+                                             Identifier="no-asignadas"
+                                             Class="dropzone"
+                                             Style="min-height: 100%; height: auto;">
+                                </MudDropZone>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Zona Asignadas -->
+                    <MudItem xs="12" md="6">
+                        <MudPaper Class="pa-4" Elevation="2" Style="height: 600px; display: flex; flex-direction: column;">
+                            <MudText Typo="Typo.h6" Class="mb-4">
+                                <MudIcon Icon="@Icons.Material.Filled.AssignmentTurnedIn" Class="mr-2" />
+                                Asignadas (@ContarItemsEnZona("asignadas"))
+                            </MudText>
+
+                            <div style="flex: 1; overflow-y: auto; min-height: 0;">
+                                <MudDropZone T="SucursalItem"
+                                             Identifier="asignadas"
+                                             Class="dropzone"
+                                             Style="min-height: 100%; height: auto;">
+                                </MudDropZone>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </ChildContent>
+            <ItemRenderer>
+                <MudPaper Class="pa-2 mb-2 item-card" Elevation="1" Style="cursor: grab;">
+                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                        <MudAvatar Size="Size.Small" Color="Color.Primary">
+                            @ObtenerIniciales(context.Nombre)
+                        </MudAvatar>
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2">
+                                <strong>@context.Nombre</strong>
+                            </MudText>
+                            @if (!string.IsNullOrEmpty(context.Codigo))
+                            {
+                                <MudText Typo="Typo.caption" Class="text-secondary">
+                                    @context.Codigo
+                                </MudText>
+                            }
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+            </ItemRenderer>
+        </MudDropContainer>
+
+        <!-- Botones -->
+        <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-4">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@Volver">
+                Volver
+            </MudButton>
+        </MudStack>
+    }
+</MudContainer>
+
+<style>
+    .dropzone {
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        padding: 8px;
+        transition: all 0.2s;
+    }
+
+        .dropzone.mud-drop-zone-drag-over {
+            border-color: #6200EE;
+            background-color: rgba(98, 0, 238, 0.05);
+        }
+
+    .item-card {
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+        .item-card:hover {
+            background-color: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+    /* Ocultar scrollbars pero mantener funcionalidad (opcional) */
+    .dropzone::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .dropzone::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .dropzone::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+        .dropzone::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+</style>
+
+    @code {
+    [Parameter] public int UsuarioId { get; set; }
+
+    [Inject]
+    private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
+
+    private bool _loading = true;
+    private UsuarioResponse? _usuario;
+    private List<SucursalItem> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            // Verificar permiso básico
+            if (!AuthProvider.HasPermission("configuracion", "perfil", "view"))
+            {
+                NavigationManager.NavigateTo("/");
+                return;
+            }
+
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            MudSnackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        // Cargar usuario
+        var usuarioResponse = await _service.GetByIdAsync(UsuarioId);
+        if (usuarioResponse?.Success == true)
+        {
+            _usuario = usuarioResponse.Data;
+        }
+
+        // Cargar todas las sucursales
+        var sucursalesResponse = await _serviceSucursal.GetAllAsync();
+        var todasSucursales = sucursalesResponse?.Success == true
+            ? sucursalesResponse.Items?.ToList() ?? new()
+            : new();
+
+        // Cargar asignaciones
+        var asignacionesResponse = await _serviceUsuarioSucursal.GetAllAsync();
+        var sucursalesAsignadas = asignacionesResponse?.Success == true
+            ? asignacionesResponse.Items?
+                .Where(x => x.PkIdUsuario == UsuarioId && x.AsignacionActiva)
+                .Select(x => x.IdSucursal)
+                .ToHashSet() ?? new()
+            : new();
+
+        // Crear items
+        _items = todasSucursales.Select(s => new SucursalItem
+        {
+            Id = s.PkidSucursal,
+            Nombre = s.Nombre ?? "",
+            Codigo = s.CodigoSucursal ?? "",
+            Zona = sucursalesAsignadas.Contains(s.PkidSucursal) ? "asignadas" : "no-asignadas"
+        }).ToList();
+    }
+
+    private async Task OnItemDropped(MudItemDropInfo<SucursalItem> dropInfo)
+    {
+        var item = dropInfo.Item;
+        var nuevaZona = dropInfo.DropzoneIdentifier;
+
+        if (item.Zona == nuevaZona) return;
+
+        try
+        {
+            _loading = true;
+
+            // Asignar sucursal
+            var asignacion = new UsuarioSucursalResponse
+            {
+                PkIdUsuario = UsuarioId,        // Cambiado de PkIdUsuario a FkidUsuarioSis
+                AspNetUserId = UsuarioId.ToString(),
+                IdEmpresa = UsuarioId,
+                IdSucursal = item.Id,         // Cambiado de IdSucursal a FkidSucursalSis
+
+                Nombre = string.Empty,
+                ApellidoPaterno = string.Empty,
+                ApellidoMaterno = string.Empty,
+                NombreCompleto = string.Empty,
+                Iniciales = string.Empty,
+                InicialesNombre = string.Empty,
+                PayrollId = string.Empty,
+                CodigoPostalUsuario = string.Empty,
+                TelefonoUsuario = string.Empty,
+                Direccion1 = string.Empty,
+                Direccion2 = string.Empty,
+                Email = string.Empty,
+                NumeroSocial = string.Empty,
+                Gafete = string.Empty,
+                Sexo = false,
+                SexoDescripcion = string.Empty,
+                FechaIngreso = DateOnly.MinValue,
+                FechaIngresoFormat = string.Empty,
+                AntigüedadAños = 0,
+                IdIdiomaPreferido = 0,
+                IdiomaPreferido = string.Empty,
+                IdMonedaPreferida = 0,
+                MonedaPreferida = string.Empty,
+                SimboloMoneda = string.Empty,
+                EsAdministrador = true,
+                UsuarioActivo = true,
+                PkidEmpresa = 0,
+                NombreEmpresa = string.Empty,
+                RfcEmpresa = string.Empty,
+                RazonSocialEmpresa = string.Empty,
+                GiroEmpresa = string.Empty,
+                IdMonedaBaseEmpresa = 0,
+                MonedaBaseEmpresa = string.Empty,
+                SimboloMonedaBase = string.Empty,
+                EmpresaFechaCreacion = System.DateTime.Now,
+                NombreSucursal = string.Empty,
+                CodigoSucursal = string.Empty,
+                DireccionSucursal = string.Empty,
+                EsMatriz = true,
+                PuedeAcceder = true,
+                PuedeConfigurar = true,
+                PuedeOperar = true,
+                PuedeReportes = true,
+                EsGerente = true,
+                EsSupervisor = true,
+                AsignacionActiva = true,
+                EsJefeEnSucursal = 0
+            };
+
+            if (nuevaZona == "asignadas")
+            {
+                
+                await _serviceUsuarioSucursal.CreateAsync(asignacion);
+                MudSnackbar.Add($"Sucursal asignada", Severity.Success);
+            }
+            else
+            {
+                // Quitar asignación
+                var _resultVer = (await _serviceUsuarioSucursal.GetAllAsync())?.Items?
+                    .FirstOrDefault(x => x.PkIdUsuario == UsuarioId && x.IdSucursal == item.Id);
+
+                if (_resultVer != null)
+                {
+                    await _serviceUsuarioSucursal.UpdateAsync(asignacion, asignacion.PkIdUsuario);
+                    MudSnackbar.Add($"Sucursal asignada", Severity.Success);
+                    // await _serviceUsuarioSucursal.DeleteAsync(asignacion.PkIdUsuario);
+                    // MudSnackbar.Add($"Sucursal quitada", Severity.Info);
+                }
+            }
+
+            // Actualizar zona del item
+            item.Zona = nuevaZona;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            MudSnackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private int ContarItemsEnZona(string zona) => _items.Count(x => x.Zona == zona);
+
+    private string ObtenerIniciales(string nombre)
+    {
+        if (string.IsNullOrEmpty(nombre)) return "??";
+        var palabras = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (palabras.Length >= 2)
+            return $"{palabras[0][0]}{palabras[1][0]}".ToUpper();
+        return nombre.Length >= 2 ? nombre.Substring(0, 2).ToUpper() : nombre[0].ToString().ToUpper();
+    }
+
+    private void Volver()
+    {
+        NavigationManager.NavigateTo("/usuarios");
+    }
+
+    // Clase para los items del drag & drop
+    public class SucursalItem
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Codigo { get; set; } = "";
+        public string Zona { get; set; } = "";
+    }
+}

@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Entities;
 

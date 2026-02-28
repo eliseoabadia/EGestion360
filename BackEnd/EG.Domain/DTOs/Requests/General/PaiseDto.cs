@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EG.Domain.DTOs.Requests.General
+﻿namespace EG.Domain.DTOs.Requests.General
 {
     public class PaiseDto
     {

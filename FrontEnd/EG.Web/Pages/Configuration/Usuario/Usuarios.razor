@@ -52,6 +52,15 @@
                                        Color="Color.Error"
                                        Size="Size.Small"
                                        OnClick="@(() => DeleteItem(usuario.PkIdUsuario))" />
+
+                    </MudTooltip>
+                    <MudTooltip Text="Asignar Sucursal">
+                        <MudIconButton Icon="@Icons.Material.Filled.AssignmentInd"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => AssingSucursal(usuario.PkIdUsuario))" />
+
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@usuario.PkIdUsuario</MudTd>
@@ -175,6 +184,37 @@
         {
             Console.WriteLine($"❌ Error en DeleteItem: {ex.Message}");
             Snackbar.Add($"Error al preparar eliminación: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    
+    private async Task AssingSucursal(int id)
+    {
+        try
+        {
+            var parameters = new DialogParameters { ["UsuarioId"] = id };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+            };
+
+            //var dialog = await DialogService.ShowAsync<EditarUsuario>("Editar Usuario", parameters, options);
+
+            var dialog = await DialogService.ShowAsync<AsignarUsuariosDepartamento>("Asignar Sucursal", parameters, options);
+            var result = await dialog.Result;
+
+            await table.ReloadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Ocurrió un error: " + ex.Message, Severity.Error);
         }
         finally
         {
