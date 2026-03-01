@@ -1,8 +1,5 @@
-﻿using EG.Domain.Entities;
-using EG.Dommain.DTOs.Responses;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EG.Dommain.DTOs.Responses;
+using EG.Infraestructure.Models;
 
 namespace EG.Business.Interfaces
 {

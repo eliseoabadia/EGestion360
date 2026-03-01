@@ -13,7 +13,8 @@ CREATE SCHEMA SIS  -- Sistema (catálogos generales)
 GO
 CREATE SCHEMA NOM  -- Nómina
 GO
-CREATE SCHEMA ALM  -- Almacén
+CREATE SCHEMA ALMA  -- Almacén
+
 GO
 CREATE SCHEMA CONTA  -- Contabilidad
 GO

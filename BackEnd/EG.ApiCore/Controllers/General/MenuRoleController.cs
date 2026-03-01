@@ -1,6 +1,6 @@
 using EG.Business.Services;
 using EG.Domain.DTOs.Requests.General;
-using EG.Domain.Entities;
+using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -19,6 +19,78 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[ALMA].[ArticuloConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[DiscrepanciaConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[EstatusArticuloConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[EstatusPeriodo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[Familia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[GrupoBien]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[HistorialEstatusArticulo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[Nivel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[PeriodoConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[RegistroConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[TipoBien]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[TipoConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[Unidades]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[Capitulo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[Concepto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[CuentaContable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[Partida]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[TipoCuenta]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[AspNetClaims]",
          "ObjectType": 0
       },
@@ -119,6 +191,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[VistaDetalleArticulos]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[VistaResumenPeriodo]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[VW_EmpresaDepartamanto]",
          "ObjectType": 3
       },
@@ -141,6 +221,10 @@
       {
          "Name": "[SIS].[Vw_UsuarioSucursal]",
          "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[sp_RegistrarConteo]",
+         "ObjectType": 1
       },
       {
          "Name": "[dbo].[spConfiguracionDeRolYClaims]",

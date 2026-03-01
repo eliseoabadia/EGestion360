@@ -6,8 +6,9 @@ using EG.Business.Interfaces;
 using EG.Business.Mapping.Entidades;
 using EG.Business.Services;
 using EG.Common.Util;
-using EG.Domain.Entities;
 using EG.Domain.Interfaces;
+using EG.Infraestructure.Models;
+
 //using EG.Filters;
 using EG.Infrastructure;
 using EG.Logger;

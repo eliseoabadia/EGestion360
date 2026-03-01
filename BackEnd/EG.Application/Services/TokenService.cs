@@ -1,14 +1,12 @@
 ﻿using EG.Application.CommonModel;
 using EG.Application.Interfaces;
 using EG.Domain.DTOs.Requests.Auth;
-using EG.Domain.Entities;
+using EG.Infraestructure.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace EG.Application.Services
 {

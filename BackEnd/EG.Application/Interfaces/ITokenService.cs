@@ -1,6 +1,6 @@
 ﻿using EG.Application.CommonModel;
 using EG.Domain.DTOs.Requests.Auth;
-using EG.Domain.Entities;
+using EG.Infraestructure.Models;
 using System.Security.Claims;
 
 namespace EG.Application.Interfaces

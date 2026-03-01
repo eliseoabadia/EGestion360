@@ -3,8 +3,8 @@ using EG.Application.CommonModel;
 using EG.Business.Services;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
-using EG.Domain.Entities;
 using EG.Dommain.DTOs.Responses;
+using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

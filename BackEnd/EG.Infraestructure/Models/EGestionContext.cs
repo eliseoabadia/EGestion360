@@ -2,7 +2,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using EG.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EG.Infraestructure.Models;
@@ -13,6 +12,8 @@ public partial class EGestionContext : DbContext
         : base(options)
     {
     }
+
+    public virtual DbSet<ArticuloConteo> ArticuloConteos { get; set; }
 
     public virtual DbSet<AspNetClaim> AspNetClaims { get; set; }
 
@@ -26,15 +27,33 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<AspNetUserRole> AspNetUserRoles { get; set; }
 
+    public virtual DbSet<Capitulo> Capitulos { get; set; }
+
     public virtual DbSet<CatTipoSucursal> CatTipoSucursals { get; set; }
 
+    public virtual DbSet<Concepto> Conceptos { get; set; }
+
+    public virtual DbSet<CuentaContable> CuentaContables { get; set; }
+
     public virtual DbSet<Departamento> Departamentos { get; set; }
+
+    public virtual DbSet<DiscrepanciaConteo> DiscrepanciaConteos { get; set; }
 
     public virtual DbSet<Empresa> Empresas { get; set; }
 
     public virtual DbSet<EmpresaEstado> EmpresaEstados { get; set; }
 
     public virtual DbSet<Estado> Estados { get; set; }
+
+    public virtual DbSet<EstatusArticuloConteo> EstatusArticuloConteos { get; set; }
+
+    public virtual DbSet<EstatusPeriodo> EstatusPeriodos { get; set; }
+
+    public virtual DbSet<Familium> Familia { get; set; }
+
+    public virtual DbSet<GrupoBien> GrupoBiens { get; set; }
+
+    public virtual DbSet<HistorialEstatusArticulo> HistorialEstatusArticulos { get; set; }
 
     public virtual DbSet<Idioma> Idiomas { get; set; }
 
@@ -44,11 +63,19 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Monedum> Moneda { get; set; }
 
+    public virtual DbSet<Nivel> Nivels { get; set; }
+
     public virtual DbSet<OrigenLogMessage> OrigenLogMessages { get; set; }
 
     public virtual DbSet<Paise> Paises { get; set; }
 
+    public virtual DbSet<Partidum> Partida { get; set; }
+
     public virtual DbSet<PerfilUsuario> PerfilUsuarios { get; set; }
+
+    public virtual DbSet<PeriodoConteo> PeriodoConteos { get; set; }
+
+    public virtual DbSet<RegistroConteo> RegistroConteos { get; set; }
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
@@ -58,11 +85,23 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<SystemParamValue> SystemParamValues { get; set; }
 
+    public virtual DbSet<TipoBien> TipoBiens { get; set; }
+
+    public virtual DbSet<TipoConteo> TipoConteos { get; set; }
+
+    public virtual DbSet<TipoCuentum> TipoCuenta { get; set; }
+
+    public virtual DbSet<Unidade> Unidades { get; set; }
+
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<UsuarioDepartamento> UsuarioDepartamentos { get; set; }
 
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
+
+    public virtual DbSet<VistaDetalleArticulo> VistaDetalleArticulos { get; set; }
+
+    public virtual DbSet<VistaResumenPeriodo> VistaResumenPeriodos { get; set; }
 
     public virtual DbSet<VwEmpresaDepartamanto> VwEmpresaDepartamantos { get; set; }
 
@@ -78,6 +117,63 @@ public partial class EGestionContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ArticuloConteo>(entity =>
+        {
+            entity.HasKey(e => e.PkidArticuloConteo);
+
+            entity.ToTable("ArticuloConteo", "ALMA");
+
+            entity.HasIndex(e => new { e.FkidEstatusAlma, e.FkidPeriodoConteoAlma }, "IX_ArticuloConteo_Estatus").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidPeriodoConteoAlma, "IX_ArticuloConteo_Pendientes").HasFilter("([ConteosPendientes]>(0) AND [Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidPeriodoConteoAlma, "IX_ArticuloConteo_Periodo");
+
+            entity.HasIndex(e => new { e.FkidPeriodoConteoAlma, e.FkidTipoBienAlma }, "UQ_ArticuloConteo_Periodo_Bien").IsUnique();
+
+            entity.Property(e => e.PkidArticuloConteo).HasColumnName("PKIdArticuloConteo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.CodigoBarras).HasMaxLength(50);
+            entity.Property(e => e.ConteosPendientes).HasDefaultValue(1);
+            entity.Property(e => e.DescripcionArticulo).HasMaxLength(1200);
+            entity.Property(e => e.Diferencia).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaFinal).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaSistema).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidEstatusAlma).HasColumnName("FKIdEstatus_ALMA");
+            entity.Property(e => e.FkidPeriodoConteoAlma).HasColumnName("FKIdPeriodoConteo_ALMA");
+            entity.Property(e => e.FkidSucursalSis).HasColumnName("FKIdSucursal_SIS");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidUsuarioConcluyoSis).HasColumnName("FKIdUsuarioConcluyo_SIS");
+            entity.Property(e => e.PorcentajeDiferencia).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Ubicacion).HasMaxLength(100);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+
+            entity.HasOne(d => d.FkidEstatusAlmaNavigation).WithMany(p => p.ArticuloConteos)
+                .HasForeignKey(d => d.FkidEstatusAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ArticuloConteo_Estatus");
+
+            entity.HasOne(d => d.FkidPeriodoConteoAlmaNavigation).WithMany(p => p.ArticuloConteos)
+                .HasForeignKey(d => d.FkidPeriodoConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ArticuloConteo_Periodo");
+
+            entity.HasOne(d => d.FkidSucursalSisNavigation).WithMany(p => p.ArticuloConteos)
+                .HasForeignKey(d => d.FkidSucursalSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ArticuloConteo_Sucursal");
+
+            entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.ArticuloConteos)
+                .HasForeignKey(d => d.FkidTipoBienAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ArticuloConteo_TipoBien");
+
+            entity.HasOne(d => d.FkidUsuarioConcluyoSisNavigation).WithMany(p => p.ArticuloConteos)
+                .HasForeignKey(d => d.FkidUsuarioConcluyoSis)
+                .HasConstraintName("FK_ArticuloConteo_UsuarioConcluyo");
+        });
+
         modelBuilder.Entity<AspNetClaim>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("CONSTRAINT_PK_AspNetClaims");
@@ -177,6 +273,19 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("CONSTRAINT_FK_AspNetUserRoles_User");
         });
 
+        modelBuilder.Entity<Capitulo>(entity =>
+        {
+            entity.HasKey(e => e.PkidCapitulo).HasName("CONTA_Capitulo_PK_IdCapitulo");
+
+            entity.ToTable("Capitulo", "CONTA");
+
+            entity.Property(e => e.PkidCapitulo).HasColumnName("PKIdCapitulo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Clave).HasMaxLength(30);
+            entity.Property(e => e.Descripcion).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<CatTipoSucursal>(entity =>
         {
             entity.HasKey(e => e.PkidTipoSucursal).HasName("PK_TipoSucursal");
@@ -190,6 +299,92 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Descripcion)
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Concepto>(entity =>
+        {
+            entity.HasKey(e => e.PkidConcepto).HasName("CONTA_Concepto_PK_IdConcepto");
+
+            entity.ToTable("Concepto", "CONTA");
+
+            entity.Property(e => e.PkidConcepto).HasColumnName("PKIdConcepto");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Clave).HasMaxLength(30);
+            entity.Property(e => e.Descripcion).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidCapituloConta).HasColumnName("FKIdCapitulo_CONTA");
+
+            entity.HasOne(d => d.FkidCapituloContaNavigation).WithMany(p => p.Conceptos)
+                .HasForeignKey(d => d.FkidCapituloConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("CONTA_FK_IdCapitulo");
+        });
+
+        modelBuilder.Entity<CuentaContable>(entity =>
+        {
+            entity.HasKey(e => e.PkidCuentaContable);
+
+            entity.ToTable("CuentaContable", "CONTA");
+
+            entity.Property(e => e.PkidCuentaContable).HasColumnName("PKIdCuentaContable");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.ClaveOrd)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.CtaCoi)
+                .HasMaxLength(20)
+                .HasColumnName("Cta_Coi");
+            entity.Property(e => e.Cuenta)
+                .IsRequired()
+                .HasMaxLength(5);
+            entity.Property(e => e.DescCoi)
+                .HasMaxLength(160)
+                .HasColumnName("Desc_Coi");
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidTipoCuentaConta).HasColumnName("FKIdTipoCuenta_CONTA");
+            entity.Property(e => e.Hijo)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.IsCuentaDetalle).HasComputedColumnSql("(case when [TipoCuenta]='D' then (1) else (0) end)", false);
+            entity.Property(e => e.Padre)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.S10).HasMaxLength(5);
+            entity.Property(e => e.S5).HasMaxLength(5);
+            entity.Property(e => e.S6).HasMaxLength(5);
+            entity.Property(e => e.S7).HasMaxLength(5);
+            entity.Property(e => e.S8).HasMaxLength(5);
+            entity.Property(e => e.S9).HasMaxLength(5);
+            entity.Property(e => e.Saldo).HasColumnType("numeric(18, 2)");
+            entity.Property(e => e.SubCuenta)
+                .IsRequired()
+                .HasMaxLength(5);
+            entity.Property(e => e.SubSubCuenta)
+                .IsRequired()
+                .HasMaxLength(5);
+            entity.Property(e => e.SubSubSubCuenta)
+                .IsRequired()
+                .HasMaxLength(5);
+            entity.Property(e => e.SubSubSubSubCuenta)
+                .IsRequired()
+                .HasMaxLength(5);
+            entity.Property(e => e.TipoCuenta)
+                .HasMaxLength(1)
+                .IsFixedLength();
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.CuentaContables)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CuentaContable_Empresa");
+
+            entity.HasOne(d => d.FkidTipoCuentaContaNavigation).WithMany(p => p.CuentaContables)
+                .HasForeignKey(d => d.FkidTipoCuentaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CuentaContable_TipoCuenta");
         });
 
         modelBuilder.Entity<Departamento>(entity =>
@@ -221,6 +416,34 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.FkidSucursalSisNavigation).WithMany(p => p.Departamentos)
                 .HasForeignKey(d => d.FkidSucursalSis)
                 .HasConstraintName("FK_Departamento_Sucursal");
+        });
+
+        modelBuilder.Entity<DiscrepanciaConteo>(entity =>
+        {
+            entity.HasKey(e => e.PkidDiscrepancia);
+
+            entity.ToTable("DiscrepanciaConteo", "ALMA");
+
+            entity.Property(e => e.PkidDiscrepancia).HasColumnName("PKIdDiscrepancia");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidArticuloConteoAlma).HasColumnName("FKIdArticuloConteo_ALMA");
+            entity.Property(e => e.FkidSupervisorSis).HasColumnName("FKIdSupervisor_SIS");
+            entity.Property(e => e.MetodoResolucion).HasMaxLength(50);
+            entity.Property(e => e.ObservacionesResolucion).HasMaxLength(500);
+            entity.Property(e => e.Valor1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Valor2).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Valor3).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorAceptado).HasColumnType("decimal(18, 4)");
+
+            entity.HasOne(d => d.FkidArticuloConteoAlmaNavigation).WithMany(p => p.DiscrepanciaConteos)
+                .HasForeignKey(d => d.FkidArticuloConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Discrepancia_Articulo");
+
+            entity.HasOne(d => d.FkidSupervisorSisNavigation).WithMany(p => p.DiscrepanciaConteos)
+                .HasForeignKey(d => d.FkidSupervisorSis)
+                .HasConstraintName("FK_Discrepancia_Supervisor");
         });
 
         modelBuilder.Entity<Empresa>(entity =>
@@ -300,6 +523,124 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidPaisSis)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Estados_Paises");
+        });
+
+        modelBuilder.Entity<EstatusArticuloConteo>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstatusArticulo).HasName("PK_EstatusArticulo");
+
+            entity.ToTable("EstatusArticuloConteo", "ALMA");
+
+            entity.HasIndex(e => e.Nombre, "UQ_EstatusArticulo_Nombre").IsUnique();
+
+            entity.Property(e => e.PkidEstatusArticulo).HasColumnName("PKIdEstatusArticulo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion).HasMaxLength(100);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<EstatusPeriodo>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstatusPeriodo);
+
+            entity.ToTable("EstatusPeriodo", "ALMA");
+
+            entity.HasIndex(e => e.Nombre, "UQ_EstatusPeriodo_Nombre").IsUnique();
+
+            entity.Property(e => e.PkidEstatusPeriodo).HasColumnName("PKIdEstatusPeriodo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion).HasMaxLength(100);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<Familium>(entity =>
+        {
+            entity.HasKey(e => e.PkidFamilia).HasName("ALMA_Familia_PK_IdFamilia");
+
+            entity.ToTable("Familia", "ALMA");
+
+            entity.Property(e => e.PkidFamilia).HasColumnName("PKIdFamilia");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(80);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
+        modelBuilder.Entity<GrupoBien>(entity =>
+        {
+            entity.HasKey(e => e.PkidGrupoBien).HasName("ALMA_GrupoBien_PK_IdGrupoBien");
+
+            entity.ToTable("GrupoBien", "ALMA");
+
+            entity.Property(e => e.PkidGrupoBien).HasColumnName("PKIdGrupoBien");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.CabmAct)
+                .HasMaxLength(50)
+                .HasColumnName("CABM_ACT");
+            entity.Property(e => e.ClaveAn)
+                .HasMaxLength(50)
+                .HasColumnName("ClaveAN");
+            entity.Property(e => e.ClaveCucop)
+                .HasMaxLength(50)
+                .HasColumnName("CLAVE_CUCOP");
+            entity.Property(e => e.Descripcion).HasMaxLength(800);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidFamiliaAlma).HasColumnName("FKIdFamilia_ALMA");
+            entity.Property(e => e.Medida)
+                .HasMaxLength(50)
+                .HasColumnName("MEDIDA");
+
+            entity.HasOne(d => d.FkidFamiliaAlmaNavigation).WithMany(p => p.GrupoBiens)
+                .HasForeignKey(d => d.FkidFamiliaAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("ALMA_FK_IdFamilia");
+        });
+
+        modelBuilder.Entity<HistorialEstatusArticulo>(entity =>
+        {
+            entity.HasKey(e => e.PkidHistorial).HasName("PK_HistorialEstatus");
+
+            entity.ToTable("HistorialEstatusArticulo", "ALMA");
+
+            entity.HasIndex(e => new { e.FkidArticuloConteoAlma, e.FechaCambio }, "IX_Historial_Articulo");
+
+            entity.Property(e => e.PkidHistorial).HasColumnName("PKIdHistorial");
+            entity.Property(e => e.FechaCambio).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidArticuloConteoAlma).HasColumnName("FKIdArticuloConteo_ALMA");
+            entity.Property(e => e.FkidEstatusAnteriorAlma).HasColumnName("FKIdEstatusAnterior_ALMA");
+            entity.Property(e => e.FkidEstatusNuevoAlma).HasColumnName("FKIdEstatusNuevo_ALMA");
+            entity.Property(e => e.FkidRegistroConteoAlma).HasColumnName("FKIdRegistroConteo_ALMA");
+            entity.Property(e => e.FkidUsuarioSis).HasColumnName("FKIdUsuario_SIS");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidArticuloConteoAlmaNavigation).WithMany(p => p.HistorialEstatusArticulos)
+                .HasForeignKey(d => d.FkidArticuloConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Historial_Articulo");
+
+            entity.HasOne(d => d.FkidEstatusAnteriorAlmaNavigation).WithMany(p => p.HistorialEstatusArticuloFkidEstatusAnteriorAlmaNavigations)
+                .HasForeignKey(d => d.FkidEstatusAnteriorAlma)
+                .HasConstraintName("FK_Historial_EstatusAnterior");
+
+            entity.HasOne(d => d.FkidEstatusNuevoAlmaNavigation).WithMany(p => p.HistorialEstatusArticuloFkidEstatusNuevoAlmaNavigations)
+                .HasForeignKey(d => d.FkidEstatusNuevoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Historial_EstatusNuevo");
+
+            entity.HasOne(d => d.FkidRegistroConteoAlmaNavigation).WithMany(p => p.HistorialEstatusArticulos)
+                .HasForeignKey(d => d.FkidRegistroConteoAlma)
+                .HasConstraintName("FK_Historial_Registro");
+
+            entity.HasOne(d => d.FkidUsuarioSisNavigation).WithMany(p => p.HistorialEstatusArticulos)
+                .HasForeignKey(d => d.FkidUsuarioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Historial_Usuario");
         });
 
         modelBuilder.Entity<Idioma>(entity =>
@@ -406,6 +747,21 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(5);
         });
 
+        modelBuilder.Entity<Nivel>(entity =>
+        {
+            entity.HasKey(e => e.PkidNivel).HasName("ALMA_Nivel_PK_IdNivel");
+
+            entity.ToTable("Nivel", "ALMA");
+
+            entity.Property(e => e.PkidNivel).HasColumnName("PKIdNivel");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descipcion)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.Nivel1).HasColumnName("Nivel");
+        });
+
         modelBuilder.Entity<OrigenLogMessage>(entity =>
         {
             entity.HasKey(e => e.PkidOrigenLogMessage).HasName("CONSTRAINT_PK_OrigenLogMessage");
@@ -461,6 +817,28 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_Paises_Moneda");
         });
 
+        modelBuilder.Entity<Partidum>(entity =>
+        {
+            entity.HasKey(e => e.PkidPartida).HasName("CONTA_Patida_PK_IdPartid");
+
+            entity.ToTable("Partida", "CONTA");
+
+            entity.Property(e => e.PkidPartida).HasColumnName("PKIdPartida");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(255);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidConceptoSis).HasColumnName("FKIdConcepto_SIS");
+
+            entity.HasOne(d => d.FkidConceptoSisNavigation).WithMany(p => p.Partida)
+                .HasForeignKey(d => d.FkidConceptoSis)
+                .HasConstraintName("CONTA_FK_IdConcepto");
+        });
+
         modelBuilder.Entity<PerfilUsuario>(entity =>
         {
             entity.HasKey(e => e.FkidUsuarioSis).HasName("PK__PerfilUs__98F09D6B86C38442");
@@ -479,6 +857,108 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.FkidUsuarioSisNavigation).WithOne(p => p.PerfilUsuario)
                 .HasForeignKey<PerfilUsuario>(d => d.FkidUsuarioSis)
                 .HasConstraintName("FK__PerfilUsu__Usuar__367C1819");
+        });
+
+        modelBuilder.Entity<PeriodoConteo>(entity =>
+        {
+            entity.HasKey(e => e.PkidPeriodoConteo);
+
+            entity.ToTable("PeriodoConteo", "ALMA");
+
+            entity.HasIndex(e => e.FkidEstatusAlma, "IX_PeriodoConteo_Estatus").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => new { e.FkidSucursalSis, e.FechaInicio }, "IX_PeriodoConteo_Sucursal").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => new { e.FkidSucursalSis, e.CodigoPeriodo }, "UQ_PeriodoConteo_Codigo").IsUnique();
+
+            entity.Property(e => e.PkidPeriodoConteo).HasColumnName("PKIdPeriodoConteo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidEstatusAlma).HasColumnName("FKIdEstatus_ALMA");
+            entity.Property(e => e.FkidResponsableSis).HasColumnName("FKIdResponsable_SIS");
+            entity.Property(e => e.FkidSucursalSis).HasColumnName("FKIdSucursal_SIS");
+            entity.Property(e => e.FkidSupervisorSis).HasColumnName("FKIdSupervisor_SIS");
+            entity.Property(e => e.FkidTipoConteoAlma).HasColumnName("FKIdTipoConteo_ALMA");
+            entity.Property(e => e.MaximoConteosPorArticulo).HasDefaultValue(3);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.RequiereAprobacionSupervisor).HasDefaultValue(true);
+
+            entity.HasOne(d => d.FkidEstatusAlmaNavigation).WithMany(p => p.PeriodoConteos)
+                .HasForeignKey(d => d.FkidEstatusAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PeriodoConteo_Estatus");
+
+            entity.HasOne(d => d.FkidResponsableSisNavigation).WithMany(p => p.PeriodoConteoFkidResponsableSisNavigations)
+                .HasForeignKey(d => d.FkidResponsableSis)
+                .HasConstraintName("FK_PeriodoConteo_Responsable");
+
+            entity.HasOne(d => d.FkidSucursalSisNavigation).WithMany(p => p.PeriodoConteos)
+                .HasForeignKey(d => d.FkidSucursalSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PeriodoConteo_Sucursal");
+
+            entity.HasOne(d => d.FkidSupervisorSisNavigation).WithMany(p => p.PeriodoConteoFkidSupervisorSisNavigations)
+                .HasForeignKey(d => d.FkidSupervisorSis)
+                .HasConstraintName("FK_PeriodoConteo_Supervisor");
+
+            entity.HasOne(d => d.FkidTipoConteoAlmaNavigation).WithMany(p => p.PeriodoConteos)
+                .HasForeignKey(d => d.FkidTipoConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PeriodoConteo_Tipo");
+        });
+
+        modelBuilder.Entity<RegistroConteo>(entity =>
+        {
+            entity.HasKey(e => e.PkidRegistroConteo);
+
+            entity.ToTable("RegistroConteo", "ALMA");
+
+            entity.HasIndex(e => new { e.FkidArticuloConteoAlma, e.NumeroConteo }, "IX_RegistroConteo_Articulo");
+
+            entity.HasIndex(e => e.FkidPeriodoConteoAlma, "IX_RegistroConteo_Periodo");
+
+            entity.HasIndex(e => new { e.FkidUsuarioSis, e.FkidPeriodoConteoAlma }, "IX_RegistroConteo_Usuario").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => new { e.FkidArticuloConteoAlma, e.FkidUsuarioSis }, "UQ_RegistroConteo_Articulo_Usuario").IsUnique();
+
+            entity.Property(e => e.PkidRegistroConteo).HasColumnName("PKIdRegistroConteo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.CantidadContada).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidArticuloConteoAlma).HasColumnName("FKIdArticuloConteo_ALMA");
+            entity.Property(e => e.FkidPeriodoConteoAlma).HasColumnName("FKIdPeriodoConteo_ALMA");
+            entity.Property(e => e.FkidSucursalSis).HasColumnName("FKIdSucursal_SIS");
+            entity.Property(e => e.FkidUsuarioSis).HasColumnName("FKIdUsuario_SIS");
+            entity.Property(e => e.FotoPath).HasMaxLength(500);
+            entity.Property(e => e.Latitud).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Longitud).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidArticuloConteoAlmaNavigation).WithMany(p => p.RegistroConteos)
+                .HasForeignKey(d => d.FkidArticuloConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RegistroConteo_Articulo");
+
+            entity.HasOne(d => d.FkidPeriodoConteoAlmaNavigation).WithMany(p => p.RegistroConteos)
+                .HasForeignKey(d => d.FkidPeriodoConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RegistroConteo_Periodo");
+
+            entity.HasOne(d => d.FkidSucursalSisNavigation).WithMany(p => p.RegistroConteos)
+                .HasForeignKey(d => d.FkidSucursalSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RegistroConteo_Sucursal");
+
+            entity.HasOne(d => d.FkidUsuarioSisNavigation).WithMany(p => p.RegistroConteos)
+                .HasForeignKey(d => d.FkidUsuarioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RegistroConteo_Usuario");
         });
 
         modelBuilder.Entity<Sucursal>(entity =>
@@ -624,6 +1104,109 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("CONSTRAINT_FK_SystemParamCatalog_SystemParamValue");
         });
 
+        modelBuilder.Entity<TipoBien>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoBien).HasName("ALMA_TipoBien_PK_IdGrupoBien");
+
+            entity.ToTable("TipoBien", "ALMA");
+
+            entity.Property(e => e.PkidTipoBien).HasColumnName("PKIdTipoBien");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Cabms)
+                .HasMaxLength(50)
+                .HasColumnName("CABMS");
+            entity.Property(e => e.CantidadEquivalente).HasColumnName("Cantidad_Equivalente");
+            entity.Property(e => e.CodigoClave).HasMaxLength(200);
+            entity.Property(e => e.CucopPlus)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("CUCOP_PLUS");
+            entity.Property(e => e.Cuota).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.DepreciacionAnual).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Descripcion).HasMaxLength(1200);
+            entity.Property(e => e.ExistenciaMaxima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaMinima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidCuentaContableConta).HasColumnName("FKIdCuentaContable_CONTA");
+            entity.Property(e => e.FkidGrupoBienAlma).HasColumnName("FKIdGrupoBien_ALMA");
+            entity.Property(e => e.FkidLocalizacionAlma).HasColumnName("FKIdLocalizacion_ALMA");
+            entity.Property(e => e.FkidNivelAlma).HasColumnName("FKIdNivel_ALMA");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.FkidUnidadesEquivalente).HasColumnName("FKIdUnidades_Equivalente");
+            entity.Property(e => e.Identificador).HasMaxLength(50);
+            entity.Property(e => e.PkIdTratadoInt).HasColumnName("Pk_IdTratadoInt");
+
+            entity.HasOne(d => d.FkidCuentaContableContaNavigation).WithMany(p => p.TipoBiens)
+                .HasForeignKey(d => d.FkidCuentaContableConta)
+                .HasConstraintName("ALMA_TipoBien_FK_IdCuentaContable");
+
+            entity.HasOne(d => d.FkidGrupoBienAlmaNavigation).WithMany(p => p.TipoBiens)
+                .HasForeignKey(d => d.FkidGrupoBienAlma)
+                .HasConstraintName("ALMA_TipoBien_FK_IdFamilia");
+
+            entity.HasOne(d => d.FkidNivelAlmaNavigation).WithMany(p => p.TipoBiens)
+                .HasForeignKey(d => d.FkidNivelAlma)
+                .HasConstraintName("ALMA_TipoBien_FK_IdNivel");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.TipoBiens)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .HasConstraintName("ALMA_TipoBien_FK_IdPartida");
+
+            entity.HasOne(d => d.FkidUnidadesAlmaNavigation).WithMany(p => p.TipoBienFkidUnidadesAlmaNavigations)
+                .HasForeignKey(d => d.FkidUnidadesAlma)
+                .HasConstraintName("ALMA_TipoBien_FK_IdUnidades");
+
+            entity.HasOne(d => d.FkidUnidadesEquivalenteNavigation).WithMany(p => p.TipoBienFkidUnidadesEquivalenteNavigations)
+                .HasForeignKey(d => d.FkidUnidadesEquivalente)
+                .HasConstraintName("ALMA_TipoBien_FK_IdUnidadesEquivalente");
+        });
+
+        modelBuilder.Entity<TipoConteo>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoConteo);
+
+            entity.ToTable("TipoConteo", "ALMA");
+
+            entity.Property(e => e.PkidTipoConteo).HasColumnName("PKIdTipoConteo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion).HasMaxLength(100);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<TipoCuentum>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoCuenta).HasName("SIS_TipoCuenta_PK_IdTipoCuenta");
+
+            entity.ToTable("TipoCuenta", "CONTA");
+
+            entity.Property(e => e.PkidTipoCuenta).HasColumnName("PKIdTipoCuenta");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Color)
+                .IsRequired()
+                .HasMaxLength(5);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
+        modelBuilder.Entity<Unidade>(entity =>
+        {
+            entity.HasKey(e => e.PkidUnidades).HasName("ALMA_Unidades_PK_IdUnidades");
+
+            entity.ToTable("Unidades", "ALMA");
+
+            entity.Property(e => e.PkidUnidades).HasColumnName("PKIdUnidades");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<Usuario>(entity =>
         {
             entity.HasKey(e => e.PkIdUsuario);
@@ -750,6 +1333,59 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidUsuarioSis)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UsuarioSucursal_Usuario");
+        });
+
+        modelBuilder.Entity<VistaDetalleArticulo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VistaDetalleArticulos", "ALMA");
+
+            entity.Property(e => e.Articulo).HasMaxLength(1200);
+            entity.Property(e => e.CodigoArticulo).HasMaxLength(200);
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.ConcluidoPor).HasMaxLength(129);
+            entity.Property(e => e.Diferencia).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Estatus)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.ExistenciaFinal).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaSistema).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.HistorialConteos).HasMaxLength(4000);
+            entity.Property(e => e.Periodo)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PkidArticuloConteo).HasColumnName("PKIdArticuloConteo");
+            entity.Property(e => e.PorcentajeDiferencia).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Sucursal)
+                .IsRequired()
+                .HasMaxLength(128);
+        });
+
+        modelBuilder.Entity<VistaResumenPeriodo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VistaResumenPeriodo", "ALMA");
+
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Estatus)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.Periodo)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PkidPeriodoConteo).HasColumnName("PKIdPeriodoConteo");
+            entity.Property(e => e.Sucursal)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.TipoConteo)
+                .IsRequired()
+                .HasMaxLength(30);
         });
 
         modelBuilder.Entity<VwEmpresaDepartamanto>(entity =>

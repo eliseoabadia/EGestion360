@@ -5,8 +5,8 @@ using EG.Business.Interfaces;
 using EG.Common;
 using EG.Domain.DTOs.Requests;
 using EG.Domain.DTOs.Requests.Auth;
-using EG.Domain.Entities;
 using EG.Domain.Interfaces;
+using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 
 

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using EG.Business.Interfaces;
-using EG.Domain.Entities;
 using EG.Domain.Interfaces;
 using EG.Dommain.DTOs.Responses;
+using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 
 
