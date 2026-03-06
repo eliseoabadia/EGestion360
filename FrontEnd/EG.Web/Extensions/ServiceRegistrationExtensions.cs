@@ -20,6 +20,9 @@ public static class ApiServiceExtensions
         RegisterCrud<MenuItemsResponse>(services, "api/Menu");
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
+
+        RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
+        RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
         // Agrega más aquí...
 
         return services;

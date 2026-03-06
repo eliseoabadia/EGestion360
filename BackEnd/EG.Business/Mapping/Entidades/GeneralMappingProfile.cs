@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EG.Domain.DTOs.Requests.General;
+using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Domain.DTOs.Responses.General;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
@@ -12,6 +13,7 @@ namespace EG.Business.Mapping.Entidades
         {
             CreateMap<Empresa, EmpresaResponse>().ReverseMap();
             CreateMap<Usuario, UsuarioResponse>().ReverseMap();
+            CreateMap<TipoConteo, TipoConteoResponse>().ReverseMap();
 
             // Entity -> Response
             CreateMap<Estado, EstadoResponse>()

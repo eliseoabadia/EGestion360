@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace EG.Infraestructure.Models;
+namespace EG.Domain.DTOs.Responses.ConteoCiclico;
 
-public partial class VistaResumenPeriodo
+public partial class VwResumenPeriodoResponse
 {
     public int PkidPeriodoConteo { get; set; }
 

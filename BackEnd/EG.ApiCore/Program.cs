@@ -34,7 +34,8 @@ public partial class Program
             cfg.AddProfile<MenuMappingProfile>();
             cfg.AddProfile<AspNetRoleMappingProfile>();
             cfg.AddProfile<UsuarioSucursalMappingProfile>();
-            
+            cfg.AddProfile<PeriodoConteoMappingProfile>();
+
 
 
         }, typeof(Program).Assembly);
@@ -56,7 +57,7 @@ public partial class Program
         //builder.Services.AddDbContextGRP(configuration);
 
         //repositories
-        builder.Services.AddScoped<IRepository<Usuario>, Repository<Usuario>>();
+        //builder.Services.AddScoped<IRepository<Usuario>, Repository<Usuario>>();
         builder.Services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
         builder.Services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
         builder.Services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
@@ -65,7 +66,7 @@ public partial class Program
 
 
         
-        builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
+        //builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IUserContextService, UserContextService>();

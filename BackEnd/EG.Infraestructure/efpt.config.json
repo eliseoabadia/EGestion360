@@ -191,11 +191,23 @@
          "ObjectType": 0
       },
       {
-         "Name": "[ALMA].[VistaDetalleArticulos]",
+         "Name": "[ALMA].[Vw_ArticuloConteo]",
          "ObjectType": 3
       },
       {
-         "Name": "[ALMA].[VistaResumenPeriodo]",
+         "Name": "[ALMA].[Vw_DetalleArticulos]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_PeriodoConteo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_RegistroConteo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_ResumenPeriodo]",
          "ObjectType": 3
       },
       {

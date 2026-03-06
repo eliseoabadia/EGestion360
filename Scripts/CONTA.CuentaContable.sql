@@ -1166,7 +1166,7 @@ GO
 
 -- Vista de resumen por periodo
 GO
-CREATE OR ALTER VIEW ALMA.VistaResumenPeriodo AS
+CREATE OR ALTER VIEW ALMA.Vw_ResumenPeriodo AS
 SELECT 
     p.PKIdPeriodoConteo,
     p.CodigoPeriodo,
@@ -1194,7 +1194,7 @@ GROUP BY p.PKIdPeriodoConteo, p.CodigoPeriodo, p.Nombre, s.Nombre, tc.Nombre,
 GO
 
 -- Vista de detalle de artículos en conteo
-CREATE OR ALTER VIEW ALMA.VistaDetalleArticulos AS
+CREATE OR ALTER VIEW ALMA.Vw_DetalleArticulos AS
 SELECT 
     a.PKIdArticuloConteo,
     p.CodigoPeriodo,

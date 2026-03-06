@@ -99,15 +99,21 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
 
-    public virtual DbSet<VistaDetalleArticulo> VistaDetalleArticulos { get; set; }
+    public virtual DbSet<VwArticuloConteo> VwArticuloConteos { get; set; }
 
-    public virtual DbSet<VistaResumenPeriodo> VistaResumenPeriodos { get; set; }
+    public virtual DbSet<VwDetalleArticulo> VwDetalleArticulos { get; set; }
 
     public virtual DbSet<VwEmpresaDepartamanto> VwEmpresaDepartamantos { get; set; }
 
     public virtual DbSet<VwEstadoEmpresa> VwEstadoEmpresas { get; set; }
 
     public virtual DbSet<VwMenu> VwMenus { get; set; }
+
+    public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
+
+    public virtual DbSet<VwRegistroConteo> VwRegistroConteos { get; set; }
+
+    public virtual DbSet<VwResumenPeriodo> VwResumenPeriodos { get; set; }
 
     public virtual DbSet<VwSucursalEmpresaEstado> VwSucursalEmpresaEstados { get; set; }
 
@@ -1335,11 +1341,75 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_UsuarioSucursal_Usuario");
         });
 
-        modelBuilder.Entity<VistaDetalleArticulo>(entity =>
+        modelBuilder.Entity<VwArticuloConteo>(entity =>
         {
             entity
                 .HasNoKey()
-                .ToView("VistaDetalleArticulos", "ALMA");
+                .ToView("Vw_ArticuloConteo", "ALMA");
+
+            entity.Property(e => e.BadgeTexto)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.CodigoArticulo).HasMaxLength(200);
+            entity.Property(e => e.CodigoBarras).HasMaxLength(50);
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.ColorEstatus)
+                .IsRequired()
+                .HasMaxLength(7)
+                .IsUnicode(false);
+            entity.Property(e => e.ConteosJson).HasColumnName("ConteosJSON");
+            entity.Property(e => e.DescripcionArticulo).HasMaxLength(1200);
+            entity.Property(e => e.Diferencia).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.DiscrepanciaMetodo).HasMaxLength(50);
+            entity.Property(e => e.DiscrepanciaValor1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.DiscrepanciaValor2).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.DiscrepanciaValor3).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.DiscrepanciaValorAceptado).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.EstaConcluidoTexto)
+                .IsRequired()
+                .HasMaxLength(2)
+                .IsUnicode(false);
+            entity.Property(e => e.EstatusDescripcion).HasMaxLength(100);
+            entity.Property(e => e.EstatusNombre)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.ExistenciaFinal).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaSistema).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.HistorialConteosTexto).HasMaxLength(4000);
+            entity.Property(e => e.IconoEstatus)
+                .IsRequired()
+                .HasMaxLength(3)
+                .IsUnicode(false);
+            entity.Property(e => e.PeriodoNombre)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PorcentajeDiferencia).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.PrimerConteo).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.SegundoConteo).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.SucursalNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.TercerConteo).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Ubicacion).HasMaxLength(100);
+            entity.Property(e => e.UltimoConteo).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.UsuarioConcluyoNombre)
+                .IsRequired()
+                .HasMaxLength(129);
+            entity.Property(e => e.UsuarioCreacionNombre)
+                .IsRequired()
+                .HasMaxLength(129);
+            entity.Property(e => e.UsuarioModificacionNombre)
+                .IsRequired()
+                .HasMaxLength(129);
+        });
+
+        modelBuilder.Entity<VwDetalleArticulo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_DetalleArticulos", "ALMA");
 
             entity.Property(e => e.Articulo).HasMaxLength(1200);
             entity.Property(e => e.CodigoArticulo).HasMaxLength(200);
@@ -1362,30 +1432,6 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Sucursal)
                 .IsRequired()
                 .HasMaxLength(128);
-        });
-
-        modelBuilder.Entity<VistaResumenPeriodo>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("VistaResumenPeriodo", "ALMA");
-
-            entity.Property(e => e.CodigoPeriodo)
-                .IsRequired()
-                .HasMaxLength(20);
-            entity.Property(e => e.Estatus)
-                .IsRequired()
-                .HasMaxLength(30);
-            entity.Property(e => e.Periodo)
-                .IsRequired()
-                .HasMaxLength(100);
-            entity.Property(e => e.PkidPeriodoConteo).HasColumnName("PKIdPeriodoConteo");
-            entity.Property(e => e.Sucursal)
-                .IsRequired()
-                .HasMaxLength(128);
-            entity.Property(e => e.TipoConteo)
-                .IsRequired()
-                .HasMaxLength(30);
         });
 
         modelBuilder.Entity<VwEmpresaDepartamanto>(entity =>
@@ -1468,6 +1514,106 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(46)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VwPeriodoConteo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_PeriodoConteo", "ALMA");
+
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.EstatusNombre)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PorcentajeAvance).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.ResponsableNombre)
+                .IsRequired()
+                .HasMaxLength(129);
+            entity.Property(e => e.SucursalNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.SupervisorNombre)
+                .IsRequired()
+                .HasMaxLength(129);
+            entity.Property(e => e.TipoConteoNombre)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.UsuarioCreacionNombre).HasMaxLength(129);
+            entity.Property(e => e.UsuarioModificacionNombre).HasMaxLength(129);
+        });
+
+        modelBuilder.Entity<VwRegistroConteo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_RegistroConteo", "ALMA");
+
+            entity.Property(e => e.CantidadContada).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.CodigoArticulo).HasMaxLength(200);
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.ColorConteo)
+                .IsRequired()
+                .HasMaxLength(7)
+                .IsUnicode(false);
+            entity.Property(e => e.ConteoDescripcion).HasMaxLength(37);
+            entity.Property(e => e.DescripcionArticulo).HasMaxLength(1200);
+            entity.Property(e => e.DiferenciaVsSistema).HasColumnType("decimal(19, 4)");
+            entity.Property(e => e.ExistenciaSistema).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FotoPath).HasMaxLength(500);
+            entity.Property(e => e.IconoConteo).HasMaxLength(30);
+            entity.Property(e => e.Latitud).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Longitud).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PeriodoNombre)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PorcentajeVsSistema).HasColumnType("decimal(38, 15)");
+            entity.Property(e => e.PromedioConteos).HasColumnType("decimal(38, 6)");
+            entity.Property(e => e.SucursalNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.UsuarioEmail)
+                .IsRequired()
+                .HasMaxLength(60);
+            entity.Property(e => e.UsuarioIniciales)
+                .IsRequired()
+                .HasMaxLength(3);
+            entity.Property(e => e.UsuarioNombre)
+                .IsRequired()
+                .HasMaxLength(194);
+        });
+
+        modelBuilder.Entity<VwResumenPeriodo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_ResumenPeriodo", "ALMA");
+
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Estatus)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.Periodo)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PkidPeriodoConteo).HasColumnName("PKIdPeriodoConteo");
+            entity.Property(e => e.Sucursal)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.TipoConteo)
+                .IsRequired()
+                .HasMaxLength(30);
         });
 
         modelBuilder.Entity<VwSucursalEmpresaEstado>(entity =>

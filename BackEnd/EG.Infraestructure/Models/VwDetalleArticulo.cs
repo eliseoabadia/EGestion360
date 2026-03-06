@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class VistaDetalleArticulo
+public partial class VwDetalleArticulo
 {
     public int PkidArticuloConteo { get; set; }
 
