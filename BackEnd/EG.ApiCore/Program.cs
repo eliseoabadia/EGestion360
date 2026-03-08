@@ -1,9 +1,12 @@
-﻿using EG.ApiCore.Services;
+﻿using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Application.CommonModel;
 using EG.Application.Interfaces;
 using EG.Application.Services;
 using EG.Business.Interfaces;
-using EG.Business.Mapping.Entidades;
+using EG.Business.Mapping;
+using EG.Business.Mapping.ConteoCiclico;
+using EG.Business.Mapping.General;
 using EG.Business.Services;
 using EG.Common.Util;
 using EG.Domain.Interfaces;
@@ -14,6 +17,7 @@ using EG.Infrastructure;
 using EG.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 public partial class Program
@@ -22,23 +26,40 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        //automapper
-        //builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+        ////automapper
+        ////builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+        //builder.Services.AddAutoMapper(cfg =>
+        //{
+        //    cfg.AddProfile<EmpresaMappingProfile>();
+        //    cfg.AddProfile<DepartamentoMappingProfile>();
+        //    cfg.AddProfile<GeneralMappingProfile>();
+        //    cfg.AddProfile<UsuarioMappingProfile>();
+        //    cfg.AddProfile<SucursalMappingProfile>();
+        //    cfg.AddProfile<MenuMappingProfile>();
+        //    cfg.AddProfile<AspNetRoleMappingProfile>();
+        //    cfg.AddProfile<UsuarioSucursalMappingProfile>();
+        //    cfg.AddProfile<PeriodoConteoMappingProfile>();
+
+
+
+        //}, typeof(Program).Assembly);
+
         builder.Services.AddAutoMapper(cfg =>
         {
-            cfg.AddProfile<EmpresaMappingProfile>();
-            cfg.AddProfile<DepartamentoMappingProfile>();
-            cfg.AddProfile<GeneralMappingProfile>();
-            cfg.AddProfile<UsuarioMappingProfile>();
-            cfg.AddProfile<SucursalMappingProfile>();
-            cfg.AddProfile<MenuMappingProfile>();
-            cfg.AddProfile<AspNetRoleMappingProfile>();
-            cfg.AddProfile<UsuarioSucursalMappingProfile>();
-            cfg.AddProfile<PeriodoConteoMappingProfile>();
+            var businessAssembly = typeof(EmpresaMappingProfile).Assembly;
 
+            var profiles = businessAssembly.GetTypes()
+                                           .Where(t => typeof(Profile).IsAssignableFrom(t) &&
+                                                       !t.IsAbstract &&
+                                                       t.Namespace != null &&
+                                                       t.Namespace.Contains("EG.Business.Mapping"));
 
+            foreach (var profile in profiles)
+            {
+                cfg.AddProfile(profile);
+            }
+        });
 
-        }, typeof(Program).Assembly);
 
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
 
@@ -61,11 +82,12 @@ public partial class Program
         builder.Services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
         builder.Services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
         builder.Services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
+        builder.Services.AddScoped<IRepositorySP<sp_RegistrarConteoResult>, RepositorySP<sp_RegistrarConteoResult>>();
         builder.Services.AddScoped<IRepository<PerfilUsuario>, Repository<PerfilUsuario>>();
         //builder.Services.AddScoped<IRepository<Empresa>, Repository<Empresa>>();
 
 
-        
+
         //builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
 
         builder.Services.AddHttpContextAccessor();

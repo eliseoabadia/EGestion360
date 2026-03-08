@@ -1,6 +1,6 @@
-﻿namespace EG.Web.Models.ConteoCiclico
+﻿namespace EG.Domain.DTOs.Requests.ConteoCiclico
 {
-    public class TipoConteoResponse
+    public class TipoConteoDto
     {
         public int PkidTipoConteo { get; set; }
 

@@ -1,4 +1,4 @@
-﻿namespace EG.Domain.DTOs.Responses.ConteoCiclico;
+﻿namespace EG.Web.Models.ConteoCiclico;
 
 public partial class VwResumenPeriodoResponse
 {

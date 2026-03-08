@@ -5,7 +5,6 @@ using EG.Business.Services;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
-using EG.Web.Models.ConteoCiclico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

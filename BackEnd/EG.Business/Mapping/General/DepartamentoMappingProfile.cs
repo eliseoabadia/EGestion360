@@ -3,7 +3,7 @@ using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 
-namespace EG.Business.Mapping.Entidades
+namespace EG.Business.Mapping.General
 {
     public class DepartamentoMappingProfile : Profile
     {

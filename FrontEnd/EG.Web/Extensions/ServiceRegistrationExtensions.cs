@@ -1,6 +1,7 @@
 ﻿using EG.Common.Helper;
 using EG.Web.Contracs;
 using EG.Web.Models.Configuration;
+using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
 using Microsoft.JSInterop;
 
@@ -23,6 +24,8 @@ public static class ApiServiceExtensions
 
         RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
         RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
+        RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
+        RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
         // Agrega más aquí...
 
         return services;

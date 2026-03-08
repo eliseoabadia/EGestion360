@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
-using EG.Web.Models.ConteoCiclico;
 
-namespace EG.Business.Mapping.Entidades
+namespace EG.Business.Mapping.ConteoCiclico
 {
     public class PeriodoConteoMappingProfile : Profile
     {
@@ -58,9 +57,7 @@ namespace EG.Business.Mapping.Entidades
                     src.TotalArticulos.HasValue && src.TotalArticulos > 0 && src.ArticulosConcluidos.HasValue ?
                     Math.Round((decimal)src.ArticulosConcluidos.Value / src.TotalArticulos.Value * 100, 2) : (decimal?)null));
 
-            // VwPeriodoConteo to VwPeriodoConteoResponse
-            CreateMap<VwPeriodoConteo, VwPeriodoConteoResponse>();
-        }
+            }
 
 
     }

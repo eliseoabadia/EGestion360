@@ -1,4 +1,4 @@
-using EG.Common.Helper;
+ï»¿using EG.Common.Helper;
 using EG.Web;
 using EG.Web.Auth;
 using EG.Web.Contracs;
@@ -20,7 +20,7 @@ internal class Program
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
-        // Configurar MudBlazor con localización y Snackbar
+        // Configurar MudBlazor con localizaciï¿½n y Snackbar
         builder.Services.AddMudServices(config =>
         {
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
@@ -55,11 +55,12 @@ internal class Program
         builder.Services.AddScoped<IRequestService, RequestService>();
         builder.Services.AddScoped<ISucursalService, SucursalService>(); 
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+        //builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
 
         // En Program.cs o Startup.cs
         builder.Services.AddScoped<MenuStateService>();
 
-        // Registrar servicios por interfaz (añadir donde están los otros builder.Services.AddScoped...)
+        // Registrar servicios por interfaz (aï¿½adir donde estï¿½n los otros builder.Services.AddScoped...)
         //builder.Services.AddScoped<ProfileService>();
         //builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
         // Program.cs

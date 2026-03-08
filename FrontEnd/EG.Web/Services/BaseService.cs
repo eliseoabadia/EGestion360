@@ -216,6 +216,9 @@ namespace EG.Web.Services
         protected async Task<T?> DeleteAsync<T>(string endpoint, bool useBaseUrl = true)
             => await SendRequestAsync<T>(HttpMethod.Delete, endpoint, null, useBaseUrl);
 
+        protected async Task<T?> PatchAsync<T>(string endpoint, object content, bool useBaseUrl = true)
+            => await SendRequestAsync<T>(HttpMethod.Patch, endpoint, content, useBaseUrl);
+
         protected async Task<(bool Result, string Message)> ExecuteOperationAsync(
             Func<Task<(bool Result, string Message)>> operation)
         {

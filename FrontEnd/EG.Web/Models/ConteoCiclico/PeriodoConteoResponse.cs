@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EG.Web.Models.Configuration;
+namespace EG.Web.Models.ConteoCiclico;
 
 public partial class PeriodoConteoResponse
 {
@@ -86,6 +86,11 @@ public partial class PeriodoConteoResponse
 
     [Display(Name = "Modificado Por")]
     public string? ModificadoPor { get; set; }
+    
+    [Display(Name = "Máximo Conteos Por Artículo")]
+    public int MaximoConteosPorArticulo { get; set; }      // ← agregar
+    [Display(Name = "Requiere Aprobación Por Supervisor")]
+    public bool RequiereAprobacionSupervisor { get; set; } // ← agregar
 }
 
 public class PeriodoConteoCreateDto
@@ -135,6 +140,7 @@ public class PeriodoConteoCreateDto
 
     [Display(Name = "Artículos a Incluir")]
     public List<int> ArticulosSeleccionados { get; set; } = new();
+
 }
 
 public class PeriodoConteoUpdateDto

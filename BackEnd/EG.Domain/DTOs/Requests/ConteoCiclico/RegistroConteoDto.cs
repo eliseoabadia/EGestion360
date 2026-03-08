@@ -1,4 +1,4 @@
-﻿namespace EG.Domain.DTOs.Requests.ConteoCiclico
+﻿namespace EG.Domain.DTOs.Responses.ConteoCiclico
 {
     public class RegistroConteoDto
     {
@@ -27,5 +27,9 @@
         public decimal? Latitud { get; set; }
 
         public decimal? Longitud { get; set; }
+
+        public bool Activo { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
     }
 }

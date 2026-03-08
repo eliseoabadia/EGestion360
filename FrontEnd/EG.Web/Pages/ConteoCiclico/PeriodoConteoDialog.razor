@@ -1,5 +1,359 @@
-﻿<h3>PeriodoConteoDashboard</h3>
+﻿@using EG.Web.Models.ConteoCiclico
+@using MudBlazor
+@using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
+@inject IGenericCrudService<PeriodoConteoResponse> _service
+@inject IGenericCrudService<SucursalResponse> _sucursalesService
+@inject IGenericCrudService<TipoConteoResponse> _tiposConteoService
+@inject IUsuarioService _usuariosService
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PeriodoConteoResponse"
+                @ref="dialog"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos del periodo..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="PeriodoConteoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <!-- Código -->
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="periodo.CodigoPeriodo"
+                              Label="Código del Periodo"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El código es requerido"
+                              For="@(() => periodo.CodigoPeriodo)" />
+            </MudItem>
+
+            <!-- Nombre -->
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="periodo.Nombre"
+                              Label="Nombre del Periodo"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El nombre es requerido"
+                              For="@(() => periodo.Nombre)" />
+            </MudItem>
+
+            <!-- Descripción -->
+            <MudItem xs="12">
+                <MudTextField @bind-Value="periodo.Descripcion"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              For="@(() => periodo.Descripcion)" />
+            </MudItem>
+
+            <!-- Sucursal -->
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Sucursal"
+                           @bind-Value="periodo.SucursalId"
+                           T="int"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar una sucursal"
+                           For="@(() => periodo.SucursalId)">
+                    <MudSelectItem T="int" Value="0">Seleccione una sucursal</MudSelectItem>
+                    @foreach (var s in sucursales)
+                    {
+                        <MudSelectItem T="int" Value="@s.PkidSucursal">@s.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Tipo de Conteo -->
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Tipo de Conteo"
+                           @bind-Value="periodo.TipoConteoId"
+                           T="int"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar un tipo de conteo"
+                           For="@(() => periodo.TipoConteoId)">
+                    <MudSelectItem T="int" Value="0">Seleccione un tipo</MudSelectItem>
+                    @foreach (var t in tiposConteo)
+                    {
+                        <MudSelectItem T="int" Value="@t.PkidTipoConteo">@t.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Fecha Inicio -->
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="fechaInicio"
+                               Label="Fecha Inicio"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha de inicio es requerida" />
+            </MudItem>
+
+            <!-- Fecha Fin -->
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="fechaFin"
+                               Label="Fecha Fin (opcional)"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <!-- Responsable -->
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Responsable"
+                           @bind-Value="periodo.ResponsableId"
+                           T="int"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar un responsable"
+                           For="@(() => periodo.ResponsableId)">
+                    <MudSelectItem T="int" Value="0">Seleccione un responsable</MudSelectItem>
+                    @foreach (var u in usuarios)
+                    {
+                        <MudSelectItem T="int" Value="@u.PkIdUsuario">@u.NombreCompleto</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Supervisor -->
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Supervisor (opcional)"
+                           @bind-Value="periodo.SupervisorId"
+                           T="int?"
+                           Variant="Variant.Outlined"
+                           For="@(() => periodo.SupervisorId)">
+                    <MudSelectItem T="int?" Value="@((int?)null)">N/A</MudSelectItem>
+                    @foreach (var u in usuarios)
+                    {
+                        <MudSelectItem T="int?" Value="@((int?)u.PkIdUsuario)">@u.NombreCompleto</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Configuración avanzada -->
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="periodo.MaximoConteosPorArticulo"
+                                 Label="Máximo conteos por artículo"
+                                 Variant="Variant.Outlined"
+                                 Min="1"
+                                 Max="5"
+                                 HideSpinButtons="false"
+                                 Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Repeat" />
+            </MudItem>
+
+            <MudItem xs="12" md="6" Class="d-flex align-center">
+                <MudSwitch @bind-Value="periodo.RequiereAprobacionSupervisor"
+                           Color="Color.Primary"
+                           Label="Requiere aprobación del supervisor"
+                           ThumbIcon="@(periodo.RequiereAprobacionSupervisor ? Icons.Material.Filled.HowToReg : Icons.Material.Filled.PersonOff)" />
+            </MudItem>
+
+            <!-- Estado Activo/Inactivo -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus del Periodo</MudText>
+                    <MudDivider Class="mb-3" />
+
+                    @if (Id.HasValue)
+                    {
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="periodo.Activo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(periodo.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(periodo.Activo ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-center">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Activo</MudChip>
+                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                (Los nuevos periodos se crean activos con estatus Pendiente)
+                            </MudText>
+                        </div>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
 
 @code {
+    [Parameter] public int? Id { get; set; }
 
+    private BaseCrudDialog<PeriodoConteoResponse> dialog = null!;
+    private BaseEntityForm<PeriodoConteoResponse> form = null!;
+    private PeriodoConteoResponse periodo = new()
+    {
+        Activo = true,
+        FechaInicio = DateTime.Today,
+        MaximoConteosPorArticulo = 3,
+        RequiereAprobacionSupervisor = false
+    };
+
+    // Puentes DateTime? ↔ DateOnly para MudDatePicker
+    private DateTime? fechaInicio
+    {
+        get => periodo.FechaInicio;
+        set { if (value.HasValue) periodo.FechaInicio = value.Value; }
+    }
+    private DateTime? fechaFin
+    {
+        get => periodo.FechaFin;
+        set => periodo.FechaFin = value;
+    }
+
+    private List<SucursalResponse> sucursales = new();
+    private List<TipoConteoResponse> tiposConteo = new();
+    private List<UsuarioResponse> usuarios = new();
+    private int _userId;
+
+    private string dialogTitle => Id.HasValue ? "Editar Periodo de Conteo" : "Nuevo Periodo de Conteo";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(CargarSucursales(), CargarTiposConteo(), CargarUsuarios());
+
+        if (Id.HasValue)
+        {
+            await CargarPeriodo();
+        }
+    }
+
+    private async Task CargarPeriodo()
+    {
+        try
+        {
+            var response = await _service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                periodo = response.Data;
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al cargar periodo", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar periodo: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarSucursales()
+    {
+        try
+        {
+            _userId = await AuthService.GetUserIdAsync();
+
+            var response = await _sucursalesService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                sucursales = response.Items.ToList();
+        }
+        catch { }
+    }
+
+    private async Task CargarTiposConteo()
+    {
+        try
+        {
+            var response = await _tiposConteoService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                tiposConteo = response.Items.ToList();
+        }
+        catch { }
+    }
+
+    private async Task CargarUsuarios()
+    {
+        try
+        {
+            var response = await _usuariosService.GetAllUsuariosAsync();
+            if (response?.Success == true && response.Items != null)
+                usuarios = response.Items.ToList();
+        }
+        catch { }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            return;
+        }
+
+        if (periodo.SucursalId <= 0)
+        {
+            Snackbar.Add("Debe seleccionar una sucursal", Severity.Warning);
+            return;
+        }
+
+        if (periodo.TipoConteoId <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un tipo de conteo", Severity.Warning);
+            return;
+        }
+
+        if (periodo.ResponsableId <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un responsable", Severity.Warning);
+            return;
+        }
+
+        if (fechaFin.HasValue && fechaFin.Value <= fechaInicio)
+        {
+            Snackbar.Add("La fecha fin debe ser mayor a la fecha inicio", Severity.Warning);
+            return;
+        }
+
+        if (periodo.MaximoConteosPorArticulo < 1 || periodo.MaximoConteosPorArticulo > 5)
+        {
+            Snackbar.Add("El máximo de conteos por artículo debe estar entre 1 y 5", Severity.Warning);
+            return;
+        }
+
+        if (!Id.HasValue)
+        {
+            periodo.Activo = true;
+            periodo.Id = 0;
+            // El estatus inicial se establece en el backend (1 = Pendiente)
+        }
+
+        try
+        {
+            ApiResponse<PeriodoConteoResponse> response;
+
+            if (Id.HasValue)
+            {
+                response = await _service.UpdateAsync(periodo, periodo.Id);
+            }
+            else
+            {
+                response = await _service.CreateAsync(periodo);
+            }
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? $"✅ Periodo {(Id.HasValue ? "actualizado" : "creado")} exitosamente", Severity.Success);
+                dialog.Close(true);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error en la operación", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
 }
