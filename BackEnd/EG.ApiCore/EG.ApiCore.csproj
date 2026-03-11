@@ -24,9 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EG.Business\EG.Business.csproj" />
+    <ProjectReference Include="..\EG.Application\EG.Application.csproj" />
     <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
-    <ProjectReference Include="..\EG.Domain\EG.Domain.csproj" />
     <ProjectReference Include="..\EG.Infraestructure\EG.Infraestructure.csproj" />
     <ProjectReference Include="..\EG.Logger\EG.Logger.csproj" />
   </ItemGroup>

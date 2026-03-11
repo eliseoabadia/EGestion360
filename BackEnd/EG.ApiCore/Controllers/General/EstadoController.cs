@@ -1,7 +1,7 @@
 using AutoMapper;
 using EG.Business.Services;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
-using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;

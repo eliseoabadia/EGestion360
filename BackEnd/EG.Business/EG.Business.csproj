@@ -11,9 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EG.Application\EG.Application.csproj" />
     <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
     <ProjectReference Include="..\EG.Domain\EG.Domain.csproj" />
+    <ProjectReference Include="..\EG.Infraestructure\EG.Infraestructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -12,8 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EG.Business\EG.Business.csproj" />
+    <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
     <ProjectReference Include="..\EG.Domain\EG.Domain.csproj" />
     <ProjectReference Include="..\EG.Infraestructure\EG.Infraestructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="CommonModel\" />
   </ItemGroup>
 
 </Project>

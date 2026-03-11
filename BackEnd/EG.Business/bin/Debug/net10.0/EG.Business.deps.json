@@ -9,9 +9,9 @@
       "EG.Business/1.0.0": {
         "dependencies": {
           "AutoMapper": "15.1.0",
-          "EG.Application": "1.0.0",
           "EG.Common": "1.0.0",
-          "EG.Domain": "1.0.0"
+          "EG.Domain": "1.0.0",
+          "EG.Infraestructure": "1.0.0"
         },
         "runtime": {
           "EG.Business.dll": {}
@@ -298,18 +298,6 @@
           }
         }
       },
-      "Microsoft.Extensions.Configuration/10.0.0": {
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "10.0.0",
-          "Microsoft.Extensions.Primitives": "10.0.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.Configuration.dll": {
-            "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25.52411"
-          }
-        }
-      },
       "Microsoft.Extensions.Configuration.Abstractions/10.0.0": {
         "dependencies": {
           "Microsoft.Extensions.Primitives": "10.0.0"
@@ -589,20 +577,6 @@
           }
         }
       },
-      "EG.Application/1.0.0": {
-        "dependencies": {
-          "EG.Domain": "1.0.0",
-          "EG.Infraestructure": "1.0.0",
-          "Microsoft.Extensions.Configuration": "10.0.0",
-          "Microsoft.Extensions.Options": "10.0.0"
-        },
-        "runtime": {
-          "EG.Application.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
       "EG.Common/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Http": "2.3.0"
@@ -772,13 +746,6 @@
       "sha512": "sha512-krK19MKp0BNiR9rpBDW7PKSrTMLVlifS9am3CVc4O1Jq6GWz0o4F+sw5OSL4L3mVd56W8l6JRgghUa2KB51vOw==",
       "path": "microsoft.extensions.caching.memory/10.0.0",
       "hashPath": "microsoft.extensions.caching.memory.10.0.0.nupkg.sha512"
-    },
-    "Microsoft.Extensions.Configuration/10.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-H4SWETCh/cC5L1WtWchHR6LntGk3rDTTznZMssr4cL8IbDmMWBxY+MOGDc/ASnqNolLKPIWHWeuC1ddiL/iNPw==",
-      "path": "microsoft.extensions.configuration/10.0.0",
-      "hashPath": "microsoft.extensions.configuration.10.0.0.nupkg.sha512"
     },
     "Microsoft.Extensions.Configuration.Abstractions/10.0.0": {
       "type": "package",
@@ -954,11 +921,6 @@
       "sha512": "sha512-o94k2RKuAce3GeDMlUvIXlhVa1kWpJw95E6C9LwW0KlG0nj5+SgCiIxJ2Eroqb9sLtG1mEMbFttZIBZ13EJPvQ==",
       "path": "system.security.cryptography.protecteddata/9.0.4",
       "hashPath": "system.security.cryptography.protecteddata.9.0.4.nupkg.sha512"
-    },
-    "EG.Application/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
     },
     "EG.Common/1.0.0": {
       "type": "project",

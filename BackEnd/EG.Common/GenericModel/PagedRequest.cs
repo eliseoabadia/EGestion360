@@ -1,4 +1,4 @@
-﻿namespace EG.Application.CommonModel
+﻿namespace EG.Common.GenericModel
 {
     public class PagedRequest
     {
@@ -7,6 +7,7 @@
         public string Filtro { get; set; }
         public string SortLabel { get; set; }
         public string SortDirection { get; set; }
-
+        public string SearchString { get; set; }
+        public Dictionary<string, object> AdditionalFilters { get; set; } = new Dictionary<string, object>();
     }
 }

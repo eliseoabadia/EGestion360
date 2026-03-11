@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using EG.Business.Services;
-using EG.Domain.DTOs.Responses;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;

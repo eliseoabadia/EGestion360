@@ -1,6 +1,5 @@
-﻿using EG.Application.CommonModel;
+﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
-using EG.Domain.DTOs.Responses;
 using EG.Dommain.DTOs.Responses;
 
 namespace EG.Business.Interfaces

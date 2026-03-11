@@ -1,5 +1,5 @@
-﻿using EG.Application.CommonModel;
-using EG.Business.Interfaces;
+﻿using EG.Business.Interfaces;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;

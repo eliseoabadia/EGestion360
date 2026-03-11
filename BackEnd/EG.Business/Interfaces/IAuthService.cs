@@ -1,12 +1,14 @@
-﻿using EG.Application.CommonModel;
+﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests;
-using EG.Domain.DTOs.Requests.Auth;
+using EG.Infraestructure.Models;
 
 namespace EG.Business.Interfaces
 {
     public interface IAuthService
     {
-        Task<LoginResponseDto> Login(LoginRequestDto loginRequest, JwtSettings jwtSettings);
 
+        Task<List<spGetClaimsByUserResult>> ObtenerClaimsUsuarioAsync(int usuarioId);
+
+        Task<LoginInformationEmployeeResult> ValidarCredencialesAsync(LoginRequestDto loginRequest);
     }
 }

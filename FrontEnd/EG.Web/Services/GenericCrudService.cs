@@ -1,4 +1,5 @@
-﻿using EG.Common.Helper;
+﻿using EG.Common.GenericModel;
+using EG.Common.Helper;
 using EG.Web.Contracs;
 using EG.Web.Models;
 using Microsoft.JSInterop;
@@ -62,31 +63,23 @@ namespace EG.Web.Services
             string filtro = "",
             string sortLabel = "",
             SortDirection sortDirection = SortDirection.Ascending,
-            Dictionary<string, object>? parametrosAdicionales = null)
+            Dictionary<string, object>? additionalFilters = null)
         {
             if (!IsClientSide())
                 return new ApiResponse<TResponse>();
 
             string sortDir = sortDirection == SortDirection.Descending ? "Descending" : "Ascending";
 
-            // Construir el objeto de parámetros base
-            var parametros = new Dictionary<string, object>
+            var pagedRequest = new
             {
-                ["page"] = page,
-                ["pageSize"] = pageSize,
-                ["filtro"] = filtro ?? "",
-                ["sortLabel"] = sortLabel ?? string.Empty,
-                ["sortDirection"] = sortDir
+                page = page,
+                pageSize = pageSize,
+                filtro = filtro ?? "",
+                sortLabel = sortLabel ?? string.Empty,
+                sortDirection = sortDir,
+                searchString = filtro ?? "",
+                additionalFilters = additionalFilters ?? new Dictionary<string, object>()
             };
-
-            // Agregar parámetros adicionales si existen
-            if (parametrosAdicionales != null)
-            {
-                foreach (var param in parametrosAdicionales)
-                {
-                    parametros[param.Key] = param.Value;
-                }
-            }
 
             // Determinar la acción para paginado
             string action = string.IsNullOrEmpty(_paginatedAction)
@@ -95,7 +88,7 @@ namespace EG.Web.Services
 
             var response = await PostAsync<ApiResponse<TResponse>>(
                 $"{_endpoint}/{action}/",
-                parametros,
+                pagedRequest,  // Enviar objeto anónimo
                 useBaseUrl: false);
 
             return response ?? new ApiResponse<TResponse>();

@@ -1,52 +1,54 @@
-﻿using EG.Business.Interfaces;
-using EG.Domain.DTOs.Requests;
-using EG.Dommain.DTOs.Responses;
+﻿using EG.Application.Interfaces.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+
 namespace EG.ApiCore.Controllers.Account
 {
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class NavigateController : ControllerBase
     {
-        private readonly INavigateService _service;
+        private readonly INavigateAppService _navigateAppService;
         private readonly ILogger<NavigateController> _logger;
 
-        public NavigateController(INavigateService service, ILogger<NavigateController> logger)
+        public NavigateController(INavigateAppService navigateAppService, ILogger<NavigateController> logger)
         {
-            _service = service;
+            _navigateAppService = navigateAppService;
             _logger = logger;
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<spNodeMenuResponse>> GetMenu(int id)
+        public async Task<IActionResult> GetMenu(int id)
         {
-            var sw = Stopwatch.StartNew();
-            _logger.LogInformation("GetMenu START id={Id}", id);
             try
             {
-                var _menu = await _service.GetMenuAsync(id);
-                sw.Stop();
-                //_logger.LogInformation("GetMenu END id={Id} elapsedMs={Ms} items={Count}", id, sw.ElapsedMilliseconds);
-                return _menu == null ? NotFound() : Ok(_menu);
+                var menu = await _navigateAppService.GetMenuAsync(id);
+                return Ok(menu);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                sw.Stop();
-                _logger.LogError(ex, "GetMenu ERROR id={Id} elapsedMs={Ms}", id, sw.ElapsedMilliseconds);
-                throw;
+                _logger.LogError(ex, "Error obteniendo menú para usuario {Id}", id);
+                return StatusCode(500, new { success = false, message = "Error interno" });
             }
         }
 
         [HttpPost("ping")]
-        public async Task<bool> Ping([FromBody] LoginRequestDto loginRequest)
+        public IActionResult Ping()
         {
-            loginRequest.Email = "";
-            return true;
+            return Ok(new { success = true, message = "pong" });
         }
     }
-
 }

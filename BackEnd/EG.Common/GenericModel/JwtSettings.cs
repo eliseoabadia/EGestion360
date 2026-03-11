@@ -1,4 +1,4 @@
-﻿namespace EG.Application.CommonModel
+﻿namespace EG.Common.GenericModel
 {
     public class JwtSettings
     {

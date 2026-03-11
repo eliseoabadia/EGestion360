@@ -1,6 +1,5 @@
 using AutoMapper;
-using EG.Application.CommonModel;
-using EG.Domain.DTOs.Responses;
+using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
 using System.Linq.Expressions;
 using System.Reflection;

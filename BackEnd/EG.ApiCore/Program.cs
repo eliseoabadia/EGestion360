@@ -1,24 +1,25 @@
 ﻿using AutoMapper;
 using EG.ApiCore.Services;
-using EG.Application.CommonModel;
-using EG.Application.Interfaces;
-using EG.Application.Services;
 using EG.Business.Interfaces;
-using EG.Business.Mapping;
-using EG.Business.Mapping.ConteoCiclico;
 using EG.Business.Mapping.General;
 using EG.Business.Services;
+using EG.Common.GenericModel;
 using EG.Common.Util;
 using EG.Domain.Interfaces;
-using EG.Infraestructure.Models;
-
-//using EG.Filters;
-using EG.Infrastructure;
 using EG.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
+using EG.Infrastructure;
+using EG.Infraestructure.Models;
+using EG.Application.Interfaces.Account;
+using EG.Application.Services.Account;
+using EG.Application.Interfaces.General;
+using EG.Application.Services.General;
+using EG.Application.Interfaces.ConteoCiclico;
+using EG.Application.Services.ConteoCiclico;
+using EG.Application.Interfaces;
+using EG.Application.Services;
 
 public partial class Program
 {
@@ -75,39 +76,46 @@ public partial class Program
         builder.Services.AddLoggerGRP(configuration);
 
         builder.Services.AddDbContextGRP(configuration);
-        //builder.Services.AddDbContextGRP(configuration);
 
-        //repositories
-        //builder.Services.AddScoped<IRepository<Usuario>, Repository<Usuario>>();
+
+        // ===== REPOSITORIES (IRepositorySP) =====
         builder.Services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
+        builder.Services.AddScoped<IRepositorySP<spGetClaimsByUserResult>, RepositorySP<spGetClaimsByUserResult>>();  // ✅ AGREGADO
         builder.Services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
         builder.Services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
         builder.Services.AddScoped<IRepositorySP<sp_RegistrarConteoResult>, RepositorySP<sp_RegistrarConteoResult>>();
         builder.Services.AddScoped<IRepository<PerfilUsuario>, Repository<PerfilUsuario>>();
-        //builder.Services.AddScoped<IRepository<Empresa>, Repository<Empresa>>();
 
+        // ===== SERVICIOS DE APLICACIÓN - ACCOUNT =====
+        builder.Services.AddScoped<IAuthAppService, AuthAppService>();
+        builder.Services.AddScoped<INavigateAppService, NavigateAppService>();
 
+        // ===== SERVICIOS DE APLICACIÓN - GENERAL =====
+        builder.Services.AddScoped<IEmpresaAppService, EmpresaAppService>();
+        builder.Services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
 
-        //builder.Services.AddScoped<IRepository<Departamento>, Repository<Departamento>>();
+        // ===== SERVICIOS DE APLICACIÓN - CONTEO CÍCLICO =====
+        builder.Services.AddScoped<IPeriodoConteoAppService, PeriodoConteoAppService>();
+        builder.Services.AddScoped<IArticuloConteoAppService, ArticuloConteoAppService>();
+        builder.Services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
 
+        // ===== SERVICIOS GENERALES =====
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IUserContextService, UserContextService>();
 
-        //services (business / application)
+        // ===== SERVICIOS DE NEGOCIO =====
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<ITokenService, TokenService>();
-        //builder.Services.AddScoped<IEmpresaService, EmpresaService>();
         builder.Services.AddScoped<INavigateService, NavigateService>();
         builder.Services.AddScoped<IUserIpService, UserIpService>();
         builder.Services.AddScoped<IUserProfileService, UserProfileService>();
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
-
-        // Registrar GenericService abierto (open generic)
+        // ===== SERVICIOS GENÉRICOS =====
         builder.Services.AddScoped(typeof(GenericService<,,>));
-
-        // Registrar repositorios genéricos
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+
 
         builder.Services.AddControllers().AddJsonOptions(options =>
         {

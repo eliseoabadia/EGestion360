@@ -1,4 +1,4 @@
-﻿namespace EG.Domain.DTOs.Requests.Auth
+﻿namespace EG.Domain.DTOs.Requests
 {
     public class LoginResponseDto
     {

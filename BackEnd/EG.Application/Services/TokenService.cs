@@ -1,6 +1,6 @@
-﻿using EG.Application.CommonModel;
-using EG.Application.Interfaces;
-using EG.Domain.DTOs.Requests.Auth;
+﻿using EG.Application.Interfaces;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests;
 using EG.Infraestructure.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -10,22 +10,33 @@ using System.Security.Cryptography;
 
 namespace EG.Application.Services
 {
-    public class TokenService(IConfiguration config) : ITokenService
+    public class TokenService : ITokenService
     {
+        private readonly IConfiguration _config;
 
+        public TokenService(IConfiguration config)
+        {
+            _config = config;
+        }
 
-        public IEnumerable<Claim> GetClaims(string userId, string userName, string email,DateTime? expiration, IList<spGetClaimsByUserResult> _claims)
+        public IEnumerable<Claim> GetClaims(
+            string userId,
+            string userName,
+            string email,
+            DateTime? expiration,
+            IList<spGetClaimsByUserResult> _claims)
         {
             var claims = new List<Claim>
             {
                 new Claim("Id", userId),
+                new Claim("id", userId), // lowercase para compatibilidad
+                new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Name, userName ?? string.Empty),
                 new Claim(ClaimTypes.Email, email ?? string.Empty),
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Expiration, expiration.Value.ToString("yyyy-MM-ddTHH:mm:ssZ")) // ISO 8601
+                new Claim(ClaimTypes.Expiration, expiration?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? string.Empty)
             };
 
-            // Agregar claims personalizados desde el modelo spGetClaimsByUserDboResult
+            // Agregar claims personalizados desde spGetClaimsByUserResult
             if (_claims != null && _claims.Any())
             {
                 foreach (var item in _claims)
@@ -43,104 +54,124 @@ namespace EG.Application.Services
 
             return claims;
         }
-       
-        public LoginResponseDto GenTokenkey(int _PkIdUsuario, string userId, string userName, string email, IList<spGetClaimsByUserResult> _claims, JwtSettings jwtSettings)
+
+        public LoginResponseDto GenTokenkey(
+            int pkIdUsuario,
+            string userId,
+            string userName,
+            string email,
+            IList<spGetClaimsByUserResult> _claims,
+            JwtSettings jwtSettings)
         {
             try
             {
                 var resultUser = new LoginResponseDto();
 
-                
-                // Get secret key
                 var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
-                Guid Id = Guid.Empty;
-                DateTime expireTime = DateTime.Now.AddMinutes(jwtSettings.ExpiryMinutes);// DateTime.UtcNow.AddMinutes(1);
+                DateTime expireTime = DateTime.Now.AddMinutes(jwtSettings.ExpiryMinutes);
+
                 resultUser.CreateAt = DateTime.Now;
                 resultUser.UpdateAt = new DateTimeOffset(expireTime).DateTime;
+
                 var JWToken = new JwtSecurityToken(
                     issuer: jwtSettings.ValidIssuer,
                     audience: jwtSettings.ValidAudience,
                     claims: GetClaims(userId, userName, email, new DateTimeOffset(expireTime).DateTime, _claims),
                     notBefore: DateTime.Now,
                     expires: new DateTimeOffset(expireTime).DateTime,
-                    signingCredentials: new SigningCredentials
-                    (new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+                    signingCredentials: new SigningCredentials(
+                        new SymmetricSecurityKey(key),
+                        SecurityAlgorithms.HmacSha256)
                 );
+
                 resultUser.RefreshTokenExpiryTime = new DateTimeOffset(expireTime).DateTime;
                 resultUser.AccessToken = new JwtSecurityTokenHandler().WriteToken(JWToken);
-                var idRefreshToken = Guid.NewGuid();
-
                 resultUser.RefreshToken = GenerateRefreshToken();
 
                 resultUser.NombreUsuario = userName;
                 resultUser.Id = Guid.NewGuid();
                 resultUser.PayrollId = userId;
-                resultUser.PkIdUsuario = _PkIdUsuario;
-                
+                resultUser.PkIdUsuario = pkIdUsuario;
+                resultUser.IsAuthenticated = true;
+
                 return resultUser;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw new InvalidOperationException("Error generando token JWT", ex);
             }
         }
 
         public int? ValidateJwtToken(string token, JwtSettings jwtSettings)
         {
-            if (token == null)
+            if (string.IsNullOrWhiteSpace(token))
                 return null;
 
             var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
             var tokenHandler = new JwtSecurityTokenHandler();
+
             try
             {
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings.ValidIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings.ValidAudience,
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+                
+                // Buscar el claim de ID (puede ser "Id", "id" o "sub")
+                var idClaim = jwtToken.Claims.FirstOrDefault(x =>
+                    x.Type == ClaimTypes.NameIdentifier ||
+                    x.Type == "Id" ||
+                    x.Type == "id") ??
+                    throw new SecurityTokenException("No ID claim found in token");
 
-                // return user id from JWT token if validation successful
-                return userId;
+                if (int.TryParse(idClaim.Value, out int userId))
+                    return userId;
+
+                return null;
             }
-            catch
+            catch (Exception)
             {
-                // return null if validation fails
                 return null;
             }
         }
 
-        
-
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token, JwtSettings jwtSettings)
         {
+            if (string.IsNullOrWhiteSpace(token))
+                throw new ArgumentNullException(nameof(token));
+
             var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
 
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings.ValidIssuer,
+                ValidateAudience = true,
+                ValidAudience = jwtSettings.ValidAudience,
+                ValidateLifetime = false, // No validar expiración
                 ClockSkew = TimeSpan.Zero
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            JwtSecurityToken jwtSecurityToken = securityToken as JwtSecurityToken;
-            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new SecurityTokenException("Invalid token");
             }
-
 
             return principal;
         }
@@ -152,7 +183,5 @@ namespace EG.Application.Services
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
-
-
     }
 }

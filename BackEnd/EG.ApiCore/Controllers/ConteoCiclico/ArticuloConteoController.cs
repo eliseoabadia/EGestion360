@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using EG.ApiCore.Services;
-using EG.Application.CommonModel;
 using EG.Business.Services;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
