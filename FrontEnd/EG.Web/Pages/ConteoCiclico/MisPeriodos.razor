@@ -1,0 +1,431 @@
+﻿@page "/conteociclico/mis-periodos"
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Shared
+@using EG.Web.Contracs.Configuration
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
+
+@inject IGenericCrudService<PeriodoConteoResponse> PeriodoService
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; background-color: var(--mud-palette-background-grey);">
+    <!-- Header con gradiente -->
+    <MudPaper Class="pa-4 mb-4" Elevation="0" Style="border-radius: 12px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h5" Class="text-white mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-2" />
+                    Mis Períodos de Conteo
+                </MudText>
+                <MudText Typo="Typo.body2" Class="text-white opacity-75">
+                    Visualiza y gestiona los períodos de conteo asignados para su realización
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center justify-end">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="() => table.ReloadData()"
+                           Class="white-text">
+                    Actualizar
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Stats Cards -->
+        <MudGrid Class="mt-4">
+            <MudItem xs="6" md="3">
+                <MudPaper Class="pa-3" Elevation="0" Style="border-radius: 10px; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                    <MudText Typo="Typo.caption" Class="text-white opacity-75">Total Asignados</MudText>
+                    <MudText Typo="Typo.h4" Class="text-white font-weight-bold">@totalPeriodos</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" md="3">
+                <MudPaper Class="pa-3" Elevation="0" Style="border-radius: 10px; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                    <MudText Typo="Typo.caption" Class="text-white opacity-75">En Proceso</MudText>
+                    <MudText Typo="Typo.h4" Class="text-white font-weight-bold">@periodosEnProceso</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" md="3">
+                <MudPaper Class="pa-3" Elevation="0" Style="border-radius: 10px; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                    <MudText Typo="Typo.caption" Class="text-white opacity-75">Pendientes</MudText>
+                    <MudText Typo="Typo.h4" Class="text-white font-weight-bold">@periodosPendientes</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" md="3">
+                <MudPaper Class="pa-3" Elevation="0" Style="border-radius: 10px; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                    <MudText Typo="Typo.caption" Class="text-white opacity-75">Completados</MudText>
+                    <MudText Typo="Typo.h4" Class="text-white font-weight-bold">@periodosCompletados</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Filtros rápidos -->
+    <MudPaper Class="pa-3 mb-3" Elevation="0" Style="border-radius: 12px;">
+        <MudGrid AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" Class="mr-1" />
+                    Filtrar por estatus
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="9">
+                <div class="d-flex gap-2 flex-wrap">
+                    <MudChip T="string"
+                             Color="@(filtroEstatus == null ? Color.Primary : Color.Default)"
+                             Variant="@(filtroEstatus == null ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(null))">
+                        Todos
+                    </MudChip>
+                    <MudChip T="string"
+                             Icon="@Icons.Material.Filled.Schedule"
+                             Color="@(filtroEstatus == 1 ? Color.Warning : Color.Default)"
+                             Variant="@(filtroEstatus == 1 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(1))">
+                        Pendientes
+                    </MudChip>
+                    <MudChip T="string"
+                             Icon="@Icons.Material.Filled.Autorenew"
+                             Color="@(filtroEstatus == 2 ? Color.Info : Color.Default)"
+                             Variant="@(filtroEstatus == 2 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(2))">
+                        En Proceso
+                    </MudChip>
+                    <MudChip T="string"
+                             Icon="@Icons.Material.Filled.CheckCircle"
+                             Color="@(filtroEstatus == 3 ? Color.Success : Color.Default)"
+                             Variant="@(filtroEstatus == 3 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(3))">
+                        Completados
+                    </MudChip>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Tabla de períodos asignados -->
+    <MudPaper Class="flex-grow-1 d-flex flex-column" Elevation="0" Style="border-radius: 12px; overflow: hidden;">
+        <GenericTable TItem="PeriodoConteoResponse"
+                      @ref="table"
+                      Title="Períodos asignados"
+                      SearchPlaceholder="Buscar por código, nombre, sucursal..."
+                      ServerDataFunc="LoadMisPeriodosData"
+                      ShowAddButton="false"
+                      ShowExportButton="false"
+                      SearchString="@searchString"
+                      SearchStringChanged="(s) => searchString = s"
+                      OnSearch="() => table.ReloadData()"
+                      Dense="false"
+                      Hover="true"
+                      Striped="true"
+                      Elevation="0">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoPeriodo" T="PeriodoConteoResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="PeriodoConteoResponse">Período</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SucursalNombre" T="PeriodoConteoResponse">Sucursal</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoConteoNombre" T="PeriodoConteoResponse">Tipo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="PeriodoConteoResponse">Fecha Inicio</MudTableSortLabel></MudTh>
+                <MudTh>Progreso</MudTh>
+                <MudTh>Estatus</MudTh>
+            </Header>
+
+            <Row Context="periodo">
+                <MudTd>
+                    <div class="d-flex gap-1">
+                        @if (periodo.EstatusId == 1 || periodo.EstatusId == 2)
+                        {
+                            <MudTooltip Text="@(periodo.EstatusId == 1 ? "Iniciar conteo" : "Continuar conteo")">
+                                <MudIconButton Icon="@Icons.Material.Filled.PlayCircle"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               Variant="Variant.Filled"
+                                               OnClick="@(() => MostrarConfirmacionInicio(periodo))" />
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="@(periodo.EstatusId == 3 ? "Período completado" : "Período cerrado")">
+                                <MudIconButton Icon="@(periodo.EstatusId == 3 ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Lock)"
+                                               Color="@(periodo.EstatusId == 3 ? Color.Success : Color.Default)"
+                                               Size="Size.Small"
+                                               Disabled="true" />
+                            </MudTooltip>
+                        }
+                        <MudTooltip Text="Ver detalles">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => VerDetallePeriodo(periodo.Id.Value))" />
+                        </MudTooltip>
+                    </div>
+                </MudTd>
+
+                <MudTd DataLabel="Código">
+                    <MudText Typo="Typo.body2" Class="font-weight-bold">@periodo.CodigoPeriodo</MudText>
+                </MudTd>
+
+                <MudTd DataLabel="Período">
+                    <MudText Typo="Typo.body2">@periodo.Nombre</MudText>
+                </MudTd>
+
+                <MudTd DataLabel="Sucursal">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">@periodo.SucursalNombre</MudChip>
+                </MudTd>
+
+                <MudTd DataLabel="Tipo">
+                    <MudChip T="string" Size="Size.Small">@periodo.TipoConteoNombre</MudChip>
+                </MudTd>
+
+                <MudTd DataLabel="Fecha Inicio">
+                    <MudText Typo="Typo.body2">@periodo.FechaInicio?.ToString("dd/MM/yyyy")</MudText>
+                </MudTd>
+
+                <MudTd DataLabel="Progreso">
+                    <div style="min-width: 120px;">
+                        <div class="d-flex justify-space-between mb-1">
+                            <MudText Typo="Typo.caption">@(periodo.ArticulosConcluidos ?? 0)/@(periodo.TotalArticulos ?? 0)</MudText>
+                            <MudText Typo="Typo.caption" Class="font-weight-bold">@(periodo.PorcentajeAvance?.ToString("F0") ?? "0")%</MudText>
+                        </div>
+                        <MudProgressLinear Value="@((double)(periodo.PorcentajeAvance ?? 0))"
+                                           Color="@GetProgressColor(periodo.PorcentajeAvance)"
+                                           Size="Size.Small"
+                                           Style="border-radius: 4px;" />
+                    </div>
+                </MudTd>
+
+                <MudTd DataLabel="Estatus">
+                    <MudChip T="string" Color="@GetEstatusColor(periodo.EstatusNombre)" Size="Size.Small">
+                        <MudIcon Icon="@GetEstatusIcon(periodo.EstatusNombre)" Size="Size.Small" Class="mr-1" />
+                        @periodo.EstatusNombre
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudPaper>
+
+    <!-- Diálogo de confirmación para iniciar conteo -->
+    <MudDialog @bind-IsVisible="@showConfirmDialog">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.PlayCircleOutline" Color="Color.Success" Class="mr-2" />
+                Iniciar Conteo
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudText Class="mb-4">
+                ¿Estás listo para comenzar el conteo del período <strong>@periodoSeleccionado?.CodigoPeriodo - @periodoSeleccionado?.Nombre</strong>?
+            </MudText>
+
+            @if (periodoSeleccionado?.EstatusId == 1)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+                    Este período cambiará a estado "En Proceso" al iniciar el conteo.
+                </MudAlert>
+            }
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                Serás redirigido a la pantalla de conteo para comenzar a registrar artículos.
+            </MudText>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="CancelarInicio">
+                Cancelar
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.PlayArrow" OnClick="ConfirmarInicioConteo">
+                Iniciar Conteo
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudContainer>
+
+@code {
+    private GenericTable<PeriodoConteoResponse> table = null!;
+    private string searchString = "";
+    private int? filtroEstatus = null;
+    private int userId;
+
+    // Estadísticas
+    private int totalPeriodos = 0;
+    private int periodosEnProceso = 0;
+    private int periodosPendientes = 0;
+    private int periodosCompletados = 0;
+
+    // Diálogo de confirmación
+    private bool showConfirmDialog = false;
+    private PeriodoConteoResponse? periodoSeleccionado = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await AuthService.GetUserIdAsync();
+    }
+
+    private async Task<TableData<PeriodoConteoResponse>> LoadMisPeriodosData(TableState state, CancellationToken token)
+    {
+        try
+        {
+            // var filters = new List<Filter>
+            // {
+            //     new Filter
+            //     {
+            //         PropertyName = "ResponsableId",
+            //         Value = userId.ToString(),
+            //         Operator = "eq"
+            //     }
+            // };
+
+            // if (filtroEstatus.HasValue)
+            // {
+            //     filters.Add(new Filter
+            //     {
+            //         PropertyName = "EstatusId",
+            //         Value = filtroEstatus.Value.ToString(),
+            //         Operator = "eq"
+            //     });
+            // }
+
+            var response = await PeriodoService.GetAllPaginadoAsync(
+                state.Page + 1,
+                state.PageSize,
+                state.SortLabel ?? "FechaInicio",
+                state.SortDirection == SortDirection.Ascending ? "asc" : "desc",
+                state.SortDirection,
+                null);
+
+            if (response?.Success == true)
+            {
+                // Actualizar estadísticas
+                CalcularEstadisticas(response.Items ?? new List<PeriodoConteoResponse>());
+
+                return new TableData<PeriodoConteoResponse>
+                {
+                    Items = response.Items ?? new List<PeriodoConteoResponse>(),
+                    TotalItems = response.TotalCount
+                };
+            }
+
+            return new TableData<PeriodoConteoResponse>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<PeriodoConteoResponse>();
+        }
+    }
+
+    private void CalcularEstadisticas(IEnumerable<PeriodoConteoResponse> periodos)
+    {
+        var lista = periodos.ToList();
+        totalPeriodos = lista.Count;
+        periodosPendientes = lista.Count(p => p.EstatusId == 1);
+        periodosEnProceso = lista.Count(p => p.EstatusId == 2);
+        periodosCompletados = lista.Count(p => p.EstatusId == 3);
+    }
+
+    private void AplicarFiltroEstatus(int? estatusId)
+    {
+        filtroEstatus = estatusId;
+        table.ReloadData();
+    }
+
+    private void MostrarConfirmacionInicio(PeriodoConteoResponse periodo)
+    {
+        periodoSeleccionado = periodo;
+        showConfirmDialog = true;
+    }
+
+    private void CancelarInicio()
+    {
+        showConfirmDialog = false;
+        periodoSeleccionado = null;
+    }
+
+    private async Task ConfirmarInicioConteo()
+    {
+        if (periodoSeleccionado == null) return;
+
+        showConfirmDialog = false;
+
+        try
+        {
+            // Si el período está pendiente, cambiar a "En Proceso"
+            if (periodoSeleccionado.EstatusId == 1)
+            {
+                Snackbar.Add("Período marcado como 'En Proceso'", Severity.Success);
+            }
+
+            NavigationManager.NavigateTo($"/conteociclico/periodo/{periodoSeleccionado.Id}/conteo");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al iniciar el conteo: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task VerDetallePeriodo(int id)
+    {
+        try
+        {
+            var response = await PeriodoService.GetByIdAsync(id);
+            if (response?.Success == true && response.Data != null)
+            {
+                var parameters = new DialogParameters { ["Periodo"] = response.Data };
+                var options = new DialogOptions
+                {
+                    CloseButton = true,
+                    MaxWidth = MaxWidth.Medium,
+                    FullWidth = true,
+                    Position = DialogPosition.Center
+                };
+
+                await DialogService.ShowAsync<PeriodoConteoDetalleDialog>($"Detalle: {response.Data.CodigoPeriodo}", parameters, options);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar detalles: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetProgressColor(decimal? porcentaje)
+    {
+        if (!porcentaje.HasValue) return Color.Default;
+        return porcentaje.Value switch
+        {
+            >= 75 => Color.Success,
+            >= 50 => Color.Info,
+            >= 25 => Color.Warning,
+            _ => Color.Error
+        };
+    }
+
+    private Color GetEstatusColor(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Color.Warning,
+            "en proceso" => Color.Info,
+            "completado" => Color.Success,
+            "cerrado" => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetEstatusIcon(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Icons.Material.Filled.Schedule,
+            "en proceso" => Icons.Material.Filled.Autorenew,
+            "completado" => Icons.Material.Filled.CheckCircle,
+            "cerrado" => Icons.Material.Filled.Lock,
+            _ => Icons.Material.Filled.Help
+        };
+    }
+}

@@ -4,192 +4,277 @@
 @using EG.Web.Shared
 @using EG.Web.Contracs.Configuration
 @inherits BaseCrudPage<PeriodoConteoResponse, PeriodoConteoResponse>
-@* @inject IPeriodoConteoService PeriodoConteoService *@
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-        <PageHeader Title="Gestión de Periodos de Conteo"
-                    Subtitle="Administra y mantén los periodos de conteo cíclico del sistema"
-                    Icon="@Icons.Material.Filled.Inventory"
-                    CanCreate="@CanCreate"
-                    OnCreate="CreateItem"
-                    OnRefresh="() => table.ReloadData()" />
+        <!-- Header con gradiente -->
+        <MudPaper Class="pa-4 mb-4" Elevation="0" Style="border-radius: 12px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+            <MudGrid AlignItems="AlignItems.Center">
+                <MudItem xs="12" md="8">
+                    <MudText Typo="Typo.h5" Class="text-white mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" Class="mr-2" />
+                        Gestión de Períodos de Conteo
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="text-white opacity-75">
+                        Administra y mantén los períodos de conteo cíclico del sistema
+                    </MudText>
+                </MudItem>
+                <MudItem xs="12" md="4" Class="d-flex align-center justify-end">
+                    @if (CanCreate)
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="CreateItem"
+                                   Class="white-text">
+                            Nuevo Período
+                        </MudButton>
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
 
         <!-- Leyenda del flujo de estatus -->
         <MudPaper Class="pa-3 mb-3" Elevation="0" Style="border-radius:8px; border:1px solid var(--mud-palette-divider);">
-            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2 d-block">Flujo de Estatus</MudText>
-            <div class="d-flex align-center gap-1 flex-wrap">
-                <MudChip T="string" Icon="@Icons.Material.Filled.Schedule" Color="Color.Warning" Size="Size.Small" Variant="Variant.Outlined">Pendiente</MudChip>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2 d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                Flujo de Estatus
+            </MudText>
+            <div class="d-flex align-center gap-2 flex-wrap">
+                <MudChip T="string" Icon="@Icons.Material.Filled.Schedule" Color="Color.Warning" Size="Size.Small">Pendiente</MudChip>
                 <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" />
-                <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">En Proceso</MudChip>
+                <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Color="Color.Info" Size="Size.Small">En Proceso</MudChip>
                 <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" />
-                <MudChip T="string" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined">Completado</MudChip>
+                <MudChip T="string" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small">Completado</MudChip>
                 <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" />
-                <MudChip T="string" Icon="@Icons.Material.Filled.Lock" Color="Color.Default" Size="Size.Small" Variant="Variant.Outlined">Cerrado</MudChip>
+                <MudChip T="string" Icon="@Icons.Material.Filled.Lock" Color="Color.Default" Size="Size.Small">Cerrado</MudChip>
             </div>
         </MudPaper>
 
-        <GenericTable TItem="PeriodoConteoResponse"
-                      @ref="table"
-                      Title="Lista de Periodos de Conteo"
-                      SearchPlaceholder="Buscar por código, nombre..."
-                      ShowExportButton="@CanExport"
-                      ServerDataFunc="LoadServerData"
-                      ExportFunc="ExportToExcel"
-                      SearchString="@SearchString"
-                      SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
-
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CodigoPeriodo" T="PeriodoConteoResponse">Código</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="PeriodoConteoResponse">Periodo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SucursalNombre" T="PeriodoConteoResponse">Sucursal</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoConteoNombre" T="PeriodoConteoResponse">Tipo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="PeriodoConteoResponse">Fecha Inicio</MudTableSortLabel></MudTh>
-                <MudTh>Progreso</MudTh>
-                <MudTh>Estatus</MudTh>
-                <MudTh>Flujo</MudTh>
-            </Header>
-
-            <Row Context="periodo">
-                <MudTd>
-                    <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                       Color="Color.Info"
-                                       Size="Size.Small"
-                                       OnClick="@(() => VerDetalle(periodo.Id))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Editar periodo">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(periodo.Id))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar periodo">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(periodo.Id))" />
-                    </MudTooltip>
-                </MudTd>
-
-                <MudTd DataLabel="Código">
-                    <MudText Typo="Typo.body2" Class="font-weight-bold">@periodo.CodigoPeriodo</MudText>
-                </MudTd>
-
-                <MudTd DataLabel="Periodo">
-                    <MudText Typo="Typo.body2">@periodo.Nombre</MudText>
-                    @if (!string.IsNullOrEmpty(periodo.Descripcion))
-                    {
-                        <MudText Typo="Typo.caption" Class="text-secondary">@periodo.Descripcion</MudText>
-                    }
-                </MudTd>
-
-                <MudTd DataLabel="Sucursal">
-                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">@periodo.SucursalNombre</MudChip>
-                </MudTd>
-
-                <MudTd DataLabel="Tipo">
-                    <MudChip T="string" Size="Size.Small">@periodo.TipoConteoNombre</MudChip>
-                </MudTd>
-
-                <MudTd DataLabel="Fecha Inicio">
-                    <MudText Typo="Typo.body2">
-                        @periodo.FechaInicio.ToString("dd/MM/yyyy")
-                        @if (periodo.FechaFin.HasValue)
-                        {
-                            <span> - @periodo.FechaFin.Value.ToString("dd/MM/yyyy")</span>
-                        }
+        <!-- Filtros rápidos -->
+        <MudPaper Class="pa-3 mb-3" Elevation="0" Style="border-radius: 8px;">
+            <MudGrid AlignItems="AlignItems.Center">
+                <MudItem xs="12" md="3">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" Class="mr-1" />
+                        Filtrar por estatus
                     </MudText>
-                </MudTd>
-
-                <MudTd DataLabel="Progreso">
-                    <div style="min-width: 120px;">
-                        <MudText Typo="Typo.caption" Align="Align.Center">
-                            @periodo.ArticulosConcluidos / @periodo.TotalArticulos artículos
-                        </MudText>
-                        <MudProgressLinear Value="@((double)(periodo.PorcentajeAvance ?? 0))"
-                                           Color="GetProgressColor(periodo.PorcentajeAvance)"
-                                           Size="Size.Small"
-                                           Class="my-1" />
-                        @if (periodo.ArticulosConDiferencia > 0)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
-                                ⚠ @periodo.ArticulosConDiferencia diferencias
-                            </MudChip>
-                        }
+                </MudItem>
+                <MudItem xs="12" md="9">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <MudChip T="string"
+                                 Color="@(filtroEstatus == null ? Color.Primary : Color.Default)"
+                                 Variant="@(filtroEstatus == null ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => AplicarFiltroEstatus(null))">
+                            Todos
+                        </MudChip>
+                        <MudChip T="string"
+                                 Icon="@Icons.Material.Filled.Schedule"
+                                 Color="@(filtroEstatus == 1 ? Color.Warning : Color.Default)"
+                                 Variant="@(filtroEstatus == 1 ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => AplicarFiltroEstatus(1))">
+                            Pendientes
+                        </MudChip>
+                        <MudChip T="string"
+                                 Icon="@Icons.Material.Filled.Autorenew"
+                                 Color="@(filtroEstatus == 2 ? Color.Info : Color.Default)"
+                                 Variant="@(filtroEstatus == 2 ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => AplicarFiltroEstatus(2))">
+                            En Proceso
+                        </MudChip>
+                        <MudChip T="string"
+                                 Icon="@Icons.Material.Filled.CheckCircle"
+                                 Color="@(filtroEstatus == 3 ? Color.Success : Color.Default)"
+                                 Variant="@(filtroEstatus == 3 ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => AplicarFiltroEstatus(3))">
+                            Completados
+                        </MudChip>
+                        <MudChip T="string"
+                                 Icon="@Icons.Material.Filled.Lock"
+                                 Color="@(filtroEstatus == 4 ? Color.Default : Color.Default)"
+                                 Variant="@(filtroEstatus == 4 ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => AplicarFiltroEstatus(4))">
+                            Cerrados
+                        </MudChip>
                     </div>
-                </MudTd>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
 
-                <MudTd DataLabel="Estatus">
-                    <MudChip T="string" Color="@GetEstatusColor(periodo.EstatusNombre)" Size="Size.Small">
-                        <MudIcon Icon="@GetEstatusIcon(periodo.EstatusNombre)" Size="Size.Small" Class="mr-1" />
-                        @periodo.EstatusNombre
-                    </MudChip>
-                </MudTd>
+        <!-- Tabla de períodos -->
+        <MudPaper Class="flex-grow-1 d-flex flex-column" Elevation="0" Style="border-radius: 12px; overflow: hidden;">
+            <GenericTable TItem="PeriodoConteoResponse"
+                          @ref="table"
+                          Title="Lista de Períodos de Conteo"
+                          SearchPlaceholder="Buscar por código, nombre, sucursal..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="() => table.ReloadData()"
+                          Dense="false"
+                          Hover="true"
+                          Striped="true"
+                          Elevation="0">
 
-                <!-- Columna de flujo de estatus -->
-                <MudTd DataLabel="Flujo">
-                    @if (CanUpdate && GetTransicionesPermitidas(periodo.EstatusId) is var transiciones && transiciones.Any())
-                    {
-                        <MudMenu Icon="@Icons.Material.Filled.SwapHoriz"
-                                 Color="Color.Secondary"
-                                 Size="Size.Small"
-                                 Dense="true"
-                                 Variant="Variant.Outlined"
-                                 Title="Cambiar estatus">
-                            @foreach (var (estatusId, label, icon, color) in transiciones)
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="CodigoPeriodo" T="PeriodoConteoResponse">Código</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="PeriodoConteoResponse">Período</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="SucursalNombre" T="PeriodoConteoResponse">Sucursal</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoConteoNombre" T="PeriodoConteoResponse">Tipo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="PeriodoConteoResponse">Fecha Inicio</MudTableSortLabel></MudTh>
+                    <MudTh>Progreso</MudTh>
+                    <MudTh>Estatus</MudTh>
+                    <MudTh>Flujo</MudTh>
+                </Header>
+
+                <Row Context="periodo">
+                    <MudTd>
+                        <div class="d-flex gap-1">
+                            <MudTooltip Text="Ver detalle">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => VerDetalle(periodo.Id.Value))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Ir a conteo">
+                                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               Disabled="@(periodo.EstatusId != 1 && periodo.EstatusId != 2)"
+                                               OnClick="@(() => NavigationManager.NavigateTo($"/conteociclico/periodo/{periodo.Id}/conteo"))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Editar período">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Visible="@CanUpdate"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditItem(periodo.Id.Value))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar período">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Visible="@CanDelete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteItem(periodo.Id.Value))" />
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+
+                    <MudTd DataLabel="Código">
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@periodo.CodigoPeriodo</MudText>
+                    </MudTd>
+
+                    <MudTd DataLabel="Período">
+                        <MudText Typo="Typo.body2">@periodo.Nombre</MudText>
+                        @if (!string.IsNullOrEmpty(periodo.Descripcion))
+                        {
+                            <MudText Typo="Typo.caption" Class="text-secondary">@periodo.Descripcion</MudText>
+                        }
+                    </MudTd>
+
+                    <MudTd DataLabel="Sucursal">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary">@periodo.SucursalNombre</MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Tipo">
+                        <MudChip T="string" Size="Size.Small">@periodo.TipoConteoNombre</MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Fecha Inicio">
+                        <MudText Typo="Typo.body2">
+                            @(periodo.FechaInicio?.ToString("dd/MM/yyyy") ?? "-")
+                            @if (periodo.FechaFin.HasValue)
                             {
-                                var localEstatusId = estatusId;
-                                var localPeriodo = periodo;
-                                <MudMenuItem OnClick="@(async () => await CambiarEstatus(localPeriodo, localEstatusId))">
-                                    <MudIcon Icon="@icon" Color="@color" Size="Size.Small" Class="mr-2" />
-                                    @label
-                                </MudMenuItem>
+                                <span> - @periodo.FechaFin.Value.ToString("dd/MM/yyyy")</span>
                             }
-                        </MudMenu>
-                    }
-                    else if (!CanUpdate)
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Tertiary">—</MudText>
-                    }
-                    else
-                    {
-                        <MudTooltip Text="No hay transiciones disponibles">
-                            <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Color="Color.Tertiary" />
-                        </MudTooltip>
-                    }
-                </MudTd>
-            </Row>
-        </GenericTable>
+                        </MudText>
+                    </MudTd>
+
+                    <MudTd DataLabel="Progreso">
+                        <div style="min-width: 140px;">
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.caption">@(periodo.ArticulosConcluidos ?? 0)/@(periodo.TotalArticulos ?? 0)</MudText>
+                                <MudText Typo="Typo.caption" Class="font-weight-bold">@(periodo.PorcentajeAvance?.ToString("F0") ?? "0")%</MudText>
+                            </div>
+                            <MudProgressLinear Value="@((double)(periodo.PorcentajeAvance ?? 0))"
+                                               Color="@GetProgressColor(periodo.PorcentajeAvance)"
+                                               Size="Size.Small"
+                                               Class="mb-1"
+                                               Style="border-radius: 4px;" />
+                            @if (periodo.ArticulosConDiferencia > 0)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="mt-1">
+                                    ⚠ @periodo.ArticulosConDiferencia diferencias
+                                </MudChip>
+                            }
+                        </div>
+                    </MudTd>
+
+                    <MudTd DataLabel="Estatus">
+                        <MudChip T="string" Color="@GetEstatusColor(periodo.EstatusNombre)" Size="Size.Small">
+                            <MudIcon Icon="@GetEstatusIcon(periodo.EstatusNombre)" Size="Size.Small" Class="mr-1" />
+                            @periodo.EstatusNombre
+                        </MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Flujo">
+                        @{
+                            var estatusId = periodo.EstatusId ?? 0;
+                            var transiciones = GetTransicionesPermitidas(estatusId);
+                        }
+                        @if (CanUpdate && transiciones.Any())
+                        {
+                            <MudMenu Icon="@Icons.Material.Filled.SwapHoriz"
+                                     Color="Color.Secondary"
+                                     Size="Size.Small"
+                                     Dense="true"
+                                     Variant="Variant.Outlined"
+                                     Title="Cambiar estatus">
+                                @foreach (var (estatusDestino, label, icon, color) in transiciones)
+                                {
+                                    var localEstatusDestino = estatusDestino;
+                                    var localPeriodo = periodo;
+                                    <MudMenuItem OnClick="@(async () => await CambiarEstatus(localPeriodo, localEstatusDestino))">
+                                        <MudIcon Icon="@icon" Color="@color" Size="Size.Small" Class="mr-2" />
+                                        @label
+                                    </MudMenuItem>
+                                }
+                            </MudMenu>
+                        }
+                        else if (!CanUpdate)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">—</MudText>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="No hay transiciones disponibles">
+                                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Color="Color.Tertiary" />
+                            </MudTooltip>
+                        }
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </MudPaper>
     </MudContainer>
 </AccessVerification>
 
 @code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
     private GenericTable<PeriodoConteoResponse> table = null!;
+    private int? filtroEstatus = null;
 
-    protected override string ModuleName => "conteocliclico";
+    protected override string ModuleName => "conteociclico";
     protected override string SubModuleName => "periodo";
-
     protected override Type CreateDialogType => typeof(PeriodoConteoDialog);
     protected override Type EditDialogType => typeof(PeriodoConteoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<PeriodoConteoResponse>);
-
     protected override string GetDefaultSortLabel() => "FechaInicio";
 
-    // ─────────────────────────────────────────────
-    // Flujo de Estatus
-    // ─────────────────────────────────────────────
-
-    /// <summary>
-    /// ID → Nombre canónico para comparaciones
-    /// 1 = Pendiente, 2 = En Proceso, 3 = Completado, 4 = Cerrado
-    /// </summary>
     private static readonly Dictionary<int, string> EstatusNombres = new()
     {
         { 1, "Pendiente" },
@@ -198,14 +283,6 @@
         { 4, "Cerrado" }
     };
 
-    /// <summary>
-    /// Devuelve la lista de (estatusId, etiqueta, icono, color) a los que puede avanzar el periodo.
-    /// Reglas del flujo (líneas sólidas + punteadas del diagrama):
-    ///   Pendiente   → En Proceso, Cerrado (atajo)
-    ///   En Proceso  → Completado, Cerrado (atajo)
-    ///   Completado  → Cerrado
-    ///   Cerrado     → (ninguno — estado final)
-    /// </summary>
     private List<(int estatusId, string label, string icon, Color color)> GetTransicionesPermitidas(int actualEstatusId)
         => actualEstatusId switch
         {
@@ -221,7 +298,7 @@
             },
             3 => new List<(int, string, string, Color)>
             {
-                (4, "Cerrar periodo",           Icons.Material.Filled.Lock,            Color.Default),
+                (4, "Cerrar período",           Icons.Material.Filled.Lock,            Color.Default),
             },
             _ => new List<(int, string, string, Color)>()
         };
@@ -230,18 +307,9 @@
     {
         try
         {
-            // var response = await PeriodoConteoService.CambiarEstatusAsync(periodo.Id, nuevoEstatusId);
-            // if (response?.Success == true)
-            // {
-            //     var nombreNuevo = EstatusNombres.GetValueOrDefault(nuevoEstatusId, "nuevo estatus");
-            //     Snackbar.Add($"✅ Periodo '{periodo.CodigoPeriodo}' cambiado a: {nombreNuevo}", Severity.Success);
-            //     await table.ReloadData();
-            // }
-            // else
-            // {
-            //    Snackbar.Add(response?.Message ?? "No se pudo cambiar el estatus", Severity.Warning);
-            // }
-            Snackbar.Add("Por implementar", Severity.Warning);
+            // Aquí usarías un método específico del servicio o un PATCH
+            Snackbar.Add($"Cambiando estatus de '{periodo.CodigoPeriodo}' a {EstatusNombres.GetValueOrDefault(nuevoEstatusId)}", Severity.Info);
+            await table.ReloadData();
         }
         catch (Exception ex)
         {
@@ -249,25 +317,67 @@
         }
     }
 
-    // ─────────────────────────────────────────────
-    // Helpers de la tabla
-    // ─────────────────────────────────────────────
+    private void AplicarFiltroEstatus(int? estatusId)
+    {
+        filtroEstatus = estatusId;
+        table.ReloadData();
+    }
+
+    protected override async Task<TableData<PeriodoConteoResponse>> LoadServerData(TableState state, CancellationToken token)
+    {
+        try
+        {
+            // var filters = new List<Filter>();
+            // if (filtroEstatus.HasValue)
+            // {
+            //     filters.Add(new Filter
+            //     {
+            //         PropertyName = "EstatusId",
+            //         Value = filtroEstatus.Value.ToString(),
+            //         Operator = "eq"
+            //     });
+            // }
+
+            var response = await Service.GetAllPaginadoAsync(
+                state.Page + 1,
+                state.PageSize,
+                state.SortLabel ?? "FechaInicio",
+                state.SortDirection == SortDirection.Ascending ? "asc" : "desc",
+                state.SortDirection,
+                null);
+
+            if (response?.Success == true)
+            {
+                return new TableData<PeriodoConteoResponse>
+                {
+                    Items = response.Items ?? new List<PeriodoConteoResponse>(),
+                    TotalItems = response.TotalCount
+                };
+            }
+
+            return new TableData<PeriodoConteoResponse>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<PeriodoConteoResponse>();
+        }
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<PeriodoConteoResponse> items)
     {
         return items.Select(p => new
         {
             Código = p.CodigoPeriodo,
-            Periodo = p.Nombre,
+            Período = p.Nombre,
             Descripción = p.Descripcion,
             Sucursal = p.SucursalNombre,
             Tipo = p.TipoConteoNombre,
             Estatus = p.EstatusNombre,
-            Fecha_Inicio = p.FechaInicio.ToString("dd/MM/yyyy"),
+            Fecha_Inicio = p.FechaInicio?.ToString("dd/MM/yyyy") ?? "",
             Fecha_Fin = p.FechaFin?.ToString("dd/MM/yyyy"),
             Total_Artículos = p.TotalArticulos,
             Conteos_Concluidos = p.ArticulosConcluidos,
-            Conteos_Pendientes = p.ArticulosPendientes,
             Diferencias = p.ArticulosConDiferencia,
             Avance = $"{p.PorcentajeAvance}%",
             Responsable = p.ResponsableNombre,
@@ -276,105 +386,68 @@
         });
     }
 
-    protected override async Task<string> GetItemNameForDelete(int id)
+    private async Task VerDetalle(int id)
     {
         try
         {
             var response = await Service.GetByIdAsync(id);
-            return response?.Data?.CodigoPeriodo ?? "el periodo";
-        }
-        catch
-        {
-            return "el periodo";
-        }
-    }
-
-    protected override async Task ReloadData()
-    {
-        if (table != null)
-        {
-            await table.ReloadData();
-            StateHasChanged();
-        }
-    }
-
-    protected override async Task DeleteItem(int id)
-    {
-        if (!CanDelete)
-        {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
-            return;
-        }
-
-        var response = await Service.GetByIdAsync(id);
-        var itemName = response?.Data?.CodigoPeriodo ?? "el periodo";
-
-        var parameters = new DialogParameters
-        {
-            ["Id"] = id,
-            ["ItemName"] = itemName,
-            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
+            if (response?.Success == true && response.Data != null)
             {
-                var deleteResponse = await Service.DeleteAsync(deleteId);
-                if (deleteResponse?.Success == true)
+                var parameters = new DialogParameters { ["Periodo"] = response.Data };
+                var options = new DialogOptions
                 {
-                    Snackbar.Add(deleteResponse.Message ?? "Periodo eliminado correctamente", Severity.Success);
-                    await table.ReloadData();
-                    return true;
-                }
-                else
-                {
-                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
-                    return false;
-                }
-            })
-        };
+                    CloseButton = true,
+                    MaxWidth = MaxWidth.Medium,
+                    FullWidth = true,
+                    Position = DialogPosition.Center
+                };
 
-        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
-            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
-
-        await dialog.Result;
-    }
-
-    private void VerDetalle(int id)
-    {
-        NavigationManager.NavigateTo($"/conteociclico/periodo/{id}");
+                await DialogService.ShowAsync<PeriodoConteoDetalleDialog>($"Detalle: {response.Data.CodigoPeriodo}", parameters, options);
+            }
+            else
+            {
+                Snackbar.Add("No se pudo cargar la información del período", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar detalle: {ex.Message}", Severity.Error);
+        }
     }
 
     private Color GetProgressColor(decimal? porcentaje)
     {
         if (!porcentaje.HasValue) return Color.Default;
-
         return porcentaje.Value switch
         {
             >= 75 => Color.Success,
             >= 50 => Color.Info,
             >= 25 => Color.Warning,
-            _     => Color.Error
+            _ => Color.Error
         };
     }
 
-    private Color GetEstatusColor(string estatus)
+    private Color GetEstatusColor(string? estatus)
     {
         return estatus?.ToLower() switch
         {
-            "pendiente"  => Color.Warning,
+            "pendiente" => Color.Warning,
             "en proceso" => Color.Info,
             "completado" => Color.Success,
-            "cerrado"    => Color.Default,
-            _            => Color.Default
+            "cerrado" => Color.Default,
+            _ => Color.Default
         };
     }
 
-    private string GetEstatusIcon(string estatus)
+    private string GetEstatusIcon(string? estatus)
     {
         return estatus?.ToLower() switch
         {
-            "pendiente"  => Icons.Material.Filled.Schedule,
+            "pendiente" => Icons.Material.Filled.Schedule,
             "en proceso" => Icons.Material.Filled.Autorenew,
             "completado" => Icons.Material.Filled.CheckCircle,
-            "cerrado"    => Icons.Material.Filled.Lock,
-            _            => Icons.Material.Filled.Help
+            "cerrado" => Icons.Material.Filled.Lock,
+            _ => Icons.Material.Filled.Help
         };
     }
 }

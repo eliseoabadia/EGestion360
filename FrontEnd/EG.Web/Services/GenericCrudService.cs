@@ -31,6 +31,22 @@ namespace EG.Web.Services
             return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/{id}");
         }
 
+        public async Task<ApiResponse<TResponse>> GetAllByEmpresaAsync(int empresaId)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<TResponse>();
+
+            return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/empresaId/{empresaId}");
+        }
+
+        public async Task<ApiResponse<TResponse>> GetAllBySucursalAsync(int sucursalId)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<TResponse>();
+
+            return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/sucursalId/{sucursalId}");
+        }
+
         public async Task<ApiResponse<TResponse>> GetAllAsync()
         {
             if (!IsClientSide())

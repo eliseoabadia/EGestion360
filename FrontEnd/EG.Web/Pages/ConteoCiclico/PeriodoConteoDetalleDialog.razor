@@ -1,0 +1,237 @@
+﻿@namespace EG.Web.Pages.Shared
+@using EG.Web.Models.ConteoCiclico
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory" Class="mr-2" />
+            Detalle del Período de Conteo
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        @if (Periodo != null)
+        {
+            <MudGrid Spacing="3">
+                <!-- Encabezado con información principal -->
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4" Elevation="0" Style="background-color: var(--mud-palette-background-grey); border-radius: 8px;">
+                        <MudGrid>
+                            <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Código</MudText>
+                                <MudText Typo="Typo.body1" Class="font-weight-bold">@Periodo.CodigoPeriodo</MudText>
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Estatus</MudText>
+                                <MudChip T="string" Color="@GetEstatusColor(Periodo.EstatusNombre)" Size="Size.Small">
+                                    <MudIcon Icon="@GetEstatusIcon(Periodo.EstatusNombre)" Size="Size.Small" Class="mr-1" />
+                                    @Periodo.EstatusNombre
+                                </MudChip>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+
+                <!-- Información general -->
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                        Información General
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Nombre del Período</MudText>
+                    <MudText Typo="Typo.body2">@Periodo.Nombre</MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Descripción</MudText>
+                    <MudText Typo="Typo.body2">@(!string.IsNullOrEmpty(Periodo.Descripcion) ? Periodo.Descripcion : "-")</MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Sucursal</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">@Periodo.SucursalNombre</MudChip>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Tipo de Conteo</MudText>
+                    <MudChip T="string" Size="Size.Small">@Periodo.TipoConteoNombre</MudChip>
+                </MudItem>
+
+                <!-- Fechas -->
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2 mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                        Fechas del Período
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Fecha de Inicio</MudText>
+                    <MudText Typo="Typo.body2">
+                        @(Periodo.FechaInicio?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                    </MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Fecha de Fin</MudText>
+                    <MudText Typo="Typo.body2">
+                        @(Periodo.FechaFin?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                    </MudText>
+                </MudItem>
+
+                <!-- Progreso del conteo -->
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2 mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Small" Class="mr-1" />
+                        Progreso del Conteo
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3" Elevation="0" Style="border:1px solid var(--mud-palette-divider); border-radius: 8px;">
+                        <MudGrid>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Total Artículos</MudText>
+                                <MudText Typo="Typo.h6">@(Periodo.TotalArticulos ?? 0)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Conteos Concluidos</MudText>
+                                <MudText Typo="Typo.h6" Color="Color.Success">@(Periodo.ArticulosConcluidos ?? 0)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Conteos Pendientes</MudText>
+                                <MudText Typo="Typo.h6" Color="Color.Warning">@(Periodo.ArticulosPendientes ?? 0)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Con Diferencias</MudText>
+                                <MudText Typo="Typo.h6" Color="Color.Error">@(Periodo.ArticulosConDiferencia ?? 0)</MudText>
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-2">
+                            Progreso General
+                        </MudText>
+                        <MudProgressLinear Value="@((double)(Periodo.PorcentajeAvance ?? 0))"
+                                           Color="@GetProgressColor(Periodo.PorcentajeAvance)"
+                                           Size="Size.Small"
+                                           Class="my-1"
+                                           Style="border-radius: 4px;" />
+                        <MudText Typo="Typo.caption" Align="Align.Center">
+                            @(Periodo.PorcentajeAvance?.ToString("F1") ?? "0")% completado
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <!-- Responsables -->
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2 mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" Class="mr-1" />
+                        Responsables
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Responsable</MudText>
+                    <MudText Typo="Typo.body2">@(!string.IsNullOrEmpty(Periodo.ResponsableNombre) ? Periodo.ResponsableNombre : "-")</MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Supervisor</MudText>
+                    <MudText Typo="Typo.body2">@(!string.IsNullOrEmpty(Periodo.SupervisorNombre) ? Periodo.SupervisorNombre : "-")</MudText>
+                </MudItem>
+
+                <!-- Información adicional -->
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2 mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Small" Class="mr-1" />
+                        Configuración
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Máx. conteos por artículo</MudText>
+                    <MudText Typo="Typo.body2">@Periodo.MaximoConteosPorArticulo</MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Requiere aprobación</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="@(Periodo.RequiereAprobacionSupervisor? Color.Warning: Color.Default)">
+                        @(Periodo.RequiereAprobacionSupervisor ? "Sí" : "No")
+                    </MudChip>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Activo</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="@(Periodo.Activo? Color.Success: Color.Error)">
+                        @(Periodo.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudItem>
+            </MudGrid>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                No se encontró información del período
+            </MudAlert>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Close">
+            <MudIcon Icon="@Icons.Material.Filled.Close" Size="Size.Small" Class="mr-1" />
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public PeriodoConteoResponse? Periodo { get; set; }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+
+    private Color GetEstatusColor(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Color.Warning,
+            "en proceso" => Color.Info,
+            "completado" => Color.Success,
+            "cerrado" => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetEstatusIcon(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Icons.Material.Filled.Schedule,
+            "en proceso" => Icons.Material.Filled.Autorenew,
+            "completado" => Icons.Material.Filled.CheckCircle,
+            "cerrado" => Icons.Material.Filled.Lock,
+            _ => Icons.Material.Filled.Help
+        };
+    }
+
+    private Color GetProgressColor(decimal? porcentaje)
+    {
+        if (!porcentaje.HasValue) return Color.Default;
+        return porcentaje.Value switch
+        {
+            >= 75 => Color.Success,
+            >= 50 => Color.Info,
+            >= 25 => Color.Warning,
+            _ => Color.Error
+        };
+    }
+}

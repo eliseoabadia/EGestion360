@@ -22,10 +22,11 @@ public static class ApiServiceExtensions
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
 
-        RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
-        RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
+        RegisterCrud<ArticuloConteoResponse>(services, "api/ArticuloConteo");
         RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
         RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
+        RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
+        RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
         // Agrega más aquí...
 
         return services;

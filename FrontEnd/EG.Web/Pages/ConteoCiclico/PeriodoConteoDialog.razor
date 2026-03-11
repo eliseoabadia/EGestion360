@@ -15,172 +15,309 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos del periodo..."
-                OnConfirm="GuardarCambiosAsync">
+                OnConfirm="GuardarCambiosAsync"
+                OnCancel="CancelAsync">
 
     <BaseEntityForm TEntity="PeriodoConteoResponse"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+                    HeaderTitle="@dialogTitle"
+                    HeaderIcon="@(Id.HasValue? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)"
+                    HeaderColor="Color.Primary">
 
-        <MudGrid GutterSize="2">
-            <!-- Código -->
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="periodo.CodigoPeriodo"
-                              Label="Código del Periodo"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="El código es requerido"
-                              For="@(() => periodo.CodigoPeriodo)" />
-            </MudItem>
-
-            <!-- Nombre -->
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="periodo.Nombre"
-                              Label="Nombre del Periodo"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="El nombre es requerido"
-                              For="@(() => periodo.Nombre)" />
-            </MudItem>
-
-            <!-- Descripción -->
-            <MudItem xs="12">
-                <MudTextField @bind-Value="periodo.Descripcion"
-                              Label="Descripción"
-                              Variant="Variant.Outlined"
-                              Lines="2"
-                              For="@(() => periodo.Descripcion)" />
-            </MudItem>
-
-            <!-- Sucursal -->
-            <MudItem xs="12" md="6">
-                <MudSelect Label="Sucursal"
-                           @bind-Value="periodo.SucursalId"
-                           T="int"
-                           Variant="Variant.Outlined"
-                           Required="true"
-                           RequiredError="Debe seleccionar una sucursal"
-                           For="@(() => periodo.SucursalId)">
-                    <MudSelectItem T="int" Value="0">Seleccione una sucursal</MudSelectItem>
-                    @foreach (var s in sucursales)
-                    {
-                        <MudSelectItem T="int" Value="@s.PkidSucursal">@s.Nombre</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            <!-- Tipo de Conteo -->
-            <MudItem xs="12" md="6">
-                <MudSelect Label="Tipo de Conteo"
-                           @bind-Value="periodo.TipoConteoId"
-                           T="int"
-                           Variant="Variant.Outlined"
-                           Required="true"
-                           RequiredError="Debe seleccionar un tipo de conteo"
-                           For="@(() => periodo.TipoConteoId)">
-                    <MudSelectItem T="int" Value="0">Seleccione un tipo</MudSelectItem>
-                    @foreach (var t in tiposConteo)
-                    {
-                        <MudSelectItem T="int" Value="@t.PkidTipoConteo">@t.Nombre</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            <!-- Fecha Inicio -->
-            <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="fechaInicio"
-                               Label="Fecha Inicio"
-                               Variant="Variant.Outlined"
-                               Required="true"
-                               RequiredError="La fecha de inicio es requerida" />
-            </MudItem>
-
-            <!-- Fecha Fin -->
-            <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="fechaFin"
-                               Label="Fecha Fin (opcional)"
-                               Variant="Variant.Outlined" />
-            </MudItem>
-
-            <!-- Responsable -->
-            <MudItem xs="12" md="6">
-                <MudSelect Label="Responsable"
-                           @bind-Value="periodo.ResponsableId"
-                           T="int"
-                           Variant="Variant.Outlined"
-                           Required="true"
-                           RequiredError="Debe seleccionar un responsable"
-                           For="@(() => periodo.ResponsableId)">
-                    <MudSelectItem T="int" Value="0">Seleccione un responsable</MudSelectItem>
-                    @foreach (var u in usuarios)
-                    {
-                        <MudSelectItem T="int" Value="@u.PkIdUsuario">@u.NombreCompleto</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            <!-- Supervisor -->
-            <MudItem xs="12" md="6">
-                <MudSelect Label="Supervisor (opcional)"
-                           @bind-Value="periodo.SupervisorId"
-                           T="int?"
-                           Variant="Variant.Outlined"
-                           For="@(() => periodo.SupervisorId)">
-                    <MudSelectItem T="int?" Value="@((int?)null)">N/A</MudSelectItem>
-                    @foreach (var u in usuarios)
-                    {
-                        <MudSelectItem T="int?" Value="@((int?)u.PkIdUsuario)">@u.NombreCompleto</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            <!-- Configuración avanzada -->
-            <MudItem xs="12" md="6">
-                <MudNumericField @bind-Value="periodo.MaximoConteosPorArticulo"
-                                 Label="Máximo conteos por artículo"
-                                 Variant="Variant.Outlined"
-                                 Min="1"
-                                 Max="5"
-                                 HideSpinButtons="false"
-                                 Adornment="Adornment.End"
-                                 AdornmentIcon="@Icons.Material.Filled.Repeat" />
-            </MudItem>
-
-            <MudItem xs="12" md="6" Class="d-flex align-center">
-                <MudSwitch @bind-Value="periodo.RequiereAprobacionSupervisor"
-                           Color="Color.Primary"
-                           Label="Requiere aprobación del supervisor"
-                           ThumbIcon="@(periodo.RequiereAprobacionSupervisor ? Icons.Material.Filled.HowToReg : Icons.Material.Filled.PersonOff)" />
-            </MudItem>
-
-            <!-- Estado Activo/Inactivo -->
-            <MudItem xs="12">
-                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus del Periodo</MudText>
-                    <MudDivider Class="mb-3" />
-
-                    @if (Id.HasValue)
-                    {
+        <!-- Indicador de progreso -->
+        @if (isLoading)
+        {
+            <div class="d-flex justify-center pa-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                <MudText Class="ml-4" Typo="Typo.body2">Cargando información...</MudText>
+            </div>
+        }
+        else
+        {
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 8px;">
+                <!-- Información del estatus actual (solo edición) -->
+                @if (Id.HasValue && periodo.EstatusId.HasValue)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4">
                         <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="periodo.Activo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(periodo.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(periodo.Activo ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="d-flex align-center">
-                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Activo</MudChip>
-                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
-                                (Los nuevos periodos se crean activos con estatus Pendiente)
+                            <MudChip T="string"
+                                     Color="@GetEstatusColor(periodo.EstatusNombre)"
+                                     Size="Size.Small"
+                                     Icon="@GetEstatusIcon(periodo.EstatusNombre)"
+                                     Class="mr-2">
+                                @periodo.EstatusNombre
+                            </MudChip>
+                            <MudText Typo="Typo.caption" Class="text-secondary">
+                                Progreso: @(periodo.PorcentajeAvance?.ToString("F1") ?? "0")% completado
                             </MudText>
                         </div>
+                    </MudAlert>
+                }
+
+                <!-- Formulario con tabs para mejor organización -->
+                <MudTabs Elevation="0" Rounded="true" Border="true" Class="mb-4">
+                    <!-- Tab 1: Información Básica -->
+                    <MudTabPanel Text="Información Básica" Icon="@Icons.Material.Filled.Info">
+                        <MudGrid Spacing="3" Class="pt-4">
+                            <!-- Código y Nombre -->
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="periodo.CodigoPeriodo"
+                                              Label="Código del Periodo"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El código es requerido"
+                                              For="@(() => periodo.CodigoPeriodo)"
+                                              Placeholder="Ej: PER-2024-001"
+                                              HelperText="Código único para identificar el período"
+                                              MaxLength="20" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="periodo.Nombre"
+                                              Label="Nombre del Periodo"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El nombre es requerido"
+                                              For="@(() => periodo.Nombre)"
+                                              Placeholder="Ej: Conteo Anual 2024"
+                                              MaxLength="100" />
+                            </MudItem>
+
+                            <!-- Descripción -->
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="periodo.Descripcion"
+                                              Label="Descripción"
+                                              Variant="Variant.Outlined"
+                                              Lines="3"
+                                              For="@(() => periodo.Descripcion)"
+                                              Placeholder="Descripción opcional del período de conteo"
+                                              MaxLength="500" />
+                            </MudItem>
+
+                            <!-- Sucursal y Tipo -->
+                            <MudItem xs="12" md="6">
+                                <MudSelect Label="Sucursal"
+                                           @bind-Value="periodo.SucursalId"
+                                           T="int?"
+                                           Variant="Variant.Outlined"
+                                           Required="true"
+                                           RequiredError="Debe seleccionar una sucursal"
+                                           For="@(() => periodo.SucursalId)"
+                                           AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem T="int?" Value="null">
+                                        <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Small" Class="mr-2" />
+                                        Seleccione una sucursal
+                                    </MudSelectItem>
+                                    @foreach (var s in sucursales)
+                                    {
+                                        <MudSelectItem T="int?" Value="@((int?)s.PkidSucursal)">
+                                            <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Small" Class="mr-2" />
+                                            @s.Nombre
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect Label="Tipo de Conteo"
+                                           @bind-Value="periodo.TipoConteoId"
+                                           T="int?"
+                                           Variant="Variant.Outlined"
+                                           Required="true"
+                                           RequiredError="Debe seleccionar un tipo de conteo"
+                                           For="@(() => periodo.TipoConteoId)">
+                                    <MudSelectItem T="int?" Value="null">
+                                        <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="mr-2" />
+                                        Seleccione un tipo
+                                    </MudSelectItem>
+                                    @foreach (var t in tiposConteo)
+                                    {
+                                        <MudSelectItem T="int?" Value="@((int?)t.PkidTipoConteo)">
+                                            <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="mr-2" />
+                                            @t.Nombre
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <!-- Tab 2: Fechas y Responsables -->
+                    <MudTabPanel Text="Fechas y Responsables" Icon="@Icons.Material.Filled.CalendarToday">
+                        <MudGrid Spacing="3" Class="pt-4">
+                            <!-- Fechas -->
+                            <MudItem xs="12" md="6">
+                                <MudDatePicker @bind-Date="fechaInicio"
+                                               Label="Fecha Inicio"
+                                               Variant="Variant.Outlined"
+                                               Required="true"
+                                               RequiredError="La fecha de inicio es requerida"
+                                               MinDate="@DateTime.Today"
+                                               MaxDate="@fechaFin"
+                                               HelperText="Fecha de inicio del período"
+                                               Format="dd/MM/yyyy" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudDatePicker @bind-Date="fechaFin"
+                                               Label="Fecha Fin (opcional)"
+                                               Variant="Variant.Outlined"
+                                               MinDate="@fechaInicio?.AddDays(1)"
+                                               HelperText="Fecha de finalización (dejar vacío si es indefinido)"
+                                               Format="dd/MM/yyyy" />
+                            </MudItem>
+
+                            <!-- Responsables -->
+                            <MudItem xs="12" md="6">
+                                <MudSelect Label="Responsable"
+                                           @bind-Value="periodo.ResponsableId"
+                                           T="int?"
+                                           Variant="Variant.Outlined"
+                                           Required="true"
+                                           RequiredError="Debe seleccionar un responsable"
+                                           For="@(() => periodo.ResponsableId)">
+                                    <MudSelectItem T="int?" Value="null">
+                                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-2" />
+                                        Seleccione un responsable
+                                    </MudSelectItem>
+                                    @foreach (var u in usuarios)
+                                    {
+                                        <MudSelectItem T="int?" Value="@((int?)u.PkIdUsuario)">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-2" />
+                                            @u.NombreCompleto
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect Label="Supervisor (opcional)"
+                                           @bind-Value="periodo.SupervisorId"
+                                           T="int?"
+                                           Variant="Variant.Outlined"
+                                           For="@(() => periodo.SupervisorId)">
+                                    <MudSelectItem T="int?" Value="null">
+                                        <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Size="Size.Small" Class="mr-2" />
+                                        Sin supervisor asignado
+                                    </MudSelectItem>
+                                    @foreach (var u in usuarios.Where(u => u.PkIdUsuario != periodo.ResponsableId))
+                                    {
+                                        <MudSelectItem T="int?" Value="@((int?)u.PkIdUsuario)">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-2" />
+                                            @u.NombreCompleto
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <!-- Tab 3: Configuración -->
+                    <MudTabPanel Text="Configuración" Icon="@Icons.Material.Filled.Settings">
+                        <MudGrid Spacing="3" Class="pt-4">
+                            <!-- Máximo conteos por artículo -->
+                            <MudItem xs="12" md="6">
+                                <MudNumericField @bind-Value="periodo.MaximoConteosPorArticulo"
+                                                 Label="Máximo conteos por artículo"
+                                                 Variant="Variant.Outlined"
+                                                 Min="1"
+                                                 Max="10"
+                                                 HideSpinButtons="false"
+                                                 Adornment="Adornment.End"
+                                                 AdornmentIcon="@Icons.Material.Filled.Repeat"
+                                                 HelperText="Número máximo de veces que se puede contar un mismo artículo" />
+                            </MudItem>
+
+                            <!-- Requiere aprobación -->
+                            <MudItem xs="12" md="6" Class="d-flex align-center">
+                                <MudSwitch @bind-Value="periodo.RequiereAprobacionSupervisor"
+                                           Color="Color.Primary"
+                                           Label="Requiere aprobación del supervisor"
+                                           ThumbIcon="@(periodo.RequiereAprobacionSupervisor? Icons.Material.Filled.HowToReg : Icons.Material.Filled.PersonOff)" />
+                            </MudItem>
+
+                            <!-- Estado Activo/Inactivo -->
+                            <MudItem xs="12">
+                                <MudPaper Class="pa-4" Elevation="0" Style="background-color: var(--mud-palette-background-grey); border-radius: 8px;">
+                                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                                        Estado del Período
+                                    </MudText>
+
+                                    @if (Id.HasValue)
+                                    {
+                                        <div class="d-flex align-center">
+                                            <MudSwitch @bind-Value="periodo.Activo"
+                                                       Color="Color.Primary"
+                                                       ThumbIcon="@(periodo.Activo? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                                                <MudText>@(periodo.Activo ? "Activo" : "Inactivo")</MudText>
+                                            </MudSwitch>
+                                            <MudTooltip Text="Los períodos inactivos no estarán disponibles para conteo">
+                                                <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Small" Color="Color.Info" Class="ml-2" />
+                                            </MudTooltip>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex align-center">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">Activo</MudChip>
+                                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                                                Los nuevos períodos se crean activos con estatus Pendiente
+                                            </MudText>
+                                        </div>
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <!-- Resumen de configuración (solo lectura) -->
+                            <MudItem xs="12">
+                                <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mt-2">
+                                    <MudText Typo="Typo.caption">
+                                        <strong>Resumen de configuración:</strong><br />
+                                        • Máximo de conteos: @(periodo.MaximoConteosPorArticulo) por artículo<br />
+                                        • @(periodo.RequiereAprobacionSupervisor ? "Requiere aprobación del supervisor" : "No requiere aprobación del supervisor")
+                                    </MudText>
+                                </MudAlert>
+                            </MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <!-- Tab 4: Resumen (solo edición) -->
+                    @if (Id.HasValue)
+                    {
+                        <MudTabPanel Text="Resumen" Icon="@Icons.Material.Filled.PieChart">
+                            <MudGrid Spacing="3" Class="pt-4">
+                                <MudItem xs="12" md="6">
+                                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-divider); border-radius: 8px;">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total Artículos</MudText>
+                                        <MudText Typo="Typo.h5">@(periodo.TotalArticulos ?? 0)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-divider); border-radius: 8px;">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Conteos Concluidos</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Success">@(periodo.ArticulosConcluidos ?? 0)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-divider); border-radius: 8px;">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Con Diferencias</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Error">@(periodo.ArticulosConDiferencia ?? 0)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-divider); border-radius: 8px;">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Progreso</MudText>
+                                        <MudText Typo="Typo.h5">@(periodo.PorcentajeAvance?.ToString("F1") ?? "0")%</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </MudTabPanel>
                     }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
+                </MudTabs>
+            </MudPaper>
+        }
     </BaseEntityForm>
 </BaseCrudDialog>
 
@@ -189,24 +326,45 @@
 
     private BaseCrudDialog<PeriodoConteoResponse> dialog = null!;
     private BaseEntityForm<PeriodoConteoResponse> form = null!;
+    private bool isLoading = false;
     private PeriodoConteoResponse periodo = new()
     {
         Activo = true,
-        FechaInicio = DateTime.Today,
         MaximoConteosPorArticulo = 3,
-        RequiereAprobacionSupervisor = false
+        RequiereAprobacionSupervisor = false,
+        SucursalId = null,
+        TipoConteoId = null,
+        ResponsableId = null,
+        SupervisorId = null,
+        EstatusId = 1, // Pendiente por defecto
+        CodigoPeriodo = string.Empty,
+        Nombre = string.Empty,
+        Descripcion = string.Empty
     };
 
-    // Puentes DateTime? ↔ DateOnly para MudDatePicker
+    // Puentes DateTime? ↔ DateOnly? para MudDatePicker
     private DateTime? fechaInicio
     {
-        get => periodo.FechaInicio;
-        set { if (value.HasValue) periodo.FechaInicio = value.Value; }
+        get => periodo.FechaInicio.HasValue ? periodo.FechaInicio.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null;
+        set
+        {
+            if (value.HasValue)
+                periodo.FechaInicio = DateOnly.FromDateTime(value.Value);
+            else
+                periodo.FechaInicio = null;
+        }
     }
+
     private DateTime? fechaFin
     {
-        get => periodo.FechaFin;
-        set => periodo.FechaFin = value;
+        get => periodo.FechaFin.HasValue ? periodo.FechaFin.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null;
+        set
+        {
+            if (value.HasValue)
+                periodo.FechaFin = DateOnly.FromDateTime(value.Value);
+            else
+                periodo.FechaFin = null;
+        }
     }
 
     private List<SucursalResponse> sucursales = new();
@@ -220,12 +378,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         await Task.WhenAll(CargarSucursales(), CargarTiposConteo(), CargarUsuarios());
 
         if (Id.HasValue)
         {
             await CargarPeriodo();
         }
+        isLoading = false;
     }
 
     private async Task CargarPeriodo()
@@ -253,7 +413,6 @@
         try
         {
             _userId = await AuthService.GetUserIdAsync();
-
             var response = await _sucursalesService.GetAllAsync();
             if (response?.Success == true && response.Items != null)
                 sucursales = response.Items.ToList();
@@ -283,6 +442,12 @@
         catch { }
     }
 
+    public async Task CancelAsync()
+    {
+        dialog.Close(false);
+        await Task.CompletedTask;
+    }
+
     private async Task GuardarCambiosAsync()
     {
         if (!await form.ValidateAsync())
@@ -291,41 +456,41 @@
             return;
         }
 
-        if (periodo.SucursalId <= 0)
+        // Validaciones adicionales
+        if (periodo.SucursalId == null || periodo.SucursalId <= 0)
         {
             Snackbar.Add("Debe seleccionar una sucursal", Severity.Warning);
             return;
         }
 
-        if (periodo.TipoConteoId <= 0)
+        if (periodo.TipoConteoId == null || periodo.TipoConteoId <= 0)
         {
             Snackbar.Add("Debe seleccionar un tipo de conteo", Severity.Warning);
             return;
         }
 
-        if (periodo.ResponsableId <= 0)
+        if (periodo.ResponsableId == null || periodo.ResponsableId <= 0)
         {
             Snackbar.Add("Debe seleccionar un responsable", Severity.Warning);
             return;
         }
 
-        if (fechaFin.HasValue && fechaFin.Value <= fechaInicio)
+        if (!fechaInicio.HasValue)
+        {
+            Snackbar.Add("La fecha de inicio es obligatoria", Severity.Warning);
+            return;
+        }
+
+        if (fechaFin.HasValue && fechaFin.Value <= fechaInicio.Value)
         {
             Snackbar.Add("La fecha fin debe ser mayor a la fecha inicio", Severity.Warning);
             return;
         }
 
-        if (periodo.MaximoConteosPorArticulo < 1 || periodo.MaximoConteosPorArticulo > 5)
+        if (periodo.MaximoConteosPorArticulo < 1 || periodo.MaximoConteosPorArticulo > 10)
         {
-            Snackbar.Add("El máximo de conteos por artículo debe estar entre 1 y 5", Severity.Warning);
+            Snackbar.Add("El máximo de conteos por artículo debe estar entre 1 y 10", Severity.Warning);
             return;
-        }
-
-        if (!Id.HasValue)
-        {
-            periodo.Activo = true;
-            periodo.Id = 0;
-            // El estatus inicial se establece en el backend (1 = Pendiente)
         }
 
         try
@@ -334,10 +499,21 @@
 
             if (Id.HasValue)
             {
-                response = await _service.UpdateAsync(periodo, periodo.Id);
+                periodo.Id = Id.Value;
+                response = await _service.UpdateAsync(periodo, Id.Value);
             }
             else
             {
+                periodo.FechaCierre = null;
+                periodo.EstatusNombre = string.Empty;
+                periodo.PorcentajeAvance = 0;
+                periodo.ResponsableNombre = string.Empty;
+                periodo.SucursalNombre = string.Empty;
+                periodo.TipoConteoNombre = string.Empty;
+                periodo.TotalArticulos = 0;
+                periodo.ArticulosConcluidos = 0;
+                periodo.ArticulosPendientes = 0;
+                periodo.ArticulosConDiferencia = 0;
                 response = await _service.CreateAsync(periodo);
             }
 
@@ -355,5 +531,30 @@
         {
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
         }
+    }
+
+    // Helpers para estatus
+    private Color GetEstatusColor(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Color.Warning,
+            "en proceso" => Color.Info,
+            "completado" => Color.Success,
+            "cerrado" => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetEstatusIcon(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Icons.Material.Filled.Schedule,
+            "en proceso" => Icons.Material.Filled.Autorenew,
+            "completado" => Icons.Material.Filled.CheckCircle,
+            "cerrado" => Icons.Material.Filled.Lock,
+            _ => Icons.Material.Filled.Help
+        };
     }
 }

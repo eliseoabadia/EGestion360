@@ -2,15 +2,15 @@
 
 public partial class ArticuloConteoResponse
 {
-    public int PkidArticuloConteo { get; set; }
+    public int? PkidArticuloConteo { get; set; }
 
-    public int FkidPeriodoConteoAlma { get; set; }
+    public int? FkidPeriodoConteoAlma { get; set; }
 
-    public int FkidTipoBienAlma { get; set; }
+    public int? FkidTipoBienAlma { get; set; }
 
-    public int FkidSucursalSis { get; set; }
+    public int? FkidSucursalSis { get; set; }
 
-    public int FkidEstatusAlma { get; set; }
+    public int? FkidEstatusAlma { get; set; }
 
     public string CodigoBarras { get; set; }
 

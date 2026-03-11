@@ -35,5 +35,15 @@
         public int? ArticulosConcluidos { get; set; }
 
         public int? ArticulosConDiferencia { get; set; }
+
+        public bool? Activo { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int UsuarioCreacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
     }
 }

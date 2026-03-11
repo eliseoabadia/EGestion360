@@ -363,7 +363,10 @@ INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,Sub
 				VALUES(2,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'conteocliclico','CO0001','conteocliclico','view,view-menu',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(2,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'periodo','CO0001','conteocliclico','view,view-menu,delete,new,update,CanExportToExcel',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(2,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'mis-periodos','CO0001','conteocliclico','view,view-menu,delete,new,update,CanExportToExcel',0)
 
+        
 
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(2,'support','support',NULL,'app://{0}/{1}',GETDATE(),'support','SO0001','Soporte','view,view-menu',0)
@@ -431,6 +434,15 @@ EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','delete'
 EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','new'
 EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','update'
 EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','CanExportToExcel'
+
+EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','view'
+EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','new'
+EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','update'
+EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','CanExportToExcel'
+
+
 
 
 EXEC spConfiguracionDeRolYClaims 'support','support','20000','view'
@@ -559,6 +571,7 @@ MERGE INTO SIS.Menu AS TARGET
 	,(7, N'Menu', 2, 2, N'Menu', N'/configuracion/menus', N'RiMenuLine', 1, N'ESP',205,1000,getdate())
 	,(8, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 1, N'ESP',300,1000,getdate())
 	,(9, N'Periodo', 2, 8, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 1, N'ESP',301,1000,getdate())
+    ,(10, N'Mis Periodo', 2, 8, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 1, N'ESP',302,1000,getdate())
 )
 	AS SOURCE (PKIdMenu, Nombre, [Tipo], [FKIdMenu_SIS], [LegacyName], Ruta, [ImageUrl], Activo, [Lenguaje], [Orden],[CreatedByOperatorId],[CreatedDateTime])
 	ON (TARGET.PKIdMenu=SOURCE.PKIdMenu)

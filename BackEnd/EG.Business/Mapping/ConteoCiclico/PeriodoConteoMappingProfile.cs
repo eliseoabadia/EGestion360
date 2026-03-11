@@ -9,56 +9,44 @@ namespace EG.Business.Mapping.ConteoCiclico
         public PeriodoConteoMappingProfile()
         {
 
-            // PeriodoConteo mappings
+            // PeriodoConteo <-> PeriodoConteoDto
             CreateMap<PeriodoConteo, PeriodoConteoDto>()
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
+                .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore());
 
-            CreateMap<VwPeriodoConteo, VwPeriodoConteoResponse>()
-                .ReverseMap();
-
+            // PeriodoConteo -> VwPeriodoConteoResponse (si se requiere desde entidad)
             CreateMap<PeriodoConteo, VwPeriodoConteoResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PkidPeriodoConteo))
                 .ForMember(dest => dest.SucursalId, opt => opt.MapFrom(src => src.FkidSucursalSis))
-                .ForMember(dest => dest.SucursalNombre, opt => opt.MapFrom(src =>
-                    src.FkidSucursalSisNavigation != null ? src.FkidSucursalSisNavigation.Nombre : null))
-
                 .ForMember(dest => dest.TipoConteoId, opt => opt.MapFrom(src => src.FkidTipoConteoAlma))
-                .ForMember(dest => dest.TipoConteoNombre, opt => opt.MapFrom(src =>
-                    src.FkidTipoConteoAlmaNavigation != null ? src.FkidTipoConteoAlmaNavigation.Nombre : null))
-
                 .ForMember(dest => dest.EstatusId, opt => opt.MapFrom(src => src.FkidEstatusAlma))
-                .ForMember(dest => dest.EstatusNombre, opt => opt.MapFrom(src =>
-                    src.FkidEstatusAlmaNavigation != null ? src.FkidEstatusAlmaNavigation.Nombre : null))
-
                 .ForMember(dest => dest.ResponsableId, opt => opt.MapFrom(src => src.FkidResponsableSis))
-                .ForMember(dest => dest.ResponsableNombre, opt => opt.MapFrom(src =>
-                    src.FkidResponsableSisNavigation != null ?
-                    src.FkidResponsableSisNavigation.Nombre + " " + src.FkidResponsableSisNavigation.ApellidoPaterno : null))
-
                 .ForMember(dest => dest.SupervisorId, opt => opt.MapFrom(src => src.FkidSupervisorSis))
-                .ForMember(dest => dest.SupervisorNombre, opt => opt.MapFrom(src =>
-                    src.FkidSupervisorSisNavigation != null ?
-                    src.FkidSupervisorSisNavigation.Nombre + " " + src.FkidSupervisorSisNavigation.ApellidoPaterno : null))
+                //.ForMember(dest => dest.UsuarioCreacionNombre, opt => opt.Ignore())  // Se obtiene de navegación
+                //.ForMember(dest => dest.UsuarioModificacionNombre, opt => opt.Ignore())
+                ;
 
-                // UsuarioCreacionNombre - Opción 1: Usar solo el ID
-                .ForMember(dest => dest.UsuarioCreacionNombre, opt => opt.MapFrom(src =>
-                    src.UsuarioCreacion > 0 ? $"Usuario {src.UsuarioCreacion}" : null))
+            // VwPeriodoConteo (vista) -> PeriodoConteoDto (para inputs de creación/actualización)
+            CreateMap<VwPeriodoConteo, PeriodoConteoDto>()
+                .ForMember(dest => dest.PkidPeriodoConteo, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FkidSucursalSis, opt => opt.MapFrom(src => src.SucursalId))
+                .ForMember(dest => dest.FkidTipoConteoAlma, opt => opt.MapFrom(src => src.TipoConteoId))
+                .ForMember(dest => dest.FkidEstatusAlma, opt => opt.MapFrom(src => src.EstatusId))
+                .ForMember(dest => dest.FkidResponsableSis, opt => opt.MapFrom(src => src.ResponsableId))
+                .ForMember(dest => dest.FkidSupervisorSis, opt => opt.MapFrom(src => src.SupervisorId))
+                //.ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
+                //.ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
+                //.ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
+                //.ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore())
+                ;
 
-                // UsuarioModificacionNombre - Opción 1: Usar solo el ID
-                .ForMember(dest => dest.UsuarioModificacionNombre, opt => opt.MapFrom(src =>
-                    src.UsuarioModificacion.HasValue && src.UsuarioModificacion.Value > 0 ?
-                    $"Usuario {src.UsuarioModificacion.Value}" : null))
-
-                .ForMember(dest => dest.ArticulosPendientes, opt => opt.MapFrom(src =>
-                    src.TotalArticulos.HasValue && src.ArticulosConcluidos.HasValue ?
-                    src.TotalArticulos - src.ArticulosConcluidos : (int?)null))
-
-                .ForMember(dest => dest.PorcentajeAvance, opt => opt.MapFrom(src =>
-                    src.TotalArticulos.HasValue && src.TotalArticulos > 0 && src.ArticulosConcluidos.HasValue ?
-                    Math.Round((decimal)src.ArticulosConcluidos.Value / src.TotalArticulos.Value * 100, 2) : (decimal?)null));
-
-            }
+            // VwPeriodoConteo -> VwPeriodoConteoResponse (directo)
+            CreateMap<VwPeriodoConteo, VwPeriodoConteoResponse>();
 
 
+        }
     }
 }

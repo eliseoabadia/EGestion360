@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace EG.ApiCore.Controllers.General
+namespace EG.ApiCore.Controllers.ConteoCiclico
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -47,28 +47,15 @@ namespace EG.ApiCore.Controllers.General
             _service.AddInclude(p => p.ArticuloConteos);
             _service.AddInclude(p => p.RegistroConteos);
 
-            // Configurar relaciones para búsqueda
-            _service.AddRelationFilter("Sucursal", new List<string> { "Nombre", "CodigoSucursal" });
-            _service.AddRelationFilter("TipoConteo", new List<string> { "Nombre" });
-            _service.AddRelationFilter("EstatusPeriodo", new List<string> { "Nombre" });
-            _service.AddRelationFilter("Responsable", new List<string> { "Nombre", "ApellidoPaterno", "Email" });
-            _service.AddRelationFilter("Supervisor", new List<string> { "Nombre", "ApellidoPaterno", "Email" });
-
-            // Configurar filtros de búsqueda para la vista
-            _serviceView.AddRelationFilter("Sucursal", new List<string> {
-                "SucursalNombre", "SucursalId"
-            });
-            _serviceView.AddRelationFilter("TipoConteo", new List<string> {
-                "TipoConteoNombre"
-            });
-            _serviceView.AddRelationFilter("Estatus", new List<string> {
-                "EstatusNombre"
-            });
+            // Configurar relaciones para búsqueda en la vista
+            _serviceView.AddRelationFilter("Sucursal", new List<string> { "SucursalNombre", "SucursalId" });
+            _serviceView.AddRelationFilter("TipoConteo", new List<string> { "TipoConteoNombre" });
+            _serviceView.AddRelationFilter("Estatus", new List<string> { "EstatusNombre" });
         }
 
         private void ConfigureValidations()
         {
-            // REGLA 1: Validar código de período único por sucursal (para creación)
+            // REGLA 1: Código de período único por sucursal (creación)
             _service.AddValidationRule("UniqueCodigoPeriodo", async (dto) =>
             {
                 var periodoDto = dto as PeriodoConteoDto;
@@ -83,7 +70,7 @@ namespace EG.ApiCore.Controllers.General
                 return !exists;
             });
 
-            // REGLA 2: Validar código de período único para ACTUALIZACIÓN
+            // REGLA 2: Código de período único para actualización (excluyendo el mismo)
             _service.AddValidationRuleWithId("UniqueCodigoPeriodoUpdate", async (dto, id) =>
             {
                 var periodoDto = dto as PeriodoConteoDto;
@@ -99,54 +86,40 @@ namespace EG.ApiCore.Controllers.General
                 return !exists;
             });
 
-            // REGLA 3: Validar fechas
+            // REGLA 3: Validar fechas (fin >= inicio, cierre >= inicio)
             _service.AddValidationRule("ValidFechas", async (dto) =>
             {
                 var periodoDto = dto as PeriodoConteoDto;
                 if (periodoDto == null)
                     return false;
 
-                // Fecha fin no puede ser menor a fecha inicio
                 if (periodoDto.FechaFin.HasValue && periodoDto.FechaFin.Value < periodoDto.FechaInicio)
                     return false;
 
-                // Fecha cierre no puede ser menor a fecha inicio
                 if (periodoDto.FechaCierre.HasValue && periodoDto.FechaCierre.Value.Date < periodoDto.FechaInicio.ToDateTime(TimeOnly.MinValue))
                     return false;
 
                 return true;
             });
 
-            // REGLA 4: Validar campos obligatorios
+            // REGLA 4: Campos obligatorios
             _service.AddValidationRule("ValidNombre", async (dto) =>
-            {
-                var periodoDto = dto as PeriodoConteoDto;
-                return !string.IsNullOrWhiteSpace(periodoDto?.Nombre);
-            });
+                !string.IsNullOrWhiteSpace((dto as PeriodoConteoDto)?.Nombre));
 
             _service.AddValidationRule("ValidCodigoPeriodo", async (dto) =>
-            {
-                var periodoDto = dto as PeriodoConteoDto;
-                return !string.IsNullOrWhiteSpace(periodoDto?.CodigoPeriodo);
-            });
+                !string.IsNullOrWhiteSpace((dto as PeriodoConteoDto)?.CodigoPeriodo));
 
             _service.AddValidationRule("ValidSucursal", async (dto) =>
-            {
-                var periodoDto = dto as PeriodoConteoDto;
-                return periodoDto?.FkidSucursalSis > 0;
-            });
+                (dto as PeriodoConteoDto)?.FkidSucursalSis > 0);
 
             _service.AddValidationRule("ValidTipoConteo", async (dto) =>
-            {
-                var periodoDto = dto as PeriodoConteoDto;
-                return periodoDto?.FkidTipoConteoAlma > 0;
-            });
+                (dto as PeriodoConteoDto)?.FkidTipoConteoAlma > 0);
 
-            // REGLA 5: Validar máximo de conteos por artículo
+            // REGLA 5: Máximo de conteos por artículo entre 1 y 5
             _service.AddValidationRule("ValidMaximoConteos", async (dto) =>
             {
-                var periodoDto = dto as PeriodoConteoDto;
-                return periodoDto?.MaximoConteosPorArticulo >= 1 && periodoDto?.MaximoConteosPorArticulo <= 5;
+                var val = (dto as PeriodoConteoDto)?.MaximoConteosPorArticulo;
+                return val >= 1 && val <= 5;
             });
         }
 
@@ -161,16 +134,15 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<VwPeriodoConteoResponse>>> GetById(int id)
         {
-            var PeriodoConteo = await _serviceView.GetByIdAsync(id, idPropertyName: "PkIdPeriodoConteo");
+            var periodo = await _serviceView.GetByIdAsync(id, idPropertyName: "Id");
 
-            if (PeriodoConteo == null)
+            if (periodo == null)
             {
                 return Ok(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = "PeriodoConteo no encontrado",
-                    Code = "NOTFOUND_USER",
-                    //Data = default,
+                    Message = "Período de conteo no encontrado",
+                    Code = "NOTFOUND_PERIODO",
                     Items = new List<VwPeriodoConteoResponse>(),
                     TotalCount = 0
                 });
@@ -179,14 +151,13 @@ namespace EG.ApiCore.Controllers.General
             return Ok(new PagedResult<VwPeriodoConteoResponse>
             {
                 Success = true,
-                Message = "PeriodoConteo encontrado",
+                Message = "Período de conteo encontrado",
                 Code = "SUCCESS",
-                Data = PeriodoConteo,
-                Items = new List<VwPeriodoConteoResponse> { PeriodoConteo },
+                Data = periodo,
+                Items = new List<VwPeriodoConteoResponse> { periodo },
                 TotalCount = 1
             });
         }
-
 
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<VwPeriodoConteoResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
@@ -198,90 +169,62 @@ namespace EG.ApiCore.Controllers.General
             return Ok(new PagedResult<VwPeriodoConteoResponse>
             {
                 Success = true,
-                Message = "PeriodoConteos obtenidos correctamente",
+                Message = "Períodos obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
         }
-
-        [HttpPost("GetAllPeriodoConteosPaginado")]
-        public async Task<ActionResult<PagedResult<VwPeriodoConteoResponse>>> GetAllPeriodoConteosPaginado([FromBody] PagedRequest _params)
-        {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(_params);
-            return Ok(new PagedResult<VwPeriodoConteoResponse>
-            {
-                Success = true,
-                Message = "PeriodoConteos obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
-        }
-
-      
 
         [HttpPost]
         public async Task<ActionResult<PagedResult<VwPeriodoConteoResponse>>> Add([FromBody] VwPeriodoConteo viewDto)
         {
             try
             {
-                // Validación básica del DTO
                 if (viewDto == null)
                 {
                     return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "Los datos del periodo son requeridos",
+                        Message = "Los datos del período son requeridos",
                         Code = "INVALID_DATA",
                         TotalCount = 0
                     });
                 }
 
-                // Validar campos obligatorios mínimos
-                if (string.IsNullOrWhiteSpace(viewDto.CodigoPeriodo) ||
-                    string.IsNullOrWhiteSpace(viewDto.Nombre))
+                if (string.IsNullOrWhiteSpace(viewDto.CodigoPeriodo) || string.IsNullOrWhiteSpace(viewDto.Nombre))
                 {
                     return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "El código y nombre del periodo son campos obligatorios",
+                        Message = "El código y nombre del período son obligatorios",
                         Code = "MISSING_REQUIRED_FIELDS",
                         TotalCount = 0
                     });
                 }
 
-                // Mapear y preparar el DTO
                 var dto = _mapper.Map<PeriodoConteoDto>(viewDto);
-                //dto.Fecha = DateTime.Now;
-                //dto.Usuario = _userContext.GetCurrentUserId();
-                //dto.Activo = true;
+                dto.Activo = true;
+                dto.FechaCreacion = DateTime.Now;
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
+                dto.FkidSupervisorSis = dto.FkidSupervisorSis == 0 ? null : dto.FkidSupervisorSis; // Pendiente por defecto
+                dto.FkidEstatusAlma = dto.FkidEstatusAlma == 0 ? 1 : dto.FkidEstatusAlma; // Pendiente por defecto
+                dto.MaximoConteosPorArticulo = dto.MaximoConteosPorArticulo == 0 ? 3 : dto.MaximoConteosPorArticulo;
 
-                // Si no se especifica, establecer valores por defecto
-                if (dto.MaximoConteosPorArticulo == 0)
-                    dto.MaximoConteosPorArticulo = 3;
-
-                if (dto.FkidEstatusAlma == 0)
-                    dto.FkidEstatusAlma = 1; // Pendiente por defecto
-
-                // Validar si puede agregar (aplicará todas las reglas de validación configuradas)
                 if (!await _service.CanAddAsync(dto))
                 {
-                    // Verificar cuál es el conflicto específico
-                    var codigoExists = await _service.GetQueryWithIncludes()
+                    // Verificar duplicado específico
+                    var duplicado = await _service.GetQueryWithIncludes()
                         .AnyAsync(p => p.FkidSucursalSis == dto.FkidSucursalSis &&
                                       p.CodigoPeriodo.ToLower() == dto.CodigoPeriodo.ToLower() &&
                                       p.Activo);
 
-                    if (codigoExists)
+                    if (duplicado)
                     {
                         return Conflict(new PagedResult<VwPeriodoConteoResponse>
                         {
                             Success = false,
-                            Message = $"El código de periodo '{dto.CodigoPeriodo}' ya existe para esta sucursal",
+                            Message = $"El código de período '{dto.CodigoPeriodo}' ya existe en esta sucursal",
                             Code = "DUPLICATE_CODIGO",
                             TotalCount = 0
                         });
@@ -290,16 +233,14 @@ namespace EG.ApiCore.Controllers.General
                     return Conflict(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "No se pudo crear el periodo. Verifique los datos.",
+                        Message = "No se pudo crear el período. Verifique los datos.",
                         Code = "VALIDATION_ERROR",
                         TotalCount = 0
                     });
                 }
 
-                // Guardar el periodo
                 await _service.AddAsync(dto);
 
-                // Obtener el periodo creado para devolverlo
                 var periodoCreado = await _serviceView.GetByIdAsync(dto.PkidPeriodoConteo, idPropertyName: "Id");
                 var response = _mapper.Map<VwPeriodoConteoResponse>(periodoCreado);
 
@@ -307,7 +248,7 @@ namespace EG.ApiCore.Controllers.General
                     new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = true,
-                        Message = "Periodo de conteo creado correctamente",
+                        Message = "Período de conteo creado correctamente",
                         Code = "SUCCESS",
                         Data = response,
                         Items = new List<VwPeriodoConteoResponse> { response },
@@ -316,22 +257,12 @@ namespace EG.ApiCore.Controllers.General
             }
             catch (DbUpdateException dbEx)
             {
-                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                var inner = dbEx.InnerException?.Message ?? dbEx.Message;
                 return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error de base de datos al crear periodo: {innerMessage}",
+                    Message = $"Error de base de datos: {inner}",
                     Code = "DB_ERROR",
-                    TotalCount = 0
-                });
-            }
-            catch (AutoMapperMappingException mapEx)
-            {
-                return BadRequest(new PagedResult<VwPeriodoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al mapear los datos del periodo: {mapEx.Message}",
-                    Code = "MAPPING_ERROR",
                     TotalCount = 0
                 });
             }
@@ -340,7 +271,7 @@ namespace EG.ApiCore.Controllers.General
                 return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear periodo: {ex.Message}",
+                    Message = $"Error al crear período: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -352,26 +283,23 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                // Validar que el ID coincida
                 if (id != viewDto.Id)
                 {
                     return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "El ID del periodo no coincide con el parámetro de la URL",
+                        Message = "El ID del período no coincide con el parámetro de la URL",
                         Code = "ID_MISMATCH",
                         TotalCount = 0
                     });
                 }
 
-                // Validar campos obligatorios mínimos
-                if (string.IsNullOrWhiteSpace(viewDto.CodigoPeriodo) ||
-                    string.IsNullOrWhiteSpace(viewDto.Nombre))
+                if (string.IsNullOrWhiteSpace(viewDto.CodigoPeriodo) || string.IsNullOrWhiteSpace(viewDto.Nombre))
                 {
                     return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "El código y nombre del periodo son campos obligatorios",
+                        Message = "El código y nombre del período son obligatorios",
                         Code = "MISSING_REQUIRED_FIELDS",
                         TotalCount = 0
                     });
@@ -379,27 +307,23 @@ namespace EG.ApiCore.Controllers.General
 
                 var dto = _mapper.Map<PeriodoConteoDto>(viewDto);
                 dto.PkidPeriodoConteo = id;
-                //dto.FechaModificacion = DateTime.Now;
-                //dto.UsuarioModificacion = _userContext.GetCurrentUserId();
+                dto.FechaModificacion = DateTime.Now;
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
 
-                // Validar si puede actualizar
-                var canUpdate = await _service.CanUpdateAsync(id, dto);
-
-                if (!canUpdate)
+                if (!await _service.CanUpdateAsync(id, dto))
                 {
-                    // Verificar cuál es el conflicto específico
-                    var existingPeriodo = await _service.GetQueryWithIncludes()
-                        .FirstOrDefaultAsync(p => p.FkidSucursalSis == dto.FkidSucursalSis &&
-                                                p.CodigoPeriodo.ToLower() == dto.CodigoPeriodo.ToLower() &&
-                                                p.PkidPeriodoConteo != id &&
-                                                p.Activo);
+                    var duplicado = await _service.GetQueryWithIncludes()
+                        .AnyAsync(p => p.FkidSucursalSis == dto.FkidSucursalSis &&
+                                      p.CodigoPeriodo.ToLower() == dto.CodigoPeriodo.ToLower() &&
+                                      p.PkidPeriodoConteo != id &&
+                                      p.Activo);
 
-                    if (existingPeriodo != null)
+                    if (duplicado)
                     {
                         return Conflict(new PagedResult<VwPeriodoConteoResponse>
                         {
                             Success = false,
-                            Message = $"El código de periodo '{dto.CodigoPeriodo}' ya está siendo utilizado por otro periodo (ID: {existingPeriodo.PkidPeriodoConteo})",
+                            Message = $"El código de período '{dto.CodigoPeriodo}' ya está en uso por otro período",
                             Code = "DUPLICATE_CODIGO",
                             TotalCount = 0
                         });
@@ -408,7 +332,7 @@ namespace EG.ApiCore.Controllers.General
                     return Conflict(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "No se pudo actualizar el periodo. Verifique los datos.",
+                        Message = "No se pudo actualizar el período. Verifique los datos.",
                         Code = "VALIDATION_ERROR",
                         TotalCount = 0
                     });
@@ -416,14 +340,13 @@ namespace EG.ApiCore.Controllers.General
 
                 await _service.UpdateAsync(id, dto);
 
-                // Obtener el periodo actualizado para devolverlo
                 var periodoActualizado = await _serviceView.GetByIdAsync(id, idPropertyName: "Id");
                 var response = _mapper.Map<VwPeriodoConteoResponse>(periodoActualizado);
 
                 return Ok(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = true,
-                    Message = "Periodo de conteo actualizado correctamente",
+                    Message = "Período de conteo actualizado correctamente",
                     Code = "SUCCESS",
                     Data = response,
                     Items = new List<VwPeriodoConteoResponse> { response },
@@ -435,29 +358,8 @@ namespace EG.ApiCore.Controllers.General
                 return NotFound(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Periodo de conteo con ID {id} no encontrado",
+                    Message = $"Período de conteo con ID {id} no encontrado",
                     Code = "NOTFOUND_PERIODO",
-                    TotalCount = 0
-                });
-            }
-            catch (DbUpdateException dbEx)
-            {
-                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                return BadRequest(new PagedResult<VwPeriodoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error de base de datos al actualizar periodo: {innerMessage}",
-                    Code = "DB_ERROR",
-                    TotalCount = 0
-                });
-            }
-            catch (AutoMapperMappingException mapEx)
-            {
-                return BadRequest(new PagedResult<VwPeriodoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al mapear los datos del periodo: {mapEx.Message}",
-                    Code = "MAPPING_ERROR",
                     TotalCount = 0
                 });
             }
@@ -478,7 +380,6 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                // Verificar si tiene artículos asociados antes de eliminar
                 var tieneArticulos = await _service.GetQueryWithIncludes()
                     .AnyAsync(p => p.PkidPeriodoConteo == id && p.ArticuloConteos.Any());
 
@@ -487,7 +388,7 @@ namespace EG.ApiCore.Controllers.General
                     return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "No se puede eliminar el periodo porque tiene artículos asociados. Desactive el periodo en su lugar.",
+                        Message = "No se puede eliminar el período porque tiene artículos asociados. Desactívelo en su lugar.",
                         Code = "HAS_CHILDREN",
                         TotalCount = 0
                     });
@@ -497,7 +398,7 @@ namespace EG.ApiCore.Controllers.General
                 return Ok(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = true,
-                    Message = "Periodo de conteo eliminado correctamente",
+                    Message = "Período de conteo eliminado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 0
                 });
@@ -507,7 +408,7 @@ namespace EG.ApiCore.Controllers.General
                 return NotFound(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Periodo de conteo con ID {id} no encontrado",
+                    Message = $"Período de conteo con ID {id} no encontrado",
                     Code = "NOTFOUND_PERIODO",
                     TotalCount = 0
                 });
@@ -535,7 +436,7 @@ namespace EG.ApiCore.Controllers.General
                     return NotFound(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "Periodo de conteo no encontrado",
+                        Message = "Período de conteo no encontrado",
                         Code = "NOTFOUND_PERIODO",
                         TotalCount = 0
                     });
@@ -546,13 +447,11 @@ namespace EG.ApiCore.Controllers.General
                 //dto.FechaModificacion = DateTime.Now;
                 //dto.UsuarioModificacion = _userContext.GetCurrentUserId();
 
-                // Si se está marcando como completado, establecer fecha fin
                 if (estatusId == 3 && !dto.FechaFin.HasValue) // Completado
                 {
                     dto.FechaFin = DateOnly.FromDateTime(DateTime.Now);
                 }
 
-                // Si se está cerrando, establecer fecha cierre
                 if (estatusId == 4 && !dto.FechaCierre.HasValue) // Cerrado
                 {
                     dto.FechaCierre = DateTime.Now;
@@ -561,11 +460,10 @@ namespace EG.ApiCore.Controllers.General
                 }
 
                 await _service.UpdateAsync(id, dto);
-
                 return Ok(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = true,
-                    Message = $"Estatus del periodo actualizado correctamente",
+                    Message = "Estatus del período actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
@@ -593,20 +491,19 @@ namespace EG.ApiCore.Controllers.General
                     return NotFound(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "Periodo de conteo no encontrado",
+                        Message = "Período de conteo no encontrado",
                         Code = "NOTFOUND_PERIODO",
                         TotalCount = 0
                     });
                 }
 
                 // Verificar si hay artículos pendientes
-                //var tienePendientes = periodo.ArticulosConcluidos.Value < 1 ?? false;
-                if (periodo.ArticulosConcluidos.HasValue && periodo.ArticulosConcluidos.Value < 1)
+                if (periodo.ArticulosPendientes > 0)
                 {
                     return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "No se puede cerrar el periodo porque tiene artículos pendientes",
+                        Message = "No se puede cerrar el período porque tiene artículos pendientes",
                         Code = "PENDING_ARTICLES",
                         TotalCount = 0
                     });
@@ -623,7 +520,7 @@ namespace EG.ApiCore.Controllers.General
                 return Ok(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = true,
-                    Message = "Periodo cerrado correctamente",
+                    Message = "Período cerrado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
@@ -633,7 +530,7 @@ namespace EG.ApiCore.Controllers.General
                 return BadRequest(new PagedResult<VwPeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al cerrar periodo: {ex.Message}",
+                    Message = $"Error al cerrar período: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 });

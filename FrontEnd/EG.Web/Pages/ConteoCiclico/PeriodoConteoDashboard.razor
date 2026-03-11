@@ -1,1 +1,541 @@
-﻿datalist
+﻿@* @page "/conteociclico/dashboard"
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Shared
+@using EG.Web.Contracs.Configuration
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+
+@inject IGenericCrudService<PeriodoConteoResponse> PeriodoService
+@inject IArticuloConteoService ArticuloService
+@inject IGenericCrudService<RegistroConteoResponse> RegistroService
+@inject IGenericCrudService<TipoConteoResponse> TipoConteoService
+@inject IGenericCrudService<SucursalResponse> SucursalService
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; background-color: var(--mud-palette-background-grey);">
+    <!-- Header con título y fecha -->
+    <MudPaper Class="pa-4 mb-4" Elevation="0" Style="border-radius: 12px; background: linear-gradient(135deg, #2C3E50 0%, #3498DB 100%);">
+        <MudGrid AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h4" Class="text-white mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
+                    Dashboard de Conteo Cíclico
+                </MudText>
+                <MudText Typo="Typo.body2" Class="text-white opacity-75">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                    @DateTime.Now.ToString("dddd, dd MMMM yyyy") - Última actualización: @ultimaActualizacion.ToString("HH:mm:ss")
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center justify-end">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="CargarTodosLosDatos"
+                           Class="white-text"
+                           Disabled="@isLoading">
+                    @(isLoading ? "Actualizando..." : "Actualizar Datos")
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Loading Overlay -->
+    @if (isLoading)
+    {
+        <MudOverlay Visible="true" Darker="true">
+            <div class="d-flex flex-column align-center justify-center" style="height: 100vh;">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                <MudText Typo="Typo.body1" Class="mt-4 white-text">Cargando datos del dashboard...</MudText>
+            </div>
+        </MudOverlay>
+    }
+
+    <!-- Tarjetas de KPIs Principales -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; border-left: 4px solid #3498DB;">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Total Períodos</MudText>
+                <MudText Typo="Typo.h3" Class="font-weight-bold">@kpiTotalPeriodos</MudText>
+                <MudText Typo="Typo.caption" Class="mt-2 d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Info" Class="mr-1" />
+                    Períodos activos en el sistema
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; border-left: 4px solid #F39C12;">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">En Proceso</MudText>
+                <MudText Typo="Typo.h3" Class="font-weight-bold">@kpiEnProceso</MudText>
+                <MudProgressLinear Value="@porcentajeEnProceso" Color="Color.Warning" Size="Size.Small" Class="my-2" />
+                <MudText Typo="Typo.caption">@porcentajeEnProceso.ToString("F1")% del total</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; border-left: 4px solid #27AE60;">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Completados</MudText>
+                <MudText Typo="Typo.h3" Class="font-weight-bold">@kpiCompletados</MudText>
+                <MudProgressLinear Value="@porcentajeCompletados" Color="Color.Success" Size="Size.Small" Class="my-2" />
+                <MudText Typo="Typo.caption">@porcentajeCompletados.ToString("F1")% del total</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; border-left: 4px solid #E74C3C;">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Artículos con Diferencia</MudText>
+                <MudText Typo="Typo.h3" Class="font-weight-bold">@kpiArticulosConDiferencia</MudText>
+                <MudText Typo="Typo.caption" Class="mt-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Error" Class="mr-1" />
+                    Requieren revisión
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Gráficos y Estadísticas -->
+    <MudGrid Class="mb-4">
+        <!-- Gráfico de distribución por estatus -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; height: 100%;">
+                <MudText Typo="Typo.subtitle1" Class="mb-3 d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.PieChart" Color="Color.Primary" Class="mr-2" />
+                    Distribución por Estatus
+                </MudText>
+                <MudDivider Class="mb-3" />
+                
+                <div style="height: 200px; position: relative;">
+                    <!-- Simulación de gráfico de dona con CSS -->
+                    <div class="donut-chart" style="--pendiente:@porcentajePendientes; --proceso:@porcentajeEnProceso; --completado:@porcentajeCompletados; --cerrado:@porcentajeCerrados;">
+                        <div class="donut-hole">
+                            <div class="donut-total">@kpiTotalPeriodos</div>
+                            <div class="donut-label">Total</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="d-flex justify-space-between mb-2">
+                        <div class="d-flex align-center">
+                            <div style="width: 12px; height: 12px; background-color: #F39C12; border-radius: 3px; margin-right: 8px;"></div>
+                            <MudText Typo="Typo.body2">Pendientes</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@kpiPendientes</MudText>
+                    </div>
+                    <div class="d-flex justify-space-between mb-2">
+                        <div class="d-flex align-center">
+                            <div style="width: 12px; height: 12px; background-color: #3498DB; border-radius: 3px; margin-right: 8px;"></div>
+                            <MudText Typo="Typo.body2">En Proceso</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@kpiEnProceso</MudText>
+                    </div>
+                    <div class="d-flex justify-space-between mb-2">
+                        <div class="d-flex align-center">
+                            <div style="width: 12px; height: 12px; background-color: #27AE60; border-radius: 3px; margin-right: 8px;"></div>
+                            <MudText Typo="Typo.body2">Completados</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@kpiCompletados</MudText>
+                    </div>
+                    <div class="d-flex justify-space-between">
+                        <div class="d-flex align-center">
+                            <div style="width: 12px; height: 12px; background-color: #95A5A6; border-radius: 3px; margin-right: 8px;"></div>
+                            <MudText Typo="Typo.body2">Cerrados</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@kpiCerrados</MudText>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Progreso General y Artículos -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; height: 100%;">
+                <MudText Typo="Typo.subtitle1" Class="mb-3 d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.ShowChart" Color="Color.Primary" Class="mr-2" />
+                    Progreso General
+                </MudText>
+                <MudDivider Class="mb-3" />
+
+                <div class="text-center mb-4">
+                    <MudText Typo="Typo.h2" Color="Color.Primary" Class="font-weight-bold">@progresoGeneral.ToString("F1")%</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Avance total del período</MudText>
+                </div>
+
+                <MudProgressLinear Value="@progresoGeneral" Color="Color.Primary" Size="Size.Medium" Class="my-4" Style="height: 10px; border-radius: 5px;" />
+
+                <div class="d-flex justify-space-between mt-4">
+                    <div class="text-center">
+                        <MudText Typo="Typo.h5" Color="Color.Success">@totalArticulosConteo</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Artículos contados</MudText>
+                    </div>
+                    <div class="text-center">
+                        <MudText Typo="Typo.h5" Color="Color.Warning">@totalArticulosPendientes</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Pendientes</MudText>
+                    </div>
+                    <div class="text-center">
+                        <MudText Typo="Typo.h5" Color="Color.Error">@totalArticulosDiferencia</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Con diferencias</MudText>
+                    </div>
+                </div>
+
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Class="mt-4"
+                           OnClick="() => NavigationManager.NavigateTo("/conteociclico/articulos")">
+                    Ver detalle de artículos
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Class="ml-2" />
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Actividad Reciente -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Elevation="0" Style="border-radius: 12px; height: 100%;">
+                <MudText Typo="Typo.subtitle1" Class="mb-3 d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Primary" Class="mr-2" />
+                    Actividad Reciente
+                </MudText>
+                <MudDivider Class="mb-3" />
+
+                @if (actividadReciente.Any())
+                {
+                    <MudList Clickable="true" Dense="true">
+                        @foreach (var actividad in actividadReciente.Take(5))
+                        {
+                            <MudListItem>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@GetActividadIcon(actividad.Tipo)" 
+                                             Color="@GetActividadColor(actividad.Tipo)" 
+                                             Size="Size.Small" 
+                                             Class="mr-2" />
+                                    <div class="flex-grow-1">
+                                        <MudText Typo="Typo.body2">@actividad.Descripcion</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @actividad.Usuario - @actividad.Fecha.ToShortTimeString()
+                                        </MudText>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mt-2">
+                        No hay actividad reciente para mostrar
+                    </MudAlert>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Tabla de Períodos Activos -->
+    <MudPaper Class="pa-4 flex-grow-1 d-flex flex-column" Elevation="0" Style="border-radius: 12px; overflow: hidden;">
+        <div class="d-flex justify-space-between align-center mb-3">
+            <MudText Typo="Typo.subtitle1" Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Class="mr-2" />
+                Períodos Activos
+            </MudText>
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       EndIcon="@Icons.Material.Filled.ArrowForward"
+                       OnClick="() => NavigationManager.NavigateTo("/conteociclico/periodo")">
+                Ver todos
+            </MudButton>
+        </div>
+
+        <MudTable Items="periodosActivos.Take(5)"
+                  Hover="true"
+                  Striped="true"
+                  Elevation="0"
+                  Class="flex-grow-1">
+            <HeaderContent>
+                <MudTh>Período</MudTh>
+                <MudTh>Sucursal</MudTh>
+                <MudTh>Progreso</MudTh>
+                <MudTh>Estatus</MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Typo="Typo.body2" Class="font-weight-bold">@context.CodigoPeriodo</MudText>
+                    <MudText Typo="Typo.caption">@context.Nombre</MudText>
+                </MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small">@context.SucursalNombre</MudChip>
+                </MudTd>
+                <MudTd>
+                    <div style="min-width: 100px;">
+                        <div class="d-flex justify-space-between">
+                            <MudText Typo="Typo.caption">@(context.ArticulosConcluidos ?? 0)/@(context.TotalArticulos ?? 0)</MudText>
+                            <MudText Typo="Typo.caption" Class="font-weight-bold">@(context.PorcentajeAvance?.ToString("F0") ?? "0")%</MudText>
+                        </div>
+                        <MudProgressLinear Value="@((double)(context.PorcentajeAvance ?? 0))"
+                                           Color="@GetProgressColor(context.PorcentajeAvance)"
+                                           Size="Size.Small"
+                                           Style="border-radius: 4px;" />
+                    </div>
+                </MudTd>
+                <MudTd>
+                    <MudChip T="string" 
+                             Color="@GetEstatusColor(context.EstatusNombre)" 
+                             Size="Size.Small"
+                             Icon="@GetEstatusIcon(context.EstatusNombre)">
+                        @context.EstatusNombre
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Info"
+                                   Size="Size.Small"
+                                   OnClick="@(() => VerDetallePeriodo(context.Id.Value))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                   Color="Color.Success"
+                                   Size="Size.Small"
+                                   Disabled="@(context.EstatusId != 1 && context.EstatusId != 2)"
+                                   OnClick="@(() => NavigationManager.NavigateTo($"/conteociclico/periodo/{context.Id}/conteo"))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        @if (!periodosActivos.Any())
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+                No hay períodos activos en este momento
+            </MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private DateTime ultimaActualizacion = DateTime.Now;
+
+    // KPIs Principales
+    private int kpiTotalPeriodos = 0;
+    private int kpiPendientes = 0;
+    private int kpiEnProceso = 0;
+    private int kpiCompletados = 0;
+    private int kpiCerrados = 0;
+    private int kpiArticulosConDiferencia = 0;
+
+    // Porcentajes
+    private double porcentajePendientes => kpiTotalPeriodos > 0 ? (kpiPendientes * 100.0 / kpiTotalPeriodos) : 0;
+    private double porcentajeEnProceso => kpiTotalPeriodos > 0 ? (kpiEnProceso * 100.0 / kpiTotalPeriodos) : 0;
+    private double porcentajeCompletados => kpiTotalPeriodos > 0 ? (kpiCompletados * 100.0 / kpiTotalPeriodos) : 0;
+    private double porcentajeCerrados => kpiTotalPeriodos > 0 ? (kpiCerrados * 100.0 / kpiTotalPeriodos) : 0;
+    private double progresoGeneral = 0;
+
+    // Artículos
+    private int totalArticulosConteo = 0;
+    private int totalArticulosPendientes = 0;
+    private int totalArticulosDiferencia = 0;
+
+    // Listas
+    private List<PeriodoConteoResponse> periodosActivos = new();
+    private List<ActividadReciente> actividadReciente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTodosLosDatos();
+    }
+
+    private async Task CargarTodosLosDatos()
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            await Task.WhenAll(
+                CargarKPIsPeriodos(),
+                CargarEstadisticasArticulos(),
+                CargarActividadReciente()
+            );
+
+            ultimaActualizacion = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarKPIsPeriodos()
+    {
+        try
+        {
+            var response = await PeriodoService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                var periodos = response.Items.ToList();
+
+                kpiTotalPeriodos = periodos.Count(p => p.Activo);
+                kpiPendientes = periodos.Count(p => p.EstatusId == 1 && p.Activo);
+                kpiEnProceso = periodos.Count(p => p.EstatusId == 2 && p.Activo);
+                kpiCompletados = periodos.Count(p => p.EstatusId == 3 && p.Activo);
+                kpiCerrados = periodos.Count(p => p.EstatusId == 4 && p.Activo);
+
+                // Calcular progreso general
+                var totalAvance = periodos.Where(p => p.Activo).Sum(p => (double)(p.PorcentajeAvance ?? 0));
+                progresoGeneral = kpiTotalPeriodos > 0 ? totalAvance / kpiTotalPeriodos : 0;
+
+                // Períodos activos (no cerrados)
+                periodosActivos = periodos
+                    .Where(p => p.Activo && p.EstatusId != 4)
+                    .OrderByDescending(p => p.FechaInicio)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar KPIs de períodos: {ex.Message}", Severity.Warning);
+        }
+    }
+
+    private async Task CargarEstadisticasArticulos()
+    {
+        try
+        {
+            // Obtener estadísticas de todos los períodos activos
+            var response = await ArticuloService.GetAllAsync();
+            if (response?.Success == true && response.Data != null)
+            {
+                var articulos = response.Data;
+
+                totalArticulosConteo = articulos.Count(a => a.FkidEstatusAlma == 3); // Completados
+                totalArticulosPendientes = articulos.Count(a => a.FkidEstatusAlma == 1 || a.FkidEstatusAlma == 2); // Pendientes o en proceso
+                totalArticulosDiferencia = 0;// articulos.Sum(a => a.ConteosConDiferencia ?? 0);
+
+                kpiArticulosConDiferencia = 0;// articulos.Count(a => a.ConteosConDiferencia > 0);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar estadísticas de artículos: {ex.Message}", Severity.Warning);
+        }
+    }
+
+    private async Task CargarActividadReciente()
+    {
+        try
+        {
+            // Aquí cargarías los registros de actividad reciente
+            // Por ahora simulamos algunos datos
+            actividadReciente = new List<ActividadReciente>
+            {
+                new() { Tipo = "conteo", Descripcion = "Se realizó conteo en período PER-001", Usuario = "Juan Pérez", Fecha = DateTime.Now.AddMinutes(-5) },
+                new() { Tipo = "inicio", Descripcion = "Período PER-002 iniciado", Usuario = "María García", Fecha = DateTime.Now.AddHours(-1) },
+                new() { Tipo = "diferencia", Descripcion = "Diferencia detectada en artículo A-123", Usuario = "Carlos López", Fecha = DateTime.Now.AddHours(-2) },
+                new() { Tipo = "completado", Descripcion = "Período PER-003 completado", Usuario = "Ana Martínez", Fecha = DateTime.Now.AddHours(-3) }
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar actividad reciente: {ex.Message}", Severity.Warning);
+        }
+    }
+
+    private async Task VerDetallePeriodo(int id)
+    {
+        try
+        {
+            var response = await PeriodoService.GetByIdAsync(id);
+            if (response?.Success == true && response.Data != null)
+            {
+                var parameters = new DialogParameters { ["Periodo"] = response.Data };
+                var options = new DialogOptions
+                {
+                    CloseButton = true,
+                    MaxWidth = MaxWidth.Medium,
+                    FullWidth = true,
+                    Position = DialogPosition.Center
+                };
+
+                await DialogService.ShowAsync<PeriodoConteoDetalleDialog>($"Detalle: {response.Data.CodigoPeriodo}", parameters, options);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar detalle: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetProgressColor(decimal? porcentaje)
+    {
+        if (!porcentaje.HasValue) return Color.Default;
+        return porcentaje.Value switch
+        {
+            >= 75 => Color.Success,
+            >= 50 => Color.Info,
+            >= 25 => Color.Warning,
+            _ => Color.Error
+        };
+    }
+
+    private Color GetEstatusColor(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Color.Warning,
+            "en proceso" => Color.Info,
+            "completado" => Color.Success,
+            "cerrado" => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetEstatusIcon(string? estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "pendiente" => Icons.Material.Filled.Schedule,
+            "en proceso" => Icons.Material.Filled.Autorenew,
+            "completado" => Icons.Material.Filled.CheckCircle,
+            "cerrado" => Icons.Material.Filled.Lock,
+            _ => Icons.Material.Filled.Help
+        };
+    }
+
+    private Color GetActividadColor(string tipo)
+    {
+        return tipo switch
+        {
+            "conteo" => Color.Success,
+            "inicio" => Color.Info,
+            "diferencia" => Color.Warning,
+            "completado" => Color.Primary,
+            _ => Color.Default
+        };
+    }
+
+    private string GetActividadIcon(string tipo)
+    {
+        return tipo switch
+        {
+            "conteo" => Icons.Material.Filled.QrCodeScanner,
+            "inicio" => Icons.Material.Filled.PlayArrow,
+            "diferencia" => Icons.Material.Filled.Warning,
+            "completado" => Icons.Material.Filled.CheckCircle,
+            _ => Icons.Material.Filled.History
+        };
+    }
+
+    private class ActividadReciente
+    {
+        public string Tipo { get; set; } = "";
+        public string Descripcion { get; set; } = "";
+        public string Usuario { get; set; } = "";
+        public DateTime Fecha { get; set; }
+    }
+} *@

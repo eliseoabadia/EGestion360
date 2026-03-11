@@ -24,6 +24,9 @@ namespace EG.Business.Mapping
             CreateMap<EstatusArticuloConteo, EstatusArticuloConteoResponse>().ReverseMap();
             CreateMap<EstatusArticuloConteoDto, EstatusArticuloConteo>().ReverseMap();
 
+            CreateMap<RegistroConteo, RegistroConteoDto>().ReverseMap();
+            CreateMap<RegistroConteo, RegistroConteoResponse>().ReverseMap();
+
             // Entity -> Response
             CreateMap<Estado, EstadoResponse>()
                 .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
