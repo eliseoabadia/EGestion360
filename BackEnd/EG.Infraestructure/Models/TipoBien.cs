@@ -63,8 +63,6 @@ public partial class TipoBien
 
     public int? CantidadEquivalente { get; set; }
 
-    public virtual ICollection<ArticuloConteo> ArticuloConteos { get; set; } = new List<ArticuloConteo>();
-
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
     public virtual CuentaContable FkidCuentaContableContaNavigation { get; set; }

@@ -6,7 +6,7 @@
 
         public int FkidPeriodoConteoAlma { get; set; }
 
-        public int FkidTipoBienAlma { get; set; }
+        public int FkidBienAlma { get; set; }
 
         public int FkidSucursalSis { get; set; }
 

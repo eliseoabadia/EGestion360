@@ -25,7 +25,7 @@ namespace EG.Business.Mapping.ConteoCiclico
             CreateMap<VwArticuloConteo, ArticuloConteoDto>()
                 .ForMember(dest => dest.PkidArticuloConteo, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.FkidPeriodoConteoAlma, opt => opt.MapFrom(src => src.PeriodoId))
-                .ForMember(dest => dest.FkidTipoBienAlma, opt => opt.MapFrom(src => src.TipoBienId))
+                .ForMember(dest => dest.FkidBienAlma, opt => opt.MapFrom(src => src.BienId))
                 .ForMember(dest => dest.FkidSucursalSis, opt => opt.MapFrom(src => src.SucursalId))
                 .ForMember(dest => dest.FkidEstatusAlma, opt => opt.MapFrom(src => src.EstatusId))
                 .ForMember(dest => dest.FkidUsuarioConcluyoSis, opt => opt.MapFrom(src => src.UsuarioConcluyoId))

@@ -10,6 +10,12 @@ public partial class EstatusArticuloConteoResponse
 
     public int Orden { get; set; }
 
+    public string Color { get; set; }
+
+    public string Icono { get; set; }
+
+    public string BadgeTexto { get; set; }
+
     public bool Activo { get; set; }
 
 }

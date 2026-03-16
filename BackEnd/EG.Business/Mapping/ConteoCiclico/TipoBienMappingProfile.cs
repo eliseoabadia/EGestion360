@@ -50,7 +50,6 @@ namespace EG.Business.Mapping.ConteoCiclico
                 .ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.ArticuloConteos, opt => opt.Ignore())
                 .ForMember(dest => dest.FkidCuentaContableContaNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FkidGrupoBienAlmaNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FkidNivelAlmaNavigation, opt => opt.Ignore())

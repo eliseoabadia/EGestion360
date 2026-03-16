@@ -7,14 +7,14 @@ CREATE TABLE [CONTA].[TipoCuenta](
 	[Color] [nvarchar](5) NOT NULL,
 	[Descripcion] [nvarchar](25) NOT NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
-	CONSTRAINT SIS_TipoCuenta_PK_IdTipoCuenta PRIMARY KEY CLUSTERED ([PKIdTipoCuenta]),
+	CONSTRAINT PK_TipoCuenta_IdTipoCuenta PRIMARY KEY CLUSTERED ([PKIdTipoCuenta]),
 	)
 
-
+    --select * from [BD_PRESUPUESTO].SIS.TipoCuenta
 	INSERT INTO [CONTA].[TipoCuenta]
            ([Color]
            ,[Descripcion]
@@ -23,7 +23,7 @@ CREATE TABLE [CONTA].[TipoCuenta](
            ,[Activo])
      VALUES
            ('1'           ,'ACREEDORA'           ,1           ,GETDATE()           ,1),
-           ('2'           ,'ACREEDORA'           ,1           ,GETDATE()           ,1)
+           ('2'           ,'DEUDORA'           ,1           ,GETDATE()           ,1)
 
 drop table if exists CONTA.CuentaContable
 CREATE TABLE CONTA.CuentaContable (
@@ -38,9 +38,9 @@ CREATE TABLE CONTA.CuentaContable (
 	[Saldo] [numeric](18, 2) NOT NULL,
 	[Descripcion] [varchar](250) NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
 	[S5] [nvarchar](5) NULL,
 	[S6] [nvarchar](5) NULL,
@@ -56,12 +56,14 @@ CREATE TABLE CONTA.CuentaContable (
 	[S9] [nvarchar](5) NULL,
 	[S10] [nvarchar](5) NULL,
 	[IsCuentaDetalle]  AS (case when [TipoCuenta]='D' then (1) else (0) end),
-    CONSTRAINT PK_CuentaContable PRIMARY KEY (PKIdCuentaContable),
-    CONSTRAINT FK_CuentaContable_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-	CONSTRAINT FK_CuentaContable_TipoCuenta FOREIGN KEY ([FKIdTipoCuenta_CONTA]) REFERENCES [CONTA].[TipoCuenta]([PKIdTipoCuenta])
+    CONSTRAINT PK_CuentaContable_IdCuentaContable PRIMARY KEY (PKIdCuentaContable),
+    CONSTRAINT FK_CuentaContable_IdEmpresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+	CONSTRAINT FK_CuentaContable_IdTipoCuenta FOREIGN KEY ([FKIdTipoCuenta_CONTA]) REFERENCES [CONTA].[TipoCuenta]([PKIdTipoCuenta])
 );
 
-insert into CONTA.CuentaContable ([FKIdEmpresa_SIS]
+-- Activar INSERT con IDs específicos
+SET IDENTITY_INSERT CONTA.CuentaContable ON
+insert into CONTA.CuentaContable (PKIdCuentaContable,[FKIdEmpresa_SIS]
            ,[FKIdTipoCuenta_CONTA]
            ,[Cuenta]
            ,[SubCuenta]
@@ -86,7 +88,7 @@ insert into CONTA.CuentaContable ([FKIdEmpresa_SIS]
            ,[S8]
            ,[S9]
            ,[S10])
-select 1,  FK_IdTipoCuenta__SIS
+select PK_IdCuentaContable,1,  FK_IdTipoCuenta__SIS
            ,[Cuenta]
            ,[SubCuenta]
            ,[SubSubCuenta]
@@ -111,16 +113,16 @@ select 1,  FK_IdTipoCuenta__SIS
            ,[S9]
            ,[S10] from [BD_PRESUPUESTO].SIS.CuentaContable
            where FK_IdTipoCuenta__SIS in (1,2)
-
+SET IDENTITY_INSERT CONTA.CuentaContable OFF
 
 
 CREATE TABLE [ALMA].[Unidades](
 	[PKIdUnidades] [int] IDENTITY(1,1) NOT NULL,
 	[Descripcion] [nvarchar](50) NOT NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT ALMA_Unidades_PK_IdUnidades PRIMARY KEY CLUSTERED ([PKIdUnidades]),
     )
@@ -138,9 +140,9 @@ CREATE TABLE [CONTA].[Capitulo](
 	[Clave] [nvarchar](30) NULL,
 	[Descripcion] [nvarchar](120) NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
      CONSTRAINT CONTA_Capitulo_PK_IdCapitulo PRIMARY KEY CLUSTERED ([PKIdCapitulo]),
     )
@@ -195,9 +197,9 @@ drop table if exists [CONTA].[Concepto]
 	[Clave] [nvarchar](30) NULL,
 	[Descripcion] [nvarchar](120) NULL,
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
 	CONSTRAINT CONTA_Concepto_PK_IdConcepto PRIMARY KEY CLUSTERED ([PKIdConcepto]),
     CONSTRAINT CONTA_FK_IdCapitulo FOREIGN KEY ([FKIdCapitulo_CONTA]) REFERENCES [CONTA].[Capitulo]([PKIdCapitulo])
@@ -252,9 +254,9 @@ CREATE TABLE [CONTA].[Partida](
 	[Clave] [nvarchar](10) NOT NULL,
 	[Descripcion] [nvarchar](255) NOT NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
  CONSTRAINT CONTA_Patida_PK_IdPartida PRIMARY KEY ([PKIdPartida]),
     CONSTRAINT CONTA_FK_IdConcepto FOREIGN KEY ([FKIdConcepto_SIS]) REFERENCES [CONTA].[Concepto]([PKIdConcepto])
@@ -294,15 +296,15 @@ WHERE p.PKIdPartida IS NULL  -- Solo insertar los que no existen
 -- Desactivar INSERT con IDs específicos
 SET IDENTITY_INSERT [CONTA].[Partida] OFF
 
-
+--drop table [ALMA].[Nivel]
 CREATE TABLE [ALMA].[Nivel](
 	[PKIdNivel] [int] IDENTITY(1,1) NOT NULL,
 	[Nivel] [int] NOT NULL,
 	[Descripcion] [nvarchar](20) NOT NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT ALMA_Nivel_PK_IdNivel PRIMARY KEY ([PKIdNivel])
     )
@@ -314,7 +316,7 @@ SET IDENTITY_INSERT [ALMA].[Nivel] ON
 INSERT INTO [ALMA].[Nivel] (
     [PKIdNivel],               -- El ID original de la fuente
     [Nivel],
-    [Descipcion],              -- Nota: hay un typo en el nombre (Descipcion vs Descripcion)
+    [Descripcion],              -- Nota: hay un typo en el nombre (Descipcion vs Descripcion)
     [UsuarioCreacion],
     [FechaCreacion],
     [FechaModificacion],
@@ -347,9 +349,9 @@ CREATE TABLE [ALMA].[Familia](
 	[Descripcion] [nvarchar](80) NOT NULL,
 	[Clave] [nvarchar](50) NULL,
 	Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT ALMA_Familia_PK_IdFamilia PRIMARY KEY ([PKIdFamilia])
     )
@@ -398,9 +400,9 @@ CREATE TABLE [ALMA].[GrupoBien](
 	[CLAVE_CUCOP] [nvarchar](50) NULL,
 	[MEDIDA] [nvarchar](50) NULL,
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
      CONSTRAINT ALMA_GrupoBien_PK_IdGrupoBien PRIMARY KEY ([PKIdGrupoBien]),
     CONSTRAINT  ALMA_FK_IdFamilia FOREIGN KEY ([FKIdFamilia_ALMA]) REFERENCES [ALMA].[Familia]([PKIdFamilia])
@@ -474,9 +476,9 @@ CREATE TABLE [ALMA].[TipoBien](
 	[CatalogoBasico] [bit] NULL,
 	[CUCOP_PLUS] [varchar](25) NULL,
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     [FKIdUnidades_Equivalente] [int] NULL,
 	[Cantidad_Equivalente] [int] NULL,
@@ -596,6 +598,9 @@ CREATE TABLE ALMA.EstatusArticuloConteo (
     Nombre NVARCHAR(30) NOT NULL,  -- 'Pendiente 1er Conteo', 'Pendiente 2do Conteo', 'Requiere 3er Conteo', 'Concluido', 'En Discrepancia'
     Descripcion NVARCHAR(100) NULL,
     Orden INT NOT NULL,  -- Para flujo
+    Color NVARCHAR(8) NULL,  -- Color hex para UI (ej: #FFA500)
+    Icono NVARCHAR(30) NULL,  -- Icono para UI (ej: pending, check, warning)
+    BadgeTexto NVARCHAR(50) NULL,  -- Texto para badge (ej: '1er Conteo', 'Concluido')
     Activo BIT NOT NULL DEFAULT 1,
     CONSTRAINT PK_EstatusArticulo PRIMARY KEY (PKIdEstatusArticulo),
     CONSTRAINT UQ_EstatusArticulo_Nombre UNIQUE (Nombre)
@@ -610,6 +615,35 @@ CREATE TABLE ALMA.TipoConteo (
     Activo BIT NOT NULL DEFAULT 1,
     CONSTRAINT PK_TipoConteo PRIMARY KEY (PKIdTipoConteo)
 )
+GO
+
+
+-- Insertar estatus para periodos de conteo
+INSERT INTO ALMA.EstatusPeriodo (Nombre, Descripcion, Activo)
+VALUES
+    ('Pendiente',   'Periodo de conteo pendiente de iniciar', 1),
+    ('En Proceso',  'Periodo de conteo en proceso',           1),
+    ('Completado',  'Periodo de conteo completado',          1),
+    ('Cerrado',     'Periodo de conteo cerrado',             1);
+GO
+
+-- Insertar tipos de conteo
+INSERT INTO ALMA.TipoConteo (Nombre, Descripcion, Activo)
+VALUES
+    ('Cíclico',   'Conteo cíclico programado',       1),
+    ('Anual',     'Conteo anual de inventario',      1),
+    ('Auditoría', 'Conteo por auditoría externa',    1),
+    ('Aleatorio', 'Conteo aleatorio no programado',  1);
+GO
+
+-- Insertar estatus para artículos en el conteo
+INSERT INTO ALMA.EstatusArticuloConteo (Nombre, Descripcion, Orden, Color, Icono, BadgeTexto, Activo)
+VALUES
+    ('Pendiente 1er Conteo',  'Artículo pendiente de primer conteo',    1, '#FFA500', 'pending', '1er Conteo', 1),
+    ('Pendiente 2do Conteo',  'Artículo pendiente de segundo conteo',   2, '#FF8C00', 'pending', '2do Conteo', 1),
+    ('Requiere 3er Conteo',   'Artículo que requiere un tercer conteo', 3, '#FF4500', 'warning', '3er Conteo', 1),
+    ('Concluido',             'Artículo con conteo finalizado',         4, '#28A745', 'check',   'Concluido',  1),
+    ('En Discrepancia',       'Artículo con diferencias sin resolver',  5, '#DC3545', 'error',   'Discrepancia', 1);
 GO
 
 -- =============================================
@@ -630,7 +664,7 @@ CREATE TABLE ALMA.PeriodoConteo (
     -- Fechas
     FechaInicio DATE NOT NULL,
     FechaFin DATE NULL,
-    FechaCierre DATETIME2 NULL,
+    FechaCierre DATETIME NULL,
     
     -- Configuración del periodo
     MaximoConteosPorArticulo INT NOT NULL DEFAULT 3,  -- Máximo de conteos permitidos
@@ -647,9 +681,9 @@ CREATE TABLE ALMA.PeriodoConteo (
     
     -- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     
     CONSTRAINT PK_PeriodoConteo PRIMARY KEY (PKIdPeriodoConteo),
@@ -667,221 +701,15 @@ CREATE INDEX IX_PeriodoConteo_Sucursal ON ALMA.PeriodoConteo(FKIdSucursal_SIS, F
 CREATE INDEX IX_PeriodoConteo_Estatus ON ALMA.PeriodoConteo(FKIdEstatus_ALMA) WHERE Activo = 1
 GO
 
--- =============================================
--- ARTÍCULOS A CONTAR EN EL PERIODO
--- =============================================
-
-CREATE TABLE ALMA.ArticuloConteo (
-    PKIdArticuloConteo INT IDENTITY(1,1) NOT NULL,
-    FKIdPeriodoConteo_ALMA INT NOT NULL,
-    FKIdTipoBien_ALMA INT NOT NULL,
-    FKIdSucursal_SIS INT NOT NULL,  -- Denormalizado para consultas rápidas
-    FKIdEstatus_ALMA INT NOT NULL,  -- Estatus actual del artículo
-    
-    -- Información base del artículo
-    CodigoBarras NVARCHAR(50) NULL,
-    DescripcionArticulo NVARCHAR(1200) NULL,
-    UnidadMedida NVARCHAR(50) NULL,
-    Ubicacion NVARCHAR(100) NULL,  -- Ubicación física (estante, rack, etc.)
-    
-    -- Información del sistema
-    ExistenciaSistema DECIMAL(18,4) NOT NULL,  -- Lo que dice el sistema al iniciar
-    FechaUltimoConteoAnterior DATETIME2 NULL,  -- Última vez que se contó
-    
-    -- Resultados finales (se calculan al concluir)
-    ExistenciaFinal DECIMAL(18,4) NULL,        -- Valor aceptado después de los conteos
-    Diferencia DECIMAL(18,4) NULL,             -- ExistenciaFinal - ExistenciaSistema
-    PorcentajeDiferencia DECIMAL(18,4) NULL,   -- (Diferencia / ExistenciaSistema) * 100
-    
-    -- Control de conteos
-    ConteosRealizados INT NOT NULL DEFAULT 0,  -- Número de conteos realizados
-    ConteosPendientes INT NOT NULL DEFAULT 1,  -- Conteos que faltan (inicia en 1)
-    
-    -- Fechas de control
-    FechaInicioConteo DATETIME2 NULL,
-    FechaConclusion DATETIME2 NULL,
-    FKIdUsuarioConcluyo_SIS INT NULL,
-    
-    -- Auditoría
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    
-    CONSTRAINT PK_ArticuloConteo PRIMARY KEY (PKIdArticuloConteo),
-    CONSTRAINT FK_ArticuloConteo_Periodo FOREIGN KEY (FKIdPeriodoConteo_ALMA) REFERENCES ALMA.PeriodoConteo(PKIdPeriodoConteo),
-    CONSTRAINT FK_ArticuloConteo_TipoBien FOREIGN KEY (FKIdTipoBien_ALMA) REFERENCES ALMA.TipoBien(PKIdTipoBien),
-    CONSTRAINT FK_ArticuloConteo_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal),
-    CONSTRAINT FK_ArticuloConteo_Estatus FOREIGN KEY (FKIdEstatus_ALMA) REFERENCES ALMA.EstatusArticuloConteo(PKIdEstatusArticulo),
-    CONSTRAINT FK_ArticuloConteo_UsuarioConcluyo FOREIGN KEY (FKIdUsuarioConcluyo_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT UQ_ArticuloConteo_Periodo_Bien UNIQUE (FKIdPeriodoConteo_ALMA, FKIdTipoBien_ALMA)
-)
-GO
-
--- Índices para ArticuloConteo
-CREATE INDEX IX_ArticuloConteo_Periodo ON ALMA.ArticuloConteo(FKIdPeriodoConteo_ALMA) 
-    INCLUDE (FKIdTipoBien_ALMA, ExistenciaSistema, FKIdEstatus_ALMA, ConteosPendientes)
-
-CREATE INDEX IX_ArticuloConteo_Estatus ON ALMA.ArticuloConteo(FKIdEstatus_ALMA, FKIdPeriodoConteo_ALMA) 
-    INCLUDE (FKIdTipoBien_ALMA) 
-    WHERE Activo = 1
-
-CREATE INDEX IX_ArticuloConteo_Pendientes ON ALMA.ArticuloConteo(FKIdPeriodoConteo_ALMA) 
-    WHERE ConteosPendientes > 0 AND Activo = 1
-GO
-
--- =============================================
--- REGISTRO DE CONTEO (TABLA DE EVENTOS)
--- =============================================
-
-CREATE TABLE ALMA.RegistroConteo (
-    PKIdRegistroConteo INT IDENTITY(1,1) NOT NULL,
-    FKIdArticuloConteo_ALMA INT NOT NULL,
-    FKIdPeriodoConteo_ALMA INT NOT NULL,  -- Denormalizado para consultas rápidas
-    FKIdSucursal_SIS INT NOT NULL,        -- Denormalizado para consultas rápidas
-    
-    -- Número de conteo (secuencial por artículo)
-    NumeroConteo INT NOT NULL,  -- 1, 2, 3, 4... (secuencial por artículo)
-    
-    -- Resultado del conteo
-    CantidadContada DECIMAL(18,4) NOT NULL,
-    FechaConteo DATETIME2 NOT NULL,
-    FKIdUsuario_SIS INT NOT NULL,
-    
-    -- Información adicional
-    Observaciones NVARCHAR(500) NULL,
-    EsReconteo BIT NOT NULL DEFAULT 0,  -- Indica si es un reconteo por discrepancia
-    
-    -- Evidencia (opcional)
-    FotoPath NVARCHAR(500) NULL,
-    
-    -- Coordenadas (si usan dispositivos móviles)
-    Latitud DECIMAL(9,6) NULL,
-    Longitud DECIMAL(9,6) NULL,
-    
-    -- Auditoría
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    
-    CONSTRAINT PK_RegistroConteo PRIMARY KEY (PKIdRegistroConteo),
-    CONSTRAINT FK_RegistroConteo_Articulo FOREIGN KEY (FKIdArticuloConteo_ALMA) REFERENCES ALMA.ArticuloConteo(PKIdArticuloConteo),
-    CONSTRAINT FK_RegistroConteo_Periodo FOREIGN KEY (FKIdPeriodoConteo_ALMA) REFERENCES ALMA.PeriodoConteo(PKIdPeriodoConteo),
-    CONSTRAINT FK_RegistroConteo_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal),
-    CONSTRAINT FK_RegistroConteo_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
-    -- Un usuario no puede contar el mismo artículo dos veces en el mismo periodo
-    CONSTRAINT UQ_RegistroConteo_Articulo_Usuario UNIQUE (FKIdArticuloConteo_ALMA, FKIdUsuario_SIS)
-)
-GO
-
--- Índices para RegistroConteo
-CREATE INDEX IX_RegistroConteo_Articulo ON ALMA.RegistroConteo(FKIdArticuloConteo_ALMA, NumeroConteo) 
-    INCLUDE (CantidadContada, FKIdUsuario_SIS, FechaConteo)
-
-CREATE INDEX IX_RegistroConteo_Periodo ON ALMA.RegistroConteo(FKIdPeriodoConteo_ALMA) 
-    INCLUDE (FKIdArticuloConteo_ALMA, CantidadContada, FKIdUsuario_SIS)
-
-CREATE INDEX IX_RegistroConteo_Usuario ON ALMA.RegistroConteo(FKIdUsuario_SIS, FKIdPeriodoConteo_ALMA) 
-    WHERE Activo = 1
-GO
-
--- =============================================
--- HISTORIAL DE CAMBIOS DE ESTATUS
--- =============================================
-
-CREATE TABLE ALMA.HistorialEstatusArticulo (
-    PKIdHistorial INT IDENTITY(1,1) NOT NULL,
-    FKIdArticuloConteo_ALMA INT NOT NULL,
-    FKIdEstatusAnterior_ALMA INT NULL,
-    FKIdEstatusNuevo_ALMA INT NOT NULL,
-    FKIdRegistroConteo_ALMA INT NULL,  -- Opcional, si el cambio fue por un conteo
-    Observaciones NVARCHAR(500) NULL,
-    FKIdUsuario_SIS INT NOT NULL,
-    FechaCambio DATETIME2 DEFAULT SYSDATETIME(),
-    
-    CONSTRAINT PK_HistorialEstatus PRIMARY KEY (PKIdHistorial),
-    CONSTRAINT FK_Historial_Articulo FOREIGN KEY (FKIdArticuloConteo_ALMA) REFERENCES ALMA.ArticuloConteo(PKIdArticuloConteo),
-    CONSTRAINT FK_Historial_EstatusAnterior FOREIGN KEY (FKIdEstatusAnterior_ALMA) REFERENCES ALMA.EstatusArticuloConteo(PKIdEstatusArticulo),
-    CONSTRAINT FK_Historial_EstatusNuevo FOREIGN KEY (FKIdEstatusNuevo_ALMA) REFERENCES ALMA.EstatusArticuloConteo(PKIdEstatusArticulo),
-    CONSTRAINT FK_Historial_Registro FOREIGN KEY (FKIdRegistroConteo_ALMA) REFERENCES ALMA.RegistroConteo(PKIdRegistroConteo),
-    CONSTRAINT FK_Historial_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario)
-)
-GO
-
-CREATE INDEX IX_Historial_Articulo ON ALMA.HistorialEstatusArticulo(FKIdArticuloConteo_ALMA, FechaCambio)
-GO
-
--- =============================================
--- TABLA PARA DISCREPANCIAS (CUANDO HAY DIFERENCIAS)
--- =============================================
-
-CREATE TABLE ALMA.DiscrepanciaConteo (
-    PKIdDiscrepancia INT IDENTITY(1,1) NOT NULL,
-    FKIdArticuloConteo_ALMA INT NOT NULL,
-    
-    -- Valores en disputa
-    Valor1 DECIMAL(18,4) NOT NULL,
-    Valor2 DECIMAL(18,4) NOT NULL,
-    Valor3 DECIMAL(18,4) NULL,
-    
-    -- Resolución
-    ValorAceptado DECIMAL(18,4) NULL,
-    MetodoResolucion NVARCHAR(50) NULL,  -- 'Promedio', 'Decisión Supervisor', 'Nuevo Conteo'
-    
-    FKIdSupervisor_SIS INT NULL,
-    FechaResolucion DATETIME2 NULL,
-    ObservacionesResolucion NVARCHAR(500) NULL,
-    
-    -- Auditoría
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    
-    CONSTRAINT PK_DiscrepanciaConteo PRIMARY KEY (PKIdDiscrepancia),
-    CONSTRAINT FK_Discrepancia_Articulo FOREIGN KEY (FKIdArticuloConteo_ALMA) REFERENCES ALMA.ArticuloConteo(PKIdArticuloConteo),
-    CONSTRAINT FK_Discrepancia_Supervisor FOREIGN KEY (FKIdSupervisor_SIS) REFERENCES SIS.Usuario(PkIdUsuario)
-)
-GO
-
--- =============================================
--- DATOS DE INICIALIZACIÓN
--- =============================================
-
--- Insertar Estatus de Periodo
-INSERT INTO ALMA.EstatusPeriodo (Nombre, Descripcion) VALUES
-('Pendiente', 'Periodo creado, pendiente de iniciar'),
-('En Proceso', 'Periodo en curso con artículos siendo contados'),
-('Completado', 'Todos los artículos han sido concluidos'),
-('Cerrado', 'Periodo cerrado, no se permiten más modificaciones')
-GO
-
--- Insertar Estatus de Artículo
-INSERT INTO ALMA.EstatusArticuloConteo (Nombre, Descripcion, Orden) VALUES
-('Pendiente 1er Conteo', 'Artículo listo para primer conteo', 1),
-('Pendiente 2do Conteo', 'Primer conteo realizado, esperando segundo', 2),
-('Pendiente 3er Conteo', 'Discrepancia, requiere tercer conteo', 3),
-('Concluido Sin Diferencia', 'Conteos coinciden, sin diferencia', 4),
-('Concluido Con Diferencia', 'Conteos finalizados con diferencia', 5),
-('En Discrepancia', 'Requiere intervención de supervisor', 6)
-GO
-
--- Insertar Tipos de Conteo
-INSERT INTO ALMA.TipoConteo (Nombre, Descripcion) VALUES
-('Cíclico', 'Conteo programado por rotación de inventario'),
-('Anual', 'Conteo general de fin de año'),
-('Auditoría', 'Conteo solicitado por auditoría'),
-('Aleatorio', 'Conteo sorpresa sin programación')
-GO
-
 
 CREATE TABLE [ALMA].[TipoPatrimonio](
 	[PKIdTipoPatrimonio] [int] IDENTITY(1,1) NOT NULL,
 	[Descripcion] [nvarchar](50) NOT NULL,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
      CONSTRAINT PK_TipoPatrimonio_Id PRIMARY KEY ([PKIdTipoPatrimonio])
      )
@@ -899,9 +727,9 @@ CREATE TABLE [SIS].[TipoProveedor](
 	[Descripcion] [varchar](80) NOT NULL,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
      CONSTRAINT PK_TipoProveedor_Id PRIMARY KEY ([PkIdTipoProveedor])
      )
@@ -918,9 +746,9 @@ CREATE TABLE [SIS].[EstatusProveedor](
 	[Color] [nvarchar](8) NULL,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
      CONSTRAINT PK_EstatusProveedor_Id PRIMARY KEY ([PKIdEstatusProveedor])
      )
@@ -968,9 +796,9 @@ CREATE TABLE [SIS].[Proveedor](
 	[CURP] [nvarchar](18) NULL,
     -- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
 
     CONSTRAINT PK_Proveedor_Id PRIMARY KEY ([PKIdProveedor]),
@@ -1094,9 +922,9 @@ CREATE TABLE  [NOM].[Persona](
 	[CLABE] [nvarchar](50) NULL,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_Persona_Id PRIMARY KEY ([PKIdPersona]),
     )
@@ -1207,9 +1035,9 @@ CREATE TABLE [SIS].[Area](
 	[Aprovado] BIT NOT NULL DEFAULT 01,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
 
     CONSTRAINT PK_Area_Id PRIMARY KEY ([PKIdArea]),
@@ -1272,9 +1100,9 @@ SET IDENTITY_INSERT [SIS].[Area] OFF
 	[EsAutorizador] [bit] NULL,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_PKIdPersonaArea_Id PRIMARY KEY ([PKIdPersonaArea]),
 
@@ -1318,9 +1146,9 @@ CREATE TABLE [ALMA].[Marca](
 	[Descripcion] [nvarchar](50) NOT NULL,
 	-- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_Marca_Id PRIMARY KEY ([PKIdMarca]),
 )
@@ -1353,9 +1181,9 @@ CREATE TABLE [ALMA].[EstadoBien](
 	[DESCRIPCION_CORTA] [nvarchar](100) NOT NULL,
     -- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_EstadoBien_Id PRIMARY KEY ([PKIdEstadoBien]),
 )
@@ -1387,9 +1215,9 @@ CREATE TABLE [ALMA].[Material](
     [Descripcion] [nvarchar](50) NOT NULL,
     -- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_Material_Id PRIMARY KEY ([PKIdMaterial]),
 )
@@ -1419,9 +1247,9 @@ CREATE TABLE [ALMA].[TipoAdquisicion](
 	[Descripmovto] [nvarchar](100) NOT NULL,
     -- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_TipoAdq_Id PRIMARY KEY ([PKIdTipoAdq]),
 )
@@ -1515,9 +1343,9 @@ CREATE TABLE [ALMA].[Bien](
 	[esContabilizado] [bit] NULL,
     -- Auditoría
     Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
+    FechaModificacion DATETIME NULL,
     UsuarioModificacion INT NULL,
 
     CONSTRAINT PK_Bien_IdBien PRIMARY KEY ([PKIdBien]),
@@ -1574,5 +1402,202 @@ CREATE TABLE [ALMA].[Bien](
             -- Desactivar INSERT con IDs específicos
     SET IDENTITY_INSERT [ALMA].[Bien] OFF
 
+-- =============================================
+-- VISTA: VwArticuloConteo
+-- Vista optimizada para listar bienes a contar en un periodo de conteo
+-- Ahora referencia Bien (activo individual) en lugar de TipoBien
+-- =============================================
 
+
+
+-- Crear índice para mejorar rendimiento de consultas
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_VwArticuloConteo_Periodo' AND object_id = OBJECT_ID('ALMA.VwArticuloConteo'))
+    CREATE INDEX IX_VwArticuloConteo_Periodo ON ALMA.VwArticuloConteo(PeriodoId, EstatusId);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_VwArticuloConteo_Bien' AND object_id = OBJECT_ID('ALMA.VwArticuloConteo'))
+    CREATE INDEX IX_VwArticuloConteo_Bien ON ALMA.VwArticuloConteo(BienId);
+GO
+
+PRINT 'Vista ALMA.VwArticuloConteo creada exitosamente';
+GO
+
+
+
+-- =============================================
+-- ARTÍCULOS A CONTAR EN EL PERIODO
+-- MODIFICACIÓN: Ahora referenciamos Bien (activo individual) en lugar de TipoBien
+-- =============================================
+
+CREATE TABLE ALMA.ArticuloConteo (
+    PKIdArticuloConteo INT IDENTITY(1,1) NOT NULL,
+    FKIdPeriodoConteo_ALMA INT NOT NULL,
+    FKIdBien_ALMA INT NOT NULL,  -- Cambiado: Ahora referenciamos Bien (activo individual)
+    FKIdSucursal_SIS INT NOT NULL,  -- Denormalizado para consultas rápidas
+    FKIdEstatus_ALMA INT NOT NULL,  -- Estatus actual del artículo
+    
+    -- Información base del artículo
+    CodigoBarras NVARCHAR(50) NULL,
+    DescripcionArticulo NVARCHAR(1200) NULL,
+    UnidadMedida NVARCHAR(50) NULL,
+    Ubicacion NVARCHAR(100) NULL,  -- Ubicación física (estante, rack, etc.)
+    
+    -- Información del sistema
+    ExistenciaSistema DECIMAL(18,4) NOT NULL,  -- Lo que dice el sistema al iniciar
+    FechaUltimoConteoAnterior DATETIME NULL,  -- Última vez que se contó
+    
+    -- Resultados finales (se calculan al concluir)
+    ExistenciaFinal DECIMAL(18,4) NULL,        -- Valor aceptado después de los conteos
+    Diferencia DECIMAL(18,4) NULL,             -- ExistenciaFinal - ExistenciaSistema
+    PorcentajeDiferencia DECIMAL(18,4) NULL,   -- (Diferencia / ExistenciaSistema) * 100
+    
+    -- Control de conteos
+    ConteosRealizados INT NOT NULL DEFAULT 0,  -- Número de conteos realizados
+    ConteosPendientes INT NOT NULL DEFAULT 1,  -- Conteos que faltan (inicia en 1)
+    
+    -- Fechas de control
+    FechaInicioConteo DATETIME NULL,
+    FechaConclusion DATETIME NULL,
+    FKIdUsuarioConcluyo_SIS INT NULL,
+    
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME NULL,
+    UsuarioModificacion INT NULL,
+    
+    CONSTRAINT PK_ArticuloConteo PRIMARY KEY (PKIdArticuloConteo),
+    CONSTRAINT FK_ArticuloConteo_Periodo FOREIGN KEY (FKIdPeriodoConteo_ALMA) REFERENCES ALMA.PeriodoConteo(PKIdPeriodoConteo),
+    CONSTRAINT FK_ArticuloConteo_Bien FOREIGN KEY (FKIdBien_ALMA) REFERENCES ALMA.Bien(PKIdBien),  -- Cambiado: referenciamos Bien
+    CONSTRAINT FK_ArticuloConteo_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal),
+    CONSTRAINT FK_ArticuloConteo_Estatus FOREIGN KEY (FKIdEstatus_ALMA) REFERENCES ALMA.EstatusArticuloConteo(PKIdEstatusArticulo),
+    CONSTRAINT FK_ArticuloConteo_UsuarioConcluyo FOREIGN KEY (FKIdUsuarioConcluyo_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT UQ_ArticuloConteo_Periodo_Bien UNIQUE (FKIdPeriodoConteo_ALMA, FKIdBien_ALMA)  -- Cambiado: único por Bien
+)
+GO
+
+-- Índices para ArticuloConteo
+CREATE INDEX IX_ArticuloConteo_Periodo ON ALMA.ArticuloConteo(FKIdPeriodoConteo_ALMA) 
+    INCLUDE (FKIdBien_ALMA, ExistenciaSistema, FKIdEstatus_ALMA, ConteosPendientes)
+
+CREATE INDEX IX_ArticuloConteo_Estatus ON ALMA.ArticuloConteo(FKIdEstatus_ALMA, FKIdPeriodoConteo_ALMA) 
+    INCLUDE (FKIdBien_ALMA) 
+    WHERE Activo = 1
+
+CREATE INDEX IX_ArticuloConteo_Pendientes ON ALMA.ArticuloConteo(FKIdPeriodoConteo_ALMA) 
+    WHERE ConteosPendientes > 0 AND Activo = 1
+GO
+
+-- =============================================
+-- REGISTRO DE CONTEO (TABLA DE EVENTOS)
+-- =============================================
+
+CREATE TABLE ALMA.RegistroConteo (
+    PKIdRegistroConteo INT IDENTITY(1,1) NOT NULL,
+    FKIdArticuloConteo_ALMA INT NOT NULL,
+    FKIdPeriodoConteo_ALMA INT NOT NULL,  -- Denormalizado para consultas rápidas
+    FKIdSucursal_SIS INT NOT NULL,        -- Denormalizado para consultas rápidas
+    
+    -- Número de conteo (secuencial por artículo)
+    NumeroConteo INT NOT NULL,  -- 1, 2, 3, 4... (secuencial por artículo)
+    
+    -- Resultado del conteo
+    CantidadContada DECIMAL(18,4) NOT NULL,
+    FechaConteo DATETIME NOT NULL,
+    FKIdUsuario_SIS INT NOT NULL,
+    
+    -- Información adicional
+    Observaciones NVARCHAR(500) NULL,
+    EsReconteo BIT NOT NULL DEFAULT 0,  -- Indica si es un reconteo por discrepancia
+    
+    -- Evidencia (opcional)
+    FotoPath NVARCHAR(500) NULL,
+    
+    -- Coordenadas (si usan dispositivos móviles)
+    Latitud DECIMAL(9,6) NULL,
+    Longitud DECIMAL(9,6) NULL,
+    
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
+    
+    CONSTRAINT PK_RegistroConteo PRIMARY KEY (PKIdRegistroConteo),
+    CONSTRAINT FK_RegistroConteo_Articulo FOREIGN KEY (FKIdArticuloConteo_ALMA) REFERENCES ALMA.ArticuloConteo(PKIdArticuloConteo),
+    CONSTRAINT FK_RegistroConteo_Periodo FOREIGN KEY (FKIdPeriodoConteo_ALMA) REFERENCES ALMA.PeriodoConteo(PKIdPeriodoConteo),
+    CONSTRAINT FK_RegistroConteo_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal),
+    CONSTRAINT FK_RegistroConteo_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
+    -- Un usuario no puede contar el mismo artículo dos veces en el mismo periodo
+    CONSTRAINT UQ_RegistroConteo_Articulo_Usuario UNIQUE (FKIdArticuloConteo_ALMA, FKIdUsuario_SIS)
+)
+GO
+
+-- Índices para RegistroConteo
+CREATE INDEX IX_RegistroConteo_Articulo ON ALMA.RegistroConteo(FKIdArticuloConteo_ALMA, NumeroConteo) 
+    INCLUDE (CantidadContada, FKIdUsuario_SIS, FechaConteo)
+
+CREATE INDEX IX_RegistroConteo_Periodo ON ALMA.RegistroConteo(FKIdPeriodoConteo_ALMA) 
+    INCLUDE (FKIdArticuloConteo_ALMA, CantidadContada, FKIdUsuario_SIS)
+
+CREATE INDEX IX_RegistroConteo_Usuario ON ALMA.RegistroConteo(FKIdUsuario_SIS, FKIdPeriodoConteo_ALMA) 
+    WHERE Activo = 1
+GO
+
+-- =============================================
+-- HISTORIAL DE CAMBIOS DE ESTATUS
+-- =============================================
+
+CREATE TABLE ALMA.HistorialEstatusArticulo (
+    PKIdHistorial INT IDENTITY(1,1) NOT NULL,
+    FKIdArticuloConteo_ALMA INT NOT NULL,
+    FKIdEstatusAnterior_ALMA INT NULL,
+    FKIdEstatusNuevo_ALMA INT NOT NULL,
+    FKIdRegistroConteo_ALMA INT NULL,  -- Opcional, si el cambio fue por un conteo
+    Observaciones NVARCHAR(500) NULL,
+    FKIdUsuario_SIS INT NOT NULL,
+    FechaCambio DATETIME DEFAULT SYSDATETIME(),
+    
+    CONSTRAINT PK_HistorialEstatus PRIMARY KEY (PKIdHistorial),
+    CONSTRAINT FK_Historial_Articulo FOREIGN KEY (FKIdArticuloConteo_ALMA) REFERENCES ALMA.ArticuloConteo(PKIdArticuloConteo),
+    CONSTRAINT FK_Historial_EstatusAnterior FOREIGN KEY (FKIdEstatusAnterior_ALMA) REFERENCES ALMA.EstatusArticuloConteo(PKIdEstatusArticulo),
+    CONSTRAINT FK_Historial_EstatusNuevo FOREIGN KEY (FKIdEstatusNuevo_ALMA) REFERENCES ALMA.EstatusArticuloConteo(PKIdEstatusArticulo),
+    CONSTRAINT FK_Historial_Registro FOREIGN KEY (FKIdRegistroConteo_ALMA) REFERENCES ALMA.RegistroConteo(PKIdRegistroConteo),
+    CONSTRAINT FK_Historial_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario)
+)
+GO
+
+CREATE INDEX IX_Historial_Articulo ON ALMA.HistorialEstatusArticulo(FKIdArticuloConteo_ALMA, FechaCambio)
+GO
+
+-- =============================================
+-- TABLA PARA DISCREPANCIAS (CUANDO HAY DIFERENCIAS)
+-- =============================================
+
+CREATE TABLE ALMA.DiscrepanciaConteo (
+    PKIdDiscrepancia INT IDENTITY(1,1) NOT NULL,
+    FKIdArticuloConteo_ALMA INT NOT NULL,
+    
+    -- Valores en disputa
+    Valor1 DECIMAL(18,4) NOT NULL,
+    Valor2 DECIMAL(18,4) NOT NULL,
+    Valor3 DECIMAL(18,4) NULL,
+    
+    -- Resolución
+    ValorAceptado DECIMAL(18,4) NULL,
+    MetodoResolucion NVARCHAR(50) NULL,  -- 'Promedio', 'Decisión Supervisor', 'Nuevo Conteo'
+    
+    FKIdSupervisor_SIS INT NULL,
+    FechaResolucion DATETIME NULL,
+    ObservacionesResolucion NVARCHAR(500) NULL,
+    
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    
+    CONSTRAINT PK_DiscrepanciaConteo PRIMARY KEY (PKIdDiscrepancia),
+    CONSTRAINT FK_Discrepancia_Articulo FOREIGN KEY (FKIdArticuloConteo_ALMA) REFERENCES ALMA.ArticuloConteo(PKIdArticuloConteo),
+    CONSTRAINT FK_Discrepancia_Supervisor FOREIGN KEY (FKIdSupervisor_SIS) REFERENCES SIS.Usuario(PkIdUsuario)
+)
+GO
 

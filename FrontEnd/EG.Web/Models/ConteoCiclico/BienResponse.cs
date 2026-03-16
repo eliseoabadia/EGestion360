@@ -1,0 +1,120 @@
+namespace EG.Web.Models.ConteoCiclico;
+
+public class BienResponse
+{
+    public int PkidBien { get; set; }
+
+    public string Clave { get; set; }
+
+    public string ClaveAnt { get; set; }
+
+    public string Descripcion { get; set; }
+
+    public string Modelo { get; set; }
+
+    public string Serie { get; set; }
+
+    public decimal? Costo { get; set; }
+
+    public DateTime? FechaAdq { get; set; }
+
+    public string Factura { get; set; }
+
+    public string Requisicion { get; set; }
+
+    public string Referencia { get; set; }
+
+    public string Notas { get; set; }
+
+    public string Ubicacion { get; set; }
+
+    public string Aadquisicion { get; set; }
+
+    public int? Frente { get; set; }
+
+    public int? Fondo { get; set; }
+
+    public int? Altura { get; set; }
+
+    public int? Diametro { get; set; }
+
+    public int VerificacionesDias { get; set; }
+
+    public int MantenimientoDias { get; set; }
+
+    public bool Mantenimiento { get; set; }
+
+    public bool Calibracion { get; set; }
+
+    public string Rango { get; set; }
+
+    public string Resolucion { get; set; }
+
+    public DateTime? FechaUltInv { get; set; }
+
+    public DateTime? FechaReqscn { get; set; }
+
+    public string Estatus { get; set; }
+
+    public string Caracteristicas { get; set; }
+
+    public int? Resguardo { get; set; }
+
+    public bool? EstaResguardado { get; set; }
+
+    public DateTime? FechaResguardado { get; set; }
+
+    public bool? Localizado { get; set; }
+
+    public bool? EsContabilizado { get; set; }
+
+    public bool Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string GrupoBienDescripcion { get; set; }
+
+    public int? GrupoBienClave { get; set; }
+
+    public string TipoBienCodigoClave { get; set; }
+
+    public string TipoBienDescripcion { get; set; }
+
+    public string TipoBienCabms { get; set; }
+
+    public string TipoBienIdentificador { get; set; }
+
+    public string TipoBienCucopPlus { get; set; }
+
+    public string AreaNombre { get; set; }
+
+    public string AreaClave { get; set; }
+
+    public string ProveedorNombre { get; set; }
+
+    public string ProveedorRfc { get; set; }
+
+    public string ProveedorClave { get; set; }
+
+    public string EstadoBienDescripcionGeneral { get; set; }
+
+    public string EstadoBienDescripcionEspecifica { get; set; }
+
+    public string EstadoBienDescripcionCorta { get; set; }
+
+    public string TipoPatrimonioDescripcion { get; set; }
+
+    public string MarcaDescripcion { get; set; }
+
+    public string MaterialDescripcion { get; set; }
+
+    public string TipoAdquisicionClave { get; set; }
+
+    public string TipoAdquisicionDescripcion { get; set; }
+
+    public string PartidaClave { get; set; }
+
+    public string PartidaDescripcion { get; set; }
+}

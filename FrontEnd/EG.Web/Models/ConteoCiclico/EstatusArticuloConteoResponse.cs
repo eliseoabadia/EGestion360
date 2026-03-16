@@ -1,4 +1,4 @@
-﻿namespace EG.Web.Models.ConteoCiclico;
+namespace EG.Web.Models.ConteoCiclico;
 
 public partial class EstatusArticuloConteoResponse
 {
@@ -9,6 +9,12 @@ public partial class EstatusArticuloConteoResponse
     public string Descripcion { get; set; }
 
     public int Orden { get; set; }
+
+    public string Color { get; set; }
+
+    public string Icono { get; set; }
+
+    public string BadgeTexto { get; set; }
 
     public bool Activo { get; set; }
 

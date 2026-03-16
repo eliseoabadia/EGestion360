@@ -10,7 +10,7 @@ public partial class ArticuloConteoResponse
 
     public string PeriodoNombre { get; set; }
 
-    public int TipoBienId { get; set; }
+    public int BienId { get; set; }
 
     public string CodigoArticulo { get; set; }
 
@@ -38,7 +38,7 @@ public partial class ArticuloConteoResponse
 
     public decimal? PorcentajeDiferencia { get; set; }
 
-    public int? FechaUltimoConteoAnterior { get; set; }
+    public int? DiasUltimoConteo { get; set; }
 
     public int ConteosRealizados { get; set; }
 
@@ -104,5 +104,18 @@ public partial class ArticuloConteoResponse
 
     public string UsuarioModificacionNombre { get; set; }
 
+    public string Serie { get; set; }
+
+    public string Modelo { get; set; }
+
+    public string MarcaBien { get; set; }
+
+    public string CodigoTipoBien { get; set; }
+
+    public string DescripcionTipoBien { get; set; }
+
+    public string AreaNombre { get; set; }
+
+    public string AreaClave { get; set; }
 
 }

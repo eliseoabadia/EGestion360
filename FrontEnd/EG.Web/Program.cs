@@ -63,6 +63,7 @@ internal class Program
         builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
         builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
         builder.Services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
+        builder.Services.AddScoped<IBienService, BienService>();
 
         // En Program.cs o Startup.cs
         builder.Services.AddScoped<MenuStateService>();

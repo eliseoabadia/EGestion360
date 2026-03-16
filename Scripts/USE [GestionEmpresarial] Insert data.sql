@@ -103,6 +103,29 @@ INSERT INTO SIS.Estados (FKIdPais_SIS, Nombre, CodigoEstado) VALUES
 (3, 'Alberta', 'AB');
 GO
 
+
+-- Activar INSERT con IDs específicos
+--SET IDENTITY_INSERT SIS.Municipios ON
+
+-- Insertar los datos manteniendo el ID original
+INSERT INTO SIS.Municipios (
+    FKIdEstado_SIS,
+    [Nombre],
+    [CodigoMunicipio],
+    Activo
+)
+SELECT 
+    FK_IdEstado__SIS
+    ,Nombre
+    ,Clave
+    ,CT_LIVE
+FROM [BD_PRESUPUESTO].[SIS].Municipio m
+where FK_IdEstado__SIS in (select PKIdEstado from sis.Estados)
+
+
+-- Desactivar INSERT con IDs específicos
+--SET IDENTITY_INSERT SIS.Municipios OFF
+
 -- =============================================
 -- 2. TIPOS DE SUCURSAL
 -- =============================================
@@ -120,7 +143,7 @@ GO
 -- 3. EMPRESAS
 -- =============================================
 INSERT INTO SIS.Empresa (Nombre, RFC, RazonSocial, Giro, FKIdMonedaBase_SIS, FKIdIdiomaPreferido_SIS, UsuarioCreacion) VALUES
-('TechNova S.A. de C.V.', 'TEC110101AAA', 'TechNova Soluciones Tecnológicas', 'Tecnología', 1, 1, 1),
+('IFT', 'IFT110101AAA', 'Instituto Federal de Telecomunicaciones', 'Tecnología', 1, 1, 1),
 ('Grupo Constructor Delta', 'GCD020202BBB', 'Delta Construcciones y Servicios', 'Construcción', 1, 1, 1),
 ('Alimentos La Laguna', 'ALL030303CCC', 'Industrias Alimenticias La Laguna', 'Alimentos', 1, 1, 1),
 ('Farmacias del Norte', 'FDN040404DDD', 'Farmacias del Norte S.A. de C.V.', 'Farmacéutico', 1, 1, 1),
@@ -172,7 +195,7 @@ INSERT INTO SIS.Sucursal (
     HorarioApertura, HorarioCierre, EsMatriz, EsActiva, Latitud, Longitud, UsuarioCreacion
 ) VALUES
 -- TechNova - Matriz CDMX
-(1, 9, 'TechNova Matriz Santa Fe', 'TECH-MAT-001', 'Matriz CDMX', 1, 1,
+(1, 9, 'IFT', 'TECH-MAT-001', 'Matriz CDMX', 1, 1,
  'Av. Santa Fe 505, Torre A Piso 15', 'Santa Fe', 'Ciudad de México',
  '01210', '55-5123-4500', '55-5123-4501', 'matriz@technova.com',
  '09:00', '18:00', 1, 1, 19.3612, -99.2598, 1),
@@ -697,6 +720,6 @@ HAVING COUNT(DISTINCT us.FKIdSucursal_SIS) > 1 OR COUNT(DISTINCT d.FKIdSucursal_
 ORDER BY Usuario;
 
 -- Ver estructura completa con la vista
-SELECT * FROM SIS.VW_UsuarioInfo;
-SELECT * FROM SIS.VW_SucursalesPorUsuario;
+--SELECT * FROM SIS.VW_UsuarioInfo;
+--SELECT * FROM SIS.VW_SucursalesPorUsuario;
 GO

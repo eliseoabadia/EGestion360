@@ -15,6 +15,12 @@ public partial class EstatusArticuloConteo
 
     public int Orden { get; set; }
 
+    public string Color { get; set; }
+
+    public string Icono { get; set; }
+
+    public string BadgeTexto { get; set; }
+
     public bool Activo { get; set; }
 
     public virtual ICollection<ArticuloConteo> ArticuloConteos { get; set; } = new List<ArticuloConteo>();

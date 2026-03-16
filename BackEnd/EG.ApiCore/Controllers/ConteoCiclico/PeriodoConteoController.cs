@@ -164,6 +164,8 @@ namespace EG.ApiCore.Controllers.General
             try
             {
                 var usuarioActual = _userContext.GetCurrentUserId();
+                if (dto.FkidSucursalSis < 1)
+                    dto.FkidSucursalSis = 1; //EAE temporal
                 var result = await _appService.CreateAsync(dto, usuarioActual);
 
                 return CreatedAtAction(nameof(GetById), new { id = result.Id },

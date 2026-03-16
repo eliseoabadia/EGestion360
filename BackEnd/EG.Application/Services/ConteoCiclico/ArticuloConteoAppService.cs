@@ -34,7 +34,7 @@ namespace EG.Application.Services.ConteoCiclico
             _service.AddInclude(a => a.FkidEstatusAlmaNavigation);
             _service.AddInclude(a => a.FkidPeriodoConteoAlmaNavigation);
             _service.AddInclude(a => a.FkidSucursalSisNavigation);
-            _service.AddInclude(a => a.FkidTipoBienAlmaNavigation);
+            _service.AddInclude(a => a.FkidBienAlmaNavigation);
             _service.AddInclude(a => a.FkidUsuarioConcluyoSisNavigation);
 
             // Filtros de relación para búsquedas dinámicas

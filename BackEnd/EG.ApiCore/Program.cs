@@ -83,7 +83,7 @@ public partial class Program
         builder.Services.AddScoped<IRepositorySP<spGetClaimsByUserResult>, RepositorySP<spGetClaimsByUserResult>>();  // ✅ AGREGADO
         builder.Services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
         builder.Services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
-        builder.Services.AddScoped<IRepositorySP<sp_RegistrarConteoResult>, RepositorySP<sp_RegistrarConteoResult>>();
+        //builder.Services.AddScoped<IRepositorySP<sp_RegistrarConteoResult>, RepositorySP<sp_RegistrarConteoResult>>();
         builder.Services.AddScoped<IRepository<PerfilUsuario>, Repository<PerfilUsuario>>();
 
         // ===== SERVICIOS DE APLICACIÓN - ACCOUNT =====
@@ -102,6 +102,7 @@ public partial class Program
         builder.Services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
         builder.Services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
         builder.Services.AddScoped<ITipoConteoAppService, TipoConteoAppService>();
+        builder.Services.AddScoped<IBienAppService, BienAppService>();
 
         // ===== SERVICIOS GENERALES =====
         builder.Services.AddHttpContextAccessor();

@@ -243,10 +243,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[ALMA].[Vw_ArticuloConteo]",
-         "ObjectType": 3
-      },
-      {
          "Name": "[ALMA].[vw_Bien]",
          "ObjectType": 3
       },
@@ -268,6 +264,10 @@
       },
       {
          "Name": "[ALMA].[Vw_TipoBienConteo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[VwArticuloConteo]",
          "ObjectType": 3
       },
       {
@@ -293,10 +293,6 @@
       {
          "Name": "[SIS].[Vw_UsuarioSucursal]",
          "ObjectType": 3
-      },
-      {
-         "Name": "[ALMA].[sp_RegistrarConteo]",
-         "ObjectType": 1
       },
       {
          "Name": "[dbo].[spConfiguracionDeRolYClaims]",

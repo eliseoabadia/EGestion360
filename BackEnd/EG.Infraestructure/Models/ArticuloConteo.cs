@@ -11,7 +11,7 @@ public partial class ArticuloConteo
 
     public int FkidPeriodoConteoAlma { get; set; }
 
-    public int FkidTipoBienAlma { get; set; }
+    public int FkidBienAlma { get; set; }
 
     public int FkidSucursalSis { get; set; }
 
@@ -57,13 +57,13 @@ public partial class ArticuloConteo
 
     public virtual ICollection<DiscrepanciaConteo> DiscrepanciaConteos { get; set; } = new List<DiscrepanciaConteo>();
 
+    public virtual Bien FkidBienAlmaNavigation { get; set; }
+
     public virtual EstatusArticuloConteo FkidEstatusAlmaNavigation { get; set; }
 
     public virtual PeriodoConteo FkidPeriodoConteoAlmaNavigation { get; set; }
 
     public virtual Sucursal FkidSucursalSisNavigation { get; set; }
-
-    public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 
     public virtual Usuario FkidUsuarioConcluyoSisNavigation { get; set; }
 

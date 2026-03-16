@@ -103,7 +103,7 @@ namespace EG.Application.Services.ConteoCiclico
                     {
                         FkidPeriodoConteoAlma = request.PeriodoId,
                         FkidSucursalSis = request.SucursalId,  // SucursalId viene en el request
-                        FkidTipoBienAlma = tipo.PkidTipoBien,
+                        FkidBienAlma = tipo.PkidTipoBien,  // Temporal: usar BienId (debería ser FkidBienAlma)
                         FkidEstatusAlma = 1, // Estatus inicial "Pendiente"
                         CodigoBarras = tipo.CodigoClave,       // Usamos CodigoClave como código de barras
                         DescripcionArticulo = tipo.Descripcion,

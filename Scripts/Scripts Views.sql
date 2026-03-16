@@ -488,7 +488,7 @@ WHERE us.Activo = 1
   AND u.Activo = 1;
 
 
-
+  GO
 -- =============================================
 -- VISTA: ALMA.VistaPeriodoConteo
 -- Descripción: Vista completa para Periodos de Conteo
@@ -554,180 +554,116 @@ GO
 -- Basada en la estructura real de tablas
 -- =============================================
 
-CREATE OR ALTER VIEW ALMA.Vw_ArticuloConteo
+
+CREATE OR ALTER VIEW ALMA.VwArticuloConteo
 AS
 SELECT 
     ac.PKIdArticuloConteo AS Id,
     ac.FKIdPeriodoConteo_ALMA AS PeriodoId,
     pc.CodigoPeriodo,
     pc.Nombre AS PeriodoNombre,
-    ac.FKIdTipoBien_ALMA AS TipoBienId,
-    tb.CodigoClave AS CodigoArticulo,
-    tb.Descripcion AS DescripcionArticulo,
+    ac.FKIdBien_ALMA AS BienId,
+    b.Clave AS CodigoArticulo,
+    b.Descripcion AS DescripcionArticulo,
     ac.FKIdSucursal_SIS AS SucursalId,
     s.Nombre AS SucursalNombre,
     ac.FKIdEstatus_ALMA AS EstatusId,
     eac.Nombre AS EstatusNombre,
     eac.Descripcion AS EstatusDescripcion,
     ac.CodigoBarras,
-    -- UnidadMedida no existe en TipoBien, lo omitimos
-    -- Si existe en otra tabla, habría que agregarlo con JOIN
     ac.Ubicacion,
-    
-    -- Información del sistema
     ac.ExistenciaSistema,
     ac.ExistenciaFinal,
     ac.Diferencia,
     ac.PorcentajeDiferencia,
-    -- FechaUltimoConteoAnterior no existe, lo omitimos
-    NULL AS FechaUltimoConteoAnterior,
-    
-    -- Control de conteos
+    CASE WHEN ac.FechaUltimoConteoAnterior IS NOT NULL 
+         THEN DATEDIFF(DAY, ac.FechaUltimoConteoAnterior, GETDATE()) 
+         ELSE NULL END AS DiasUltimoConteo,
     ac.ConteosRealizados,
     ac.ConteosPendientes,
-    pc.MaximoConteosPorArticulo,
-    (pc.MaximoConteosPorArticulo - ac.ConteosRealizados) AS ConteosRestantes,
-    
-    -- Flags de estado - Usamos los campos que existen en la tabla
-    -- En lugar de EstaConcluido, usamos ConteosPendientes = 0 como indicador
-    CASE WHEN ac.ConteosPendientes = 0 THEN 1 ELSE 0 END AS EstaConcluido,
-    CASE WHEN ac.ConteosPendientes = 0 THEN 'Sí' ELSE 'No' END AS EstaConcluidoTexto,
-    
-    -- RequiereTercerConteo no existe, lo calculamos
+    pc.MaximoConteosPorArticulo AS MaximoConteosPorArticulo,
+    pc.MaximoConteosPorArticulo - ac.ConteosRealizados AS ConteosRestantes,
+    CASE WHEN ac.FKIdEstatus_ALMA IN (4, 5) THEN 1 ELSE 0 END AS EstaConcluido,
     CASE 
-        WHEN ac.ConteosRealizados = 2 AND ac.ConteosPendientes = 1 THEN 1 
-        ELSE 0 
-    END AS RequiereTercerConteo,
-    
-    -- Fechas importantes
+        WHEN ac.FKIdEstatus_ALMA = 4 THEN 'Concluido'
+        WHEN ac.FKIdEstatus_ALMA = 5 THEN 'Con Diferencia'
+        ELSE 'Pendiente'
+    END AS EstaConcluidoTexto,
+    CASE WHEN ac.FKIdEstatus_ALMA = 3 THEN 1 ELSE 0 END AS RequiereTercerConteo,
     ac.FechaInicioConteo,
     ac.FechaConclusion,
     ac.FKIdUsuarioConcluyo_SIS AS UsuarioConcluyoId,
-    CONCAT(uConcluye.Nombre, ' ', uConcluye.ApellidoPaterno) AS UsuarioConcluyoNombre,
-    
-    -- Información de la discrepancia (si existe)
+    u.Nombre AS UsuarioConcluyoNombre,
     d.PKIdDiscrepancia AS DiscrepanciaId,
     d.Valor1 AS DiscrepanciaValor1,
     d.Valor2 AS DiscrepanciaValor2,
     d.Valor3 AS DiscrepanciaValor3,
     d.ValorAceptado AS DiscrepanciaValorAceptado,
     d.MetodoResolucion AS DiscrepanciaMetodo,
-    CASE WHEN d.ValorAceptado IS NULL AND d.PKIdDiscrepancia IS NOT NULL THEN 1 ELSE 0 END AS TieneDiscrepanciaPendiente,
-    
-    -- Resumen de conteos realizados
-    (
-        SELECT STRING_AGG(
-            CONCAT('Conteo ', r.NumeroConteo, ': ', r.CantidadContada, ' (', 
-                   CONCAT(u.Nombre, ' ', u.ApellidoPaterno), ')'), 
-            ' | ')
-        FROM ALMA.RegistroConteo r
-        INNER JOIN SIS.Usuario u ON r.FKIdUsuario_SIS = u.PkIdUsuario
-        WHERE r.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-        AND r.Activo = 1
-    ) AS HistorialConteosTexto,
-    
-    -- Último conteo realizado
-    (
-        SELECT TOP 1 CantidadContada
-        FROM ALMA.RegistroConteo r
-        WHERE r.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-        AND r.Activo = 1
-        ORDER BY r.NumeroConteo DESC
-    ) AS UltimoConteo,
-    
-    -- Primer conteo
-    (
-        SELECT TOP 1 CantidadContada
-        FROM ALMA.RegistroConteo r
-        WHERE r.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-        AND r.Activo = 1
-        ORDER BY r.NumeroConteo ASC
-    ) AS PrimerConteo,
-    
-    -- Segundo conteo (si existe)
-    (
-        SELECT CantidadContada
-        FROM ALMA.RegistroConteo r
-        WHERE r.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-        AND r.NumeroConteo = 2
-        AND r.Activo = 1
-    ) AS SegundoConteo,
-    
-    -- Tercer conteo (si existe)
-    (
-        SELECT CantidadContada
-        FROM ALMA.RegistroConteo r
-        WHERE r.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-        AND r.NumeroConteo = 3
-        AND r.Activo = 1
-    ) AS TercerConteo,
-    
-    -- Conteos por usuario (JSON para frontend)
+    CASE WHEN d.PKIdDiscrepancia IS NOT NULL AND d.ValorAceptado IS NULL THEN 1 ELSE 0 END AS TieneDiscrepanciaPendiente,
+    STUFF((
+        SELECT ', ' + CONCAT('Conteo ', rc.NumeroConteo, ': ', rc.CantidadContada)
+        FROM ALMA.RegistroConteo rc
+        WHERE rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo AND rc.Activo = 1
+        ORDER BY rc.NumeroConteo
+        FOR XML PATH(''), TYPE
+    ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS HistorialConteosTexto,
+    (SELECT TOP 1 rc.CantidadContada 
+     FROM ALMA.RegistroConteo rc 
+     WHERE rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo AND rc.Activo = 1 
+     ORDER BY rc.NumeroConteo DESC) AS UltimoConteo,
+    (SELECT TOP 1 rc.CantidadContada 
+     FROM ALMA.RegistroConteo rc 
+     WHERE rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo AND rc.Activo = 1 AND rc.NumeroConteo = 1) AS PrimerConteo,
+    (SELECT TOP 1 rc.CantidadContada 
+     FROM ALMA.RegistroConteo rc 
+     WHERE rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo AND rc.Activo = 1 AND rc.NumeroConteo = 2) AS SegundoConteo,
+    (SELECT TOP 1 rc.CantidadContada 
+     FROM ALMA.RegistroConteo rc 
+     WHERE rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo AND rc.Activo = 1 AND rc.NumeroConteo = 3) AS TercerConteo,
+    -- Corregido: usa FOR JSON PATH para generar un arreglo JSON con todos los registros
     (
         SELECT 
-            r.NumeroConteo,
-            r.CantidadContada,
-            r.FechaConteo,
-            u.PkIdUsuario AS UsuarioId,
-            CONCAT(u.Nombre, ' ', u.ApellidoPaterno) AS UsuarioNombre,
-            r.Observaciones
-        FROM ALMA.RegistroConteo r
-        INNER JOIN SIS.Usuario u ON r.FKIdUsuario_SIS = u.PkIdUsuario
-        WHERE r.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-        AND r.Activo = 1
-        ORDER BY r.NumeroConteo
+            rc.NumeroConteo AS numeroConteo,
+            rc.CantidadContada AS cantidadContada,
+            FORMAT(rc.FechaConteo, 'yyyy-MM-dd HH:mm:ss') AS fechaConteo,
+            rc.FKIdUsuario_SIS AS usuarioId,
+            rc.Observaciones AS observaciones,
+            rc.EsReconteo AS esReconteo
+        FROM ALMA.RegistroConteo rc
+        WHERE rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo AND rc.Activo = 1
+        ORDER BY rc.NumeroConteo
         FOR JSON PATH
-    ) AS ConteosJSON,
-    
-    -- Colores e iconos para UI
-    CASE eac.Nombre
-        WHEN 'Pendiente 1er Conteo' THEN 'error'
-        WHEN 'Pendiente 2do Conteo' THEN 'warning'
-        WHEN 'Pendiente 3er Conteo' THEN 'warning'
-        WHEN 'Concluido Sin Diferencia' THEN 'success'
-        WHEN 'Concluido Con Diferencia' THEN 'info'
-        WHEN 'En Discrepancia' THEN 'error'
-        ELSE 'default'
-    END AS ColorEstatus,
-    
-    CASE eac.Nombre
-        WHEN 'Pendiente 1er Conteo' THEN '⏳'
-        WHEN 'Pendiente 2do Conteo' THEN '🔄'
-        WHEN 'Pendiente 3er Conteo' THEN '⚠️'
-        WHEN 'Concluido Sin Diferencia' THEN '✅'
-        WHEN 'Concluido Con Diferencia' THEN '⚠️✅'
-        WHEN 'En Discrepancia' THEN '❌'
-        ELSE '📦'
-    END AS IconoEstatus,
-    
-    -- Badge para UI
-    CASE 
-        WHEN ac.ConteosPendientes = 0 AND ac.Diferencia = 0 THEN 'Coincide'
-        WHEN ac.ConteosPendientes = 0 AND ac.Diferencia != 0 THEN 'Con diferencia'
-        WHEN ac.ConteosRealizados = 2 AND ac.ConteosPendientes = 1 THEN 'Requiere 3er conteo'
-        WHEN ac.ConteosRealizados = 0 THEN 'Sin iniciar'
-        WHEN ac.ConteosRealizados = 1 THEN '1er conteo listo'
-        WHEN ac.ConteosRealizados = 2 THEN '2do conteo listo'
-        ELSE eac.Nombre
-    END AS BadgeTexto,
-    
-    -- Auditoría
+    ) AS ConteosJson,
+    eac.Color AS ColorEstatus,
+    eac.Icono AS IconoEstatus,
+    eac.BadgeTexto AS BadgeTexto,
     ac.Activo,
     ac.FechaCreacion,
-    CONCAT(uCreacion.Nombre, ' ', uCreacion.ApellidoPaterno) AS UsuarioCreacionNombre,
+    uc.Nombre AS UsuarioCreacionNombre,
     ac.FechaModificacion,
-    CONCAT(uModificacion.Nombre, ' ', uModificacion.ApellidoPaterno) AS UsuarioModificacionNombre
-    
+    um.Nombre AS UsuarioModificacionNombre,
+    b.Serie,
+    b.Modelo,
+    m.Descripcion AS MarcaBien,
+    tb.CodigoClave AS CodigoTipoBien,
+    tb.Descripcion AS DescripcionTipoBien,
+    a.Nombre AS AreaNombre,
+    a.Clave AS AreaClave
 FROM ALMA.ArticuloConteo ac
 INNER JOIN ALMA.PeriodoConteo pc ON ac.FKIdPeriodoConteo_ALMA = pc.PKIdPeriodoConteo
-INNER JOIN ALMA.TipoBien tb ON ac.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+INNER JOIN ALMA.Bien b ON ac.FKIdBien_ALMA = b.PKIdBien
+INNER JOIN ALMA.TipoBien tb ON b.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+LEFT JOIN ALMA.Marca m ON b.FKIdMarca_ALMA = m.PKIdMarca
 INNER JOIN SIS.Sucursal s ON ac.FKIdSucursal_SIS = s.PKIdSucursal
 INNER JOIN ALMA.EstatusArticuloConteo eac ON ac.FKIdEstatus_ALMA = eac.PKIdEstatusArticulo
-LEFT JOIN ALMA.DiscrepanciaConteo d ON ac.PKIdArticuloConteo = d.FKIdArticuloConteo_ALMA
-LEFT JOIN SIS.Usuario uConcluye ON ac.FKIdUsuarioConcluyo_SIS = uConcluye.PkIdUsuario
-LEFT JOIN SIS.Usuario uCreacion ON ac.UsuarioCreacion = uCreacion.PkIdUsuario
-LEFT JOIN SIS.Usuario uModificacion ON ac.UsuarioModificacion = uModificacion.PkIdUsuario
-WHERE ac.Activo = 1
+LEFT JOIN SIS.Usuario u ON ac.FKIdUsuarioConcluyo_SIS = u.PkIdUsuario
+LEFT JOIN SIS.Usuario uc ON ac.UsuarioCreacion = uc.PkIdUsuario
+LEFT JOIN SIS.Usuario um ON ac.UsuarioModificacion = um.PkIdUsuario
+LEFT JOIN ALMA.DiscrepanciaConteo d ON ac.PKIdArticuloConteo = d.FKIdArticuloConteo_ALMA AND d.Activo = 1
+LEFT JOIN SIS.Area a ON b.FKIdArea_SIS = a.PKIdArea
+WHERE ac.Activo = 1;
+GO
 GO
 
 -- =============================================
@@ -740,7 +676,6 @@ GO
 -- Descripción: Vista completa para Registros de Conteo
 -- SIN la columna UsuarioCreacion que no existe
 -- =============================================
-
 CREATE OR ALTER VIEW ALMA.Vw_RegistroConteo
 AS
 SELECT 
@@ -756,8 +691,8 @@ SELECT
     -- Información de la sucursal
     s.Nombre AS SucursalNombre,
     
-    -- Información del artículo
-    ac.FKIdTipoBien_ALMA AS TipoBienId,
+    -- Información del artículo (desde Bien y TipoBien)
+    b.FKIdTipoBien_ALMA AS TipoBienId,
     tb.CodigoClave AS CodigoArticulo,
     tb.Descripcion AS DescripcionArticulo,
     ac.ExistenciaSistema,
@@ -839,9 +774,10 @@ FROM ALMA.RegistroConteo rc
 INNER JOIN ALMA.PeriodoConteo pc ON rc.FKIdPeriodoConteo_ALMA = pc.PKIdPeriodoConteo
 INNER JOIN SIS.Sucursal s ON rc.FKIdSucursal_SIS = s.PKIdSucursal
 INNER JOIN ALMA.ArticuloConteo ac ON rc.FKIdArticuloConteo_ALMA = ac.PKIdArticuloConteo
-INNER JOIN ALMA.TipoBien tb ON ac.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+INNER JOIN ALMA.Bien b ON ac.FKIdBien_ALMA = b.PKIdBien   -- Nuevo JOIN
+INNER JOIN ALMA.TipoBien tb ON b.FKIdTipoBien_ALMA = tb.PKIdTipoBien
 INNER JOIN SIS.Usuario u ON rc.FKIdUsuario_SIS = u.PkIdUsuario
-WHERE rc.Activo = 1
+WHERE rc.Activo = 1;
 GO
 
 -- ====
@@ -932,37 +868,44 @@ GROUP BY p.PKIdPeriodoConteo, p.CodigoPeriodo, p.Nombre, s.Nombre, tc.Nombre,
          ep.Nombre, p.FechaInicio, p.FechaFin, p.FechaCierre, 
          p.TotalArticulos, p.ArticulosConcluidos, p.ArticulosConDiferencia
 GO
-
--- Vista de detalle de artículos en conteo
 CREATE OR ALTER VIEW ALMA.Vw_DetalleArticulos AS
 SELECT 
     a.PKIdArticuloConteo,
     p.CodigoPeriodo,
-    p.Nombre as Periodo,
-    s.Nombre as Sucursal,
-    tb.CodigoClave as CodigoArticulo,
-    tb.Descripcion as Articulo,
+    p.Nombre AS Periodo,
+    s.Nombre AS Sucursal,
+    tb.CodigoClave AS CodigoArticulo,
+    tb.Descripcion AS Articulo,
     a.ExistenciaSistema,
     a.ExistenciaFinal,
     a.Diferencia,
     a.PorcentajeDiferencia,
-    eac.Nombre as Estatus,
+    eac.Nombre AS Estatus,
     a.ConteosRealizados,
     a.ConteosPendientes,
     a.FechaInicioConteo,
     a.FechaConclusion,
-    u.Nombre + ' ' + u.ApellidoPaterno as ConcluidoPor,
-    (SELECT STRING_AGG(CONCAT('Conteo', rc.NumeroConteo, ': ', rc.CantidadContada, ' (', uc.Nombre, ')'), ' | ') 
-     FROM ALMA.RegistroConteo rc
-     INNER JOIN SIS.Usuario uc ON rc.FKIdUsuario_SIS = uc.PkIdUsuario
-     WHERE rc.FKIdArticuloConteo_ALMA = a.PKIdArticuloConteo) as HistorialConteos
+    -- Nombre completo del usuario que concluyó (maneja nulos)
+    LTRIM(RTRIM(CONCAT(u.Nombre, ' ', u.ApellidoPaterno, ISNULL(' ' + u.ApellidoMaterno, '')))) AS ConcluidoPor,
+    -- Historial de conteos usando FOR XML PATH (compatible con versiones anteriores)
+    STUFF((
+        SELECT ' | ' + CONCAT('Conteo ', rc.NumeroConteo, ': ', rc.CantidadContada, ' (', 
+                LTRIM(RTRIM(CONCAT(uc.Nombre, ' ', uc.ApellidoPaterno, ISNULL(' ' + uc.ApellidoMaterno, '')))), ')')
+        FROM ALMA.RegistroConteo rc
+        INNER JOIN SIS.Usuario uc ON rc.FKIdUsuario_SIS = uc.PkIdUsuario
+        WHERE rc.FKIdArticuloConteo_ALMA = a.PKIdArticuloConteo
+          AND rc.Activo = 1
+        ORDER BY rc.NumeroConteo
+        FOR XML PATH('')
+    ), 1, 3, '') AS HistorialConteos
 FROM ALMA.ArticuloConteo a
 INNER JOIN ALMA.PeriodoConteo p ON a.FKIdPeriodoConteo_ALMA = p.PKIdPeriodoConteo
 INNER JOIN SIS.Sucursal s ON a.FKIdSucursal_SIS = s.PKIdSucursal
-INNER JOIN ALMA.TipoBien tb ON a.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+INNER JOIN ALMA.Bien b ON a.FKIdBien_ALMA = b.PKIdBien                     -- Join necesario para llegar a TipoBien
+INNER JOIN ALMA.TipoBien tb ON b.FKIdTipoBien_ALMA = tb.PKIdTipoBien      -- Ahora obtenemos los datos del artículo correctamente
 INNER JOIN ALMA.EstatusArticuloConteo eac ON a.FKIdEstatus_ALMA = eac.PKIdEstatusArticulo
 LEFT JOIN SIS.Usuario u ON a.FKIdUsuarioConcluyo_SIS = u.PkIdUsuario
-WHERE a.Activo = 1
+WHERE a.Activo = 1;
 GO
 
 
