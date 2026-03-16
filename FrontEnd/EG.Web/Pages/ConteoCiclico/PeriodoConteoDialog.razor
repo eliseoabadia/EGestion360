@@ -15,16 +15,14 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos del periodo..."
-                OnConfirm="GuardarCambiosAsync"
-                OnCancel="CancelAsync">
+                OnConfirm="GuardarCambiosAsync">
+    <!-- Quitado OnCancel -->
 
     <BaseEntityForm TEntity="PeriodoConteoResponse"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle"
-                    HeaderIcon="@(Id.HasValue? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)"
-                    HeaderColor="Color.Primary">
-
+                    HeaderTitle="@dialogTitle">
+        <!-- Quitado HeaderIcon -->
         <!-- Indicador de progreso -->
         @if (isLoading)
         {
@@ -234,7 +232,7 @@
                                 <MudSwitch @bind-Value="periodo.RequiereAprobacionSupervisor"
                                            Color="Color.Primary"
                                            Label="Requiere aprobación del supervisor"
-                                           ThumbIcon="@(periodo.RequiereAprobacionSupervisor? Icons.Material.Filled.HowToReg : Icons.Material.Filled.PersonOff)" />
+                                           ThumbIcon="@(periodo.RequiereAprobacionSupervisor.Value? Icons.Material.Filled.HowToReg : Icons.Material.Filled.PersonOff)" />
                             </MudItem>
 
                             <!-- Estado Activo/Inactivo -->
@@ -276,7 +274,7 @@
                                     <MudText Typo="Typo.caption">
                                         <strong>Resumen de configuración:</strong><br />
                                         • Máximo de conteos: @(periodo.MaximoConteosPorArticulo) por artículo<br />
-                                        • @(periodo.RequiereAprobacionSupervisor ? "Requiere aprobación del supervisor" : "No requiere aprobación del supervisor")
+                                        • @(periodo.RequiereAprobacionSupervisor.Value ? "Requiere aprobación del supervisor" : "No requiere aprobación del supervisor")
                                     </MudText>
                                 </MudAlert>
                             </MudItem>
@@ -323,6 +321,7 @@
 
 @code {
     [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;   // ← Agregado para cerrar
 
     private BaseCrudDialog<PeriodoConteoResponse> dialog = null!;
     private BaseEntityForm<PeriodoConteoResponse> form = null!;
@@ -442,9 +441,12 @@
         catch { }
     }
 
+    // Método de cancelación llamado desde el botón del diálogo (si existe)
+    // Si BaseCrudDialog ya tiene su propio botón de cancelar, este método puede no ser necesario,
+    // pero lo dejamos por si se necesita llamar manualmente.
     public async Task CancelAsync()
     {
-        dialog.Close(false);
+        MudDialog.Close(false);   // ← CORREGIDO: usa MudDialog en lugar de dialog
         await Task.CompletedTask;
     }
 
@@ -520,7 +522,7 @@
             if (response?.Success == true)
             {
                 Snackbar.Add(response.Message ?? $"✅ Periodo {(Id.HasValue ? "actualizado" : "creado")} exitosamente", Severity.Success);
-                dialog.Close(true);
+                MudDialog.Close(true);   // ← CORREGIDO: usa MudDialog en lugar de dialog
             }
             else
             {

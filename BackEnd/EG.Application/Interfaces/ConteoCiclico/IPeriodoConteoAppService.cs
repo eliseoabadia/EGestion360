@@ -5,18 +5,27 @@ namespace EG.Application.Interfaces.ConteoCiclico
 {
     public interface IPeriodoConteoAppService
     {
-        // Consultas
-        Task<PagedResult<VwPeriodoConteoResponse>> GetAllAsync();
-        Task<VwPeriodoConteoResponse> GetByIdAsync(int id);
-        Task<PagedResult<VwPeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest request);
+        // Consultas básicas
+        Task<PagedResult<PeriodoConteoResponse>> GetAllAsync();
+        Task<PeriodoConteoResponse> GetByIdAsync(int id);
+        Task<PagedResult<PeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
 
-        // Comandos (CREATE, UPDATE, DELETE)
-        Task<VwPeriodoConteoResponse> CreateAsync(PeriodoConteoDto dto, int usuarioActual);
-        Task<VwPeriodoConteoResponse> UpdateAsync(int id, PeriodoConteoDto dto, int usuarioActual);
-        Task DeleteAsync(int id);
-        
-        // Operaciones específicas
-        Task CambiarEstatusAsync(int id, int estatusId, int usuarioActual);
-        Task CerrarPeriodoAsync(int id, int usuarioActual);
+        // Filtros específicos
+        Task<PagedResult<PeriodoConteoResponse>> GetBySucursalIdAsync(int sucursalId);
+        Task<PagedResult<PeriodoConteoResponse>> GetByEstatusIdAsync(int estatusId);
+        Task<PagedResult<PeriodoConteoResponse>> GetPeriodosAbiertosAsync();
+        Task<PagedResult<PeriodoConteoResponse>> GetPeriodosCerradosAsync();
+
+        // Operaciones de escritura
+        Task<PeriodoConteoResponse> CreateAsync(PeriodoConteoDto dto, int usuarioActual);
+        Task<PeriodoConteoResponse> UpdateAsync(int id, PeriodoConteoDto dto, int usuarioActual);
+        Task<bool> DeleteAsync(int id, int usuarioActual);
+
+        // Acciones de negocio
+        Task<bool> CerrarPeriodoAsync(int id, int usuarioActual);
+        Task<bool> ReabrirPeriodoAsync(int id, int usuarioActual);
+        Task<bool> ActualizarEstadisticasAsync(int id);
+        Task<bool> CambiarEstatusAsync(int id, int estatusId, int usuarioActual);
+        Task<PagedResult<PeriodoConteoResponse>> GetMisPeriodosAsync(int usuarioId);
     }
 }

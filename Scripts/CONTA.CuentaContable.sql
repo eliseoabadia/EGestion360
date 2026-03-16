@@ -245,7 +245,7 @@ WHERE NOT EXISTS (  -- Evitar duplicados
 SET IDENTITY_INSERT [CONTA].[Concepto] OFF
 
 
-drop table if exists [CONTA].[Partida]
+--drop table if exists [CONTA].[Partida]
 CREATE TABLE [CONTA].[Partida](
 	[PKIdPartida] [int] IDENTITY(1,1) NOT NULL,
 	[FKIdConcepto_SIS] [int] NULL,
@@ -298,7 +298,7 @@ SET IDENTITY_INSERT [CONTA].[Partida] OFF
 CREATE TABLE [ALMA].[Nivel](
 	[PKIdNivel] [int] IDENTITY(1,1) NOT NULL,
 	[Nivel] [int] NOT NULL,
-	[Descipcion] [nvarchar](20) NOT NULL,
+	[Descripcion] [nvarchar](20) NOT NULL,
 	Activo BIT NOT NULL DEFAULT 1,
     FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
@@ -873,354 +873,706 @@ INSERT INTO ALMA.TipoConteo (Nombre, Descripcion) VALUES
 ('Aleatorio', 'Conteo sorpresa sin programación')
 GO
 
--- =============================================
--- PROCEDIMIENTOS ALMACENADOS
--- =============================================
 
--- SP para registrar un conteo (con lógica de negocio)
+CREATE TABLE [ALMA].[TipoPatrimonio](
+	[PKIdTipoPatrimonio] [int] IDENTITY(1,1) NOT NULL,
+	[Descripcion] [nvarchar](50) NOT NULL,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+     CONSTRAINT PK_TipoPatrimonio_Id PRIMARY KEY ([PKIdTipoPatrimonio])
+     )
+
+
+INSERT INTO [ALMA].[TipoPatrimonio] ([Descripcion],UsuarioCreacion) VALUES
+('BIENES PROPIOS',1),
+('ARRENDADOS',1),
+('BIENES NO PERTENECIENTES AL INSTITUTO',1)
 GO
-CREATE OR ALTER PROCEDURE ALMA.sp_RegistrarConteo
-    @PKIdArticuloConteo INT,
-    @CantidadContada DECIMAL(18,4),
-    @FKIdUsuario_SIS INT,
-    @Observaciones NVARCHAR(500) = NULL,
-    @Latitud DECIMAL(9,6) = NULL,
-    @Longitud DECIMAL(9,6) = NULL,
-    @FotoPath NVARCHAR(500) = NULL
-AS
-BEGIN
-    SET NOCOUNT ON
-    
-    DECLARE @FKIdPeriodoConteo INT
-    DECLARE @FKIdSucursal INT
-    DECLARE @ConteosRealizados INT
-    DECLARE @MaximoConteos INT
-    DECLARE @ExistenciaSistema DECIMAL(18,4)
-    DECLARE @EstatusActual INT
-    DECLARE @NuevoEstatus INT
-    DECLARE @NumeroConteo INT
-    DECLARE @FechaActual DATETIME2 = GETDATE()
-    
-    BEGIN TRANSACTION
-    
-    BEGIN TRY
-        -- Obtener información del artículo con bloqueo
-        SELECT 
-            @FKIdPeriodoConteo = ac.FKIdPeriodoConteo_ALMA,
-            @FKIdSucursal = ac.FKIdSucursal_SIS,
-            @ConteosRealizados = ac.ConteosRealizados,
-            @ExistenciaSistema = ac.ExistenciaSistema,
-            @EstatusActual = ac.FKIdEstatus_ALMA,
-            @MaximoConteos = p.MaximoConteosPorArticulo
-        FROM ALMA.ArticuloConteo ac WITH (UPDLOCK)
-        INNER JOIN ALMA.PeriodoConteo p ON ac.FKIdPeriodoConteo_ALMA = p.PKIdPeriodoConteo
-        WHERE ac.PKIdArticuloConteo = @PKIdArticuloConteo AND ac.Activo = 1
+
+--drop table [SIS].[TipoProveedor] if exists [SIS].[TipoProveedor]
+CREATE TABLE [SIS].[TipoProveedor](
+	[PkIdTipoProveedor] [int] IDENTITY(1,1) NOT NULL,
+	[Descripcion] [varchar](80) NOT NULL,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+     CONSTRAINT PK_TipoProveedor_Id PRIMARY KEY ([PkIdTipoProveedor])
+     )
+
+     INSERT INTO [SIS].[TipoProveedor] ([Descripcion],UsuarioCreacion) VALUES
+    ('Fabricante',1),
+    ('Distribuidor',1),
+    ('MiPyME',1)
+GO
+
+CREATE TABLE [SIS].[EstatusProveedor](
+	[PKIdEstatusProveedor] [int] IDENTITY(1,1) NOT NULL,
+	[Descripcion] [nvarchar](150) NOT NULL,
+	[Color] [nvarchar](8) NULL,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+     CONSTRAINT PK_EstatusProveedor_Id PRIMARY KEY ([PKIdEstatusProveedor])
+     )
+
+ 
+INSERT INTO [SIS].[EstatusProveedor] (Descripcion,Color,UsuarioCreacion) values('Normal','#D3D3D3',1)
+INSERT INTO [SIS].[EstatusProveedor] (Descripcion,Color,UsuarioCreacion) values('Validado','#CBE1E8',1)
+INSERT INTO [SIS].[EstatusProveedor] (Descripcion,Color,UsuarioCreacion) values('Contrato Marco','#D1B7EA',1)
+INSERT INTO [SIS].[EstatusProveedor] (Descripcion,Color,UsuarioCreacion) values('Inhabilitado','#F59494',1)
+
+
+
+--drop table [SIS].[Proveedor] 
+CREATE TABLE [SIS].[Proveedor](
+	[PKIdProveedor] [int] IDENTITY(1,1) NOT NULL,
+
+	[FkIdTipoProveedor_SIS] [int] NULL,
+	[FKIdEstatusProveedor_SIS] [int] NULL,
+	[FKIdCuentaContable_SIS] [int] NULL,
+	[FKIdMunicipio_SIS] [int] NOT NULL,
+	[FKIdEstado_SIS] [int] NOT NULL,
+	[FKIdPais_SIS] [int] NOT NULL,
+
+	[FKIdResponsable_SIS] [int] NULL,
+	[FKIdAESector_SIS] [int] NULL,
+	[FKIdAEDivision_SIS] [int] NULL,
+	[FKIdAEGrupo_SIS] [int] NULL,
+	[FKIdAEClase_SIS] [int] NULL,
+
+	[Nombre] [nvarchar](500) NOT NULL,
+	[RFC] [nvarchar](50) NULL,
+	[Colonia] [nvarchar](50) NULL,
+	[CP] [nvarchar](50) NULL,
+	[Ciudad] [nvarchar](50) NULL,
+	[EMAIL] [nvarchar](50) NULL,
+	
+	[Clave] [nvarchar](10) NOT NULL,
+	[Calle] [nvarchar](50) NULL,
+	[Numero] [nvarchar](10) NULL,
+	[FechaAlta] [datetime] NULL,
+	[TelefonoInstitucional] [nvarchar](20) NULL,
+	[Notas] [nvarchar](max) NULL,
+	[PaginaWeb] [nvarchar](100) NULL,
+	[NumeroInt] [nvarchar](10) NULL,
+	[CURP] [nvarchar](18) NULL,
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+
+    CONSTRAINT PK_Proveedor_Id PRIMARY KEY ([PKIdProveedor]),
+
+    CONSTRAINT FK_Proveedor_FkIdTipoProveedor FOREIGN KEY ([FkIdTipoProveedor_SIS]) REFERENCES [SIS].[TipoProveedor]([PkIdTipoProveedor]),
+    CONSTRAINT FK_Proveedor_FKIdEstatusProveedor FOREIGN KEY ([FKIdEstatusProveedor_SIS]) REFERENCES [SIS].[EstatusProveedor]([PKIdEstatusProveedor]),
+    CONSTRAINT FK_Proveedor_FKIdCuentaContable FOREIGN KEY ([FKIdCuentaContable_SIS]) REFERENCES CONTA.CuentaContable([PKIdCuentaContable]),
+    CONSTRAINT FK_Proveedor_FKIdMunicipio FOREIGN KEY ([FKIdMunicipio_SIS]) REFERENCES SIS.Municipios([PKIdMunicipio]),
+    CONSTRAINT FK_Proveedor_FKIdEstado FOREIGN KEY ([FKIdEstado_SIS]) REFERENCES SIS.Estados([PKIdEstado]),
+    CONSTRAINT FK_Proveedor_FKIdPais FOREIGN KEY ([FKIdPais_SIS]) REFERENCES SIS.Paises([PKIdPais]),
+    )
+
+    -- Activar INSERT con IDs específicos
+SET IDENTITY_INSERT [SIS].[Proveedor] ON
+
+INSERT INTO [SIS].[Proveedor]
+           ([PKIdProveedor]
+           ,[FkIdTipoProveedor_SIS]
+           ,[FKIdEstatusProveedor_SIS]
+           ,[FKIdCuentaContable_SIS]
+           ,[FKIdMunicipio_SIS]
+           ,[FKIdEstado_SIS]
+           ,[FKIdPais_SIS]
+           --,[FKIdResponsable_SIS]
+           --,[FKIdAESector_SIS]
+           --,[FKIdAEDivision_SIS]
+           --,[FKIdAEGrupo_SIS]
+           --,[FKIdAEClase_SIS]
+           ,[Nombre]
+           ,[RFC]
+           ,[Colonia]
+           ,[CP]
+           ,[Ciudad]
+           ,[EMAIL]
+           ,[Clave]
+           ,[Calle]
+           ,[Numero]
+           ,[FechaAlta]
+           ,[TelefonoInstitucional]
+           ,[Notas]
+           ,[PaginaWeb]
+           ,[NumeroInt]
+           ,[CURP]
+           ,[Activo]
+           ,[FechaCreacion]
+           ,[UsuarioCreacion])
+    SELECT p.[PK_IdProveedor]
+      ,p.[Fk_IdTipoProveedor]
+      ,p.[FK_IdEstatusProveedor]
+      ,[FK_IdCuentaContable__SIS] = tp2.PKIdCuentaContable
+      ,p.[FK_IdMunicipio__SIS]
+      ,p.[FK_IdEstado__SIS]
+      ,p.[FK_IdPais__SIS]
+      --,[FK_IdResponsable__SIS]
+      --,[FK_IdAESector__SIS]
+      --,[FK_IdAEDivision__SIS]
+      --,[FK_IdAEGrupo__SIS]
+      --,[FK_IdAEClase__SIS]
+      ,p.[Nombre]
+      ,p.[RFC]
+      ,p.[Colonia]
+      ,p.[CP]
+      ,p.[Ciudad]
+      ,p.[EMAIL]
+      ,p.[Clave]
+      ,p.[Calle]
+      ,p.[Numero]
+      ,p.[FechaAlta]
+      ,p.[TelefonoInstitucional]
+      ,p.[Notas]
+      ,p.[PaginaWeb]
+      ,p.[NumeroInt]
+      ,p.[CURP]
+      ,p.[CT_LIVE]
+      ,p.[CT_CreatedDate]
+      ,p.[CT_CreatedBy]
+  FROM [BD_PRESUPUESTO].[SIS].[Proveedor] p
+  inner join [BD_PRESUPUESTO].[SIS].CuentaContable c on p.FK_IdCuentaContable__SIS = c.PK_IdCuentaContable
+  inner join [GestionEmpresarial].CONTA.CuentaContable tp2 on c.Descripcion = tp2.Descripcion
+  where [Fk_IdTipoProveedor] is not null and [FK_IdEstatusProveedor] is not null and [FK_IdEstado__SIS] is not null and [FK_IdPais__SIS] is not null
+  and p.FK_IdMunicipio__SIS in (select PKIdMunicipio from sis.Municipios)
+
+  -- Desactivar INSERT con IDs específicos
+SET IDENTITY_INSERT [SIS].[Proveedor] OFF
+
+--drop table [NOM].[Persona]
+CREATE TABLE  [NOM].[Persona](
+	[PKIdPersona] [int] IDENTITY(1,1) NOT NULL,
+	[Clave] [nvarchar](15) NOT NULL,
+	[Nombre] [nvarchar](50) NOT NULL,
+	[Paterno] [nvarchar](50) NOT NULL,
+	[Materno] [nvarchar](50) NOT NULL,
+	[Telefono_particular] [nvarchar](15) NULL,
+	[Telefono_movil] [nvarchar](15) NULL,
+	[Fecha_de_Inicio] [datetime] NOT NULL,
+	[Fecha_Fin] [datetime] NULL,
+	[RFC] [nvarchar](15) NOT NULL,
+	[Curp] [nvarchar](18) NOT NULL,
+	[FechaNacimiento] [datetime] NOT NULL,
+	[Sexo] [nvarchar](10) NULL,
+	[ESTADO_CIVIL] [nvarchar](20) NULL,
+	[Municipio] [nvarchar](20) NULL,
+	[REG_IMSS] [nvarchar](12) NULL,
+	[NoCartilla] [nvarchar](16) NULL,
+	[NoLicencia] [nvarchar](16) NULL,
+	[NoPasaporte] [nvarchar](16) NULL,
+	[NoCredencialElector] [nvarchar](32) NULL,
+	[Calle] [nvarchar](40) NULL,
+	[Num_exterior] [nvarchar](10) NULL,
+	[Num_interior] [nvarchar](10) NULL,
+	[Colonia] [nvarchar](40) NULL,
+	[CP] [nvarchar](6) NULL,
+	[Estado] [nvarchar](30) NULL,
+	[CORREO_ELECTRONICO] [nvarchar](250) NULL,
+	[TIPO_CONTRATACION] [nvarchar](50) NULL,
+	[PUESTO] [nvarchar](100) NULL,
+	[SUELDO_BASE] [float] NULL,
+	[COMPENSACION_GARANTIZADA] [float] NULL,
+	[BANCO] [nvarchar](100) NULL,
+	[NUMERO_CUENTA] [nvarchar](25) NULL,
+	[CLABE] [nvarchar](50) NULL,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Persona_Id PRIMARY KEY ([PKIdPersona]),
+    )
+
+
+    SET IDENTITY_INSERT [NOM].[Persona] ON
+
+INSERT INTO [NOM].[Persona]
+           ([PKIdPersona]
+           ,[Clave]
+           ,[Nombre]
+           ,[Paterno]
+           ,[Materno]
+           ,[Telefono_particular]
+           ,[Telefono_movil]
+           ,[Fecha_de_Inicio]
+           ,[Fecha_Fin]
+           ,[RFC]
+           ,[Curp]
+           ,[FechaNacimiento]
+           ,[Sexo]
+           ,[ESTADO_CIVIL]
+           ,[Municipio]
+           ,[REG_IMSS]
+           ,[NoCartilla]
+           ,[NoLicencia]
+           ,[NoPasaporte]
+           ,[NoCredencialElector]
+           ,[Calle]
+           ,[Num_exterior]
+           ,[Num_interior]
+           ,[Colonia]
+           ,[CP]
+           ,[Estado]
+           ,[CORREO_ELECTRONICO]
+           ,[TIPO_CONTRATACION]
+           ,[PUESTO]
+           ,[SUELDO_BASE]
+           ,[COMPENSACION_GARANTIZADA]
+           ,[BANCO]
+           ,[NUMERO_CUENTA]
+           ,[CLABE]
+           ,[Activo]
+           ,[FechaCreacion]
+           ,[UsuarioCreacion])
+    SELECT [PK_IdPersona]
+      ,[Clave]
+      ,[Nombre]
+      ,[Paterno]
+      ,[Materno]
+      ,[Telefono_particular]
+      ,[Telefono_movil]
+      ,[Fecha_de_Inicio]
+      ,[Fecha_Fin]
+      ,[RFC]
+      ,[Curp]
+      ,[FechaNacimiento]
+      ,[Sexo]
+      ,[ESTADO_CIVIL]
+      ,[Municipio]
+      ,[REG_IMSS]
+      ,[NoCartilla]
+      ,[NoLicencia]
+      ,[NoPasaporte]
+      ,[NoCredencialElector]
+      ,[Calle]
+      ,[Num_exterior]
+      ,[Num_interior]
+      ,[Colonia]
+      ,[CP]
+      ,[Estado]
+      ,[CORREO_ELECTRONICO]
+      ,[TIPO_CONTRATACION]
+      ,[PUESTO]
+      ,[SUELDO_BASE]
+      ,[COMPENSACION_GARANTIZADA]
+      ,[BANCO]
+      ,[NUMERO_CUENTA]
+      ,[CLABE]
+      ,[CT_LIVE]
+      ,[CT_CreatedDate]
+      ,[CT_CreatedBy]
+  FROM [BD_PRESUPUESTO].[RHCT].[Persona]
+
+  -- Desactivar INSERT con IDs específicos
+SET IDENTITY_INSERT [NOM].[Persona] OFF
+
+
+GO
+
+
+--drop table [SIS].[Area]
+CREATE TABLE [SIS].[Area](
+	[PKIdArea] [int] IDENTITY(1,1) NOT NULL,
+	[FKIdArea_SIS] [int] NULL,
+	--[FK_IdPersona__RHCT] [int] NULL,
+	[FKIdAreaDocto_SIS] [int]  NULL,
+	[Clave] [nvarchar](15) NOT NULL,
+	[Nombre] [nvarchar](200) NOT NULL,
+	[UltimoInv] [datetime] NULL,
+	[ZonaEconomica] [nvarchar](100) NULL,
+	[Direccion] [nvarchar](64) NULL,
+	[Colonia] [nvarchar](64) NULL,
+	[CP] [nvarchar](5) NULL,
+	[Telefono] [nvarchar](32) NULL,
+	--[FL_Foto] [nvarchar](max) NULL,
+	--[IM_Foto] [image] NULL,
+	[Aprovado] BIT NOT NULL DEFAULT 01,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+
+    CONSTRAINT PK_Area_Id PRIMARY KEY ([PKIdArea]),
+
+    CONSTRAINT FK_Area_FKIdArea FOREIGN KEY ([FKIdArea_SIS]) REFERENCES [SIS].[Area]([PKIdArea])
+    )
+
+    SET IDENTITY_INSERT [SIS].[Area] ON
+
+-- Insertar los datos manteniendo el ID original
+INSERT INTO [SIS].[Area] (
+    [PKIdArea]
+      ,[FKIdArea_SIS]
+      --,[FK_IdAreaDocto__SIS]
+      ,[Clave]
+      ,[Nombre]
+      ,[UltimoInv]
+      ,[ZonaEconomica]
+      ,[Direccion]
+      ,[Colonia]
+      ,[CP]
+      ,[Telefono]
+      ,[Aprovado]
+      ,[Activo]
+      ,[FechaCreacion]
+      ,[UsuarioCreacion]
+)
+SELECT 
+    [PK_IdArea]
+      ,[FK_IdArea__SIS]
+      ,[Clave]
+      ,[Nombre]
+      --,[FK_IdPersona__RHCT]
+      --,[FK_IdAreaDocto__SIS]
+      ,[UltimoInv]
+      ,[ZonaEconomica]
+      ,[Direccion]
+      ,[Colonia]
+      ,[CP]
+      ,[Telefono]
+      --,[FL_Foto]
+      --,[IM_Foto]
+      ,[Aprovado]
+      ,[CT_LIVE]
+      ,[CT_CreatedDate]
+      ,[CT_CreatedBy]
+FROM [BD_PRESUPUESTO].[SIS].[Area]
+
+-- Desactivar INSERT con IDs específicos
+SET IDENTITY_INSERT [SIS].[Area] OFF
+
+    GO
+    --drop table [NOM].[PersonaArea]
+    CREATE TABLE [NOM].[PersonaArea](
+	[PKIdPersonaArea] [int] IDENTITY(1,1) NOT NULL,
+	[FKIdPersona_NOM] [int] NOT NULL,
+	[FKIdArea_SIS] [int] NOT NULL,
+	[IsAdscrito] [bit] NOT NULL,
+	[EsSolicitante] [bit] NULL,
+	[EsAutorizador] [bit] NULL,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_PKIdPersonaArea_Id PRIMARY KEY ([PKIdPersonaArea]),
+
+    CONSTRAINT FK_PersonaArea_FKIdPersona FOREIGN KEY ([FKIdPersona_NOM]) REFERENCES [NOM].[Persona]([PKIdPersona]),
+    CONSTRAINT FK_PersonaArea_FKIdArea FOREIGN KEY ([FKIdArea_SIS]) REFERENCES [SIS].[Area]([PKIdArea])
+    )
+
+    -- Insertar los datos manteniendo el ID original
+    SET IDENTITY_INSERT [NOM].[PersonaArea] ON
+
+INSERT INTO [NOM].[PersonaArea] (
+    [PKIdPersonaArea]
+      ,[FKIdPersona_NOM]
+      ,[FKIdArea_SIS]
+      ,[IsAdscrito]
+      ,[EsSolicitante]
+      ,[EsAutorizador]
+      ,[Activo]
+      ,[FechaCreacion]
+      ,[UsuarioCreacion]
+)
+SELECT [PK_IdPersonaArea]
+      ,[FK_IdPersona]
+      ,[FK_IdArea]
+      ,[IsAdscrito]
+      ,[EsSolicitante]
+      ,[EsAutorizador]
+      ,[CT_LIVE]
+      ,[CT_CreatedDate]
+      ,[CT_CreatedBy]
+FROM [BD_PRESUPUESTO].[RHCT].[PersonaArea]
+
+-- Desactivar INSERT con IDs específicos
+SET IDENTITY_INSERT [NOM].[PersonaArea] OFF
+
+GO
+
+-------------------------------------- marca -------------------------------------- 
+CREATE TABLE [ALMA].[Marca](
+	[PKIdMarca] [int] IDENTITY(1,1) NOT NULL,
+	[Descripcion] [nvarchar](50) NOT NULL,
+	-- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Marca_Id PRIMARY KEY ([PKIdMarca]),
+)
+
+  -- Insertar los datos manteniendo el ID original
+    SET IDENTITY_INSERT [ALMA].[Marca] ON
+
+    INSERT INTO [ALMA].[Marca] (
+        [PKIdMarca]
+        ,[Descripcion]
+        ,[Activo]
+        ,[UsuarioCreacion]
+        ,[FechaCreacion]
+    )
+    SELECT [PK_IdMarca]
+          ,[Descripcion]
+          ,[CT_LIVE]
+          ,[CT_CreatedBy]
+          ,[CT_CreatedDate]
+    FROM [BD_PRESUPUESTO].[SICOP].[Marca]
+
+    -- Desactivar INSERT con IDs específicos
+    SET IDENTITY_INSERT [ALMA].[Marca] OFF
+-------------------------------------- EstadoBien --------------------------------------
+
+CREATE TABLE [ALMA].[EstadoBien](
+    [PKIdEstadoBien] [int] IDENTITY(1,1) NOT NULL,
+    [DESCRIPCION_GENERAL] [nvarchar](150) NOT NULL,
+	[DESCRIPCION_ESPECIFICA] [nvarchar](200) NOT NULL,
+	[DESCRIPCION_CORTA] [nvarchar](100) NOT NULL,
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_EstadoBien_Id PRIMARY KEY ([PKIdEstadoBien]),
+)
+  -- Insertar los datos manteniendo el ID original
+SET IDENTITY_INSERT [ALMA].[EstadoBien] ON
+    INSERT INTO [ALMA].[EstadoBien] (
+        [PKIdEstadoBien]
+        ,[DESCRIPCION_GENERAL]
+        ,[DESCRIPCION_ESPECIFICA]
+        ,[DESCRIPCION_CORTA]
+        ,[Activo]
+        ,[UsuarioCreacion]
+        ,[FechaCreacion]
+    )
+    SELECT [PK_IdEstadoBien]
+          ,[DESCRIPCION_GENERAL]
+          ,[DESCRIPCION_ESPECIFICA]
+          ,[DESCRIPCION_CORTA]
+          ,[CT_LIVE]
+          ,[CT_CreatedBy]
+          ,[CT_CreatedDate]
+    FROM [BD_PRESUPUESTO].[SICOP].[EstadoBien]
+    -- Desactivar INSERT con IDs específicos
+    SET IDENTITY_INSERT [ALMA].[EstadoBien] OFF
+
+-------------------------------------- Material --------------------------------------
+CREATE TABLE [ALMA].[Material](
+    [PKIdMaterial] [int] IDENTITY(1,1) NOT NULL,
+    [Descripcion] [nvarchar](50) NOT NULL,
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Material_Id PRIMARY KEY ([PKIdMaterial]),
+)
+  -- Insertar los datos manteniendo el ID original
+    SET IDENTITY_INSERT [ALMA].[Material] ON
+    INSERT INTO [ALMA].[Material] (
+        [PKIdMaterial]
+        ,[Descripcion]
+        ,[Activo]
+        ,[UsuarioCreacion]
+        ,[FechaCreacion]
+    )
+    SELECT [PK_IdMaterial]
+          ,[Descripcion]
+          ,[CT_LIVE]
+          ,[CT_CreatedBy]
+          ,[CT_CreatedDate]
+    FROM [BD_PRESUPUESTO].[SICOP].[Material]
+    -- Desactivar INSERT con IDs específicos
+    SET IDENTITY_INSERT [ALMA].[Material] OFF
+
+-------------------------------------- TipoAdquisicion --------------------------------------
+CREATE TABLE [ALMA].[TipoAdquisicion](
+    [PKIdTipoAdq] [int] IDENTITY(1,1) NOT NULL,
+    [Clave] [nvarchar](10) NOT NULL,
+	[Descripcion] [nvarchar](100) NOT NULL,
+	[Descripmovto] [nvarchar](100) NOT NULL,
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_TipoAdq_Id PRIMARY KEY ([PKIdTipoAdq]),
+)
+  -- Insertar los datos manteniendo el ID original
+    SET IDENTITY_INSERT [ALMA].[TipoAdquisicion] ON
+    INSERT INTO [ALMA].[TipoAdquisicion] (
+        [PKIdTipoAdq]
+        , [Clave]
+          ,[Descripcion]
+          ,[Descripmovto]
+        ,[Activo]
+        ,[UsuarioCreacion]
+        ,[FechaCreacion]
+    )
+    SELECT [PK_IdTipoAdq]
+          , [Clave]
+          ,[Descripcion]
+          ,[Descripmovto]
+          ,[CT_LIVE]
+          ,[CT_CreatedBy]
+          ,[CT_CreatedDate]
+    FROM [BD_PRESUPUESTO].[SICOP].[TipoAdq]
+    -- Desactivar INSERT con IDs específicos
+    SET IDENTITY_INSERT [ALMA].[TipoAdquisicion] OFF
+
+-------------------------------------- Bien --------------------------------------
+--select distinct FK_IdProveedor__SIS from [BD_PRESUPUESTO].sicop.Bien
+--update [BD_PRESUPUESTO].sicop.Bien set FK_IdProveedor__SIS = 2 where FK_IdProveedor__SIS <> 1 
+--select * from SIS.Proveedor where pkidproveedor in (156,1)
+
+CREATE TABLE [ALMA].[Bien](
+	[PKIdBien] [int] IDENTITY(1,1) NOT NULL,
+	
+    [FKIdGrupoBien_ALMA] [int] NULL,
+	[FKIdTipoBien_ALMA] [int] NOT NULL,
+	[FKIdArea_SIS] [int] NULL,
+	[FKIdProveedor_SIS] [int] NULL,
+	[FKIdEstadoBien_ALMA] [int] NULL,
+	[FKIdTipoPatrimonio_ALMA] [int] NULL,
+	[FKIdMarca_ALMA] [int] NULL,
+	[FKIdMaterial_ALMA] [int] NULL,
+	[FKIdTipoAdq_ALMA] [int] NULL,
+	[FKIdPartida_CONTA] [int] NULL,
+
+	[FKIdDetalleOrdenCompra_ORCO] [int] NULL,
+	--[FK_IdAreaUlt__SIS] [int] NULL,
+
+	[Clave] [nvarchar](50) NULL,
+	[ClaveAnt] [nvarchar](50) NULL,
+	[Descripcion] [nvarchar](1000) NULL,
+	[Modelo] [nvarchar](50) NULL,
+	[Serie] [nvarchar](1000) NULL,
+	[Requisicion] [nvarchar](25) NULL,
+	[Factura] [nvarchar](50) NULL,
+	[Costo] [dbo].[dmoney] NULL,
+	[FechaAdq] [datetime] NULL,
+	[Referencia] [nvarchar](50) NULL,
+	[Notas] [nvarchar](250) NULL,
+	--[FK_IdPersona__RHCT] [int] NULL,
+	[Ubicacion] [nvarchar](50) NULL,
+	[AAdquisicion] [nvarchar](2) NULL,
+	--[FL_FOTO] [nvarchar](1000) NULL,
+	--[FK_IdColor__SICOP] [int] NULL,
+	[Frente] [int] NULL,
+	[Fondo] [int] NULL,
+	[Altura] [int] NULL,
+	[Diametro] [int] NULL,
+	[VerificacionesDias] [int] NOT NULL,
+	[MantenimientoDias] [int] NOT NULL,
+	[Mantenimiento] [bit] NOT NULL,
+	[Calibracion] [bit] NOT NULL,
+	[Rango] [nvarchar](20) NULL,
+	[Resolucion] [nvarchar](20) NULL,
+	[FechaUltInv] [datetime] NULL,
+	[FechaReqscn] [datetime] NULL,
+	--[FL_Factura] [nvarchar](1000) NULL,
+	[Estatus] [nvarchar](1) NULL,
+	[Caracteristicas] [nvarchar](50) NULL,
+	[Resguardo] [int] NULL,
+	[ResguardoAnterior] [int] NULL,
+	[RelId] [int] NULL,
+	[ValorRescate] [dbo].[dmoney] NULL,
+	[ValorActual] [dbo].[dmoney] NULL,
+	[Antiguedad] [int] NULL,
+	[Progresivo] [int] NULL,
+	[Consecutivo] [int] NULL,
+	[ClaveHist] [nvarchar](50) NULL,
+	[EstaResguardado] [bit] NULL,
+	[FechaResguardado] [datetime] NULL,
+	[Localizado] [bit] NULL,
+	[esContabilizado] [bit] NULL,
+    -- Auditoría
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+
+    CONSTRAINT PK_Bien_IdBien PRIMARY KEY ([PKIdBien]),
+
+    CONSTRAINT FK_Bien_IdGrupoBien FOREIGN KEY ([FKIdGrupoBien_ALMA]) REFERENCES [ALMA].[GrupoBien]([PKIdGrupoBien]),
+    CONSTRAINT FK_Bien_IdTipoBien FOREIGN KEY ([FKIdTipoBien_ALMA]) REFERENCES [ALMA].[TipoBien]([PKIdTipoBien]),
+    CONSTRAINT FK_Bien_IdArea FOREIGN KEY ([FKIdArea_SIS]) REFERENCES [SIS].[Area]([PKIdArea]),
+    CONSTRAINT FK_Bien_IdProveedor FOREIGN KEY ([FKIdProveedor_SIS]) REFERENCES [SIS].[Proveedor]([PKIdProveedor]),
+    CONSTRAINT FK_Bien_IdEstadoBien FOREIGN KEY ([FKIdEstadoBien_ALMA]) REFERENCES [ALMA].[EstadoBien]([PKIdEstadoBien]),
+    CONSTRAINT FK_Bien_IdTipoPatrimonio FOREIGN KEY ([FKIdTipoPatrimonio_ALMA]) REFERENCES [ALMA].[TipoPatrimonio]([PKIdTipoPatrimonio]),
+    CONSTRAINT FK_Bien_IdMarca FOREIGN KEY ([FKIdMarca_ALMA]) REFERENCES [ALMA].[Marca]([PKIdMarca]),
+    CONSTRAINT FK_Bien_IdMaterial FOREIGN KEY ([FKIdMaterial_ALMA]) REFERENCES [ALMA].[Material]([PKIdMaterial]),
+    CONSTRAINT FK_Bien_TipoAdquisicion FOREIGN KEY ([FKIdTipoAdq_ALMA]) REFERENCES [ALMA].[TipoAdquisicion]([PKIdTipoAdq]),
+    CONSTRAINT FK_Bien_Partida FOREIGN KEY ([FKIdPartida_CONTA]) REFERENCES [CONTA].[Partida]([PKIdPartida])
         
-        -- Validaciones
-        IF @EstatusActual IN (4, 5, 6) -- Concluido o en discrepancia
-        BEGIN
-            RAISERROR('Este artículo ya ha sido concluido', 16, 1)
-            ROLLBACK
-            RETURN
-        END
-        
-        IF @ConteosRealizados >= @MaximoConteos
-        BEGIN
-            RAISERROR('Se alcanzó el máximo de conteos permitidos para este artículo', 16, 1)
-            ROLLBACK
-            RETURN
-        END
-        
-        -- Verificar que el usuario no haya contado antes este artículo
-        IF EXISTS (
-            SELECT 1 FROM ALMA.RegistroConteo 
-            WHERE FKIdArticuloConteo_ALMA = @PKIdArticuloConteo 
-            AND FKIdUsuario_SIS = @FKIdUsuario_SIS
-        )
-        BEGIN
-            RAISERROR('Este usuario ya realizó un conteo para este artículo', 16, 1)
-            ROLLBACK
-            RETURN
-        END
-        
-        -- Determinar el número de conteo
-        SET @NumeroConteo = @ConteosRealizados + 1
-        
-        -- Insertar el registro de conteo
-        INSERT INTO ALMA.RegistroConteo (
-            FKIdArticuloConteo_ALMA,
-            FKIdPeriodoConteo_ALMA,
-            FKIdSucursal_SIS,
-            NumeroConteo,
-            CantidadContada,
-            FechaConteo,
-            FKIdUsuario_SIS,
-            Observaciones,
-            Latitud,
-            Longitud,
-            FotoPath
-        ) VALUES (
-            @PKIdArticuloConteo,
-            @FKIdPeriodoConteo,
-            @FKIdSucursal,
-            @NumeroConteo,
-            @CantidadContada,
-            @FechaActual,
-            @FKIdUsuario_SIS,
-            @Observaciones,
-            @Latitud,
-            @Longitud,
-            @FotoPath
-        )
-        
-        -- Actualizar contador en el artículo
-        UPDATE ALMA.ArticuloConteo
-        SET ConteosRealizados = @ConteosRealizados + 1,
-            ConteosPendientes = CASE 
-                WHEN @ConteosRealizados + 1 >= @MaximoConteos THEN 0
-                ELSE 1
-            END,
-            FechaModificacion = @FechaActual,
-            UsuarioModificacion = @FKIdUsuario_SIS
-        WHERE PKIdArticuloConteo = @PKIdArticuloConteo
-        
-        -- Determinar el nuevo estatus basado en la lógica de negocio
-        DECLARE @Conteos TABLE (Numero INT, Cantidad DECIMAL(18,4))
-        
-        INSERT INTO @Conteos
-        SELECT NumeroConteo, CantidadContada
-        FROM ALMA.RegistroConteo
-        WHERE FKIdArticuloConteo_ALMA = @PKIdArticuloConteo
-        ORDER BY NumeroConteo
-        
-        DECLARE @TotalConteos INT = (SELECT COUNT(*) FROM @Conteos)
-        
-        -- Lógica de negocio para determinar estatus
-        IF @TotalConteos = 1
-        BEGIN
-            -- Primer conteo realizado, esperar segundo
-            SET @NuevoEstatus = 2 -- Pendiente 2do Conteo
-        END
-        ELSE IF @TotalConteos = 2
-        BEGIN
-            -- Segundo conteo, verificar si coinciden
-            DECLARE @Cantidad1 DECIMAL(18,4) = (SELECT Cantidad FROM @Conteos WHERE Numero = 1)
-            DECLARE @Cantidad2 DECIMAL(18,4) = (SELECT Cantidad FROM @Conteos WHERE Numero = 2)
-            
-            IF @Cantidad1 = @Cantidad2
-            BEGIN
-                -- Coinciden, concluir sin diferencia
-                SET @NuevoEstatus = 4 -- Concluido Sin Diferencia
-                
-                -- Actualizar valores finales
-                UPDATE ALMA.ArticuloConteo
-                SET ExistenciaFinal = @Cantidad1,
-                    Diferencia = @Cantidad1 - @ExistenciaSistema,
-                    PorcentajeDiferencia = CASE 
-                        WHEN @ExistenciaSistema = 0 THEN 0
-                        ELSE ((@Cantidad1 - @ExistenciaSistema) / @ExistenciaSistema) * 100
-                    END,
-                    FechaConclusion = @FechaActual,
-                    FKIdUsuarioConcluyo_SIS = @FKIdUsuario_SIS
-                WHERE PKIdArticuloConteo = @PKIdArticuloConteo
-            END
-            ELSE
-            BEGIN
-                -- No coinciden, verificar si podemos hacer tercer conteo
-                IF @MaximoConteos >= 3
-                BEGIN
-                    SET @NuevoEstatus = 3 -- Pendiente 3er Conteo
-                END
-                ELSE
-                BEGIN
-                    -- No hay más conteos permitidos, pasa a discrepancia
-                    SET @NuevoEstatus = 6 -- En Discrepancia
-                    
-                    -- Insertar en tabla de discrepancias
-                    INSERT INTO ALMA.DiscrepanciaConteo (
-                        FKIdArticuloConteo_ALMA,
-                        Valor1,
-                        Valor2,
-                        FechaCreacion,
-                        UsuarioCreacion
-                    ) VALUES (
-                        @PKIdArticuloConteo,
-                        @Cantidad1,
-                        @Cantidad2,
-                        @FechaActual,
-                        @FKIdUsuario_SIS
-                    )
-                END
-            END
-        END
-        ELSE IF @TotalConteos = 3
-        BEGIN
-            -- Tercer conteo, determinar resultado
-            DECLARE @Cant3 DECIMAL(18,4) = (SELECT Cantidad FROM @Conteos WHERE Numero = 3)
-            DECLARE @ValorFinal DECIMAL(18,4)
-            
-            -- Buscar si alguna cantidad coincide
-            IF @Cant3 = @Cantidad1 OR @Cant3 = @Cantidad2
-            BEGIN
-                -- Coincide con alguno anterior
-                SET @ValorFinal = @Cant3
-                SET @NuevoEstatus = 4 -- Concluido Sin Diferencia
-            END
-            ELSE IF @Cantidad1 = @Cantidad2
-            BEGIN
-                -- Los dos primeros coinciden, ese es el bueno
-                SET @ValorFinal = @Cantidad1
-                SET @NuevoEstatus = 4 -- Concluido Sin Diferencia
-            END
-            ELSE
-            BEGIN
-                -- Los tres son diferentes, pasa a discrepancia
-                SET @NuevoEstatus = 6 -- En Discrepancia
-                
-                INSERT INTO ALMA.DiscrepanciaConteo (
-                    FKIdArticuloConteo_ALMA,
-                    Valor1,
-                    Valor2,
-                    Valor3,
-                    FechaCreacion,
-                    UsuarioCreacion
-                ) VALUES (
-                    @PKIdArticuloConteo,
-                    @Cantidad1,
-                    @Cantidad2,
-                    @Cant3,
-                    @FechaActual,
-                    @FKIdUsuario_SIS
-                )
-            END
-            
-            IF @NuevoEstatus = 4 -- Si concluyó, actualizar valores finales
-            BEGIN
-                UPDATE ALMA.ArticuloConteo
-                SET ExistenciaFinal = @ValorFinal,
-                    Diferencia = @ValorFinal - @ExistenciaSistema,
-                    PorcentajeDiferencia = CASE 
-                        WHEN @ExistenciaSistema = 0 THEN 0
-                        ELSE ((@ValorFinal - @ExistenciaSistema) / @ExistenciaSistema) * 100
-                    END,
-                    FechaConclusion = @FechaActual,
-                    FKIdUsuarioConcluyo_SIS = @FKIdUsuario_SIS
-                WHERE PKIdArticuloConteo = @PKIdArticuloConteo
-            END
-        END
-        
-        -- Actualizar el estatus si cambió
-        IF @NuevoEstatus IS NOT NULL AND @NuevoEstatus != @EstatusActual
-        BEGIN
-            -- Guardar en historial
-            INSERT INTO ALMA.HistorialEstatusArticulo (
-                FKIdArticuloConteo_ALMA,
-                FKIdEstatusAnterior_ALMA,
-                FKIdEstatusNuevo_ALMA,
-                FKIdRegistroConteo_ALMA,
-                Observaciones,
-                FKIdUsuario_SIS,
-                FechaCambio
-            ) VALUES (
-                @PKIdArticuloConteo,
-                @EstatusActual,
-                @NuevoEstatus,
-                SCOPE_IDENTITY(), -- Último registro de conteo insertado
-                'Cambio automático por regla de negocio',
-                @FKIdUsuario_SIS,
-                @FechaActual
+    )
+
+    -- Insertar los datos manteniendo el ID original
+     SET IDENTITY_INSERT [ALMA].[Bien] ON
+        INSERT INTO [ALMA].[Bien] (
+            [PKIdBien]        ,[FKIdGrupoBien_ALMA]        ,[FKIdTipoBien_ALMA]        ,[FKIdArea_SIS]        ,[FKIdProveedor_SIS]        ,[FKIdEstadoBien_ALMA]
+            ,[FKIdTipoPatrimonio_ALMA]        ,[FKIdMarca_ALMA]        ,[FKIdMaterial_ALMA]        ,[FKIdTipoAdq_ALMA]        ,[FKIdPartida_CONTA]
+            --,[FK_IdDetalleOrdenCompra_ORCO]
+            --,[FK_IdAreaUlt__SIS]
+            ,[Clave]        ,[ClaveAnt]        ,[Descripcion]        ,[Modelo]        ,[Serie]        ,[Requisicion]        ,[Factura]        ,[Costo]
+            ,[FechaAdq]        ,[Referencia]        ,[Notas]
+            --,[FK_IdPersona__RHCT] 
+            ,[Ubicacion]        ,[AAdquisicion]
+            --,[FL_FOTO]
+            --,[FK_IdColor__SICOP]
+            ,[Frente]    ,[Fondo]    ,[Altura]    ,[Diametro]    ,[VerificacionesDias]    ,[MantenimientoDias]    ,[Mantenimiento]    ,[Calibracion]    ,[Rango] ,[Resolucion]    ,[FechaUltInv]    ,[FechaReqscn]
+        --,[FL_Factura]
+        ,[Estatus]    ,[Caracteristicas]    ,[Resguardo]    ,[ResguardoAnterior]    ,[RelId]    ,[ValorRescate]    ,[ValorActual]    ,[Antiguedad],  [Progresivo]
+        ,[Consecutivo]    ,[ClaveHist]    ,[EstaResguardado]    ,[FechaResguardado]    ,[Localizado]    ,[esContabilizado]    ,[Activo]    ,[FechaCreacion]    ,[UsuarioCreacion]
             )
-            
-            -- Actualizar artículo
-            UPDATE ALMA.ArticuloConteo
-            SET FKIdEstatus_ALMA = @NuevoEstatus
-            WHERE PKIdArticuloConteo = @PKIdArticuloConteo
-        END
-        
-        COMMIT TRANSACTION
-        
-        -- Retornar resultado
-        SELECT 
-            'Éxito' as Resultado,
-            @NumeroConteo as ConteoRegistrado,
-            (SELECT Nombre FROM ALMA.EstatusArticuloConteo WHERE PKIdEstatusArticulo = ISNULL(@NuevoEstatus, @EstatusActual)) as NuevoEstatus,
-            CASE 
-                WHEN @NuevoEstatus = 4 THEN 'Artículo concluido - Coincidencia'
-                WHEN @NuevoEstatus = 5 THEN 'Artículo concluido con diferencia'
-                WHEN @NuevoEstatus = 6 THEN 'Artículo en discrepancia - Requiere supervisor'
-                WHEN @NuevoEstatus = 3 THEN 'Requiere tercer conteo'
-                ELSE 'Conteo registrado exitosamente'
-            END as Mensaje
-            
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION
-        THROW
-    END CATCH
-END
-GO
+            SELECT [PK_IdBien]            ,[FK_IdGrupoBien__SICOP]            ,[FK_IdTipoBien__SICOP]            ,[FK_IdAreaUlt__SIS]            ,[FK_IdProveedor__SIS]            ,[FK_IdEstadoBien__SICOP]
+            ,[FK_IdTipoPatrimonio__SICOP]            ,[FK_IdMarca__SICOP]            ,[FK_IdMaterial__SICOP]            ,[FK_IdTipoAdq__SICOP]            ,[FK_IdPartida__SIS]
+            --,[FK_IdDetalleOrdenCompra]
+            --,[FK_IdAreaUlt__SIS]
+            ,[Clave]            ,[ClaveAnt]            ,[Descripcion]            ,[Modelo]            ,[Serie]            ,[Requisicion]            ,[Factura]            ,[Costo]
+            ,[FechaAdq]            ,[Referencia]            ,[Notas]
+            --,[FK_IdPersona__RHCT]
+            ,[Ubicacion]            ,[AAdquisicion]
+            --,[FL_FOTO]
+            --,[FK_IdColor__SICOP]
+            ,[Frente]    ,[Fondo]    ,[Altura]    ,[Diametro]    ,[VerificacionesDias]    ,[MantenimientoDias]    ,[Mantenimiento]    ,[Calibracion]    ,[Rango]    ,[Resolucion]    ,[FechaUltInv]    ,[FechaReqscn]
+            --,[FL_Factura]
+            ,[Estatus]    ,[Caracteristicas]    ,[Resguardo]    ,[ResguardoAnterior]    ,[RelId]    ,[ValorRescate]    ,[ValorActual]    ,[Antiguedad]    ,[Progresivo]
+            ,[Consecutivo]    ,[ClaveHist]    ,[EstaResguardado]    ,[FechaResguardado]    ,[Localizado]    ,[esContabilizado]    ,[CT_LIVE]    ,[CT_CreatedDate]    ,[CT_CreatedBy]
+            FROM [BD_PRESUPUESTO].[SICOP].[Bien]
+            where FK_IdPartida__SIS in (select PKIdPartida from CONTA.Partida)
+            and FK_IdProveedor__SIS in (select PKIdProveedor from SIS.Proveedor)
+            AND FK_IdTipoBien__SICOP in (select PKIdTipoBien from ALMA.TipoBien)
+            -- Desactivar INSERT con IDs específicos
+    SET IDENTITY_INSERT [ALMA].[Bien] OFF
 
--- =============================================
--- VISTAS PARA REPORTES
--- =============================================
 
--- Vista de resumen por periodo
-GO
-CREATE OR ALTER VIEW ALMA.Vw_ResumenPeriodo AS
-SELECT 
-    p.PKIdPeriodoConteo,
-    p.CodigoPeriodo,
-    p.Nombre as Periodo,
-    s.Nombre as Sucursal,
-    tc.Nombre as TipoConteo,
-    ep.Nombre as Estatus,
-    p.FechaInicio,
-    p.FechaFin,
-    p.FechaCierre,
-    p.TotalArticulos,
-    p.ArticulosConcluidos,
-    p.ArticulosConDiferencia,
-    (p.TotalArticulos - ISNULL(p.ArticulosConcluidos, 0)) as ArticulosPendientes,
-    COUNT(DISTINCT r.FKIdUsuario_SIS) as ContadoresParticiparon,
-    COUNT(r.PKIdRegistroConteo) as TotalConteosRegistrados
-FROM ALMA.PeriodoConteo p
-INNER JOIN SIS.Sucursal s ON p.FKIdSucursal_SIS = s.PKIdSucursal
-INNER JOIN ALMA.TipoConteo tc ON p.FKIdTipoConteo_ALMA = tc.PKIdTipoConteo
-INNER JOIN ALMA.EstatusPeriodo ep ON p.FKIdEstatus_ALMA = ep.PKIdEstatusPeriodo
-LEFT JOIN ALMA.RegistroConteo r ON p.PKIdPeriodoConteo = r.FKIdPeriodoConteo_ALMA
-GROUP BY p.PKIdPeriodoConteo, p.CodigoPeriodo, p.Nombre, s.Nombre, tc.Nombre, 
-         ep.Nombre, p.FechaInicio, p.FechaFin, p.FechaCierre, 
-         p.TotalArticulos, p.ArticulosConcluidos, p.ArticulosConDiferencia
-GO
 
--- Vista de detalle de artículos en conteo
-CREATE OR ALTER VIEW ALMA.Vw_DetalleArticulos AS
-SELECT 
-    a.PKIdArticuloConteo,
-    p.CodigoPeriodo,
-    p.Nombre as Periodo,
-    s.Nombre as Sucursal,
-    tb.CodigoClave as CodigoArticulo,
-    tb.Descripcion as Articulo,
-    a.ExistenciaSistema,
-    a.ExistenciaFinal,
-    a.Diferencia,
-    a.PorcentajeDiferencia,
-    eac.Nombre as Estatus,
-    a.ConteosRealizados,
-    a.ConteosPendientes,
-    a.FechaInicioConteo,
-    a.FechaConclusion,
-    u.Nombre + ' ' + u.ApellidoPaterno as ConcluidoPor,
-    (SELECT STRING_AGG(CONCAT('Conteo', rc.NumeroConteo, ': ', rc.CantidadContada, ' (', uc.Nombre, ')'), ' | ') 
-     FROM ALMA.RegistroConteo rc
-     INNER JOIN SIS.Usuario uc ON rc.FKIdUsuario_SIS = uc.PkIdUsuario
-     WHERE rc.FKIdArticuloConteo_ALMA = a.PKIdArticuloConteo) as HistorialConteos
-FROM ALMA.ArticuloConteo a
-INNER JOIN ALMA.PeriodoConteo p ON a.FKIdPeriodoConteo_ALMA = p.PKIdPeriodoConteo
-INNER JOIN SIS.Sucursal s ON a.FKIdSucursal_SIS = s.PKIdSucursal
-INNER JOIN ALMA.TipoBien tb ON a.FKIdTipoBien_ALMA = tb.PKIdTipoBien
-INNER JOIN ALMA.EstatusArticuloConteo eac ON a.FKIdEstatus_ALMA = eac.PKIdEstatusArticulo
-LEFT JOIN SIS.Usuario u ON a.FKIdUsuarioConcluyo_SIS = u.PkIdUsuario
-WHERE a.Activo = 1
-GO

@@ -1,15 +1,9 @@
-﻿using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
+﻿using EG.ApiCore.Services;
+using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.General;
-using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
-using EG.Domain.Interfaces;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 
 
 namespace EG.ApiCore.Controllers.General
@@ -20,32 +14,14 @@ namespace EG.ApiCore.Controllers.General
     public class UsuarioSucursalController : ControllerBase
     {
         private readonly IUserContextService _userContext;
-        private readonly IRepositorySP<spEliminarUsuarioSucursalResult> _repositorySP;
-        private readonly GenericService<UsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> _service;
-        private readonly GenericService<VwUsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> _serviceView;
-        private readonly IMapper _mapper;
+        private readonly IUsuarioSucursalAppService _appService;
 
         public UsuarioSucursalController(
-            GenericService<UsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> service,
-            GenericService<VwUsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> serviceView,
-            IRepositorySP<spEliminarUsuarioSucursalResult> repositorySP,
-            IMapper mapper,
+            IUsuarioSucursalAppService appService,
             IUserContextService userContext)
         {
-            _service = service;
-            _serviceView = serviceView;
-            _repositorySP = repositorySP;
+            _appService = appService;
             _userContext = userContext;
-            _mapper = mapper;
-            ConfigureService();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(us => us.FkidUsuarioSisNavigation);
-            _service.AddInclude(us => us.FkidSucursalSisNavigation);
-            _service.AddRelationFilter("Usuario", new List<string> { "Nombre", "ApellidoPaterno", "Email" });
-            _service.AddRelationFilter("Sucursal", new List<string> { "Nombre", "CodigoSucursal" });
         }
 
         /// <summary>
@@ -54,15 +30,21 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetAll()
         {
-            var result = await _serviceView.GetAllAsync();
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
+            try
             {
-                Success = true,
-                Message = "Asignaciones obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+                var result = await _appService.GetAllAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = false,
+                    Message = $"Error al obtener asignaciones: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
 
         /// <summary>
@@ -71,26 +53,39 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetById(int id)
         {
-            var result = await _serviceView.GetByIdAsync(id);
+            try
+            {
+                var result = await _appService.GetByIdAsync(id);
 
-            if (result == null)
-                return NotFound(new PagedResult<VwUsuarioSucursalResponse>
+                if (result == null)
+                    return NotFound(new PagedResult<VwUsuarioSucursalResponse>
+                    {
+                        Success = false,
+                        Message = "Asignación no encontrada",
+                        Code = "NOTFOUND_ASIGNACION",
+                        TotalCount = 0
+                    });
+
+                return Ok(new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = true,
+                    Message = "Asignación encontrada",
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<VwUsuarioSucursalResponse> { result },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = "Asignación no encontrada",
-                    Code = "NOTFOUND_ASIGNACION",
+                    Message = $"Error al obtener asignación: {ex.Message}",
+                    Code = "ERROR",
                     TotalCount = 0
                 });
-
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
-            {
-                Success = true,
-                Message = "Asignación encontrada",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<VwUsuarioSucursalResponse> { result },
-                TotalCount = 1
-            });
+            }
         }
 
         /// <summary>
@@ -99,27 +94,39 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet("usuario/{usuarioId}/sucursal/{sucursalId}")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetByUsuarioAndSucursal(int usuarioId, int sucursalId)
         {
-            var todos = await _serviceView.GetAllAsync();
-            var result = todos.FirstOrDefault(x => x.PkIdUsuario == usuarioId && x.IdSucursal == sucursalId);
+            try
+            {
+                var result = await _appService.GetByUsuarioAndSucursalAsync(usuarioId, sucursalId);
 
-            if (result == null)
-                return NotFound(new PagedResult<VwUsuarioSucursalResponse>
+                if (result == null)
+                    return NotFound(new PagedResult<VwUsuarioSucursalResponse>
+                    {
+                        Success = false,
+                        Message = "Asignación no encontrada",
+                        Code = "NOTFOUND_ASIGNACION",
+                        TotalCount = 0
+                    });
+
+                return Ok(new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = true,
+                    Message = "Asignación encontrada",
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<VwUsuarioSucursalResponse> { result },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = "Asignación no encontrada",
-                    Code = "NOTFOUND_ASIGNACION",
+                    Message = $"Error al obtener asignación: {ex.Message}",
+                    Code = "ERROR",
                     TotalCount = 0
                 });
-
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
-            {
-                Success = true,
-                Message = "Asignación encontrada",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<VwUsuarioSucursalResponse> { result },
-                TotalCount = 1
-            });
+            }
         }
 
         /// <summary>
@@ -128,17 +135,21 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet("usuario/{usuarioId}")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetByUsuario(int usuarioId)
         {
-            var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.PkIdUsuario == usuarioId && x.AsignacionActiva.Value).ToList();
-
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
+            try
             {
-                Success = true,
-                Message = "Sucursales del usuario obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result,
-                TotalCount = result.Count
-            });
+                var result = await _appService.GetByUsuarioAsync(usuarioId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = false,
+                    Message = $"Error al obtener sucursales: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
 
         /// <summary>
@@ -147,17 +158,21 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet("sucursal/{sucursalId}")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetBySucursal(int sucursalId)
         {
-            var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.IdSucursal == sucursalId && x.AsignacionActiva.Value).ToList();
-
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
+            try
             {
-                Success = true,
-                Message = "Usuarios de la sucursal obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result,
-                TotalCount = result.Count
-            });
+                var result = await _appService.GetBySucursalAsync(sucursalId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = false,
+                    Message = $"Error al obtener usuarios: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
 
         /// <summary>
@@ -166,17 +181,21 @@ namespace EG.ApiCore.Controllers.General
         [HttpGet("sucursal/{sucursalId}/gerentes")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetGerentesBySucursal(int sucursalId)
         {
-            var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.IdSucursal == sucursalId && x.EsGerente.Value && x.AsignacionActiva.Value).ToList();
-
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
+            try
             {
-                Success = true,
-                Message = "Gerentes de la sucursal obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result,
-                TotalCount = result.Count
-            });
+                var result = await _appService.GetGerentesBySucursalAsync(sucursalId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = false,
+                    Message = $"Error al obtener gerentes: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
 
         /// <summary>
@@ -187,43 +206,14 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                var result = await _serviceView.GetByIdAsync(_dto.PkIdUsuario);
-
-                // Mapear y preparar el DTO
-                var dto = _mapper.Map<UsuarioSucursalDto>(result);
-                // Verificar si ya existe la asignación
-                //var existentes = await _service.GetAllAsync();
-                //var existe = existentes.Any(x => x.PkIdUsuario == dto.FkidUsuarioSis &&
-                //                                 x.IdSucursal == dto.FkidSucursalSis &&
-                //                                 x.UsuarioActivo);
-
-                //if (existe)
-                //{
-                //    return Conflict(new PagedResult<VwUsuarioSucursalResponse>
-                //    {
-                //        Success = false,
-                //        Message = "El usuario ya está asignado a esta sucursal",
-                //        Code = "DUPLICATE_ASIGNACION",
-                //        TotalCount = 0
-                //    });
-                //}
-
-                // Establecer valores por defecto
-                dto.FkidSucursalSis = _dto.IdSucursal.Value;
-                dto.FechaAsignacion = DateTime.Now;
-                dto.Activo = true;
-
-                await _service.AddAsync(dto);
-
-                // Mapear y preparar el DTO
-                var viewDto = _mapper.Map<VwUsuarioSucursalResponse>(dto);
+                var result = await _appService.AddAsync(_dto, _userContext.GetCurrentUserId());
 
                 return Ok(new PagedResult<VwUsuarioSucursalResponse>
                 {
                     Success = true,
                     Message = "¡Usuario asignado correctamente a la sucursal!",
                     Code = "SUCCESS",
-                    Data = viewDto,
+                    Data = result,
                     TotalCount = 1
                 });
             }
@@ -240,50 +230,6 @@ namespace EG.ApiCore.Controllers.General
         }
 
         /// <summary>
-        /// Actualiza una asignación
-        /// </summary>
-        [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> Update(int id, [FromBody] VwUsuarioSucursalResponse _dto)
-        {
-            try
-            {
-                // Mapear y preparar el DTO
-                //var dto = _mapper.Map<UsuarioSucursalDto>(_dto);
-
-                //await _service.UpdateAsync(id, dto);
-                var parameters = new[]
-                {
-                    new SqlParameter("@FkidUsuarioSis", id),
-                    new SqlParameter("@FkidSucursalSis", _dto.IdSucursal),
-                    new SqlParameter("@UsuarioModificacion", _userContext.GetCurrentUserId())
-                };
-                var result = await _repositorySP.ExecuteStoredProcedureAsync<spEliminarUsuarioSucursalResult>("SIS.spEliminarUsuarioSucursal", parameters);
-
-                // Mapear y preparar el DTO
-                //var viewDto = _mapper.Map<VwUsuarioSucursalResponse>(dto);
-
-                return Ok(new PagedResult<VwUsuarioSucursalResponse>
-                {
-                    Success = true,
-                    Message = "¡Se elimina la sucursal al suaurio!",
-                    Code = "SUCCESS",
-                    Data = _dto,
-                    TotalCount = 1
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<VwUsuarioSucursalResponse>
-                {
-                    Success = false,
-                    Message = $"Error al actualizar asignación: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        /// <summary>
         /// Elimina una asignación (baja física)
         /// </summary>
         [HttpDelete("{usuarioId}/{sucursalId}")]
@@ -291,33 +237,7 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                var _resultListUserSuc = await _serviceView.GetAllPaginadoAsync(
-                new PagedRequest { Page = 1, PageSize = 1000 },
-                u => u.PkIdUsuario == usuarioId && u.IdSucursal == sucursalId);
-
-                var _result = _resultListUserSuc.Items.FirstOrDefault();
-
-                // Mapear y preparar el DTO
-                var dto = _mapper.Map<UsuarioSucursalDto>(_result);
-
-                if (dto == null)
-                {
-                    return NotFound(new PagedResult<VwUsuarioSucursalResponse>
-                    {
-                        Success = false,
-                        Message = "Asignación no encontrada",
-                        Code = "NOT_FOUND",
-                        TotalCount = 0
-                    });
-                }
-
-                var parameters = new[]
-                {
-                    new SqlParameter("@FkidUsuarioSis", usuarioId),
-                    new SqlParameter("@FkidSucursalSis", sucursalId),
-                    new SqlParameter("@UsuarioModificacion", _userContext.GetCurrentUserId())
-                };
-                var result = await _repositorySP.ExecuteStoredProcedureAsync<spEliminarUsuarioSucursalResult>("SIS.spEliminarUsuarioSucursal", parameters);
+                await _appService.DeleteAsync(usuarioId, sucursalId, _userContext.GetCurrentUserId());
 
                 return Ok(new PagedResult<VwUsuarioSucursalResponse>
                 {
@@ -437,19 +357,21 @@ namespace EG.ApiCore.Controllers.General
         [HttpPost("paginado")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
         {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(_params);
-
-            return Ok(new PagedResult<VwUsuarioSucursalResponse>
+            try
             {
-                Success = true,
-                Message = "Asignaciones obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+                var result = await _appService.GetAllPaginadoAsync(_params);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
+                {
+                    Success = false,
+                    Message = $"Error al obtener asignaciones paginadas: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
     }
 }

@@ -13,6 +13,8 @@ public partial class EGestionContext : DbContext
     {
     }
 
+    public virtual DbSet<Area> Areas { get; set; }
+
     public virtual DbSet<ArticuloConteo> ArticuloConteos { get; set; }
 
     public virtual DbSet<AspNetClaim> AspNetClaims { get; set; }
@@ -26,6 +28,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<AspNetUser> AspNetUsers { get; set; }
 
     public virtual DbSet<AspNetUserRole> AspNetUserRoles { get; set; }
+
+    public virtual DbSet<Bien> Biens { get; set; }
 
     public virtual DbSet<Capitulo> Capitulos { get; set; }
 
@@ -45,9 +49,13 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Estado> Estados { get; set; }
 
+    public virtual DbSet<EstadoBien> EstadoBiens { get; set; }
+
     public virtual DbSet<EstatusArticuloConteo> EstatusArticuloConteos { get; set; }
 
     public virtual DbSet<EstatusPeriodo> EstatusPeriodos { get; set; }
+
+    public virtual DbSet<EstatusProveedor> EstatusProveedors { get; set; }
 
     public virtual DbSet<Familium> Familia { get; set; }
 
@@ -57,11 +65,17 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Idioma> Idiomas { get; set; }
 
+    public virtual DbSet<Marca> Marcas { get; set; }
+
+    public virtual DbSet<Material> Materials { get; set; }
+
     public virtual DbSet<Menu> Menus { get; set; }
 
     public virtual DbSet<MenuRole> MenuRoles { get; set; }
 
     public virtual DbSet<Monedum> Moneda { get; set; }
+
+    public virtual DbSet<Municipio> Municipios { get; set; }
 
     public virtual DbSet<Nivel> Nivels { get; set; }
 
@@ -75,6 +89,12 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<PeriodoConteo> PeriodoConteos { get; set; }
 
+    public virtual DbSet<Persona> Personas { get; set; }
+
+    public virtual DbSet<PersonaArea> PersonaAreas { get; set; }
+
+    public virtual DbSet<Proveedor> Proveedors { get; set; }
+
     public virtual DbSet<RegistroConteo> RegistroConteos { get; set; }
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
@@ -85,11 +105,17 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<SystemParamValue> SystemParamValues { get; set; }
 
+    public virtual DbSet<TipoAdquisicion> TipoAdquisicions { get; set; }
+
     public virtual DbSet<TipoBien> TipoBiens { get; set; }
 
     public virtual DbSet<TipoConteo> TipoConteos { get; set; }
 
     public virtual DbSet<TipoCuentum> TipoCuenta { get; set; }
+
+    public virtual DbSet<TipoPatrimonio> TipoPatrimonios { get; set; }
+
+    public virtual DbSet<TipoProveedor> TipoProveedors { get; set; }
 
     public virtual DbSet<Unidade> Unidades { get; set; }
 
@@ -100,6 +126,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
 
     public virtual DbSet<VwArticuloConteo> VwArticuloConteos { get; set; }
+
+    public virtual DbSet<VwBien> VwBiens { get; set; }
 
     public virtual DbSet<VwDetalleArticulo> VwDetalleArticulos { get; set; }
 
@@ -117,12 +145,46 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwSucursalEmpresaEstado> VwSucursalEmpresaEstados { get; set; }
 
+    public virtual DbSet<VwTipoBienConteo> VwTipoBienConteos { get; set; }
+
     public virtual DbSet<VwUsuarioEmpresa> VwUsuarioEmpresas { get; set; }
 
     public virtual DbSet<VwUsuarioSucursal> VwUsuarioSucursals { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Area>(entity =>
+        {
+            entity.HasKey(e => e.PkidArea).HasName("PK_Area_Id");
+
+            entity.ToTable("Area", "SIS");
+
+            entity.Property(e => e.PkidArea).HasColumnName("PKIdArea");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Aprovado).HasDefaultValue(true);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(15);
+            entity.Property(e => e.Colonia).HasMaxLength(64);
+            entity.Property(e => e.Cp)
+                .HasMaxLength(5)
+                .HasColumnName("CP");
+            entity.Property(e => e.Direccion).HasMaxLength(64);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidAreaDoctoSis).HasColumnName("FKIdAreaDocto_SIS");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.Telefono).HasMaxLength(32);
+            entity.Property(e => e.UltimoInv).HasColumnType("datetime");
+            entity.Property(e => e.ZonaEconomica).HasMaxLength(100);
+
+            entity.HasOne(d => d.FkidAreaSisNavigation).WithMany(p => p.InverseFkidAreaSisNavigation)
+                .HasForeignKey(d => d.FkidAreaSis)
+                .HasConstraintName("FK_Area_FKIdArea");
+        });
+
         modelBuilder.Entity<ArticuloConteo>(entity =>
         {
             entity.HasKey(e => e.PkidArticuloConteo);
@@ -277,6 +339,95 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("CONSTRAINT_FK_AspNetUserRoles_User");
+        });
+
+        modelBuilder.Entity<Bien>(entity =>
+        {
+            entity.HasKey(e => e.PkidBien).HasName("PK_Bien_IdBien");
+
+            entity.ToTable("Bien", "ALMA");
+
+            entity.Property(e => e.PkidBien).HasColumnName("PKIdBien");
+            entity.Property(e => e.Aadquisicion)
+                .HasMaxLength(2)
+                .HasColumnName("AAdquisicion");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Caracteristicas).HasMaxLength(50);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.ClaveAnt).HasMaxLength(50);
+            entity.Property(e => e.ClaveHist).HasMaxLength(50);
+            entity.Property(e => e.Costo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Descripcion).HasMaxLength(1000);
+            entity.Property(e => e.EsContabilizado).HasColumnName("esContabilizado");
+            entity.Property(e => e.Estatus).HasMaxLength(1);
+            entity.Property(e => e.Factura).HasMaxLength(50);
+            entity.Property(e => e.FechaAdq).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FechaReqscn).HasColumnType("datetime");
+            entity.Property(e => e.FechaResguardado).HasColumnType("datetime");
+            entity.Property(e => e.FechaUltInv).HasColumnType("datetime");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidDetalleOrdenCompraOrco).HasColumnName("FKIdDetalleOrdenCompra_ORCO");
+            entity.Property(e => e.FkidEstadoBienAlma).HasColumnName("FKIdEstadoBien_ALMA");
+            entity.Property(e => e.FkidGrupoBienAlma).HasColumnName("FKIdGrupoBien_ALMA");
+            entity.Property(e => e.FkidMarcaAlma).HasColumnName("FKIdMarca_ALMA");
+            entity.Property(e => e.FkidMaterialAlma).HasColumnName("FKIdMaterial_ALMA");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidTipoAdqAlma).HasColumnName("FKIdTipoAdq_ALMA");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidTipoPatrimonioAlma).HasColumnName("FKIdTipoPatrimonio_ALMA");
+            entity.Property(e => e.Modelo).HasMaxLength(50);
+            entity.Property(e => e.Notas).HasMaxLength(250);
+            entity.Property(e => e.Rango).HasMaxLength(20);
+            entity.Property(e => e.Referencia).HasMaxLength(50);
+            entity.Property(e => e.Requisicion).HasMaxLength(25);
+            entity.Property(e => e.Resolucion).HasMaxLength(20);
+            entity.Property(e => e.Serie).HasMaxLength(1000);
+            entity.Property(e => e.Ubicacion).HasMaxLength(50);
+            entity.Property(e => e.ValorActual).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.ValorRescate).HasColumnType("decimal(20, 4)");
+
+            entity.HasOne(d => d.FkidAreaSisNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidAreaSis)
+                .HasConstraintName("FK_Bien_IdArea");
+
+            entity.HasOne(d => d.FkidEstadoBienAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidEstadoBienAlma)
+                .HasConstraintName("FK_Bien_IdEstadoBien");
+
+            entity.HasOne(d => d.FkidGrupoBienAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidGrupoBienAlma)
+                .HasConstraintName("FK_Bien_IdGrupoBien");
+
+            entity.HasOne(d => d.FkidMarcaAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidMarcaAlma)
+                .HasConstraintName("FK_Bien_IdMarca");
+
+            entity.HasOne(d => d.FkidMaterialAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidMaterialAlma)
+                .HasConstraintName("FK_Bien_IdMaterial");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .HasConstraintName("FK_Bien_Partida");
+
+            entity.HasOne(d => d.FkidProveedorSisNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidProveedorSis)
+                .HasConstraintName("FK_Bien_IdProveedor");
+
+            entity.HasOne(d => d.FkidTipoAdqAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidTipoAdqAlma)
+                .HasConstraintName("FK_Bien_TipoAdquisicion");
+
+            entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidTipoBienAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Bien_IdTipoBien");
+
+            entity.HasOne(d => d.FkidTipoPatrimonioAlmaNavigation).WithMany(p => p.Biens)
+                .HasForeignKey(d => d.FkidTipoPatrimonioAlma)
+                .HasConstraintName("FK_Bien_IdTipoPatrimonio");
         });
 
         modelBuilder.Entity<Capitulo>(entity =>
@@ -531,6 +682,29 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_Estados_Paises");
         });
 
+        modelBuilder.Entity<EstadoBien>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstadoBien).HasName("PK_EstadoBien_Id");
+
+            entity.ToTable("EstadoBien", "ALMA");
+
+            entity.Property(e => e.PkidEstadoBien).HasColumnName("PKIdEstadoBien");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.DescripcionCorta)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("DESCRIPCION_CORTA");
+            entity.Property(e => e.DescripcionEspecifica)
+                .IsRequired()
+                .HasMaxLength(200)
+                .HasColumnName("DESCRIPCION_ESPECIFICA");
+            entity.Property(e => e.DescripcionGeneral)
+                .IsRequired()
+                .HasMaxLength(150)
+                .HasColumnName("DESCRIPCION_GENERAL");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<EstatusArticuloConteo>(entity =>
         {
             entity.HasKey(e => e.PkidEstatusArticulo).HasName("PK_EstatusArticulo");
@@ -561,6 +735,21 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Nombre)
                 .IsRequired()
                 .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<EstatusProveedor>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstatusProveedor).HasName("PK_EstatusProveedor_Id");
+
+            entity.ToTable("EstatusProveedor", "SIS");
+
+            entity.Property(e => e.PkidEstatusProveedor).HasColumnName("PKIdEstatusProveedor");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Color).HasMaxLength(8);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
         });
 
         modelBuilder.Entity<Familium>(entity =>
@@ -671,6 +860,34 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.NombreNativo).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Marca>(entity =>
+        {
+            entity.HasKey(e => e.PkidMarca).HasName("PK_Marca_Id");
+
+            entity.ToTable("Marca", "ALMA");
+
+            entity.Property(e => e.PkidMarca).HasColumnName("PKIdMarca");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
+        modelBuilder.Entity<Material>(entity =>
+        {
+            entity.HasKey(e => e.PkidMaterial).HasName("PK_Material_Id");
+
+            entity.ToTable("Material", "ALMA");
+
+            entity.Property(e => e.PkidMaterial).HasColumnName("PKIdMaterial");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<Menu>(entity =>
         {
             entity.HasKey(e => e.PkidMenu).HasName("CONSTRAINT_PK_Menu");
@@ -753,6 +970,30 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(5);
         });
 
+        modelBuilder.Entity<Municipio>(entity =>
+        {
+            entity.HasKey(e => e.PkidMunicipio);
+
+            entity.ToTable("Municipios", "SIS");
+
+            entity.Property(e => e.PkidMunicipio).HasColumnName("PKIdMunicipio");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.CodigoMunicipio)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidEstadoSis).HasColumnName("FKIdEstado_SIS");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.FkidEstadoSisNavigation).WithMany(p => p.Municipios)
+                .HasForeignKey(d => d.FkidEstadoSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Municipios_Estados");
+        });
+
         modelBuilder.Entity<Nivel>(entity =>
         {
             entity.HasKey(e => e.PkidNivel).HasName("ALMA_Nivel_PK_IdNivel");
@@ -761,7 +1002,7 @@ public partial class EGestionContext : DbContext
 
             entity.Property(e => e.PkidNivel).HasColumnName("PKIdNivel");
             entity.Property(e => e.Activo).HasDefaultValue(true);
-            entity.Property(e => e.Descipcion)
+            entity.Property(e => e.Descripcion)
                 .IsRequired()
                 .HasMaxLength(20);
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
@@ -917,6 +1158,191 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidTipoConteoAlma)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PeriodoConteo_Tipo");
+        });
+
+        modelBuilder.Entity<Persona>(entity =>
+        {
+            entity.HasKey(e => e.PkidPersona).HasName("PK_Persona_Id");
+
+            entity.ToTable("Persona", "NOM");
+
+            entity.Property(e => e.PkidPersona).HasColumnName("PKIdPersona");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Banco)
+                .HasMaxLength(100)
+                .HasColumnName("BANCO");
+            entity.Property(e => e.Calle).HasMaxLength(40);
+            entity.Property(e => e.Clabe)
+                .HasMaxLength(50)
+                .HasColumnName("CLABE");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(15);
+            entity.Property(e => e.Colonia).HasMaxLength(40);
+            entity.Property(e => e.CompensacionGarantizada).HasColumnName("COMPENSACION_GARANTIZADA");
+            entity.Property(e => e.CorreoElectronico)
+                .HasMaxLength(250)
+                .HasColumnName("CORREO_ELECTRONICO");
+            entity.Property(e => e.Cp)
+                .HasMaxLength(6)
+                .HasColumnName("CP");
+            entity.Property(e => e.Curp)
+                .IsRequired()
+                .HasMaxLength(18);
+            entity.Property(e => e.Estado).HasMaxLength(30);
+            entity.Property(e => e.EstadoCivil)
+                .HasMaxLength(20)
+                .HasColumnName("ESTADO_CIVIL");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FechaDeInicio)
+                .HasColumnType("datetime")
+                .HasColumnName("Fecha_de_Inicio");
+            entity.Property(e => e.FechaFin)
+                .HasColumnType("datetime")
+                .HasColumnName("Fecha_Fin");
+            entity.Property(e => e.FechaNacimiento).HasColumnType("datetime");
+            entity.Property(e => e.Materno)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Municipio).HasMaxLength(20);
+            entity.Property(e => e.NoCartilla).HasMaxLength(16);
+            entity.Property(e => e.NoCredencialElector).HasMaxLength(32);
+            entity.Property(e => e.NoLicencia).HasMaxLength(16);
+            entity.Property(e => e.NoPasaporte).HasMaxLength(16);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.NumExterior)
+                .HasMaxLength(10)
+                .HasColumnName("Num_exterior");
+            entity.Property(e => e.NumInterior)
+                .HasMaxLength(10)
+                .HasColumnName("Num_interior");
+            entity.Property(e => e.NumeroCuenta)
+                .HasMaxLength(25)
+                .HasColumnName("NUMERO_CUENTA");
+            entity.Property(e => e.Paterno)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Puesto)
+                .HasMaxLength(100)
+                .HasColumnName("PUESTO");
+            entity.Property(e => e.RegImss)
+                .HasMaxLength(12)
+                .HasColumnName("REG_IMSS");
+            entity.Property(e => e.Rfc)
+                .IsRequired()
+                .HasMaxLength(15)
+                .HasColumnName("RFC");
+            entity.Property(e => e.Sexo).HasMaxLength(10);
+            entity.Property(e => e.SueldoBase).HasColumnName("SUELDO_BASE");
+            entity.Property(e => e.TelefonoMovil)
+                .HasMaxLength(15)
+                .HasColumnName("Telefono_movil");
+            entity.Property(e => e.TelefonoParticular)
+                .HasMaxLength(15)
+                .HasColumnName("Telefono_particular");
+            entity.Property(e => e.TipoContratacion)
+                .HasMaxLength(50)
+                .HasColumnName("TIPO_CONTRATACION");
+        });
+
+        modelBuilder.Entity<PersonaArea>(entity =>
+        {
+            entity.HasKey(e => e.PkidPersonaArea).HasName("PK_PKIdPersonaArea_Id");
+
+            entity.ToTable("PersonaArea", "NOM");
+
+            entity.Property(e => e.PkidPersonaArea).HasColumnName("PKIdPersonaArea");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
+
+            entity.HasOne(d => d.FkidAreaSisNavigation).WithMany(p => p.PersonaAreas)
+                .HasForeignKey(d => d.FkidAreaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PersonaArea_FKIdArea");
+
+            entity.HasOne(d => d.FkidPersonaNomNavigation).WithMany(p => p.PersonaAreas)
+                .HasForeignKey(d => d.FkidPersonaNom)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PersonaArea_FKIdPersona");
+        });
+
+        modelBuilder.Entity<Proveedor>(entity =>
+        {
+            entity.HasKey(e => e.PkidProveedor).HasName("PK_Proveedor_Id");
+
+            entity.ToTable("Proveedor", "SIS");
+
+            entity.Property(e => e.PkidProveedor).HasColumnName("PKIdProveedor");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Calle).HasMaxLength(50);
+            entity.Property(e => e.Ciudad).HasMaxLength(50);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.Colonia).HasMaxLength(50);
+            entity.Property(e => e.Cp)
+                .HasMaxLength(50)
+                .HasColumnName("CP");
+            entity.Property(e => e.Curp)
+                .HasMaxLength(18)
+                .HasColumnName("CURP");
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .HasColumnName("EMAIL");
+            entity.Property(e => e.FechaAlta).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.FkIdTipoProveedorSis).HasColumnName("FkIdTipoProveedor_SIS");
+            entity.Property(e => e.FkidAeclaseSis).HasColumnName("FKIdAEClase_SIS");
+            entity.Property(e => e.FkidAedivisionSis).HasColumnName("FKIdAEDivision_SIS");
+            entity.Property(e => e.FkidAegrupoSis).HasColumnName("FKIdAEGrupo_SIS");
+            entity.Property(e => e.FkidAesectorSis).HasColumnName("FKIdAESector_SIS");
+            entity.Property(e => e.FkidCuentaContableSis).HasColumnName("FKIdCuentaContable_SIS");
+            entity.Property(e => e.FkidEstadoSis).HasColumnName("FKIdEstado_SIS");
+            entity.Property(e => e.FkidEstatusProveedorSis).HasColumnName("FKIdEstatusProveedor_SIS");
+            entity.Property(e => e.FkidMunicipioSis).HasColumnName("FKIdMunicipio_SIS");
+            entity.Property(e => e.FkidPaisSis).HasColumnName("FKIdPais_SIS");
+            entity.Property(e => e.FkidResponsableSis).HasColumnName("FKIdResponsable_SIS");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.Numero).HasMaxLength(10);
+            entity.Property(e => e.NumeroInt).HasMaxLength(10);
+            entity.Property(e => e.PaginaWeb).HasMaxLength(100);
+            entity.Property(e => e.Rfc)
+                .HasMaxLength(50)
+                .HasColumnName("RFC");
+            entity.Property(e => e.TelefonoInstitucional).HasMaxLength(20);
+
+            entity.HasOne(d => d.FkIdTipoProveedorSisNavigation).WithMany(p => p.Proveedors)
+                .HasForeignKey(d => d.FkIdTipoProveedorSis)
+                .HasConstraintName("FK_Proveedor_FkIdTipoProveedor");
+
+            entity.HasOne(d => d.FkidCuentaContableSisNavigation).WithMany(p => p.Proveedors)
+                .HasForeignKey(d => d.FkidCuentaContableSis)
+                .HasConstraintName("FK_Proveedor_FKIdCuentaContable");
+
+            entity.HasOne(d => d.FkidEstadoSisNavigation).WithMany(p => p.Proveedors)
+                .HasForeignKey(d => d.FkidEstadoSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Proveedor_FKIdEstado");
+
+            entity.HasOne(d => d.FkidEstatusProveedorSisNavigation).WithMany(p => p.Proveedors)
+                .HasForeignKey(d => d.FkidEstatusProveedorSis)
+                .HasConstraintName("FK_Proveedor_FKIdEstatusProveedor");
+
+            entity.HasOne(d => d.FkidMunicipioSisNavigation).WithMany(p => p.Proveedors)
+                .HasForeignKey(d => d.FkidMunicipioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Proveedor_FKIdMunicipio");
+
+            entity.HasOne(d => d.FkidPaisSisNavigation).WithMany(p => p.Proveedors)
+                .HasForeignKey(d => d.FkidPaisSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Proveedor_FKIdPais");
         });
 
         modelBuilder.Entity<RegistroConteo>(entity =>
@@ -1110,6 +1536,26 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("CONSTRAINT_FK_SystemParamCatalog_SystemParamValue");
         });
 
+        modelBuilder.Entity<TipoAdquisicion>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoAdq).HasName("PK_TipoAdq_Id");
+
+            entity.ToTable("TipoAdquisicion", "ALMA");
+
+            entity.Property(e => e.PkidTipoAdq).HasColumnName("PKIdTipoAdq");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.Descripmovto)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<TipoBien>(entity =>
         {
             entity.HasKey(e => e.PkidTipoBien).HasName("ALMA_TipoBien_PK_IdGrupoBien");
@@ -1196,6 +1642,34 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Descripcion)
                 .IsRequired()
                 .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
+        modelBuilder.Entity<TipoPatrimonio>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoPatrimonio).HasName("PK_TipoPatrimonio_Id");
+
+            entity.ToTable("TipoPatrimonio", "ALMA");
+
+            entity.Property(e => e.PkidTipoPatrimonio).HasColumnName("PKIdTipoPatrimonio");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
+        });
+
+        modelBuilder.Entity<TipoProveedor>(entity =>
+        {
+            entity.HasKey(e => e.PkIdTipoProveedor).HasName("PK_TipoProveedor_Id");
+
+            entity.ToTable("TipoProveedor", "SIS");
+
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(80)
+                .IsUnicode(false);
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())");
         });
 
@@ -1403,6 +1877,70 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.UsuarioModificacionNombre)
                 .IsRequired()
                 .HasMaxLength(129);
+        });
+
+        modelBuilder.Entity<VwBien>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_Bien", "ALMA");
+
+            entity.Property(e => e.Aadquisicion)
+                .HasMaxLength(2)
+                .HasColumnName("AAdquisicion");
+            entity.Property(e => e.AreaClave).HasMaxLength(15);
+            entity.Property(e => e.AreaNombre).HasMaxLength(200);
+            entity.Property(e => e.Caracteristicas).HasMaxLength(50);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.ClaveAnt).HasMaxLength(50);
+            entity.Property(e => e.ClaveHist).HasMaxLength(50);
+            entity.Property(e => e.Costo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Descripcion).HasMaxLength(1000);
+            entity.Property(e => e.EsContabilizado).HasColumnName("esContabilizado");
+            entity.Property(e => e.EstadoBienDescripcionCorta).HasMaxLength(100);
+            entity.Property(e => e.EstadoBienDescripcionEspecifica).HasMaxLength(200);
+            entity.Property(e => e.EstadoBienDescripcionGeneral).HasMaxLength(150);
+            entity.Property(e => e.Estatus).HasMaxLength(1);
+            entity.Property(e => e.Factura).HasMaxLength(50);
+            entity.Property(e => e.FechaAdq).HasColumnType("datetime");
+            entity.Property(e => e.FechaReqscn).HasColumnType("datetime");
+            entity.Property(e => e.FechaResguardado).HasColumnType("datetime");
+            entity.Property(e => e.FechaUltInv).HasColumnType("datetime");
+            entity.Property(e => e.GrupoBienDescripcion).HasMaxLength(800);
+            entity.Property(e => e.MarcaDescripcion).HasMaxLength(50);
+            entity.Property(e => e.MaterialDescripcion).HasMaxLength(50);
+            entity.Property(e => e.Modelo).HasMaxLength(50);
+            entity.Property(e => e.Notas).HasMaxLength(250);
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidBien).HasColumnName("PKIdBien");
+            entity.Property(e => e.ProveedorClave).HasMaxLength(10);
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+            entity.Property(e => e.ProveedorRfc)
+                .HasMaxLength(50)
+                .HasColumnName("ProveedorRFC");
+            entity.Property(e => e.Rango).HasMaxLength(20);
+            entity.Property(e => e.Referencia).HasMaxLength(50);
+            entity.Property(e => e.Requisicion).HasMaxLength(25);
+            entity.Property(e => e.Resolucion).HasMaxLength(20);
+            entity.Property(e => e.Serie).HasMaxLength(1000);
+            entity.Property(e => e.TipoAdquisicionClave).HasMaxLength(10);
+            entity.Property(e => e.TipoAdquisicionDescripcion).HasMaxLength(100);
+            entity.Property(e => e.TipoAdquisicionDescripcionMovto).HasMaxLength(100);
+            entity.Property(e => e.TipoBienCabms)
+                .HasMaxLength(50)
+                .HasColumnName("TipoBienCABMS");
+            entity.Property(e => e.TipoBienCodigoClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienCucopPlus)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("TipoBienCUCOP_PLUS");
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.TipoBienIdentificador).HasMaxLength(50);
+            entity.Property(e => e.TipoPatrimonioDescripcion).HasMaxLength(50);
+            entity.Property(e => e.Ubicacion).HasMaxLength(50);
+            entity.Property(e => e.ValorActual).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.ValorRescate).HasColumnType("decimal(20, 4)");
         });
 
         modelBuilder.Entity<VwDetalleArticulo>(entity =>
@@ -1663,6 +2201,50 @@ public partial class EGestionContext : DbContext
                 .HasColumnName("RFC");
             entity.Property(e => e.TelefonoPrincipal).HasMaxLength(20);
             entity.Property(e => e.TelefonoSecundario).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<VwTipoBienConteo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoBienConteo", "ALMA");
+
+            entity.Property(e => e.Cabms)
+                .HasMaxLength(50)
+                .HasColumnName("CABMS");
+            entity.Property(e => e.CantidadEquivalente).HasColumnName("Cantidad_Equivalente");
+            entity.Property(e => e.CodigoArticulo).HasMaxLength(200);
+            entity.Property(e => e.CucopPlus)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("CUCOP_PLUS");
+            entity.Property(e => e.CuentaCompleta).HasMaxLength(29);
+            entity.Property(e => e.CuentaDescripcion)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.DepreciacionAnual).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.DescripcionArticulo).HasMaxLength(1200);
+            entity.Property(e => e.ExistenciaMaxima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaMinima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.Familia)
+                .IsRequired()
+                .HasMaxLength(80);
+            entity.Property(e => e.GrupoBien).HasMaxLength(800);
+            entity.Property(e => e.Nivel)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.PartidaClave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.PartidaDescripcion)
+                .IsRequired()
+                .HasMaxLength(255);
+            entity.Property(e => e.PkidTipoBien).HasColumnName("PKIdTipoBien");
+            entity.Property(e => e.TipoCuenta).HasMaxLength(25);
+            entity.Property(e => e.UnidadEquivalente).HasMaxLength(50);
+            entity.Property(e => e.UnidadMedida)
+                .IsRequired()
+                .HasMaxLength(50);
         });
 
         modelBuilder.Entity<VwUsuarioEmpresa>(entity =>

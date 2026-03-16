@@ -1,115 +1,93 @@
 ﻿@using EG.Web.Models.ConteoCiclico
-@using MudBlazor
-@using EG.Web.Contracs
-@using EG.Web.Contracs.Configuration
-@inject IGenericCrudService<RegistroConteoResponse> RegistroService
-@inject AuthService AuthService
+@using EG.Web.Contracs.ConteoCiclico
+@inject IConteoCiclicoService ConteoCiclicoService
 @inject ISnackbar Snackbar
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">Registrar Conteo</MudText>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.AddCircle" Color="Color.Info" Class="mr-2" />
+            Registrar Conteo
+        </MudText>
     </TitleContent>
     <DialogContent>
-        <MudGrid>
-            <MudItem xs="12">
-                <MudText Typo="Typo.body2" Class="text-secondary">Conteo número @NumeroConteo</MudText>
-            </MudItem>
-            <MudItem xs="12">
-                <MudNumericField T="decimal"
-                    @bind-Value="cantidad"
-                    Label="Cantidad contada *"
-                    Variant="Variant.Outlined"
-                    Min="0m"
-                    Step="0.01m"
-                    Format="N2"
-                    Required="true"
-                    RequiredError="La cantidad es obligatoria" />
-            </MudItem>
-            <MudItem xs="12">
-                <MudTextField @bind-Value="observaciones"
-                              Label="Observaciones"
-                              Variant="Variant.Outlined"
-                              Lines="2" />
-            </MudItem>
-            <MudItem xs="12">
-                <MudSwitch @bind-Value="esReconteo"
-                           Color="Color.Primary"
-                           Label="Es reconteo (por discrepancia)" />
-            </MudItem>
-        </MudGrid>
+        <MudText Class="mb-4">
+            Artículo: <strong>@Articulo.CodigoArticulo - @Articulo.DescripcionArticulo</strong><br />
+            Existencia en sistema: <strong>@Articulo.ExistenciaSistema.ToString("N2")</strong><br />
+            Conteo número: <strong>@(Articulo.ConteosRealizados + 1) de @Articulo.MaximoConteosPorArticulo</strong>
+        </MudText>
+
+        <MudTextField @bind-Value="model.CantidadContada"
+                      Label="Cantidad contada *"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Adornment="Adornment.End"
+                      AdornmentText="unidades"
+                      Required="true"
+                      For="@(() => model.CantidadContada)" />
+
+        <MudTextField @bind-Value="model.Observaciones"
+                      Label="Observaciones"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Lines="3" />
+
+        <MudCheckBox T="bool"
+                     @bind-Checked="model.EsReconteo"
+                     Label="Es reconteo"
+                     Color="Color.Info" />
+
+        @if (EsPrimerConteo)
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-3">
+                Al ser el primer conteo, esta cantidad se considerará como existencia final temporal.
+            </MudAlert>
+        }
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Cancel">Cancelar</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Guardar" Disabled="isProcessing">
-            @(isProcessing ? "Guardando..." : "Guardar")
-        </MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Guardar" Disabled="!EsValido">Guardar Conteo</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ArticuloConteoResponse Articulo { get; set; } = null!;
+    [Parameter] public bool EsReconteo { get; set; } = false;
 
-    [Parameter] public int ArticuloId { get; set; }
-    [Parameter] public int PeriodoId { get; set; }
-    [Parameter] public int NumeroConteo { get; set; }
-    [Parameter] public EventCallback OnConteoRegistrado { get; set; }
+    private class RegistroModel
+    {
+        public decimal CantidadContada { get; set; }
+        public string? Observaciones { get; set; }
+        public bool EsReconteo { get; set; }
+    }
+    private RegistroModel model = new();
+    private bool EsPrimerConteo => Articulo.ConteosRealizados == 0;
+    private bool EsValido => model.CantidadContada > 0;
 
-    private decimal cantidad = 0;
-    private string observaciones = string.Empty;
-    private bool esReconteo = false;
-    private bool isProcessing;
+    protected override void OnInitialized() => model.EsReconteo = EsReconteo;
+
+    private void Cancelar() => MudDialog.Cancel();
 
     private async Task Guardar()
     {
-        if (cantidad < 0)
-        {
-            Snackbar.Add("La cantidad debe ser mayor o igual a cero", Severity.Warning);
-            return;
-        }
-
-        isProcessing = true;
-        StateHasChanged();
-
         try
         {
-            var userId = await AuthService.GetUserIdAsync();
-
-            var nuevoRegistro = new RegistroConteoResponse
+            var request = new RegistrarConteoRequest
             {
-                ArticuloConteoId = ArticuloId,
-                PeriodoId = PeriodoId,
-                NumeroConteo = NumeroConteo,
-                CantidadContada = cantidad,
-                Observaciones = observaciones,
-                EsReconteo = esReconteo,
-                UsuarioId = userId,
-                FechaConteo = DateTime.Now,
-                Activo = true
+                ArticuloConteoId = Articulo.Id,
+                CantidadContada = model.CantidadContada,
+                Observaciones = model.Observaciones,
+                EsReconteo = model.EsReconteo
             };
-
-            var response = await RegistroService.CreateAsync(nuevoRegistro);
-
-            if (response?.Success == true)
+            var result = await ConteoCiclicoService.RegistrarConteoAsync(request);
+            if (result.Success)
             {
-                Snackbar.Add("Conteo registrado exitosamente", Severity.Success);
-                await OnConteoRegistrado.InvokeAsync();
+                Snackbar.Add(result.Message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
-            else
-            {
-                Snackbar.Add(response?.Message ?? "Error al registrar", Severity.Error);
-            }
+            else Snackbar.Add(result.Message, Severity.Error);
         }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            isProcessing = false;
-        }
+        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
     }
-
-    private void Cancel() => MudDialog.Cancel();
 }

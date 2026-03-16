@@ -23,7 +23,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[Bien]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[DiscrepanciaConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[EstadoBien]",
          "ObjectType": 0
       },
       {
@@ -47,6 +55,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[Marca]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[Material]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[Nivel]",
          "ObjectType": 0
       },
@@ -59,11 +75,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[TipoAdquisicion]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[TipoBien]",
          "ObjectType": 0
       },
       {
          "Name": "[ALMA].[TipoConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[TipoPatrimonio]",
          "ObjectType": 0
       },
       {
@@ -115,6 +139,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[NOM].[Persona]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[PersonaArea]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Area]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[CatTipoSucursal]",
          "ObjectType": 0
       },
@@ -135,6 +171,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[EstatusProveedor]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Idioma]",
          "ObjectType": 0
       },
@@ -151,6 +191,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Municipios]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[OrigenLogMessage]",
          "ObjectType": 0
       },
@@ -160,6 +204,10 @@
       },
       {
          "Name": "[SIS].[PerfilUsuario]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Proveedor]",
          "ObjectType": 0
       },
       {
@@ -179,6 +227,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[TipoProveedor]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Usuario]",
          "ObjectType": 0
       },
@@ -195,6 +247,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[vw_Bien]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[Vw_DetalleArticulos]",
          "ObjectType": 3
       },
@@ -208,6 +264,10 @@
       },
       {
          "Name": "[ALMA].[Vw_ResumenPeriodo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_TipoBienConteo]",
          "ObjectType": 3
       },
       {

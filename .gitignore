@@ -55,3 +55,4 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 /BackEnd/EG.ApiCore/bin/Debug/net10.0/EG.ApiCore.deps.json
+/.vs/EGestion360.slnx/config/applicationhost.config

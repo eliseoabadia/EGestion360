@@ -1,0 +1,65 @@
+﻿@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Contracs.ConteoCiclico
+@inject IConteoCiclicoService ConteoCiclicoService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Done" Color="Color.Success" Class="mr-2" />
+            Cerrar Conteo
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Class="mb-4">
+            Artículo: <strong>@Articulo.CodigoArticulo - @Articulo.DescripcionArticulo</strong><br />
+            Existencia en sistema: <strong>@Articulo.ExistenciaSistema.ToString("N2")</strong><br />
+            Último conteo registrado: <strong>@(Articulo.UltimoConteo?.ToString("N2") ?? "Ninguno")</strong>
+        </MudText>
+
+        <MudTextField @bind-Value="existenciaFinal"
+                      Label="Existencia final (dejar vacío para usar el último conteo)"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Adornment="Adornment.End"
+                      AdornmentText="unidades"
+                      HelperText="Si no se especifica, se tomará el último conteo registrado" />
+
+        <MudAlert Severity="Severity.Warning" Class="mt-3">
+            Al cerrar el conteo, se calculará la diferencia y el artículo se marcará como concluido.
+        </MudAlert>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Guardar">Confirmar Cierre</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ArticuloConteoResponse Articulo { get; set; } = null!;
+
+    private decimal? existenciaFinal;
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private async Task Guardar()
+    {
+        try
+        {
+            var request = new CerrarConteoRequest
+            {
+                ArticuloConteoId = Articulo.Id,
+                ExistenciaFinal = existenciaFinal
+            };
+            var result = await ConteoCiclicoService.CerrarConteoAsync(request);
+            if (result.Success)
+            {
+                Snackbar.Add(result.Message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else Snackbar.Add(result.Message, Severity.Error);
+        }
+        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+    }
+}

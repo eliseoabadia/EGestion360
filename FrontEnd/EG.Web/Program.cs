@@ -3,9 +3,11 @@ using EG.Web;
 using EG.Web.Auth;
 using EG.Web.Contracs;
 using EG.Web.Contracs.Configuration;
+using EG.Web.Contracs.ConteoCiclico;
 using EG.Web.Extensions;
 using EG.Web.Services;
 using EG.Web.Services.Configuration;
+using EG.Web.Services.ConteoCiclico;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -56,6 +58,11 @@ internal class Program
         builder.Services.AddScoped<ISucursalService, SucursalService>(); 
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
         //builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
+
+        // Servicios de conteo cíclico
+        builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
+        builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
+        builder.Services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
 
         // En Program.cs o Startup.cs
         builder.Services.AddScoped<MenuStateService>();

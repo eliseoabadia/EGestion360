@@ -843,3 +843,230 @@ INNER JOIN ALMA.TipoBien tb ON ac.FKIdTipoBien_ALMA = tb.PKIdTipoBien
 INNER JOIN SIS.Usuario u ON rc.FKIdUsuario_SIS = u.PkIdUsuario
 WHERE rc.Activo = 1
 GO
+
+-- ====
+CREATE OR ALTER VIEW ALMA.Vw_TipoBienConteo
+AS
+SELECT 
+    tb.PKIdTipoBien,
+    tb.CodigoClave AS CodigoArticulo,
+    tb.Descripcion AS DescripcionArticulo,
+    tb.Activo,
+    
+    -- Unidades
+    u.Descripcion AS UnidadMedida,
+    ue.Descripcion AS UnidadEquivalente,
+    tb.Cantidad_Equivalente,
+    
+    -- Clasificación (Familia, Grupo, Nivel)
+    f.Descripcion AS Familia,
+    gb.Descripcion AS GrupoBien,
+    n.Descripcion AS Nivel,
+    
+    -- Ubicación (si se define)
+    -- (Actualmente no hay tabla de localizaciones, se puede agregar después)
+    
+    -- Datos de partida y cuenta contable
+    p.Clave AS PartidaClave,
+    p.Descripcion AS PartidaDescripcion,
+    cc.Cuenta + '.' + cc.SubCuenta + '.' + cc.SubSubCuenta + '.' + cc.SubSubSubCuenta + '.' + cc.SubSubSubSubCuenta AS CuentaCompleta,
+    cc.Descripcion AS CuentaDescripcion,
+    tc.Descripcion AS TipoCuenta,  -- 'ACREEDORA' u 'DEUDORA'
+    
+    -- Parámetros del artículo
+    tb.ExistenciaMinima,
+    tb.ExistenciaMaxima,
+    tb.CABMS,
+    tb.CUCOP_PLUS,
+    tb.DepreciacionAnual,
+    tb.TiempoVida,
+    tb.ProveeduriaNac,
+    tb.CatalogoBasico,
+    
+    -- Auditoría
+    tb.FechaCreacion,
+    tb.UsuarioCreacion
+FROM 
+    ALMA.TipoBien tb
+    INNER JOIN ALMA.GrupoBien gb ON tb.FKIdGrupoBien_ALMA = gb.PKIdGrupoBien
+    INNER JOIN ALMA.Familia f ON gb.FKIdFamilia_ALMA = f.PKIdFamilia
+    INNER JOIN ALMA.Nivel n ON tb.FKIdNivel_ALMA = n.PKIdNivel
+    INNER JOIN CONTA.Partida p ON tb.FKIdPartida_CONTA = p.PKIdPartida
+    LEFT JOIN CONTA.CuentaContable cc ON tb.FKIdCuentaContable_CONTA = cc.PKIdCuentaContable
+    LEFT JOIN CONTA.TipoCuenta tc ON cc.FKIdTipoCuenta_CONTA = tc.PKIdTipoCuenta
+    INNER JOIN ALMA.Unidades u ON tb.FKIdUnidades_ALMA = u.PKIdUnidades
+    LEFT JOIN ALMA.Unidades ue ON tb.FKIdUnidades_Equivalente = ue.PKIdUnidades
+WHERE 
+    tb.Activo = 1
+GO
+
+-- =============================================
+-- VISTAS PARA REPORTES
+-- =============================================
+
+-- Vista de resumen por periodo
+GO
+CREATE OR ALTER VIEW ALMA.Vw_ResumenPeriodo AS
+SELECT 
+    p.PKIdPeriodoConteo,
+    p.CodigoPeriodo,
+    p.Nombre as Periodo,
+    s.Nombre as Sucursal,
+    tc.Nombre as TipoConteo,
+    ep.Nombre as Estatus,
+    p.FechaInicio,
+    p.FechaFin,
+    p.FechaCierre,
+    p.TotalArticulos,
+    p.ArticulosConcluidos,
+    p.ArticulosConDiferencia,
+    (p.TotalArticulos - ISNULL(p.ArticulosConcluidos, 0)) as ArticulosPendientes,
+    COUNT(DISTINCT r.FKIdUsuario_SIS) as ContadoresParticiparon,
+    COUNT(r.PKIdRegistroConteo) as TotalConteosRegistrados
+FROM ALMA.PeriodoConteo p
+INNER JOIN SIS.Sucursal s ON p.FKIdSucursal_SIS = s.PKIdSucursal
+INNER JOIN ALMA.TipoConteo tc ON p.FKIdTipoConteo_ALMA = tc.PKIdTipoConteo
+INNER JOIN ALMA.EstatusPeriodo ep ON p.FKIdEstatus_ALMA = ep.PKIdEstatusPeriodo
+LEFT JOIN ALMA.RegistroConteo r ON p.PKIdPeriodoConteo = r.FKIdPeriodoConteo_ALMA
+GROUP BY p.PKIdPeriodoConteo, p.CodigoPeriodo, p.Nombre, s.Nombre, tc.Nombre, 
+         ep.Nombre, p.FechaInicio, p.FechaFin, p.FechaCierre, 
+         p.TotalArticulos, p.ArticulosConcluidos, p.ArticulosConDiferencia
+GO
+
+-- Vista de detalle de artículos en conteo
+CREATE OR ALTER VIEW ALMA.Vw_DetalleArticulos AS
+SELECT 
+    a.PKIdArticuloConteo,
+    p.CodigoPeriodo,
+    p.Nombre as Periodo,
+    s.Nombre as Sucursal,
+    tb.CodigoClave as CodigoArticulo,
+    tb.Descripcion as Articulo,
+    a.ExistenciaSistema,
+    a.ExistenciaFinal,
+    a.Diferencia,
+    a.PorcentajeDiferencia,
+    eac.Nombre as Estatus,
+    a.ConteosRealizados,
+    a.ConteosPendientes,
+    a.FechaInicioConteo,
+    a.FechaConclusion,
+    u.Nombre + ' ' + u.ApellidoPaterno as ConcluidoPor,
+    (SELECT STRING_AGG(CONCAT('Conteo', rc.NumeroConteo, ': ', rc.CantidadContada, ' (', uc.Nombre, ')'), ' | ') 
+     FROM ALMA.RegistroConteo rc
+     INNER JOIN SIS.Usuario uc ON rc.FKIdUsuario_SIS = uc.PkIdUsuario
+     WHERE rc.FKIdArticuloConteo_ALMA = a.PKIdArticuloConteo) as HistorialConteos
+FROM ALMA.ArticuloConteo a
+INNER JOIN ALMA.PeriodoConteo p ON a.FKIdPeriodoConteo_ALMA = p.PKIdPeriodoConteo
+INNER JOIN SIS.Sucursal s ON a.FKIdSucursal_SIS = s.PKIdSucursal
+INNER JOIN ALMA.TipoBien tb ON a.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+INNER JOIN ALMA.EstatusArticuloConteo eac ON a.FKIdEstatus_ALMA = eac.PKIdEstatusArticulo
+LEFT JOIN SIS.Usuario u ON a.FKIdUsuarioConcluyo_SIS = u.PkIdUsuario
+WHERE a.Activo = 1
+GO
+
+
+CREATE OR ALTER VIEW ALMA.vw_Bien
+AS
+SELECT 
+    b.PKIdBien,
+    b.Clave,
+    b.ClaveAnt,
+    b.Descripcion,
+    b.Modelo,
+    b.Serie,
+    b.Costo,
+    b.FechaAdq,
+    b.Factura,
+    b.Requisicion,
+    b.Referencia,
+    b.Notas,
+    b.Ubicacion,
+    b.AAdquisicion,
+    b.Frente,
+    b.Fondo,
+    b.Altura,
+    b.Diametro,
+    b.VerificacionesDias,
+    b.MantenimientoDias,
+    b.Mantenimiento,
+    b.Calibracion,
+    b.Rango,
+    b.Resolucion,
+    b.FechaUltInv,
+    b.FechaReqscn,
+    b.Estatus,
+    b.Caracteristicas,
+    b.Resguardo,
+    b.ResguardoAnterior,
+    b.RelId,
+    b.ValorRescate,
+    b.ValorActual,
+    b.Antiguedad,
+    b.Progresivo,
+    b.Consecutivo,
+    b.ClaveHist,
+    b.EstaResguardado,
+    b.FechaResguardado,
+    b.Localizado,
+    b.esContabilizado,
+    b.Activo,
+    b.FechaCreacion,
+    b.UsuarioCreacion,
+    b.FechaModificacion,
+    b.UsuarioModificacion,
+
+    -- Información de GrupoBien
+    gb.Descripcion AS GrupoBienDescripcion,
+    gb.Clave AS GrupoBienClave,
+
+    -- Información de TipoBien
+    tb.CodigoClave AS TipoBienCodigoClave,
+    tb.Descripcion AS TipoBienDescripcion,
+    tb.CABMS AS TipoBienCABMS,
+    tb.Identificador AS TipoBienIdentificador,
+    tb.CUCOP_PLUS AS TipoBienCUCOP_PLUS,
+
+    -- Información de Área (SIS.Area)
+    a.Nombre AS AreaNombre,
+    a.Clave AS AreaClave,
+
+    -- Información de Proveedor
+    p.Nombre AS ProveedorNombre,
+    p.RFC AS ProveedorRFC,
+    p.Clave AS ProveedorClave,
+
+    -- Información de EstadoBien
+    eb.DESCRIPCION_GENERAL AS EstadoBienDescripcionGeneral,
+    eb.DESCRIPCION_ESPECIFICA AS EstadoBienDescripcionEspecifica,
+    eb.DESCRIPCION_CORTA AS EstadoBienDescripcionCorta,
+
+    -- Información de TipoPatrimonio
+    tp.Descripcion AS TipoPatrimonioDescripcion,
+
+    -- Información de Marca
+    m.Descripcion AS MarcaDescripcion,
+
+    -- Información de Material
+    mat.Descripcion AS MaterialDescripcion,
+
+    -- Información de TipoAdquisicion
+    ta.Clave AS TipoAdquisicionClave,
+    ta.Descripcion AS TipoAdquisicionDescripcion,
+    ta.Descripmovto AS TipoAdquisicionDescripcionMovto,
+
+    -- Información de Partida (CONTA.Partida)
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion
+
+FROM ALMA.Bien b
+LEFT JOIN ALMA.GrupoBien gb ON b.FKIdGrupoBien_ALMA = gb.PKIdGrupoBien
+LEFT JOIN ALMA.TipoBien tb ON b.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+LEFT JOIN SIS.Area a ON b.FKIdArea_SIS = a.PKIdArea
+LEFT JOIN SIS.Proveedor p ON b.FKIdProveedor_SIS = p.PKIdProveedor
+LEFT JOIN ALMA.EstadoBien eb ON b.FKIdEstadoBien_ALMA = eb.PKIdEstadoBien
+LEFT JOIN ALMA.TipoPatrimonio tp ON b.FKIdTipoPatrimonio_ALMA = tp.PKIdTipoPatrimonio
+LEFT JOIN ALMA.Marca m ON b.FKIdMarca_ALMA = m.PKIdMarca
+LEFT JOIN ALMA.Material mat ON b.FKIdMaterial_ALMA = mat.PKIdMaterial
+LEFT JOIN ALMA.TipoAdquisicion ta ON b.FKIdTipoAdq_ALMA = ta.PKIdTipoAdq
+LEFT JOIN CONTA.Partida part ON b.FKIdPartida_CONTA = part.PKIdPartida

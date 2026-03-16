@@ -1,14 +1,10 @@
-﻿using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
+﻿using EG.ApiCore.Services;
+using EG.Application.Interfaces.ConteoCiclico;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
-using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCore.Controllers.ConteoCiclico
 {
@@ -17,760 +13,328 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
     [Authorize]
     public class ArticuloConteoController : ControllerBase
     {
+        private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(ArticuloConteoController));
+        private readonly IArticuloConteoAppService _appService;
         private readonly IUserContextService _userContext;
-        private readonly GenericService<ArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> _service;
-        private readonly GenericService<VwArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> _serviceView;
-        private readonly IMapper _mapper;
 
         public ArticuloConteoController(
-            GenericService<ArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> service,
-            GenericService<VwArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> serviceView,
-            IMapper mapper,
+            IArticuloConteoAppService appService,
             IUserContextService userContext)
         {
-            _service = service;
-            _serviceView = serviceView;
-            _mapper = mapper;
+            _appService = appService;
             _userContext = userContext;
-
-            ConfigureService();
-            ConfigureValidations();
         }
 
-        private void ConfigureService()
-        {
-            // Configurar includes para la entidad principal
-            _service.AddInclude(a => a.FkidPeriodoConteoAlmaNavigation);
-            _service.AddInclude(a => a.FkidTipoBienAlmaNavigation);
-            _service.AddInclude(a => a.FkidEstatusAlmaNavigation);
-            _service.AddInclude(a => a.RegistroConteos);
-            _service.AddInclude(a => a.FkidUsuarioConcluyoSisNavigation);
+        // ==================== CONSULTAS ====================
 
-            // Configurar relaciones para búsqueda en la vista
-            _serviceView.AddRelationFilter("Periodo", new List<string> { "PeriodoCodigo", "PeriodoNombre" });
-            _serviceView.AddRelationFilter("Articulo", new List<string> { "ArticuloCodigo", "ArticuloDescripcion" });
-            _serviceView.AddRelationFilter("Estatus", new List<string> { "EstatusNombre" });
-            _serviceView.AddRelationFilter("UsuarioAsignado", new List<string> { "UsuarioAsignadoNombre" });
-        }
-
-        private void ConfigureValidations()
-        {
-            // REGLA 1: Validar que el artículo no esté duplicado en el mismo período
-            _service.AddValidationRule("UniqueArticuloEnPeriodo", async (dto) =>
-            {
-                var articuloDto = dto as ArticuloConteoDto;
-                if (articuloDto == null || articuloDto.FkidPeriodoConteoAlma <= 0 || articuloDto.PkidArticuloConteo <= 0)
-                    return false;
-
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(a => a.FkidPeriodoConteoAlma == articuloDto.FkidPeriodoConteoAlma &&
-                                  a.PkidArticuloConteo == articuloDto.PkidArticuloConteo &&
-                                  a.Activo);
-
-                return !exists;
-            });
-
-            // REGLA 2: Validar artículo único para actualización (excluyendo el mismo)
-            _service.AddValidationRuleWithId("UniqueArticuloEnPeriodoUpdate", async (dto, id) =>
-            {
-                var articuloDto = dto as ArticuloConteoDto;
-                if (articuloDto == null || !id.HasValue || articuloDto.FkidPeriodoConteoAlma <= 0 || articuloDto.PkidArticuloConteo <= 0)
-                    return true;
-
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(a => a.FkidPeriodoConteoAlma == articuloDto.FkidPeriodoConteoAlma &&
-                                  //a.id == articuloDto.FkidArticulo &&
-                                  a.PkidArticuloConteo != id.Value &&
-                                  a.Activo);
-
-                return !exists;
-            });
-
-            // REGLA 3: Validar que el período esté activo y no cerrado
-            _service.AddValidationRule("ValidPeriodoActivo", async (dto) =>
-            {
-                var articuloDto = dto as ArticuloConteoDto;
-                if (articuloDto == null || articuloDto.FkidPeriodoConteoAlma <= 0)
-                    return false;
-
-                // Esta validación requiere acceso al servicio de período
-                // Se implementa en el controlador o mediante un servicio inyectado
-                return true; // Placeholder, se valida en el método Add/Update
-            });
-
-            // REGLA 4: Campos obligatorios
-            //_service.AddValidationRule("ValidArticulo", async (dto) =>
-            //    (dto as ArticuloConteoDto)?.FkidArticulo > 0);
-
-            _service.AddValidationRule("ValidPeriodo", async (dto) =>
-                (dto as ArticuloConteoDto)?.FkidPeriodoConteoAlma > 0);
-
-            //_service.AddValidationRule("ValidEstatus", async (dto) =>
-            //    (dto as ArticuloConteoDto)?.FkidEstatusArticulo > 0);
-        }
-
-        // GET: api/ArticuloConteo
         [HttpGet]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetAll()
         {
             try
             {
-                var result = await _serviceView.GetAllAsync();
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Artículos de conteo obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = result.ToList(),
-                    TotalCount = result.Count()
-                });
+                var result = await _appService.GetAllAsync();
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
+                _logger.LogError($"Error en GetAll: {ex.Message}", ex);
+                return StatusCode(500, new PagedResult<PeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener artículos de conteo: {ex.Message}",
+                    Message = ex.Message,
                     Code = "ERROR",
                     TotalCount = 0
                 });
             }
         }
 
-        // GET: api/ArticuloConteo/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> GetById(int id)
+        public async Task<ActionResult<PeriodoConteoResponse>> GetById(int id)
         {
             try
             {
-                var result = await _serviceView.GetByIdAsync(id, idPropertyName: "Id");
-
-                if (result == null)
-                    return NotFound(new PagedResult<VwArticuloConteoResponse>
+                var item = await _appService.GetByIdAsync(id);
+                if (item == null)
+                {
+                    return NotFound(new PagedResult<PeriodoConteoResponse>
                     {
                         Success = false,
-                        Message = "Artículo de conteo no encontrado",
-                        Code = "NOTFOUND_ARTICULOCONTEO",
+                        Message = "Artículo no encontrado",
+                        Code = "NOTFOUND",
                         TotalCount = 0
                     });
+                }
 
-                return Ok(new PagedResult<VwArticuloConteoResponse>
+                return Ok(new PagedResult<PeriodoConteoResponse>
                 {
                     Success = true,
-                    Message = "Artículo de conteo encontrado",
+                    Message = "Artículo encontrado",
                     Code = "SUCCESS",
-                    Data = result,
-                    Items = new List<VwArticuloConteoResponse> { result },
+                    Data = item,
+                    Items = new List<PeriodoConteoResponse> { item },
                     TotalCount = 1
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener artículo de conteo: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError($"Error en GetById: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // GET: api/ArticuloConteo/ByPeriodo/{periodoId}
-        [HttpGet("ByPeriodo/{periodoId}")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> GetByPeriodo(int periodoId)
-        {
-            try
-            {
-                var result = await _serviceView.GetQueryWithIncludes()
-                    .Where(a => a.PeriodoId == periodoId && a.Activo)
-                    .ToListAsync();
-
-                var response = _mapper.Map<VwArticuloConteoResponse>(result);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Artículos de conteo del período obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = new List<VwArticuloConteoResponse> { response },
-                    TotalCount = result.Count
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener artículos del período: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        // GET: api/ArticuloConteo/ByUsuario/{usuarioId}
-        [HttpGet("ByUsuario/{usuarioId}")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> GetByUsuario(int usuarioId)
-        {
-            try
-            {
-                var result = await _serviceView.GetQueryWithIncludes()
-                    .Where(a => a.UsuarioConcluyoId == usuarioId && a.Activo)  // error va el usuario que hace el conteo
-                    .ToListAsync();
-
-                var response = _mapper.Map<VwArticuloConteoResponse>(result);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Artículos asignados al usuario obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = new List<VwArticuloConteoResponse> { response },
-                    TotalCount = result.Count
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener artículos del usuario: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        // POST: api/ArticuloConteo/GetAllPaginado
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
         {
             try
             {
-                _serviceView.ClearConfiguration();
-                ConfigureService();
-
-                var result = await _serviceView.GetAllPaginadoAsync(_params);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Artículos de conteo obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = result.Items,
-                    TotalCount = result.TotalCount
-                });
+                var result = await _appService.GetAllPaginadoAsync(pageRequest);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener artículos de conteo paginados: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError($"Error en GetAllPaginado: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // POST: api/ArticuloConteo/GetAllPaginadoByPeriodo/{periodoId}
-        [HttpPost("GetAllPaginadoByPeriodo/{periodoId}")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> GetAllPaginadoByPeriodo(int periodoId, [FromBody] PagedRequest _params)
+        [HttpGet("periodo/{periodoId}")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetByPeriodoId(int periodoId)
         {
             try
             {
-                _serviceView.ClearConfiguration();
-                ConfigureService();
-
-                //// Agregar filtro por período
-                //if (_params.Filters == null)
-                //    _params.Filters = new List<Filter>();
-
-                //_params.Filters.Add(new Filter
-                //{
-                //    PropertyName = "PeriodoId",
-                //    Value = periodoId.ToString(),
-                //    Operator = "eq"
-                //});
-
-                var result = await _serviceView.GetAllPaginadoAsync(_params);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Artículos de conteo del período obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = result.Items,
-                    TotalCount = result.TotalCount
-                });
+                var result = await _appService.GetByPeriodoIdAsync(periodoId);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener artículos del período paginados: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError($"Error en GetByPeriodoId: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // POST: api/ArticuloConteo
+        [HttpGet("sucursal/{sucursalId}")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetBySucursalId(int sucursalId)
+        {
+            try
+            {
+                var result = await _appService.GetBySucursalIdAsync(sucursalId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en GetBySucursalId: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("pendientes")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetPendientes([FromQuery] int periodoId, [FromQuery] int sucursalId)
+        {
+            try
+            {
+                var result = await _appService.GetPendientesAsync(periodoId, sucursalId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en GetPendientes: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("concluidos")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetConcluidos([FromQuery] int periodoId, [FromQuery] int sucursalId)
+        {
+            try
+            {
+                var result = await _appService.GetConcluidosAsync(periodoId, sucursalId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en GetConcluidos: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        // ==================== ESCRITURA ====================
+
         [HttpPost]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> Add([FromBody] VwArticuloConteo viewDto)
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Create([FromBody] ArticuloConteoDto dto)
         {
             try
             {
-                if (viewDto == null)
-                {
-                    return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Los datos del artículo de conteo son requeridos",
-                        Code = "INVALID_DATA",
-                        TotalCount = 0
-                    });
-                }
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(dto, usuarioActual);
 
-                //// Validaciones básicas
-                //if (viewDto.ArticuloId <= 0 || viewDto.PeriodoId <= 0)
-                //{
-                //    return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                //    {
-                //        Success = false,
-                //        Message = "El artículo y el período son obligatorios",
-                //        Code = "MISSING_REQUIRED_FIELDS",
-                //        TotalCount = 0
-                //    });
-                //}
-
-                var dto = _mapper.Map<ArticuloConteoDto>(viewDto);
-                dto.Activo = true;
-                dto.FechaCreacion = DateTime.Now;
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                //dto.NumeroConteos = 0;
-                dto.FkidEstatusAlma = dto.FkidEstatusAlma == 0 ? 1 : dto.FkidEstatusAlma; // Pendiente por defecto
-
-                // Validar si el artículo ya existe en el período
-                var existe = await _service.GetQueryWithIncludes()
-                    .AnyAsync(a => a.FkidPeriodoConteoAlma == dto.FkidPeriodoConteoAlma &&
-                                  a.PkidArticuloConteo == dto.PkidArticuloConteo &&
-                                  a.Activo);
-
-                if (existe)
-                {
-                    return Conflict(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Este artículo ya está registrado en el período seleccionado",
-                        Code = "DUPLICATE_ARTICULO",
-                        TotalCount = 0
-                    });
-                }
-
-                if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "No se pudo agregar el artículo. Verifique los datos.",
-                        Code = "VALIDATION_ERROR",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.AddAsync(dto);
-
-                var articuloCreado = await _serviceView.GetByIdAsync(dto.PkidArticuloConteo, idPropertyName: "Id");
-                var response = _mapper.Map<VwArticuloConteoResponse>(articuloCreado);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidArticuloConteo },
-                    new PagedResult<VwArticuloConteoResponse>
+                return CreatedAtAction(nameof(GetById), new { id = result.Id },
+                    new PagedResult<PeriodoConteoResponse>
                     {
                         Success = true,
-                        Message = "Artículo agregado al período correctamente",
+                        Message = "Artículo creado correctamente",
                         Code = "SUCCESS",
-                        Data = response,
-                        Items = new List<VwArticuloConteoResponse> { response },
+                        Data = result,
+                        Items = new List<PeriodoConteoResponse> { result },
                         TotalCount = 1
                     });
             }
-            catch (DbUpdateException dbEx)
+            catch (ArgumentNullException ex)
             {
-                var inner = dbEx.InnerException?.Message ?? dbEx.Message;
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new PagedResult<PeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error de base de datos: {inner}",
-                    Code = "DB_ERROR",
+                    Message = ex.Message,
+                    Code = "INVALID_DATA",
+                    TotalCount = 0
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "MISSING_REQUIRED_FIELDS",
+                    TotalCount = 0
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE_ENTITY",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al agregar artículo: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError($"Error en Create: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // POST: api/ArticuloConteo/Batch
-        [HttpPost("Batch")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> AddBatch([FromBody] List<VwArticuloConteo> articulos)
-        {
-            try
-            {
-                if (articulos == null || !articulos.Any())
-                {
-                    return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "La lista de artículos es requerida",
-                        Code = "INVALID_DATA",
-                        TotalCount = 0
-                    });
-                }
-
-                var periodoId = articulos.First().PeriodoId;
-                var userId = _userContext.GetCurrentUserId();
-                var exitosos = 0;
-                var errores = new List<string>();
-
-                foreach (var viewDto in articulos)
-                {
-                    try
-                    {
-                        // Verificar si ya existe
-                        var existe = await _service.GetQueryWithIncludes()
-                            .AnyAsync(a => a.FkidPeriodoConteoAlma == periodoId &&
-                                          a.PkidArticuloConteo == viewDto.Id &&
-                                          a.Activo);
-
-                        if (existe)
-                        {
-                            errores.Add($"Artículo  ya existe en el período"); //{viewDto.ArticuloCodigo}
-                            continue;
-                        }
-
-                        var dto = _mapper.Map<ArticuloConteoDto>(viewDto);
-                        dto.Activo = true;
-                        dto.FechaCreacion = DateTime.Now;
-                        dto.UsuarioCreacion = userId;
-                        //dto.NumeroConteos = 0;
-                        dto.FkidEstatusAlma = 1; // Pendiente
-
-                        await _service.AddAsync(dto);
-                        exitosos++;
-                    }
-                    catch (Exception ex)
-                    {
-                        errores.Add($"Error al agregar artículo : {ex.Message}"); //{viewDto.ArticuloCodigo}
-                    }
-                }
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = $"Se agregaron {exitosos} artículos. {errores.Count} errores.",
-                    Code = "SUCCESS",
-                    TotalCount = exitosos
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al agregar artículos en lote: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        // PUT: api/ArticuloConteo/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> Update(int id, [FromBody] VwArticuloConteo viewDto)
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Update(int id, [FromBody] ArticuloConteoDto dto)
         {
             try
             {
-                if (id != viewDto.Id)
-                {
-                    return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "El ID del artículo no coincide con el parámetro de la URL",
-                        Code = "ID_MISMATCH",
-                        TotalCount = 0
-                    });
-                }
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
 
-                if (viewDto.Id <= 0 || viewDto.PeriodoId <= 0)
-                {
-                    return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "El artículo y el período son obligatorios",
-                        Code = "MISSING_REQUIRED_FIELDS",
-                        TotalCount = 0
-                    });
-                }
-
-                var dto = _mapper.Map<ArticuloConteoDto>(viewDto);
-                dto.PkidArticuloConteo = id;
-                dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-
-                // Validar duplicado (excluyendo el actual)
-                var existe = await _service.GetQueryWithIncludes()
-                    .AnyAsync(a => a.FkidPeriodoConteoAlma == dto.FkidPeriodoConteoAlma &&
-                                  //a.FkidArticulo == dto.FkidArticulo &&
-                                  a.PkidArticuloConteo != id &&
-                                  a.Activo);
-
-                if (existe)
-                {
-                    return Conflict(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe otro artículo igual en este período",
-                        Code = "DUPLICATE_ARTICULO",
-                        TotalCount = 0
-                    });
-                }
-
-                if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "No se pudo actualizar el artículo. Verifique los datos.",
-                        Code = "VALIDATION_ERROR",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.UpdateAsync(id, dto);
-
-                var articuloActualizado = await _serviceView.GetByIdAsync(id, idPropertyName: "Id");
-                var response = _mapper.Map<VwArticuloConteoResponse>(articuloActualizado);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
+                return Ok(new PagedResult<PeriodoConteoResponse>
                 {
                     Success = true,
-                    Message = "Artículo de conteo actualizado correctamente",
+                    Message = "Artículo actualizado correctamente",
                     Code = "SUCCESS",
-                    Data = response,
-                    Items = new List<VwArticuloConteoResponse> { response },
+                    Data = result,
+                    Items = new List<PeriodoConteoResponse> { result },
                     TotalCount = 1
                 });
             }
-            catch (KeyNotFoundException)
+            catch (ArgumentNullException ex)
             {
-                return NotFound(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Artículo de conteo con ID {id} no encontrado",
-                    Code = "NOTFOUND_ARTICULOCONTEO",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // DELETE: api/ArticuloConteo/{id}
         [HttpDelete("{id}")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> Delete(int id)
+        public async Task<ActionResult<bool>> Delete(int id)
         {
             try
             {
-                // Verificar si tiene registros de conteo
-                var tieneRegistros = await _service.GetQueryWithIncludes()
-                    .AnyAsync(a => a.PkidArticuloConteo == id && a.RegistroConteos.Any());
-
-                if (tieneRegistros)
-                {
-                    return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "No se puede eliminar el artículo porque tiene registros de conteo asociados. Desactívelo en su lugar.",
-                        Code = "HAS_CHILDREN",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.DeleteAsync(id);
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Artículo de conteo eliminado correctamente",
-                    Code = "SUCCESS",
-                    TotalCount = 0
-                });
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.DeleteAsync(id, usuarioActual);
+                return Ok(new { success = result, message = "Artículo eliminado correctamente" });
             }
-            catch (KeyNotFoundException)
+            catch (ArgumentException ex)
             {
-                return NotFound(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Artículo de conteo con ID {id} no encontrado",
-                    Code = "NOTFOUND_ARTICULOCONTEO",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return NotFound(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // PATCH: api/ArticuloConteo/{id}/cambiar-estatus
-        [HttpPatch("{id}/cambiar-estatus")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> CambiarEstatus(int id, [FromBody] int estatusId)
+        // ==================== ACCIONES DE NEGOCIO ====================
+
+        [HttpPost("{id}/iniciar")]
+        public async Task<ActionResult<bool>> IniciarConteo(int id)
         {
             try
             {
-                var articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
-                if (articulo == null)
-                {
-                    return NotFound(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Artículo de conteo no encontrado",
-                        Code = "NOTFOUND_ARTICULOCONTEO",
-                        TotalCount = 0
-                    });
-                }
-
-                var dto = _mapper.Map<ArticuloConteoDto>(articulo);
-                dto.FkidEstatusAlma = estatusId;
-                dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-
-                await _service.UpdateAsync(id, dto);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Estatus del artículo actualizado correctamente",
-                    Code = "SUCCESS",
-                    TotalCount = 1
-                });
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.IniciarConteoAsync(id, usuarioActual);
+                return Ok(new { success = result, message = "Conteo iniciado correctamente" });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al cambiar estatus: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // PATCH: api/ArticuloConteo/{id}/asignar-usuario
-        [HttpPatch("{id}/asignar-usuario")]
-        public async Task<ActionResult<PagedResult<VwArticuloConteoResponse>>> AsignarUsuario(int id, [FromBody] int usuarioId)
+        [HttpPost("{id}/concluir")]
+        public async Task<ActionResult<bool>> ConcluirConteo(int id, [FromBody] decimal existenciaFinal)
         {
             try
             {
-                var articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
-                if (articulo == null)
-                {
-                    return NotFound(new PagedResult<VwArticuloConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Artículo de conteo no encontrado",
-                        Code = "NOTFOUND_ARTICULOCONTEO",
-                        TotalCount = 0
-                    });
-                }
-
-                var dto = _mapper.Map<ArticuloConteoDto>(articulo);
-                dto.UsuarioCreacion = usuarioId;
-                dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-
-                await _service.UpdateAsync(id, dto);
-
-                return Ok(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = true,
-                    Message = "Usuario asignado correctamente",
-                    Code = "SUCCESS",
-                    TotalCount = 1
-                });
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.ConcluirConteoAsync(id, existenciaFinal, usuarioActual);
+                return Ok(new { success = result, message = "Conteo concluido correctamente" });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<VwArticuloConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al asignar usuario: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        // GET: api/ArticuloConteo/estadisticas/{periodoId}
-        [HttpGet("estadisticas/{periodoId}")]
-        public async Task<ActionResult> GetEstadisticas(int periodoId)
-        {
-            try
-            {
-                var articulos = await _serviceView.GetQueryWithIncludes()
-                    .Where(a => a.PeriodoId == periodoId && a.Activo)
-                    .ToListAsync();
-
-                var estadisticas = new
-                {
-                    TotalArticulos = articulos.Count,
-                    Pendientes = articulos.Count(a => a.EstatusId == 1),
-                    EnProceso = articulos.Count(a => a.EstatusId == 2),
-                    Completados = articulos.Count(a => a.EstatusId == 3),
-                    ConDiferencias = articulos.Sum(a => a.Diferencia),
-                    PorcentajeAvance = articulos.Any()
-                        ? (articulos.Count(a => a.EstatusId == 3) * 100.0 / articulos.Count)
-                        : 0
-                };
-
-                return Ok(new
-                {
-                    Success = true,
-                    Data = estadisticas,
-                    Message = "Estadísticas obtenidas correctamente"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    Success = false,
-                    Message = $"Error al obtener estadísticas: {ex.Message}"
-                });
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
     }

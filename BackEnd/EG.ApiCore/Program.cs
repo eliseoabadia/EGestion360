@@ -93,15 +93,21 @@ public partial class Program
         // ===== SERVICIOS DE APLICACIÓN - GENERAL =====
         builder.Services.AddScoped<IEmpresaAppService, EmpresaAppService>();
         builder.Services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
+        builder.Services.AddScoped<IUsuarioSucursalAppService, UsuarioSucursalAppService>();
 
         // ===== SERVICIOS DE APLICACIÓN - CONTEO CÍCLICO =====
-        builder.Services.AddScoped<IPeriodoConteoAppService, PeriodoConteoAppService>();
         builder.Services.AddScoped<IArticuloConteoAppService, ArticuloConteoAppService>();
+        builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
+        builder.Services.AddScoped<IPeriodoConteoAppService, PeriodoConteoAppService>();
         builder.Services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
+        builder.Services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
+        builder.Services.AddScoped<ITipoConteoAppService, TipoConteoAppService>();
 
         // ===== SERVICIOS GENERALES =====
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IUserContextService, UserContextService>();
+        builder.Services.AddScoped<IUsuarioAppService, UsuarioAppService>();
+        builder.Services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
 
         // ===== SERVICIOS DE NEGOCIO =====
         builder.Services.AddScoped<IAuthService, AuthService>();

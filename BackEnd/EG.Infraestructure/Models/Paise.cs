@@ -28,4 +28,6 @@ public partial class Paise
     public virtual Idioma FkidIdiomaPrincipalSisNavigation { get; set; }
 
     public virtual Monedum FkidMonedaPrincipalSisNavigation { get; set; }
+
+    public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
 }

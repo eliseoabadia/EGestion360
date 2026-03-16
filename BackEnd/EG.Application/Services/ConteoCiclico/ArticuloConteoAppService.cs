@@ -6,18 +6,19 @@ using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Net.NetworkInformation;
 
 namespace EG.Application.Services.ConteoCiclico
 {
     public class ArticuloConteoAppService : IArticuloConteoAppService
     {
-        private readonly GenericService<ArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> _service;
-        private readonly GenericService<VwArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> _serviceView;
+        private readonly GenericService<ArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> _service;
+        private readonly GenericService<VwArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> _serviceView;
         private readonly IMapper _mapper;
 
         public ArticuloConteoAppService(
-            GenericService<ArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> service,
-            GenericService<VwArticuloConteo, ArticuloConteoDto, VwArticuloConteoResponse> serviceView,
+            GenericService<ArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> service,
+            GenericService<VwArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> serviceView,
             IMapper mapper)
         {
             _service = service;
@@ -29,225 +30,388 @@ namespace EG.Application.Services.ConteoCiclico
 
         private void ConfigureService()
         {
-            _service.AddInclude(a => a.FkidPeriodoConteoAlmaNavigation);
-            _service.AddInclude(a => a.FkidTipoBienAlmaNavigation);
-            _service.AddInclude(a => a.FkidSucursalSisNavigation);
+            // Includes necesarios para el servicio de entidad (para operaciones de escritura)
             _service.AddInclude(a => a.FkidEstatusAlmaNavigation);
-            _service.AddInclude(a => a.RegistroConteos);
-            _service.AddInclude(a => a.HistorialEstatusArticulos);
+            _service.AddInclude(a => a.FkidPeriodoConteoAlmaNavigation);
+            _service.AddInclude(a => a.FkidSucursalSisNavigation);
+            _service.AddInclude(a => a.FkidTipoBienAlmaNavigation);
+            _service.AddInclude(a => a.FkidUsuarioConcluyoSisNavigation);
 
-            _serviceView.AddRelationFilter("Periodo", new List<string> { "PeriodoNombre", "PeriodoId" });
-            _serviceView.AddRelationFilter("TipoBien", new List<string> { "ArticuloDescripcion" });
-            _serviceView.AddRelationFilter("Estatus", new List<string> { "EstatusNombre" });
+            // Filtros de relación para búsquedas dinámicas
+            _service.AddRelationFilter("Periodo", new List<string> { "Codigo", "Nombre" });
+            _service.AddRelationFilter("Sucursal", new List<string> { "Nombre", "Codigo" });
+            _service.AddRelationFilter("Estatus", new List<string> { "Nombre", "Descripcion" });
+            _service.AddRelationFilter("TipoBien", new List<string> { "Codigo", "Descripcion" });
+
+            // Configuración para la vista (solo consultas)
+            _serviceView.AddRelationFilter("Periodo", new List<string> { "CodigoPeriodo", "PeriodoNombre" });
+            _serviceView.AddRelationFilter("Sucursal", new List<string> { "SucursalNombre" });
+            _serviceView.AddRelationFilter("Estatus", new List<string> { "EstatusNombre", "EstatusDescripcion" });
         }
 
         private void ConfigureValidations()
         {
-            // REGLA: Código de artículo único por período
-            _service.AddValidationRule("UniqueCodigoArticulo", async (dto) =>
+            // REGLA 1: Código de barras único (creación)
+            _service.AddValidationRule("UniqueCodigoBarras", async (dto) =>
             {
                 var articuloDto = dto as ArticuloConteoDto;
                 if (articuloDto == null || string.IsNullOrWhiteSpace(articuloDto.CodigoBarras))
-                    return true; // Si no tiene código, permitir
+                    return true;
 
                 var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(a => a.FkidPeriodoConteoAlma == articuloDto.FkidPeriodoConteoAlma &&
-                                  a.CodigoBarras == articuloDto.CodigoBarras &&
-                                  a.Activo);
-
+                    .AnyAsync(a => a.CodigoBarras == articuloDto.CodigoBarras && a.Activo);
                 return !exists;
             });
 
-            // REGLA: Existencia mínima/máxima validadas
-            _service.AddValidationRule("ValidExistencia", async (dto) =>
+            // REGLA 2: Código de barras único (actualización)
+            _service.AddValidationRuleWithId("UniqueCodigoBarrasUpdate", async (dto, id) =>
             {
                 var articuloDto = dto as ArticuloConteoDto;
-                if (articuloDto == null) return false;
+                if (articuloDto == null || !id.HasValue || string.IsNullOrWhiteSpace(articuloDto.CodigoBarras))
+                    return true;
 
-                return articuloDto.ExistenciaSistema >= 0;
+                var exists = await _service.GetQueryWithIncludes()
+                    .AnyAsync(a => a.CodigoBarras == articuloDto.CodigoBarras &&
+                                   a.PkidArticuloConteo != id.Value &&
+                                   a.Activo);
+                return !exists;
+            });
+
+            // REGLA 3: Descripción obligatoria
+            _service.AddValidationRule("DescripcionRequerida", async (dto) =>
+            {
+                var articuloDto = dto as ArticuloConteoDto;
+                return !string.IsNullOrWhiteSpace(articuloDto?.DescripcionArticulo);
+            });
+
+            // REGLA 4: Existencia sistema debe ser >= 0
+            _service.AddValidationRule("ExistenciaSistemaValida", async (dto) =>
+            {
+                var articuloDto = dto as ArticuloConteoDto;
+                return articuloDto?.ExistenciaSistema >= 0;
             });
         }
 
-        // ===== CONSULTAS =====
-        public async Task<PagedResult<VwArticuloConteoResponse>> GetAllAsync()
+        // ==================== CONSULTAS ====================
+
+        public async Task<PagedResult<PeriodoConteoResponse>> GetAllAsync()
         {
-            var result = await _serviceView.GetAllAsync();
-            var response = _mapper.Map<List<VwArticuloConteoResponse>>(result);
-            return new PagedResult<VwArticuloConteoResponse>
+            try
             {
-                Success = true,
-                Items = response,
-                TotalCount = response.Count
-            };
+                var result = await _serviceView.GetAllAsync();
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Listado de artículos obtenido correctamente",
+                    Code = "SUCCESS",
+                    Items = result.ToList(),
+                    TotalCount = result.Count()
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
-        public async Task<VwArticuloConteoResponse> GetByIdAsync(int id)
+        public async Task<PeriodoConteoResponse> GetByIdAsync(int id)
         {
-            var articulo = await _serviceView.GetByIdAsync(id, idPropertyName: "Id");
-            if (articulo == null)
-                throw new KeyNotFoundException($"Artículo {id} no encontrado");
-
-            return articulo;
+            try
+            {
+                return await _serviceView.GetByIdAsync(id, idPropertyName: "Id");
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        public async Task<PagedResult<VwArticuloConteoResponse>> GetAllPaginadoAsync(PagedRequest request)
+        public async Task<PagedResult<PeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest)
         {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(request);
-            return new PagedResult<VwArticuloConteoResponse>
+            try
             {
-                Success = true,
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            };
+                var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Listado paginado obtenido",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
-        // ===== FILTRADOS =====
-        public async Task<PagedResult<VwArticuloConteoResponse>> GetAllByPeriodoAsync(int periodoId)
+        public async Task<PagedResult<PeriodoConteoResponse>> GetByPeriodoIdAsync(int periodoId)
         {
-            var parametros = new Dictionary<string, object> { ["periodoId"] = periodoId };
-            var request = new PagedRequest
+            try
             {
-                Page = 1,
-                PageSize = 10000,
-                SearchString = "",
-                SortLabel = "CodigoBarras",
-                SortDirection = "Ascending",
-                AdditionalFilters = parametros
-            };
-
-            return await GetAllPaginadoAsync(request);
+                var result = await _serviceView.GetAllPaginadoAsync(
+                    new PagedRequest { Page = 1, PageSize = int.MaxValue },
+                    x => x.PeriodoId == periodoId && x.Activo
+                );
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Artículos por periodo obtenidos",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
-        public async Task<PagedResult<VwArticuloConteoResponse>> GetPendientesAsync(int periodoId)
+        public async Task<PagedResult<PeriodoConteoResponse>> GetBySucursalIdAsync(int sucursalId)
         {
-            // 🔧 LÓGICA: Artículos pendientes = ConteosPendientes > 0
-            var parametros = new Dictionary<string, object>
+            try
             {
-                ["periodoId"] = periodoId,
-                ["conteosRestantes"] = 1 // >0
-            };
-
-            var request = new PagedRequest
+                var result = await _serviceView.GetAllPaginadoAsync(
+                    new PagedRequest { Page = 1, PageSize = int.MaxValue },
+                    x => x.SucursalId == sucursalId && x.Activo
+                );
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Artículos por sucursal obtenidos",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
             {
-                Page = 1,
-                PageSize = 10000,
-                SearchString = "",
-                SortLabel = "CodigoBarras",
-                SortDirection = "Ascending",
-                AdditionalFilters = parametros
-            };
-
-            return await GetAllPaginadoAsync(request);
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
-        public async Task<PagedResult<VwArticuloConteoResponse>> GetByEstatusAsync(int periodoId, int estatusId)
+        public async Task<PagedResult<PeriodoConteoResponse>> GetPendientesAsync(int periodoId, int sucursalId)
         {
-            var parametros = new Dictionary<string, object>
+            try
             {
-                ["periodoId"] = periodoId,
-                ["estatusId"] = estatusId
-            };
-
-            var request = new PagedRequest
+                var result = await _serviceView.GetAllPaginadoAsync(
+                    new PagedRequest { Page = 1, PageSize = int.MaxValue },
+                    x => x.PeriodoId == periodoId &&
+                         x.SucursalId == sucursalId &&
+                         x.EstaConcluido == 0 &&
+                         x.Activo
+                );
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Artículos pendientes obtenidos",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
             {
-                Page = 1,
-                PageSize = 10000,
-                SearchString = "",
-                SortLabel = "CodigoBarras",
-                SortDirection = "Ascending",
-                AdditionalFilters = parametros
-            };
-
-            return await GetAllPaginadoAsync(request);
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
-        // ===== COMANDOS =====
-        public async Task<VwArticuloConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual)
+        public async Task<PagedResult<PeriodoConteoResponse>> GetConcluidosAsync(int periodoId, int sucursalId)
         {
-            if (dto.FkidPeriodoConteoAlma <= 0 || dto.FkidTipoBienAlma <= 0)
-                throw new ArgumentException("Período y Tipo de Bien son requeridos");
+            try
+            {
+                var result = await _serviceView.GetAllPaginadoAsync(
+                    new PagedRequest { Page = 1, PageSize = int.MaxValue },
+                    x => x.PeriodoId == periodoId &&
+                         x.SucursalId == sucursalId &&
+                         x.EstaConcluido == 1 &&
+                         x.Activo
+                );
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Artículos concluidos obtenidos",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
+        }
 
-            // 🔧 LÓGICA: Inicializar valores de conteo
+        // ==================== ESCRITURA ====================
+
+        public async Task<PeriodoConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto), "Los datos del artículo son requeridos");
+
+            // Asignar valores de auditoría
+            dto.FechaCreacion = DateTime.Now;
+            dto.UsuarioCreacion = usuarioActual;
+            dto.Activo = true;
             dto.ConteosRealizados = 0;
-            dto.ConteosPendientes = 1;
-            dto.FkidEstatusAlma = 1; // Pendiente 1er Conteo
+            dto.ConteosPendientes = 0; // Se calculará después según configuración
 
+            // Validar reglas de negocio
             if (!await _service.CanAddAsync(dto))
-                throw new InvalidOperationException("Validación falló");
+            {
+                var existeCodigo = await _service.GetQueryWithIncludes()
+                    .AnyAsync(a => a.CodigoBarras == dto.CodigoBarras && a.Activo);
+                if (existeCodigo)
+                    throw new InvalidOperationException($"El código de barras '{dto.CodigoBarras}' ya está registrado para otro artículo activo");
+            }
 
             await _service.AddAsync(dto);
-
-            var articuloCreado = await _serviceView.GetByIdAsync(dto.PkidArticuloConteo, idPropertyName: "Id");
-            return articuloCreado;
+            return await GetByIdAsync(dto.PkidArticuloConteo);
         }
 
-        public async Task<VwArticuloConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual)
+        public async Task<PeriodoConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual)
         {
-            if (id != dto.PkidArticuloConteo)
-                throw new ArgumentException("ID no coincide");
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto), "Los datos del artículo son requeridos");
+            if (id <= 0)
+                throw new ArgumentException("ID de artículo inválido", nameof(id));
+
+            dto.PkidArticuloConteo = id;
+            dto.FechaModificacion = DateTime.Now;
+            dto.UsuarioModificacion = usuarioActual;
 
             if (!await _service.CanUpdateAsync(id, dto))
-                throw new InvalidOperationException("Validación falló");
-
-            await _service.UpdateAsync(id, dto);
-
-            return await GetByIdAsync(id);
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
-            if (articulo == null)
-                throw new KeyNotFoundException($"Artículo {id} no encontrado");
-
-            // 🔧 LÓGICA: No se puede eliminar si tiene conteos realizados
-            if (articulo.ConteosRealizados > 0)
-                throw new InvalidOperationException("No se puede eliminar: tiene conteos realizados");
-
-            await _service.DeleteAsync(id);
-        }
-
-        // ===== OPERACIONES ESPECÍFICAS =====
-        public async Task CambiarEstatusAsync(int id, int estatusId, int usuarioActual)
-        {
-            var articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
-            if (articulo == null)
-                throw new KeyNotFoundException($"Artículo {id} no encontrado");
-
-            var dto = _mapper.Map<ArticuloConteoDto>(articulo);
-            dto.FkidEstatusAlma = estatusId;
-
-            // 🔧 LÓGICA: Si se marca como "Concluido Sin Diferencia", asignar fecha de conclusión
-            if (estatusId == 4 || estatusId == 5) // Concluido
             {
-                dto.FechaConclusion = DateTime.Now;
+                var existeCodigo = await _service.GetQueryWithIncludes()
+                    .AnyAsync(a => a.CodigoBarras == dto.CodigoBarras &&
+                                   a.PkidArticuloConteo != id &&
+                                   a.Activo);
+                if (existeCodigo)
+                    throw new InvalidOperationException($"El código de barras '{dto.CodigoBarras}' ya está registrado para otro artículo activo");
             }
 
             await _service.UpdateAsync(id, dto);
+            return await GetByIdAsync(id);
         }
 
-        public async Task ActualizarProgresAsync(int periodoId, int usuarioActual)
+        public async Task<bool> DeleteAsync(int id, int usuarioActual)
         {
-            // 🔧 LÓGICA DE NEGOCIO: Actualizar estadísticas del período
-            var articulos = await _service.GetQueryWithIncludes()
-                .Where(a => a.FkidPeriodoConteoAlma == periodoId && a.Activo)
-                .ToListAsync();
+            if (id <= 0)
+                throw new ArgumentException("ID de artículo inválido", nameof(id));
 
-            if (!articulos.Any())
-                return;
+            var _articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
+            if (_articulo == null)
+                throw new InvalidOperationException("Artículo no encontrado");
 
-            // Contar por estatus
-            int totalArticulos = articulos.Count;
-            int concluidos = articulos.Count(a => a.FkidEstatusAlma == 4 || a.FkidEstatusAlma == 5);
-            int conDiferencia = articulos.Count(a => a.FkidEstatusAlma == 5);
-            int pendientes = articulos.Count(a => a.ConteosPendientes > 0);
-            int enDiscrepancia = articulos.Count(a => a.FkidEstatusAlma == 6);
+            var articuloDto = _mapper.Map<ArticuloConteoDto>(_articulo);
+            // Soft delete
+            articuloDto.Activo = false;
+            articuloDto.FechaModificacion = DateTime.Now;
+            articuloDto.UsuarioModificacion = usuarioActual;
 
-            // Aquí podrías actualizar PeriodoConteo con estas estadísticas
-            // await _periodoService.ActualizarEstadisticasAsync(periodoId, totalArticulos, concluidos, conDiferencia);
+            await _service.UpdateAsync(id, articuloDto);
+            return true;
+        }
+
+        // ==================== MÉTODOS DE NEGOCIO ====================
+
+        public async Task<bool> IniciarConteoAsync(int id, int usuarioActual)
+        {
+            if (id <= 0)
+                throw new ArgumentException("ID de artículo inválido", nameof(id));
+
+            var _articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
+            if (_articulo == null)
+                throw new InvalidOperationException("Artículo no encontrado");
+
+            //if (_articulo.FechaInicio.)
+            //    throw new InvalidOperationException("El conteo ya fue iniciado anteriormente");
+
+            var articuloDto = _mapper.Map<ArticuloConteoDto>(_articulo);
+
+            articuloDto.FechaInicioConteo = DateTime.Now;
+            articuloDto.FechaModificacion = DateTime.Now;
+            articuloDto.UsuarioModificacion = usuarioActual;
+
+            await _service.UpdateAsync(id, articuloDto);
+            return true;
+        }
+
+        public async Task<bool> ConcluirConteoAsync(int id, decimal existenciaFinal, int usuarioActual)
+        {
+            if (id <= 0)
+                throw new ArgumentException("ID de artículo inválido", nameof(id));
+
+            var _articulo = await _service.GetByIdAsync(id, idPropertyName: "PkidArticuloConteo");
+            if (_articulo == null)
+                throw new InvalidOperationException("Artículo no encontrado");
+
+            if (_articulo.FechaCierre.HasValue)
+                throw new InvalidOperationException("El conteo ya fue concluido anteriormente");
+
+
+            var articuloDto = _mapper.Map<ArticuloConteoDto>(_articulo);
+
+            // Calcular diferencias
+            articuloDto.ExistenciaFinal = existenciaFinal;
+            articuloDto.Diferencia = existenciaFinal - articuloDto.ExistenciaSistema;
+            if (articuloDto.ExistenciaSistema != 0)
+            {
+                articuloDto.PorcentajeDiferencia = (articuloDto.Diferencia / articuloDto.ExistenciaSistema) * 100;
+            }
+            else
+            {
+                articuloDto.PorcentajeDiferencia = articuloDto.Diferencia != 0 ? 100 : 0;
+            }
+
+            articuloDto.FechaConclusion = DateTime.Now;
+            articuloDto.FkidUsuarioConcluyoSis = usuarioActual;
+            articuloDto.FechaModificacion = DateTime.Now;
+            articuloDto.UsuarioModificacion = usuarioActual;
+
+            // Actualizar estatus si es necesario (ej: a un estatus de concluido)
+            // articuloDto.FkidEstatusAlma = idEstatusConcluido;
+
+            await _service.UpdateAsync(id, articuloDto);
+            return true;
         }
     }
 }

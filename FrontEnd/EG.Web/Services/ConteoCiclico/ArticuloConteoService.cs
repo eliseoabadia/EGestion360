@@ -2,11 +2,10 @@
 using EG.Web.Contracs.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.ConteoCiclico;
-using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
 using SortDirection = MudBlazor.SortDirection;
 
-namespace EG.Web.Services.Configuration
+namespace EG.Web.Services.ConteoCiclico
 {
     public class ArticuloConteoService : BaseService, IArticuloConteoService
     {
@@ -56,39 +55,32 @@ namespace EG.Web.Services.Configuration
 
             string sortDir = sortDirection == SortDirection.Descending ? "desc" : "asc";
 
-            var jsonParams = new
-            {
-                page,
-                pageSize,
-                filtro = filtro ?? "",
-                sortLabel = sortLabel ?? string.Empty,
-                sortDirection = sortDir,
-                filters = new List<object>()
-            };
-
             // Agregar filtros si existen
-            var filters = new List<object>();
+            var filters = new Dictionary<string, object>();
+
             if (periodoId.HasValue)
             {
-                filters.Add(new
+                filters.Add("PeriodoId", new
                 {
                     propertyName = "PeriodoId",
                     value = periodoId.Value.ToString(),
                     @operator = "eq"
                 });
             }
+
             if (usuarioId.HasValue)
             {
-                filters.Add(new
+                filters.Add("UsuarioAsignadoId", new
                 {
                     propertyName = "UsuarioAsignadoId",
                     value = usuarioId.Value.ToString(),
                     @operator = "eq"
                 });
             }
+
             if (estatusId.HasValue)
             {
-                filters.Add(new
+                filters.Add("EstatusId", new
                 {
                     propertyName = "EstatusId",
                     value = estatusId.Value.ToString(),
@@ -97,16 +89,18 @@ namespace EG.Web.Services.Configuration
             }
 
             // Usar reflexión para agregar filters
-            var jsonParamsWithFilters = new
+            var jsonParamsWithFilters = new PagedRequest
             {
-                page,
-                pageSize,
-                filtro = filtro ?? "",
-                sortLabel = sortLabel ?? string.Empty,
-                sortDirection = sortDir,
-                filters = filters
-            };
 
+                Page= page,
+                PageSize= pageSize,
+                Filtro = filtro ?? "",
+                SortLabel = sortLabel ?? string.Empty,
+                SortDirection = sortDir,
+                SearchString = string.Empty,
+                AdditionalFilters = filters
+            };
+            //public Dictionary<string, object> AdditionalFilters { get; set; } = new Dictionary<string, object>();
             var response = await PostAsync<ApiResponse<ArticuloConteoResponse>>(
                 "api/ArticuloConteo/GetAllPaginado/",
                 jsonParamsWithFilters,
@@ -146,7 +140,7 @@ namespace EG.Web.Services.Configuration
             if (!IsClientSide())
                 return new ApiResponse<ArticuloConteoResponse>();
 
-            if (entity.PkidArticuloConteo <= 0)
+            if (entity.Id <= 0)
                 return new ApiResponse<ArticuloConteoResponse>
                 {
                     Success = false,
@@ -155,7 +149,7 @@ namespace EG.Web.Services.Configuration
                 };
 
             var response = await PutAsync<ApiResponse<ArticuloConteoResponse>>(
-                $"api/ArticuloConteo/{entity.PkidArticuloConteo}/",
+                $"api/ArticuloConteo/{entity.Id}/",
                 entity,
                 useBaseUrl: false);
 

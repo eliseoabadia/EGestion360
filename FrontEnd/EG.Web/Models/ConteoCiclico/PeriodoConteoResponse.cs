@@ -30,9 +30,9 @@ public partial class PeriodoConteoResponse
 
     public DateTime? FechaCierre { get; set; }
 
-    public int MaximoConteosPorArticulo { get; set; }
+    public int? MaximoConteosPorArticulo { get; set; }
 
-    public bool RequiereAprobacionSupervisor { get; set; }
+    public bool? RequiereAprobacionSupervisor { get; set; }
 
     public int? ResponsableId { get; set; }
 
@@ -53,5 +53,13 @@ public partial class PeriodoConteoResponse
     public decimal? PorcentajeAvance { get; set; }
 
     public bool Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public string UsuarioCreacionNombre { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string UsuarioModificacionNombre { get; set; }
 }
 

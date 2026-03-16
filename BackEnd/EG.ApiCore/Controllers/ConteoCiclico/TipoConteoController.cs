@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
+﻿using EG.ApiCore.Services;
+using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,263 +13,211 @@ namespace EG.ApiCore.Controllers.General
     [Authorize]
     public class TipoConteoController : ControllerBase
     {
-        private readonly GenericService<TipoConteo, TipoConteoDto, TipoConteoResponse> _service;
-        private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext; // Opcional
+        private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(TipoConteoController));
+        private readonly ITipoConteoAppService _appService;
+        private readonly IUserContextService _userContext;
 
         public TipoConteoController(
-            GenericService<TipoConteo, TipoConteoDto, TipoConteoResponse> service,
-            IMapper mapper,
-            IUserContextService userContext = null) // Hacer opcional si no se usa
+            ITipoConteoAppService appService,
+            IUserContextService userContext)
         {
-            _service = service;
-            _mapper = mapper;
+            _appService = appService;
             _userContext = userContext;
-            ConfigureService();
         }
 
-        private void ConfigureService()
-        {
-            // Si la entidad tiene relaciones, puedes agregar includes aquí
-            // Ejemplo: _service.AddInclude(t => t.AlgunaPropiedad);
-            // _service.AddRelationFilter("TipoConteo", new List<string> { "Nombre" });
-        }
-
-        // GET: api/TipoConteo
         [HttpGet]
         public async Task<ActionResult<PagedResult<TipoConteoResponse>>> GetAll()
         {
             try
             {
-                var result = await _service.GetAllAsync();
-                return Ok(new PagedResult<TipoConteoResponse>
-                {
-                    Success = true,
-                    Message = "Tipos de conteo obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = result.ToList(),
-                    TotalCount = result.Count()
-                });
+                var result = await _appService.GetAllAsync();
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<TipoConteoResponse>
+                _logger.LogError($"Error en GetAll: {ex.Message}", ex);
+                return StatusCode(500, new PagedResult<TipoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener tipos de conteo: {ex.Message}",
+                    Message = ex.Message,
                     Code = "ERROR",
                     TotalCount = 0
                 });
             }
         }
 
-        // GET: api/TipoConteo/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> GetById(int id)
+        public async Task<ActionResult<TipoConteoResponse>> GetById(int id)
         {
             try
             {
-                var result = await _service.GetByIdAsync(id);
-
-                if (result == null)
+                var item = await _appService.GetByIdAsync(id);
+                if (item == null)
+                {
                     return NotFound(new PagedResult<TipoConteoResponse>
                     {
                         Success = false,
                         Message = "Tipo de conteo no encontrado",
-                        Code = "NOTFOUND_TIPOCONTEO",
+                        Code = "NOTFOUND",
                         TotalCount = 0
                     });
+                }
 
                 return Ok(new PagedResult<TipoConteoResponse>
                 {
                     Success = true,
                     Message = "Tipo de conteo encontrado",
                     Code = "SUCCESS",
-                    Data = result,
-                    Items = new List<TipoConteoResponse> { result },
+                    Data = item,
+                    Items = new List<TipoConteoResponse> { item },
                     TotalCount = 1
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<TipoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener tipo de conteo: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError($"Error en GetById: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // POST: api/TipoConteo
-        [HttpPost]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Add([FromBody] TipoConteoResponse viewDto)
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
         {
             try
             {
-                var dto = _mapper.Map<TipoConteoDto>(viewDto);
+                var result = await _appService.GetAllPaginadoAsync(pageRequest);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en GetAllPaginado: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
 
-                // Validar duplicados (ajusta la lógica según tu negocio)
-                if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<TipoConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe un tipo de conteo activo con ese nombre",
-                        Code = "DUPLICATE_TIPOCONTEO",
-                        TotalCount = 0
-                    });
-                }
+        [HttpPost]
+        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Create([FromBody] TipoConteoDto dto)
+        {
+            try
+            {
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(dto, usuarioActual);
 
-                await _service.AddAsync(dto);
-
-                // Mapear de vuelta para obtener el ID generado (si es necesario)
-                var createdDto = _mapper.Map<TipoConteoResponse>(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidTipoConteo },
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidTipoConteo },
                     new PagedResult<TipoConteoResponse>
                     {
                         Success = true,
                         Message = "Tipo de conteo creado correctamente",
                         Code = "SUCCESS",
-                        Data = createdDto,
-                        Items = new List<TipoConteoResponse> { createdDto },
+                        Data = result,
+                        Items = new List<TipoConteoResponse> { result },
                         TotalCount = 1
                     });
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
+                _logger.LogError(ex.Message, ex);
                 return BadRequest(new PagedResult<TipoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear tipo de conteo: {ex.Message}",
-                    Code = "ERROR",
+                    Message = ex.Message,
+                    Code = "INVALID_DATA",
                     TotalCount = 0
                 });
             }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new PagedResult<TipoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "MISSING_REQUIRED_FIELDS",
+                    TotalCount = 0
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new PagedResult<TipoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE_ENTITY",
+                    TotalCount = 0
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en Create: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        // PUT: api/TipoConteo/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Update(int id, [FromBody] TipoConteoResponse viewDto)
+        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Update(int id, [FromBody] TipoConteoDto dto)
         {
             try
             {
-                var dto = _mapper.Map<TipoConteoDto>(viewDto);
-                dto.PkidTipoConteo = id;
-
-                // Validar duplicados en actualización
-                if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<TipoConteoResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe otro tipo de conteo activo con ese nombre",
-                        Code = "DUPLICATE_TIPOCONTEO",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.UpdateAsync(id, dto);
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
 
                 return Ok(new PagedResult<TipoConteoResponse>
                 {
                     Success = true,
                     Message = "Tipo de conteo actualizado correctamente",
                     Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<TipoConteoResponse> { result },
                     TotalCount = 1
                 });
             }
-            catch (KeyNotFoundException)
+            catch (ArgumentNullException ex)
             {
-                return NotFound(new PagedResult<TipoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Tipo de conteo con ID {id} no encontrado",
-                    Code = "NOTFOUND_TIPOCONTEO",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<TipoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al actualizar tipo de conteo: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        // DELETE: api/TipoConteo/{id}
         [HttpDelete("{id}")]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Delete(int id)
+        public async Task<ActionResult<bool>> Delete(int id)
         {
             try
             {
-                await _service.DeleteAsync(id);
-                return Ok(new PagedResult<TipoConteoResponse>
-                {
-                    Success = true,
-                    Message = "Tipo de conteo eliminado correctamente",
-                    Code = "SUCCESS",
-                    TotalCount = 0
-                });
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.DeleteAsync(id, usuarioActual);
+                return Ok(new { success = result, message = "Tipo de conteo eliminado correctamente" });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return NotFound(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<TipoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al eliminar tipo de conteo: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
-        }
-
-        // POST: api/TipoConteo/GetAllPaginado
-        [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
-        {
-            try
-            {
-                // Limpiar configuración previa si es necesario
-                _service.ClearConfiguration();
-                ConfigureService();
-
-                // Asume que el servicio tiene un método GetAllPaginadoAsync que acepta PagedRequest
-                var result = await _service.GetAllPaginadoAsync(_params);
-
-                return Ok(new PagedResult<TipoConteoResponse>
-                {
-                    Success = true,
-                    Message = "Tipos de conteo obtenidos correctamente",
-                    Code = "SUCCESS",
-                    Items = result.Items,
-                    TotalCount = result.TotalCount
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<TipoConteoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener tipos de conteo paginados: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        // POST: api/TipoConteo/GetAllTipoConteoPaginado (opcional, por compatibilidad)
-        [HttpPost("GetAllTipoConteoPaginado")]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> GetAllTipoConteoPaginado([FromBody] PagedRequest _params)
-        {
-            // Redirige al mismo método paginado
-            return await GetAllPaginado(_params);
         }
     }
 }

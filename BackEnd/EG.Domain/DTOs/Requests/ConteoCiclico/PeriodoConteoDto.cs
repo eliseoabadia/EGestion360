@@ -36,7 +36,7 @@
 
         public int? ArticulosConDiferencia { get; set; }
 
-        public bool? Activo { get; set; }
+        public bool Activo { get; set; }
 
         public DateTime? FechaCreacion { get; set; }
 

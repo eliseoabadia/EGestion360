@@ -19,6 +19,11 @@ GO
 CREATE SCHEMA CONTA  -- Contabilidad
 GO
 
+
+CREATE TYPE [dbo].[dmoney] FROM [decimal](20, 4) NULL
+GO
+
+
 -- =============================================
 -- CATÁLOGOS BASE
 -- =============================================
@@ -74,6 +79,44 @@ CREATE TABLE SIS.Estados (
     CONSTRAINT FK_Estados_Paises FOREIGN KEY (FKIdPais_SIS) REFERENCES SIS.Paises(PKIdPais),
     CONSTRAINT UQ_Estados_Pais_Nombre UNIQUE (FKIdPais_SIS, Nombre)
 );
+
+-- Tabla de Municipios
+--drop table SIS.Municipios
+CREATE TABLE SIS.Municipios (
+    PKIdMunicipio INT IDENTITY(1,1) NOT NULL,
+    FKIdEstado_SIS INT NOT NULL,
+    Nombre VARCHAR(100) NOT NULL,
+    CodigoMunicipio VARCHAR(10) NULL, -- Código INEGI, Postal, etc.
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),                
+    CONSTRAINT PK_Municipios PRIMARY KEY CLUSTERED (PKIdMunicipio),
+    CONSTRAINT FK_Municipios_Estados FOREIGN KEY (FKIdEstado_SIS) 
+        REFERENCES SIS.Estados(PKIdEstado),
+    -- Asegura que no haya municipios duplicados en el mismo estado
+    --CONSTRAINT UQ_Municipios_Estado_Nombre UNIQUE (FKIdEstado_SIS, Nombre)
+);
+
+    -- Activar INSERT con IDs específicos
+--SET IDENTITY_INSERT SIS.Municipios ON
+
+-- Insertar los datos manteniendo el ID original
+INSERT INTO SIS.Municipios (
+    FKIdEstado_SIS,
+    [Nombre],
+    [CodigoMunicipio],
+    Activo
+)
+SELECT 
+    FK_IdEstado__SIS
+    ,Nombre
+    ,Clave
+    ,CT_LIVE
+FROM [BD_PRESUPUESTO].[SIS].Municipio m
+
+
+-- Desactivar INSERT con IDs específicos
+--SET IDENTITY_INSERT SIS.Municipios OFF
+
 
 -- =============================================
 -- ESTRUCTURA DE EMPRESA
@@ -342,7 +385,7 @@ INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,Sub
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(1,'configuration','configuracion',NULL,'app://{0}/{1}',GETDATE(),'configuracion','AD0001','Configuración','view,view-menu',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(1,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'conteocliclico','CO0001','Configuración','view,view-menu',0)
+				VALUES(1,'conteociclico','conteociclico',NULL,'app://{0}/{1}',GETDATE(),'conteociclico','CO0001','Configuración','view,view-menu',0)
 
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(2,'administration','administration',NULL,'app://{0}/{1}',GETDATE(),'administration','AD0001','Administracion','view,view-menu,delete,new,update',0)
@@ -360,11 +403,11 @@ INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,Sub
 				VALUES(2,'configuracion','configuracion',NULL,'app://{0}/{1}',GETDATE(),'menus','AD0001','Administracion','view,view-menu,delete,new,update,CanExportToExcel',0)
 
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(2,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'conteocliclico','CO0001','conteocliclico','view,view-menu',0)
+				VALUES(2,'conteociclico','conteociclico',NULL,'app://{0}/{1}',GETDATE(),'conteociclico','CO0001','conteociclico','view,view-menu',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(2,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'periodo','CO0001','conteocliclico','view,view-menu,delete,new,update,CanExportToExcel',0)
+				VALUES(2,'conteociclico','conteociclico',NULL,'app://{0}/{1}',GETDATE(),'periodo','CO0001','conteociclico','view,view-menu,delete,new,update,CanExportToExcel',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
-				VALUES(2,'conteocliclico','conteocliclico',NULL,'app://{0}/{1}',GETDATE(),'mis-periodos','CO0001','conteocliclico','view,view-menu,delete,new,update,CanExportToExcel',0)
+				VALUES(2,'conteociclico','conteociclico',NULL,'app://{0}/{1}',GETDATE(),'mis-periodos','CO0001','conteociclico','view,view-menu,delete,new,update,CanExportToExcel',0)
 
         
 
@@ -424,23 +467,23 @@ EXEC spConfiguracionDeRolYClaims 'configuracion','menus','10000','new'
 EXEC spConfiguracionDeRolYClaims 'configuracion','menus','10000','update'
 EXEC spConfiguracionDeRolYClaims 'configuracion','menus','10000','CanExportToExcel'
 
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','conteocliclico','10000','view'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','conteocliclico','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','conteociclico','10000','view'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','conteociclico','10000','view-menu'
 
 
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','view'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','view-menu'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','delete'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','new'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','update'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','periodo','10000','CanExportToExcel'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','periodo','10000','view'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','periodo','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','periodo','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','periodo','10000','new'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','periodo','10000','update'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','periodo','10000','CanExportToExcel'
 
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','view'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','view-menu'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','delete'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','new'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','update'
-EXEC spConfiguracionDeRolYClaims 'conteocliclico','mis-periodos','10000','CanExportToExcel'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','view'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','new'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','update'
+EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','CanExportToExcel'
 
 
 
@@ -745,3 +788,5 @@ INSERT INTO [SIS].[SystemParamValue]
            ,1)
 
 select * from sis.SystemLog
+
+truncate table [SIS].[SystemLog]

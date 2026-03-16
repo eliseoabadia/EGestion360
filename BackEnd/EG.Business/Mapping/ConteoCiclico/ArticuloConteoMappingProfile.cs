@@ -37,7 +37,7 @@ namespace EG.Business.Mapping.ConteoCiclico
                 ;
 
             // VwArticuloConteo -> VwArticuloConteoResponse
-            CreateMap<VwArticuloConteo, VwArticuloConteoResponse>();
+            CreateMap<VwArticuloConteo, ArticuloConteoResponse>();
         }
     }
 }

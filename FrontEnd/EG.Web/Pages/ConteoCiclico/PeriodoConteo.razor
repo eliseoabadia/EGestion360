@@ -1,8 +1,12 @@
 ﻿@page "/conteociclico/periodo"
+@using EG.Web.Contracs.ConteoCiclico
 @using EG.Web.Models.ConteoCiclico
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @using EG.Web.Contracs.Configuration
+
+
+@inject IPeriodoConteoService PeriodoConteoService
 @inherits BaseCrudPage<PeriodoConteoResponse, PeriodoConteoResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
@@ -116,9 +120,7 @@
                           SearchStringChanged="(s) => SearchString = s"
                           OnSearch="() => table.ReloadData()"
                           Dense="false"
-                          Hover="true"
-                          Striped="true"
-                          Elevation="0">
+                          Hover="true">
 
                 <Header>
                     <MudTh>Acciones</MudTh>
@@ -303,19 +305,7 @@
             _ => new List<(int, string, string, Color)>()
         };
 
-    private async Task CambiarEstatus(PeriodoConteoResponse periodo, int nuevoEstatusId)
-    {
-        try
-        {
-            // Aquí usarías un método específico del servicio o un PATCH
-            Snackbar.Add($"Cambiando estatus de '{periodo.CodigoPeriodo}' a {EstatusNombres.GetValueOrDefault(nuevoEstatusId)}", Severity.Info);
-            await table.ReloadData();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al cambiar estatus: {ex.Message}", Severity.Error);
-        }
-    }
+    
 
     private void AplicarFiltroEstatus(int? estatusId)
     {
@@ -323,39 +313,40 @@
         table.ReloadData();
     }
 
+    private async Task CambiarEstatus(PeriodoConteoResponse periodo, int nuevoEstatusId)
+    {
+        try
+        {
+            var result = await PeriodoConteoService.CambiarEstatusAsync(periodo.Id.Value, nuevoEstatusId);
+            if (result.Success)
+            {
+                Snackbar.Add($"Estatus cambiado a {EstatusNombres[nuevoEstatusId]}", Severity.Success);
+                await table.ReloadData();
+            }
+            else Snackbar.Add(result.Message, Severity.Error);
+        }
+        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+    }
+
     protected override async Task<TableData<PeriodoConteoResponse>> LoadServerData(TableState state, CancellationToken token)
     {
         try
         {
-            // var filters = new List<Filter>();
-            // if (filtroEstatus.HasValue)
-            // {
-            //     filters.Add(new Filter
-            //     {
-            //         PropertyName = "EstatusId",
-            //         Value = filtroEstatus.Value.ToString(),
-            //         Operator = "eq"
-            //     });
-            // }
+            var filters = new Dictionary<string, object>();
+            if (filtroEstatus.HasValue)
+                filters.Add("EstatusId", filtroEstatus.Value);
 
             var response = await Service.GetAllPaginadoAsync(
                 state.Page + 1,
                 state.PageSize,
-                state.SortLabel ?? "FechaInicio",
-                state.SortDirection == SortDirection.Ascending ? "asc" : "desc",
-                state.SortDirection,
-                null);
+                filtro: SearchString,
+                sortLabel: state.SortLabel ?? GetDefaultSortLabel(),
+                sortDirection: state.SortDirection,
+                null); //additionalFilters: filters
 
-            if (response?.Success == true)
-            {
-                return new TableData<PeriodoConteoResponse>
-                {
-                    Items = response.Items ?? new List<PeriodoConteoResponse>(),
-                    TotalItems = response.TotalCount
-                };
-            }
-
-            return new TableData<PeriodoConteoResponse>();
+            return response?.Success == true
+                ? new TableData<PeriodoConteoResponse> { Items = response.Items, TotalItems = response.TotalCount }
+                : new TableData<PeriodoConteoResponse>();
         }
         catch (Exception ex)
         {
@@ -402,7 +393,7 @@
                     Position = DialogPosition.Center
                 };
 
-                await DialogService.ShowAsync<PeriodoConteoDetalleDialog>($"Detalle: {response.Data.CodigoPeriodo}", parameters, options);
+                await DialogService.ShowAsync<PeriodoConteoDetalleDialog>($"Detalle: {response.Data}", parameters, options);
             }
             else
             {

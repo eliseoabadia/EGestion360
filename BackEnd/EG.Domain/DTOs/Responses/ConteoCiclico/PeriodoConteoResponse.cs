@@ -1,18 +1,18 @@
 ﻿namespace EG.Domain.DTOs.Responses.ConteoCiclico;
 
-public partial class VwPeriodoConteoResponse
+public partial class PeriodoConteoResponse
 {
-    public int? Id { get; set; }
+    public int Id { get; set; }
 
-    public int? SucursalId { get; set; }
+    public int SucursalId { get; set; }
 
     public string SucursalNombre { get; set; }
 
-    public int? TipoConteoId { get; set; }
+    public int TipoConteoId { get; set; }
 
     public string TipoConteoNombre { get; set; }
 
-    public int? EstatusId { get; set; }
+    public int EstatusId { get; set; }
 
     public string EstatusNombre { get; set; }
 
@@ -22,7 +22,7 @@ public partial class VwPeriodoConteoResponse
 
     public string Descripcion { get; set; }
 
-    public DateOnly? FechaInicio { get; set; }
+    public DateOnly FechaInicio { get; set; }
 
     public DateOnly? FechaFin { get; set; }
 
@@ -52,4 +52,11 @@ public partial class VwPeriodoConteoResponse
 
     public bool Activo { get; set; }
 
+    public DateTime? FechaCreacion { get; set; }
+
+    public string UsuarioCreacionNombre { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string UsuarioModificacionNombre { get; set; }
 }

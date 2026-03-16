@@ -69,5 +69,7 @@ public partial class CuentaContable
 
     public virtual TipoCuentum FkidTipoCuentaContaNavigation { get; set; }
 
+    public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
+
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();
 }

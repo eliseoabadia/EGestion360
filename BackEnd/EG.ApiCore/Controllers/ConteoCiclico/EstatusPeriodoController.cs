@@ -8,7 +8,7 @@ using EG.Infraestructure.Models;               // Contiene la entidad EstatusPer
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCore.Controllers.General
+namespace EG.ApiCore.Controllers.ConteoCiclico
 {
     [Route("api/[controller]")]
     [ApiController]

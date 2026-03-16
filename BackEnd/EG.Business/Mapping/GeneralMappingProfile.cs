@@ -15,9 +15,11 @@ namespace EG.Business.Mapping
             CreateMap<Empresa, EmpresaResponse>().ReverseMap();
             CreateMap<Usuario, UsuarioResponse>().ReverseMap();
 
-            CreateMap<TipoConteo, TipoConteoResponse>().ReverseMap();
-            CreateMap<TipoConteoDto, TipoConteo>().ReverseMap();
-            CreateMap<TipoConteoDto, TipoConteoResponse>().ReverseMap();
+            CreateMap<TipoConteo, TipoConteoDto>().ReverseMap();
+            CreateMap<TipoConteo, TipoConteoResponse>(); 
+
+            CreateMap<TipoBien, TipoBienDto>().ReverseMap();
+            CreateMap<TipoBien, TipoBienResponse>(); 
 
             CreateMap<EstatusPeriodo, EstatusPeriodoResponse>().ReverseMap();
             CreateMap<EstatusPeriodoDto, EstatusPeriodo>().ReverseMap();

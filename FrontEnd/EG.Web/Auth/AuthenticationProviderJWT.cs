@@ -223,22 +223,41 @@ namespace EG.Web.Auth
                 StringComparer.OrdinalIgnoreCase);
         }
 
+
         public bool HasPermission(string group, string subGroup, string action)
         {
             if (string.IsNullOrWhiteSpace(group) || string.IsNullOrWhiteSpace(action))
                 return false;
 
-            if (!_permissions.TryGetValue(group.Trim(), out var subdict))
+            var normalizedGroup = group.Trim().ToLowerInvariant();
+            var normalizedSubGroup = (subGroup ?? string.Empty).Trim().ToLowerInvariant();
+            var normalizedAction = action.Trim();
+
+            // Si no existe el grupo, no hay permisos
+            if (!_permissions.TryGetValue(normalizedGroup, out var subDict))
                 return false;
 
-            var key = subGroup?.Trim() ?? string.Empty;
-
-            // verificar subgrupo exacto y también clave vacía (permisos generales del grupo)
-            if (subdict.TryGetValue(key, out var set) && set.Contains(action.Trim()))
+            // 1. Verificar permisos en el subgrupo exacto
+            if (subDict.TryGetValue(normalizedSubGroup, out var set) && set.Contains(normalizedAction))
                 return true;
 
-            if (subdict.TryGetValue(string.Empty, out var general) && general.Contains(action.Trim()))
+            // 2. Verificar permisos generales del grupo
+            if (subDict.TryGetValue(string.Empty, out var general) && general.Contains(normalizedAction))
                 return true;
+
+            // 3. Recursivamente revisar hijos (otros subgrupos dentro del mismo grupo)
+            foreach (var kvp in subDict)
+            {
+                var childSubGroup = kvp.Key;
+                var childActions = kvp.Value;
+
+                if (childActions.Contains(normalizedAction))
+                    return true;
+
+                // Llamada recursiva: buscar dentro de cada hijo
+                if (HasPermission(normalizedGroup, childSubGroup, normalizedAction))
+                    return true;
+            }
 
             return false;
         }

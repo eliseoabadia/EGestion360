@@ -33,6 +33,8 @@ public partial class GrupoBien
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
+
     public virtual Familium FkidFamiliaAlmaNavigation { get; set; }
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();

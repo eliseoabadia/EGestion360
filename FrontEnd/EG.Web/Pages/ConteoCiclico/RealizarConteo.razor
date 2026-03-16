@@ -1,1 +1,257 @@
-﻿
+﻿@page "/conteociclico/periodo/{PeriodoId:int}/conteo"
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Shared
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Contracs.ConteoCiclico
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
+
+@inject IArticuloConteoService ArticuloService
+@inject IConteoCiclicoService ConteoCiclicoService
+@inject IPeriodoConteoService PeriodoService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudPaper Class="pa-4 mb-4" Elevation="0" Style="border-radius: 12px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+        <MudGrid AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h5" Class="text-white mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Class="mr-2" />
+                    Conteo de Artículos - @periodo?.Nombre
+                </MudText>
+                <MudText Typo="Typo.body2" Class="text-white opacity-75">@periodo?.Descripcion</MudText>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center justify-end gap-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           OnClick="@(() => NavigationManager.NavigateTo("/conteociclico/mis-periodos"))">
+                    Volver
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Success"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="@table.ReloadData">
+                    Actualizar
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Filtros rápidos -->
+    <MudPaper Class="pa-3 mb-3" Elevation="0" Style="border-radius: 8px;">
+        <MudGrid AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" Class="mr-1" />
+                    Filtrar por estatus
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="9">
+                <div class="d-flex gap-2 flex-wrap">
+                    <MudChip T="string" Color="@(filtroEstatus == null ? Color.Primary : Color.Default)"
+                             Variant="@(filtroEstatus == null ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(null))">Todos</MudChip>
+                    <MudChip T="string" Icon="@Icons.Material.Filled.Schedule"
+                             Color="@(filtroEstatus == 1 ? Color.Warning : Color.Default)"
+                             Variant="@(filtroEstatus == 1 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(1))">Pendientes</MudChip>
+                    <MudChip T="string" Icon="@Icons.Material.Filled.PlayArrow"
+                             Color="@(filtroEstatus == 2 ? Color.Info : Color.Default)"
+                             Variant="@(filtroEstatus == 2 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(2))">En Proceso</MudChip>
+                    <MudChip T="string" Icon="@Icons.Material.Filled.CheckCircle"
+                             Color="@(filtroEstatus == 3 ? Color.Success : Color.Default)"
+                             Variant="@(filtroEstatus == 3 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(3))">Concluidos</MudChip>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Tabla de artículos -->
+    <MudPaper Class="flex-grow-1 d-flex flex-column" Elevation="0" Style="border-radius: 12px; overflow: hidden;">
+        <GenericTable TItem="ArticuloConteoResponse"
+                      @ref="table"
+                      Title="Artículos para conteo"
+                      SearchPlaceholder="Buscar por código, descripción, ubicación..."
+                      ShowExportButton="false"
+                      ServerDataFunc="LoadArticulosData"
+                      SearchString="@searchString"
+                      SearchStringChanged="(s) => searchString = s"
+                      OnSearch="() => table.ReloadData()"
+                      Dense="false"
+                      Hover="true">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoArticulo" T="ArticuloConteoResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="DescripcionArticulo" T="ArticuloConteoResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh>Ubicación</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ExistenciaSistema" T="ArticuloConteoResponse">Sistema</MudTableSortLabel></MudTh>
+                <MudTh>Conteos</MudTh>
+                <MudTh>Último Conteo</MudTh>
+                <MudTh>Estatus</MudTh>
+            </Header>
+            <Row Context="articulo">
+                <MudTd>
+                    <div class="d-flex gap-1">
+                        @if (articulo.EstaConcluido == 0)
+                        {
+                            if (articulo.ConteosRealizados == 0)
+                            {
+                                <MudTooltip Text="Iniciar conteo">
+                                    <MudIconButton Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Success" Size="Size.Small"
+                                                   OnClick="@(() => IniciarConteoArticulo(articulo))" />
+                                </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudTooltip Text="Registrar conteo">
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Info" Size="Size.Small"
+                                                   OnClick="@(() => RegistrarConteo(articulo))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Cerrar conteo">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Done" Color="Color.Success" Size="Size.Small"
+                                                   OnClick="@(() => CerrarConteoArticulo(articulo))" />
+                                </MudTooltip>
+                            }
+                        }
+                        else
+                        {
+                            <MudTooltip Text="Artículo concluido">
+                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" Disabled="true" />
+                            </MudTooltip>
+                        }
+                        <MudTooltip Text="Ver registros">
+                            <MudIconButton Icon="@Icons.Material.Filled.History" Color="Color.Default" Size="Size.Small"
+                                           OnClick="@(() => VerRegistros(articulo.Id))" />
+                        </MudTooltip>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Código"><MudText Typo="Typo.body2" Class="font-weight-bold">@articulo.CodigoArticulo</MudText></MudTd>
+                <MudTd DataLabel="Descripción"><MudText Typo="Typo.body2">@articulo.DescripcionArticulo</MudText></MudTd>
+                <MudTd DataLabel="Ubicación"><MudText Typo="Typo.body2">@articulo.Ubicacion</MudText></MudTd>
+                <MudTd DataLabel="Sistema"><MudText Typo="Typo.body2">@articulo.ExistenciaSistema.ToString("N2")</MudText></MudTd>
+                <MudTd DataLabel="Conteos">
+                    <MudChip T="string" Size="Size.Small" Color="@GetConteosColor(articulo)">
+                        @articulo.ConteosRealizados / @articulo.MaximoConteosPorArticulo
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Último Conteo">
+                    @if (articulo.UltimoConteo.HasValue)
+                    {
+                        <MudText Typo="Typo.body2">@articulo.UltimoConteo.Value.ToString("N2")</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Tertiary">-</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Estatus">
+                    <MudChip T="string" Color="@GetEstatusColor(articulo.EstatusNombre)" Size="Size.Small">
+                        <MudIcon Icon="@GetEstatusIcon(articulo.EstatusNombre)" Size="Size.Small" Class="mr-1" />
+                        @articulo.EstatusNombre
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter] public int PeriodoId { get; set; }
+    private GenericTable<ArticuloConteoResponse> table = null!;
+    private string searchString = "";
+    private int? filtroEstatus = null;
+    private PeriodoConteoResponse? periodo;
+
+    protected override async Task OnInitializedAsync() => await CargarPeriodo();
+
+    private async Task CargarPeriodo()
+    {
+        var response = await PeriodoService.GetByIdAsync(PeriodoId);
+        if (response?.Success == true && response.Data != null)
+            periodo = response.Data;
+        else
+        {
+            Snackbar.Add("No se pudo cargar la información del período", Severity.Error);
+            NavigationManager.NavigateTo("/conteociclico/mis-periodos");
+        }
+    }
+
+    private async Task<TableData<ArticuloConteoResponse>> LoadArticulosData(TableState state, CancellationToken token)
+    {
+        try
+        {
+            var filters = new Dictionary<string, object> { { "PeriodoId", PeriodoId } };
+            if (filtroEstatus.HasValue)
+                filters.Add("EstatusId", filtroEstatus.Value);
+
+            var response = await ArticuloService.GetAllPaginadoAsync(
+                state.Page + 1,
+                state.PageSize,
+                filtro: searchString,
+                sortLabel: state.SortLabel ?? "",
+                sortDirection: state.SortDirection,
+                null); //additionalFilters: filters
+
+            return response?.Success == true
+                ? new TableData<ArticuloConteoResponse> { Items = response.Items, TotalItems = response.TotalCount }
+                : new TableData<ArticuloConteoResponse>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar artículos: {ex.Message}", Severity.Error);
+            return new TableData<ArticuloConteoResponse>();
+        }
+    }
+
+    private void AplicarFiltroEstatus(int? estatusId) { filtroEstatus = estatusId; table.ReloadData(); }
+
+    private async Task IniciarConteoArticulo(ArticuloConteoResponse articulo)
+    {
+        var result = await ConteoCiclicoService.IniciarConteoAsync(articulo.Id);
+        if (result.Success) { Snackbar.Add(result.Message, Severity.Success); await table.ReloadData(); }
+        else Snackbar.Add(result.Message, Severity.Error);
+    }
+
+    private async Task RegistrarConteo(ArticuloConteoResponse articulo)
+    {
+        var parameters = new DialogParameters { ["Articulo"] = articulo, ["EsReconteo"] = false };
+        var dialog = await DialogService.ShowAsync<RegistroConteoDialog>("Registrar Conteo", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (!result.Canceled) await table.ReloadData();
+    }
+
+    private async Task CerrarConteoArticulo(ArticuloConteoResponse articulo)
+    {
+        var parameters = new DialogParameters { ["Articulo"] = articulo };
+        var dialog = await DialogService.ShowAsync<CerrarConteoDialog>("Cerrar Conteo", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (!result.Canceled) await table.ReloadData();
+    }
+
+    private void VerRegistros(int articuloId) => NavigationManager.NavigateTo($"/conteociclico/articulo/{articuloId}/registros");
+
+    private Color GetConteosColor(ArticuloConteoResponse a) => a.ConteosRealizados == 0 ? Color.Warning :
+        a.ConteosRealizados < a.MaximoConteosPorArticulo ? Color.Info : Color.Success;
+
+    private Color GetEstatusColor(string? e) => e?.ToLower() switch
+    {
+        "pendiente" => Color.Warning,
+        "en proceso" => Color.Info,
+        "concluido" => Color.Success,
+        _ => Color.Default
+    };
+
+    private string GetEstatusIcon(string? e) => e?.ToLower() switch
+    {
+        "pendiente" => Icons.Material.Filled.Schedule,
+        "en proceso" => Icons.Material.Filled.Autorenew,
+        "concluido" => Icons.Material.Filled.CheckCircle,
+        _ => Icons.Material.Filled.Help
+    };
+}

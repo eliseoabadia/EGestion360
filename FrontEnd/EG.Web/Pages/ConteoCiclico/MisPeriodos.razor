@@ -2,10 +2,12 @@
 @using EG.Web.Models.ConteoCiclico
 @using EG.Web.Shared
 @using EG.Web.Contracs.Configuration
+@using EG.Web.Contracs.ConteoCiclico
 @using Microsoft.AspNetCore.Components
 @using MudBlazor
 
-@inject IGenericCrudService<PeriodoConteoResponse> PeriodoService
+@inject IPeriodoConteoService PeriodoService
+@inject IConteoCiclicoService ConteoCiclicoService
 @inject AuthService AuthService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -102,6 +104,13 @@
                              OnClick="@(() => AplicarFiltroEstatus(3))">
                         Completados
                     </MudChip>
+                    <MudChip T="string"
+                             Icon="@Icons.Material.Filled.Lock"
+                             Color="@(filtroEstatus == 4 ? Color.Default : Color.Default)"
+                             Variant="@(filtroEstatus == 4 ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => AplicarFiltroEstatus(4))">
+                        Cerrados
+                    </MudChip>
                 </div>
             </MudItem>
         </MudGrid>
@@ -172,6 +181,10 @@
 
                 <MudTd DataLabel="Período">
                     <MudText Typo="Typo.body2">@periodo.Nombre</MudText>
+                    @if (!string.IsNullOrEmpty(periodo.Descripcion))
+                    {
+                        <MudText Typo="Typo.caption" Class="text-secondary">@periodo.Descripcion</MudText>
+                    }
                 </MudTd>
 
                 <MudTd DataLabel="Sucursal">
@@ -184,10 +197,14 @@
 
                 <MudTd DataLabel="Fecha Inicio">
                     <MudText Typo="Typo.body2">@periodo.FechaInicio?.ToString("dd/MM/yyyy")</MudText>
+                    @if (periodo.FechaFin.HasValue)
+                    {
+                        <MudText Typo="Typo.caption">- @periodo.FechaFin?.ToString("dd/MM/yyyy")</MudText>
+                    }
                 </MudTd>
 
                 <MudTd DataLabel="Progreso">
-                    <div style="min-width: 120px;">
+                    <div style="min-width: 140px;">
                         <div class="d-flex justify-space-between mb-1">
                             <MudText Typo="Typo.caption">@(periodo.ArticulosConcluidos ?? 0)/@(periodo.TotalArticulos ?? 0)</MudText>
                             <MudText Typo="Typo.caption" Class="font-weight-bold">@(periodo.PorcentajeAvance?.ToString("F0") ?? "0")%</MudText>
@@ -270,39 +287,24 @@
     {
         try
         {
-            // var filters = new List<Filter>
-            // {
-            //     new Filter
-            //     {
-            //         PropertyName = "ResponsableId",
-            //         Value = userId.ToString(),
-            //         Operator = "eq"
-            //     }
-            // };
-
-            // if (filtroEstatus.HasValue)
-            // {
-            //     filters.Add(new Filter
-            //     {
-            //         PropertyName = "EstatusId",
-            //         Value = filtroEstatus.Value.ToString(),
-            //         Operator = "eq"
-            //     });
-            // }
+            var filters = new Dictionary<string, object>
+            {
+                { "ResponsableId", userId }
+            };
+            if (filtroEstatus.HasValue)
+                filters.Add("EstatusId", filtroEstatus.Value);
 
             var response = await PeriodoService.GetAllPaginadoAsync(
                 state.Page + 1,
                 state.PageSize,
-                state.SortLabel ?? "FechaInicio",
-                state.SortDirection == SortDirection.Ascending ? "asc" : "desc",
-                state.SortDirection,
-                null);
+                filtro: searchString,
+                sortLabel: state.SortLabel ?? "FechaInicio",
+                sortDirection: state.SortDirection,
+                null); //additionalFilters: filters
 
             if (response?.Success == true)
             {
-                // Actualizar estadísticas
                 CalcularEstadisticas(response.Items ?? new List<PeriodoConteoResponse>());
-
                 return new TableData<PeriodoConteoResponse>
                 {
                     Items = response.Items ?? new List<PeriodoConteoResponse>(),
@@ -326,6 +328,7 @@
         periodosPendientes = lista.Count(p => p.EstatusId == 1);
         periodosEnProceso = lista.Count(p => p.EstatusId == 2);
         periodosCompletados = lista.Count(p => p.EstatusId == 3);
+        // No contamos cerrados aquí porque solo se muestran asignados (normalmente no cerrados)
     }
 
     private void AplicarFiltroEstatus(int? estatusId)
@@ -349,7 +352,6 @@
     private async Task ConfirmarInicioConteo()
     {
         if (periodoSeleccionado == null) return;
-
         showConfirmDialog = false;
 
         try
@@ -357,10 +359,16 @@
             // Si el período está pendiente, cambiar a "En Proceso"
             if (periodoSeleccionado.EstatusId == 1)
             {
+                var result = await PeriodoService.CambiarEstatusAsync(periodoSeleccionado.Id.Value, 2);
+                if (!result.Success)
+                {
+                    Snackbar.Add("No se pudo iniciar el período: " + result.Message, Severity.Warning);
+                    return;
+                }
                 Snackbar.Add("Período marcado como 'En Proceso'", Severity.Success);
             }
 
-            NavigationManager.NavigateTo($"/conteociclico/periodo/{periodoSeleccionado.Id}/conteo");
+            NavigationManager.NavigateTo($"/conteociclico/periodo/{periodoSeleccionado.Id}/articulos");
         }
         catch (Exception ex)
         {

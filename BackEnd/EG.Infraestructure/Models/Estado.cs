@@ -21,5 +21,9 @@ public partial class Estado
 
     public virtual Paise FkidPaisSisNavigation { get; set; }
 
+    public virtual ICollection<Municipio> Municipios { get; set; } = new List<Municipio>();
+
+    public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
+
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 }

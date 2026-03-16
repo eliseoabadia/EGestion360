@@ -25,6 +25,8 @@ public partial class Partidum
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
+
     public virtual Concepto FkidConceptoSisNavigation { get; set; }
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();

@@ -1,11 +1,9 @@
-﻿using AutoMapper;
-using EG.Business.Services;
-using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.General;
+﻿using EG.Application.Interfaces.General;
 using EG.Domain.DTOs.Responses.General;
-using EG.Infraestructure.Models;
+using EG.ApiCore.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EG.Common.GenericModel;
 
 namespace EG.ApiCore.Controllers.General
 {
@@ -14,74 +12,125 @@ namespace EG.ApiCore.Controllers.General
     [Authorize]
     public class AspNetRolesController : ControllerBase
     {
-        private readonly GenericService<AspNetRole, AspNetRoleDto, AspNetRoleResponse> _service;
-        private readonly IMapper _mapper;
+        private readonly IAspNetRolesAppService _appService;
+        private readonly IUserContextService _userContext;
 
         public AspNetRolesController(
-            GenericService<AspNetRole, AspNetRoleDto, AspNetRoleResponse> service,
-            IMapper mapper)
+            IAspNetRolesAppService appService,
+            IUserContextService userContext)
         {
-            _service = service;
-            _mapper = mapper;
+            _appService = appService ?? throw new ArgumentNullException(nameof(appService));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<AspNetRoleResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<AspNetRoleResponse>
+            try
             {
-                Success = true,
-                Message = "AspNetRole obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+                var result = await _appService.GetAllAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<AspNetRoleResponse>>> GetById(int id)
+        public async Task<ActionResult<AspNetRoleResponse>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "Id");
-            if (result == null)
-                return NotFound(new PagedResult<AspNetRoleResponse>
-                {
-                    Success = false,
-                    Message = "AspNetRole no encontrada",
-                    Code = "NOTFOUND_ASPNETROLE",
-                    TotalCount = 0
-                });
-
-            return Ok(new PagedResult<AspNetRoleResponse>
+            try
             {
-                Success = true,
-                Message = "AspNetRole encontrada",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<AspNetRoleResponse> { result },
-                TotalCount = 1
-            });
+                var result = await _appService.GetByIdAsync(id.ToString());
+                return Ok(new { success = true, data = result });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
+        //[HttpPost("GetAllPaginado")]
+        //public async Task<ActionResult<PagedResult<AspNetRoleResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        //{
+        //    try
+        //    {
+        //        var result = await _appService.Get(request);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { success = false, message = ex.Message });
+        //    }
+        //}
+
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] AspNetRoleDto AspNetRoleDto)
+        public async Task<ActionResult<AspNetRoleResponse>> Create([FromBody] AspNetRoleResponse dto)
         {
-            await _service.AddAsync(AspNetRoleDto);
-            return Ok();
+            try
+            {
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(dto, usuarioActual);
+                return CreatedAtAction(nameof(GetById), new { id = result }, new { success = true, data = result });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] AspNetRoleDto AspNetRoleDto)
+        public async Task<ActionResult<AspNetRoleResponse>> Update(int id, [FromBody] AspNetRoleResponse dto)
         {
-            await _service.UpdateAsync(id, AspNetRoleDto);
-            return Ok();
+            try
+            {
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id.ToString(), dto, usuarioActual);
+                return Ok(new { success = true, data = result });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            await _service.DeleteAsync(id);
-            return Ok();
+            try
+            {
+                await _appService.DeleteAsync(id.ToString());
+                return Ok(new { success = true, message = "Eliminado correctamente" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
     }
 }

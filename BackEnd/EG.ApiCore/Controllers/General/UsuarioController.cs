@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
+﻿using EG.ApiCore.Services;
+using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCore.Controllers.General
 {
@@ -16,613 +13,47 @@ namespace EG.ApiCore.Controllers.General
     [Authorize]
     public class UsuarioController : ControllerBase
     {
+        private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(UsuarioController));
+        private readonly IUsuarioAppService _appService;
         private readonly IUserContextService _userContext;
-        private readonly GenericService<Usuario, UsuarioDto, UsuarioResponse> _service;
-        private readonly GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> _serviceView;
-        private readonly IMapper _mapper;
 
         public UsuarioController(
-            GenericService<Usuario, UsuarioDto, UsuarioResponse> service,
-            GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> serviceView,
-            IMapper mapper,
+            IUsuarioAppService appService,
             IUserContextService userContext)
         {
-            _service = service;
-            _serviceView = serviceView;
-            _mapper = mapper;
+            _appService = appService;
             _userContext = userContext;
-
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            // ✅ VERSIÓN SIMPLE - Solo includes de primer nivel
-            // EF Core cargará las propiedades anidadas cuando se acceda a ellas
-            // o si están configuradas con eager loading por defecto
-            _service.AddInclude(u => u.FkidEmpresaSisNavigation);
-            _service.AddInclude(u => u.PerfilUsuario);
-            _service.AddInclude(u => u.UsuarioSucursals);
-
-            // Nota: Para acceder a FkidSucursalNavigation, aseguramos que esté en la consulta
-            // a través de los filtros de relación
-
-            // Configurar relaciones para búsqueda
-            _service.AddRelationFilter("Empresa", new List<string> { "Nombre", "Rfc" });
-            _service.AddRelationFilter("PerfilUsuario", new List<string> { "Rol", "NivelAcceso" });
-            _service.AddRelationFilter("UsuarioSucursals", new List<string> {
-                "FkidSucursalNavigation.Nombre",
-                "FkidSucursalNavigation.Codigo"
-            });
-
-                    // Configurar filtros de búsqueda para la vista
-                    _serviceView.AddRelationFilter("Usuario", new List<string> {
-                "NombreUsuario", "ApellidoPaterno", "ApellidoMaterno", "Email", "PayrollId"
-            });
-                    _serviceView.AddRelationFilter("Sucursal", new List<string> {
-                "NombreSucursal", "CodigoSucursal", "AliasSucursal"
-            });
-                    _serviceView.AddRelationFilter("Empresa", new List<string> {
-                "NombreEmpresa", "RfcEmpresa"
-            });
-        }
-
-        private void ConfigureValidations()
-        {
-            // REGLA 1: Validar email único (para creación)
-            _service.AddValidationRule("UniqueEmail", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                if (usuarioDto == null || string.IsNullOrWhiteSpace(usuarioDto.Email))
-                    return false;
-
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(u => u.Email.ToLower() == usuarioDto.Email.ToLower() &&
-                                  u.Activo);
-
-                return !exists;
-            });
-
-            // REGLA 2: Validar email único para ACTUALIZACIÓN - CORREGIDA
-            _service.AddValidationRuleWithId("UniqueEmailUpdate", async (dto, id) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                if (usuarioDto == null || !id.HasValue || string.IsNullOrWhiteSpace(usuarioDto.Email))
-                    return true; // Si no hay email, no validamos (ya hay otra regla para campos obligatorios)
-
-                // Buscar si existe OTRO usuario activo con el mismo email
-                // IMPORTANTE: Excluimos el usuario actual por ID, sin importar sus sucursales
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(u => u.Email.ToLower() == usuarioDto.Email.ToLower() &&
-                                  u.PkIdUsuario != id.Value &&
-                                  u.Activo);
-
-                return !exists; // Retorna true si NO existe otro usuario con ese email (válido)
-            });
-
-            // REGLA 3: Validar PayrollId único por empresa (para creación)
-            _service.AddValidationRule("UniquePayrollId", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                if (usuarioDto == null || string.IsNullOrWhiteSpace(usuarioDto.PayrollId))
-                    return true; // Si no tiene PayrollId, no validamos
-
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(u => u.FkidEmpresaSis == usuarioDto.FkidEmpresaSis &&
-                                  u.PayrollId.ToLower() == usuarioDto.PayrollId.ToLower() &&
-                                  u.Activo);
-
-                return !exists;
-            });
-
-            // REGLA 4: Validar PayrollId único por empresa para ACTUALIZACIÓN - CORREGIDA
-            _service.AddValidationRuleWithId("UniquePayrollIdUpdate", async (dto, id) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                if (usuarioDto == null || !id.HasValue || string.IsNullOrWhiteSpace(usuarioDto.PayrollId))
-                    return true; // Si no tiene PayrollId, no validamos
-
-                // Buscar si existe OTRO usuario activo con el mismo PayrollId en la misma empresa
-                // IMPORTANTE: Excluimos el usuario actual por ID
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(u => u.FkidEmpresaSis == usuarioDto.FkidEmpresaSis &&
-                                  u.PayrollId.ToLower() == usuarioDto.PayrollId.ToLower() &&
-                                  u.PkIdUsuario != id.Value &&
-                                  u.Activo);
-
-                return !exists; // Retorna true si NO existe otro usuario con ese PayrollId (válido)
-            });
-
-            // RESTO DE VALIDACIONES (sin cambios)...
-            // REGLA 5: Validar campos obligatorios
-            _service.AddValidationRule("ValidNombre", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                return !string.IsNullOrWhiteSpace(usuarioDto?.Nombre);
-            });
-
-            _service.AddValidationRule("ValidApellidoPaterno", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                return !string.IsNullOrWhiteSpace(usuarioDto?.ApellidoPaterno);
-            });
-
-            // REGLA 6: Validar formato de email
-            _service.AddValidationRule("ValidEmailFormat", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                if (string.IsNullOrWhiteSpace(usuarioDto?.Email))
-                    return false;
-
-                try
-                {
-                    var addr = new System.Net.Mail.MailAddress(usuarioDto.Email);
-                    return addr.Address == usuarioDto.Email;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
-
-            // REGLA 7: Validar empresa válida
-            _service.AddValidationRule("ValidCompany", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                return usuarioDto?.FkidEmpresaSis > 0;
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetAll()
         {
-            var result = await _serviceView.GetAllAsync();
-            var response = _mapper.Map<List<UsuarioResponse>>(result);
-            return Ok(new { success = true, Items = response, TotalCount = response.Count });
+            try
+            {
+                var result = await _appService.GetAllAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en GetAll: {ex.Message}", ex);
+                return StatusCode(500, new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    ////Items = new(),
+                    TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetById(int id)
-        {
-            var usuario = await _serviceView.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
-
-            if (usuario == null)
-            {
-                return Ok(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = "Usuario no encontrado",
-                    Code = "NOTFOUND_USER",
-                    //Data = default,
-                    Items = new List<UsuarioResponse>(),
-                    TotalCount = 0
-                });
-            }
-
-            return Ok(new PagedResult<UsuarioResponse>
-            {
-                Success = true,
-                Message = "Usuario encontrado",
-                Code = "SUCCESS",
-                Data = usuario,
-                Items = new List<UsuarioResponse> { usuario },
-                TotalCount = 1
-            });
-        }
-
-        [HttpGet("empresa/{empresaId}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetByEmpresaId(int empresaId)
-        {
-            var result = await _serviceView.GetAllPaginadoAsync(
-                new PagedRequest { Page = 1, PageSize = 1000 },
-                u => u.IdEmpresa == empresaId && u.UsuarioActivo);
-
-            var response = _mapper.Map<List<UsuarioResponse>>(result.Items);
-
-            return Ok(new PagedResult<UsuarioResponse>
-            {
-                Success = true,
-                Message = "Usuarios por empresa obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = response,
-                TotalCount = result.TotalCount
-            });
-        }
-
-        [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
-        {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(_params);
-            return Ok(new PagedResult<UsuarioResponse>
-            {
-                Success = true,
-                Message = "Usuarios obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
-        }
-
-        [HttpPost("GetAllUsuariosPaginado")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetAllUsuariosPaginado([FromBody] PagedRequest _params)
-        {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(_params);
-            return Ok(new PagedResult<UsuarioResponse>
-            {
-                Success = true,
-                Message = "Usuarios obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
-        }
-
-        //[HttpGet("sucursal/{sucursalId}")]
-        //public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetBySucursalId(int sucursalId)
-        //{
-        //    var result = await _serviceView.GetAllPaginadoAsync(
-        //        new PagedRequest { Page = 1, PageSize = 1000 },
-        //        u => u.PkidSucursal == sucursalId && u.RelacionActiva);
-
-        //    var response = _mapper.Map<List<UsuarioResponse>>(result.Items);
-
-        //    return Ok(new PagedResult<UsuarioResponse>
-        //    {
-        //        Success = true,
-        //        Message = "Usuarios por sucursal obtenidos correctamente",
-        //        Code = "SUCCESS",
-        //        Items = response,
-        //        TotalCount = result.TotalCount
-        //    });
-        //}
-
-        [HttpPost]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Add([FromBody] VwUsuarioEmpresa viewDto)
+        public async Task<ActionResult<UsuarioResponse>> GetById(int id)
         {
             try
             {
-                // Validación básica del DTO
-                if (viewDto == null)
-                {
-                    return BadRequest(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "Los datos del usuario son requeridos",
-                        Code = "INVALID_DATA",
-                        TotalCount = 0
-                    });
-                }
+                var usuario = await _appService.GetByIdAsync(id);
 
-                // Validar campos obligatorios mínimos
-                if (string.IsNullOrWhiteSpace(viewDto.NombreCompleto) ||
-                    string.IsNullOrWhiteSpace(viewDto.Email))
-                {
-                    return BadRequest(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "El nombre y email son campos obligatorios",
-                        Code = "MISSING_REQUIRED_FIELDS",
-                        TotalCount = 0
-                    });
-                }
-
-                // Mapear y preparar el DTO
-                var dto = _mapper.Map<UsuarioDto>(viewDto);
-                dto.FechaCreacion = DateTime.Now;
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.Activo = true;
-
-                var _sepNombre = SepararNombre(viewDto.NombreCompleto);
-                dto.Nombre = _sepNombre.Nombre;
-                dto.ApellidoPaterno = _sepNombre.ApellidoPaterno;
-                dto.ApellidoMaterno = _sepNombre.ApellidoMaterno;
-                dto.Telefono = viewDto.TelefonoUsuario ?? "";
-                dto.AspNetUserId = viewDto.PayrollId;
-
-                // Asegurar que el email esté en minúsculas para consistencia
-                if (!string.IsNullOrWhiteSpace(dto.Email))
-                    dto.Email = dto.Email.ToLower().Trim();
-
-                // Validar si puede agregar (aplicará todas las reglas de validación configuradas)
-                if (!await _service.CanAddAsync(dto))
-                {
-                    // Verificar cuál es el conflicto específico para dar un mensaje más claro
-                    var emailExists = await _service.GetQueryWithIncludes()
-                        .AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower() && u.Activo);
-
-                    if (emailExists)
-                    {
-                        return Conflict(new PagedResult<UsuarioResponse>
-                        {
-                            Success = false,
-                            Message = $"El email '{dto.Email}' ya está registrado para otro usuario activo",
-                            Code = "DUPLICATE_EMAIL",
-                            TotalCount = 0
-                        });
-                    }
-
-                    // Verificar PayrollId si aplica
-                    if (!string.IsNullOrWhiteSpace(dto.PayrollId))
-                    {
-                        var payrollExists = await _service.GetQueryWithIncludes()
-                            .AnyAsync(u => u.FkidEmpresaSis == dto.FkidEmpresaSis &&
-                                          u.PayrollId.ToLower() == dto.PayrollId.ToLower() &&
-                                          u.Activo);
-
-                        if (payrollExists)
-                        {
-                            return Conflict(new PagedResult<UsuarioResponse>
-                            {
-                                Success = false,
-                                Message = $"El Payroll ID '{dto.PayrollId}' ya está registrado para otro usuario activo en esta empresa",
-                                Code = "DUPLICATE_PAYROLL",
-                                TotalCount = 0
-                            });
-                        }
-                    }
-
-                    // Mensaje genérico si no se identificó el conflicto específico
-                    return Conflict(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "El email o payroll ID ya existe para un usuario activo",
-                        Code = "DUPLICATE_USER",
-                        TotalCount = 0
-                    });
-                }
-
-                // Guardar el usuario
-                await _service.AddAsync(dto);
-
-                // Obtener el usuario creado para devolverlo
-                var usuarioCreado = await _serviceView.GetByIdAsync(dto.PkIdUsuario, idPropertyName: "PkIdUsuario");
-                var response = _mapper.Map<UsuarioResponse>(usuarioCreado);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkIdUsuario },
-                    new PagedResult<UsuarioResponse>
-                    {
-                        Success = true,
-                        Message = "Usuario creado correctamente",
-                        Code = "SUCCESS",
-                        Data = response,
-                        Items = new List<UsuarioResponse> { response },
-                        TotalCount = 1
-                    });
-            }
-            catch (DbUpdateException dbEx)
-            {
-                // Error específico de base de datos
-                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error de base de datos al crear usuario: {innerMessage}",
-                    Code = "DB_ERROR",
-                    TotalCount = 0
-                });
-            }
-            catch (AutoMapperMappingException mapEx)
-            {
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error al mapear los datos del usuario: {mapEx.Message}",
-                    Code = "MAPPING_ERROR",
-                    TotalCount = 0
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error al crear usuario: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] VwUsuarioEmpresa viewDto)
-        {
-            try
-            {
-                // Validar que el ID coincida
-                if (id != viewDto.PkIdUsuario)
-                {
-                    return BadRequest(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "El ID del usuario no coincide con el parámetro de la URL",
-                        Code = "ID_MISMATCH",
-                        TotalCount = 0
-                    });
-                }
-
-                // Validar campos obligatorios mínimos
-                if (string.IsNullOrWhiteSpace(viewDto.NombreCompleto) ||
-                    string.IsNullOrWhiteSpace(viewDto.Email))
-                {
-                    return BadRequest(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "El nombre y email son campos obligatorios",
-                        Code = "MISSING_REQUIRED_FIELDS",
-                        TotalCount = 0
-                    });
-                }
-
-                var dto = _mapper.Map<UsuarioDto>(viewDto);
-                dto.PkIdUsuario = id;
-                dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-
-                // Asegurar que el email esté en minúsculas para consistencia
-                if (!string.IsNullOrWhiteSpace(dto.Email))
-                    dto.Email = dto.Email.ToLower().Trim();
-
-                // Validar si puede actualizar
-                var canUpdate = await _service.CanUpdateAsync(id, dto);
-
-                if (!canUpdate)
-                {
-                    // Verificar cuál es el conflicto específico
-                    var existingUser = await _service.GetQueryWithIncludes()
-                        .FirstOrDefaultAsync(u => u.Email.ToLower() == dto.Email.ToLower() &&
-                                                u.PkIdUsuario != id &&
-                                                u.Activo);
-
-                    if (existingUser != null)
-                    {
-                        return Conflict(new PagedResult<UsuarioResponse>
-                        {
-                            Success = false,
-                            Message = $"El email '{dto.Email}' ya está siendo utilizado por otro usuario activo (ID: {existingUser.PkIdUsuario})",
-                            Code = "DUPLICATE_EMAIL",
-                            TotalCount = 0
-                        });
-                    }
-
-                    // Verificar conflicto por PayrollId
-                    if (!string.IsNullOrWhiteSpace(dto.PayrollId))
-                    {
-                        existingUser = await _service.GetQueryWithIncludes()
-                            .FirstOrDefaultAsync(u => u.FkidEmpresaSis == dto.FkidEmpresaSis &&
-                                                    u.PayrollId.ToLower() == dto.PayrollId.ToLower() &&
-                                                    u.PkIdUsuario != id &&
-                                                    u.Activo);
-
-                        if (existingUser != null)
-                        {
-                            return Conflict(new PagedResult<UsuarioResponse>
-                            {
-                                Success = false,
-                                Message = $"El Payroll ID '{dto.PayrollId}' ya está siendo utilizado por otro usuario activo en esta empresa (ID: {existingUser.PkIdUsuario})",
-                                Code = "DUPLICATE_PAYROLL",
-                                TotalCount = 0
-                            });
-                        }
-                    }
-
-                    // Mensaje genérico si no se identificó el conflicto
-                    return Conflict(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe otro usuario activo con ese email o payroll ID en esta empresa",
-                        Code = "DUPLICATE_USER",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.UpdateAsync(id, dto);
-
-                // Obtener el usuario actualizado para devolverlo
-                var usuarioActualizado = await _serviceView.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
-                var response = _mapper.Map<UsuarioResponse>(usuarioActualizado);
-
-                return Ok(new PagedResult<UsuarioResponse>
-                {
-                    Success = true,
-                    Message = "Usuario actualizado correctamente",
-                    Code = "SUCCESS",
-                    Data = response,
-                    Items = new List<UsuarioResponse> { response },
-                    TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Usuario con ID {id} no encontrado",
-                    Code = "NOTFOUND_USER",
-                    TotalCount = 0
-                });
-            }
-            catch (DbUpdateException dbEx)
-            {
-                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error de base de datos al actualizar usuario: {innerMessage}",
-                    Code = "DB_ERROR",
-                    TotalCount = 0
-                });
-            }
-            catch (AutoMapperMappingException mapEx)
-            {
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error al mapear los datos del usuario: {mapEx.Message}",
-                    Code = "MAPPING_ERROR",
-                    TotalCount = 0
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Delete(int id)
-        {
-            try
-            {
-                await _service.DeleteAsync(id);
-                return Ok(new PagedResult<UsuarioResponse>
-                {
-                    Success = true,
-                    Message = "Usuario eliminado correctamente",
-                    Code = "SUCCESS",
-                    TotalCount = 0
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Usuario con ID {id} no encontrado",
-                    Code = "NOTFOUND_USER",
-                    TotalCount = 0
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
-        }
-
-        [HttpPatch("{id}/cambiar-estado")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> CambiarEstado(int id, [FromBody] bool activo)
-        {
-            try
-            {
-                var usuario = await _service.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
                 if (usuario == null)
                 {
                     return NotFound(new PagedResult<UsuarioResponse>
@@ -630,62 +61,183 @@ namespace EG.ApiCore.Controllers.General
                         Success = false,
                         Message = "Usuario no encontrado",
                         Code = "NOTFOUND_USER",
+                        ////Items = new(),
                         TotalCount = 0
                     });
                 }
 
-                var dto = _mapper.Map<UsuarioDto>(usuario);
-                dto.Activo = activo;
-                dto.FechaModificacion = DateTime.Now;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-
-                await _service.UpdateAsync(id, dto);
-
                 return Ok(new PagedResult<UsuarioResponse>
                 {
                     Success = true,
-                    Message = $"Usuario {(activo ? "activado" : "desactivado")} correctamente",
+                    Message = "Usuario encontrado",
                     Code = "SUCCESS",
+                    Data = usuario,
+                    Items = new List<UsuarioResponse> { usuario },
                     TotalCount = 1
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = $"Error al cambiar estado: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
+                _logger.LogError($"Error en GetById: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        private (string Nombre, string ApellidoPaterno, string ApellidoMaterno) SepararNombre(string nombreCompleto)
+        [HttpGet("empresa/{empresaId}")]
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetByEmpresaId(int empresaId)
         {
-            if (string.IsNullOrWhiteSpace(nombreCompleto))
-                return (string.Empty, string.Empty, string.Empty);
-
-            var partes = nombreCompleto.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            if (partes.Length == 1)
+            try
             {
-                // Solo un nombre, sin apellidos
-                return (partes[0], string.Empty, string.Empty);
+                var result = await _appService.GetByEmpresaIdAsync(empresaId);
+                return Ok(result);
             }
-            else if (partes.Length == 2)
+            catch (Exception ex)
             {
-                // Nombre y un solo apellido
-                return (partes[0], partes[1], string.Empty);
+                _logger.LogError($"Error en GetByEmpresaId: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
-            else
-            {
-                // Caso típico: Nombre(s) + Apellido paterno + Apellido materno
-                var apellidoMaterno = partes[^1];       // último elemento
-                var apellidoPaterno = partes[^2];       // penúltimo elemento
-                var nombres = string.Join(" ", partes.Take(partes.Length - 2));
+        }
 
-                return (nombres, apellidoPaterno, apellidoMaterno);
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
+        {
+            try
+            {
+                var result = await _appService.GetAllPaginadoAsync(pageRequest);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en GetAllPaginado: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Create([FromBody] UsuarioDto dto)
+        {
+            try
+            {
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(dto, usuarioActual);
+
+                return CreatedAtAction(nameof(GetById), new { id = result.PkIdUsuario },
+                    new PagedResult<UsuarioResponse>
+                    {
+                        Success = true,
+                        Message = "Usuario creado correctamente",
+                        Code = "SUCCESS",
+                        Data = result,
+                        Items = new List<UsuarioResponse> { result },
+                        TotalCount = 1
+                    });
+            }
+            catch (ArgumentNullException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "INVALID_DATA",
+                    ////Items = new(),
+                    TotalCount = 0
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "MISSING_REQUIRED_FIELDS",
+                    ////Items = new(),
+                    TotalCount = 0
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE_USER",
+                    ////Items = new(),
+                    TotalCount = 0
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en Create: {ex.Message}", ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] UsuarioDto dto)
+        {
+            try
+            {
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
+
+                return Ok(new PagedResult<UsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Usuario actualizado correctamente",
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<UsuarioResponse> { result },
+                    TotalCount = 1
+                });
+            }
+            catch (ArgumentNullException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Conflict(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<bool>> Delete(int id)
+        {
+            try
+            {
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.DeleteAsync(id, usuarioActual);
+                return Ok(new { success = result, message = "Usuario eliminado correctamente" });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
     }

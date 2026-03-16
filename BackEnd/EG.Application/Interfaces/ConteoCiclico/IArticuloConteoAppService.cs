@@ -6,23 +6,24 @@ namespace EG.Application.Interfaces.ConteoCiclico
 {
     public interface IArticuloConteoAppService
     {
-        // Consultas
-        Task<PagedResult<VwArticuloConteoResponse>> GetAllAsync();
-        Task<VwArticuloConteoResponse> GetByIdAsync(int id);
-        Task<PagedResult<VwArticuloConteoResponse>> GetAllPaginadoAsync(PagedRequest request);
-        
-        // Filtrados
-        Task<PagedResult<VwArticuloConteoResponse>> GetAllByPeriodoAsync(int periodoId);
-        Task<PagedResult<VwArticuloConteoResponse>> GetPendientesAsync(int periodoId);
-        Task<PagedResult<VwArticuloConteoResponse>> GetByEstatusAsync(int periodoId, int estatusId);
+        // Consultas básicas
+        Task<PagedResult<PeriodoConteoResponse>> GetAllAsync();
+        Task<PeriodoConteoResponse> GetByIdAsync(int id);
+        Task<PagedResult<PeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
 
-        // Comandos
-        Task<VwArticuloConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual);
-        Task<VwArticuloConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual);
-        Task DeleteAsync(int id);
+        // Filtros específicos (basados en la vista)
+        Task<PagedResult<PeriodoConteoResponse>> GetByPeriodoIdAsync(int periodoId);
+        Task<PagedResult<PeriodoConteoResponse>> GetBySucursalIdAsync(int sucursalId);
+        Task<PagedResult<PeriodoConteoResponse>> GetPendientesAsync(int periodoId, int sucursalId);
+        Task<PagedResult<PeriodoConteoResponse>> GetConcluidosAsync(int periodoId, int sucursalId);
 
-        // Operaciones específicas
-        Task CambiarEstatusAsync(int id, int estatusId, int usuarioActual);
-        Task ActualizarProgresAsync(int periodoId, int usuarioActual);
+        // Operaciones de escritura
+        Task<PeriodoConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual);
+        Task<PeriodoConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual);
+        Task<bool> DeleteAsync(int id, int usuarioActual);
+
+        // Métodos adicionales de negocio
+        Task<bool> IniciarConteoAsync(int id, int usuarioActual);
+        Task<bool> ConcluirConteoAsync(int id, decimal existenciaFinal, int usuarioActual);
     }
 }
