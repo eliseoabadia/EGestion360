@@ -1,6 +1,8 @@
-﻿using EG.ApiCore.Services;
+﻿using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +17,16 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(RegistroConteoController));
         private readonly IRegistroConteoAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public RegistroConteoController(
             IRegistroConteoAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         // ==================== CONSULTAS ====================
@@ -174,10 +179,11 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         // ==================== ESCRITURA ====================
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<RegistroConteoResponse>>> Create([FromBody] RegistroConteoDto dto)
+        public async Task<ActionResult<PagedResult<RegistroConteoResponse>>> Create([FromBody] RegistroConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<RegistroConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(dto, usuarioActual);
 
@@ -233,10 +239,11 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<RegistroConteoResponse>>> Update(int id, [FromBody] RegistroConteoDto dto)
+        public async Task<ActionResult<PagedResult<RegistroConteoResponse>>> Update(int id, [FromBody] RegistroConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<RegistroConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, dto, usuarioActual);
 

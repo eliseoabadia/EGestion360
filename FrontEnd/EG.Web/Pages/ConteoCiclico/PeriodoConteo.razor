@@ -1,4 +1,4 @@
-﻿@page "/conteociclico/periodo"
+@page "/conteociclico/periodo"
 @using EG.Web.Contracs.ConteoCiclico
 @using EG.Web.Models.ConteoCiclico
 @using EG.Web.Pages.Shared
@@ -266,7 +266,7 @@
 </AccessVerification>
 
 @code {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    // NOTA: IMudDialogInstance NO debe declararse en una página (@page). Solo aplica en componentes abiertos como diálogo.
     private GenericTable<PeriodoConteoResponse> table = null!;
     private int? filtroEstatus = null;
 
@@ -326,6 +326,14 @@
             else Snackbar.Add(result.Message, Severity.Error);
         }
         catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
     }
 
     protected override async Task<TableData<PeriodoConteoResponse>> LoadServerData(TableState state, CancellationToken token)

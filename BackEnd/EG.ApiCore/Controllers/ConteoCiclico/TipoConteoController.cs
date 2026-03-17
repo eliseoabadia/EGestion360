@@ -5,6 +5,7 @@ using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 namespace EG.ApiCore.Controllers.General
 {
@@ -16,13 +17,16 @@ namespace EG.ApiCore.Controllers.General
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(TipoConteoController));
         private readonly ITipoConteoAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public TipoConteoController(
             ITipoConteoAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -96,10 +100,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Create([FromBody] TipoConteoDto dto)
+        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Create([FromBody] TipoConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<TipoConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(dto, usuarioActual);
 
@@ -155,10 +160,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Update(int id, [FromBody] TipoConteoDto dto)
+        public async Task<ActionResult<PagedResult<TipoConteoResponse>>> Update(int id, [FromBody] TipoConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<TipoConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, dto, usuarioActual);
 

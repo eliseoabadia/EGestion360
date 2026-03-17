@@ -1,6 +1,7 @@
-﻿using EG.Common.Helper;
+using EG.Common.Helper;
 using EG.Web.Contracs;
 using EG.Web.Models;
+using EG.Web.Models.Configuration;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 using Microsoft.JSInterop;
@@ -60,6 +61,46 @@ namespace EG.Web.Services
             }
 
             return resultado;
+        }
+
+        public async Task<List<SucursalResponse>> GetSucursalesUsuarioAsync(int usuarioId)
+        {
+            try
+            {
+                var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
+                HttpResponseMessage response = await _httpClient.GetAsync($"api/UsuarioSucursal/usuario/{usuarioId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<ApiResponse<VwUsuarioSucursalResponse>>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    
+                    if (result?.Success == true && result.Items != null)
+                    {
+                        return result.Items.Select(x => new SucursalResponse
+                        {
+                            PkidSucursal = x.IdSucursal ?? 0,
+                            Nombre = x.NombreSucursal ?? string.Empty,
+                            Direccion = x.DireccionSucursal ?? string.Empty
+                        }).ToList();
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error getting sucursales: {response.StatusCode} - {errorContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception getting sucursales: {ex.Message}");
+            }
+            return new List<SucursalResponse>();
         }
 
         public Task Logout()

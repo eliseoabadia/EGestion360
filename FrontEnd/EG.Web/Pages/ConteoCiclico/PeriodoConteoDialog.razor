@@ -1,29 +1,32 @@
 ﻿@using EG.Web.Models.ConteoCiclico
 @using MudBlazor
+@using EG.Web.Pages.Shared
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
+@using EG.Web.Services
 @inject IGenericCrudService<PeriodoConteoResponse> _service
 @inject IGenericCrudService<SucursalResponse> _sucursalesService
 @inject IGenericCrudService<TipoConteoResponse> _tiposConteoService
 @inject IUsuarioService _usuariosService
 @inject AuthService AuthService
+@inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="PeriodoConteoResponse"
-                @ref="dialog"
-                MaxWidth="MaxWidth.Medium"
-                ActionText="@actionText"
-                ProcessingText="@processingText"
-                LoadingMessage="Cargando datos del periodo..."
-                OnConfirm="GuardarCambiosAsync">
-    <!-- Quitado OnCancel -->
 
+
+<BaseCrudDialog TItem="PeriodoConteoResponse"
+                 @ref="dialog"
+                 MaxWidth="MaxWidth.Medium"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos del periodo..."
+                 OnConfirm="GuardarCambiosAsync">
+    
     <BaseEntityForm TEntity="PeriodoConteoResponse"
                     @ref="form"
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
-        <!-- Quitado HeaderIcon -->
-        <!-- Indicador de progreso -->
+        
         @if (isLoading)
         {
             <div class="d-flex justify-center pa-8">
@@ -102,14 +105,15 @@
                                            Required="true"
                                            RequiredError="Debe seleccionar una sucursal"
                                            For="@(() => periodo.SucursalId)"
-                                           AnchorOrigin="Origin.BottomCenter">
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           Disabled="@sucursalDeshabilitada">
                                     <MudSelectItem T="int?" Value="null">
                                         <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Small" Class="mr-2" />
                                         Seleccione una sucursal
                                     </MudSelectItem>
                                     @foreach (var s in sucursales)
                                     {
-                                        <MudSelectItem T="int?" Value="@((int?)s.PkidSucursal)">
+                                        <MudSelectItem T="int?" Value="@((int?)s.PkidSucursal)" Disabled="@(s.PkidSucursal != sucursalIdActual)">
                                             <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Small" Class="mr-2" />
                                             @s.Nombre
                                         </MudSelectItem>
@@ -321,7 +325,7 @@
 
 @code {
     [Parameter] public int? Id { get; set; }
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;   // ← Agregado para cerrar
+    // IMudDialogInstance es manejado internamente por BaseCrudDialog
 
     private BaseCrudDialog<PeriodoConteoResponse> dialog = null!;
     private BaseEntityForm<PeriodoConteoResponse> form = null!;
@@ -370,19 +374,36 @@
     private List<TipoConteoResponse> tiposConteo = new();
     private List<UsuarioResponse> usuarios = new();
     private int _userId;
+    private int sucursalIdActual;
+    private bool sucursalDeshabilitada = false;
 
     private string dialogTitle => Id.HasValue ? "Editar Periodo de Conteo" : "Nuevo Periodo de Conteo";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+
+        // Inicializar servicio de sucursal
+        await SucursalStateService.InitializeAsync();
+        sucursalIdActual = SucursalStateService.SucursalId ?? 0;
+        sucursalDeshabilitada = sucursalIdActual > 0;
+
         await Task.WhenAll(CargarSucursales(), CargarTiposConteo(), CargarUsuarios());
+
+        // Si es nuevo periodo y hay sucursal seleccionada, establecer por defecto
+        if (!Id.HasValue && sucursalIdActual > 0)
+        {
+            periodo.SucursalId = sucursalIdActual;
+        }
 
         if (Id.HasValue)
         {
             await CargarPeriodo();
+            // En edición, permitir cambiar sucursal
+            sucursalDeshabilitada = false;
         }
         isLoading = false;
     }
@@ -415,8 +436,13 @@
             var response = await _sucursalesService.GetAllAsync();
             if (response?.Success == true && response.Items != null)
                 sucursales = response.Items.ToList();
+            else
+                Console.WriteLine($"Error cargando sucursales: {response?.Message}");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception cargando sucursales: {ex.Message}");
+        }
     }
 
     private async Task CargarTiposConteo()
@@ -426,8 +452,13 @@
             var response = await _tiposConteoService.GetAllAsync();
             if (response?.Success == true && response.Items != null)
                 tiposConteo = response.Items.ToList();
+            else
+                Console.WriteLine($"Error cargando tipos conteo: {response?.Message}");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception cargando tipos conteo: {ex.Message}");
+        }
     }
 
     private async Task CargarUsuarios()
@@ -441,16 +472,13 @@
         catch { }
     }
 
-    // Método de cancelación llamado desde el botón del diálogo (si existe)
-    // Si BaseCrudDialog ya tiene su propio botón de cancelar, este método puede no ser necesario,
-    // pero lo dejamos por si se necesita llamar manualmente.
     public async Task CancelAsync()
     {
-        MudDialog.Close(false);   // ← CORREGIDO: usa MudDialog en lugar de dialog
+        dialog?.SignalClose(false);
         await Task.CompletedTask;
     }
 
-    private async Task GuardarCambiosAsync()
+    private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
         {
@@ -502,10 +530,19 @@
             if (Id.HasValue)
             {
                 periodo.Id = Id.Value;
+                if (!periodo.SupervisorId.HasValue)
+                {
+                    periodo.SupervisorId = 0;
+                    periodo.SupervisorNombre = string.Empty;
+                }
+                
+                periodo.UsuarioModificacionNombre = periodo.UsuarioModificacionNombre ?? string.Empty;
+
                 response = await _service.UpdateAsync(periodo, Id.Value);
             }
             else
             {
+                periodo.Id = 0;
                 periodo.FechaCierre = null;
                 periodo.EstatusNombre = string.Empty;
                 periodo.PorcentajeAvance = 0;
@@ -516,17 +553,29 @@
                 periodo.ArticulosConcluidos = 0;
                 periodo.ArticulosPendientes = 0;
                 periodo.ArticulosConDiferencia = 0;
+                periodo.FechaCreacion = DateTime.Now;
+                periodo.SupervisorId = 0;
+                periodo.SupervisorNombre = string.Empty;
+                periodo.UsuarioModificacionNombre = string.Empty;
+                periodo.UsuarioCreacionNombre = string.Empty;
+
+                // Si es nuevo periodo y hay sucursal seleccionada, establecer por defecto
+                if (!Id.HasValue && sucursalIdActual > 0)
+                {
+                    periodo.SucursalId = sucursalIdActual;
+                }
+
                 response = await _service.CreateAsync(periodo);
             }
-
             if (response?.Success == true)
             {
-                Snackbar.Add(response.Message ?? $"✅ Periodo {(Id.HasValue ? "actualizado" : "creado")} exitosamente", Severity.Success);
-                MudDialog.Close(true);   // ← CORREGIDO: usa MudDialog en lugar de dialog
+                Snackbar.Add(response.Message ?? $"Periodo {(Id.HasValue ? "actualizado" : "creado")} exitosamente", Severity.Success);
+                dialog?.SignalClose(true);
             }
             else
             {
                 Snackbar.Add(response?.Message ?? "Error en la operación", Severity.Error);
+                dialog?.SignalClose(false);
             }
         }
         catch (Exception ex)

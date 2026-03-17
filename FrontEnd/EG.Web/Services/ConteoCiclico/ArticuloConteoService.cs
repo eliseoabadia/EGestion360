@@ -2,6 +2,7 @@
 using EG.Web.Contracs.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.ConteoCiclico;
+using EG.Web.Services;
 using Microsoft.JSInterop;
 using SortDirection = MudBlazor.SortDirection;
 
@@ -9,9 +10,16 @@ namespace EG.Web.Services.ConteoCiclico
 {
     public class ArticuloConteoService : BaseService, IArticuloConteoService
     {
-        public ArticuloConteoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
+        private readonly SucursalStateService _sucursalStateService;
+
+        public ArticuloConteoService(
+            HttpClient httpClient, 
+            IJSRuntime jsRuntime, 
+            ApplicationInstance application,
+            SucursalStateService sucursalStateService)
             : base(httpClient, jsRuntime, application)
         {
+            _sucursalStateService = sucursalStateService;
         }
 
         // GET: api/ArticuloConteo
@@ -381,6 +389,35 @@ namespace EG.Web.Services.ConteoCiclico
                 Code = "ERROR"
             };
         }
+
+        // Método para obtener artículos de la sucursal actual
+        public async Task<ApiResponse<ArticuloConteoResponse>> GetAllPaginadoBySucursalActualAsync(
+            int periodoId,
+            int page = 1,
+            int pageSize = 10,
+            string filtro = "",
+            string sortLabel = "",
+            SortDirection sortDirection = SortDirection.Ascending)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<ArticuloConteoResponse>();
+
+            if (!_sucursalStateService.HasSucursalSeleccionada)
+            {
+                return new ApiResponse<ArticuloConteoResponse>
+                {
+                    Success = false,
+                    Message = "No hay sucursal seleccionada",
+                    Code = "NOSUCURSAL"
+                };
+            }
+
+            return await GetPaginadoByPeriodoAsync(periodoId, page, pageSize, filtro, sortLabel, sortDirection);
+        }
+
+        public bool HasSucursalSeleccionada => _sucursalStateService.HasSucursalSeleccionada;
+        public int? SucursalId => _sucursalStateService.SucursalId;
+        public string? SucursalNombre => _sucursalStateService.SucursalNombre;
 
     }
 }

@@ -5,6 +5,7 @@ using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 namespace EG.ApiCore.Controllers.ConteoCiclico
 {
@@ -16,13 +17,16 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(ArticuloConteoController));
         private readonly IArticuloConteoAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public ArticuloConteoController(
             IArticuloConteoAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         // ==================== CONSULTAS ====================

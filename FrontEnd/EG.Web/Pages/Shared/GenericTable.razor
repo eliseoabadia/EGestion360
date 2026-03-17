@@ -9,6 +9,7 @@
               @ref="mudTableRef"
               Dense="@Dense"
               Hover="@Hover"
+              Striped="@Striped"
               Loading="@Loading"
               ReadOnly="@ReadOnly"
               SortLabel="Ordenar por"
@@ -22,6 +23,20 @@
         <ToolBarContent>
             <MudText Typo="Typo.h6">@Title</MudText>
             <MudSpacer />
+
+            @if (ShowAddButton)
+            {
+                <MudTooltip Text="Agregar">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="OnAddClick"
+                               Size="Size.Small"
+                               Class="mr-2">
+                        Agregar
+                    </MudButton>
+                </MudTooltip>
+            }
 
             @if (ShowExportButton)
             {
@@ -92,6 +107,7 @@
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
     [Parameter] public bool ShowExportButton { get; set; } = true;
+    [Parameter] public bool ShowAddButton { get; set; } = true;
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
 
     [Parameter] public int PageSize { get; set; } = 10;
@@ -100,6 +116,7 @@
     [Parameter] public bool Loading { get; set; }
     [Parameter] public bool Dense { get; set; } = true;
     [Parameter] public bool Hover { get; set; } = true;
+    [Parameter] public bool Striped { get; set; } = false;
     [Parameter] public bool ReadOnly { get; set; } = true;
     [Parameter] public bool BlockSwitch { get; set; }
     [Parameter] public SortDirection InitialSortDirection { get; set; } = SortDirection.Descending;
@@ -113,6 +130,7 @@
     [Parameter] public RenderFragment<TItem> Row { get; set; } = null!;
     [Parameter] public Func<TableState, CancellationToken, Task<TableData<TItem>>> ServerDataFunc { get; set; } = null!;
     [Parameter] public Func<Task> ExportFunc { get; set; } = null!;
+    [Parameter] public EventCallback OnAdd { get; set; }
 
     private MudTable<TItem> mudTableRef = new();
     private MudTextField<string> searchField = new();
@@ -142,6 +160,11 @@
         {
             await ExportFunc();
         }
+    }
+
+    private async Task OnAddClick()
+    {
+        await OnAdd.InvokeAsync();
     }
 
     public async Task ReloadData()

@@ -96,26 +96,6 @@ CREATE TABLE SIS.Municipios (
     --CONSTRAINT UQ_Municipios_Estado_Nombre UNIQUE (FKIdEstado_SIS, Nombre)
 );
 
-    -- Activar INSERT con IDs específicos
---SET IDENTITY_INSERT SIS.Municipios ON
-
--- Insertar los datos manteniendo el ID original
-INSERT INTO SIS.Municipios (
-    FKIdEstado_SIS,
-    [Nombre],
-    [CodigoMunicipio],
-    Activo
-)
-SELECT 
-    FK_IdEstado__SIS
-    ,Nombre
-    ,Clave
-    ,CT_LIVE
-FROM [BD_PRESUPUESTO].[SIS].Municipio m
-
-
--- Desactivar INSERT con IDs específicos
---SET IDENTITY_INSERT SIS.Municipios OFF
 
 
 -- =============================================
@@ -329,7 +309,7 @@ CREATE INDEX IX_Departamento_Sucursal ON SIS.Departamento(FKIdSucursal_SIS) INCL
 
 /*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
 /*
-user:DIR002
+user:ADM001
 pasword: Tecno.2025
 */
 /*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
@@ -551,13 +531,14 @@ CREATE TABLE dbo.AspNetUserRoles (
 );
 
 /*  [dbo].[AspNetUserRoles]  */
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('3E3B05E8-0A87-49DF-97D3-A5FA7AF97825' ,'71804e93-9753-4684-84fd-cf037349c111' ,GETDATE())
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('A06C2BE9-5070-46B3-9759-D3ACDFBB00B4' ,'739CC754-488B-4BB4-B7FB-62F6BF3C26D0' ,GETDATE())
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('F567D8EC-47C1-4B34-827B-20F0FF182BAF' ,'67A6E679-DBC4-402D-AE6E-7F28DDB11BD8' ,GETDATE())
+--INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('22FF4850-B4FD-418F-B14C-143012B71ECA' ,'71804e93-9753-4684-84fd-cf037349c111' ,'71804e93-9753-4684-84fd-cf037349c111')
+--INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('31C2A0AC-D4E6-45DD-8E77-B58A7BDE3C00' ,'739CC754-488B-4BB4-B7FB-62F6BF3C26D0' ,GETDATE())
+--INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate]) VALUES ('F567D8EC-47C1-4B34-827B-20F0FF182BAF' ,'67A6E679-DBC4-402D-AE6E-7F28DDB11BD8' ,GETDATE())
 
---select a.Id,b.Id,dateadd(day,29,GETDATE())
---from dbo.AspNetUsers as a
---inner join [dbo].[AspNetRoles] as b on 1=1
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId] ,[RoleId] ,[ExpireDate])
+select [Id],'71804e93-9753-4684-84fd-cf037349c111','2027-12-31'
+from [dbo].[AspNetUsers]
+where PkIdUsuario in (1/*,2*/)
 
 
 ---

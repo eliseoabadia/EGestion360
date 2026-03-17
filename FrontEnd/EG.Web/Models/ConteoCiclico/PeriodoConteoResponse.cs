@@ -30,7 +30,7 @@ public partial class PeriodoConteoResponse
 
     public DateTime? FechaCierre { get; set; }
 
-    public int? MaximoConteosPorArticulo { get; set; }
+    public int MaximoConteosPorArticulo { get; set; }
 
     public bool? RequiereAprobacionSupervisor { get; set; }
 

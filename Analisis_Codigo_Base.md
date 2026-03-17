@@ -369,3 +369,15 @@ El proyecto utiliza el patrón de **servicio genérico** para optimizar el códi
 ---
 
 *Documento actualizado con análisis de Conteo Cíclico.*
+
+
+
+
+Para tablas que tienen depenciencia por lo general serán combos si se usan en front, pero para llenar la tabla principal será la vista que llegue al front
+Entonces en el back se definirá de la siguiente manera: EG.Infraestructure
+si tiene un VwNombreTabla se usaran los siguientes modelos
+En EG.Domain.DTOs.Requests.Esquema
+   será NombreTablaDto
+En EG.Domain.DTOs.Responses.Esquema
+  será NombreTablaResponse (pero contendrá los datos de la vista)
+En el servicio hará uso del dto y del context según sea necesario. Se necesita un mapper para adaptar esto.

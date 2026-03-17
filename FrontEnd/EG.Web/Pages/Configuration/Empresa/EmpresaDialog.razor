@@ -95,6 +95,7 @@
     [Parameter] public int? Id { get; set; }  // CORREGIDO: Ahora usa Id
 
     private BaseCrudDialog<EmpresaResponse> dialog = null!;
+    
     private BaseEntityForm<EmpresaResponse> form = null!;
     private EmpresaResponse empresa = new() { EmpresaActivo = true };
     private IList<EstadoResponse> estados = new List<EstadoResponse>();
@@ -206,7 +207,7 @@
     }
 
 
-    private async Task GuardarCambiosAsync()
+    private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
         {
@@ -248,7 +249,7 @@
                     $"✅ Empresa {(Id.HasValue ? "actualizada" : "creada")} exitosamente";
 
                 Snackbar.Add(message, Severity.Success);
-                dialog.Close(true);
+                dialog?.SignalClose(true);
             }
             else
             {

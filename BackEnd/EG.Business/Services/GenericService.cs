@@ -16,7 +16,7 @@ namespace EG.Business.Services
         protected readonly IRepository<TEntity> _repository = repository;
         protected readonly IMapper _mapper = mapper;
 
-        // Propiedades para configurar includes dinámicos
+        // Propiedades para configurar includes dinï¿½micos
         protected List<Expression<Func<TEntity, object>>> _includes = new();
         protected Dictionary<string, List<string>> _relationFilters = new();
 
@@ -24,9 +24,9 @@ namespace EG.Business.Services
         protected Dictionary<string, Func<TDto, Task<bool>>> _validationRules = new();
         protected Dictionary<string, Func<TDto, int?, Task<bool>>> _validationRulesWithId = new();
 
-        // ============ NUEVO: MÉTODOS DE VALIDACIÓN ============
+        // ============ NUEVO: Mï¿½TODOS DE VALIDACIï¿½N ============
 
-        // Método para agregar regla de validación (para Add)
+        // Mï¿½todo para agregar regla de validaciï¿½n (para Add)
         public virtual GenericService<TEntity, TDto, TResponse> AddValidationRule(
             string ruleName,
             Func<TDto, Task<bool>> rule)
@@ -35,7 +35,7 @@ namespace EG.Business.Services
             return this;
         }
 
-        // Método para agregar regla de validación con ID (para Update)
+        // Mï¿½todo para agregar regla de validaciï¿½n con ID (para Update)
         public virtual GenericService<TEntity, TDto, TResponse> AddValidationRuleWithId(
             string ruleName,
             Func<TDto, int?, Task<bool>> rule)
@@ -44,7 +44,7 @@ namespace EG.Business.Services
             return this;
         }
 
-        // Validación para agregar
+        // Validaciï¿½n para agregar
         public virtual async Task<bool> CanAddAsync(TDto dto)
         {
             foreach (var rule in _validationRules.Values)
@@ -55,7 +55,7 @@ namespace EG.Business.Services
             return true;
         }
 
-        // Validación para actualizar
+        // Validaciï¿½n para actualizar
         public virtual async Task<bool> CanUpdateAsync(int id, TDto dto)
         {
             foreach (var rule in _validationRulesWithId.Values)
@@ -66,21 +66,21 @@ namespace EG.Business.Services
             return true;
         }
 
-        // Método para agregar includes dinámicamente
+        // Mï¿½todo para agregar includes dinï¿½micamente
         public virtual GenericService<TEntity, TDto, TResponse> AddInclude(Expression<Func<TEntity, object>> includeExpression)
         {
             _includes.Add(includeExpression);
             return this;
         }
 
-        // Método para agregar filtros en relaciones
+        // Mï¿½todo para agregar filtros en relaciones
         public virtual GenericService<TEntity, TDto, TResponse> AddRelationFilter(string relationProperty, List<string> searchProperties)
         {
             _relationFilters[relationProperty] = searchProperties;
             return this;
         }
 
-        // Limpiar configuración
+        // Limpiar configuraciï¿½n
         public virtual void ClearConfiguration()
         {
             _includes.Clear();
@@ -111,7 +111,7 @@ namespace EG.Business.Services
         {
             var query = GetQueryWithIncludes();
 
-            // Obtener la propiedad ID de forma estática para la expresión
+            // Obtener la propiedad ID de forma estï¿½tica para la expresiï¿½n
             var idProperty = typeof(TEntity).GetProperties()
                 .FirstOrDefault(p => p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase) &&
                                     (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
@@ -119,7 +119,7 @@ namespace EG.Business.Services
             if (idProperty == null)
                 return null;
 
-            // Construir la expresión lambda de forma estática
+            // Construir la expresiï¿½n lambda de forma estï¿½tica
             var parameter = Expression.Parameter(typeof(TEntity), "e");
             var propertyAccess = Expression.Property(parameter, idProperty);
             var constant = Expression.Constant(id);
@@ -144,7 +144,7 @@ namespace EG.Business.Services
             return entity != null ? _mapper.Map<TResponse>(entity) : null;
         }
 
-        // Versión con parámetros personalizados - CORREGIDA
+        // Versiï¿½n con parï¿½metros personalizados - CORREGIDA
         public virtual async Task<TResponse?> GetByIdAsync(int id,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? customQuery = null,
             string idPropertyName = null)
@@ -188,7 +188,7 @@ namespace EG.Business.Services
 
             var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
 
-            // CORRECCIÓN: Usar Task.Run con ToList() en lugar de FirstOrDefaultAsync
+            // CORRECCIï¿½N: Usar Task.Run con ToList() en lugar de FirstOrDefaultAsync
             var entities = await Task.Run(() => query.ToList());
             var entity = entities.FirstOrDefault(lambda.Compile());
 
@@ -197,8 +197,21 @@ namespace EG.Business.Services
 
         private int GetIdValue(TEntity entity)
         {
+            // First try to find Pkid* properties (primary keys)
+            var pkidProperty = typeof(TEntity).GetProperties()
+                .FirstOrDefault(p => p.Name.StartsWith("Pkid") && 
+                                    (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
+
+            if (pkidProperty != null)
+            {
+                var value = pkidProperty.GetValue(entity);
+                return value != null ? (int)value : 0;
+            }
+
+            // Fallback to properties ending with "Id"
             var idProperty = typeof(TEntity).GetProperties()
-                .FirstOrDefault(p => p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase) &&
+                .FirstOrDefault(p => p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase) &&
+                                    !p.Name.StartsWith("Fk") &&
                                     (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
 
             if (idProperty != null)
@@ -219,8 +232,10 @@ namespace EG.Business.Services
 
             // Mapear el ID de vuelta al DTO si es necesario
             var idProperty = typeof(TDto).GetProperty("PkidDepartamento") ??
+                            typeof(TDto).GetProperty("PkidPeriodoConteo") ??
+                            typeof(TDto).GetProperty("PkidBien") ??
                             typeof(TDto).GetProperty("Id") ??
-                            typeof(TDto).GetProperties().FirstOrDefault(p => p.Name.Contains("Id"));
+                            typeof(TDto).GetProperties().FirstOrDefault(p => p.Name.StartsWith("Pkid"));
 
             if (idProperty != null)
             {

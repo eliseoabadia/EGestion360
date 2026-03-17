@@ -17,17 +17,30 @@ namespace EG.Business.Mapping
 
             CreateMap<TipoConteo, TipoConteoDto>().ReverseMap();
             CreateMap<TipoConteo, TipoConteoResponse>(); 
+            CreateMap<TipoConteoResponse, TipoConteoDto>();
 
             CreateMap<TipoBien, TipoBienDto>().ReverseMap();
             CreateMap<TipoBien, TipoBienResponse>(); 
+            CreateMap<TipoBienResponse, TipoBienDto>();
 
             CreateMap<EstatusPeriodo, EstatusPeriodoResponse>().ReverseMap();
             CreateMap<EstatusPeriodoDto, EstatusPeriodo>().ReverseMap();
+            CreateMap<EstatusPeriodoResponse, EstatusPeriodoDto>();
+
             CreateMap<EstatusArticuloConteo, EstatusArticuloConteoResponse>().ReverseMap();
             CreateMap<EstatusArticuloConteoDto, EstatusArticuloConteo>().ReverseMap();
+            CreateMap<EstatusArticuloConteoResponse, EstatusArticuloConteoDto>();
 
             CreateMap<RegistroConteo, RegistroConteoDto>().ReverseMap();
             CreateMap<RegistroConteo, RegistroConteoResponse>().ReverseMap();
+            CreateMap<RegistroConteoResponse, RegistroConteoDto>();
+
+            CreateMap<Sucursal, SucursalDto>().ReverseMap();
+            CreateMap<SucursalResponse, SucursalDto>();
+            CreateMap<Sucursal, SucursalResponse>().ReverseMap();
+
+            CreateMap<Departamento, DepartamentoDto>().ReverseMap();
+            CreateMap<DepartamentoResponse, DepartamentoDto>();
 
             // Entity -> Response
             CreateMap<Estado, EstadoResponse>()

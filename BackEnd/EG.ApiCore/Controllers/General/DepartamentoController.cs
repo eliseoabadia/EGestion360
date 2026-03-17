@@ -149,11 +149,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Add([FromBody] VwEmpresaDepartamanto viewDto)
+        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Add([FromBody] DepartamentoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<DepartamentoDto>(viewDto);
+                var dto = _mapper.Map<DepartamentoDto>(response);
 
                 if (!await _service.CanAddAsync(dto))
                 {
@@ -190,11 +190,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Update(int id, [FromBody] VwEmpresaDepartamanto viewDto)
+        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Update(int id, [FromBody] DepartamentoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<DepartamentoDto>(viewDto);
+                var dto = _mapper.Map<DepartamentoDto>(response);
                 dto.PkidDepartamento = id;
 
                 if (!await _service.CanUpdateAsync(id, dto))

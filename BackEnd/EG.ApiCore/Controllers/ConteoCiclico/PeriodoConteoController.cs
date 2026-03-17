@@ -1,9 +1,11 @@
 ﻿using EG.ApiCore.Services;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 namespace EG.ApiCore.Controllers.General
 {
@@ -15,13 +17,16 @@ namespace EG.ApiCore.Controllers.General
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(PeriodoConteoController));
         private readonly IPeriodoConteoAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public PeriodoConteoController(
             IPeriodoConteoAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         // ==================== CONSULTAS ====================
@@ -159,10 +164,12 @@ namespace EG.ApiCore.Controllers.General
         // ==================== ESCRITURA ====================
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Create([FromBody] PeriodoConteoDto dto)
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Create([FromBody] PeriodoConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<PeriodoConteoDto>(response);
+                dto.FkidSupervisorSis = dto.FkidSupervisorSis.Value > 0 ? dto.FkidSupervisorSis.Value :  null;
                 var usuarioActual = _userContext.GetCurrentUserId();
                 if (dto.FkidSucursalSis < 1)
                     dto.FkidSucursalSis = 1; //EAE temporal
@@ -220,11 +227,13 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Update(int id, [FromBody] PeriodoConteoDto dto)
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Update(int id, [FromBody] PeriodoConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<PeriodoConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
+
                 var result = await _appService.UpdateAsync(id, dto, usuarioActual);
 
                 return Ok(new PagedResult<PeriodoConteoResponse>

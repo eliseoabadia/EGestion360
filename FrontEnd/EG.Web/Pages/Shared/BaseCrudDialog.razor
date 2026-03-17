@@ -1,4 +1,4 @@
-﻿@using MudBlazor
+@using MudBlazor
 @typeparam TItem
 
 <MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="false">
@@ -57,19 +57,24 @@
     [Parameter] public string ProcessingText { get; set; } = "Guardando...";
     [Parameter] public string LoadingMessage { get; set; } = "Cargando...";
     [Parameter] public bool CanConfirm { get; set; } = true;
-    [Parameter] public EventCallback OnConfirm { get; set; }  // Este es el parámetro importante
+    [Parameter] public EventCallback<bool> OnConfirm { get; set; }  // Señal de confirmación con resultado (bool)
+    [Parameter] public EventCallback OnCancel { get; set; }
+    // Nota: el cierre se notifica al padre mediante SignalClose(success)
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private bool loading = true;
     private bool isProcessing = false;
+    private bool _closed = false;
     private Dictionary<string, object> _registeredComponents = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            Console.WriteLine("🔄 BaseCrudDialog: Iniciando...");
             await LoadDataAsync();
+            Console.WriteLine("✅ BaseCrudDialog: Datos cargados, MudDialog state: " + (MudDialog != null ? "OK" : "NULL"));
         }
         catch (Exception ex)
         {
@@ -78,8 +83,29 @@
         finally
         {
             loading = false;
-            await InvokeAsync(StateHasChanged);
+            // StateHasChanged es llamado automáticamente por Blazor al completar OnInitializedAsync
         }
+    }
+
+    // Parametro de cierre: hijos pueden notificar éxito o fallo
+    public void SignalClose(bool success)
+    {
+        if (MudDialog == null)
+        {
+            Console.WriteLine("⚠️ SignalClose: MudDialog es null");
+            return;
+        }
+        _closed = true;
+        if (success)
+            MudDialog.Close(DialogResult.Ok(true));
+        else
+            MudDialog.Close(DialogResult.Cancel());
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Console.WriteLine($"📌 BaseCrudDialog renderizado, loading={loading}");
+        base.OnAfterRender(firstRender);
     }
 
     protected virtual Task LoadDataAsync() => Task.CompletedTask;
@@ -90,7 +116,6 @@
         if (!OnConfirm.HasDelegate)
         {
             Console.WriteLine("⚠️ OnConfirm no tiene un handler asignado");
-            // Cerrar el diálogo de todas formas?
             Close(true);
             return;
         }
@@ -100,24 +125,34 @@
 
         try
         {
-            await OnConfirm.InvokeAsync();
+            await OnConfirm.InvokeAsync(true);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error en OnConfirm: {ex.Message}");
-            // Manejar el error si es necesario
         }
         finally
         {
             isProcessing = false;
-            StateHasChanged();
+            // Solo llamar StateHasChanged si el diálogo no fue cerrado durante la operación
+            if (!_closed)
+            {
+                StateHasChanged();
+            }
         }
     }
 
-    public void Cancelar() => MudDialog.Cancel();
+    public void Cancelar()
+    {
+        if (OnCancel.HasDelegate)
+            OnCancel.InvokeAsync(null);
+        else
+            MudDialog.Cancel();
+    }
 
     public void Close(bool success = true)
     {
+        _closed = true;
         if (success)
             MudDialog.Close(DialogResult.Ok(true));
         else

@@ -1,18 +1,14 @@
-﻿@page "/login"
+@page "/login"
 @using EG.Web.Auth
 @using EG.Web.Contracs
 @using EG.Web.Models
-@* @using EG.Web.Components.Layout *@
 @using EG.Web.Models.DTO
+@using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using MudBlazor
 
 
 @inject IJSRuntime _jsRuntime
-
-@* @inject LoginService LoginService
-@inject NavigationManager NavigationManager
-@inject ISnackbar Snackbar *@
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
     <MudPaper Class="pa-6 rounded-lg" Elevation="25">
@@ -33,7 +29,16 @@
                       OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" />
 
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-6 w-100"
-                   OnClick="HandleLogin">Iniciar Sesión</MudButton>
+                   OnClick="HandleLogin" Disabled="isLoading">
+            @if (isLoading)
+            {
+                <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <text>Iniciar Sesión</text>
+            }
+        </MudButton>
 
         <MudText Class="text-center mt-4">
             ¿No tienes cuenta? <MudLink Href="/register" Color="Color.Primary">Regístrate aquí</MudLink>
@@ -54,8 +59,13 @@
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Inject] private ILoginService LoginService { get; set; } = null!;
+    [Inject] private SucursalStateService SucursalStateService { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private bool isShow;
+    private bool isLoading = false;
+    private List<SucursalResponse> sucursalesUsuario = new();
+    
     private InputType PasswordInput = InputType.Password;
     private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
 
@@ -82,28 +92,63 @@
 
     private async Task HandleLogin()
     {
-
+        isLoading = true;
+        
         UserResult result = await LoginService.LoginAsync(login.Usuario, login.Password);
+        
         if (!result.PayrollId.Equals("0"))
         {
-            // Almacenar en localStorage (menos seguro que ProtectedLocalStorage)
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
-
-            Snackbar.Add("¡Bienvenido!", Severity.Success);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
 
             await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
-            NavigationManager.NavigateTo("/");
-            // Espera 100ms
-            await Task.Delay(100);
+            sucursalesUsuario = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
 
-            // Recarga la página usando JavaScript interop
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            if (sucursalesUsuario.Count > 1)
+            {
+                var parameters = new DialogParameters<SelectSucursalDialog>
+                {
+                    { x => x.Sucursales, sucursalesUsuario }
+                };
+                
+                var options = new DialogOptions 
+                { 
+                    CloseOnEscapeKey = false
+                };
+                
+                var dialog = await DialogService.Show<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options).Result;
+                
+                if (dialog.Canceled)
+                {
+                    isLoading = false;
+                    return;
+                }
+                
+                var selectedSucursal = dialog.Data as SucursalResponse;
+                if (selectedSucursal != null)
+                {
+                    Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.Nombre}", Severity.Success);
+                    NavigationManager.NavigateTo("/", forceLoad: true);
+                }
+            }
+            else if (sucursalesUsuario.Count == 1)
+            {
+                await SucursalStateService.SetSucursalAsync(sucursalesUsuario[0].PkidSucursal, sucursalesUsuario[0].Nombre);
+                Snackbar.Add("¡Bienvenido!", Severity.Success);
+                NavigationManager.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                Snackbar.Add("No tienes sucursales asignadas. Contacta al administrador.", Severity.Warning);
+            }
         }
         else
         {
             Snackbar.Add("Correo o contraseña incorrectos.", Severity.Error);
         }
+        
+        isLoading = false;
     }
 }

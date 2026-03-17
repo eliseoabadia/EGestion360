@@ -1,4 +1,5 @@
-﻿@using MudBlazor
+@using MudBlazor
+@using EG.Web.Pages.Shared
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Services.Configuration
@@ -7,12 +8,12 @@
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="DepartamentoResponse"
-                @ref="dialog"
-                MaxWidth="MaxWidth.Small"
-                ActionText="@actionText"
-                ProcessingText="@processingText"
-                LoadingMessage="Cargando datos del departamento..."
-                OnConfirm="GuardarCambiosAsync">
+                 @ref="dialog"
+                 MaxWidth="MaxWidth.Small"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos del departamento..."
+                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="DepartamentoResponse"
                     @ref="form"
@@ -166,7 +167,7 @@
             yield return "El nombre no puede exceder los 100 caracteres";
     }
 
-    private async Task GuardarCambiosAsync()
+    private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
         {
@@ -210,7 +211,7 @@
                     $"✅ Departamento {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
 
                 Snackbar.Add(message, Severity.Success);
-                dialog.Close(true);
+                dialog?.SignalClose(true);
             }
             else
             {

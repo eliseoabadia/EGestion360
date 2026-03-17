@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@inject SucursalStateService SucursalStateService
+@inject IJSRuntime JSRuntime
 
 <link href="css/menu-overlays.css" rel="stylesheet" />
 <script src="~/js/download.js"></script>
@@ -11,44 +13,68 @@
 
 <MudLayout>
     <MudAppBar Elevation="1" Class="app-bar">
-        <MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
-                       Color="Color.Inherit"
-                       Edge="Edge.Start"
-                       OnClick="@((e) => DrawerToggle())" />
+        @if (!esPaginaLogin)
+        {
+            <MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
+                           Color="Color.Inherit"
+                           Edge="Edge.Start"
+                           OnClick="@((e) => DrawerToggle())" />
+        }
         <MudText Typo="Typo.h5" Class="ml-3 app-title">GE.WebApp</MudText>
         <MudSpacer />
 
-        <!-- Selector único con las tres opciones -->
-        <MudMenu Icon="@Icons.Material.Filled.ColorLens"
-                 Color="Color.Inherit"
-                 AnchorOrigin="Origin.TopRight"
-                 TransformOrigin="Origin.TopRight"
-                 Class="theme-menu">
-            @foreach (var option in Enum.GetValues<ThemeOption>())
-            {
-                <MudMenuItem OnClick="@(() => SelectThemeOption(option))">
-                    <div class="d-flex align-center">
-                        @if (option == ThemeOption.Claro)
-                        {
-                            <MudIcon Icon="@Icons.Material.Outlined.LightMode" Class="mr-2" Size="Size.Small" />
-                        }
-                        else if (option == ThemeOption.Oscuro)
-                        {
-                            <MudIcon Icon="@Icons.Material.Outlined.DarkMode" Class="mr-2" Size="Size.Small" />
-                        }
-                        else if (option == ThemeOption.Morena)
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.Park" Class="mr-2" Size="Size.Small" Style="color: #8B4513;" />
-                        }
-                        @option.ToString()
-                    </div>
-                </MudMenuItem>
-            }
-        </MudMenu>
+        @if (!esPaginaLogin)
+        {
+            <!-- Información del usuario y sucursal -->
+            <div class="d-flex align-center mr-4">
+                <MudChip T="string" Color="Color.Primary" 
+                         Variant="Variant.Outlined" 
+                         Size="Size.Small"
+                         Icon="@Icons.Material.Filled.Store"
+                         Class="mr-2">
+                    @(SucursalStateService.SucursalNombre ?? "Sin sucursal")
+                </MudChip>
+                
+                <MudChip T="string" Color="Color.Default" 
+                         Variant="Variant.Text" 
+                         Size="Size.Small"
+                         Icon="@Icons.Material.Filled.Person">
+                    @nombreUsuario
+                </MudChip>
+            </div>
 
-        <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopRight">
-            <MudMenuItem OnClick="@Logout">Cerrar sesión</MudMenuItem>
-        </MudMenu>
+            <!-- Selector único con las tres opciones -->
+            <MudMenu Icon="@Icons.Material.Filled.ColorLens"
+                     Color="Color.Inherit"
+                     AnchorOrigin="Origin.TopRight"
+                     TransformOrigin="Origin.TopRight"
+                     Class="theme-menu">
+                @foreach (var option in Enum.GetValues<ThemeOption>())
+                {
+                    <MudMenuItem OnClick="@(() => SelectThemeOption(option))">
+                        <div class="d-flex align-center">
+                            @if (option == ThemeOption.Claro)
+                            {
+                                <MudIcon Icon="@Icons.Material.Outlined.LightMode" Class="mr-2" Size="Size.Small" />
+                            }
+                            else if (option == ThemeOption.Oscuro)
+                            {
+                                <MudIcon Icon="@Icons.Material.Outlined.DarkMode" Class="mr-2" Size="Size.Small" />
+                            }
+                            else if (option == ThemeOption.Morena)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Park" Class="mr-2" Size="Size.Small" Style="color: #8B4513;" />
+                            }
+                            @option.ToString()
+                        </div>
+                    </MudMenuItem>
+                }
+            </MudMenu>
+
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopRight">
+                <MudMenuItem OnClick="@Logout">Cerrar sesión</MudMenuItem>
+            </MudMenu>
+        }
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen"
@@ -87,6 +113,53 @@
     private bool _isDarkMode = true; // true = oscuro, false = claro
     private string _selectedTheme = "default"; // "default" o "morena"
     private MudTheme _theme = new MudTheme(); // Inicializamos aquí
+    private string nombreUsuario = "Usuario";
+    private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        // Inicializar con el tema por defecto (Oscuro)
+        OnThemeOptionChanged();
+        
+        // Cargar información del usuario
+        await CargarUsuarioAsync();
+        
+        // Inicializar servicio de sucursal
+        await SucursalStateService.InitializeAsync();
+        
+        // Suscribirse a cambios de sucursal
+        SucursalStateService.OnSucursalChanged += OnSucursalChanged;
+    }
+
+    private async Task CargarUsuarioAsync()
+    {
+        try
+        {
+            var userName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName");
+            if (!string.IsNullOrEmpty(userName))
+            {
+                nombreUsuario = userName;
+            }
+            else
+            {
+                var userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    nombreUsuario = $"ID: {userId}";
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error, usar valor por defecto
+        }
+    }
+
+    private void OnSucursalChanged(int sucursalId, string sucursalNombre)
+    {
+        StateHasChanged();
+    }
 
     private async Task Logout()
     {
@@ -120,13 +193,6 @@
         }
 
         LoadTheme();
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        // Inicializar con el tema por defecto (Oscuro)
-        OnThemeOptionChanged();
     }
 
     private void LoadTheme()

@@ -301,7 +301,7 @@
         return iniciales.Length > 3 ? iniciales.Substring(0, 3) : iniciales;
     }
 
-    private async Task GuardarCambiosAsync()
+    private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
         {
@@ -340,7 +340,7 @@
                     $"✅ Usuario {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
 
                 Snackbar.Add(message, Severity.Success);
-                dialog.Close(true);
+                dialog?.SignalClose(true);
             }
             else
             {

@@ -28,6 +28,10 @@ namespace EG.Business.Mapping.ConteoCiclico
 
             // VwBien -> BienResponse
             CreateMap<VwBien, BienResponse>();
+
+            // BienResponse -> BienDto (para Create/Update desde el frontend)
+            CreateMap<BienResponse, BienDto>()
+                .ForMember(dest => dest.PkidBien, opt => opt.MapFrom(src => src.PkidBien));
         }
     }
 }

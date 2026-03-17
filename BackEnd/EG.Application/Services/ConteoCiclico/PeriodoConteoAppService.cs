@@ -325,12 +325,20 @@ namespace EG.Application.Services.ConteoCiclico
             if (id <= 0)
                 throw new ArgumentException("ID de periodo inválido", nameof(id));
 
-            // Verificar si el periodo ya está cerrado
-            var periodoExistente = await _service.GetByIdAsync(id, idPropertyName: "PkidPeriodoConteo");
+            // Obtener la entidad directamente para preservar valores de auditoría
+            var query = _service.GetQueryWithIncludes(p => p.PkidPeriodoConteo == id);
+            var periodoExistente = await Task.Run(() => query.FirstOrDefault());
+            
             if (periodoExistente == null)
                 throw new InvalidOperationException("Periodo no encontrado");
             if (periodoExistente.FechaCierre.HasValue)
                 throw new InvalidOperationException("No se puede modificar un periodo cerrado");
+
+            // Preservar valores originales de auditoría
+            dto.FechaCreacion = periodoExistente.FechaCreacion;
+            dto.UsuarioCreacion = periodoExistente.UsuarioCreacion;
+
+            dto.FkidSupervisorSis = dto.FkidSupervisorSis.Value > 0? dto.FkidSupervisorSis.Value : null;
 
             dto.PkidPeriodoConteo = id;
             dto.FechaModificacion = DateTime.Now;

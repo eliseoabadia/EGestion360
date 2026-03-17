@@ -1,4 +1,5 @@
-﻿using EG.Application.Interfaces.General;
+﻿using AutoMapper;
+using EG.Application.Interfaces.General;
 using EG.ApiCore.Services;
 using EG.Domain.DTOs.Requests.General;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,13 @@ namespace EG.ApiCore.Controllers.General
     {
         private readonly IEmpresaAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
-        public EmpresaController(IEmpresaAppService appService, IUserContextService userContext)
+        public EmpresaController(IEmpresaAppService appService, IUserContextService userContext, IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -73,10 +76,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPost]
-        public async Task<ActionResult<EmpresaResponse>> Create([FromBody] EmpresaDto dto)
+        public async Task<ActionResult<EmpresaResponse>> Create([FromBody] EmpresaResponse response)
         {
             try
             {
+                var dto = _mapper.Map<EmpresaDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(dto, usuarioActual);
                 return CreatedAtAction(nameof(GetById), new { id = result.PkidEmpresa }, new { success = true, data = result });
@@ -100,10 +104,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<EmpresaResponse>> Update(int id, [FromBody] EmpresaDto dto)
+        public async Task<ActionResult<EmpresaResponse>> Update(int id, [FromBody] EmpresaResponse response)
         {
             try
             {
+                var dto = _mapper.Map<EmpresaDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, dto, usuarioActual);
                 return Ok(new { success = true, data = result });

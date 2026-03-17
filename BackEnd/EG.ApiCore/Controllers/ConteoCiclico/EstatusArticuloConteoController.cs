@@ -1,4 +1,5 @@
-﻿using EG.ApiCore.Services;
+﻿using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
@@ -16,13 +17,16 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(EstatusArticuloConteoController));
         private readonly IEstatusArticuloConteoAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public EstatusArticuloConteoController(
             IEstatusArticuloConteoAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -97,10 +101,11 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<EstatusArticuloConteoResponse>>> Create([FromBody] EstatusArticuloConteoDto dto)
+        public async Task<ActionResult<PagedResult<EstatusArticuloConteoResponse>>> Create([FromBody] EstatusArticuloConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<EstatusArticuloConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(dto, usuarioActual);
 
@@ -156,10 +161,11 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<EstatusArticuloConteoResponse>>> Update(int id, [FromBody] EstatusArticuloConteoDto dto)
+        public async Task<ActionResult<PagedResult<EstatusArticuloConteoResponse>>> Update(int id, [FromBody] EstatusArticuloConteoResponse response)
         {
             try
             {
+                var dto = _mapper.Map<EstatusArticuloConteoDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, dto, usuarioActual);
 

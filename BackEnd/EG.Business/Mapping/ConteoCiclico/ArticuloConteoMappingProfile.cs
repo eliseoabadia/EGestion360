@@ -38,6 +38,15 @@ namespace EG.Business.Mapping.ConteoCiclico
 
             // VwArticuloConteo -> VwArticuloConteoResponse
             CreateMap<VwArticuloConteo, ArticuloConteoResponse>();
+
+            // ArticuloConteoResponse -> ArticuloConteoDto (para Create/Update desde el frontend)
+            CreateMap<ArticuloConteoResponse, ArticuloConteoDto>()
+                .ForMember(dest => dest.PkidArticuloConteo, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FkidPeriodoConteoAlma, opt => opt.MapFrom(src => src.PeriodoId))
+                .ForMember(dest => dest.FkidBienAlma, opt => opt.MapFrom(src => src.BienId))
+                .ForMember(dest => dest.FkidSucursalSis, opt => opt.MapFrom(src => src.SucursalId))
+                .ForMember(dest => dest.FkidEstatusAlma, opt => opt.MapFrom(src => src.EstatusId))
+                .ForMember(dest => dest.FkidUsuarioConcluyoSis, opt => opt.MapFrom(src => src.UsuarioConcluyoId));
         }
     }
 }

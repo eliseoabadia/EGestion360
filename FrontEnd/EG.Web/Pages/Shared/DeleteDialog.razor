@@ -2,12 +2,12 @@
 @typeparam TItem
 
 <BaseCrudDialog TItem="TItem"
-                @ref="dialog"
-                MaxWidth="MaxWidth.Small"
-                ActionColor="Color.Error"
-                ActionIcon="@Icons.Material.Filled.Delete"
-                ActionText="Eliminar"
-                ProcessingText="Eliminando..."
+                 @ref="dialog"
+                 MaxWidth="MaxWidth.Small"
+                 ActionColor="Color.Error"
+                 ActionIcon="@Icons.Material.Filled.Delete"
+                 ActionText="Eliminar"
+                 ProcessingText="Eliminando..."
                 LoadingMessage="Cargando..."
                 CanConfirm="!isDeleted"
                 OnConfirm="Eliminar">
@@ -31,10 +31,12 @@
     [Parameter] public string? ItemName { get; set; }
     [Parameter] public Func<int, Task<bool>>? DeleteFunc { get; set; }
 
+    [Parameter] public TItem? ItemPayload { get; set; }
     private BaseCrudDialog<TItem> dialog = null!;
     private bool isDeleted = false;
 
-    private async Task Eliminar()
+
+    private async Task Eliminar(bool _)
     {
         Console.WriteLine("🗑️ Eliminar llamado");
         if (DeleteFunc == null)
@@ -52,7 +54,7 @@
             {
                 Console.WriteLine("✅ Eliminación exitosa, cerrando diálogo");
                 isDeleted = true;
-                dialog.Close(true);
+                dialog?.SignalClose(true);
             }
         }
         catch (Exception ex)

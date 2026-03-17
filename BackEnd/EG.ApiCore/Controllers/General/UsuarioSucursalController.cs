@@ -133,6 +133,7 @@ namespace EG.ApiCore.Controllers.General
         /// Obtiene todas las sucursales asignadas a un usuario
         /// </summary>
         [HttpGet("usuario/{usuarioId}")]
+        [AllowAnonymous]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetByUsuario(int usuarioId)
         {
             try

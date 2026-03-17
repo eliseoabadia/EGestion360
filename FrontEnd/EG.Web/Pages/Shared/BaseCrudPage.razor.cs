@@ -174,13 +174,26 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
+        Console.WriteLine("🔄 Abriendo diálogo de crear...");
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}",
             new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
 
+        Console.WriteLine("⏳ Esperando resultado del diálogo...");
         var result = await dialog.Result;
-        if (!result!.Canceled)
+        
+        if (result == null)
         {
+            Console.WriteLine("⚠️ Resultado es null");
+            return;
+        }
+        
+        Console.WriteLine($"📋 Resultado del diálogo: Canceled={result.Canceled}");
+        
+        if (!result.Canceled)
+        {
+            Console.WriteLine("🔄 Recargando datos...");
             await ReloadData();
+            Console.WriteLine("✅ Datos recargados");
         }
     }
 
@@ -192,14 +205,27 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
+        Console.WriteLine($"🔄 Abriendo diálogo de editar para ID: {id}");
         var parameters = new DialogParameters { ["Id"] = id };
         var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
             new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
 
+        Console.WriteLine("⏳ Esperando resultado del diálogo...");
         var result = await dialog.Result;
-        if (!result!.Canceled)
+        
+        if (result == null)
         {
+            Console.WriteLine("⚠️ Resultado es null");
+            return;
+        }
+        
+        Console.WriteLine($"📋 Resultado del diálogo: Canceled={result.Canceled}, Data={result.Data}");
+
+        if (!result.Canceled)
+        {
+            Console.WriteLine("🔄 Recargando datos...");
             await ReloadData();
+            Console.WriteLine("✅ Datos recargados");
         }
     }
 

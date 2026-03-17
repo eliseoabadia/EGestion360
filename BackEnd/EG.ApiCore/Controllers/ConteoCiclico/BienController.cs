@@ -5,6 +5,7 @@ using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 namespace EG.ApiCore.Controllers.ConteoCiclico
 {
@@ -16,13 +17,16 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(BienController));
         private readonly IBienAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public BienController(
             IBienAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -192,10 +196,11 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<BienResponse>>> Create([FromBody] BienDto dto)
+        public async Task<ActionResult<PagedResult<BienResponse>>> Create([FromBody] BienResponse response)
         {
             try
             {
+                var dto = _mapper.Map<BienDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(dto, usuarioActual);
                 return Ok(new PagedResult<BienResponse>
@@ -222,10 +227,11 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<BienResponse>>> Update(int id, [FromBody] BienDto dto)
+        public async Task<ActionResult<PagedResult<BienResponse>>> Update(int id, [FromBody] BienResponse response)
         {
             try
             {
+                var dto = _mapper.Map<BienDto>(response);
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, dto, usuarioActual);
                 return Ok(new PagedResult<BienResponse>

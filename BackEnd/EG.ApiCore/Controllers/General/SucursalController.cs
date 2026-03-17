@@ -285,10 +285,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<SucursalResponse>>> Create([FromBody] SucursalDto dto)
+        public async Task<ActionResult<PagedResult<SucursalResponse>>> Create([FromBody] SucursalResponse response)
         {
             try
             {
+                var dto = _mapper.Map<SucursalDto>(response);
                 ConfigureValidations();
 
                 if (!await _service.CanAddAsync(dto))
@@ -326,10 +327,11 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<SucursalResponse>>> Update(int id, [FromBody] SucursalDto dto)
+        public async Task<ActionResult<PagedResult<SucursalResponse>>> Update(int id, [FromBody] SucursalResponse response)
         {
             try
             {
+                var dto = _mapper.Map<SucursalDto>(response);
                 dto.PkidSucursal = id;
                 ConfigureValidations();
 
