@@ -87,8 +87,8 @@ namespace EG.Web.Services
                 : _paginatedAction;
 
             var response = await PostAsync<ApiResponse<TResponse>>(
-                $"{_endpoint}/{action}/",
-                pagedRequest,  // Enviar objeto anónimo
+                $"{_endpoint}/{action}",
+                pagedRequest,
                 useBaseUrl: false);
 
             return response ?? new ApiResponse<TResponse>();
@@ -123,7 +123,7 @@ namespace EG.Web.Services
             }
 
             var response = await PutAsync<ApiResponse<TResponse>>(
-                $"{_endpoint}/{id}/",
+                $"{_endpoint}/{id}",
                 entity,
                 useBaseUrl: false);
 
@@ -141,7 +141,7 @@ namespace EG.Web.Services
                 return new ApiResponse<TResponse>();
 
             var response = await DeleteAsync<ApiResponse<TResponse>>(
-                $"{_endpoint}/{id}/",
+                $"{_endpoint}/{id}",
                 useBaseUrl: false);
 
             return response ?? new ApiResponse<TResponse>

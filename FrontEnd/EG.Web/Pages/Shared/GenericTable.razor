@@ -98,7 +98,8 @@
                            ShowFirstLastPage="true"
                            ShowPageSizeSelector="true"
                            ShowPaginationText="true"
-                           PaginationTextFormat="Página {0} de {1}" />
+                           PaginationTextFormat="Página {0} de {1}"
+                           Disabled="@isLoading" />
         </PagerContent>
     </MudTable>
 </MudPaper>
@@ -135,14 +136,23 @@
 
     private MudTable<TItem> mudTableRef = new();
     private MudTextField<string> searchField = new();
+    private bool isLoading = false;
 
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
-        if (ServerDataFunc != null)
+        isLoading = true;
+        try
         {
-            return await ServerDataFunc(state, cancellationToken);
+            if (ServerDataFunc != null)
+            {
+                return await ServerDataFunc(state, cancellationToken);
+            }
+            return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
         }
-        return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async void HandleKeyUp(KeyboardEventArgs args)

@@ -52,7 +52,7 @@ namespace EG.ApiCore.Extensions
             services.AddScoped<IBienAppService, BienAppService>();
 
             // ===== SERVICIOS DE APLICACIÓN - ALMACÉN =====
-            services.AddScoped<ITipoBienService, TipoBienService>();
+            services.AddScoped<ITipoBienAppService, TipoBienAppService>();
             services.AddScoped<IFamiliaService, FamiliaService>();
             services.AddScoped<IBienAppService, BienAppService>();
 
