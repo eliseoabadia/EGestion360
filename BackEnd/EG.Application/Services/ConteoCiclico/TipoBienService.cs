@@ -3,6 +3,7 @@ using EG.Application.Interfaces.ConteoCiclico;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
+using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
 

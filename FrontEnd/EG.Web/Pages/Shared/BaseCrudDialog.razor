@@ -1,7 +1,15 @@
 @using MudBlazor
 @typeparam TItem
 
-<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="false">
+<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true">
+    <TitleContent>
+        <div class="d-flex align-center justify-space-between">
+            <MudText Typo="Typo.h6">@Title</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                         OnClick="Cancelar" 
+                         Disabled="@isProcessing" />
+        </div>
+    </TitleContent>
     <DialogContent>
         <!-- Overlay de carga global -->
         <MudOverlay Visible="@loading" Fixed="true" ZIndex="10">
@@ -50,6 +58,7 @@
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public MaxWidth MaxWidth { get; set; } = MaxWidth.Medium;
     [Parameter] public Color ActionColor { get; set; } = Color.Primary;
     [Parameter] public string ActionIcon { get; set; } = Icons.Material.Filled.Save;
@@ -70,21 +79,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            Console.WriteLine("🔄 BaseCrudDialog: Iniciando...");
-            await LoadDataAsync();
-            Console.WriteLine("✅ BaseCrudDialog: Datos cargados, MudDialog state: " + (MudDialog != null ? "OK" : "NULL"));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error en diálogo: {ex.Message}");
-        }
-        finally
-        {
-            loading = false;
-            // StateHasChanged es llamado automáticamente por Blazor al completar OnInitializedAsync
-        }
+        // No ejecutar LoadDataAsync aquí para evitar ejecución doble
+        // El loading se maneja en OnAfterRender o manualmente
+        loading = false;
+        Console.WriteLine("✅ BaseCrudDialog: Listo para mostrar");
     }
 
     // Parametro de cierre: hijos pueden notificar éxito o fallo
@@ -151,9 +149,9 @@
 
     public void Cancelar()
     {
-        Console.WriteLine("🔔 Cancelar llamado");
+        Console.WriteLine("🔔 Cancelar llamado - cerrando diálogo");
         _closed = true;
-        MudDialog.Cancel();
+        MudDialog.Close(DialogResult.Cancel());
     }
 
     public void Close(bool success = true)

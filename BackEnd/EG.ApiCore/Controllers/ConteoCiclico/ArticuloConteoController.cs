@@ -1,11 +1,12 @@
-﻿using EG.ApiCore.Services;
+﻿using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.DTOs.Responses.General;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
 
 namespace EG.ApiCore.Controllers.ConteoCiclico
 {
@@ -92,7 +93,14 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
             try
             {
                 var result = await _appService.GetAllPaginadoAsync(pageRequest);
-                return Ok(result);
+                return Ok(new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = "Departamentos obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                });
             }
             catch (Exception ex)
             {

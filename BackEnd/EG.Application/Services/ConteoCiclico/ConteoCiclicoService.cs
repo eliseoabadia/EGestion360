@@ -4,6 +4,7 @@ using EG.Application.Interfaces.ConteoCiclico;
 using EG.Business.Services;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Requests.ConteoCiclico.EG.Domain.DTOs.ConteoCiclico;
+using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;

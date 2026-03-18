@@ -53,10 +53,11 @@
         return mudForm.IsValid;
     }
     
-    public void ResetValidation()
-    {
-        mudForm.ResetValidation();
-    }
+    // ResetValidation no está disponible en MudForm de MudBlazor 8
+    // public void ResetValidation()
+    // {
+    //     mudForm.Reset();
+    // }
     
     // Método para validación asíncrona personalizada
     public async Task<bool> ValidateWithCustomRules(Func<Task<bool>> customValidation)

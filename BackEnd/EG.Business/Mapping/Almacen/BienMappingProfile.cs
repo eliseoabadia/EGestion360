@@ -1,6 +1,6 @@
 using AutoMapper;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
-using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.DTOs.Responses.Almacen;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Almacen
@@ -9,15 +9,10 @@ namespace EG.Business.Mapping.Almacen
     {
         public BienMappingProfile()
         {
-            // Mapeo bidireccional entre entidad Bien y su DTO de solicitud
-            CreateMap<Bien, BienDto>().ReverseMap();
+            // Entity → Response (using view model)
+            CreateMap<VwBien, BienResponse>().ReverseMap();
 
-            // Mapeo de la vista VwBien al DTO de respuesta
-            CreateMap<VwBien, BienResponse>();
-
-            // Opcional: mapeo directo desde Bien (con includes) a BienResponse
-            // Esto podría ser útil si se necesita usar la entidad directamente en lugar de la vista.
-            
+            // Entity → Response (using navigation properties, if not using view)
             CreateMap<Bien, BienResponse>()
                 .ForMember(dest => dest.GrupoBienDescripcion, opt => opt.MapFrom(src => src.FkidGrupoBienAlmaNavigation != null ? src.FkidGrupoBienAlmaNavigation.Descripcion : null))
                 .ForMember(dest => dest.GrupoBienClave, opt => opt.MapFrom(src => src.FkidGrupoBienAlmaNavigation != null ? src.FkidGrupoBienAlmaNavigation.Clave : null))
@@ -39,10 +34,30 @@ namespace EG.Business.Mapping.Almacen
                 .ForMember(dest => dest.MaterialDescripcion, opt => opt.MapFrom(src => src.FkidMaterialAlmaNavigation != null ? src.FkidMaterialAlmaNavigation.Descripcion : null))
                 .ForMember(dest => dest.TipoAdquisicionClave, opt => opt.MapFrom(src => src.FkidTipoAdqAlmaNavigation != null ? src.FkidTipoAdqAlmaNavigation.Clave : null))
                 .ForMember(dest => dest.TipoAdquisicionDescripcion, opt => opt.MapFrom(src => src.FkidTipoAdqAlmaNavigation != null ? src.FkidTipoAdqAlmaNavigation.Descripcion : null))
-                //.ForMember(dest => dest.tipoa, opt => opt.MapFrom(src => src.FkidTipoAdqAlmaNavigation != null ? src.FkidTipoAdqAlmaNavigation.DescripcionMovto : null))
+                //.ForMember(dest => dest.TipoAdquisicionDescripcionMovto, opt => opt.MapFrom(src => src.FkidTipoAdqAlmaNavigation != null ? src.FkidTipoAdqAlmaNavigation.DescripcionMovto : null))
                 .ForMember(dest => dest.PartidaClave, opt => opt.MapFrom(src => src.FkidPartidaContaNavigation != null ? src.FkidPartidaContaNavigation.Clave : null))
                 .ForMember(dest => dest.PartidaDescripcion, opt => opt.MapFrom(src => src.FkidPartidaContaNavigation != null ? src.FkidPartidaContaNavigation.Descripcion : null));
-            
+
+            // Request DTO → Entity (for create/update)
+            CreateMap<BienDto, Bien>()
+                .ForMember(dest => dest.ArticuloConteos, opt => opt.Ignore()) // Ignore collections
+                .ForMember(dest => dest.FkidAreaSisNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidEstadoBienAlmaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidGrupoBienAlmaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidMarcaAlmaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidMaterialAlmaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidPartidaContaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidProveedorSisNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidTipoAdqAlmaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidTipoBienAlmaNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidTipoPatrimonioAlmaNavigation, opt => opt.Ignore());
+
+            // Optional: Reverse map for updates if needed (e.g., from entity to DTO for response after update)
+            // CreateMap<Bien, BienDto>();
+
+            // Optional: Map from DTO to view model if needed
+            // CreateMap<BienDto, VwBien>();
+
         }
     }
 }

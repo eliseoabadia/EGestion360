@@ -66,7 +66,12 @@ namespace EG.ApiCore.Controllers.Almacen
             try
             {
                 var result = await _bienAppService.GetAllPaginadoAsync(pageRequest);
-                return Ok(result);
+                return new PagedResult<BienResponse>
+                {
+                    Success = true,
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
             }
             catch (Exception ex)
             {

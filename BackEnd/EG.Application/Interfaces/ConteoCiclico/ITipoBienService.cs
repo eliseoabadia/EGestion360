@@ -1,6 +1,6 @@
 ﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
-using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.DTOs.Responses.Almacen;
 
 namespace EG.Application.Interfaces.ConteoCiclico
 {

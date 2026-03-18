@@ -118,15 +118,16 @@
                     CloseOnEscapeKey = false
                 };
                 
-                var dialog = await DialogService.Show<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options).Result;
+                var dialog = await DialogService.ShowAsync<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options);
+                var dialogResult = await dialog.Result;
                 
-                if (dialog.Canceled)
+                if (dialogResult.Canceled)
                 {
                     isLoading = false;
                     return;
                 }
                 
-                var selectedSucursal = dialog.Data as SucursalResponse;
+                var selectedSucursal = dialogResult.Data as SucursalResponse;
                 if (selectedSucursal != null)
                 {
                     Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.Nombre}", Severity.Success);

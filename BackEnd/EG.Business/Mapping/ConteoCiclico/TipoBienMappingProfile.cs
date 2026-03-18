@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
-using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.DTOs.Responses.Almacen;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.ConteoCiclico
