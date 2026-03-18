@@ -21,7 +21,7 @@
                         <MudButton Variant="Variant.Text"
                                    Color="Color.Secondary"
                                    Class="mr-2"
-                                   OnClick="Cancelar"
+                                   OnClick="@(() => { Console.WriteLine("🔔 Click en Cancelar"); Cancelar(); })"
                                    Disabled="@isProcessing">
                             Cancelar
                         </MudButton>
@@ -90,6 +90,7 @@
     // Parametro de cierre: hijos pueden notificar éxito o fallo
     public void SignalClose(bool success)
     {
+        Console.WriteLine($"🔔 SignalClose llamado con success={success}, MudDialog null? {MudDialog == null}");
         if (MudDialog == null)
         {
             Console.WriteLine("⚠️ SignalClose: MudDialog es null");
@@ -97,9 +98,15 @@
         }
         _closed = true;
         if (success)
+        {
+            Console.WriteLine("✅ Cerrando diálogo con Ok");
             MudDialog.Close(DialogResult.Ok(true));
+        }
         else
+        {
+            Console.WriteLine("✅ Cerrando diálogo con Cancel");
             MudDialog.Close(DialogResult.Cancel());
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -144,10 +151,9 @@
 
     public void Cancelar()
     {
-        if (OnCancel.HasDelegate)
-            OnCancel.InvokeAsync(null);
-        else
-            MudDialog.Cancel();
+        Console.WriteLine("🔔 Cancelar llamado");
+        _closed = true;
+        MudDialog.Cancel();
     }
 
     public void Close(bool success = true)

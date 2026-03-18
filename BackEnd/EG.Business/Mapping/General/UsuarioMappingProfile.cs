@@ -23,14 +23,7 @@ namespace EG.Business.Mapping.General
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.NombreEmpresa, opt => opt.MapFrom(src => src.NombreEmpresa))
                 .ForMember(dest => dest.RfcEmpresa, opt => opt.MapFrom(src => src.RfcEmpresa))
-                .ForMember(dest => dest.RolPrincipal, opt => opt.MapFrom(src => src.RolPrincipal ?? "Usuario"))
-                .ForMember(dest => dest.UsuarioActivo, opt => opt.MapFrom(src => src.UsuarioActivo))
-                //.ForMember(dest => dest.TotalSucursales, opt => opt.MapFrom(src => src.TotalSucursales ?? 0))
-                .ForMember(dest => dest.TotalDepartamentos, opt => opt.MapFrom(src => src.TotalDepartamentos ?? 0))
-
-                // Ignorar el resto para mejorar rendimiento
-                //.ForAllOtherMembers(opt => opt.Ignore())
-                ;
+                .ForMember(dest => dest.UsuarioActivo, opt => opt.MapFrom(src => src.UsuarioActivo));
             // Mapeo para la vista VwUsuarioEmpresa a UsuarioDto
             CreateMap<VwUsuarioEmpresa, UsuarioDto>()
                 .ForMember(dest => dest.PkIdUsuario, opt => opt.MapFrom(src => src.PkIdUsuario))

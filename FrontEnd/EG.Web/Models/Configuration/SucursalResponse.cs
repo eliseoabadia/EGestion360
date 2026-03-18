@@ -14,7 +14,9 @@
 
         public string Alias { get; set; }
 
-        public int TipoSucursal { get; set; }
+        public int FkidTipoSucursal { get; set; }
+
+        public int? FkidMonedaLocalSis { get; set; }
 
         public string Direccion { get; set; }
 
@@ -42,9 +44,15 @@
 
         public decimal? Longitud { get; set; }
 
-        public decimal? MetrosCuadrados { get; set; }
+        public string NombreEmpresa { get; set; }
 
-        public int? CapacidadPersonas { get; set; }
+        public string Rfc { get; set; }
+
+        public string NombreEstado { get; set; }
+
+        public string CodigoEstado { get; set; }
+
+        public string NombrePais { get; set; }
 
         public bool Activo { get; set; }
 

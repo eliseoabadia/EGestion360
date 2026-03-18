@@ -118,4 +118,8 @@ public partial class ArticuloConteoResponse
 
     public string AreaClave { get; set; }
 
+    public int UsuarioCreacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
+
 }

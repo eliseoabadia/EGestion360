@@ -7,7 +7,6 @@
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EmpresaResponse"
-                @ref="dialog"
                 MaxWidth="MaxWidth.Small"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
@@ -92,9 +91,9 @@
 </BaseCrudDialog>
 
 @code {
-    [Parameter] public int? Id { get; set; }  // CORREGIDO: Ahora usa Id
+    [Parameter] public int? Id { get; set; }
 
-    private BaseCrudDialog<EmpresaResponse> dialog = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
     
     private BaseEntityForm<EmpresaResponse> form = null!;
     private EmpresaResponse empresa = new() { EmpresaActivo = true };
@@ -104,10 +103,10 @@
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
-    private Converter<string> rfcConverter = new Converter<string>
-    {
-        SetFunc = value => value?.ToUpperInvariant()
-    };
+    // private Converter<string> rfcConverter = new Converter<string>
+    // {
+    //     SetFunc = value => value?.ToUpperInvariant()
+    // };
 
     protected override async Task OnInitializedAsync()
     {
@@ -249,7 +248,7 @@
                     $"✅ Empresa {(Id.HasValue ? "actualizada" : "creada")} exitosamente";
 
                 Snackbar.Add(message, Severity.Success);
-                dialog?.SignalClose(true);
+                MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {

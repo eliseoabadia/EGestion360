@@ -8,12 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise.Snackbar" Version="1.8.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0" PrivateAssets="all" />
-    <PackageReference Include="MiniExcel" Version="1.42.0" />
-    <PackageReference Include="MudBlazor" Version="8.15.0" />
+    <PackageReference Include="Blazorise.Snackbar" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.5" PrivateAssets="all" />
+    <PackageReference Include="MiniExcel" Version="1.43.0" />
+    <PackageReference Include="MudBlazor" Version="9.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Models\DTO\Configuration\" />
+    <Folder Include="Services\Almacen\" />
   </ItemGroup>
 
 </Project>

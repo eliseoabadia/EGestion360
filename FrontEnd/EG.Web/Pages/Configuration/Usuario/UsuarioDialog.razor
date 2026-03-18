@@ -7,7 +7,6 @@
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="UsuarioResponse"
-                @ref="dialog"
                 MaxWidth="MaxWidth.Large"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
@@ -184,7 +183,8 @@
 @code {
     [Parameter] public int? Id { get; set; }
 
-    private BaseCrudDialog<UsuarioResponse> dialog = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    
     private BaseEntityForm<UsuarioResponse> form = null!;
     private UsuarioResponse usuario = new() { UsuarioActivo = true };
     private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
@@ -340,7 +340,7 @@
                     $"✅ Usuario {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
 
                 Snackbar.Add(message, Severity.Success);
-                dialog?.SignalClose(true);
+                MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {

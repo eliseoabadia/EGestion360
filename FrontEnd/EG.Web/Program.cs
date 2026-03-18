@@ -3,6 +3,7 @@ using EG.Web;
 using EG.Web.Auth;
 using EG.Web.Contracs;
 using EG.Web.Contracs.Configuration;
+using EG.Web.Contracs.Almacen;
 using EG.Web.Contracs.ConteoCiclico;
 using EG.Web.Extensions;
 using EG.Web.Services;
@@ -63,7 +64,7 @@ internal class Program
         builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
         builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
         builder.Services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
-        builder.Services.AddScoped<IBienService, BienService>();
+      
 
         // En Program.cs o Startup.cs
         builder.Services.AddScoped<MenuStateService>();

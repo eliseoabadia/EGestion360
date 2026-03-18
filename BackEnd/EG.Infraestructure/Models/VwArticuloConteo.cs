@@ -122,4 +122,8 @@ public partial class VwArticuloConteo
     public string AreaNombre { get; set; }
 
     public string AreaClave { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 }

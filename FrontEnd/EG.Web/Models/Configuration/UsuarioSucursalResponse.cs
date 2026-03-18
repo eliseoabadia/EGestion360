@@ -103,5 +103,13 @@
         public bool AsignacionActiva { get; set; }
 
         public int EsJefeEnSucursal { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int UsuarioCreacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
     }
 }

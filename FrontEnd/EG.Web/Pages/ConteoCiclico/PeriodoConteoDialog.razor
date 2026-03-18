@@ -15,7 +15,6 @@
 
 
 <BaseCrudDialog TItem="PeriodoConteoResponse"
-                 @ref="dialog"
                  MaxWidth="MaxWidth.Medium"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
@@ -325,9 +324,9 @@
 
 @code {
     [Parameter] public int? Id { get; set; }
-    // IMudDialogInstance es manejado internamente por BaseCrudDialog
 
-    private BaseCrudDialog<PeriodoConteoResponse> dialog = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
     private BaseEntityForm<PeriodoConteoResponse> form = null!;
     private bool isLoading = false;
     private PeriodoConteoResponse periodo = new()
@@ -474,7 +473,7 @@
 
     public async Task CancelAsync()
     {
-        dialog?.SignalClose(false);
+        MudDialog.Close(DialogResult.Cancel());
         await Task.CompletedTask;
     }
 
@@ -570,12 +569,11 @@
             if (response?.Success == true)
             {
                 Snackbar.Add(response.Message ?? $"Periodo {(Id.HasValue ? "actualizado" : "creado")} exitosamente", Severity.Success);
-                dialog?.SignalClose(true);
+                MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
                 Snackbar.Add(response?.Message ?? "Error en la operación", Severity.Error);
-                dialog?.SignalClose(false);
             }
         }
         catch (Exception ex)

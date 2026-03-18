@@ -106,7 +106,7 @@ namespace EG.Web.Services.Configuration
             if (!IsClientSide())
                 return new ApiResponse<DepartamentoResponse>();
 
-            if (!departamento.PkidDepartamento.HasValue || departamento.PkidDepartamento <= 0)
+            if (departamento.PkidDepartamento <= 0)
                 return new ApiResponse<DepartamentoResponse>
                 {
                     Success = false,

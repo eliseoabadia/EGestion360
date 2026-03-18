@@ -41,14 +41,14 @@
                                        Visible="@CanUpdate"
                                        Color="Color.Primary"
                                        Size="Size.Small"
-                                       OnClick="@(() => EditItem(departamento.PkidDepartamento!.Value))" />
+                                       OnClick="@(() => EditItem(departamento.PkidDepartamento))" />
                     </MudTooltip>
                     <MudTooltip Text="Eliminar departamento">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Visible="@CanDelete"
                                        Color="Color.Error"
                                        Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(departamento.PkidDepartamento!.Value))" />
+                                       OnClick="@(() => DeleteItem(departamento.PkidDepartamento))" />
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@departamento.PkidDepartamento</MudTd>

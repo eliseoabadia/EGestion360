@@ -8,7 +8,6 @@
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="DepartamentoResponse"
-                 @ref="dialog"
                  MaxWidth="MaxWidth.Small"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
@@ -36,16 +35,16 @@
             <MudItem xs="12">
                 <MudSelect Label="Empresa"
                            @bind-Value="departamento.PkidEmpresa"
-                           T="int?"
+                           T="int"
                            Variant="Variant.Outlined"
                            Required="true"
                            RequiredError="Debe seleccionar una empresa"
                            Disabled="@(Id.HasValue && empresas.Count == 1)"
                            For="@(() => departamento.PkidEmpresa)">
-                    <MudSelectItem T="int?" Value="null">Seleccione una empresa</MudSelectItem>
+                    <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
                     @foreach (var empresa in empresas)
                     {
-                        <MudSelectItem T="int?" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                        <MudSelectItem T="int" Value="empresa.PkidEmpresa ?? 0">@empresa.EmpresaNombre</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -85,7 +84,9 @@
 @code {
     [Parameter] public int? Id { get; set; }
 
-    private BaseCrudDialog<DepartamentoResponse> dialog = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    //private BaseCrudDialog<DepartamentoResponse> dialog = null!;
     private BaseEntityForm<DepartamentoResponse> form = null!;
     private DepartamentoResponse departamento = new() { DepartamentoActivo = true };
     private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
@@ -175,7 +176,7 @@
             return;
         }
 
-        if (!departamento.PkidEmpresa.HasValue || departamento.PkidEmpresa.Value <= 0)
+        if (departamento.PkidEmpresa <= 0)
         {
             Snackbar.Add("Debe seleccionar una empresa", Severity.Warning);
             return;
@@ -197,7 +198,7 @@
             if (Id.HasValue)
             {
                 Console.WriteLine($"📝 Actualizando departamento ID: {departamento.PkidDepartamento}");
-                response = await _service.UpdateAsync(departamento, departamento.PkidDepartamento!.Value);
+                response = await _service.UpdateAsync(departamento, departamento.PkidDepartamento);
             }
             else
             {
@@ -211,7 +212,8 @@
                     $"✅ Departamento {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
 
                 Snackbar.Add(message, Severity.Success);
-                dialog?.SignalClose(true);
+                //dialog?.SignalClose(true);
+                MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {

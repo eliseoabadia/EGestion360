@@ -2046,7 +2046,9 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ExistenciaFinal).HasColumnType("decimal(18, 4)");
             entity.Property(e => e.ExistenciaSistema).HasColumnType("decimal(18, 4)");
             entity.Property(e => e.FechaConclusion).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaInicioConteo).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.Periodo)
                 .IsRequired()
                 .HasMaxLength(100);

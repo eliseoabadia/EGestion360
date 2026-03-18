@@ -2,7 +2,6 @@
 @typeparam TItem
 
 <BaseCrudDialog TItem="TItem"
-                 @ref="dialog"
                  MaxWidth="MaxWidth.Small"
                  ActionColor="Color.Error"
                  ActionIcon="@Icons.Material.Filled.Delete"
@@ -32,7 +31,9 @@
     [Parameter] public Func<int, Task<bool>>? DeleteFunc { get; set; }
 
     [Parameter] public TItem? ItemPayload { get; set; }
-    private BaseCrudDialog<TItem> dialog = null!;
+    
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    
     private bool isDeleted = false;
 
 
@@ -54,7 +55,7 @@
             {
                 Console.WriteLine("✅ Eliminación exitosa, cerrando diálogo");
                 isDeleted = true;
-                dialog?.SignalClose(true);
+                MudDialog.Close(DialogResult.Ok(true));
             }
         }
         catch (Exception ex)

@@ -12,15 +12,17 @@ public partial class UsuarioResponse
 
     public int IdEmpresa { get; set; }
 
-    public string NombreCompleto { get; set; }
-
     public string Nombre { get; set; }
 
     public string ApellidoPaterno { get; set; }
 
     public string ApellidoMaterno { get; set; }
 
+    public string NombreCompleto { get; set; }
+
     public string Iniciales { get; set; }
+
+    public string InicialesNombre { get; set; }
 
     public string PayrollId { get; set; }
 
@@ -38,9 +40,9 @@ public partial class UsuarioResponse
 
     public string Gafete { get; set; }
 
-    public string SexoDescripcion { get; set; }
-
     public bool Sexo { get; set; }
+
+    public string SexoDescripcion { get; set; }
 
     public DateOnly? FechaIngreso { get; set; }
 
@@ -62,12 +64,6 @@ public partial class UsuarioResponse
 
     public bool UsuarioActivo { get; set; }
 
-    public DateTime? UsuarioFechaCreacion { get; set; }
-
-    public string UsuarioFechaCreacionFormat { get; set; }
-
-    public int UsuarioCreadorId { get; set; }
-
     public int PkidEmpresa { get; set; }
 
     public string NombreEmpresa { get; set; }
@@ -84,33 +80,41 @@ public partial class UsuarioResponse
 
     public string SimboloMonedaBase { get; set; }
 
-    public bool EmpresaActiva { get; set; }
-
     public DateTime? EmpresaFechaCreacion { get; set; }
 
-    public string ListaDepartamentos { get; set; }
+    public int IdSucursal { get; set; }
 
-    public int? TotalDepartamentos { get; set; }
+    public string NombreSucursal { get; set; }
 
-    public int EsJefeAlgunDepartamento { get; set; }
+    public string CodigoSucursal { get; set; }
 
-    public string DepartamentosComoJefe { get; set; }
+    public string DireccionSucursal { get; set; }
 
-    public string ListaSucursales { get; set; }
+    public bool EsMatriz { get; set; }
 
-    public int TotalSucursales { get; set; }
+    public bool PuedeAcceder { get; set; }
 
-    public string SucursalMatrizAsignada { get; set; }
+    public bool PuedeConfigurar { get; set; }
 
-    public string RolPrincipal { get; set; }
+    public bool PuedeOperar { get; set; }
 
-    public string CoberturaSucursales { get; set; }
+    public bool PuedeReportes { get; set; }
 
-    public int? UltimoAcceso { get; set; }
+    public bool EsGerente { get; set; }
 
-    public string NumeroEmpleado { get; set; }
+    public bool EsSupervisor { get; set; }
 
-    public string InicialesNombre { get; set; }
+    public bool AsignacionActiva { get; set; }
+
+    public int EsJefeEnSucursal { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 }
 public class FotografiaUsuarioResponse
 {

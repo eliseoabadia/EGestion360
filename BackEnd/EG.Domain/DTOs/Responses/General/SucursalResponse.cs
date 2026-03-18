@@ -57,4 +57,14 @@ public partial class SucursalResponse
     public string CodigoEstado { get; set; }
 
     public string NombrePais { get; set; }
+
+    public bool Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 }

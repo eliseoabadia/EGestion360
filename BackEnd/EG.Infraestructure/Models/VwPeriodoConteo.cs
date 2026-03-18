@@ -64,4 +64,8 @@ public partial class VwPeriodoConteo
     public DateTime? FechaModificacion { get; set; }
 
     public string UsuarioModificacionNombre { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 }

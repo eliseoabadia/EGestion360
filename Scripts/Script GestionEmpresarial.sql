@@ -366,6 +366,8 @@ INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,Sub
 				VALUES(1,'configuration','configuracion',NULL,'app://{0}/{1}',GETDATE(),'configuracion','AD0001','Configuración','view,view-menu',0)
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(1,'conteociclico','conteociclico',NULL,'app://{0}/{1}',GETDATE(),'conteociclico','CO0001','Configuración','view,view-menu',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(1,'almacen','almacen',NULL,'app://{0}/{1}',GETDATE(),'almacen','AL0001','Configuración','view,view-menu',0)
 
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(2,'administration','administration',NULL,'app://{0}/{1}',GETDATE(),'administration','AD0001','Administracion','view,view-menu,delete,new,update',0)
@@ -389,6 +391,15 @@ INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,Sub
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
 				VALUES(2,'conteociclico','conteociclico',NULL,'app://{0}/{1}',GETDATE(),'mis-periodos','CO0001','conteociclico','view,view-menu,delete,new,update,CanExportToExcel',0)
 
+
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(2,'almacen','almacen',NULL,'app://{0}/{1}',GETDATE(),'almacen','AL0001','almacen','view,view-menu',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(2,'almacen','almacen',NULL,'app://{0}/{1}',GETDATE(),'familia','AL0001','almacen','view,view-menu,delete,new,update,CanExportToExcel',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(2,'almacen','almacen',NULL,'app://{0}/{1}',GETDATE(),'tipo-bien','AL0001','almacen','view,view-menu,delete,new,update,CanExportToExcel',0)
+INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
+				VALUES(2,'almacen','almacen',NULL,'app://{0}/{1}',GETDATE(),'bien','AL0001','almacen','view,view-menu,delete,new,update,CanExportToExcel',0)
         
 
 INSERT INTO AspNetClaims(ClaimTypeId,Name,[Group],RoleId,TokenFormat,Created,SubGroup,Code,[Description],[Values],ReferenceId)
@@ -464,6 +475,30 @@ EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','delete'
 EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','new'
 EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','update'
 EXEC spConfiguracionDeRolYClaims 'conteociclico','mis-periodos','10000','CanExportToExcel'
+
+EXEC spConfiguracionDeRolYClaims 'almacen','almacen','10000','view'
+EXEC spConfiguracionDeRolYClaims 'almacen','almacen','10000','view-menu'
+                                 
+EXEC spConfiguracionDeRolYClaims 'almacen','familia','10000','view'
+EXEC spConfiguracionDeRolYClaims 'almacen','familia','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'almacen','familia','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'almacen','familia','10000','new'
+EXEC spConfiguracionDeRolYClaims 'almacen','familia','10000','update'
+EXEC spConfiguracionDeRolYClaims 'almacen','familia','10000','CanExportToExcel'
+                                 
+EXEC spConfiguracionDeRolYClaims 'almacen','tipo-bien','10000','view'
+EXEC spConfiguracionDeRolYClaims 'almacen','tipo-bien','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'almacen','tipo-bien','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'almacen','tipo-bien','10000','new'
+EXEC spConfiguracionDeRolYClaims 'almacen','tipo-bien','10000','update'
+EXEC spConfiguracionDeRolYClaims 'almacen','tipo-bien','10000','CanExportToExcel'
+
+EXEC spConfiguracionDeRolYClaims 'almacen','bien','10000','view'
+EXEC spConfiguracionDeRolYClaims 'almacen','bien','10000','view-menu'
+EXEC spConfiguracionDeRolYClaims 'almacen','bien','10000','delete'
+EXEC spConfiguracionDeRolYClaims 'almacen','bien','10000','new'
+EXEC spConfiguracionDeRolYClaims 'almacen','bien','10000','update'
+EXEC spConfiguracionDeRolYClaims 'almacen','bien','10000','CanExportToExcel'
 
 
 
@@ -596,6 +631,10 @@ MERGE INTO SIS.Menu AS TARGET
 	,(8, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 1, N'ESP',300,1000,getdate())
 	,(9, N'Periodo', 2, 8, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 1, N'ESP',301,1000,getdate())
     ,(10, N'Mis Periodo', 2, 8, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 1, N'ESP',302,1000,getdate())
+    ,(11, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaRegSun', 1, N'ESP',400,1000,getdate())
+	,(12, N'Almacén', 2, 11, N'Familia', N'/almacen/familia', N'RiListCheck2', 1, N'ESP',401,1000,getdate())
+    ,(13, N'Tipo Bien', 2, 11, N'Tipo Bien', N'/almacen/tipo-bien', N'RiListCheck2', 1, N'ESP',401,1000,getdate())
+    ,(14, N'Bien', 2, 11, N'Bien', N'/almacen/bien', N'RiListCheck2', 1, N'ESP',402,1000,getdate())
 )
 	AS SOURCE (PKIdMenu, Nombre, [Tipo], [FKIdMenu_SIS], [LegacyName], Ruta, [ImageUrl], Activo, [Lenguaje], [Orden],[CreatedByOperatorId],[CreatedDateTime])
 	ON (TARGET.PKIdMenu=SOURCE.PKIdMenu)

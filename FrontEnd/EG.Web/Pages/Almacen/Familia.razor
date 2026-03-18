@@ -1,0 +1,160 @@
+@page "/almacen/familia"
+@using EG.Web.Models.Almacen
+@using EG.Web.Models.Configuration
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<FamiliaResponse, FamiliaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Gestión de Familias"
+                    Subtitle="Administra y mantén el registro de familias del sistema"
+                    Icon="@Icons.Material.Filled.Domain"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="FamiliaResponse"
+                      @ref="table"
+                      Title="Lista de Familias"
+                      SearchPlaceholder="Buscar por nombre..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidFamilia" T="FamiliaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="FamiliaResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FamiliaResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+
+            <Row Context="familia">
+                <MudTd>
+                    <MudTooltip Text="Editar Familia">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(familia.PkidFamilia))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar Familia">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(familia.PkidFamilia))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@familia.PkidFamilia</MudTd>
+                <MudTd>@familia.Clave</MudTd>
+                <MudTd>@familia.Descripcion</MudTd>
+                <MudTd>
+                    <MudBadge Color="@(familia.Activo? Color.Success: Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(familia.Activo ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<FamiliaResponse> table = null!;
+
+    protected override string ModuleName => "almacen";
+    protected override string SubModuleName => "familia";
+
+    protected override Type CreateDialogType => typeof(FamiliaDialog);
+    protected override Type EditDialogType => typeof(FamiliaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<FamiliaResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion"; // Corregido
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<FamiliaResponse> items)
+    {
+        return items.Select(d => new
+        {
+            ID = d.PkidFamilia,
+            Clave = d.Clave,
+            Descripción = d.Descripcion, // Cambiado a "Descripción" para claridad
+            Estado = d.Activo ? "Activo" : "Inactivo"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.Descripcion ?? "la familia";
+        }
+        catch
+        {
+            return "la familia";
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            Console.WriteLine("🔄 Recargando tabla de familias...");
+            await table.ReloadData();
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("⚠️ table es null en ReloadData");
+        }
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(id);
+        var familiaNombre = response?.Data?.Descripcion ?? "la familia";
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = familiaNombre,
+            ["DeleteFunc"] = new Func<Task<bool>>(() => EliminarFamilia(id)) // ✅ Corregido: función sin parámetros
+        };
+
+        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        await dialog.Result;
+    }
+
+    // Método auxiliar para la eliminación
+    private async Task<bool> EliminarFamilia(int id)
+    {
+        var deleteResponse = await Service.DeleteAsync(id);
+        if (deleteResponse?.Success == true)
+        {
+            Snackbar.Add(deleteResponse.Message ?? "Familia eliminada correctamente", Severity.Success);
+            await table.ReloadData();
+            return true;
+        }
+        else
+        {
+            Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
+            return false;
+        }
+    }
+}

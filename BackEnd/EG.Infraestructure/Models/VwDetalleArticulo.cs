@@ -40,4 +40,14 @@ public partial class VwDetalleArticulo
     public string ConcluidoPor { get; set; }
 
     public string HistorialConteos { get; set; }
+
+    public bool Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 }

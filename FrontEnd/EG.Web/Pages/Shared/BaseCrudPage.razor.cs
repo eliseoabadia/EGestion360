@@ -176,7 +176,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
         Console.WriteLine("🔄 Abriendo diálogo de crear...");
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}",
-            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
         Console.WriteLine("⏳ Esperando resultado del diálogo...");
         var result = await dialog.Result;
@@ -208,7 +208,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         Console.WriteLine($"🔄 Abriendo diálogo de editar para ID: {id}");
         var parameters = new DialogParameters { ["Id"] = id };
         var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
-            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
         Console.WriteLine("⏳ Esperando resultado del diálogo...");
         var result = await dialog.Result;
@@ -257,7 +257,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
-            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         await dialog.Result;
     }

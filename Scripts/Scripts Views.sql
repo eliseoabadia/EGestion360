@@ -8,6 +8,8 @@ SELECT E.PKIdEmpresa,
 	   D.Nombre AS DepartamentoNombre,
 	   D.Activo AS DepartamentoActivo,
 	   E.Activo AS EmpresaActivo
+      --,E.Activo
+      ,E.FechaCreacion,E.UsuarioCreacion,E.FechaModificacion,E.UsuarioModificacion
 FROM [SIS].[Empresa] E WITH (NOLOCK)
 INNER JOIN [SIS].[Departamento] D WITH (NOLOCK) ON E.PKIdEmpresa = D.FKIdEmpresa_SIS
 WHERE E.Activo = 1 AND D.Activo = 1 ;
@@ -60,6 +62,8 @@ SELECT
     est.Nombre AS NombreEstado,
     est.CodigoEstado,
     p.Nombre AS NombrePais
+    ,E.Activo
+    ,E.FechaCreacion,E.UsuarioCreacion,E.FechaModificacion,E.UsuarioModificacion
 FROM [SIS].Sucursal s WITH (NOLOCK)
 INNER JOIN [SIS].Empresa e WITH (NOLOCK) 
     ON s.FKIdEmpresa_SIS = e.PKIdEmpresa 
@@ -139,6 +143,7 @@ WITH MenuJerarquico AS (
             THEN 'INCONSISTENCIA: Contenedor con ruta y submenús'
             ELSE 'OK'
         END AS ValidacionEstructura
+       
     FROM SIS.Menu m
     LEFT JOIN SIS.Menu p ON m.FKIdMenu_SIS = p.PKIdMenu
 )
@@ -166,7 +171,8 @@ SELECT
     RutaCompleta,
     TieneSubmenus,
     ValidacionEstructura
-FROM MenuJerarquico;
+    
+FROM MenuJerarquico m;
 GO
 
 
@@ -475,7 +481,8 @@ SELECT
             AND (ud.FechaFinAsignacion IS NULL OR ud.FechaFinAsignacion >= GETDATE())
         ) THEN 1 ELSE 0 
     END AS EsJefeEnSucursal
-
+    --,m.Activo
+       ,u.FechaCreacion,u.UsuarioCreacion,u.FechaModificacion,u.UsuarioModificacion
 FROM SIS.Usuario u
 INNER JOIN SIS.Empresa e ON u.FKIdEmpresa_SIS = e.PKIdEmpresa
 LEFT JOIN SIS.Idioma i ON u.FKIdIdiomaPreferido_SIS = i.PKIdIdioma
@@ -532,6 +539,11 @@ SELECT
     uCreacion.Nombre + ' ' + uCreacion.ApellidoPaterno AS UsuarioCreacionNombre,
     pc.FechaModificacion,
     uModificacion.Nombre + ' ' + uModificacion.ApellidoPaterno AS UsuarioModificacionNombre
+    --, pc.Activo
+       --,pc.FechaCreacion
+       ,pc.UsuarioCreacion
+       --,pc.FechaModificacion
+       ,pc.UsuarioModificacion
 FROM ALMA.PeriodoConteo pc
 INNER JOIN SIS.Sucursal s ON pc.FKIdSucursal_SIS = s.PKIdSucursal
 INNER JOIN ALMA.TipoConteo tc ON pc.FKIdTipoConteo_ALMA = tc.PKIdTipoConteo
@@ -650,6 +662,12 @@ SELECT
     tb.Descripcion AS DescripcionTipoBien,
     a.Nombre AS AreaNombre,
     a.Clave AS AreaClave
+
+    --,E.Activo
+      --,E.FechaCreacion
+      ,ac.UsuarioCreacion
+      --,E.FechaModificacion
+      ,ac.UsuarioModificacion
 FROM ALMA.ArticuloConteo ac
 INNER JOIN ALMA.PeriodoConteo pc ON ac.FKIdPeriodoConteo_ALMA = pc.PKIdPeriodoConteo
 INNER JOIN ALMA.Bien b ON ac.FKIdBien_ALMA = b.PKIdBien
@@ -898,6 +916,8 @@ SELECT
         ORDER BY rc.NumeroConteo
         FOR XML PATH('')
     ), 1, 3, '') AS HistorialConteos
+         ,a.Activo
+      ,a.FechaCreacion,a.UsuarioCreacion,a.FechaModificacion,a.UsuarioModificacion
 FROM ALMA.ArticuloConteo a
 INNER JOIN ALMA.PeriodoConteo p ON a.FKIdPeriodoConteo_ALMA = p.PKIdPeriodoConteo
 INNER JOIN SIS.Sucursal s ON a.FKIdSucursal_SIS = s.PKIdSucursal

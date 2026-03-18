@@ -1,0 +1,117 @@
+@using EG.Web.Contracs.Almacen
+@using EG.Web.Models.Almacen
+@using MudBlazor
+
+@inject IGenericCrudService<TipoBienResponse> _service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="TipoBienResponse"
+                MaxWidth="MaxWidth.Small"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos del tipo de bien..."
+                OnConfirm="GuardarCambiosAsync"
+                OnCancel="HandleCancel">
+
+    <BaseEntityForm TEntity="TipoBienResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="tipo.CodigoArticulo"
+                              Label="Código"
+                              Variant="Variant.Outlined"
+                              Required="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="tipo.DescripcionArticulo"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              Required="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSwitch @bind-Value="tipo.Activo"
+                           Color="Color.Primary"
+                           Label="@(tipo.Activo ? "Activo" : "Inactivo")" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<TipoBienResponse> form = null!;
+    private TipoBienResponse tipo = new() { Activo = true };
+
+    private string dialogTitle => Id.HasValue ? "Editar Tipo de Bien" : "Nuevo Tipo de Bien";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarTipo();
+        }
+    }
+
+    private async Task CargarTipo()
+    {
+        try
+        {
+            var response = await _service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                tipo = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar tipo de bien: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void HandleCancel() => MudDialog.Close(DialogResult.Cancel());
+
+    private async Task GuardarCambiosAsync(bool _)
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Complete los campos requeridos", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            ApiResponse<TipoBienResponse> response;
+
+            if (Id.HasValue)
+            {
+                response = await _service.UpdateAsync(tipo, tipo.PkidTipoBien);
+            }
+            else
+            {
+                response = await _service.CreateAsync(tipo);
+            }
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Tipo de bien guardado exitosamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al guardar", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}
