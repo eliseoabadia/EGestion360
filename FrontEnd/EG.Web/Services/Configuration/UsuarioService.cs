@@ -76,19 +76,19 @@ namespace EG.Web.Services.Configuration
                 return new ApiResponse<UsuarioResponse>();
 
             var response = await PostAsync<ApiResponse<UsuarioResponse>>(
-                "api/Usuario/",
+                "api/Usuario",
                 usuario,
                 useBaseUrl: false);
 
             return response ?? new ApiResponse<UsuarioResponse>();
         }
 
-        public async Task<ApiResponse<UsuarioResponse>> UpdateUsuarioAsync(UsuarioResponse usuario)
+        public async Task<ApiResponse<UsuarioResponse>> UpdateUsuarioAsync(int id, UsuarioResponse usuario)
         {
             if (!IsClientSide())
                 return new ApiResponse<UsuarioResponse>();
 
-            if (usuario.PkIdUsuario <= 0)
+            if (id <= 0)
                 return new ApiResponse<UsuarioResponse>
                 {
                     Success = false,
@@ -97,7 +97,7 @@ namespace EG.Web.Services.Configuration
                 };
 
             var response = await PutAsync<ApiResponse<UsuarioResponse>>(
-                $"api/Usuario/{usuario.PkIdUsuario}/",
+                $"api/Usuario/{id}",
                 usuario,
                 useBaseUrl: false);
 

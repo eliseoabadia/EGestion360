@@ -42,14 +42,14 @@
                                        Visible="@CanUpdate"
                                        Color="Color.Primary"
                                        Size="Size.Small"
-                                       OnClick="@(() => EditItem(empresa.PkidEmpresa!.Value))" />
+                                       OnClick="@(() => EditItem(empresa.PkidEmpresa))" />
                     </MudTooltip>
                     <MudTooltip Text="Eliminar empresa">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Visible="@CanDelete"
                                        Color="Color.Error"
                                        Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(empresa.PkidEmpresa!.Value))" />
+                                       OnClick="@(() => DeleteItem(empresa.PkidEmpresa))" />
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@empresa.PkidEmpresa</MudTd>

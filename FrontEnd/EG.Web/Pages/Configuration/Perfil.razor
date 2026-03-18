@@ -481,7 +481,7 @@
                 return;
             }
 
-            var response = await usuarioService.UpdateUsuarioAsync(userProfile);
+            var response = await usuarioService.UpdateUsuarioAsync(userProfile.PkIdUsuario, userProfile);
 
             if (response == null || !response.Success)
             {
@@ -630,4 +630,5 @@
         }
         return null;
     }
+
 }

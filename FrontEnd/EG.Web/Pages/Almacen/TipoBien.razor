@@ -56,10 +56,10 @@
                 <MudTd>@tipo.CodigoArticulo</MudTd>
                 <MudTd>@tipo.DescripcionArticulo</MudTd>
                 <MudTd>
-                    <MudBadge Color="@(tipo.Activo? Color.Success: Color.Error)"
+                    <MudBadge Color="@(tipo.Activo == true ? Color.Success : Color.Error)"
                               Variant="Variant.Filled"
                               Size="Size.Small">
-                        @(tipo.Activo ? "Activo" : "Inactivo")
+                        @(tipo.Activo == true ? "Activo" : "Inactivo")
                     </MudBadge>
                 </MudTd>
             </Row>
@@ -86,7 +86,7 @@
             ID = d.PkidTipoBien,
             Código = d.CodigoArticulo,
             Descripción = d.DescripcionArticulo,
-            Estado = d.Activo ? "Activo" : "Inactivo"
+            Estado = d.Activo == true ? "Activo" : "Inactivo"
         });
     }
 

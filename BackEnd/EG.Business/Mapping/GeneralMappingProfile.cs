@@ -46,17 +46,31 @@ namespace EG.Business.Mapping
             // Entity -> Response
             CreateMap<Estado, EstadoResponse>()
                 .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre));
+                .ForMember(dest => dest.FkidPaisSis, opt => opt.MapFrom(src => src.FkidPaisSis))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo));
 
-            // DTO -> Entity
+            // Dto -> Entity
             CreateMap<EstadoDto, Estado>()
                 .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre));
+                .ForMember(dest => dest.FkidPaisSis, opt => opt.MapFrom(src => src.FkidPaisSis))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo))
+                .ForMember(dest => dest.EmpresaEstados, opt => opt.Ignore())
+                .ForMember(dest => dest.Municipios, opt => opt.Ignore())
+                .ForMember(dest => dest.Proveedors, opt => opt.Ignore())
+                .ForMember(dest => dest.Sucursals, opt => opt.Ignore())
+                .ForMember(dest => dest.FkidPaisSisNavigation, opt => opt.Ignore());
 
-            // Response -> DTO (si es necesario)
+            // Response -> Dto
             CreateMap<EstadoResponse, EstadoDto>()
                 .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre));
+                .ForMember(dest => dest.FkidPaisSis, opt => opt.MapFrom(src => src.FkidPaisSis))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo));
 
             CreateMap<LoginInformationEmployeeResult, UserResponse>().ReverseMap();
             CreateMap<spNodeMenuResponse, spNodeMenuResult>().ReverseMap();

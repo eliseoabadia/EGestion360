@@ -6,7 +6,7 @@ public class EmpresaResponse
 
     public string EstadoNombre { get; set; }
 
-    public int? PkidEmpresa { get; set; }
+    public int PkidEmpresa { get; set; }
 
     public string EmpresaNombre { get; set; }
 

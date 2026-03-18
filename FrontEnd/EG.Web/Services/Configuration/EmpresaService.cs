@@ -101,7 +101,7 @@ namespace EG.Web.Services.Configuration
             if (!IsClientSide())
                 return new ApiResponse<EmpresaResponse>();
 
-            if (!empresa.PkidEmpresa.HasValue || empresa.PkidEmpresa <= 0)
+            if (empresa.PkidEmpresa <= 0)
                 return new ApiResponse<EmpresaResponse>
                 {
                     Success = false,

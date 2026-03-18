@@ -327,7 +327,9 @@ SELECT
     -- Para ordenamiento y filtros
     u.PayrollID AS NumeroEmpleado,
     UPPER(LEFT(u.Nombre, 1) + LEFT(u.ApellidoPaterno, 1)) AS InicialesNombre
-
+     --,m.Activo
+       ,u.FechaCreacion,u.UsuarioCreacion
+       ,u.FechaModificacion AS UsuarioModifyId,u.UsuarioModificacion AS UsuarioFechaModificacion
 FROM SIS.Usuario u
 
 -- Relación con Empresa

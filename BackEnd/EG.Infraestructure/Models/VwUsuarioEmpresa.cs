@@ -112,4 +112,12 @@ public partial class VwUsuarioEmpresa
     public string NumeroEmpleado { get; set; }
 
     public string InicialesNombre { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? UsuarioModifyId { get; set; }
+
+    public int? UsuarioFechaModificacion { get; set; }
 }

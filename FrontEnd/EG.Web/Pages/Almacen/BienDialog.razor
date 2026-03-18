@@ -52,7 +52,7 @@
                         </MudSelect>
                     </MudItem> *@
                     <MudItem xs="6">
-                        <MudSelect T="int" @bind-Value="editModel.FkidTipoBienAlma"
+                        <MudSelect T="int?" @bind-Value="editModel.FkidTipoBienAlma"
                                    Label="Tipo de Bien"
                                    Variant="Variant.Outlined"
                                    Required="true"
@@ -260,7 +260,7 @@
                     <MudItem xs="12">
                         <MudSwitch @bind-Value="editModel.Activo"
                                    Color="Color.Primary"
-                                   Label="@(editModel.Activo ? "Activo" : "Inactivo")" />
+                                   Label="@(editModel.Activo == true ? "Activo" : "Inactivo")" />
                     </MudItem>
                 </MudGrid>
             </MudTabPanel>
@@ -385,9 +385,9 @@
     // Modelo local para edición (basado en BienDto)
     public class BienEditModel
     {
-        public int PkidBien { get; set; }
+        public int? PkidBien { get; set; }
         public int? FkidGrupoBienAlma { get; set; }
-        public int FkidTipoBienAlma { get; set; }
+        public int? FkidTipoBienAlma { get; set; }
         public int? FkidAreaSis { get; set; }
         public int? FkidProveedorSis { get; set; }
         public int? FkidEstadoBienAlma { get; set; }
@@ -396,29 +396,29 @@
         public int? FkidMaterialAlma { get; set; }
         public int? FkidTipoAdqAlma { get; set; }
         public int? FkidPartidaConta { get; set; }
-        public string Clave { get; set; }
-        public string ClaveAnt { get; set; }
-        public string Descripcion { get; set; }
-        public string Modelo { get; set; }
-        public string Serie { get; set; }
-        public string Requisicion { get; set; }
-        public string Factura { get; set; }
+        public string Clave { get; set; } = string.Empty;
+        public string ClaveAnt { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public string Modelo { get; set; } = string.Empty;
+        public string Serie { get; set; } = string.Empty;
+        public string Requisicion { get; set; } = string.Empty;
+        public string Factura { get; set; } = string.Empty;
         public decimal? Costo { get; set; }
         public DateTime? FechaAdq { get; set; }
-        public string Referencia { get; set; }
-        public string Notas { get; set; }
-        public string Ubicacion { get; set; }
-        public string Caracteristicas { get; set; }
+        public string Referencia { get; set; } = string.Empty;
+        public string Notas { get; set; } = string.Empty;
+        public string Ubicacion { get; set; } = string.Empty;
+        public string Caracteristicas { get; set; } = string.Empty;
         public int? Frente { get; set; }
         public int? Fondo { get; set; }
         public int? Altura { get; set; }
         public int? Diametro { get; set; }
-        public int VerificacionesDias { get; set; }
-        public int MantenimientoDias { get; set; }
-        public bool Mantenimiento { get; set; }
-        public bool Calibracion { get; set; }
+        public int? VerificacionesDias { get; set; }
+        public int? MantenimientoDias { get; set; }
+        public bool? Mantenimiento { get; set; }
+        public bool? Calibracion { get; set; }
         public decimal? ValorRescate { get; set; }
         public decimal? ValorActual { get; set; }
-        public bool Activo { get; set; }
+        public bool? Activo { get; set; }
     }
 }

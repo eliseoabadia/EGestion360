@@ -45,7 +45,7 @@
                     <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
                     @foreach (var empresa in empresas)
                     {
-                        <MudSelectItem T="int" Value="empresa.PkidEmpresa ?? 0">@empresa.EmpresaNombre</MudSelectItem>
+                        <MudSelectItem T="int" Value="empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>

@@ -2,8 +2,9 @@
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
 @using EG.Web.Services.Configuration
+@using EG.Web.Models.Configuration
 @inject IEmpresaService empresaService
-@inject IGenericCrudService<UsuarioResponse> _service
+@inject IUsuarioService usuarioService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="UsuarioResponse"
@@ -43,7 +44,7 @@
                     <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
                     @foreach (var empresa in listadoEmpresas)
                     {
-                        <MudSelectItem T="int" Value="@empresa.PkidEmpresa.Value">@empresa.EmpresaNombre</MudSelectItem>
+                        <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -72,6 +73,7 @@
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.Direccion1"
                               Label="Dirección 1"
+                              Required="true"
                               Variant="Variant.Outlined" />
             </MudItem>
 
@@ -85,6 +87,7 @@
             <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.CodigoPostalUsuario"
                               Label="Código Postal"
+                              Required="true"
                               Variant="Variant.Outlined"
                               Placeholder="12345" />
                 @* Sin Mask para permitir edición libre *@
@@ -231,7 +234,7 @@
     {
         try
         {
-            var response = await _service.GetByIdAsync(Id!.Value);
+            var response = await usuarioService.GetUsuarioByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 usuario = response.Data;
@@ -310,7 +313,7 @@
             return;
         }
 
-        if (usuario.IdEmpresa <= 0)
+        if (usuario.IdEmpresa == null || usuario.IdEmpresa <= 0)
         {
             Snackbar.Add("Debe seleccionar una sucursal", Severity.Warning);
             return;
@@ -327,12 +330,12 @@
             if (Id.HasValue)
             {
                 Console.WriteLine($"📝 Actualizando usuario ID: {usuario.PkIdUsuario}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
-                response = await _service.UpdateAsync(usuario, usuario.PkIdUsuario);
+                response = await usuarioService.UpdateUsuarioAsync(usuario.PkIdUsuario, usuario);
             }
             else
             {
                 Console.WriteLine($"➕ Creando nuevo usuario: {usuario.NombreCompleto} (Activo)");
-                response = await _service.CreateAsync(usuario);
+                response = await usuarioService.CreateUsuarioAsync(usuario);
             }
 
             if (response?.Success == true)
@@ -356,4 +359,6 @@
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
         }
     }
+
+
 }

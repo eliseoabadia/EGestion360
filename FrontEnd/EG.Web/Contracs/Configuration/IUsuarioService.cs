@@ -24,7 +24,7 @@ namespace EG.Web.Contracs.Configuration
 
         Task<ApiResponse<UsuarioResponse>> CreateUsuarioAsync(UsuarioResponse usuario);
 
-        Task<ApiResponse<UsuarioResponse>> UpdateUsuarioAsync(UsuarioResponse usuario);
+        Task<ApiResponse<UsuarioResponse>> UpdateUsuarioAsync(int id, UsuarioResponse usuario);
 
         Task<ApiResponse<UsuarioResponse>> DeleteUsuarioAsync(int usuarioId);
 

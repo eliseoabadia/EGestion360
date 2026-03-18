@@ -35,7 +35,7 @@
             <MudItem xs="12">
                 <MudSwitch @bind-Value="tipo.Activo"
                            Color="Color.Primary"
-                           Label="@(tipo.Activo ? "Activo" : "Inactivo")" />
+                           Label="@(tipo.Activo == true ? "Activo" : "Inactivo")" />
             </MudItem>
         </MudGrid>
     </BaseEntityForm>

@@ -56,10 +56,10 @@
                 <MudTd>@familia.Clave</MudTd>
                 <MudTd>@familia.Descripcion</MudTd>
                 <MudTd>
-                    <MudBadge Color="@(familia.Activo? Color.Success: Color.Error)"
+                    <MudBadge Color="@(familia.Activo == true ? Color.Success : Color.Error)"
                               Variant="Variant.Filled"
                               Size="Size.Small">
-                        @(familia.Activo ? "Activo" : "Inactivo")
+                        @(familia.Activo == true ? "Activo" : "Inactivo")
                     </MudBadge>
                 </MudTd>
             </Row>
@@ -86,7 +86,7 @@
             ID = d.PkidFamilia,
             Clave = d.Clave,
             Descripción = d.Descripcion, // Cambiado a "Descripción" para claridad
-            Estado = d.Activo ? "Activo" : "Inactivo"
+            Estado = d.Activo == true ? "Activo" : "Inactivo"
         });
     }
 

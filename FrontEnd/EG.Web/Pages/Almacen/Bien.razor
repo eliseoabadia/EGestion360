@@ -62,10 +62,10 @@
                 <MudTd>@bien.Serie</MudTd>
                 <MudTd>@bien.Costo?.ToString("C")</MudTd>
                 <MudTd>
-                    <MudBadge Color="@(bien.Activo? Color.Success: Color.Error)"
+                    <MudBadge Color="@(bien.Activo == true ? Color.Success : Color.Error)"
                               Variant="Variant.Filled"
                               Size="Size.Small">
-                        @(bien.Activo ? "Activo" : "Inactivo")
+                        @(bien.Activo == true ? "Activo" : "Inactivo")
                     </MudBadge>
                 </MudTd>
             </Row>
@@ -95,7 +95,7 @@
             Modelo = d.Modelo,
             Serie = d.Serie,
             Costo = d.Costo,
-            Estado = d.Activo ? "Activo" : "Inactivo"
+            Estado = d.Activo == true ? "Activo" : "Inactivo"
         });
     }
 

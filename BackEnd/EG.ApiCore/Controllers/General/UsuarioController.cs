@@ -1,4 +1,5 @@
-﻿using EG.ApiCore.Services;
+﻿using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
@@ -16,13 +17,16 @@ namespace EG.ApiCore.Controllers.General
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(UsuarioController));
         private readonly IUsuarioAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
 
         public UsuarioController(
             IUsuarioAppService appService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            IMapper mapper)
         {
             _appService = appService;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -114,12 +118,15 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Create([FromBody] UsuarioDto dto)
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Create([FromBody] UsuarioResponse request)
         {
             try
             {
-                var usuarioActual = _userContext.GetCurrentUserId();
-                var result = await _appService.CreateAsync(dto, usuarioActual);
+                var dto = _mapper.Map<UsuarioDto>(request);
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
+                dto.FechaCreacion = DateTime.Now;
+                
+                var result = await _appService.CreateAsync(dto, dto.UsuarioCreacion);
 
                 return CreatedAtAction(nameof(GetById), new { id = result.PkIdUsuario },
                     new PagedResult<UsuarioResponse>
@@ -140,7 +147,6 @@ namespace EG.ApiCore.Controllers.General
                     Success = false,
                     Message = ex.Message,
                     Code = "INVALID_DATA",
-                    ////Items = new(),
                     TotalCount = 0
                 });
             }
@@ -152,7 +158,6 @@ namespace EG.ApiCore.Controllers.General
                     Success = false,
                     Message = ex.Message,
                     Code = "MISSING_REQUIRED_FIELDS",
-                    ////Items = new(),
                     TotalCount = 0
                 });
             }
@@ -164,7 +169,6 @@ namespace EG.ApiCore.Controllers.General
                     Success = false,
                     Message = ex.Message,
                     Code = "DUPLICATE_USER",
-                    ////Items = new(),
                     TotalCount = 0
                 });
             }
@@ -176,12 +180,16 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] UsuarioDto dto)
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] UsuarioResponse request)
         {
             try
             {
-                var usuarioActual = _userContext.GetCurrentUserId();
-                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
+                var dto = _mapper.Map<UsuarioDto>(request);
+                dto.PkIdUsuario = id;
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
+                dto.FechaModificacion = DateTime.Now;
+                
+                var result = await _appService.UpdateAsync(id, dto, dto.UsuarioModificacion ?? 0);
 
                 return Ok(new PagedResult<UsuarioResponse>
                 {

@@ -234,7 +234,7 @@
             if (Id.HasValue)  // CORREGIDO
             {
                 Console.WriteLine($"📝 Actualizando empresa ID: {empresa.PkidEmpresa}");
-                response = await _service.UpdateAsync(empresa, empresa.PkidEmpresa!.Value);
+                response = await _service.UpdateAsync(empresa, empresa.PkidEmpresa);
             }
             else
             {
