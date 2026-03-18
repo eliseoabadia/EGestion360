@@ -1,7 +1,10 @@
-using EG.Application.Interfaces.Almacen;
+using AutoMapper;
+using EG.ApiCore.Services;
+using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
+using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EG.ApiCore.Controllers.Almacen
@@ -10,17 +13,35 @@ namespace EG.ApiCore.Controllers.Almacen
     [Route("api/[controller]")]
     public class BienController : ControllerBase
     {
-        private readonly IBienAppService _bienAppService;
+        private readonly GenericService<Bien, BienDto, BienResponse> _service;
+        private readonly GenericService<VwBien, BienDto, BienResponse> _serviceView;
+        private readonly IMapper _mapper;
+        private readonly IUserContextService _userContext;
 
-        public BienController(IBienAppService bienAppService)
+        public BienController(
+            GenericService<Bien, BienDto, BienResponse> service,
+            GenericService<VwBien, BienDto, BienResponse> serviceView,
+            IMapper mapper,
+            IUserContextService userContext)
         {
-            _bienAppService = bienAppService;
+            _service = service;
+            _serviceView = serviceView;
+            _mapper = mapper;
+            _userContext = userContext;
+
+            ConfigureService();
+        }
+
+        private void ConfigureService()
+        {
+            // VwBien is a view - it doesn't have navigation properties
+            // The serviceView is used for reading data only
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<BienResponse>>> GetAll()
         {
-            var result = await _bienAppService.GetAllAsync();
+            var result = await _serviceView.GetAllAsync();
             return Ok(result);
         }
 
@@ -29,7 +50,17 @@ namespace EG.ApiCore.Controllers.Almacen
         {
             try
             {
-                var result = await _bienAppService.GetByIdAsync(id);
+                var result = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidBien");
+                if (result == null)
+                {
+                    return NotFound(new PagedResult<BienResponse>
+                    {
+                        Success = false,
+                        Message = "Bien no encontrado",
+                        Code = "NOT_FOUND"
+                    });
+                }
+
                 return Ok(new PagedResult<BienResponse>
                 {
                     Success = true,
@@ -38,15 +69,6 @@ namespace EG.ApiCore.Controllers.Almacen
                     Data = result,
                     Items = new List<BienResponse> { result },
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new PagedResult<BienResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "NOT_FOUND"
                 });
             }
             catch (Exception ex)
@@ -65,13 +87,16 @@ namespace EG.ApiCore.Controllers.Almacen
         {
             try
             {
-                var result = await _bienAppService.GetAllPaginadoAsync(pageRequest);
-                return new PagedResult<BienResponse>
+                _serviceView.ClearConfiguration();
+                ConfigureService();
+
+                var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
+                return Ok(new PagedResult<BienResponse>
                 {
                     Success = true,
                     Items = result.Items,
                     TotalCount = result.TotalCount
-                };
+                });
             }
             catch (Exception ex)
             {
@@ -85,18 +110,21 @@ namespace EG.ApiCore.Controllers.Almacen
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<BienResponse>>> Create([FromBody] BienDto dto, [FromQuery] int usuarioActual)
+        public async Task<ActionResult<PagedResult<BienResponse>>> Create([FromBody] BienResponse response)
         {
             try
             {
-                var result = await _bienAppService.CreateAsync(dto, usuarioActual);
-                return CreatedAtAction(nameof(GetById), new { id = result.PkidBien }, new PagedResult<BienResponse>
+                var dto = _mapper.Map<BienDto>(response);
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
+                dto.FechaCreacion = DateTime.Now;
+
+                await _service.AddAsync(dto);
+
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidBien }, new PagedResult<BienResponse>
                 {
                     Success = true,
                     Message = "Bien creado correctamente",
                     Code = "SUCCESS",
-                    Data = result,
-                    Items = new List<BienResponse> { result },
                     TotalCount = 1
                 });
             }
@@ -105,26 +133,39 @@ namespace EG.ApiCore.Controllers.Almacen
                 return BadRequest(new PagedResult<BienResponse>
                 {
                     Success = false,
-                    Message = ex.Message,
+                    Message = $"Error al crear: {ex.Message}",
                     Code = "ERROR"
                 });
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<BienResponse>>> Update(int id, [FromBody] BienDto dto, [FromQuery] int usuarioActual)
+        public async Task<ActionResult<PagedResult<BienResponse>>> Update(int id, [FromBody] BienResponse response)
         {
             try
             {
-                var result = await _bienAppService.UpdateAsync(id, dto, usuarioActual);
+                var dto = _mapper.Map<BienDto>(response);
+                dto.PkidBien = id;
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
+                dto.FechaModificacion = DateTime.Now;
+
+                await _service.UpdateAsync(id, dto);
+
                 return Ok(new PagedResult<BienResponse>
                 {
                     Success = true,
                     Message = "Bien actualizado correctamente",
                     Code = "SUCCESS",
-                    Data = result,
-                    Items = new List<BienResponse> { result },
                     TotalCount = 1
+                });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new PagedResult<BienResponse>
+                {
+                    Success = false,
+                    Message = $"Bien con ID {id} no encontrado",
+                    Code = "NOT_FOUND"
                 });
             }
             catch (Exception ex)
@@ -132,7 +173,7 @@ namespace EG.ApiCore.Controllers.Almacen
                 return BadRequest(new PagedResult<BienResponse>
                 {
                     Success = false,
-                    Message = ex.Message,
+                    Message = $"Error al actualizar: {ex.Message}",
                     Code = "ERROR"
                 });
             }
@@ -143,7 +184,7 @@ namespace EG.ApiCore.Controllers.Almacen
         {
             try
             {
-                await _bienAppService.DeleteAsync(id);
+                await _service.DeleteAsync(id);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -154,12 +195,21 @@ namespace EG.ApiCore.Controllers.Almacen
                     TotalCount = 1
                 });
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = $"Bien con ID {id} no encontrado",
+                    Code = "NOT_FOUND"
+                });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = ex.Message,
+                    Message = $"Error al eliminar: {ex.Message}",
                     Code = "ERROR"
                 });
             }

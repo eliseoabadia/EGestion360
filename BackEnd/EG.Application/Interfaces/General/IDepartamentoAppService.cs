@@ -10,8 +10,8 @@ namespace EG.Application.Interfaces.General
         Task<DepartamentoResponse> GetByIdAsync(int id);
         Task<PagedResult<DepartamentoResponse>> GetAllPaginadoAsync(PagedRequest request);
         Task<PagedResult<DepartamentoResponse>> GetAllByEmpresaAsync(int empresaId);
-        Task<DepartamentoResponse> CreateAsync(DepartamentoDto dto, int usuarioActual);
-        Task<DepartamentoResponse> UpdateAsync(int id, DepartamentoDto dto, int usuarioActual);
+        Task<DepartamentoResponse> CreateAsync(DepartamentoResponse dto, int usuarioActual);
+        Task<DepartamentoResponse> UpdateAsync(int id, DepartamentoResponse dto, int usuarioActual);
         Task DeleteAsync(int id);
     }
 }

@@ -87,10 +87,13 @@ namespace EG.Application.Services.General
             return await GetAllPaginadoAsync(request);
         }
 
-        public async Task<DepartamentoResponse> CreateAsync(DepartamentoDto dto, int usuarioActual)
+        public async Task<DepartamentoResponse> CreateAsync(DepartamentoResponse response, int usuarioActual)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre))
+            if (response == null || string.IsNullOrWhiteSpace(response.DepartamentoNombre))
                 throw new ArgumentException("Nombre de departamento es requerido");
+
+            var dto = _mapper.Map<DepartamentoDto>(response);
+            dto.UsuarioCreacion = usuarioActual;
 
             if (!await _service.CanAddAsync(dto))
                 throw new InvalidOperationException("Ya existe un departamento activo con ese nombre");
@@ -99,12 +102,14 @@ namespace EG.Application.Services.General
             return await GetByIdAsync(dto.PkidDepartamento);
         }
 
-        public async Task<DepartamentoResponse> UpdateAsync(int id, DepartamentoDto dto, int usuarioActual)
+        public async Task<DepartamentoResponse> UpdateAsync(int id, DepartamentoResponse response, int usuarioActual)
         {
             if (id <= 0) throw new ArgumentException("ID debe ser mayor a 0");
-            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            if (response == null) throw new ArgumentNullException(nameof(response));
 
+            var dto = _mapper.Map<DepartamentoDto>(response);
             dto.PkidDepartamento = id;
+            dto.UsuarioModificacion = usuarioActual;
 
             if (!await _service.CanUpdateAsync(id, dto))
                 throw new InvalidOperationException("Ya existe otro departamento activo con ese nombre");

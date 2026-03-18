@@ -23,5 +23,11 @@ public class AlmacenMappingProfile : Profile
         // Mapeo de VwTipoBienConteo a TipoBienResponse
         CreateMap<VwTipoBienConteo, TipoBienResponse>();
 
+        // Mapeo de Bien a BienDto (bidireccional)
+        CreateMap<Bien, BienDto>().ReverseMap();
+
+        // Mapeo de VwBien a BienResponse
+        CreateMap<VwBien, BienResponse>();
+
     }
 }

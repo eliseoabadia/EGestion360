@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EG.ApiCore.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
@@ -18,15 +19,18 @@ namespace EG.ApiCore.Controllers.General
         private readonly GenericService<Departamento, DepartamentoDto, DepartamentoResponse> _service;
         private readonly GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> _serviceView;
         private readonly IMapper _mapper;
+        private readonly IUserContextService _userContext;
 
         public DepartamentoController(
             GenericService<Departamento, DepartamentoDto, DepartamentoResponse> service,
             GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> serviceView,
-            IMapper mapper)
+            IMapper mapper,
+            IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
             _mapper = mapper;
+            _userContext = userContext;
 
             ConfigureService();
         }
@@ -166,6 +170,9 @@ namespace EG.ApiCore.Controllers.General
                     });
                 }
 
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
+                dto.FechaCreacion = DateTime.Now;
+
                 await _service.AddAsync(dto);
 
                 return CreatedAtAction(nameof(GetById), new { id = dto.PkidDepartamento },
@@ -207,6 +214,8 @@ namespace EG.ApiCore.Controllers.General
                         TotalCount = 0
                     });
                 }
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
+                dto.FechaModificacion = DateTime.Now;
 
                 await _service.UpdateAsync(id, dto);
 
