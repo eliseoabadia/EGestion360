@@ -4,17 +4,17 @@ namespace EG.Web.Models.ConteoCiclico;
 
 public partial class PeriodoConteoResponse
 {
-    public int? Id { get; set; }
+    public int Id { get; set; }
 
-    public int? SucursalId { get; set; }
+    public int SucursalId { get; set; }
 
     public string SucursalNombre { get; set; }
 
-    public int? TipoConteoId { get; set; }
+    public int TipoConteoId { get; set; }
 
     public string TipoConteoNombre { get; set; }
 
-    public int? EstatusId { get; set; }
+    public int EstatusId { get; set; }
 
     public string EstatusNombre { get; set; }
 
@@ -24,7 +24,7 @@ public partial class PeriodoConteoResponse
 
     public string Descripcion { get; set; }
 
-    public DateOnly? FechaInicio { get; set; }
+    public DateOnly FechaInicio { get; set; }
 
     public DateOnly? FechaFin { get; set; }
 
@@ -32,7 +32,7 @@ public partial class PeriodoConteoResponse
 
     public int MaximoConteosPorArticulo { get; set; }
 
-    public bool? RequiereAprobacionSupervisor { get; set; }
+    public bool RequiereAprobacionSupervisor { get; set; }
 
     public int? ResponsableId { get; set; }
 

@@ -162,7 +162,7 @@ namespace EG.Application.Services.ConteoCiclico
                 if (articulo == null)
                     return new ConteoResult { Success = false, Message = "Artículo no encontrado" };
 
-                if (articulo.FechaCierre.HasValue)
+                if (articulo.FechaConclusion.HasValue)
                     return new ConteoResult { Success = false, Message = "El artículo ya está concluido" };
 
                 // Actualizar fecha de inicio usando el servicio de entidad
@@ -191,10 +191,10 @@ namespace EG.Application.Services.ConteoCiclico
                 if (articulo == null)
                     return new ConteoResult { Success = false, Message = "Artículo no encontrado" };
 
-                if (articulo.FechaCierre.HasValue)
+                if (articulo.FechaConclusion.HasValue)
                     return new ConteoResult { Success = false, Message = "El artículo ya está concluido" };
 
-                if (articulo.ArticulosConcluidos.Value >= articulo.MaximoConteosPorArticulo)
+                if (articulo.ConteosRealizados >= articulo.MaximoConteosPorArticulo)
                     return new ConteoResult { Success = false, Message = "Ya se alcanzó el máximo de conteos permitidos" };
 
                 // Crear registro de conteo
@@ -203,7 +203,7 @@ namespace EG.Application.Services.ConteoCiclico
                     FkidArticuloConteoAlma = request.ArticuloConteoId,
                     FkidPeriodoConteoAlma = articulo.Id,
                     FkidSucursalSis = articulo.SucursalId,
-                    NumeroConteo = articulo.ArticulosConcluidos.Value + 1,
+                    NumeroConteo = articulo.ConteosRealizados + 1,
                     CantidadContada = request.CantidadContada,
                     FechaConteo = DateTime.Now,
                     FkidUsuarioSis = usuarioActual,
@@ -222,13 +222,13 @@ namespace EG.Application.Services.ConteoCiclico
                 var articuloDto = new ArticuloConteoDto
                 {
                     PkidArticuloConteo = request.ArticuloConteoId,
-                    ConteosRealizados = articulo.ArticulosConcluidos.Value + 1,
-                    ConteosPendientes = articulo.MaximoConteosPorArticulo - 1,  //eae  validar esto
+                    ConteosRealizados = articulo.ConteosRealizados + 1,
+                    ConteosPendientes = articulo.MaximoConteosPorArticulo - 1,
                     UsuarioModificacion = usuarioActual
                 };
 
                 // Si es el primer conteo, guardar como existencia final temporal
-                if (articulo.ArticulosConcluidos.Value == 0)
+                if (articulo.ConteosRealizados == 0)
                 {
                     articuloDto.ExistenciaFinal = request.CantidadContada;
                 }
@@ -236,7 +236,7 @@ namespace EG.Application.Services.ConteoCiclico
                 await _articuloEntityService.UpdateAsync(request.ArticuloConteoId, articuloDto);
 
                 // Verificar cierre automático
-                if (articulo.ArticulosConcluidos.Value + 1 >= articulo.MaximoConteosPorArticulo)
+                if (articulo.ConteosRealizados + 1 >= articulo.MaximoConteosPorArticulo)
                 {
                     await CerrarConteoInternoAsync(request.ArticuloConteoId, usuarioActual);
                 }
@@ -264,7 +264,7 @@ namespace EG.Application.Services.ConteoCiclico
                 if (articulo == null)
                     return new ConteoResult { Success = false, Message = "Artículo no encontrado" };
 
-                if (articulo.FechaCierre.HasValue)
+                if (articulo.FechaConclusion.HasValue)
                     return new ConteoResult { Success = false, Message = "El artículo ya está concluido" };
 
                 // Obtener registros del artículo
@@ -277,9 +277,9 @@ namespace EG.Application.Services.ConteoCiclico
                 decimal existenciaFinal = request.ExistenciaFinal ?? registros.OrderByDescending(r => r.FechaConteo).First().CantidadContada;
 
                 // Calcular diferencia
-                var diferencia = existenciaFinal - articulo.TotalArticulos;
-                var porcentaje = articulo.TotalArticulos != 0
-                    ? (diferencia / articulo.TotalArticulos) * 100
+                var diferencia = existenciaFinal - articulo.ExistenciaSistema;
+                var porcentaje = articulo.ExistenciaSistema != 0
+                    ? (diferencia / articulo.ExistenciaSistema) * 100
                     : (diferencia != 0 ? 100 : 0);
 
                 // Actualizar artículo
@@ -394,8 +394,8 @@ namespace EG.Application.Services.ConteoCiclico
             var articulos = articulosPaged.Items;
 
             var total = articulos.Count;
-            var concluidos = articulos.Count(a => a.FechaCierre.HasValue);
-            var conDiferencia = articulos.Count(a => a.ArticulosConDiferencia != 0 && a.ArticulosConDiferencia.HasValue);
+            var concluidos = articulos.Count(a => a.FechaConclusion.HasValue);
+            var conDiferencia = articulos.Count(a => a.Diferencia != 0 && a.Diferencia.HasValue);
 
             // Actualizar periodo usando servicio de entidad
             var _periodoDto = await _periodoEntityService.GetByIdAsync(periodoId);

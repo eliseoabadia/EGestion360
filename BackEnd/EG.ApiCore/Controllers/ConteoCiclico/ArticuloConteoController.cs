@@ -33,7 +33,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         // ==================== CONSULTAS ====================
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> GetAll()
         {
             try
             {
@@ -43,7 +43,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
             catch (Exception ex)
             {
                 _logger.LogError($"Error en GetAll: {ex.Message}", ex);
-                return StatusCode(500, new PagedResult<PeriodoConteoResponse>
+                return StatusCode(500, new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -54,14 +54,14 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PeriodoConteoResponse>> GetById(int id)
+        public async Task<ActionResult<ArticuloConteoResponse>> GetById(int id)
         {
             try
             {
                 var item = await _appService.GetByIdAsync(id);
                 if (item == null)
                 {
-                    return NotFound(new PagedResult<PeriodoConteoResponse>
+                    return NotFound(new PagedResult<ArticuloConteoResponse>
                     {
                         Success = false,
                         Message = "Artículo no encontrado",
@@ -70,13 +70,13 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
                     });
                 }
 
-                return Ok(new PagedResult<PeriodoConteoResponse>
+                return Ok(new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Artículo encontrado",
                     Code = "SUCCESS",
                     Data = item,
-                    Items = new List<PeriodoConteoResponse> { item },
+                    Items = new List<ArticuloConteoResponse> { item },
                     TotalCount = 1
                 });
             }
@@ -88,12 +88,12 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
         {
             try
             {
                 var result = await _appService.GetAllPaginadoAsync(pageRequest);
-                return Ok(new PagedResult<PeriodoConteoResponse>
+                return Ok(new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Departamentos obtenidos correctamente",
@@ -110,7 +110,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpGet("periodo/{periodoId}")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetByPeriodoId(int periodoId)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> GetByPeriodoId(int periodoId)
         {
             try
             {
@@ -125,7 +125,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpGet("sucursal/{sucursalId}")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetBySucursalId(int sucursalId)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> GetBySucursalId(int sucursalId)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpGet("pendientes")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetPendientes([FromQuery] int periodoId, [FromQuery] int sucursalId)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> GetPendientes([FromQuery] int periodoId, [FromQuery] int sucursalId)
         {
             try
             {
@@ -155,7 +155,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpGet("concluidos")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> GetConcluidos([FromQuery] int periodoId, [FromQuery] int sucursalId)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> GetConcluidos([FromQuery] int periodoId, [FromQuery] int sucursalId)
         {
             try
             {
@@ -172,28 +172,30 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         // ==================== ESCRITURA ====================
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Create([FromBody] ArticuloConteoDto dto)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> Create([FromBody] ArticuloConteoResponse response)
         {
             try
             {
-                var usuarioActual = _userContext.GetCurrentUserId();
-                var result = await _appService.CreateAsync(dto, usuarioActual);
+                var dto = _mapper.Map<ArticuloConteoDto>(response);
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
+                
+                var result = await _appService.CreateAsync(dto, dto.UsuarioCreacion);
 
                 return CreatedAtAction(nameof(GetById), new { id = result.Id },
-                    new PagedResult<PeriodoConteoResponse>
+                    new PagedResult<ArticuloConteoResponse>
                     {
                         Success = true,
                         Message = "Artículo creado correctamente",
                         Code = "SUCCESS",
                         Data = result,
-                        Items = new List<PeriodoConteoResponse> { result },
+                        Items = new List<ArticuloConteoResponse> { result },
                         TotalCount = 1
                     });
             }
             catch (ArgumentNullException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new PagedResult<PeriodoConteoResponse>
+                return BadRequest(new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -204,7 +206,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new PagedResult<PeriodoConteoResponse>
+                return BadRequest(new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -215,7 +217,7 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return Conflict(new PagedResult<PeriodoConteoResponse>
+                return Conflict(new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -231,20 +233,22 @@ namespace EG.ApiCore.Controllers.ConteoCiclico
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> Update(int id, [FromBody] ArticuloConteoDto dto)
+        public async Task<ActionResult<PagedResult<ArticuloConteoResponse>>> Update(int id, [FromBody] ArticuloConteoResponse response)
         {
             try
             {
-                var usuarioActual = _userContext.GetCurrentUserId();
-                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
+                var dto = _mapper.Map<ArticuloConteoDto>(response);
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
+                
+                var result = await _appService.UpdateAsync(id, dto, dto.UsuarioModificacion ?? 0);
 
-                return Ok(new PagedResult<PeriodoConteoResponse>
+                return Ok(new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Artículo actualizado correctamente",
                     Code = "SUCCESS",
                     Data = result,
-                    Items = new List<PeriodoConteoResponse> { result },
+                    Items = new List<ArticuloConteoResponse> { result },
                     TotalCount = 1
                 });
             }

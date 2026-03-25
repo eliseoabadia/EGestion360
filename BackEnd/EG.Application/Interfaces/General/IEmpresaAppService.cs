@@ -6,14 +6,11 @@ namespace EG.Application.Interfaces.General
 {
     public interface IEmpresaAppService
     {
-        // Consultas
         Task<PagedResult<EmpresaResponse>> GetAllAsync();
         Task<EmpresaResponse> GetByIdAsync(int id);
-        Task<PagedResult<EmpresaResponse>> GetAllPaginadoAsync(PagedRequest request);
-
-        // Comandos
+        Task<PagedResult<EmpresaResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
         Task<EmpresaResponse> CreateAsync(EmpresaDto dto, int usuarioActual);
         Task<EmpresaResponse> UpdateAsync(int id, EmpresaDto dto, int usuarioActual);
-        Task DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id, int usuarioActual);
     }
 }

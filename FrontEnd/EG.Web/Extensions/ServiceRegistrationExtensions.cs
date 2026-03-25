@@ -1,9 +1,11 @@
 ﻿using EG.Common.Helper;
 using EG.Web.Contracs;
+using EG.Web.Contracs.ConteoCiclico;
 using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
+using EG.Web.Services.ConteoCiclico;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Extensions;
@@ -18,6 +20,7 @@ public static class ApiServiceExtensions
         // Registro de los CRUDs específicos
         RegisterCrud<DepartamentoResponse>(services, "api/Departamento");
         RegisterCrud<UsuarioResponse>(services, "api/Usuario");
+        RegisterCrud<EstadoResponse>(services, "api/Estado");
         RegisterCrud<EmpresaResponse>(services, "api/Empresa");
         RegisterCrud<MenuItemsResponse>(services, "api/Menu");
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
@@ -33,6 +36,10 @@ public static class ApiServiceExtensions
         RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
         RegisterCrud<BienResponse>(services, "api/Bien");
         // Agrega más aquí...
+
+        // Servicios específicos de Conteo Cíclico
+        services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
+        services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
 
         return services;
     }

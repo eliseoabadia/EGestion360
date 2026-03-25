@@ -2085,6 +2085,9 @@ public partial class EGestionContext : DbContext
                 .HasNoKey()
                 .ToView("VW_EstadoEmpresa", "SIS");
 
+            entity.Property(e => e.CodigoEstado)
+                .HasMaxLength(10)
+                .IsUnicode(false);
             entity.Property(e => e.EmpresaNombre)
                 .IsRequired()
                 .HasMaxLength(128);
@@ -2092,8 +2095,13 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(64)
                 .IsUnicode(false);
+            entity.Property(e => e.FkidIdiomaPreferidoSis).HasColumnName("FKIdIdiomaPreferido_SIS");
+            entity.Property(e => e.FkidMonedaBaseSis).HasColumnName("FKIdMonedaBase_SIS");
+            entity.Property(e => e.FkidPaisSis).HasColumnName("FKIdPais_SIS");
+            entity.Property(e => e.Giro).HasMaxLength(100);
             entity.Property(e => e.PkidEmpresa).HasColumnName("PKIdEmpresa");
             entity.Property(e => e.PkidEstado).HasColumnName("PKIdEstado");
+            entity.Property(e => e.RazonSocial).HasMaxLength(255);
             entity.Property(e => e.Rfc)
                 .IsRequired()
                 .HasMaxLength(13)

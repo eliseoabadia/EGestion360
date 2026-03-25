@@ -2,124 +2,64 @@ namespace EG.Web.Models.ConteoCiclico;
 
 public partial class ArticuloConteoResponse
 {
-    public int Id { get; set; }
-
-    public int PeriodoId { get; set; }
-
-    public string CodigoPeriodo { get; set; }
-
-    public string PeriodoNombre { get; set; }
-
-    public int BienId { get; set; }
-
-    public string CodigoArticulo { get; set; }
-
-    public string DescripcionArticulo { get; set; }
-
-    public int SucursalId { get; set; }
-
-    public string SucursalNombre { get; set; }
-
-    public int EstatusId { get; set; }
-
-    public string EstatusNombre { get; set; }
-
-    public string EstatusDescripcion { get; set; }
-
-    public string CodigoBarras { get; set; }
-
-    public string Ubicacion { get; set; }
-
-    public decimal ExistenciaSistema { get; set; }
-
-    public decimal? ExistenciaFinal { get; set; }
-
-    public decimal? Diferencia { get; set; }
-
-    public decimal? PorcentajeDiferencia { get; set; }
-
-    public int? DiasUltimoConteo { get; set; }
-
-    public int ConteosRealizados { get; set; }
-
-    public int ConteosPendientes { get; set; }
-
-    public int MaximoConteosPorArticulo { get; set; }
-
-    public int? ConteosRestantes { get; set; }
-
-    public int EstaConcluido { get; set; }
-
-    public string EstaConcluidoTexto { get; set; }
-
-    public int RequiereTercerConteo { get; set; }
-
-    public DateTime? FechaInicioConteo { get; set; }
-
-    public DateTime? FechaConclusion { get; set; }
-
-    public int? UsuarioConcluyoId { get; set; }
-
-    public string UsuarioConcluyoNombre { get; set; }
-
-    public int? DiscrepanciaId { get; set; }
-
-    public decimal? DiscrepanciaValor1 { get; set; }
-
-    public decimal? DiscrepanciaValor2 { get; set; }
-
-    public decimal? DiscrepanciaValor3 { get; set; }
-
-    public decimal? DiscrepanciaValorAceptado { get; set; }
-
-    public string DiscrepanciaMetodo { get; set; }
-
-    public int TieneDiscrepanciaPendiente { get; set; }
-
-    public string HistorialConteosTexto { get; set; }
-
-    public decimal? UltimoConteo { get; set; }
-
-    public decimal? PrimerConteo { get; set; }
-
-    public decimal? SegundoConteo { get; set; }
-
-    public decimal? TercerConteo { get; set; }
-
-    public string ConteosJson { get; set; }
-
-    public string ColorEstatus { get; set; }
-
-    public string IconoEstatus { get; set; }
-
-    public string BadgeTexto { get; set; }
-
-    public bool Activo { get; set; }
-
-    public DateTime? FechaCreacion { get; set; }
-
-    public string UsuarioCreacionNombre { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
-
-    public string UsuarioModificacionNombre { get; set; }
-
-    public string Serie { get; set; }
-
-    public string Modelo { get; set; }
-
-    public string MarcaBien { get; set; }
-
-    public string CodigoTipoBien { get; set; }
-
-    public string DescripcionTipoBien { get; set; }
-
-    public string AreaNombre { get; set; }
-
-    public string AreaClave { get; set; }
-
-    public int UsuarioCreacion { get; set; }
-
-    public int? UsuarioModificacion { get; set; }
-
+    public int Id { get; set; } = 0;
+    public int PeriodoId { get; set; } = 0;
+    public string CodigoPeriodo { get; set; } = string.Empty;
+    public string PeriodoNombre { get; set; } = string.Empty;
+    public int BienId { get; set; } = 0;
+    public string CodigoArticulo { get; set; } = string.Empty;
+    public string DescripcionArticulo { get; set; } = string.Empty;
+    public int SucursalId { get; set; } = 0;
+    public string SucursalNombre { get; set; } = string.Empty;
+    public int EstatusId { get; set; } = 0;
+    public string EstatusNombre { get; set; } = string.Empty;
+    public string EstatusDescripcion { get; set; } = string.Empty;
+    public string CodigoBarras { get; set; } = string.Empty;
+    public string Ubicacion { get; set; } = string.Empty;
+    public decimal ExistenciaSistema { get; set; } = 0;
+    public decimal? ExistenciaFinal { get; set; } = 0;
+    public decimal? Diferencia { get; set; } = 0;
+    public decimal? PorcentajeDiferencia { get; set; } = 0;
+    public int? DiasUltimoConteo { get; set; } = 0;
+    public int ConteosRealizados { get; set; } = 0;
+    public int ConteosPendientes { get; set; } = 0;
+    public int MaximoConteosPorArticulo { get; set; } = 0;
+    public int? ConteosRestantes { get; set; } = 0;
+    public int EstaConcluido { get; set; } = 0;
+    public string EstaConcluidoTexto { get; set; } = string.Empty;
+    public int RequiereTercerConteo { get; set; } = 0;
+    public DateTime? FechaInicioConteo { get; set; } = DateTime.MinValue;
+    public DateTime? FechaConclusion { get; set; } = DateTime.MinValue;
+    public int? UsuarioConcluyoId { get; set; } = 0;
+    public string UsuarioConcluyoNombre { get; set; } = string.Empty;
+    public int? DiscrepanciaId { get; set; } = 0;
+    public decimal? DiscrepanciaValor1 { get; set; } = 0;
+    public decimal? DiscrepanciaValor2 { get; set; } = 0;
+    public decimal? DiscrepanciaValor3 { get; set; } = 0;
+    public decimal? DiscrepanciaValorAceptado { get; set; } = 0;
+    public string DiscrepanciaMetodo { get; set; } = string.Empty;
+    public int TieneDiscrepanciaPendiente { get; set; } = 0;
+    public string HistorialConteosTexto { get; set; } = string.Empty;
+    public decimal? UltimoConteo { get; set; } = 0;
+    public decimal? PrimerConteo { get; set; } = 0;
+    public decimal? SegundoConteo { get; set; } = 0;
+    public decimal? TercerConteo { get; set; } = 0;
+    public string ConteosJson { get; set; } = string.Empty;
+    public string ColorEstatus { get; set; } = string.Empty;
+    public string IconoEstatus { get; set; } = string.Empty;
+    public string BadgeTexto { get; set; } = string.Empty;
+    public bool Activo { get; set; } = false;
+    public DateTime? FechaCreacion { get; set; } = DateTime.MinValue;
+    public string UsuarioCreacionNombre { get; set; } = string.Empty;
+    public DateTime? FechaModificacion { get; set; } = DateTime.MinValue;
+    public string UsuarioModificacionNombre { get; set; } = string.Empty;
+    public string Serie { get; set; } = string.Empty;
+    public string Modelo { get; set; } = string.Empty;
+    public string MarcaBien { get; set; } = string.Empty;
+    public string CodigoTipoBien { get; set; } = string.Empty;
+    public string DescripcionTipoBien { get; set; } = string.Empty;
+    public string AreaNombre { get; set; } = string.Empty;
+    public string AreaClave { get; set; } = string.Empty;
+    public int UsuarioCreacion { get; set; } = 0;
+    public int? UsuarioModificacion { get; set; } = 0;
 }

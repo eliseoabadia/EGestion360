@@ -57,10 +57,10 @@
                 <MudTd>@empresa.EstadoNombre</MudTd>
                 <MudTd>@empresa.Rfc</MudTd>
                 <MudTd>
-                    <MudBadge Color="@(empresa.EmpresaActivo == true ? Color.Success : Color.Error)"
+                    <MudBadge Color="@(empresa.EmpresaActivo? Color.Success: Color.Error)"
                               Variant="Variant.Filled"
                               Size="Size.Small">
-                        @(empresa.EmpresaActivo == true ? "Activo" : "Inactivo")
+                        @(empresa.EmpresaActivo ? "Activo" : "Inactivo")
                     </MudBadge>
                 </MudTd>
             </Row>
@@ -87,11 +87,10 @@
             ID = e.PkidEmpresa,
             Nombre = e.EmpresaNombre,
             RFC = e.Rfc,
-            Estado = e.EmpresaActivo == true ? "Activo" : "Inactivo"
+            Estado = e.EmpresaActivo ? "Activo" : "Inactivo"
         });
     }
 
-    // Sobrescribir para obtener el nombre de la empresa
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         try
@@ -105,69 +104,17 @@
         }
     }
 
-    // Sobrescribir para recargar la tabla
     protected override async Task ReloadData()
     {
         if (table != null)
         {
             Console.WriteLine("🔄 Recargando tabla de empresas...");
             await table.ReloadData();
-            StateHasChanged(); // Forzar actualización de la UI
+            StateHasChanged();
         }
         else
         {
             Console.WriteLine("⚠️ table es null en ReloadData");
         }
-    }
-
-    // Opcional: Sobrescribir métodos individuales para más control
-    protected override async Task CreateItem()
-    {
-        await base.CreateItem();
-        // ReloadData ya se llama en base.CreateItem
-    }
-
-    protected override async Task EditItem(int id)
-    {
-        await base.EditItem(id);
-        // ReloadData ya se llama en base.EditItem
-    }
-
-    protected override async Task DeleteItem(int id)
-    {
-        if (!CanDelete)
-        {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
-            return;
-        }
-
-        var response = await Service.GetByIdAsync(id);
-        var empresaNombre = response?.Data?.EmpresaNombre ?? "la empresa";
-
-        var parameters = new DialogParameters
-        {
-            ["Id"] = id,
-            ["ItemName"] = empresaNombre,
-            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
-            {
-                var deleteResponse = await Service.DeleteAsync(deleteId);
-                if (deleteResponse?.Success == true)
-                {
-                    Snackbar.Add(deleteResponse.Message ?? "Empresa eliminada correctamente", Severity.Success);
-                    await table.ReloadData(); // Recargar aquí mismo
-                    return true;
-                }
-                else
-                {
-                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
-                    return false;
-                }
-            })
-        };
-
-        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
-            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
-
-        await dialog.Result;
     }
 }

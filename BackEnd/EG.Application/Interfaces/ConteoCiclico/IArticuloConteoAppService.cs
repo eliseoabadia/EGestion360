@@ -7,19 +7,19 @@ namespace EG.Application.Interfaces.ConteoCiclico
     public interface IArticuloConteoAppService
     {
         // Consultas básicas
-        Task<PagedResult<PeriodoConteoResponse>> GetAllAsync();
-        Task<PeriodoConteoResponse> GetByIdAsync(int id);
-        Task<PagedResult<PeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
+        Task<PagedResult<ArticuloConteoResponse>> GetAllAsync();
+        Task<ArticuloConteoResponse> GetByIdAsync(int id);
+        Task<PagedResult<ArticuloConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
 
         // Filtros específicos (basados en la vista)
-        Task<PagedResult<PeriodoConteoResponse>> GetByPeriodoIdAsync(int periodoId);
-        Task<PagedResult<PeriodoConteoResponse>> GetBySucursalIdAsync(int sucursalId);
-        Task<PagedResult<PeriodoConteoResponse>> GetPendientesAsync(int periodoId, int sucursalId);
-        Task<PagedResult<PeriodoConteoResponse>> GetConcluidosAsync(int periodoId, int sucursalId);
+        Task<PagedResult<ArticuloConteoResponse>> GetByPeriodoIdAsync(int periodoId);
+        Task<PagedResult<ArticuloConteoResponse>> GetBySucursalIdAsync(int sucursalId);
+        Task<PagedResult<ArticuloConteoResponse>> GetPendientesAsync(int periodoId, int sucursalId);
+        Task<PagedResult<ArticuloConteoResponse>> GetConcluidosAsync(int periodoId, int sucursalId);
 
         // Operaciones de escritura
-        Task<PeriodoConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual);
-        Task<PeriodoConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual);
+        Task<ArticuloConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual);
+        Task<ArticuloConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual);
         Task<bool> DeleteAsync(int id, int usuarioActual);
 
         // Métodos adicionales de negocio

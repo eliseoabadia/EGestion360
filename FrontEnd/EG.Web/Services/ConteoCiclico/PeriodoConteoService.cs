@@ -2,103 +2,189 @@ using EG.Common.Helper;
 using EG.Web.Contracs.ConteoCiclico;
 using EG.Web.Models;
 using EG.Web.Models.ConteoCiclico;
-using EG.Web.Services;
 using Microsoft.JSInterop;
+using MudBlazor;
+using SortDirection = MudBlazor.SortDirection;
 
-namespace EG.Web.Services.ConteoCiclico
+namespace EG.Web.Services.ConteoCiclico;
+
+public class PeriodoConteoService : BaseService, IPeriodoConteoService
 {
-    public class PeriodoConteoService : GenericCrudService<PeriodoConteoResponse>, IPeriodoConteoService
+    public PeriodoConteoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
+        : base(httpClient, jsRuntime, application)
     {
-        private readonly SucursalStateService _sucursalStateService;
+    }
 
-        public PeriodoConteoService(
-            HttpClient httpClient, 
-            IJSRuntime jsRuntime, 
-            ApplicationInstance application,
-            SucursalStateService sucursalStateService)
-            : base(httpClient, jsRuntime, application, "api/PeriodoConteo")
+    public async Task<ApiResponse<PeriodoConteoResponse>> GetByIdAsync(int id)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        return await GetAsync<ApiResponse<PeriodoConteoResponse>>($"api/PeriodoConteo/{id}");
+    }
+
+    public async Task<ApiResponse<PeriodoConteoResponse>> GetAllAsync()
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        var response = await GetAsync<ApiResponse<PeriodoConteoResponse>>("api/PeriodoConteo", useBaseUrl: false);
+        return response ?? new ApiResponse<PeriodoConteoResponse>();
+    }
+
+    public async Task<ApiResponse<PeriodoConteoResponse>> GetAllByEmpresaAsync(int empresaId)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        var response = await GetAsync<ApiResponse<PeriodoConteoResponse>>($"api/PeriodoConteo/empresa/{empresaId}", useBaseUrl: false);
+        return response ?? new ApiResponse<PeriodoConteoResponse>();
+    }
+
+    public async Task<ApiResponse<PeriodoConteoResponse>> GetAllBySucursalAsync(int sucursalId)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        var response = await GetAsync<ApiResponse<PeriodoConteoResponse>>($"api/PeriodoConteo/sucursal/{sucursalId}", useBaseUrl: false);
+        return response ?? new ApiResponse<PeriodoConteoResponse>();
+    }
+
+    public async Task<ApiResponse<PeriodoConteoResponse>> GetAllPaginadoAsync(
+        int page = 1,
+        int pageSize = 10,
+        string filtro = "",
+        string sortLabel = "",
+        SortDirection sortDirection = SortDirection.Ascending,
+        Dictionary<string, object>? additionalFilters = null)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        string sortDir = sortDirection == SortDirection.Descending ? "Descending" : "Ascending";
+
+        var pagedRequest = new
         {
-            _sucursalStateService = sucursalStateService;
-        }
+            page = page,
+            pageSize = pageSize,
+            filtro = filtro ?? "",
+            sortLabel = sortLabel ?? string.Empty,
+            sortDirection = sortDir,
+            searchString = filtro ?? "",
+            additionalFilters = additionalFilters ?? new Dictionary<string, object>()
+        };
 
-        public async Task<ApiResponse<bool>> CambiarEstatusAsync(int id, int estatusId)
+        var response = await PostAsync<ApiResponse<PeriodoConteoResponse>>(
+            "api/PeriodoConteo/GetAllPaginado",
+            pagedRequest,
+            useBaseUrl: false);
+
+        return response ?? new ApiResponse<PeriodoConteoResponse>();
+    }
+
+    public async Task<ApiResponse<PeriodoConteoResponse>> CreateAsync(PeriodoConteoResponse entity)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        var response = await PostAsync<ApiResponse<PeriodoConteoResponse>>(
+            "api/PeriodoConteo",
+            entity,
+            useBaseUrl: false);
+
+        return response ?? new ApiResponse<PeriodoConteoResponse>();
+    }
+
+    public async Task<ApiResponse<PeriodoConteoResponse>> UpdateAsync(PeriodoConteoResponse entity, int id)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
+
+        if (id <= 0)
         {
-            if (!IsClientSide())
-                return new ApiResponse<bool>();
-
-            var response = await PatchAsync<ApiResponse<bool>>(
-                $"api/PeriodoConteo/{id}/cambiar-estatus",
-                estatusId,
-                useBaseUrl: false);
-
-            return response ?? new ApiResponse<bool>
+            return new ApiResponse<PeriodoConteoResponse>
             {
                 Success = false,
-                Message = "Error al cambiar estatus",
-                Code = "ERROR"
+                Message = "ID no válido",
+                Code = "INVALID_ID"
             };
         }
 
-        public async Task<ApiResponse<bool>> CerrarPeriodoAsync(int id)
+        var response = await PutAsync<ApiResponse<PeriodoConteoResponse>>(
+            $"api/PeriodoConteo/{id}",
+            entity,
+            useBaseUrl: false);
+
+        return response ?? new ApiResponse<PeriodoConteoResponse>
         {
-            if (!IsClientSide())
-                return new ApiResponse<bool>();
+            Success = false,
+            Message = "Error al actualizar",
+            Code = "ERROR"
+        };
+    }
 
-            var response = await PatchAsync<ApiResponse<bool>>(
-                $"api/PeriodoConteo/{id}/cerrar",
-                null,
-                useBaseUrl: false);
+    public async Task<ApiResponse<PeriodoConteoResponse>> DeleteAsync(int id)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<PeriodoConteoResponse>();
 
-            return response ?? new ApiResponse<bool>
-            {
-                Success = false,
-                Message = "Error al cerrar período",
-                Code = "ERROR"
-            };
-        }
+        var response = await DeleteAsync<ApiResponse<PeriodoConteoResponse>>(
+            $"api/PeriodoConteo/{id}",
+            useBaseUrl: false);
 
-        public async Task<ApiResponse<List<PeriodoConteoResponse>>> GetMisPeriodosAsync(int usuarioId)
+        return response ?? new ApiResponse<PeriodoConteoResponse>
         {
-            if (!IsClientSide())
-                return new ApiResponse<List<PeriodoConteoResponse>>();
+            Success = false,
+            Message = "Error al eliminar",
+            Code = "ERROR"
+        };
+    }
 
-            var response = await GetAsync<ApiResponse<List<PeriodoConteoResponse>>>(
-                $"api/PeriodoConteo/mis-periodos/{usuarioId}",
-                useBaseUrl: false);
+    public async Task<ApiResponse<bool>> CambiarEstatusAsync(int id, int estatusId)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<bool>();
 
-            return response ?? new ApiResponse<List<PeriodoConteoResponse>>
-            {
-                Success = false,
-                Message = "Error al obtener mis períodos",
-                Code = "ERROR"
-            };
-        }
+        var response = await PatchAsync<ApiResponse<bool>>(
+            $"api/PeriodoConteo/{id}/cambiar-estatus",
+            new { estatusId },
+            useBaseUrl: false);
 
-        // Obtener periodos por la sucursal actual
-        public async Task<ApiResponse<List<PeriodoConteoResponse>>> GetBySucursalActualAsync()
+        return response ?? new ApiResponse<bool>
         {
-            if (!IsClientSide())
-                return new ApiResponse<List<PeriodoConteoResponse>>();
+            Success = false,
+            Message = "Error al cambiar estatus",
+            Code = "ERROR"
+        };
+    }
 
-            if (!_sucursalStateService.HasSucursalSeleccionada)
-            {
-                return new ApiResponse<List<PeriodoConteoResponse>>
-                {
-                    Success = false,
-                    Message = "No hay sucursal seleccionada",
-                    Code = "NOSUCURSAL"
-                };
-            }
+    public async Task<ApiResponse<bool>> CerrarPeriodoAsync(int id)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<bool>();
 
-            var response = await GetAsync<ApiResponse<List<PeriodoConteoResponse>>>(
-                $"api/PeriodoConteo/sucursal/{_sucursalStateService.SucursalId}",
-                useBaseUrl: false);
+        var response = await PostAsync<ApiResponse<bool>>(
+            $"api/PeriodoConteo/{id}/cerrar",
+            new { },
+            useBaseUrl: false);
 
-            return response ?? new ApiResponse<List<PeriodoConteoResponse>>();
-        }
+        return response ?? new ApiResponse<bool>
+        {
+            Success = false,
+            Message = "Error al cerrar periodo",
+            Code = "ERROR"
+        };
+    }
 
-        public bool HasSucursalSeleccionada => _sucursalStateService.HasSucursalSeleccionada;
-        public int? SucursalId => _sucursalStateService.SucursalId;
-        public string? SucursalNombre => _sucursalStateService.SucursalNombre;
+    public async Task<ApiResponse<List<PeriodoConteoResponse>>> GetMisPeriodosAsync(int usuarioId)
+    {
+        if (!IsClientSide())
+            return new ApiResponse<List<PeriodoConteoResponse>>();
+
+        var response = await GetAsync<ApiResponse<List<PeriodoConteoResponse>>>(
+            $"api/PeriodoConteo/mis-periodos/{usuarioId}",
+            useBaseUrl: false);
+
+        return response ?? new ApiResponse<List<PeriodoConteoResponse>>();
     }
 }

@@ -1,0 +1,441 @@
+@page "/conteo-ciclico/articulos/{PeriodoId:int}"
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Contracs.ConteoCiclico
+@using EG.Web.Services.ConteoCiclico
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using EG.Web.Auth
+@inject IArticuloConteoService articuloService
+@inject IPeriodoConteoService periodoService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject AuthenticationProviderJWT AuthProvider
+@inject IJSRuntime JsRuntime
+
+<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudBreadcrumbs Items="_breadcrumbs">
+        <ItemTemplate Context="item">
+            <MudLink Typo="Typo.body2" Href="@item.Href">@item.Text</MudLink>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+
+    <PageHeader Title="@($"Artículos del Periodo: {_periodoNombre}")"
+                Subtitle="@($"Código: {_periodoCodigo} | Estatus: {_periodoEstatus}")"
+                Icon="@Icons.Material.Filled.Inventory"
+                CanCreate="@CanCreate"
+                OnCreate="AgregarBienes"
+                OnRefresh="() => table.ReloadData()" />
+
+    @* Estadísticas *@
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Total Artículos</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Primary">@_totalArticulos</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Concluidos</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Success">@_articulosConcluidos</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Con Diferencia</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Warning">@_articulosDiferencia</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Pendientes</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Error">@_articulosPendientes</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <GenericTable TItem="ArticuloConteoResponse"
+                  @ref="table"
+                  Title="Lista de Artículos"
+                  SearchPlaceholder="Buscar por código, descripción, ubicación..."
+                  ShowExportButton="@CanExport"
+                  ShowAddButton="false"
+                  ServerDataFunc="LoadServerData"
+                  ExportFunc="ExportToExcel"
+                  SearchString="@SearchString"
+                  SearchStringChanged="(s) => SearchString = s"
+                  OnSearch="OnSearch">
+
+        <Header>
+            <MudTh>Acciones</MudTh>
+            <MudTh>Estatus</MudTh>
+            <MudTh><MudTableSortLabel SortLabel="CodigoArticulo" T="ArticuloConteoResponse">Código</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="DescripcionArticulo" T="ArticuloConteoResponse">Descripción</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="Ubicacion" T="ArticuloConteoResponse">Ubicación</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="ExistenciaSistema" T="ArticuloConteoResponse">Exist. Sistema</MudTableSortLabel></MudTh>
+            <MudTh>Conteo Final</MudTh>
+            <MudTh>Diferencia</MudTh>
+            <MudTh>Conteos</MudTh>
+        </Header>
+
+        <Row Context="articulo">
+            <MudTd>
+                <MudTooltip Text="Realizar Conteo">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => RealizarConteo(articulo))" />
+                </MudTooltip>
+                <MudTooltip Text="Ver Historial">
+                    <MudIconButton Icon="@Icons.Material.Filled.History"
+                                   Color="Color.Default"
+                                   Size="Size.Small"
+                                   OnClick="@(() => VerHistorial(articulo))" />
+                </MudTooltip>
+                <MudTooltip Text="Eliminar">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteItem(articulo.Id))" />
+                </MudTooltip>
+            </MudTd>
+            <MudTd>
+                <MudChip T="string" 
+                         Size="Size.Small" 
+                         Color="@GetEstatusColor(articulo.EstatusId)"
+                         Variant="Variant.Filled">
+                    @articulo.EstatusNombre
+                </MudChip>
+            </MudTd>
+            <MudTd>@articulo.CodigoArticulo</MudTd>
+            <MudTd>
+                <MudText Typo="Typo.body2">@articulo.DescripcionArticulo</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    @articulo.Serie | @articulo.Modelo | @articulo.MarcaBien
+                </MudText>
+            </MudTd>
+            <MudTd>@articulo.Ubicacion</MudTd>
+            <MudTd>
+                <MudText Typo="Typo.body2">@articulo.ExistenciaSistema.ToString("N2")</MudText>
+            </MudTd>
+            <MudTd>
+                @if (articulo.ExistenciaFinal.HasValue)
+                {
+                    <MudText Typo="Typo.body2" 
+                             Color="@(articulo.Diferencia != 0 ? Color.Warning : Color.Default)">
+                        @articulo.ExistenciaFinal.Value.ToString("N2")
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Default">-</MudText>
+                }
+            </MudTd>
+            <MudTd>
+                @if (articulo.Diferencia.HasValue && articulo.Diferencia != 0)
+                {
+                    <MudText Typo="Typo.body2" 
+                             Color="@(articulo.Diferencia > 0 ? Color.Success : Color.Error)">
+                        @(articulo.Diferencia > 0 ? "+" : "")@articulo.Diferencia.Value.ToString("N2")
+                    </MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        (@articulo.PorcentajeDiferencia?.ToString("F1")%)
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Success">0</MudText>
+                }
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.body2">
+                    @articulo.ConteosRealizados / @articulo.MaximoConteosPorArticulo
+                </MudText>
+            </MudTd>
+        </Row>
+    </GenericTable>
+</MudContainer>
+
+@code {
+    [Parameter] public int PeriodoId { get; set; }
+
+    private GenericTable<ArticuloConteoResponse> table = null!;
+    private List<BreadcrumbItem> _breadcrumbs = new();
+
+    private string _periodoNombre = string.Empty;
+    private string _periodoCodigo = string.Empty;
+    private string _periodoEstatus = string.Empty;
+
+    private int _totalArticulos = 0;
+    private int _articulosConcluidos = 0;
+    private int _articulosDiferencia = 0;
+    private int _articulosPendientes = 0;
+    private List<ArticuloConteoResponse> _allArticulos = new();
+
+    private string SearchString { get; set; } = string.Empty;
+    private bool Loading { get; set; }
+    private bool CanCreate { get; set; } = true;
+    private bool CanExport { get; set; } = true;
+    private bool CanDelete { get; set; } = true;
+
+    private string ModuleName => "conteociclico";
+    private string SubModuleName => "periodo";
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbs = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Inicio", "/"),
+            new BreadcrumbItem("Conteo Cíclico", "/conteo-ciclico/periodos"),
+            new BreadcrumbItem("Artículos", null, disabled: true)
+        };
+
+        CanCreate = AuthProvider.HasPermission(ModuleName, SubModuleName, "new");
+        CanExport = AuthProvider.HasPermission(ModuleName, SubModuleName, "CanExportToExcel");
+        CanDelete = AuthProvider.HasPermission(ModuleName, SubModuleName, "delete");
+
+        await CargarPeriodo();
+    }
+
+    private async Task CargarPeriodo()
+    {
+        try
+        {
+            var response = await periodoService.GetByIdAsync(PeriodoId);
+            if (response?.Success == true && response.Data != null)
+            {
+                _periodoNombre = response.Data.Nombre ?? string.Empty;
+                _periodoCodigo = response.Data.CodigoPeriodo ?? string.Empty;
+                _periodoEstatus = response.Data.EstatusNombre ?? string.Empty;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar periodo: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<TableData<ArticuloConteoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await articuloService.GetAllPaginadoAsync(
+                page: state.Page + 1,
+                pageSize: state.PageSize,
+                filtro: SearchString,
+                sortLabel: state.SortLabel ?? "CodigoArticulo",
+                sortDirection: state.SortDirection,
+                periodoId: PeriodoId);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                var items = response.Items.ToList();
+                _totalArticulos = response.TotalCount;
+                CalcularEstadisticas(items);
+
+                return new TableData<ArticuloConteoResponse>
+                {
+                    Items = items,
+                    TotalItems = response.TotalCount
+                };
+            }
+
+            return new TableData<ArticuloConteoResponse>
+            {
+                Items = new List<ArticuloConteoResponse>(),
+                TotalItems = 0
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar artículos: {ex.Message}", Severity.Error);
+            return new TableData<ArticuloConteoResponse>
+            {
+                Items = new List<ArticuloConteoResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CalcularEstadisticas(List<ArticuloConteoResponse> articulos)
+    {
+        _allArticulos = articulos;
+        _totalArticulos = articulos.Count;
+        _articulosConcluidos = articulos.Count(x => x.EstatusId == 3);
+        _articulosDiferencia = articulos.Count(x => x.EstatusId == 4);
+        _articulosPendientes = articulos.Count(x => x.EstatusId == 1 || x.EstatusId == 2);
+    }
+
+    private Color GetEstatusColor(int? estatusId)
+    {
+        return estatusId switch
+        {
+            1 => Color.Default,
+            2 => Color.Warning,
+            3 => Color.Success,
+            4 => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private async Task OnSearch()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task AgregarBienes()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para agregar bienes", Severity.Warning);
+            return;
+        }
+
+        var existingBienIds = new HashSet<int>(_allArticulos.Select(a => a.BienId));
+
+        var parameters = new DialogParameters
+        {
+            ["PeriodoId"] = PeriodoId,
+            ["ExistingBienIds"] = existingBienIds
+        };
+
+        var dialog = await DialogService.ShowAsync<AgregarBienesDialog>(
+            "Agregar Bienes al Periodo",
+            parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await OnSearch();
+            Snackbar.Add("Bienes agregados correctamente", Severity.Success);
+        }
+    }
+
+    private void RealizarConteo(ArticuloConteoResponse articulo)
+    {
+        Snackbar.Add($"Realizar conteo para: {articulo.DescripcionArticulo}", Severity.Info);
+    }
+
+    private void VerHistorial(ArticuloConteoResponse articulo)
+    {
+        Snackbar.Add($"Historial de conteos para: {articulo.CodigoArticulo}", Severity.Info);
+    }
+
+    private async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        var response = await articuloService.GetByIdAsync(id);
+        var itemName = response?.Data?.DescripcionArticulo ?? "el artículo";
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = itemName,
+            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
+            {
+                var deleteResponse = await articuloService.DeleteAsync(deleteId);
+                if (deleteResponse?.Success == true)
+                {
+                    Snackbar.Add(deleteResponse.Message ?? "Artículo eliminado", Severity.Success);
+                    await OnSearch();
+                    return true;
+                }
+                else
+                {
+                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
+                    return false;
+                }
+            })
+        };
+
+        var dialog = await DialogService.ShowAsync<DeleteDialog<ArticuloConteoResponse>>(
+            "Eliminar Artículo",
+            parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        await dialog.Result;
+    }
+
+    private async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await articuloService.GetAllPaginadoAsync(
+                page: 1,
+                pageSize: int.MaxValue,
+                filtro: SearchString,
+                periodoId: PeriodoId);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add("No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            var excelData = response.Items.Select(a => new
+            {
+                ID = a.Id,
+                Código = a.CodigoArticulo,
+                Descripción = a.DescripcionArticulo,
+                Ubicación = a.Ubicacion,
+                Serie = a.Serie,
+                Modelo = a.Modelo,
+                Marca = a.MarcaBien,
+                Estatus = a.EstatusNombre,
+                Existencia_Sistema = a.ExistenciaSistema,
+                Existencia_Final = a.ExistenciaFinal,
+                Diferencia = a.Diferencia,
+                Conteos_Realizados = a.ConteosRealizados
+            });
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"ArticulosConteo_{_periodoCodigo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportación exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -2,7 +2,7 @@
 using EG.Web.Models.ConteoCiclico;
 using SortDirection = MudBlazor.SortDirection;
 
-namespace EG.Web.Contracs.Configuration
+namespace EG.Web.Contracs.ConteoCiclico
 {
     public interface IArticuloConteoService
     {
@@ -31,7 +31,6 @@ namespace EG.Web.Contracs.Configuration
             SortDirection sortDirection = SortDirection.Ascending);
         Task<ApiResponse<bool>> CambiarEstatusAsync(int id, int estatusId);
         Task<ApiResponse<bool>> AsignarUsuarioAsync(int id, int usuarioId);
-        //Task<ApiResponse<EstadisticasArticulosResponse>> GetEstadisticasAsync(int periodoId);
         Task<ApiResponse<List<ArticuloConteoResponse>>> AddBatchAsync(List<ArticuloConteoResponse> articulos);
     }
 }

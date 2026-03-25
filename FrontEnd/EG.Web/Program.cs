@@ -60,8 +60,7 @@ internal class Program
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
         //builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
 
-        // Servicios de conteo cíclico
-        builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
+        //builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
         builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
         builder.Services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
       

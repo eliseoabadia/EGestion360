@@ -17,17 +17,43 @@ WHERE E.Activo = 1 AND D.Activo = 1 ;
 GO
 
 
-CREATE OR ALTER VIEW  [SIS].[VW_EstadoEmpresa]
+CREATE OR ALTER VIEW SIS.VW_EstadoEmpresa
 AS
-SELECT E.PKIdEstado,
-	   E.Nombre AS EstadoNombre,
-	   T.PKIdEmpresa,
-	   T.Nombre AS EmpresaNombre,
-	   T.RFC,
-	   T.Activo AS EmpresaActivo
-FROM [SIS].Estados E WITH (NOLOCK)
-INNER JOIN [SIS].[Empresa] T WITH (NOLOCK) ON E.PKIdEstado = T.PKIdEmpresa
-WHERE T.Activo = 1 ;
+SELECT 
+    -- Campos de Empresa
+    EM.PKIdEmpresa,
+    EM.Nombre AS EmpresaNombre,
+    EM.RFC,
+    EM.RazonSocial,
+    EM.Giro,
+    EM.FKIdMonedaBase_SIS,
+    EM.FKIdIdiomaPreferido_SIS,
+    EM.Logo,
+    EM.Activo AS EmpresaActivo,
+    EM.FechaCreacion AS EmpresaFechaCreacion,
+    EM.UsuarioCreacion AS EmpresaUsuarioCreacion,
+    EM.FechaModificacion AS EmpresaFechaModificacion,
+    EM.UsuarioModificacion AS EmpresaUsuarioModificacion,
+
+    -- Campos de Estado
+    E.PKIdEstado,
+    E.FKIdPais_SIS,
+    E.Nombre AS EstadoNombre,
+    E.CodigoEstado,
+    E.Activo AS EstadoActivo,
+
+    -- Campos de la relación (EmpresaEstado)
+    EE.FechaApertura,
+    EE.EsOficinaPrincipal,
+    EE.Activo AS RelacionActiva
+
+FROM SIS.Empresa EM
+INNER JOIN SIS.EmpresaEstado EE ON EM.PKIdEmpresa = EE.FKIdEmpresa_SIS
+INNER JOIN SIS.Estados E ON EE.FKIdEstado_SIS = E.PKIdEstado
+WHERE EM.Activo = 1        -- Solo empresas activas
+  AND E.Activo = 1         -- Solo estados activos
+  -- AND EE.Activo = 1     -- Opcional: si quieres filtrar solo relaciones activas
+
 
 GO
 

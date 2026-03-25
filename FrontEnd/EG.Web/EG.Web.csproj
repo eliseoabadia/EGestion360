@@ -22,7 +22,9 @@
 
   <ItemGroup>
     <Folder Include="Models\DTO\Configuration\" />
+    <Folder Include="Pages\ConteoCiclico\" />
     <Folder Include="Services\Almacen\" />
+    <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 
 </Project>

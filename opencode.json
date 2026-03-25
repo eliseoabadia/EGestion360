@@ -8,9 +8,9 @@
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "deepseek-r1:latest": { "name": "deepseek-r1:latest (local)" }
+        "deepseek-r1": { "name": "qdeepseek-r1 (local)" }
       }
     }
   },
-  "model": "ollama/deepseek-r1:latest"
+  "model": "ollama/deepseek-r1"
 }

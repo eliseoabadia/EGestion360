@@ -12,13 +12,13 @@ namespace EG.Application.Services.ConteoCiclico
 {
     public class ArticuloConteoAppService : IArticuloConteoAppService
     {
-        private readonly GenericService<ArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> _service;
-        private readonly GenericService<VwArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> _serviceView;
+        private readonly GenericService<ArticuloConteo, ArticuloConteoDto, ArticuloConteoResponse> _service;
+        private readonly GenericService<VwArticuloConteo, ArticuloConteoDto, ArticuloConteoResponse> _serviceView;
         private readonly IMapper _mapper;
 
         public ArticuloConteoAppService(
-            GenericService<ArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> service,
-            GenericService<VwArticuloConteo, ArticuloConteoDto, PeriodoConteoResponse> serviceView,
+            GenericService<ArticuloConteo, ArticuloConteoDto, ArticuloConteoResponse> service,
+            GenericService<VwArticuloConteo, ArticuloConteoDto, ArticuloConteoResponse> serviceView,
             IMapper mapper)
         {
             _service = service;
@@ -94,12 +94,12 @@ namespace EG.Application.Services.ConteoCiclico
 
         // ==================== CONSULTAS ====================
 
-        public async Task<PagedResult<PeriodoConteoResponse>> GetAllAsync()
+        public async Task<PagedResult<ArticuloConteoResponse>> GetAllAsync()
         {
             try
             {
                 var result = await _serviceView.GetAllAsync();
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Listado de artículos obtenido correctamente",
@@ -110,7 +110,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
             catch (Exception ex)
             {
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -120,7 +120,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
         }
 
-        public async Task<PeriodoConteoResponse> GetByIdAsync(int id)
+        public async Task<ArticuloConteoResponse> GetByIdAsync(int id)
         {
             try
             {
@@ -132,12 +132,12 @@ namespace EG.Application.Services.ConteoCiclico
             }
         }
 
-        public async Task<PagedResult<PeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest)
+        public async Task<PagedResult<ArticuloConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest)
         {
             try
             {
                 var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Listado paginado obtenido",
@@ -148,7 +148,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
             catch (Exception ex)
             {
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -158,7 +158,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
         }
 
-        public async Task<PagedResult<PeriodoConteoResponse>> GetByPeriodoIdAsync(int periodoId)
+        public async Task<PagedResult<ArticuloConteoResponse>> GetByPeriodoIdAsync(int periodoId)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace EG.Application.Services.ConteoCiclico
                     new PagedRequest { Page = 1, PageSize = int.MaxValue },
                     x => x.PeriodoId == periodoId && x.Activo
                 );
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Artículos por periodo obtenidos",
@@ -177,7 +177,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
             catch (Exception ex)
             {
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -187,7 +187,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
         }
 
-        public async Task<PagedResult<PeriodoConteoResponse>> GetBySucursalIdAsync(int sucursalId)
+        public async Task<PagedResult<ArticuloConteoResponse>> GetBySucursalIdAsync(int sucursalId)
         {
             try
             {
@@ -195,7 +195,7 @@ namespace EG.Application.Services.ConteoCiclico
                     new PagedRequest { Page = 1, PageSize = int.MaxValue },
                     x => x.SucursalId == sucursalId && x.Activo
                 );
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Artículos por sucursal obtenidos",
@@ -206,7 +206,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
             catch (Exception ex)
             {
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -216,7 +216,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
         }
 
-        public async Task<PagedResult<PeriodoConteoResponse>> GetPendientesAsync(int periodoId, int sucursalId)
+        public async Task<PagedResult<ArticuloConteoResponse>> GetPendientesAsync(int periodoId, int sucursalId)
         {
             try
             {
@@ -227,7 +227,7 @@ namespace EG.Application.Services.ConteoCiclico
                          x.EstaConcluido == 0 &&
                          x.Activo
                 );
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Artículos pendientes obtenidos",
@@ -238,7 +238,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
             catch (Exception ex)
             {
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -248,7 +248,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
         }
 
-        public async Task<PagedResult<PeriodoConteoResponse>> GetConcluidosAsync(int periodoId, int sucursalId)
+        public async Task<PagedResult<ArticuloConteoResponse>> GetConcluidosAsync(int periodoId, int sucursalId)
         {
             try
             {
@@ -259,7 +259,7 @@ namespace EG.Application.Services.ConteoCiclico
                          x.EstaConcluido == 1 &&
                          x.Activo
                 );
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = true,
                     Message = "Artículos concluidos obtenidos",
@@ -270,7 +270,7 @@ namespace EG.Application.Services.ConteoCiclico
             }
             catch (Exception ex)
             {
-                return new PagedResult<PeriodoConteoResponse>
+                return new PagedResult<ArticuloConteoResponse>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -282,7 +282,7 @@ namespace EG.Application.Services.ConteoCiclico
 
         // ==================== ESCRITURA ====================
 
-        public async Task<PeriodoConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual)
+        public async Task<ArticuloConteoResponse> CreateAsync(ArticuloConteoDto dto, int usuarioActual)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto), "Los datos del artículo son requeridos");
@@ -307,7 +307,7 @@ namespace EG.Application.Services.ConteoCiclico
             return await GetByIdAsync(dto.PkidArticuloConteo);
         }
 
-        public async Task<PeriodoConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual)
+        public async Task<ArticuloConteoResponse> UpdateAsync(int id, ArticuloConteoDto dto, int usuarioActual)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto), "Los datos del artículo son requeridos");
@@ -384,7 +384,7 @@ namespace EG.Application.Services.ConteoCiclico
             if (_articulo == null)
                 throw new InvalidOperationException("Artículo no encontrado");
 
-            if (_articulo.FechaCierre.HasValue)
+            if (_articulo.FechaConclusion.HasValue)
                 throw new InvalidOperationException("El conteo ya fue concluido anteriormente");
 
 
