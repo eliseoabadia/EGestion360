@@ -32,8 +32,8 @@ namespace EG.Application.Services.General
         {
             // Includes de primer nivel
             _service.AddInclude(u => u.FkidEmpresaSisNavigation);
-            _service.AddInclude(u => u.PerfilUsuario);
-            _service.AddInclude(u => u.UsuarioSucursals);
+            _service.AddInclude(u => u.PerfilUsuarioUsuarioCreacionNavigations);
+            _service.AddInclude(u => u.UsuarioSucursalUsuarioCreacionNavigations);
 
             // Filtros de relación
             _service.AddRelationFilter("Empresa", new List<string> { "Nombre", "Rfc" });

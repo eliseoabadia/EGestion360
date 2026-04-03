@@ -273,47 +273,111 @@
 
     protected override async Task OnInitializedAsync()
     {
-        loading = true;
         try
         {
-            await Task.Run(() =>
-           {
-               _isInitialized = true;
-               try
-               {
-                   // Verificar permisos usando AuthenticationProviderJWT
-                   _canView = AuthProvider.HasPermission("configuracion", "perfil", "view");
+            _canView = AuthProvider.HasPermission("configuracion", "perfil", "view");
 
-                   if (!_canView)
-                   {
-                       _hasAccess = false;
-                       StateHasChanged();
-                       // Redirigir al home después de un pequeño delay
-                       Task.Delay(2000);
-                       NavigationManager.NavigateTo("/", forceLoad: true);
-                       return;
-                   }
+            if (!_canView)
+            {
+                _hasAccess = false;
+                _isInitialized = true;
+                StateHasChanged();
+                Task.Delay(2000);
+                NavigationManager.NavigateTo("/", forceLoad: true);
+                return;
+            }
 
-                   // Si tiene acceso, verificar permisos específicos
-                   _canCreate = AuthProvider.HasPermission("configuracion", "perfil", "new");
-                   _canUpdate = AuthProvider.HasPermission("configuracion", "perfil", "update");
-                   _canDelete = AuthProvider.HasPermission("configuracion", "perfil", "delete");
-                   _canExport = AuthProvider.HasPermission("configuracion", "perfil", "CanExportToExcel");
+            _canCreate = AuthProvider.HasPermission("configuracion", "perfil", "new");
+            _canUpdate = AuthProvider.HasPermission("configuracion", "perfil", "update");
+            _canDelete = AuthProvider.HasPermission("configuracion", "perfil", "delete");
+            _canExport = AuthProvider.HasPermission("configuracion", "perfil", "CanExportToExcel");
 
-                   _hasAccess = true;
+            _hasAccess = true;
+            _isInitialized = true;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
+            _isInitialized = true;
+            StateHasChanged();
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+    }
 
-                   
-               }
-               catch (Exception ex)
-               {
-                   Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
-                   Task.Delay(1000);
-                   NavigationManager.NavigateTo("/", forceLoad: true);
-               }
-               loading = false;
-           });
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _hasAccess)
+        {
+            _isClientSide = true;
+            loading = true;
+            StateHasChanged();
 
-            // Cargar lista de empresas
+            try
+            {
+                string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", timeoutMs: 2000);
+
+                if (string.IsNullOrWhiteSpace(rawToken))
+                {
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+
+                rawToken = rawToken.Trim();
+                if ((rawToken.StartsWith("\"") && rawToken.EndsWith("\"")) ||
+                    (rawToken.StartsWith("'") && rawToken.EndsWith("'")))
+                {
+                    rawToken = rawToken.Substring(1, rawToken.Length - 2);
+                }
+
+                var tokenValue = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? rawToken.Substring("Bearer ".Length)
+                    : rawToken;
+
+                _token = tokenValue;
+                _userId = await AuthService.GetUserIdAsync();
+
+                if (_userId == 0)
+                {
+                    var parsed = ParseUserIdFromToken(tokenValue);
+                    if (parsed.HasValue)
+                    {
+                        _userId = parsed.Value;
+                    }
+                    else
+                    {
+                        var stored = await GetLocalStorageItemWithTimeoutAsync("userId", timeoutMs: 1000);
+                        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId))
+                        {
+                            _userId = sId;
+                        }
+                    }
+                }
+
+                if (_userId == 0)
+                {
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+
+                await LoadEmpresas();
+                await LoadUserProfileData();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                loading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task LoadEmpresas()
+    {
+        try
+        {
             var responseEmpresas = await empresaService.GetAllEmpresasAsync();
 
             if (responseEmpresas != null && responseEmpresas.Success && responseEmpresas.Items != null && responseEmpresas.Items.Any())
@@ -328,98 +392,11 @@
                 Snackbar.Add(errorMessage, Severity.Warning);
                 empresas = new List<EmpresaResponse>();
             }
-
-            loading = false;
-            StateHasChanged();
-            
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
-        }
-        // finally
-        // {
-        //     loading = false;
-        // }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_isInitialized)
-        {
-            _isClientSide = true;
-            _isInitialized = true;
-
-            loading = true;
-            StateHasChanged(); // Forzar actualización UI para mostrar loading
-
-            try
-            {
-                // Leer token desde localStorage
-                string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", timeoutMs: 2000);
-
-                if (string.IsNullOrWhiteSpace(rawToken))
-                {
-                    // No hay token: ir a login
-                    NavigationManager.NavigateTo("/login", forceLoad: true);
-                    return;
-                }
-
-                // Normalizar token
-                rawToken = rawToken.Trim();
-                if ((rawToken.StartsWith("\"") && rawToken.EndsWith("\"")) ||
-                    (rawToken.StartsWith("'") && rawToken.EndsWith("'")))
-                {
-                    rawToken = rawToken.Substring(1, rawToken.Length - 2);
-                }
-
-                var tokenValue = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                    ? rawToken.Substring("Bearer ".Length)
-                    : rawToken;
-
-                _token = tokenValue;
-
-                // Obtener userId desde AuthenticationState
-                _userId = await AuthService.GetUserIdAsync();
-
-                // Si AuthenticationState no tiene userId, intentar extraer del token
-                if (_userId == 0)
-                {
-                    var parsed = ParseUserIdFromToken(tokenValue);
-                    if (parsed.HasValue)
-                    {
-                        _userId = parsed.Value;
-                    }
-                    else
-                    {
-                        // fallback a localStorage userId
-                        var stored = await GetLocalStorageItemWithTimeoutAsync("userId", timeoutMs: 1000);
-                        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId))
-                        {
-                            _userId = sId;
-                        }
-                    }
-                }
-
-                if (_userId == 0)
-                {
-                    // No podemos determinar userId -> forzar login
-                    NavigationManager.NavigateTo("/login", forceLoad: true);
-                    return;
-                }
-
-                // Cargar datos dependientes de JS
-                await LoadUserProfileData();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error al cargar datos del usuario: {ex.Message}", Severity.Error);
-            }
-            finally
-            {
-                loading = false;
-                StateHasChanged(); // Actualizar UI
-            }
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+            empresas = new List<EmpresaResponse>();
         }
     }
 

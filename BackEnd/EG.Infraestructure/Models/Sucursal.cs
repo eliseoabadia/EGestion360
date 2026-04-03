@@ -59,8 +59,6 @@ public partial class Sucursal
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<ArticuloConteo> ArticuloConteos { get; set; } = new List<ArticuloConteo>();
-
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
@@ -73,7 +71,9 @@ public partial class Sucursal
 
     public virtual ICollection<PeriodoConteo> PeriodoConteos { get; set; } = new List<PeriodoConteo>();
 
-    public virtual ICollection<RegistroConteo> RegistroConteos { get; set; } = new List<RegistroConteo>();
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 
     public virtual ICollection<UsuarioSucursal> UsuarioSucursals { get; set; } = new List<UsuarioSucursal>();
 }

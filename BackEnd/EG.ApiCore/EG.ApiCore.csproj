@@ -30,4 +30,8 @@
     <ProjectReference Include="..\EG.Logger\EG.Logger.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\ConteoCiclico\" />
+  </ItemGroup>
+
 </Project>

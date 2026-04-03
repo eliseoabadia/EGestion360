@@ -16,4 +16,8 @@
     <ProjectReference Include="..\EG.Infraestructure\EG.Infraestructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Mapping\ConteoCiclico\" />
+  </ItemGroup>
+
 </Project>

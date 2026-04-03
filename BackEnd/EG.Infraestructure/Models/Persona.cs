@@ -85,5 +85,7 @@ public partial class Persona
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<ConteoDetalle> ConteoDetalles { get; set; } = new List<ConteoDetalle>();
+
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
 }

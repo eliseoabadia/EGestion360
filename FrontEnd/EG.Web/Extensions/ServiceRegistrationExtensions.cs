@@ -1,11 +1,8 @@
 ﻿using EG.Common.Helper;
 using EG.Web.Contracs;
-using EG.Web.Contracs.ConteoCiclico;
 using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;
-using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
-using EG.Web.Services.ConteoCiclico;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Extensions;
@@ -26,11 +23,12 @@ public static class ApiServiceExtensions
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
 
-        RegisterCrud<ArticuloConteoResponse>(services, "api/ArticuloConteo");
-        RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
-        RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
-        RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
-        RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
+        //RegisterCrud<ArticuloConteoResponse>(services, "api/ArticuloConteo");
+        //RegisterCrud<RegistroConteoResponse>(services, "api/RegistroConteo");
+        //RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
+        //RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
+        //RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
+        //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
         RegisterCrud<FamiliaResponse>(services, "api/Familia");
         RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
@@ -38,8 +36,9 @@ public static class ApiServiceExtensions
         // Agrega más aquí...
 
         // Servicios específicos de Conteo Cíclico
-        services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
-        services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
+        //services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
+        //services.AddScoped<IArticuloConteoService, ArticuloConteoService>();
+        //services.AddScoped<IRegistroConteoService, RegistroConteoService>();
 
         return services;
     }

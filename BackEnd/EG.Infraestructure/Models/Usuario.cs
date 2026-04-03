@@ -57,11 +57,23 @@ public partial class Usuario
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<ArticuloConteo> ArticuloConteos { get; set; } = new List<ArticuloConteo>();
-
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
-    public virtual ICollection<DiscrepanciaConteo> DiscrepanciaConteos { get; set; } = new List<DiscrepanciaConteo>();
+    public virtual ICollection<ConteoDetalle> ConteoDetalleUsuarioCreacionNavigations { get; set; } = new List<ConteoDetalle>();
+
+    public virtual ICollection<ConteoDetalle> ConteoDetalleUsuarioModificacionNavigations { get; set; } = new List<ConteoDetalle>();
+
+    public virtual ICollection<Conteo> ConteoUsuarioCreacionNavigations { get; set; } = new List<Conteo>();
+
+    public virtual ICollection<Conteo> ConteoUsuarioModificacionNavigations { get; set; } = new List<Conteo>();
+
+    public virtual ICollection<Departamento> DepartamentoUsuarioCreacionNavigations { get; set; } = new List<Departamento>();
+
+    public virtual ICollection<Departamento> DepartamentoUsuarioModificacionNavigations { get; set; } = new List<Departamento>();
+
+    public virtual ICollection<Empresa> EmpresaUsuarioCreacionNavigations { get; set; } = new List<Empresa>();
+
+    public virtual ICollection<Empresa> EmpresaUsuarioModificacionNavigations { get; set; } = new List<Empresa>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
@@ -69,17 +81,49 @@ public partial class Usuario
 
     public virtual Monedum FkidMonedaPreferidaSisNavigation { get; set; }
 
-    public virtual ICollection<HistorialEstatusArticulo> HistorialEstatusArticulos { get; set; } = new List<HistorialEstatusArticulo>();
+    public virtual ICollection<Usuario> InverseUsuarioCreacionNavigation { get; set; } = new List<Usuario>();
 
-    public virtual PerfilUsuario PerfilUsuario { get; set; }
+    public virtual ICollection<Usuario> InverseUsuarioModificacionNavigation { get; set; } = new List<Usuario>();
+
+    public virtual ICollection<OrigenLogMessage> OrigenLogMessageUsuarioCreacionNavigations { get; set; } = new List<OrigenLogMessage>();
+
+    public virtual ICollection<OrigenLogMessage> OrigenLogMessageUsuarioModificacionNavigations { get; set; } = new List<OrigenLogMessage>();
+
+    public virtual PerfilUsuario PerfilUsuarioFkidUsuarioSisNavigation { get; set; }
+
+    public virtual ICollection<PerfilUsuario> PerfilUsuarioUsuarioCreacionNavigations { get; set; } = new List<PerfilUsuario>();
+
+    public virtual ICollection<PerfilUsuario> PerfilUsuarioUsuarioModificacionNavigations { get; set; } = new List<PerfilUsuario>();
 
     public virtual ICollection<PeriodoConteo> PeriodoConteoFkidResponsableSisNavigations { get; set; } = new List<PeriodoConteo>();
 
     public virtual ICollection<PeriodoConteo> PeriodoConteoFkidSupervisorSisNavigations { get; set; } = new List<PeriodoConteo>();
 
-    public virtual ICollection<RegistroConteo> RegistroConteos { get; set; } = new List<RegistroConteo>();
+    public virtual ICollection<Sucursal> SucursalUsuarioCreacionNavigations { get; set; } = new List<Sucursal>();
 
-    public virtual ICollection<UsuarioDepartamento> UsuarioDepartamentos { get; set; } = new List<UsuarioDepartamento>();
+    public virtual ICollection<Sucursal> SucursalUsuarioModificacionNavigations { get; set; } = new List<Sucursal>();
 
-    public virtual ICollection<UsuarioSucursal> UsuarioSucursals { get; set; } = new List<UsuarioSucursal>();
+    public virtual ICollection<SystemParamCatalog> SystemParamCatalogUsuarioCreacionNavigations { get; set; } = new List<SystemParamCatalog>();
+
+    public virtual ICollection<SystemParamCatalog> SystemParamCatalogUsuarioModificacionNavigations { get; set; } = new List<SystemParamCatalog>();
+
+    public virtual ICollection<SystemParamValue> SystemParamValueUsuarioCreacionNavigations { get; set; } = new List<SystemParamValue>();
+
+    public virtual ICollection<SystemParamValue> SystemParamValueUsuarioModificacionNavigations { get; set; } = new List<SystemParamValue>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual ICollection<UsuarioDepartamento> UsuarioDepartamentoFkidUsuarioSisNavigations { get; set; } = new List<UsuarioDepartamento>();
+
+    public virtual ICollection<UsuarioDepartamento> UsuarioDepartamentoUsuarioCreacionNavigations { get; set; } = new List<UsuarioDepartamento>();
+
+    public virtual ICollection<UsuarioDepartamento> UsuarioDepartamentoUsuarioModificacionNavigations { get; set; } = new List<UsuarioDepartamento>();
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
+
+    public virtual ICollection<UsuarioSucursal> UsuarioSucursalFkidUsuarioSisNavigations { get; set; } = new List<UsuarioSucursal>();
+
+    public virtual ICollection<UsuarioSucursal> UsuarioSucursalUsuarioCreacionNavigations { get; set; } = new List<UsuarioSucursal>();
+
+    public virtual ICollection<UsuarioSucursal> UsuarioSucursalUsuarioModificacionNavigations { get; set; } = new List<UsuarioSucursal>();
 }

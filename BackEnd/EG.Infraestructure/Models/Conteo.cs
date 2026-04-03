@@ -5,19 +5,19 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Departamento
+public partial class Conteo
 {
-    public int PkidDepartamento { get; set; }
+    public int PkidConteo { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
+    public int FkidTipoBienAlma { get; set; }
 
-    public int? FkidSucursalSis { get; set; }
-
-    public string Nombre { get; set; }
+    public decimal CantidadInventario { get; set; }
 
     public string Descripcion { get; set; }
 
-    public int? NivelJerarquico { get; set; }
+    public DateTime FechaInicio { get; set; }
+
+    public DateTime? FechaFin { get; set; }
 
     public bool Activo { get; set; }
 
@@ -29,13 +29,11 @@ public partial class Departamento
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
+    public virtual ICollection<ConteoDetalle> ConteoDetalles { get; set; } = new List<ConteoDetalle>();
 
-    public virtual Sucursal FkidSucursalSisNavigation { get; set; }
+    public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
-
-    public virtual ICollection<UsuarioDepartamento> UsuarioDepartamentos { get; set; } = new List<UsuarioDepartamento>();
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

@@ -22,10 +22,4 @@ public partial class EstatusArticuloConteo
     public string BadgeTexto { get; set; }
 
     public bool Activo { get; set; }
-
-    public virtual ICollection<ArticuloConteo> ArticuloConteos { get; set; } = new List<ArticuloConteo>();
-
-    public virtual ICollection<HistorialEstatusArticulo> HistorialEstatusArticuloFkidEstatusAnteriorAlmaNavigations { get; set; } = new List<HistorialEstatusArticulo>();
-
-    public virtual ICollection<HistorialEstatusArticulo> HistorialEstatusArticuloFkidEstatusNuevoAlmaNavigations { get; set; } = new List<HistorialEstatusArticulo>();
 }

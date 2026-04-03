@@ -1,5 +1,5 @@
 ﻿{
-   "CodeGenerationMode": 4,
+   "CodeGenerationMode": 6,
    "ContextClassName": "EGestionContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
@@ -19,15 +19,19 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[ALMA].[ArticuloConteo]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[ALMA].[Bien]",
          "ObjectType": 0
       },
       {
-         "Name": "[ALMA].[DiscrepanciaConteo]",
+         "Name": "[ALMA].[Conteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[ConteoDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[ConteoHist]",
          "ObjectType": 0
       },
       {
@@ -51,10 +55,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[ALMA].[HistorialEstatusArticulo]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[ALMA].[Marca]",
          "ObjectType": 0
       },
@@ -68,10 +68,6 @@
       },
       {
          "Name": "[ALMA].[PeriodoConteo]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[ALMA].[RegistroConteo]",
          "ObjectType": 0
       },
       {
@@ -247,27 +243,15 @@
          "ObjectType": 3
       },
       {
-         "Name": "[ALMA].[Vw_DetalleArticulos]",
+         "Name": "[ALMA].[VW_ConteoDetalle]",
          "ObjectType": 3
       },
       {
-         "Name": "[ALMA].[Vw_PeriodoConteo]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ALMA].[Vw_RegistroConteo]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ALMA].[Vw_ResumenPeriodo]",
+         "Name": "[ALMA].[VW_Existencias]",
          "ObjectType": 3
       },
       {
          "Name": "[ALMA].[Vw_TipoBienConteo]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ALMA].[VwArticuloConteo]",
          "ObjectType": 3
       },
       {
@@ -293,6 +277,10 @@
       {
          "Name": "[SIS].[Vw_UsuarioSucursal]",
          "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[SP_CargaInicialConteo]",
+         "ObjectType": 1
       },
       {
          "Name": "[dbo].[spConfiguracionDeRolYClaims]",

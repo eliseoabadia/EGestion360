@@ -23,3 +23,16 @@ C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Common\obj\Debug\net10
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\refint\EG.Common.dll
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.pdb
 C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\ref\EG.Common.dll
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\bin\Debug\net10.0\EG.Common.deps.json
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\bin\Debug\net10.0\EG.Common.dll
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\bin\Debug\net10.0\EG.Common.pdb
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.csproj.AssemblyReference.cache
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.GeneratedMSBuildEditorConfig.editorconfig
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.AssemblyInfoInputs.cache
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.AssemblyInfo.cs
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.csproj.CoreCompileInputs.cache
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.sourcelink.json
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.dll
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\refint\EG.Common.dll
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\EG.Common.pdb
+C:\Desa\Desarrollo\FullStack\EGestion360\EGestion360\BackEnd\EG.Common\obj\Debug\net10.0\ref\EG.Common.dll

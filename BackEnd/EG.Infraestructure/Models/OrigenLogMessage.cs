@@ -22,4 +22,8 @@ public partial class OrigenLogMessage
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<SystemLog> SystemLogs { get; set; } = new List<SystemLog>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

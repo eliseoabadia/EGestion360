@@ -70,6 +70,32 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_CargaInicialConteoResult>> SP_CargaInicialConteoAsync(int? p_Partida, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "P_Partida",
+                    Value = p_Partida ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_CargaInicialConteoResult>("EXEC @returnValue = [ALMA].[SP_CargaInicialConteo] @P_Partida = @P_Partida", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spConfiguracionDeRolYClaimsResult>> spConfiguracionDeRolYClaimsAsync(string group, string subgroup, string code, string values, string description, string rolName, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

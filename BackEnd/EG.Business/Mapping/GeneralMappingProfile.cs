@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Almacen;
-using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Domain.DTOs.Responses.General;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
@@ -16,25 +14,25 @@ namespace EG.Business.Mapping
             CreateMap<Empresa, EmpresaResponse>().ReverseMap();
             CreateMap<Usuario, UsuarioResponse>().ReverseMap();
 
-            CreateMap<TipoConteo, TipoConteoDto>().ReverseMap();
-            CreateMap<TipoConteo, TipoConteoResponse>(); 
-            CreateMap<TipoConteoResponse, TipoConteoDto>();
+            //CreateMap<TipoConteo, TipoConteoDto>().ReverseMap();
+            //CreateMap<TipoConteo, TipoConteoResponse>(); 
+            //CreateMap<TipoConteoResponse, TipoConteoDto>();
 
-            CreateMap<TipoBien, TipoBienDto>().ReverseMap();
+            //CreateMap<TipoBien, TipoBienDto>().ReverseMap();
             CreateMap<TipoBien, TipoBienResponse>().ReverseMap();
-            CreateMap<TipoBienResponse, TipoBienDto>().ReverseMap();
+            //CreateMap<TipoBienResponse, TipoBienDto>().ReverseMap();
 
-            CreateMap<EstatusPeriodo, EstatusPeriodoResponse>().ReverseMap();
-            CreateMap<EstatusPeriodoDto, EstatusPeriodo>().ReverseMap();
-            CreateMap<EstatusPeriodoResponse, EstatusPeriodoDto>().ReverseMap();
+            //CreateMap<EstatusPeriodo, EstatusPeriodoResponse>().ReverseMap();
+            //CreateMap<EstatusPeriodoDto, EstatusPeriodo>().ReverseMap();
+            //CreateMap<EstatusPeriodoResponse, EstatusPeriodoDto>().ReverseMap();
 
-            CreateMap<EstatusArticuloConteo, EstatusArticuloConteoResponse>().ReverseMap();
-            CreateMap<EstatusArticuloConteoDto, EstatusArticuloConteo>().ReverseMap();
-            CreateMap<EstatusArticuloConteoResponse, EstatusArticuloConteoDto>().ReverseMap();
+            //CreateMap<EstatusArticuloConteo, EstatusArticuloConteoResponse>().ReverseMap();
+            //CreateMap<EstatusArticuloConteoDto, EstatusArticuloConteo>().ReverseMap();
+            //CreateMap<EstatusArticuloConteoResponse, EstatusArticuloConteoDto>().ReverseMap();
 
-            CreateMap<RegistroConteo, RegistroConteoDto>().ReverseMap();
-            CreateMap<RegistroConteo, RegistroConteoResponse>().ReverseMap();
-            CreateMap<RegistroConteoResponse, RegistroConteoDto>().ReverseMap();
+            //CreateMap<RegistroConteo, RegistroConteoDto>().ReverseMap();
+            //CreateMap<RegistroConteo, RegistroConteoResponse>().ReverseMap();
+            //CreateMap<RegistroConteoResponse, RegistroConteoDto>().ReverseMap();
 
             CreateMap<Sucursal, SucursalDto>().ReverseMap();
             CreateMap<SucursalResponse, SucursalDto>();

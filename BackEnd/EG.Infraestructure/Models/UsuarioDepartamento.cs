@@ -30,4 +30,8 @@ public partial class UsuarioDepartamento
     public virtual Departamento FkidDepartamentoSisNavigation { get; set; }
 
     public virtual Usuario FkidUsuarioSisNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

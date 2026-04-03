@@ -28,4 +28,8 @@ public partial class PerfilUsuario
     public int? UsuarioModificacion { get; set; }
 
     public virtual Usuario FkidUsuarioSisNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

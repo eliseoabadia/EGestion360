@@ -1,5 +1,5 @@
 using AutoMapper;
-using EG.Domain.DTOs.Requests.ConteoCiclico;
+using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Infraestructure.Models;
 
@@ -40,7 +40,7 @@ namespace EG.Business.Mapping.Almacen
 
             // Request DTO → Entity (for create/update)
             CreateMap<BienDto, Bien>()
-                .ForMember(dest => dest.ArticuloConteos, opt => opt.Ignore()) // Ignore collections
+                //.ForMember(dest => dest.ArticuloConteos, opt => opt.Ignore()) // Ignore collections
                 .ForMember(dest => dest.FkidAreaSisNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FkidEstadoBienAlmaNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FkidGrupoBienAlmaNavigation, opt => opt.Ignore())

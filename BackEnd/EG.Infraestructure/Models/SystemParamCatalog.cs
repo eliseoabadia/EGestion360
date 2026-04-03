@@ -24,4 +24,8 @@ public partial class SystemParamCatalog
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<SystemParamValue> SystemParamValues { get; set; } = new List<SystemParamValue>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

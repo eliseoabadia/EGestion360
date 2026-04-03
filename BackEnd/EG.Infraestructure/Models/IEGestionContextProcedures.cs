@@ -14,6 +14,7 @@ namespace EG.Infraestructure.Models
     public partial interface IEGestionContextProcedures
     {
         Task<List<LoginInformationEmployeeResult>> LoginInformationEmployeeAsync(string payrollID, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
+        Task<List<SP_CargaInicialConteoResult>> SP_CargaInicialConteoAsync(int? p_Partida, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<spConfiguracionDeRolYClaimsResult>> spConfiguracionDeRolYClaimsAsync(string group, string subgroup, string code, string values, string description, string rolName, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<spEliminarUsuarioSucursalResult>> spEliminarUsuarioSucursalAsync(int? fkidUsuarioSis, int? fkidSucursalSis, string usuarioModificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<spGetClaimsByUserResult>> spGetClaimsByUserAsync(int? pkIdUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);

@@ -26,4 +26,8 @@ public partial class SystemParamValue
     public int? UsuarioModificacion { get; set; }
 
     public virtual SystemParamCatalog FkidSystemParamCatalogSisNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

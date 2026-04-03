@@ -21,6 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Contracs\ConteoCiclico\" />
+    <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
     <Folder Include="Pages\ConteoCiclico\" />
     <Folder Include="Services\Almacen\" />
