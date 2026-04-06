@@ -249,6 +249,11 @@ namespace EG.Web.Auth
             foreach (var kvp in subDict)
             {
                 var childSubGroup = kvp.Key;
+
+                // No recursar en el entry general (string.Empty) para evitar ciclos infinitos
+                if (string.IsNullOrEmpty(childSubGroup))
+                    continue;
+
                 var childActions = kvp.Value;
 
                 if (childActions.Contains(normalizedAction))

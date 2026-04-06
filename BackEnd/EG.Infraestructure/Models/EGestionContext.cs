@@ -135,6 +135,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwMenu> VwMenus { get; set; }
 
+    public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
+
     public virtual DbSet<VwSucursalEmpresaEstado> VwSucursalEmpresaEstados { get; set; }
 
     public virtual DbSet<VwTipoBienConteo> VwTipoBienConteos { get; set; }
@@ -2099,6 +2101,36 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(46)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VwPeriodoConteo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_PeriodoConteo", "ALMA");
+
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.DescripcionEstatusPeriodo).HasMaxLength(100);
+            entity.Property(e => e.DescripcionTipoConteo).HasMaxLength(100);
+            entity.Property(e => e.EstatusPeriodo).HasMaxLength(30);
+            entity.Property(e => e.FechaCierre).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.PkidPeriodoConteo).HasColumnName("PKIdPeriodoConteo");
+            entity.Property(e => e.Responsable)
+                .IsRequired()
+                .HasMaxLength(194);
+            entity.Property(e => e.Sucursal).HasMaxLength(128);
+            entity.Property(e => e.Supervisor)
+                .IsRequired()
+                .HasMaxLength(194);
+            entity.Property(e => e.TipoConteo).HasMaxLength(30);
         });
 
         modelBuilder.Entity<VwSucursalEmpresaEstado>(entity =>

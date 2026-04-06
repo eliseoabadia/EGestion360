@@ -364,6 +364,8 @@ VALUES
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'empresas', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'departamentos', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'menus', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
+(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0001', 'Número de conteo', 'view,view-menu', 0),
 (2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
 (2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'periodo', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'mis-periodos', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -373,6 +375,12 @@ VALUES
 (2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'support', 'support', NULL, 'app://{0}/{1}', GETDATE(), 'support', 'SO0001', 'Soporte', 'view,view-menu', 0),
 (2, 'configuration', 'configuration', NULL, 'app://{0}/{1}', GETDATE(), 'configuration', 'CO0001', 'Configuracion', 'view,view-menu,delete,new,update', 0);
+
+INSERT INTO dbo.AspNetClaims (ClaimTypeId, Name, [Group], RoleId, TokenFormat, Created, SubGroup, Code, [Description], [Values], ReferenceId)
+VALUES 
+(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
+(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0002', 'Número de conteo', 'view,view-menu', 0);
+
 
 -- Claim Values
 CREATE TABLE dbo.AspNetClaimValues (
@@ -422,6 +430,16 @@ EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'delete';
 EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'new';
 EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'update';
 EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'CanExportToExcel';
+
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'almacen', '10000', 'view';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'almacen', '10000', 'view-menu';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'view';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'view-menu';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'delete';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'new';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'update';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'CanExportToExcel';
+
 EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view';
 EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view-menu';
 EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'view';
@@ -560,13 +578,15 @@ USING (VALUES
     (5, N'Empresa', 2, 2, N'Empresa', N'/configuracion/empresas', N'FaRegUser', 'ESP', 203, 1000, GETDATE()),
     (6, N'Departamento', 2, 2, N'Departamento', N'/configuracion/departamentos', N'FaRegUser', 'ESP', 204, 1000, GETDATE()),
     (7, N'Menu', 2, 2, N'Menu', N'/configuracion/menus', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
-    (8, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 'ESP', 300, 1000, GETDATE()),
-    (9, N'Periodo', 2, 8, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
-    (10, N'Mis Periodo', 2, 8, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 'ESP', 302, 1000, GETDATE()),
-    (11, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaRegSun', 'ESP', 400, 1000, GETDATE()),
-    (12, N'Almacén', 2, 11, N'Familia', N'/almacen/familia', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
-    (13, N'Tipo Bien', 2, 11, N'Tipo Bien', N'/almacen/tipo-bien', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
-    (14, N'Bien', 2, 11, N'Bien', N'/almacen/bien', N'RiListCheck2', 'ESP', 402, 1000, GETDATE())
+	(8, N'Almacén', 2, 2, N'Almacen', N'/', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+	(9, N'Número de Conteo', 2, 8, N'Número de Conteo', N'/numero-conteo', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+    (10, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 'ESP', 300, 1000, GETDATE()),
+    (11, N'Periodo', 2, 10, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
+    (12, N'Mis Periodo', 2, 10, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 'ESP', 302, 1000, GETDATE()),
+    (13, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaRegSun', 'ESP', 400, 1000, GETDATE()),
+    (14, N'Almacén', 2, 13, N'Familia', N'/almacen/familia', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
+    (15, N'Tipo Bien', 2, 13, N'Tipo Bien', N'/almacen/tipo-bien', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
+    (16, N'Bien', 2, 13, N'Bien', N'/almacen/bien', N'RiListCheck2', 'ESP', 402, 1000, GETDATE())
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Lenguaje, Orden, CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)
 WHEN MATCHED THEN

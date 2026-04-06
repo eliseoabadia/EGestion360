@@ -251,6 +251,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[VW_PeriodoConteo]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[Vw_TipoBienConteo]",
          "ObjectType": 3
       },

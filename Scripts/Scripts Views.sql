@@ -812,3 +812,63 @@ LEFT JOIN [ALMA].[TipoBien] TB
 LEFT JOIN [NOM].[Persona] P
     ON CD.[FKIdPersona_NOM] = P.[PKIdPersona];
 GO
+
+-- =============================================
+-- VISTA: ALMA.VW_PeriodoConteo
+-- Descripción: Vista descriptiva de los periodos de conteo cíclico.
+-- =============================================
+CREATE OR ALTER VIEW [ALMA].[VW_PeriodoConteo]
+AS
+SELECT
+    pc.[PKIdPeriodoConteo],
+    pc.[CodigoPeriodo],
+    pc.[Nombre],
+    pc.[Descripcion],
+    pc.[FechaInicio],
+    pc.[FechaFin],
+    pc.[FechaCierre],
+    pc.[MaximoConteosPorArticulo],
+    pc.[RequiereAprobacionSupervisor],
+    pc.[TotalArticulos],
+    pc.[ArticulosConcluidos],
+    pc.[ArticulosConDiferencia],
+    pc.[Activo],
+    pc.[FechaCreacion],
+    pc.[UsuarioCreacion],
+    pc.[FechaModificacion],
+    pc.[UsuarioModificacion],
+
+    -- Sucursal
+    s.[PKIdSucursal]            AS [IdSucursal],
+    s.[Nombre]                  AS [Sucursal],
+    --s.[Clave]                   AS [ClaveSucursal],
+
+    -- Tipo de conteo
+    tc.[PKIdTipoConteo]         AS [IdTipoConteo],
+    tc.[Nombre]                 AS [TipoConteo],
+    tc.[Descripcion]            AS [DescripcionTipoConteo],
+
+    -- Estatus del periodo
+    ep.[PKIdEstatusPeriodo]     AS [IdEstatusPeriodo],
+    ep.[Nombre]                 AS [EstatusPeriodo],
+    ep.[Descripcion]            AS [DescripcionEstatusPeriodo],
+
+    -- Responsable
+    r.[PkIdUsuario]             AS [IdResponsable],
+    CONCAT(r.[Nombre], ' ' ,r.[ApellidoPaterno], ' ',r.[ApellidoMaterno])          AS [Responsable],       -- Ajusta según el campo real de SIS.Usuario
+    -- Supervisor
+    sup.[PkIdUsuario]           AS [IdSupervisor],
+    CONCAT(sup.[Nombre], ' ' ,sup.[ApellidoPaterno], ' ',sup.[ApellidoMaterno])        AS [Supervisor]         -- Ajusta según el campo real de SIS.Usuario
+
+FROM [ALMA].[PeriodoConteo] pc
+LEFT JOIN [SIS].[Sucursal] s
+    ON pc.[FKIdSucursal_SIS] = s.[PKIdSucursal]
+LEFT JOIN [ALMA].[TipoConteo] tc
+    ON pc.[FKIdTipoConteo_ALMA] = tc.[PKIdTipoConteo]
+LEFT JOIN [ALMA].[EstatusPeriodo] ep
+    ON pc.[FKIdEstatus_ALMA] = ep.[PKIdEstatusPeriodo]
+LEFT JOIN [SIS].[Usuario] r
+    ON pc.[FKIdResponsable_SIS] = r.[PkIdUsuario]
+LEFT JOIN [SIS].[Usuario] sup
+    ON pc.[FKIdSupervisor_SIS] = sup.[PkIdUsuario];
+GO
