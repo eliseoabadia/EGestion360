@@ -581,7 +581,7 @@ USING (VALUES
 	(8, N'Almacén', 2, 2, N'Almacen', N'/', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
 	(9, N'Número de Conteo', 2, 8, N'Número de Conteo', N'/numero-conteo', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
     (10, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 'ESP', 300, 1000, GETDATE()),
-    (11, N'Periodo', 2, 10, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
+    (11, N'Periodo', 2, 10, N'Periodo', N'/numero-conteo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
     (12, N'Mis Periodo', 2, 10, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 'ESP', 302, 1000, GETDATE()),
     (13, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaRegSun', 'ESP', 400, 1000, GETDATE()),
     (14, N'Almacén', 2, 13, N'Familia', N'/almacen/familia', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
