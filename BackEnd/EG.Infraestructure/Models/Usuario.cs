@@ -59,6 +59,10 @@ public partial class Usuario
 
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
+    public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneoUsuarioCreacionNavigations { get; set; } = new List<ConteoDetalleEscaneo>();
+
+    public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneoUsuarioModificacionNavigations { get; set; } = new List<ConteoDetalleEscaneo>();
+
     public virtual ICollection<ConteoDetalle> ConteoDetalleUsuarioCreacionNavigations { get; set; } = new List<ConteoDetalle>();
 
     public virtual ICollection<ConteoDetalle> ConteoDetalleUsuarioModificacionNavigations { get; set; } = new List<ConteoDetalle>();

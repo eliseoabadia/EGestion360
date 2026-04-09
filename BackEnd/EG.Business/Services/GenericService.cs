@@ -204,8 +204,7 @@ namespace EG.Business.Services
 
             if (pkidProperty != null)
             {
-                var value = pkidProperty.GetValue(entity);
-                return value != null ? (int)value : 0;
+                return pkidProperty.GetValue(entity) as int? ?? 0;
             }
 
             // Fallback to properties ending with "Id"
@@ -216,13 +215,14 @@ namespace EG.Business.Services
 
             if (idProperty != null)
             {
-                return (int)idProperty.GetValue(entity);
+                return idProperty.GetValue(entity) as int? ?? 0;
             }
 
             var intProperty = typeof(TEntity).GetProperties()
                 .FirstOrDefault(p => p.PropertyType == typeof(int) || p.PropertyType == typeof(int?));
 
-            return intProperty != null ? (int)intProperty.GetValue(entity) : 0;
+            var value = intProperty?.GetValue(entity) as int?;
+            return value ?? 0;
         }
 
         public virtual async Task AddAsync(TDto dto)

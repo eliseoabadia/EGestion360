@@ -5,19 +5,21 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Conteo
+public partial class ConteoDetalleEscaneo
 {
-    public int PkidConteo { get; set; }
+    public int PkidDetalleEscaneo { get; set; }
+
+    public int FkidConteoAlma { get; set; }
+
+    public int FkidPersonaNom { get; set; }
+
+    public string CodigoBarras { get; set; }
 
     public int FkidTipoBienAlma { get; set; }
 
-    public decimal CantidadInventario { get; set; }
+    public int? FkidBienAlma { get; set; }
 
-    public string Descripcion { get; set; }
-
-    public DateTime FechaInicio { get; set; }
-
-    public DateTime? FechaFin { get; set; }
+    public DateTime FechaEscaneo { get; set; }
 
     public bool Activo { get; set; }
 
@@ -29,9 +31,9 @@ public partial class Conteo
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; } = new List<ConteoDetalleEscaneo>();
+    public virtual Conteo FkidConteoAlmaNavigation { get; set; }
 
-    public virtual ICollection<ConteoDetalle> ConteoDetalles { get; set; } = new List<ConteoDetalle>();
+    public virtual Persona FkidPersonaNomNavigation { get; set; }
 
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 

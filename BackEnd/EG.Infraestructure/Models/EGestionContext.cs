@@ -39,6 +39,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<ConteoDetalle> ConteoDetalles { get; set; }
 
+    public virtual DbSet<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; }
+
     public virtual DbSet<ConteoHist> ConteoHists { get; set; }
 
     public virtual DbSet<CuentaContable> CuentaContables { get; set; }
@@ -126,6 +128,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwBien> VwBiens { get; set; }
 
     public virtual DbSet<VwConteoDetalle> VwConteoDetalles { get; set; }
+
+    public virtual DbSet<VwConteoDetalleEscaneo> VwConteoDetalleEscaneos { get; set; }
 
     public virtual DbSet<VwEmpresaDepartamanto> VwEmpresaDepartamantos { get; set; }
 
@@ -492,6 +496,56 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ConteoDetalleUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_ConteoDetalle_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<ConteoDetalleEscaneo>(entity =>
+        {
+            entity.HasKey(e => e.PkidDetalleEscaneo);
+
+            entity.ToTable("ConteoDetalleEscaneo", "ALMA");
+
+            entity.HasIndex(e => new { e.FkidConteoAlma, e.CodigoBarras }, "IX_ConteoDetalleEscaneo_CodigoBarras");
+
+            entity.Property(e => e.PkidDetalleEscaneo).HasColumnName("PKIdDetalleEscaneo");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ConteoDetalleEscaneo_Activo");
+            entity.Property(e => e.CodigoBarras)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("(sysdatetime())", "DF_ConteoDetalleEscaneo_FechaCreacion")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FechaEscaneo)
+                .HasDefaultValueSql("(sysdatetime())", "DF_ConteoDetalleEscaneo_FechaEscaneo")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkidBienAlma).HasColumnName("FKIdBien_ALMA");
+            entity.Property(e => e.FkidConteoAlma).HasColumnName("FKIdConteo_ALMA");
+            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+
+            entity.HasOne(d => d.FkidConteoAlmaNavigation).WithMany(p => p.ConteoDetalleEscaneos)
+                .HasForeignKey(d => d.FkidConteoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ConteoDetalleEscaneo_Conteo");
+
+            entity.HasOne(d => d.FkidPersonaNomNavigation).WithMany(p => p.ConteoDetalleEscaneos)
+                .HasForeignKey(d => d.FkidPersonaNom)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ConteoDetalleEscaneo_Persona");
+
+            entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.ConteoDetalleEscaneos)
+                .HasForeignKey(d => d.FkidTipoBienAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ConteoDetalleEscaneo_TipoBien");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ConteoDetalleEscaneoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ConteoDetalleEscaneo_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ConteoDetalleEscaneoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_ConteoDetalleEscaneo_UsuarioModificacion");
         });
 
         modelBuilder.Entity<ConteoHist>(entity =>
@@ -1981,6 +2035,47 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PersonaPaterno).HasMaxLength(50);
             entity.Property(e => e.PkidConteo).HasColumnName("PKIdConteo");
             entity.Property(e => e.PkidDetalleConteo).HasColumnName("PKIdDetalleConteo");
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+        });
+
+        modelBuilder.Entity<VwConteoDetalleEscaneo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_ConteoDetalleEscaneo", "ALMA");
+
+            entity.Property(e => e.BienClave).HasMaxLength(50);
+            entity.Property(e => e.BienDescripcion).HasMaxLength(1000);
+            entity.Property(e => e.BienModelo).HasMaxLength(50);
+            entity.Property(e => e.BienSerie).HasMaxLength(1000);
+            entity.Property(e => e.CodigoBarras)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.ConteoCantidadInventario).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ConteoDescripcion).IsRequired();
+            entity.Property(e => e.ConteoFechaFin).HasColumnType("datetime");
+            entity.Property(e => e.ConteoFechaInicio).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaEscaneo).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkidBienAlma).HasColumnName("FKIdBien_ALMA");
+            entity.Property(e => e.FkidConteoAlma).HasColumnName("FKIdConteo_ALMA");
+            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.PersonaClave)
+                .IsRequired()
+                .HasMaxLength(15);
+            entity.Property(e => e.PersonaMaterno)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PersonaNombre)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PersonaPaterno)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PkidDetalleEscaneo).HasColumnName("PKIdDetalleEscaneo");
+            entity.Property(e => e.TipoBienCodigoClave).HasMaxLength(200);
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
         });
 

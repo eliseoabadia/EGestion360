@@ -1,4 +1,4 @@
-﻿@using MudBlazor
+@using MudBlazor
 @typeparam TEntity where TEntity : class, new()
 
 <MudForm @ref="mudForm">
@@ -6,11 +6,11 @@
         @if (ShowHeader)
         {
             <MudCardHeader>
-                <MudCardHeaderContent>
+                <CardHeaderContent>
                     <MudText Typo="Typo.h5" Color="Color.Primary">
                         @HeaderTitle
                     </MudText>
-                </MudCardHeaderContent>
+                </CardHeaderContent>
             </MudCardHeader>
             <MudDivider Class="mb-4" />
         }
