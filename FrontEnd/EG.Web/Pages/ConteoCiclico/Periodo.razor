@@ -1,0 +1,92 @@
+@page "/conteociclico/periodo"
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<ConteoDetalleResponse, ConteoDetalleResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Inicio de Conteo Cíclico"
+                    Subtitle="Seleccione el conteo a iniciar o continuar"
+                    Icon="@Icons.Material.Filled.Inventory"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="ConteoDetalleResponse"
+                      @ref="table"
+                      Title="Conteos Asignados"
+                      SearchPlaceholder="Buscar por descripción, tipo bien..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ConteoDescripcion" T="ConteoDetalleResponse">Descripción Conteo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="ConteoDetalleResponse">Tipo Bien</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CantidadInventarioInicial" T="ConteoDetalleResponse">Inventario Inicial</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CantidadContada" T="ConteoDetalleResponse">Cant. Contada</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="ConteoDetalleResponse">Fecha Inicio</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+
+            <Row Context="conteo">
+                <MudTd>
+                    <MudTooltip Text="Iniciar/Continuar Conteo">
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   Size="Size.Small"
+                                   OnClick="@(() => NavigateToDetalle(conteo.PkidConteo))">
+                            Ver Detalle
+                        </MudButton>
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@conteo.ConteoDescripcion</MudTd>
+                <MudTd>@conteo.TipoBienDescripcion</MudTd>
+                <MudTd>@conteo.CantidadInventarioInicial</MudTd>
+                <MudTd>@conteo.CantidadContada</MudTd>
+                <MudTd>@conteo.FechaInicio.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@(conteo.ConteoActivo ? Color.Success : Color.Error)"
+                             Variant="Variant.Filled">
+                         @(conteo.ConteoActivo ? "Activo" : "Cerrado")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ConteoDetalleResponse> table = null!;
+
+    protected override string ModuleName => "conteociclico";
+    protected override string SubModuleName => "periodo";
+    
+    // Asumimos un componente vacio porque no editamos desde acá, sino que navegamos al Detalle.
+    protected override Type CreateDialogType => typeof(object);
+    protected override Type EditDialogType => typeof(object);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ConteoDetalleResponse>);
+    
+    protected override string GetDefaultSortLabel() => "ConteoDescripcion";
+
+    private void NavigateToDetalle(int pkidConteo)
+    {
+        NavigationManager.NavigateTo($"/conteociclico/detalle/{pkidConteo}");
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ConteoDetalleResponse> items) =>
+        items.Select(d => new
+        {
+            Descripcion = d.ConteoDescripcion,
+            TipoBien = d.TipoBienDescripcion,
+            TotalInicial = d.CantidadInventarioInicial,
+            Contado = d.CantidadContada,
+            FechaSistema = d.FechaInicio.ToString("dd/MM/yyyy"),
+            Estado = d.ConteoActivo ? "Activo" : "Cerrado"
+        });
+}

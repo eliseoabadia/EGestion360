@@ -872,3 +872,47 @@ LEFT JOIN [SIS].[Usuario] r
 LEFT JOIN [SIS].[Usuario] sup
     ON pc.[FKIdSupervisor_SIS] = sup.[PkIdUsuario];
 GO
+
+-- =============================================
+-- VISTA: VW_ConteoDetalleEscaneo
+-- Descripción: Muestra los detalles de escaneo de códigos de barras con información asociada
+-- =============================================
+CREATE OR ALTER VIEW [ALMA].[VW_ConteoDetalleEscaneo]
+AS
+SELECT
+    cde.[PKIdDetalleEscaneo],
+    cde.[FKIdConteo_ALMA],
+    cde.[FKIdPersona_NOM],
+    cde.[CodigoBarras],
+    cde.[FKIdTipoBien_ALMA],
+    cde.[FKIdBien_ALMA],
+    cde.[FechaEscaneo],
+    cde.[Activo],
+    cde.[FechaCreacion],
+    cde.[UsuarioCreacion],
+    cde.[FechaModificacion],
+    cde.[UsuarioModificacion],
+    -- Información del Conteo
+    c.[Descripcion]             AS [ConteoDescripcion],
+    c.[FechaInicio]             AS [ConteoFechaInicio],
+    c.[FechaFin]                AS [ConteoFechaFin],
+    c.[CantidadInventario]      AS [ConteoCantidadInventario],
+    -- Información del Tipo de Bien
+    tb.[Descripcion]            AS [TipoBienDescripcion],
+    tb.[CodigoClave]            AS [TipoBienCodigoClave],
+    -- Información de la Persona que escaneó
+    p.[Nombre]                  AS [PersonaNombre],
+    p.[Paterno]                 AS [PersonaPaterno],
+    p.[Materno]                 AS [PersonaMaterno],
+    p.[Clave]                   AS [PersonaClave],
+    -- Información del Bien (si está asociado)
+    b.[Clave]                   AS [BienClave],
+    b.[Serie]                   AS [BienSerie],
+    b.[Modelo]                  AS [BienModelo],
+    b.[Descripcion]             AS [BienDescripcion]
+FROM [ALMA].[ConteoDetalleEscaneo] cde
+INNER JOIN [ALMA].[Conteo] c ON cde.[FKIdConteo_ALMA] = c.[PKIdConteo]
+INNER JOIN [ALMA].[TipoBien] tb ON cde.[FKIdTipoBien_ALMA] = tb.[PKIdTipoBien]
+INNER JOIN [NOM].[Persona] p ON cde.[FKIdPersona_NOM] = p.[PKIdPersona]
+LEFT JOIN [ALMA].[Bien] b ON cde.[FKIdBien_ALMA] = b.[PKIdBien];
+GO

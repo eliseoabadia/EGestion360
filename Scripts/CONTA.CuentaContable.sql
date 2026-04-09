@@ -1011,6 +1011,38 @@ CREATE TABLE [ALMA].[ConteoDetalle] (
 );
 GO
 
+-- =============================================
+-- TABLA PARA CONTEO POR CÓDIGO DE BARRAS (ÍTEMS INDIVIDUALES)
+-- =============================================
+DROP TABLE IF EXISTS [ALMA].[ConteoDetalleEscaneo];
+GO
+
+CREATE TABLE [ALMA].[ConteoDetalleEscaneo] (
+    [PKIdDetalleEscaneo]    INT              IDENTITY(1, 1) NOT NULL,
+    [FKIdConteo_ALMA]       INT              NOT NULL,          -- Conteo al que pertenece el escaneo
+    [FKIdPersona_NOM]       INT              NOT NULL,          -- Persona que realizó el escaneo
+    [CodigoBarras]          NVARCHAR(100)    NOT NULL,          -- Código de barras del bien escaneado
+    [FKIdTipoBien_ALMA]     INT              NOT NULL,          -- Tipo de bien (se puede deducir del código o del bien maestro)
+    [FKIdBien_ALMA]         INT              NULL,              -- Opcional: referencia al bien maestro si existe (ej. tabla ALMA.Bien)
+    [FechaEscaneo]          DATETIME         NOT NULL CONSTRAINT DF_ConteoDetalleEscaneo_FechaEscaneo DEFAULT SYSDATETIME(),
+    [Activo]                BIT              NOT NULL CONSTRAINT DF_ConteoDetalleEscaneo_Activo DEFAULT (1),
+    [FechaCreacion]         DATETIME         CONSTRAINT DF_ConteoDetalleEscaneo_FechaCreacion DEFAULT SYSDATETIME(),
+    [UsuarioCreacion]       INT              NOT NULL,
+    [FechaModificacion]     DATETIME         NULL,
+    [UsuarioModificacion]   INT              NULL,
+    CONSTRAINT PK_ConteoDetalleEscaneo PRIMARY KEY ([PKIdDetalleEscaneo]),
+    CONSTRAINT FK_ConteoDetalleEscaneo_Conteo FOREIGN KEY ([FKIdConteo_ALMA]) REFERENCES [ALMA].[Conteo] ([PKIdConteo]),
+    CONSTRAINT FK_ConteoDetalleEscaneo_Persona FOREIGN KEY ([FKIdPersona_NOM]) REFERENCES [NOM].[Persona] ([PKIdPersona]),
+    CONSTRAINT FK_ConteoDetalleEscaneo_TipoBien FOREIGN KEY ([FKIdTipoBien_ALMA]) REFERENCES [ALMA].[TipoBien] ([PKIdTipoBien]),
+    CONSTRAINT FK_ConteoDetalleEscaneo_UsuarioCreacion FOREIGN KEY ([UsuarioCreacion]) REFERENCES [SIS].[Usuario] ([PkIdUsuario]),
+    CONSTRAINT FK_ConteoDetalleEscaneo_UsuarioModificacion FOREIGN KEY ([UsuarioModificacion]) REFERENCES [SIS].[Usuario] ([PkIdUsuario])
+);
+GO
+
+-- Índice sugerido para búsquedas por código de barras dentro de un conteo
+CREATE INDEX IX_ConteoDetalleEscaneo_CodigoBarras ON [ALMA].[ConteoDetalleEscaneo] ([FKIdConteo_ALMA], [CodigoBarras]);
+GO
+
 DROP TABLE  [ALMA].[ConteoHist];
 GO
 
