@@ -5,11 +5,11 @@
 
 <link href="/css/menu-overlays.css" rel="stylesheet" />
 <script src="/js/download.js"></script>
+<script src="/js/mudBlazorTheme.js"></script>
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkMode" />
-<MudThemeProvider />
+<MudThemeProvider @ref="_themeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
-<MudPopoverProvider />   <!-- ← Este es el que falta -->
+<MudPopoverProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
@@ -108,12 +108,13 @@
         Morena
     }
 
-    private ThemeOption _selectedThemeOption { get; set; } = ThemeOption.Oscuro; // Cambiado a Oscuro por defecto
+    private MudThemeProvider _themeProvider = null!;
+    private ThemeOption _selectedThemeOption { get; set; } = ThemeOption.Oscuro;
 
     private bool _drawerOpen = true;
-    private bool _isDarkMode = true; // true = oscuro, false = claro
-    private string _selectedTheme = "default"; // "default" o "morena"
-    private MudTheme _theme = new MudTheme(); // Inicializamos aquí
+    private bool _isDarkMode = true;
+    private string _selectedTheme = "default";
+    private MudTheme _theme = new MudTheme();
     private string nombreUsuario = "Usuario";
     private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
 
@@ -171,8 +172,9 @@
     private async Task SelectThemeOption(ThemeOption option)
     {
         _selectedThemeOption = option;
-        OnThemeOptionChanged(); // Llama al método que tiene la lógica de cambio
-        StateHasChanged();
+        OnThemeOptionChanged();
+        await InvokeAsync(StateHasChanged);
+        await JSRuntime.InvokeVoidAsync("mudBlazorTheme.applyTheme");
     }
 
     private void OnThemeOptionChanged()
@@ -188,7 +190,7 @@
                 _selectedTheme = "default";
                 break;
             case ThemeOption.Morena:
-                _isDarkMode = true; // Morena usa modo oscuro por defecto para mejor contraste
+                _isDarkMode = true;
                 _selectedTheme = "morena";
                 break;
         }
@@ -198,32 +200,32 @@
 
     private void LoadTheme()
     {
-        _theme = new()
+        _theme = new MudTheme
         {
             PaletteLight = GetLightPalette(),
             PaletteDark = GetDarkPalette(),
-            LayoutProperties = new LayoutProperties()
+            LayoutProperties = new LayoutProperties
             {
                 DefaultBorderRadius = "10px"
             },
-            Typography = new Typography()
+            Typography = new Typography
             {
-                Default = new DefaultTypography()
+                Default = new DefaultTypography
                 {
                     FontFamily = new[] { "Segoe UI", "Roboto", "Arial", "sans-serif" },
                     FontSize = "0.95rem"
                 },
-                H5 = new H5Typography()
+                H5 = new H5Typography
                 {
                     FontWeight = "700",
                     FontSize = "1.4rem"
                 },
-                Overline = new OverlineTypography()
+                Overline = new OverlineTypography
                 {
                     FontSize = "0.8rem",
                     FontWeight = "500"
                 },
-                Subtitle2 = new Subtitle2Typography()
+                Subtitle2 = new Subtitle2Typography
                 {
                     FontSize = "0.875rem",
                     FontWeight = "500"
@@ -234,119 +236,123 @@
 
     private PaletteLight GetLightPalette()
     {
-        // Para el modo claro solo aplica si es tema default
-        if (_selectedTheme == "default" && _selectedThemeOption == ThemeOption.Claro)
+        return new PaletteLight
         {
-            return new PaletteLight()
-            {
-                Primary = "#4A6EF1",
-                Secondary = "#F5A623",
-                Tertiary = "#50C878",
-                Background = "#F9FAFB",
-                Surface = "#FFFFFF",
-                AppbarBackground = "#FFFFFFCC",
-                AppbarText = "#1F2937",
-                DrawerBackground = "#F3F4F6",
-                DrawerText = "#1F2937",
-                DrawerIcon = "#4A6EF1",
-                TextPrimary = "#1F2937",
-                TextSecondary = "#6B7280",
-                ActionDefault = "#4A6EF1",
-                ActionDisabled = "#D1D5DB",
-                ActionDisabledBackground = "#E5E7EB",
-                Divider = "#E5E7EB",
-                LinesDefault = "#E5E7EB",
-                TableLines = "#E5E7EB",
-                Info = "#3B82F6",
-                Success = "#10B981",
-                Warning = "#F59E0B",
-                Error = "#EF4444",
-                GrayLight = "#E5E7EB",
-                GrayLighter = "#F9FAFB",
-            };
-        }
-
-        // Si no es modo claro, retornamos una paleta por defecto (no se usará)
-        return new PaletteLight();
+            Primary = "#2563EB",
+            PrimaryLighten = "#3B82F6",
+            PrimaryDarken = "#1D4ED8",
+            Secondary = "#7C3AED",
+            SecondaryLighten = "#8B5CF6",
+            SecondaryDarken = "#6D28D9",
+            Tertiary = "#059669",
+            TertiaryLighten = "#10B981",
+            TertiaryDarken = "#047857",
+            Background = "#F8FAFC",
+            Surface = "#FFFFFF",
+            AppbarBackground = "#FFFFFF",
+            AppbarText = "#0F172A",
+            DrawerBackground = "#F1F5F9",
+            DrawerText = "#1E293B",
+            DrawerIcon = "#2563EB",
+            TextPrimary = "#0F172A",
+            TextSecondary = "#475569",
+            TextDisabled = "#94A3B8",
+            ActionDefault = "#2563EB",
+            ActionDisabled = "#CBD5E1",
+            ActionDisabledBackground = "#F1F5F9",
+            Divider = "#E2E8F0",
+            LinesDefault = "#E2E8F0",
+            TableLines = "#E2E8F0",
+            Info = "#0284C7",
+            Success = "#059669",
+            Warning = "#D97706",
+            Error = "#DC2626",
+            GrayLight = "#E2E8F0",
+            GrayLighter = "#F1F5F9",
+            OverlayLight = "#00000040",
+            Black = "#000000",
+            White = "#FFFFFF",
+        };
     }
 
     private PaletteDark GetDarkPalette()
     {
         if (_selectedTheme == "morena")
         {
-            // Tema Morena (siempre en modo oscuro)
-            return new PaletteDark()
+            return new PaletteDark
             {
-                Primary = "#CD853F", // Café claro
-                Secondary = "#8B4513", // Café silla
-                Tertiary = "#D2691E", // Chocolate
-
-                Background = "#2D1B0F", // Café muy oscuro
-                Surface = "#3D2A1C", // Café oscuro
-
-                AppbarBackground = "#3D2A1CCC", // Café oscuro con transparencia
-                AppbarText = "#F4E4C1", // Beige claro
-
-                DrawerBackground = "#2D1B0F", // Café muy oscuro
-                DrawerText = "#F4E4C1", // Beige claro
-                DrawerIcon = "#CD853F", // Café claro
-
-                TextPrimary = "#F4E4C1", // Beige claro
-                TextSecondary = "#DEB887", // Madera
-
-                ActionDefault = "#CD853F", // Café claro
-                ActionDisabled = "#5D3A1A", // Café oscuro
-                ActionDisabledBackground = "#3D2A1C", // Café oscuro
-
-                Divider = "#5D3A1A", // Café oscuro
-                LinesDefault = "#5D3A1A", // Café oscuro
-                TableLines = "#5D3A1A", // Café oscuro
-
-                Info = "#5F9EA0", // Azul cadete
-                Success = "#6B8E23", // Verde oliva
-                Warning = "#CD853F", // Café claro
-                Error = "#B22222", // Rojo ladrillo
-
-                GrayLight = "#5D3A1A", // Café oscuro
-                GrayLighter = "#3D2A1C", // Café oscuro
-                OverlayLight = "#2D1B0F80", // Café muy oscuro con transparencia
+                Primary = "#CD853F",
+                PrimaryLighten = "#DEB887",
+                PrimaryDarken = "#8B4513",
+                Secondary = "#D2691E",
+                SecondaryLighten = "#DEB887",
+                SecondaryDarken = "#8B4513",
+                Tertiary = "#6B8E23",
+                Background = "#1A1209",
+                Surface = "#2D1B0F",
+                AppbarBackground = "#2D1B0F",
+                AppbarText = "#F4E4C1",
+                DrawerBackground = "#1A1209",
+                DrawerText = "#F4E4C1",
+                DrawerIcon = "#CD853F",
+                TextPrimary = "#F4E4C1",
+                TextSecondary = "#DEB887",
+                TextDisabled = "#8B7355",
+                ActionDefault = "#CD853F",
+                ActionDisabled = "#5D3A1A",
+                ActionDisabledBackground = "#3D2A1C",
+                Divider = "#5D3A1A",
+                LinesDefault = "#5D3A1A",
+                TableLines = "#5D3A1A",
+                Info = "#5F9EA0",
+                Success = "#6B8E23",
+                Warning = "#D97706",
+                Error = "#B22222",
+                GrayLight = "#5D3A1A",
+                GrayLighter = "#3D2A1C",
+                OverlayLight = "#1A120980",
+                Black = "#000000",
+                White = "#FFFFFF",
             };
         }
-        else if (_selectedThemeOption == ThemeOption.Oscuro || _selectedThemeOption == ThemeOption.Morena)
+
+        return new PaletteDark
         {
-            // Tema Oscuro default
-            return new PaletteDark()
-            {
-                Primary = "#4A6EF1",
-                Secondary = "#F5A623",
-                Tertiary = "#50C878",
-                Background = "#111827",
-                Surface = "#1F2937",
-                AppbarBackground = "#1F2937CC",
-                AppbarText = "#F9FAFB",
-                DrawerBackground = "#1F2937",
-                DrawerText = "#F9FAFB",
-                DrawerIcon = "#4A6EF1",
-                TextPrimary = "#F9FAFB",
-                TextSecondary = "#9CA3AF",
-                ActionDefault = "#4A6EF1",
-                ActionDisabled = "#4B5563",
-                ActionDisabledBackground = "#374151",
-                Divider = "#374151",
-                LinesDefault = "#374151",
-                TableLines = "#374151",
-                Info = "#60A5FA",
-                Success = "#34D399",
-                Warning = "#FBBF24",
-                Error = "#F87171",
-                GrayLight = "#374151",
-                GrayLighter = "#1F2937",
-                OverlayLight = "#1F293780",
-            };
-        }
-
-        // Default (no debería llegar aquí)
-        return new PaletteDark();
+            Primary = "#3B82F6",
+            PrimaryLighten = "#60A5FA",
+            PrimaryDarken = "#2563EB",
+            Secondary = "#8B5CF6",
+            SecondaryLighten = "#A78BFA",
+            SecondaryDarken = "#7C3AED",
+            Tertiary = "#10B981",
+            TertiaryLighten = "#34D399",
+            TertiaryDarken = "#059669",
+            Background = "#0F172A",
+            Surface = "#1E293B",
+            AppbarBackground = "#1E293B",
+            AppbarText = "#F8FAFC",
+            DrawerBackground = "#0F172A",
+            DrawerText = "#F8FAFC",
+            DrawerIcon = "#3B82F6",
+            TextPrimary = "#F8FAFC",
+            TextSecondary = "#94A3B8",
+            TextDisabled = "#64748B",
+            ActionDefault = "#3B82F6",
+            ActionDisabled = "#475569",
+            ActionDisabledBackground = "#1E293B",
+            Divider = "#334155",
+            LinesDefault = "#334155",
+            TableLines = "#334155",
+            Info = "#38BDF8",
+            Success = "#34D399",
+            Warning = "#FBBF24",
+            Error = "#F87171",
+            GrayLight = "#334155",
+            GrayLighter = "#1E293B",
+            OverlayLight = "#0F172A80",
+            Black = "#000000",
+            White = "#FFFFFF",
+        };
     }
 
     private void DrawerToggle()
