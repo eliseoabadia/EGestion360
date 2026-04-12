@@ -648,10 +648,6 @@ public partial class EGestionContext : DbContext
 
             entity.ToTable("Departamento", "SIS");
 
-            entity.HasIndex(e => e.FkidEmpresaSis, "IX_Departamento_Empresa").HasFilter("([Activo]=(1))");
-
-            entity.HasIndex(e => e.FkidSucursalSis, "IX_Departamento_Sucursal").HasFilter("([Activo]=(1))");
-
             entity.Property(e => e.PkidDepartamento).HasColumnName("PKIdDepartamento");
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Descripcion).HasMaxLength(255);
@@ -1795,8 +1791,6 @@ public partial class EGestionContext : DbContext
 
             entity.ToTable("Usuario", "SIS");
 
-            entity.HasIndex(e => e.AspNetUserId, "IX_Usuario_AspNetUserId");
-
             entity.HasIndex(e => e.Email, "IX_Usuario_Email").HasFilter("([Activo]=(1))");
 
             entity.HasIndex(e => e.FkidEmpresaSis, "IX_Usuario_Empresa").HasFilter("([Activo]=(1))");
@@ -1911,10 +1905,6 @@ public partial class EGestionContext : DbContext
             entity.HasKey(e => new { e.FkidUsuarioSis, e.FkidSucursalSis });
 
             entity.ToTable("UsuarioSucursal", "SIS");
-
-            entity.HasIndex(e => e.FkidSucursalSis, "IX_UsuarioSucursal_Sucursal").HasFilter("([Activo]=(1))");
-
-            entity.HasIndex(e => e.FkidUsuarioSis, "IX_UsuarioSucursal_Usuario").HasFilter("([Activo]=(1))");
 
             entity.Property(e => e.FkidUsuarioSis).HasColumnName("FKIdUsuario_SIS");
             entity.Property(e => e.FkidSucursalSis).HasColumnName("FKIdSucursal_SIS");

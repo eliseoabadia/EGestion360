@@ -1,4 +1,4 @@
-﻿@page "/configuracion/departamentos"
+@page "/configuracion/departamentos"
 @using EG.Web.Models.Configuration
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -84,12 +84,15 @@
         {
             ID = d.PkidDepartamento,
             Nombre = d.DepartamentoNombre,
+            Descripcion = d.Descripcion ?? "",
             Empresa = d.EmpresaNombre,
-            Estado = d.DepartamentoActivo == true ? "Activo" : "Inactivo"
+            Nivel_Jerarquico = d.NivelJerarquico,
+            Estado = d.DepartamentoActivo ? "Activo" : "Inactivo",
+            Fecha_Creacion = d.FechaCreacion?.ToString("dd/MM/yyyy") ?? "",
+            Usuario_Creacion = d.UsuarioCreacionNombre
         });
     }
 
-    // Obtener el nombre del departamento para eliminar
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         try
@@ -103,22 +106,15 @@
         }
     }
 
-    // Recargar la tabla
     protected override async Task ReloadData()
     {
         if (table != null)
         {
-            Console.WriteLine("🔄 Recargando tabla de departamentos...");
             await table.ReloadData();
             StateHasChanged();
         }
-        else
-        {
-            Console.WriteLine("⚠️ table es null en ReloadData");
-        }
     }
 
-    // Personalizar la eliminación para usar el diálogo genérico
     protected override async Task DeleteItem(int id)
     {
         if (!CanDelete)

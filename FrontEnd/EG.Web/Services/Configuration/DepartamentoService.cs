@@ -40,7 +40,7 @@ namespace EG.Web.Services.Configuration
             if (!IsClientSide())
                 return new ApiResponse<DepartamentoResponse>();
 
-            string sortDirection = _sortDirection == SortDirection.Descending ? "Descending" : "Ascending";
+            string sortDirection = _sortDirection == SortDirection.Descending ? "desc" : "asc";
 
             var jsonParams = new
             {
@@ -49,12 +49,11 @@ namespace EG.Web.Services.Configuration
                 filtro = filtro ?? "",
                 sortLabel = sortLabel ?? string.Empty,
                 sortDirection,
-                empresaId,
-                estado
+                searchString = filtro ?? ""
             };
 
             var response = await PostAsync<ApiResponse<DepartamentoResponse>>(
-                "api/Departamento/GetAllDepartamentosPaginado/",
+                "api/Departamento/GetAllPaginado",
                 jsonParams,
                 useBaseUrl: false);
 

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EG.ApiCore.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -33,66 +33,40 @@ namespace EG.ApiCore.Controllers.General
             _userContext = userContext;
 
             ConfigureService();
+            ConfigureValidations();
         }
 
         private void ConfigureService()
         {
-            // ❌ INCORRECTO - Estás incluyendo el FK, no la navegación
-            // _service.AddInclude(d => d.FkidEmpresaSis);
-
-            // ✅ CORRECTO - Incluye la propiedad de navegación completa
-            _service.AddInclude(d => d.FkidEmpresaSisNavigation); // Ajusta el nombre real de la propiedad
-
-            // O si la propiedad de navegación se llama "Empresa"
             _service.AddInclude(d => d.FkidEmpresaSisNavigation);
-
-            // Configurar propiedades de Empresa para búsqueda
-            _service.AddRelationFilter("Empresa", new List<string> { "Nombre", "Rfc" }); // Usa el mismo nombre
+            _service.AddInclude(d => d.FkidSucursalSisNavigation);
+            _service.AddInclude(d => d.UsuarioCreacionNavigation);
+            _service.AddRelationFilter("FkidEmpresaSisNavigation", new List<string> { "Nombre" });
         }
 
         private void ConfigureValidations()
         {
-            // REGLA 1: Validar nombre único por empresa para CREACIÓN
             _service.AddValidationRule("UniqueDepartmentPerCompany", async (dto) =>
             {
                 var deptoDto = dto as DepartamentoDto;
                 if (deptoDto == null) return true;
 
-                var exists = _service.GetQueryWithIncludes()
+                return !_service.GetQueryWithIncludes()
                     .Any(d => d.FkidEmpresaSis == deptoDto.FkidEmpresaSis &&
                              d.Nombre.ToLower() == deptoDto.Nombre.ToLower() &&
                              d.Activo);
-
-                return !exists;
             });
 
-            // REGLA 2: Validar nombre único por empresa para ACTUALIZACIÓN (excluyendo el actual)
             _service.AddValidationRuleWithId("UniqueDepartmentPerCompanyUpdate", async (dto, id) =>
             {
                 var deptoDto = dto as DepartamentoDto;
                 if (deptoDto == null || !id.HasValue) return true;
 
-                var exists = _service.GetQueryWithIncludes()
+                return !_service.GetQueryWithIncludes()
                     .Any(d => d.FkidEmpresaSis == deptoDto.FkidEmpresaSis &&
                              d.Nombre.ToLower() == deptoDto.Nombre.ToLower() &&
                              d.PkidDepartamento != id.Value &&
                              d.Activo);
-
-                return !exists;
-            });
-
-            // REGLA 3: Validar que el nombre no esté vacío y tenga al menos 3 caracteres
-            _service.AddValidationRule("ValidNameLength", async (dto) =>
-            {
-                var deptoDto = dto as DepartamentoDto;
-                return !string.IsNullOrWhiteSpace(deptoDto?.Nombre) && deptoDto.Nombre.Length >= 3;
-            });
-
-            // REGLA 4: Validar que la empresa sea válida
-            _service.AddValidationRule("ValidCompany", async (dto) =>
-            {
-                var deptoDto = dto as DepartamentoDto;
-                return deptoDto?.FkidEmpresaSis > 0;
             });
         }
 
@@ -120,7 +94,7 @@ namespace EG.ApiCore.Controllers.General
                 {
                     Success = false,
                     Message = "Departamento no encontrado",
-                    Code = "NOTFOUND_DEPARTMENT",
+                    Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
@@ -153,11 +127,16 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Add([FromBody] DepartamentoResponse response)
+        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Create([FromBody] DepartamentoResponse response)
         {
             try
             {
                 var dto = _mapper.Map<DepartamentoDto>(response);
+
+                dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
+                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
+                dto.FechaCreacion = DateTime.Now;
+                dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
                 {
@@ -169,9 +148,6 @@ namespace EG.ApiCore.Controllers.General
                         TotalCount = 0
                     });
                 }
-
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
 
                 await _service.AddAsync(dto);
 
@@ -203,6 +179,8 @@ namespace EG.ApiCore.Controllers.General
             {
                 var dto = _mapper.Map<DepartamentoDto>(response);
                 dto.PkidDepartamento = id;
+                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
+                dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
                 {
@@ -214,8 +192,6 @@ namespace EG.ApiCore.Controllers.General
                         TotalCount = 0
                     });
                 }
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
 
                 await _service.UpdateAsync(id, dto);
 
@@ -233,7 +209,7 @@ namespace EG.ApiCore.Controllers.General
                 {
                     Success = false,
                     Message = $"Departamento con ID {id} no encontrado",
-                    Code = "NOTFOUND_DEPARTMENT",
+                    Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
@@ -250,32 +226,34 @@ namespace EG.ApiCore.Controllers.General
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Delete(int id)
+        public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             try
             {
                 await _service.DeleteAsync(id);
-                return Ok(new PagedResult<DepartamentoResponse>
+                return Ok(new PagedResult<bool>
                 {
                     Success = true,
                     Message = "Departamento eliminado correctamente",
                     Code = "SUCCESS",
-                    TotalCount = 0
+                    Data = true,
+                    Items = new List<bool> { true },
+                    TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<DepartamentoResponse>
+                return NotFound(new PagedResult<bool>
                 {
                     Success = false,
                     Message = $"Departamento con ID {id} no encontrado",
-                    Code = "NOTFOUND_DEPARTMENT",
+                    Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<DepartamentoResponse>
+                return BadRequest(new PagedResult<bool>
                 {
                     Success = false,
                     Message = $"Error al eliminar: {ex.Message}",
@@ -285,64 +263,37 @@ namespace EG.ApiCore.Controllers.General
             }
         }
 
-        [HttpPost("GetAllDepartamentosPaginado")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> GetAllDepartamentosPaginado([FromBody] PagedRequest _params)
-        {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(_params);
-            return Ok(new PagedResult<DepartamentoResponse>
-            {
-                Success = true,
-                Message = "Departamentos obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
-        }
-
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
+        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (empresaId.HasValue)
+            {
+                var result = await _service.GetAllPaginadoAsync(request, d => d.FkidEmpresaSis == empresaId.Value);
+                return Ok(new PagedResult<DepartamentoResponse>
+                {
+                    Success = true,
+                    Message = "Departamentos obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                });
+            }
 
-            var result = await _serviceView.GetAllPaginadoAsync(_params);
+            var allResult = await _serviceView.GetAllPaginadoAsync(request);
             return Ok(new PagedResult<DepartamentoResponse>
             {
                 Success = true,
                 Message = "Departamentos obtenidos correctamente",
                 Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
-        }
-
-        [HttpPost("GetAllDepartamentosPaginadoPorEmpresa/{empresaId}")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> GetAllDepartamentosPaginadoPorEmpresa(int empresaId, [FromBody] PagedRequest _params)
-        {
-            _service.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _service.GetAllPaginadoAsync(_params, d => d.FkidEmpresaSis == empresaId);
-
-            return Ok(new PagedResult<DepartamentoResponse>
-            {
-                Success = true,
-                Message = "Departamentos por empresa obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
+                Items = allResult.Items,
+                TotalCount = allResult.TotalCount
             });
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> BuscarDepartamentos([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
-            _service.ClearConfiguration();
-            ConfigureService();
-
             var pagedRequest = new PagedRequest
             {
                 Page = request.Page,
@@ -352,7 +303,8 @@ namespace EG.ApiCore.Controllers.General
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
+            var result = await _serviceView.GetAllPaginadoAsync(pagedRequest);
+
             return Ok(new PagedResult<DepartamentoResponse>
             {
                 Success = true,
@@ -360,32 +312,6 @@ namespace EG.ApiCore.Controllers.General
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
-            });
-        }
-
-        [HttpPost("validar")]
-        public async Task<ActionResult<PagedResult<DepartamentoResponse>>> ValidarDepartamento([FromBody] VwEmpresaDepartamanto viewDto)
-        {
-            var dto = _mapper.Map<DepartamentoDto>(viewDto);
-            var isValid = await _service.CanAddAsync(dto);
-
-            if (!isValid)
-            {
-                return Ok(new PagedResult<DepartamentoResponse>
-                {
-                    Success = false,
-                    Message = "Ya existe un departamento activo con ese nombre en esta empresa",
-                    Code = "DUPLICATE_DEPARTMENT",
-                    TotalCount = 0
-                });
-            }
-
-            return Ok(new PagedResult<DepartamentoResponse>
-            {
-                Success = true,
-                Message = "El nombre está disponible",
-                Code = "SUCCESS",
-                TotalCount = 0
             });
         }
     }

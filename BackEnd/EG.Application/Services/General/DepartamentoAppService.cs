@@ -11,16 +11,13 @@ namespace EG.Application.Services.General
     public class DepartamentoAppService : IDepartamentoAppService
     {
         private readonly GenericService<Departamento, DepartamentoDto, DepartamentoResponse> _service;
-        private readonly GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> _serviceView;
         private readonly IMapper _mapper;
 
         public DepartamentoAppService(
             GenericService<Departamento, DepartamentoDto, DepartamentoResponse> service,
-            GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> serviceView,
             IMapper mapper)
         {
             _service = service;
-            _serviceView = serviceView;
             _mapper = mapper;
             ConfigureService();
         }
@@ -28,12 +25,14 @@ namespace EG.Application.Services.General
         private void ConfigureService()
         {
             _service.AddInclude(d => d.FkidEmpresaSisNavigation);
-            _service.AddRelationFilter("Empresa", new List<string> { "Nombre" });
+            _service.AddInclude(d => d.FkidSucursalSisNavigation);
+            _service.AddInclude(d => d.UsuarioCreacionNavigation);
+            _service.AddRelationFilter("FkidEmpresaSisNavigation", new List<string> { "Nombre" });
         }
 
         public async Task<PagedResult<DepartamentoResponse>> GetAllAsync()
         {
-            var result = await _serviceView.GetAllAsync();
+            var result = await _service.GetAllAsync();
             return new PagedResult<DepartamentoResponse>
             {
                 Success = true,
@@ -47,7 +46,7 @@ namespace EG.Application.Services.General
             if (id <= 0)
                 throw new ArgumentException("ID debe ser mayor a 0");
 
-            var result = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidDepartamento");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidDepartamento");
 
             if (result == null)
                 throw new KeyNotFoundException($"Departamento {id} no encontrado");
@@ -57,10 +56,7 @@ namespace EG.Application.Services.General
 
         public async Task<PagedResult<DepartamentoResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            _serviceView.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _serviceView.GetAllPaginadoAsync(request);
+            var result = await _service.GetAllPaginadoAsync(request);
             return new PagedResult<DepartamentoResponse>
             {
                 Success = true,
@@ -74,17 +70,16 @@ namespace EG.Application.Services.General
             if (empresaId <= 0)
                 throw new ArgumentException("Empresa ID debe ser mayor a 0");
 
-            var parametros = new Dictionary<string, object> { ["empresaId"] = empresaId };
-            var request = new PagedRequest
-            {
-                Page = 1,
-                PageSize = 10000,
-                SortLabel = "Nombre",
-                SortDirection = "Ascending",
-                AdditionalFilters = parametros
-            };
+            var result = await _service.GetAllPaginadoAsync(
+                new PagedRequest { Page = 1, PageSize = 10000, SortLabel = "Nombre", SortDirection = "asc" },
+                d => d.FkidEmpresaSis == empresaId);
 
-            return await GetAllPaginadoAsync(request);
+            return new PagedResult<DepartamentoResponse>
+            {
+                Success = true,
+                Items = result.Items,
+                TotalCount = result.TotalCount
+            };
         }
 
         public async Task<DepartamentoResponse> CreateAsync(DepartamentoResponse response, int usuarioActual)
@@ -94,6 +89,8 @@ namespace EG.Application.Services.General
 
             var dto = _mapper.Map<DepartamentoDto>(response);
             dto.UsuarioCreacion = usuarioActual;
+            dto.FechaCreacion = DateTime.Now;
+            dto.Activo = true;
 
             if (!await _service.CanAddAsync(dto))
                 throw new InvalidOperationException("Ya existe un departamento activo con ese nombre");
@@ -110,6 +107,7 @@ namespace EG.Application.Services.General
             var dto = _mapper.Map<DepartamentoDto>(response);
             dto.PkidDepartamento = id;
             dto.UsuarioModificacion = usuarioActual;
+            dto.FechaModificacion = DateTime.Now;
 
             if (!await _service.CanUpdateAsync(id, dto))
                 throw new InvalidOperationException("Ya existe otro departamento activo con ese nombre");

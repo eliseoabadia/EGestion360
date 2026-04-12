@@ -1,383 +1,327 @@
-# Análisis de Código - EGestion360
+SmartDoc: Generador de CRUD Completo para Arquitectura Blazor + MudBlazor + GenericService
+🎯 Objetivo
+Este documento guía a una IA para generar automáticamente todo el código necesario (frontend y backend) de un CRUD completo, siguiendo la arquitectura y patrones definidos por el usuario. La IA deberá pedir información faltante y producir código sin errores ni warnings.
 
-## 1. Estructura del Proyecto
+📐 Filosofía del Sistema
+Frontend: Blazor con MudBlazor.
 
-### 1.1 Arquitectura General
-El proyecto sigue una arquitectura ** Onion Architecture** (Capas) con separación clara de responsabilidades:
+Tabla genérica: GenericTable<T> con paginación, búsqueda y ordenamiento.
 
-```
-EGestion360/
-├── BackEnd/                    # API REST en .NET 8
-│   ├── EG.ApiCore/            # Controllers y configuración
-│   ├── EG.Application/        # Servicios de aplicación (Use Cases)
-│   ├── EG.Business/           # Lógica de negocio y mapeos
-│   ├── EG.Domain/             # Entidades, DTOs, Interfaces
-│   ├── EG.Common/             # Utilidades, Helpers, Enums
-│   ├── EG.Logger/             # Sistema de logging
-│   └── EG.Infraestructure/    # Acceso a datos (EF Core)
-│
-└── FrontEnd/EG.Web/            # Blazor WebAssembly
-    ├── Pages/                 # Componentes Razor (Pages)
-    │   ├── Account/           # Login, Register
-    │   ├── Configuration/     # Usuarios, Empresas, Departments, Menus
-    │   ├── ConteoCiclico/     # Módulo de conteo (IGNORADO)
-    │   └── Shared/            # Componentes compartidos
-    ├── Layout/                # MainLayout, NavMenu, DynamicMenu
-    ├── Services/              # Servicios HTTP
-    ├── Models/                # Modelos y DTOs
-    ├── Contracs/              # Interfaces de servicios
-    └── Auth/                  # Autenticación JWT
-```
+Página base: BaseCrudPage<TResponse, TItem> (hereda la lógica de CRUD).
+
+Diálogo: BaseCrudDialog<TItem> + BaseEntityForm<TEntity> para formularios.
+
+Backend: ASP.NET Core Web API.
+
+Servicio genérico: GenericService<TEntity, TDto, TResponse> (EG.Business).
+
+Repositorio: IRepository<T> (EG.Domain.Interfaces).
+
+Mapeo: AutoMapper (perfiles separados por módulo).
+
+Vistas con FK: Si una entidad tiene llaves foráneas, se usa una vista (ej. VwEmpresa) en el controlador para las consultas, mientras que el DTO se usa para escritura.
+
+Validaciones: Se configuran dentro del controlador usando métodos AddValidationRule y AddValidationRuleWithId.
+
+🗂️ Estructura de Carpetas Esperada
+Frontend (Blazor)
+text
+Pages/
+  └── [Modulo]/
+      └── [SubModulo]/
+          ├── [Entidad]s.razor        (página principal)
+          └── [Entidad]Dialog.razor    (diálogo de creación/edición)
+Backend
+text
+EG.ApiCore/
+  └── Controllers/
+      └── [Modulo]/
+          └── [Entidad]Controller.cs
+
+EG.Business/
+  └── Mapping/
+      └── [Modulo]/
+          └── [Entidad]MappingProfile.cs
+
+EG.Domain/
+  └── DTOs/
+      ├── Requests/
+      │   └── [Modulo]/
+      │       └── [Entidad]Dto.cs
+      └── Responses/
+          └── [Modulo]/
+              └── [Entidad]Response.cs
+
+EG.Infraestructure/
+  └── Models/
+      ├── [Entidad].cs          (entidad EF)
+      └── Vw[Entidad].cs        (vista con FK)
+Registro de Servicios (Frontend)
+EG.Web/Extensions/ApiServiceExtensions.cs → agregar RegisterCrud<[Entidad]Response>(services, "api/[Entidad]");
+
+📥 Datos Requeridos por la IA
+Antes de generar código, la IA debe preguntar lo siguiente:
+
+Nombre de la entidad (ej. Empresa, Departamento).
+
+Módulo y submódulo (para la ruta y permisos). Ej: módulo configuracion, submódulo empresas.
+
+Definición de la clase Entidad (el modelo EF Core, sin navegaciones virtuales, pero con propiedades de navegación si se usan en includes).
+
+Definición de la vista VwEntidad (si existe; si no, se usará la entidad directamente, pero se recomienda una vista cuando hay FKs).
+
+Nombre de la propiedad principal para ordenar (ej. Nombre, EmpresaNombre).
+
+Reglas de validación específicas (unicidad, formato, rangos, etc.).
+
+¿Tiene FK con otras tablas? Listar las tablas relacionadas y si se deben cargar en combos (ej. Estado, Moneda).
+
+Campos de auditoría: ¿Tiene UsuarioCreacion, FechaCreacion, UsuarioModificacion, FechaModificacion?
+
+¿Requiere lógica adicional (ej. guardar relación muchos-a-muchos)?
+
+🧩 Pasos de Generación (Orden Estricto)
+La IA debe ejecutar estos pasos en orden, produciendo el código completo al final.
+
+1. Crear DTOs
+Request DTO ([Entidad]Dto.cs)
+Copiar la entidad base, eliminar propiedades virtuales.
+
+Cambiar namespace a EG.Domain.DTOs.Requests.[Modulo].
+
+La clase se llamará [Entidad]Dto.
+
+Si la entidad tiene Activo, el DTO también lo tiene (se usará para escritura).
+
+Incluir solo los campos que se puedan escribir (no incluir campos solo lectura de la vista).
+
+Response DTO ([Entidad]Response.cs)
+Copiar la vista Vw[Entidad], eliminar propiedades virtuales.
+
+Cambiar namespace a EG.Domain.DTOs.Responses.[Modulo].
+
+La clase se llamará [Entidad]Response.
+
+Incluir todos los campos que se mostrarán en la tabla y en el diálogo.
+
+2. Crear Mapping Profile
+Ubicación: EG.Business.Mapping.[Modulo].[Entidad]MappingProfile.cs
+
+csharp
+using AutoMapper;
+using EG.Domain.DTOs.Requests.[Modulo];
+using EG.Domain.DTOs.Responses.[Modulo];
+using EG.Infraestructure.Models;
+
+namespace EG.Business.Mapping.[Modulo]
+{
+    public class [Entidad]MappingProfile : Profile
+    {
+        public [Entidad]MappingProfile()
+        {
+            // Entity ↔ DTO
+            CreateMap<[Entidad], [Entidad]Dto>().ReverseMap();
+            
+            // Vista → Response
+            CreateMap<Vw[Entidad], [Entidad]Response>();
+            
+            // Response → DTO (ignorando propiedades extra)
+            CreateMap<[Entidad]Response, [Entidad]Dto>()
+                .ForMember(dest => dest.[PropiedadId], opt => opt.Ignore()) // ignorar PK si no está en DTO
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        }
+    }
+}
+3. Crear Controlador
+Ubicación: EG.ApiCore.Controllers.[Modulo].[Entidad]Controller.cs
+
+Usar como machote el siguiente código (adaptar según la entidad). Incluir:
+
+Inyección de GenericService<Entidad, EntidadDto, EntidadResponse> y GenericService<VwEntidad, EntidadDto, EntidadResponse>.
+
+Configuración de ConfigureService() para añadir Include de navegaciones y AddRelationFilter para búsquedas en propiedades relacionadas.
+
+Configuración de validaciones en ConfigureValidations().
+
+Métodos: GetAll, GetById, Create, Update, Delete, GetAllPaginado, Buscar.
+
+Machote base (tomado de DepartamentoController):
+
+csharp
+using AutoMapper;
+using EG.ApiCore.Services;
+using EG.Business.Services;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.[Modulo];
+using EG.Domain.DTOs.Responses.[Modulo];
+using EG.Infraestructure.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EG.ApiCore.Controllers.[Modulo]
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class [Entidad]Controller : ControllerBase
+    {
+        private readonly GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> _service;
+        private readonly GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> _serviceView;
+        private readonly IMapper _mapper;
+        private readonly IUserContextService _userContext;
+
+        public [Entidad]Controller(
+            GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> service,
+            GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> serviceView,
+            IMapper mapper,
+            IUserContextService userContext)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            _mapper = mapper;
+            _userContext = userContext;
+            ConfigureService();
+            ConfigureValidations();
+        }
+
+        private void ConfigureService()
+        {
+            // Agregar includes para propiedades de navegación
+            // _service.AddInclude(e => e.FkPropiedadNavigation);
+            // Configurar búsqueda en relaciones
+            // _service.AddRelationFilter("PropiedadNavegacion", new List<string> { "CampoBusqueda" });
+        }
+
+        private void ConfigureValidations()
+        {
+            // Reglas de validación (ej: nombre único)
+            // _service.AddValidationRule("UniqueName", async (dto) => { ... });
+            // _service.AddValidationRuleWithId("UniqueNameUpdate", async (dto, id) => { ... });
+        }
+
+        // Métodos CRUD: GetAll, GetById, Add, Update, Delete, GetAllPaginado, Buscar
+        // (copiar exactamente la implementación de DepartamentoController)
+    }
+}
+Nota: Los métodos CRUD deben ser idénticos en estructura a los del DepartamentoController, solo cambiar el tipo de entidad y los mensajes.
+
+4. Registrar Servicio en Frontend
+En EG.Web/Extensions/ApiServiceExtensions.cs, dentro del método AddApiServices, agregar:
+
+csharp
+RegisterCrud<[Entidad]Response>(services, "api/[Entidad]");
+5. Generar Vistas Razor
+a) Página principal [Entidad]s.razor
+Ubicación: Pages/[Modulo]/[SubModulo]/[Entidad]s.razor.
+
+Hereda de BaseCrudPage<[Entidad]Response, [Entidad]Response>.
+
+Define ModuleName y SubModuleName (usados para permisos).
+
+Usa GenericTable<T> con columnas definidas según las propiedades de [Entidad]Response.
+
+Implementa MapToExcelData para exportación.
+
+Implementa GetItemNameForDelete.
+
+Machote (basado en Empresas.razor):
+
+razor
+@page "/[modulo]/[submodulo]"
+@using EG.Web.Models.[Modulo]
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<[Entidad]Response, [Entidad]Response>
+
+<AccessVerification ...>
+    <MudContainer ...>
+        <PageHeader ... />
+        <GenericTable TItem="[Entidad]Response" ...>
+            <Header>...</Header>
+            <Row Context="item">...</Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<[Entidad]Response> table = null!;
+    protected override string ModuleName => "[modulo]";
+    protected override string SubModuleName => "[submodulo]";
+    protected override Type CreateDialogType => typeof([Entidad]Dialog);
+    protected override Type EditDialogType => typeof([Entidad]Dialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<[Entidad]Response>);
+    protected override string GetDefaultSortLabel() => "[PropiedadOrden]";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<[Entidad]Response> items) { ... }
+    protected override async Task<string> GetItemNameForDelete(int id) { ... }
+    protected override async Task ReloadData() { ... }
+}
+b) Diálogo [Entidad]Dialog.razor
+Usa BaseCrudDialog<TItem> y BaseEntityForm<TEntity>.
+
+Carga combos para cada FK (usando IGenericCrudService<TRelacion>).
+
+Implementa validaciones de campos (longitud, formato, etc.).
+
+Maneja fechas (convertir DateOnly? a DateTime?).
+
+Envía los datos al servicio IGenericCrudService<[Entidad]Response>.
+
+Machote (basado en EmpresaDialog.razor).
+
+6. Compilación y Verificación
+La IA debe verificar que:
+
+Todos los using sean correctos.
+
+No haya propiedades virtuales en DTOs/Responses.
+
+Los nombres de propiedades coincidan entre entidad, DTO, response y vista.
+
+Los métodos del controlador usen el idPropertyName correcto en GetByIdAsync.
+
+Las validaciones estén bien implementadas.
+
+📝 Formato de Salida
+La IA debe entregar el resultado en un solo bloque de Markdown con cada archivo claramente delimitado y con su ruta relativa.
+
+Ejemplo:
+
+markdown
+## 1. DTOs
+
+### `EG.Domain.DTOs.Requests.General.EmpresaDto.cs`
+```csharp
+// código
+EG.Domain.DTOs.Responses.General.EmpresaResponse.cs
+csharp
+// código
+2. Mapping Profile
+... etc.
+
+text
+
+Además, debe incluir una sección de **instrucciones finales** para el usuario (cómo compilar, qué ajustar manualmente).
 
 ---
 
-## 2. Backend (ASP.NET Core 8)
+## ❓ Preguntas que la IA debe hacer al usuario (si falta info)
 
-### 2.1 Tecnologías y Librerías
-- **Framework**: .NET 8
-- **ORM**: Entity Framework Core
-- **Autenticación**: JWT (JSON Web Tokens)
-- **Mapeo**: AutoMapper
-- **Logging**: Log4Net personalizado
-- **API**: ASP.NET Core Web API + OpenAPI
-
-### 2.2 Estructura de Capas
-
-#### EG.ApiCore (Presentación)
-- **Program.cs**: Configuración centralizada de servicios
-- **Controllers**: 
-  - `AuthController` - Login/Autenticación
-  - `NavigateController` - Menú y navegación
-- **Filters**: `InitializeUserFilter` (comentado)
-
-#### EG.Application (Servicios de Aplicación)
-Patrón: **Application Services** que orquestan lógica de negocio
-
-Servicios registrados:
-- `IAuthAppService` / `AuthAppService` - Autenticación
-- `INavigateAppService` / `NavigateAppService` - Menú dinámico
-- `IEmpresaAppService` / `EmpresaAppService` - Gestión empresas
-- `IDepartamentoAppService` / `DepartamentoAppService` - Departamentos
-- `IUsuarioAppService` / `UsuarioAppService` - Usuarios
-- `IAspNetRolesAppService` / `AspNetRolesAppService` - Roles
-- `IConteoCiclicoService` - Conteo cíclico (IGNORADO)
-
-#### EG.Business (Lógica de Negocio)
-- **Servicios**: 
-  - `AuthService` - Validación de credenciales, obtención de claims
-  - `EmployeeService` - Gestión de empleados
-  - `GenericService<T>` - CRUD genérico
-  - `NavigateService` - Generación de menú
-  - `UserProfileService` - Perfil de usuario
-  
-- **Interfaces**: `IAuthService`, `IEmployeeService`, `INavigateService`, etc.
-
-- **Mapping Profiles**: AutoMapper para transformación de entidades a DTOs
-  - `EmpresaMappingProfile`
-  - `UsuarioMappingProfile`
-  - `MenuMappingProfile`
-  - etc.
-
-#### EG.Domain (Dominio)
-- **Interfaces de Repositorio**:
-  - `IRepository<T>` - CRUD genérico para entidades
-  - `IRepositorySP<T>` - Ejecución de Stored Procedures
-  
-- **DTOs**:
-  - Requests: `LoginRequestDto`, `EmpresaDto`, `UsuarioDto`, etc.
-  - Responses: `LoginResponseDto`, `EmpresaResponse`, etc.
-
-#### EG.Common (Utilidades)
-- `CriptoSecurity` - Encriptación de contraseñas
-- `JwtSettings` - Configuración JWT
-- `Utilities` - Utilidades varias
-- `Enums` - Enumeraciones del sistema
-- `UserIpService` - Obtención de IP del cliente
-
-#### EG.Infraestructure (Datos)
-- `DbContext` - Contexto de EF Core
-- Repositorios concretos
-- Modelos de stored procedures
-
-### 2.3 Flujo de Autenticación JWT
-1. **Login**: `AuthController.Login` → `AuthAppService.LoginAsync`
-2. **Validación**: `AuthService.ValidarCredencialesAsync` 
-   - Ejecuta SP `SIS.LoginInformationEmployee`
-   - Compara password encriptado
-3. **Claims**: `AuthService.ObtenerClaimsUsuarioAsync` → `spGetClaimsByUser`
-4. **Token**: `TokenService.GenTokenkey` genera JWT con claims personalizados
-5. **Validación**: `TokenService.ValidateJwtToken` verifica token
+- ¿Cuál es el nombre exacto de la entidad y la vista?
+- ¿Qué propiedades tiene la entidad? (proporcionar el código de la clase)
+- ¿Qué propiedades tiene la vista? (si no existe, se usará la entidad directamente)
+- ¿Cuál es el módulo y submódulo para la ruta? (ej. `configuracion/empresas`)
+- ¿Cuál es la propiedad por la que se ordena por defecto?
+- ¿Qué validaciones de negocio se requieren? (unicidad, rangos, etc.)
+- ¿Qué relaciones FK se necesitan cargar en combos? (listar entidades relacionadas)
+- ¿La entidad tiene campos de auditoría? (UsuarioCreacion, FechaCreacion, etc.)
+- ¿Hay lógica adicional al guardar (ej. guardar en tablas puente)?
 
 ---
 
-## 3. FrontEnd (Blazor WebAssembly)
+## 🧪 Ejemplo de Uso
 
-### 3.1 Tecnologías y Librerías
-- **Framework**: Blazor WebAssembly .NET 8
-- **UI**: MudBlazor (Material Design)
-- **Autenticación**: JWT con Custom `AuthenticationStateProvider`
-- **HTTP**: HttpClient con BaseService
-
-### 3.2 Estructura de Capas
-
-#### Servicios HTTP
-- `BaseService<T>` - Clase base para servicios
-- `LoginService` - Autenticación
-- `GenericCrudService<T>` - CRUD genérico
-- `Configuration/*` - Servicios de configuración (Empresa, Usuario, etc.)
-
-#### Autenticación
-- `AuthenticationProviderJWT` - Custom AuthenticationStateProvider
-- `AuthService` - Métodos auxiliares para permisos y claims
-
-#### Páginas Principales (Ignorando ConteoCiclico)
-
-**Account:**
-- `Login.razor` - Página de login
-- `Register.razor` - Registro (implementado)
-- `AuthLinks.razor` - Links de autenticación
-
-**Configuration:**
-- `Usuario/Usuarios.razor` - Gestión de usuarios
-- `Usuario/UsuarioDialog.razor` - Dialog de edición
-- `Empresa/Empresas.razor` - Gestión de empresas
-- `Empresa/EmpresaDialog.razor` - Dialog de edición
-- `Departamento/Departamentos.razor` - Departamentos
-- `Menu/Menus.razor` - Configuración de menús
-- `Menu/CrearMenu.razor`, `EditarMenu.razor`, `EliminarMenu.razor`
-- `Perfil.razor` - Perfil de usuario
-
-**Shared:**
-- `MainLayout.razor` - Layout principal con theming (3 temas)
-- `NavMenu.razor` - Menú de navegación
-- `DynamicMenu.razor` - Menú dinámico desde backend
-- `GenericTable.razor` - Tabla genérica
-- `BaseCrudPage.razor` - Página base para CRUD
-- `DeleteDialog.razor`, `GenericDeleteDialog.razor`
-
-### 3.3 Sistema de Temas (MudBlazor)
-- **Claro**: Paleta light con primary #4A6EF1
-- **Oscuro**: Paleta dark con primary #4A6EF1
-- **Morena**: Paleta dark custom café (#CD853F)
-
-### 3.4 Flujo de Autenticación Frontend
-1. Login envía credenciales al backend
-2. Backend retorna JWT + Refresh Token
-3. Frontend almacena tokens (localStorage/sessionStorage)
-4. `AuthenticationProviderJWT` crea ClaimsPrincipal desde token
-5. `AuthService` provee métodos para verificar permisos
+Si el usuario responde con los datos de `Empresa` (como se hizo anteriormente), la IA aplicará este SmartDoc y generará el código completo sin necesidad de más intervención.
 
 ---
 
-## 4. Patrones y Buenas Prácticas
-
-### 4.1 Patrones Utilizados
-| Patrón | Ubicación | Descripción |
-|--------|-----------|--------------|
-| Repository | EG.Domain/Interfaces | Abstracción de acceso a datos |
-| Unit of Work | EG.Infraestructure | Gestión de transacciones |
-| Service Layer | EG.Application | Orquestación de Use Cases |
-| DTO | EG.Domain/DTOs | Transferencia de datos |
-| Authentication Provider | FrontEnd/Auth | Custom auth state |
-| Generic CRUD | FrontEnd/Services | Reutilización de código |
-
-### 4.2 Observaciones Positivas
-- ✅ Separación clara de responsabilidades (Onion Architecture)
-- ✅ Uso de interfaces para inyección de dependencias
-- ✅ DTOs para comunicación entre capas
-- ✅ AutoMapper para mapeo de objetos
-- ✅ JWT con claims personalizados para permisos
-- ✅ UI basada en componentes con MudBlazor
-- ✅ Theme system con múltiples opciones
-
-### 4.3 Áreas de Mejora Potencial
-- ⚠️ Código comentado en Program.cs del backend
-- ⚠️ Duplicación de servicios genéricos (GenericService y GenericCrudService)
-- ⚠️ Manejo de errores inconsistente entre controladores
-- ⚠️spGetClaimsByUser tiene líneas comentadas con Console.WriteLine
-- ⚠️ Sistema de logging parece estar parcialmente implementado
-
----
-
-## 5. Endpoints API Principales
-
-### Autenticación
-- `POST /api/auth/login` - Inicio de sesión
-
-### Configuración (Ejemplos)
-- `GET/POST/PUT/DELETE` - Empresa, Usuario, Departamento
-- `GET /api/navigate/menu` - Menú dinámico por rol
-
-*(Los endpoints específicos de ConteoCiclico fueron ignorados)*
-
----
-
-## 6. Servicios Frontend Ignorados
-Los siguientes servicios de **ConteoCiclico** no fueron analizados:
-- `ConteoCiclicoService`
-- `PeriodoConteoService`
-- `ArticuloConteoService`
-- Todas las páginas en `Pages/ConteoCiclico/`
-
----
-
-## 7. Próximos Pasos Recomendados
-
-1. **Limpiar código**: Eliminar Console.WriteLine y código comentado
-2. **Estandarizar errores**: Crear filtro/handler global de excepciones
-3. **Refactorizar**: Unificar servicios genéricos duplicados
-4. **Documentar**: Agregar XML comments a métodos públicos
-5. **Testing**: Implementar pruebas unitarias para servicios críticos
-6. **Security Audit**: Revisar manejo de passwords y tokens
-
----
-
-## ANÁLISIS ESPECÍFICO DE CONTEO CÍCLICO
-
-### 1. Estructura Actual (Backend)
-
-#### Entidades y Vistas
-| Entidad/Vista | Propósito |
-|--------------|-----------|
-| `PeriodoConteo` | Define un período de conteo |
-| `ArticuloConteo` | Artículos a contar en un período |
-| `RegistroConteo` | Registros de conteo (1er, 2do, 3er) |
-| `VwPeriodoConteo` | Vista para consultas optimizadas |
-| `VwArticuloConteo` | Vista con cálculos (conteo 1, 2, 3, match) |
-| `VwRegistroConteo` | Vista de registros de conteo |
-| `VwResumenPeriodo` | Resumen ejecutivo |
-| `VwDetalleArticulo` | Detalle de artículo |
-| `TipoConteo` | Catálogo de tipos de conteo |
-| `EstatusPeriodo` | Catálogo de estatus de período |
-| `EstatusArticuloConteo` | Catálogo de estatus de artículo |
-| `TipoBien` | Catálogo de bienes/artículos |
-| `DiscrepanciaConteo` | Gestión de discrepancias |
-
-#### Servicios Existentes
-| Servicio | Ubicación | Descripción |
-|----------|-----------|-------------|
-| `IPeriodoConteoAppService` | EG.Application | CRUD completo + acciones de negocio |
-| `IArticuloConteoAppService` | EG.Application | CRUD de artículos |
-| `IRegistroConteoAppService` | EG.Application | CRUD de registros |
-| `IConteoCiclicoService` | EG.Application | Operaciones de negocio (generar, iniciar, registrar, cerrar, dashboard) |
-| `ITipoBienService` | EG.Application | Catálogo de bienes |
-| `ITipoConteoAppService` | EG.Application | Catálogo de tipos |
-
-#### Controladores Existentes
-- `PeriodoConteoController` - CRUD + cerrar/reabrir + cambio de estatus + mis períodos
-- `ArticuloConteoController` - CRUD de artículos
-- `RegistroConteoController` - CRUD de registros
-- `ConteoCiclicoController` - Generar, iniciar, registrar, cerrar, dashboard
-- `TipoConteoController`, `EstatusPeriodoController`, etc.
-
-### 2. Estructura Actual (Frontend)
-
-#### Servicios
-| Servicio | Uso |
-|----------|-----|
-| `PeriodoConteoService` | Hereda de `GenericCrudService<PeriodoConteoResponse>` |
-| `ArticuloConteoService` | Hereda de `GenericCrudService<ArticuloConteoResponse>` |
-| `ConteoCiclicoService` | Dashboard y operaciones de negocio |
-
-#### Páginas Existentes
-| Página | Descripción |
-|--------|-------------|
-| `PeriodoConteo.razor` | CRUD completo de períodos |
-| `MisPeriodos.razor` | Períodos asignados al usuario |
-| `PeriodoConteoDashboard.razor` | Dashboard con KPIs y gráficos |
-| `RealizarConteo.razor` | Interfaz para realizar conteos |
-| `PeriodoConteoDialog.razor` | Diálogo de creación/edición |
-| `PeriodoConteoDetalleDialog.razor` | Ver detalle del período |
-| `RegistroConteoDialog.razor` | Registrar conteo |
-| `CerrarConteoDialog.razor` | Cerrar período |
-
-### 3. Flujo de Trabajo Implementado
-
-```
-1. Crear Período (PeriodoConteo.razor)
-   ├── Definir sucursal, tipo conteo, responsable, supervisor
-   ├── Configurar máximo de conteos por artículo (1-3)
-   └── Establecer fechas
-
-2. Iniciar Período (MisPeriodos.razor)
-   └── Cambiar estatus: Pendiente → En Proceso
-
-3. Agregar Bienes al Conteo (ConteoCiclicoController/GenerarConteo)
-   └── Seleccionar bienes del catálogo (TipoBien)
-
-4. Realizar Conteo (RealizarConteo.razor)
-   ├── 1er Conteo: Registrar cantidad
-   ├── Validar: Match vs Diferencia
-   │   ├── Si Match → Cerrar artículo
-   │   └── Si Diferencia → 2do Conteo
-   ├── 2do Conteo: Registrar cantidad
-   ├── Validar: Match vs Diferencia
-   │   ├── Si Match → Cerrar artículo
-   │   └── Si Diferencia → 3er Conteo (Definitivo)
-   └── 3er Conteo: Registro final, cierra automáticamente
-```
-
-### 4. Métodos del Backend
-
-#### PeriodoConteoController
-- `GET /api/PeriodoConteo` - Listar todos
-- `GET /api/PeriodoConteo/{id}` - Ver detalle
-- `POST /api/PeriodoConteo/GetAllPaginado` - Paginación
-- `GET /api/PeriodoConteo/sucursal/{id}` - Filtrar por sucursal
-- `GET /api/PeriodoConteo/estatus/{id}` - Filtrar por estatus
-- `GET /api/PeriodoConteo/abiertos` - Períodos abiertos
-- `GET /api/PeriodoConteo/cerrados` - Períodos cerrados
-- `POST` - Crear período
-- `PUT /{id}` - Actualizar período
-- `DELETE /{id}` - Eliminar (soft delete)
-- `POST /{id}/cerrar` - Cerrar período
-- `POST /{id}/reabrir` - Reabrir período
-- `PATCH /{id}/cambiar-estatus` - Cambiar estatus (NUEVO)
-- `GET /mis-periodos/{usuarioId}` - Períodos del usuario (NUEVO)
-
-#### ConteoCiclicoController
-- `POST /api/ConteoCiclico/generar` - Generar artículos para conteo
-- `POST /api/ConteoCiclico/iniciar/{id}` - Iniciar conteo de artículo
-- `POST /api/ConteoCiclico/registrar` - Registrar conteo
-- `POST /api/ConteoCiclico/cerrar` - Cerrar artículo
-- `GET /api/ConteoCiclico/dashboard` - Dashboard
-
-### 5. Tecnologías Usadas
-
-**Backend:**
-- .NET 8
-- Entity Framework Core
-- AutoMapper
-- GenericService (servicio genérico con vistas)
-- Stored Procedures para datos complejos
-
-**Frontend:**
-- Blazor WebAssembly
-- MudBlazor
-- GenericCrudService
-- GenericTable
-
-### 6. Código Optimizado con GenericService
-
-El proyecto utiliza el patrón de **servicio genérico** para optimizar el código:
-- Un solo servicio para operaciones CRUD
-- Soporte para entidades y vistas
-- Validaciones configurables
-- Filtros de relación dinámicos
-- Paginación integrada
-
----
-
-*Documento actualizado con análisis de Conteo Cíclico.*
-
-
-
-
-Para tablas que tienen depenciencia por lo general serán combos si se usan en front, pero para llenar la tabla principal será la vista que llegue al front
-Entonces en el back se definirá de la siguiente manera: EG.Infraestructure
-si tiene un VwNombreTabla se usaran los siguientes modelos
-En EG.Domain.DTOs.Requests.Esquema
-   será NombreTablaDto
-En EG.Domain.DTOs.Responses.Esquema
-  será NombreTablaResponse (pero contendrá los datos de la vista)
-En el servicio hará uso del dto y del context según sea necesario. Se necesita un mapper para adaptar esto.
+**Fin del SmartDoc**

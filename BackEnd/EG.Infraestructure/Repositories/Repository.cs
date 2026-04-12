@@ -53,7 +53,12 @@ namespace EG.Infrastructure
 
         public async Task UpdateAsync(T entity)
         {
-            _dbSet.Update(entity);
+            var entry = _context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                _dbSet.Attach(entity);
+                entry.State = EntityState.Modified;
+            }
             await _context.SaveChangesAsync();
         }
 

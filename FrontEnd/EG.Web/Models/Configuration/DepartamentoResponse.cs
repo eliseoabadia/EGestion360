@@ -1,18 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
-
 namespace EG.Web.Models.Configuration
 {
     public class DepartamentoResponse
     {
-        public int PkidEmpresa { get; set; }
-
-        public string EmpresaNombre { get; set; }
-
-        public string Rfc { get; set; }
-
         public int PkidDepartamento { get; set; }
 
-        public string DepartamentoNombre { get; set; }
+        public int PkidEmpresa { get; set; }
+
+        public string EmpresaNombre { get; set; } = string.Empty;
+
+        public string Rfc { get; set; } = string.Empty;
+
+        public string DepartamentoNombre { get; set; } = string.Empty;
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? NivelJerarquico { get; set; }
 
         public bool DepartamentoActivo { get; set; }
 
@@ -25,5 +27,7 @@ namespace EG.Web.Models.Configuration
         public DateTime? FechaModificacion { get; set; }
 
         public int? UsuarioModificacion { get; set; }
+
+        public string UsuarioCreacionNombre { get; set; } = string.Empty;
     }
 }
