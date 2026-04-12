@@ -8,8 +8,14 @@
 
   <ItemGroup>
     <Compile Remove="CommonModel\**" />
+    <Compile Remove="Interfaces\ConteoCiclico\**" />
+    <Compile Remove="Services\ConteoCiclico\**" />
     <EmbeddedResource Remove="CommonModel\**" />
+    <EmbeddedResource Remove="Interfaces\ConteoCiclico\**" />
+    <EmbeddedResource Remove="Services\ConteoCiclico\**" />
     <None Remove="CommonModel\**" />
+    <None Remove="Interfaces\ConteoCiclico\**" />
+    <None Remove="Services\ConteoCiclico\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,11 +29,6 @@
     <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
     <ProjectReference Include="..\EG.Domain\EG.Domain.csproj" />
     <ProjectReference Include="..\EG.Infraestructure\EG.Infraestructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Interfaces\ConteoCiclico\" />
-    <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 
 </Project>

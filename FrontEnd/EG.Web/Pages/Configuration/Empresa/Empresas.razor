@@ -57,7 +57,7 @@
                 <MudTd>@empresa.EstadoNombre</MudTd>
                 <MudTd>@empresa.Rfc</MudTd>
                 <MudTd>
-                    <MudBadge Color="@(empresa.EmpresaActivo? Color.Success: Color.Error)"
+                    <MudBadge Color="@(empresa.EmpresaActivo ? Color.Success : Color.Error)"
                               Variant="Variant.Filled"
                               Size="Size.Small">
                         @(empresa.EmpresaActivo ? "Activo" : "Inactivo")

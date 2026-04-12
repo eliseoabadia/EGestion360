@@ -3,12 +3,13 @@
 @inject SucursalStateService SucursalStateService
 @inject IJSRuntime JSRuntime
 
-<link href="css/menu-overlays.css" rel="stylesheet" />
-<script src="~/js/download.js"></script>
+<link href="/css/menu-overlays.css" rel="stylesheet" />
+<script src="/js/download.js"></script>
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkMode" />
-<MudPopoverProvider />
+<MudThemeProvider />
 <MudDialogProvider />
+<MudPopoverProvider />   <!-- ← Este es el que falta -->
 <MudSnackbarProvider />
 
 <MudLayout>
