@@ -3,14 +3,15 @@
   "provider": {
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama (local)",
+      "name": "Ollama",
       "options": {
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "deepseek-r1": { "name": "qdeepseek-r1 (local)" }
+        "mistral:instruct": {
+          "name": "mistral:instruct"
+        }
       }
     }
-  },
-  "model": "ollama/deepseek-r1"
+  }
 }

@@ -9,8 +9,8 @@
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-        <PageHeader Title="Gestión de Tipos de Bien"
-                    Subtitle="Administra los tipos de bien del inventario"
+        <PageHeader Title="Bienes y Servicios"
+                    Subtitle="Gestión del catálogo de bienes y servicios"
                     Icon="@Icons.Material.Filled.Category"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -18,7 +18,7 @@
 
         <GenericTable TItem="TipoBienResponse"
                       @ref="table"
-                      Title="Lista de Tipos de Bien"
+                      Title="Lista de Bienes y Servicios"
                       SearchPlaceholder="Buscar por código o descripción..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
@@ -32,19 +32,20 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoBien" T="TipoBienResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="CodigoArticulo" T="TipoBienResponse">Código</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="DescripcionArticulo" T="TipoBienResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="GrupoBien" T="TipoBienResponse">Grupo Bien</MudTableSortLabel></MudTh>
                 <MudTh>Estado</MudTh>
             </Header>
 
             <Row Context="tipo">
                 <MudTd>
-                    <MudTooltip Text="Editar Tipo">
+                    <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Visible="@CanUpdate"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        OnClick="@(() => EditItem(tipo.PkidTipoBien))" />
                     </MudTooltip>
-                    <MudTooltip Text="Eliminar Tipo">
+                    <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Visible="@CanDelete"
                                        Color="Color.Error"
@@ -55,6 +56,7 @@
                 <MudTd>@tipo.PkidTipoBien</MudTd>
                 <MudTd>@tipo.CodigoArticulo</MudTd>
                 <MudTd>@tipo.DescripcionArticulo</MudTd>
+                <MudTd>@tipo.GrupoBien</MudTd>
                 <MudTd>
                     <MudBadge Color="@(tipo.Activo == true ? Color.Success : Color.Error)"
                               Variant="Variant.Filled"
@@ -86,7 +88,12 @@
             ID = d.PkidTipoBien,
             Código = d.CodigoArticulo,
             Descripción = d.DescripcionArticulo,
-            Estado = d.Activo == true ? "Activo" : "Inactivo"
+            Grupo_Bien = d.GrupoBien ?? "",
+            Exist_Mínima = d.ExistenciaMinima,
+            Exist_Máxima = d.ExistenciaMaxima,
+            Tiempo_Vida = d.TiempoVida,
+            Cucop_Plus = d.CucopPlus ?? "",
+            Estado = d.Activo ? "Activo" : "Inactivo"
         });
     }
 
@@ -95,11 +102,11 @@
         try
         {
             var response = await Service.GetByIdAsync(id);
-            return response?.Data?.DescripcionArticulo ?? "el tipo de bien";
+            return response?.Data?.DescripcionArticulo ?? "el bien/servicio";
         }
         catch
         {
-            return "el tipo de bien";
+            return "el bien/servicio";
         }
     }
 
@@ -121,7 +128,7 @@
         }
 
         var response = await Service.GetByIdAsync(id);
-        var nombre = response?.Data?.DescripcionArticulo ?? "el tipo de bien";
+        var nombre = response?.Data?.DescripcionArticulo ?? "el bien/servicio";
 
         var parameters = new DialogParameters
         {
@@ -141,7 +148,7 @@
         var deleteResponse = await Service.DeleteAsync(id);
         if (deleteResponse?.Success == true)
         {
-            Snackbar.Add(deleteResponse.Message ?? "Tipo de bien eliminado correctamente", Severity.Success);
+            Snackbar.Add(deleteResponse.Message ?? "Eliminado correctamente", Severity.Success);
             await table.ReloadData();
             return true;
         }

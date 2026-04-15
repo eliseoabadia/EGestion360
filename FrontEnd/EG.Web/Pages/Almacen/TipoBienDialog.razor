@@ -7,10 +7,10 @@
 
 <BaseCrudDialog TItem="TipoBienResponse"
                 Title="@dialogTitle"
-                MaxWidth="MaxWidth.Small"
+                MaxWidth="MaxWidth.Medium"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando datos del tipo de bien..."
+                LoadingMessage="Cargando datos del bien/servicio..."
                 OnConfirm="GuardarCambiosAsync"
                 OnCancel="HandleCancel">
 
@@ -20,22 +20,103 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid>
-            <MudItem xs="12">
+            <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="tipo.CodigoArticulo"
-                              Label="Código"
+                              Label="Código o Clave"
                               Variant="Variant.Outlined"
-                              Required="true" />
+                              Required="true"
+                              RequiredError="El código es requerido"
+                              MaxLength="10" />
             </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch @bind-Value="tipo.Activo"
+                           Color="Color.Primary"
+                           Label="@(tipo.Activo ? "Activo" : "Inactivo")" />
+            </MudItem>
+
             <MudItem xs="12">
                 <MudTextField @bind-Value="tipo.DescripcionArticulo"
                               Label="Descripción"
                               Variant="Variant.Outlined"
-                              Required="true" />
+                              Required="true"
+                              RequiredError="La descripción es requerida"
+                              MaxLength="150"
+                              Lines="2" />
             </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="tipo.ExistenciaMinima"
+                                Label="Existencia Mínima"
+                                Variant="Variant.Outlined"
+                                Min="0"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.Numbers" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="tipo.ExistenciaMaxima"
+                                Label="Existencia Máxima"
+                                Variant="Variant.Outlined"
+                                Min="0"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.Numbers" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="tipo.CucopPlus"
+                              Label="CUCOP Plus"
+                              Variant="Variant.Outlined"
+                              MaxLength="25" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="tipo.TiempoVida"
+                                Label="Tiempo de Vida (Días)"
+                                Variant="Variant.Outlined"
+                                Min="0"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.Schedule" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="tipo.DepreciacionAnual"
+                                Label="Depreciación Anual"
+                                Variant="Variant.Outlined"
+                                Min="0"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="tipo.CantidadEquivalente"
+                                Label="Cantidad Equivalente"
+                                Variant="Variant.Outlined"
+                                Min="0"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.Scale" />
+            </MudItem>
+
             <MudItem xs="12">
-                <MudSwitch @bind-Value="tipo.Activo"
-                           Color="Color.Primary"
-                           Label="@(tipo.Activo == true ? "Activo" : "Inactivo")" />
+                <MudTextField @bind-Value="tipo.Identificador"
+                              Label="Identificador de Almacén"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="tipo.Consecutivo"
+                                Label="Consecutivo"
+                                Variant="Variant.Outlined"
+                                Min="1"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.Countertops" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCheckBox @bind-Checked="tipo.CatalogoBasico"
+                             T="bool?"
+                             Label="Catálogo Básico"
+                             Color="Color.Primary" />
             </MudItem>
         </MudGrid>
     </BaseEntityForm>
@@ -49,7 +130,7 @@
     private BaseEntityForm<TipoBienResponse> form = null!;
     private TipoBienResponse tipo = new() { Activo = true };
 
-    private string dialogTitle => Id.HasValue ? "Editar Tipo de Bien" : "Nuevo Tipo de Bien";
+    private string dialogTitle => Id.HasValue ? "Editar Bien/Servicio" : "Nuevo Bien/Servicio";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
@@ -65,15 +146,25 @@
     {
         try
         {
+            Console.WriteLine($"🔍 CargarTipo: Cargando ID={Id}");
             var response = await _service.GetByIdAsync(Id!.Value);
+            Console.WriteLine($"🔍 CargarTipo: Response es null={response == null}, Success={response?.Success}, Data es null={response?.Data == null}");
+            
             if (response?.Success == true && response.Data != null)
             {
                 tipo = response.Data;
+                Console.WriteLine($"✅ CargarTipo: Datos cargados - PkidTipoBien={tipo.PkidTipoBien}, CodigoArticulo={tipo.CodigoArticulo}");
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ CargarTipo: Datos no cargados - Message={response?.Message}");
+                Snackbar.Add(response?.Message ?? "No se pudieron cargar los datos", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar tipo de bien: {ex.Message}", Severity.Error);
+            Console.WriteLine($"❌ CargarTipo: Error={ex.Message}");
+            Snackbar.Add($"Error al cargar: {ex.Message}", Severity.Error);
         }
     }
 
@@ -81,9 +172,19 @@
 
     private async Task GuardarCambiosAsync(bool _)
     {
+        Console.WriteLine($"🔍 GuardarCambiosAsync: Iniciando - Id={Id}, PkidTipoBien={tipo.PkidTipoBien}, CodigoArticulo={tipo.CodigoArticulo}");
+        
         if (!await form.ValidateAsync())
         {
+            Console.WriteLine($"⚠️ GuardarCambiosAsync: Validación del formulario falló");
             Snackbar.Add("Complete los campos requeridos", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(tipo.CodigoArticulo))
+        {
+            Console.WriteLine($"⚠️ GuardarCambiosAsync: CodigoArticulo es vacío");
+            Snackbar.Add("El código es requerido", Severity.Warning);
             return;
         }
 
@@ -93,25 +194,31 @@
 
             if (Id.HasValue)
             {
+                Console.WriteLine($"🔄 GuardarCambiosAsync: Llamando UpdateAsync con id={tipo.PkidTipoBien}");
                 response = await _service.UpdateAsync(tipo, tipo.PkidTipoBien);
+                Console.WriteLine($"🔄 GuardarCambiosAsync: UpdateAsync completado - Success={response?.Success}, Message={response?.Message}");
             }
             else
             {
+                Console.WriteLine($"🔄 GuardarCambiosAsync: Llamando CreateAsync");
                 response = await _service.CreateAsync(tipo);
+                Console.WriteLine($"🔄 GuardarCambiosAsync: CreateAsync completado - Success={response?.Success}, Message={response?.Message}");
             }
 
             if (response?.Success == true)
             {
-                Snackbar.Add(response.Message ?? "Tipo de bien guardado exitosamente", Severity.Success);
+                Snackbar.Add(response.Message ?? "Guardado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
+                Console.WriteLine($"⚠️ GuardarCambiosAsync: Response Success=false, Message={response?.Message}");
                 Snackbar.Add(response?.Message ?? "Error al guardar", Severity.Error);
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ GuardarCambiosAsync: Exception={ex.Message}");
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }

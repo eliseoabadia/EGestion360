@@ -525,10 +525,12 @@ WHERE us.Activo = 1
 
   GO
 
--- ====
-CREATE OR ALTER VIEW ALMA.Vw_TipoBienConteo
+  CREATE OR ALTER VIEW ALMA.Vw_TipoBienConteo
 AS
 SELECT 
+    -- ========================
+    -- Campos originales de la vista (se mantienen)
+    -- ========================
     tb.PKIdTipoBien,
     tb.CodigoClave AS CodigoArticulo,
     tb.Descripcion AS DescripcionArticulo,
@@ -539,20 +541,17 @@ SELECT
     ue.Descripcion AS UnidadEquivalente,
     tb.Cantidad_Equivalente,
     
-    -- Clasificación (Familia, Grupo, Nivel)
+    -- Clasificación
     f.Descripcion AS Familia,
     gb.Descripcion AS GrupoBien,
     n.Descripcion AS Nivel,
     
-    -- Ubicación (si se define)
-    -- (Actualmente no hay tabla de localizaciones, se puede agregar después)
-    
-    -- Datos de partida y cuenta contable
+    -- Partida y cuenta contable
     p.Clave AS PartidaClave,
     p.Descripcion AS PartidaDescripcion,
     cc.Cuenta + '.' + cc.SubCuenta + '.' + cc.SubSubCuenta + '.' + cc.SubSubSubCuenta + '.' + cc.SubSubSubSubCuenta AS CuentaCompleta,
     cc.Descripcion AS CuentaDescripcion,
-    tc.Descripcion AS TipoCuenta,  -- 'ACREEDORA' u 'DEUDORA'
+    tc.Descripcion AS TipoCuenta,
     
     -- Parámetros del artículo
     tb.ExistenciaMinima,
@@ -566,7 +565,25 @@ SELECT
     
     -- Auditoría
     tb.FechaCreacion,
-    tb.UsuarioCreacion
+    tb.UsuarioCreacion,
+    tb.FechaModificacion,
+    tb.UsuarioModificacion,
+
+    -- ========================
+    -- NUEVOS CAMPOS requeridos por el CRUD (solo los que no existían)
+    -- ========================
+    -- IDs de las relaciones (necesarios para combos y FK)
+    tb.FKIdGrupoBien_ALMA AS FkIdGrupoBienSicop,
+    tb.FKIdNivel_ALMA AS FkIdNivel,
+    tb.FKIdPartida_CONTA AS FkIdPartidaSis,
+    tb.FKIdCuentaContable_CONTA AS FkIdCuentaContable,
+    tb.FKIdUnidades_ALMA AS FkIdUnidadesAlma,
+    tb.FKIdUnidades_Equivalente AS FkIdUnidadesEquivalente,
+    
+    -- Otros campos útiles que no estaban en la vista original
+    tb.Consecutivo,
+    tb.Identificador
+
 FROM 
     ALMA.TipoBien tb
     INNER JOIN ALMA.GrupoBien gb ON tb.FKIdGrupoBien_ALMA = gb.PKIdGrupoBien
@@ -578,8 +595,9 @@ FROM
     INNER JOIN ALMA.Unidades u ON tb.FKIdUnidades_ALMA = u.PKIdUnidades
     LEFT JOIN ALMA.Unidades ue ON tb.FKIdUnidades_Equivalente = ue.PKIdUnidades
 WHERE 
-    tb.Activo = 1
-GO
+    tb.Activo = 1;
+
+  GO
 
 
 CREATE OR ALTER VIEW ALMA.vw_Bien

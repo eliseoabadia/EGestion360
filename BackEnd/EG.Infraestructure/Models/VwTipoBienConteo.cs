@@ -56,4 +56,24 @@ public partial class VwTipoBienConteo
     public DateTime? FechaCreacion { get; set; }
 
     public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
+
+    public int? FkIdGrupoBienSicop { get; set; }
+
+    public int? FkIdNivel { get; set; }
+
+    public int? FkIdPartidaSis { get; set; }
+
+    public int? FkIdCuentaContable { get; set; }
+
+    public int? FkIdUnidadesAlma { get; set; }
+
+    public int? FkIdUnidadesEquivalente { get; set; }
+
+    public int? Consecutivo { get; set; }
+
+    public string Identificador { get; set; }
 }

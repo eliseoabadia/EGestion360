@@ -34,15 +34,25 @@ namespace EG.ApiCore.Controllers.Almacen
         public async Task<ActionResult<PagedResult<TipoBienResponse>>> GetAll()
         {
             var result = await _serviceView.GetAllAsync();
-            return Ok(result);
+            return Ok(new PagedResult<TipoBienResponse>
+            {
+                Success = true,
+                Message = "Tipos de bien obtenidos correctamente",
+                Code = "SUCCESS",
+                Items = result.ToList(),
+                TotalCount = result.Count()
+            });
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<TipoBienResponse>>> GetById(int id)
         {
+            Console.WriteLine($"🔍 Backend GetById: Buscando id={id}");
             try
             {
                 var result = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidTipoBien");
+                Console.WriteLine($"🔍 Backend GetById: Resultado es null={result == null}");
+                
                 if (result == null)
                 {
                     return NotFound(new PagedResult<TipoBienResponse>
@@ -52,6 +62,8 @@ namespace EG.ApiCore.Controllers.Almacen
                         Code = "NOT_FOUND"
                     });
                 }
+
+                Console.WriteLine($"🔍 Backend GetById: Encontrado - PkidTipoBien={result.PkidTipoBien}, CodigoArticulo={result.CodigoArticulo}");
 
                 return Ok(new PagedResult<TipoBienResponse>
                 {
@@ -65,6 +77,7 @@ namespace EG.ApiCore.Controllers.Almacen
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"❌ Backend GetById: Error={ex.Message}");
                 return BadRequest(new PagedResult<TipoBienResponse>
                 {
                     Success = false,
@@ -80,7 +93,14 @@ namespace EG.ApiCore.Controllers.Almacen
             try
             {
                 var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
-                return Ok(result);
+                return Ok(new PagedResult<TipoBienResponse>
+                {
+                    Success = true,
+                    Message = "Tipos de bien obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                });
             }
             catch (Exception ex)
             {
@@ -126,9 +146,12 @@ namespace EG.ApiCore.Controllers.Almacen
         [HttpPut("{id}")]
         public async Task<ActionResult<PagedResult<TipoBienResponse>>> Update(int id, [FromBody] TipoBienResponse response)
         {
+            Console.WriteLine($"🔍 Backend Update: Recibido id={id}, PkidTipoBien={response?.PkidTipoBien}, CodigoArticulo={response?.CodigoArticulo}");
             try
             {
                 var dto = _mapper.Map<TipoBienDto>(response);
+                Console.WriteLine($"🔍 Backend Update: DTO mapeado - PkidTipoBien={dto.PkidTipoBien}, CodigoClave={dto.CodigoClave}");
+                
                 dto.PkidTipoBien = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
@@ -145,6 +168,7 @@ namespace EG.ApiCore.Controllers.Almacen
             }
             catch (KeyNotFoundException)
             {
+                Console.WriteLine($"⚠️ Backend Update: Entidad con ID {id} no encontrada");
                 return NotFound(new PagedResult<TipoBienResponse>
                 {
                     Success = false,
@@ -154,6 +178,7 @@ namespace EG.ApiCore.Controllers.Almacen
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"❌ Backend Update: Error={ex.Message}");
                 return BadRequest(new PagedResult<TipoBienResponse>
                 {
                     Success = false,

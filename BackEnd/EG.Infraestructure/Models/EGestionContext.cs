@@ -2294,7 +2294,9 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(80);
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.GrupoBien).HasMaxLength(800);
+            entity.Property(e => e.Identificador).HasMaxLength(50);
             entity.Property(e => e.Nivel)
                 .IsRequired()
                 .HasMaxLength(20);
