@@ -247,6 +247,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[VW_Conteo]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[VW_ConteoDetalle]",
          "ObjectType": 3
       },

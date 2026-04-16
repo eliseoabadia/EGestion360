@@ -1,4 +1,4 @@
-﻿using EG.Web.Models;
+using EG.Web.Models;
 using MudBlazor;
 
 namespace EG.Web.Contracs
@@ -20,5 +20,6 @@ namespace EG.Web.Contracs
 
         Task<ApiResponse<TResponse>> GetAllByEmpresaAsync(int empresaId);
         Task<ApiResponse<TResponse>> GetAllBySucursalAsync(int sucursalId);
+        Task<ApiResponse<TResponse>> IniciarConteoAsync(int periodoId);
     }
 }

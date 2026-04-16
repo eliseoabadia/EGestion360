@@ -1,0 +1,296 @@
+@using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Models.Configuration
+@using EG.Web.Services.Configuration
+@using MudBlazor
+
+@inject IGenericCrudService<PeriodoConteoResponse> _service
+@inject ISucursalService _sucursalService
+@inject SucursalStateService _sucursalState
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PeriodoConteoResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos del período..."
+                OnConfirm="GuardarCambiosAsync"
+                OnCancel="HandleCancel">
+
+    <BaseEntityForm TEntity="PeriodoConteoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="periodo.CodigoPeriodo"
+                              Label="Código del Período"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El código es requerido"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="periodo.Nombre"
+                              Label="Nombre del Período"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El nombre es requerido"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="periodo.Descripcion"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              MaxLength="500"
+                              Lines="2" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" @bind-Value="periodo.IdSucursal"
+                           Label="Sucursal"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           Disabled="@Id.HasValue">
+                    @foreach (var item in sucursales)
+                    {
+                        <MudSelectItem T="int?" Value="item.PkidSucursal">
+                            @item.Nombre
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+                @if (Id.HasValue)
+                {
+                    <MudText Color="Color.Info" Class="mt-1" Typo="Typo.caption">
+                        La sucursal no se puede cambiar en modo edición
+                    </MudText>
+                }
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" @bind-Value="periodo.IdTipoConteo"
+                           Label="Tipo de Conteo"
+                           Variant="Variant.Outlined"
+                           Required="true">
+                    @foreach (var item in tiposConteo)
+                    {
+                        <MudSelectItem T="int?" Value="item.PkidTipoConteo">
+                            @item.Nombre
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="fechaInicio"
+                               Label="Fecha de Inicio"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               DateFormat="dd/MM/yyyy" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="fechaFin"
+                               Label="Fecha de Fin"
+                               Variant="Variant.Outlined"
+                               DateFormat="dd/MM/yyyy" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="periodo.MaximoConteosPorArticulo"
+                                 Label="Máximo Conteos por Artículo"
+                                 Variant="Variant.Outlined"
+                                 Min="1"
+                                 Max="10"
+                                 Required="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch @bind-Value="periodo.RequiereAprobacionSupervisor"
+                           Color="Color.Primary"
+                           Label="Requiere Aprobación de Supervisor" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estado del Período</MudText>
+                        <MudDivider Class="mb-3" />
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="periodo.Activo"
+                                       Color="Color.Primary">
+                                <MudText>@(periodo.Activo ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<PeriodoConteoResponse> form = null!;
+    private PeriodoConteoResponse periodo = new() { Activo = true, MaximoConteosPorArticulo = 3 };
+
+    private DateTime? fechaInicio { get; set; } = DateTime.Today;
+    private DateTime? fechaFin { get; set; }
+
+    private List<SucursalResponse> sucursales = new();
+    private List<TipoConteoResponse> tiposConteo = new();
+
+    private string dialogTitle => Id.HasValue ? "Editar Período de Conteo" : "Nuevo Período de Conteo";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarSucursales();
+        await CargarTiposConteo();
+
+        if (Id.HasValue)
+        {
+            await CargarPeriodo();
+        }
+    }
+
+    private async Task CargarSucursales()
+    {
+        try
+        {
+            var response = await _sucursalService.GetAllSucursales();
+            if (response?.Success == true && response.Items != null)
+            {
+                sucursales = response.Items.ToList();
+
+                if (!Id.HasValue && _sucursalState.HasSucursalSeleccionada)
+                {
+                    periodo.IdSucursal = _sucursalState.SucursalId;
+                }
+            }
+            else
+            {
+                Snackbar.Add("No se pudieron cargar las sucursales", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar sucursales: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarTiposConteo()
+    {
+        try
+        {
+            tiposConteo = new List<TipoConteoResponse>
+            {
+                new() { PkidTipoConteo = 1, Nombre = "Cíclico" },
+                new() { PkidTipoConteo = 2, Nombre = "Anual" },
+                new() { PkidTipoConteo = 3, Nombre = "Extraordinario" }
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar tipos de conteo: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarPeriodo()
+    {
+        try
+        {
+            var response = await _service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                periodo = response.Data;
+                fechaInicio = periodo.FechaInicio.ToDateTime(TimeOnly.MinValue);
+                fechaFin = periodo.FechaFin?.ToDateTime(TimeOnly.MinValue);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al cargar período", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar período: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void HandleCancel() => MudDialog.Close(DialogResult.Cancel());
+
+    private async Task GuardarCambiosAsync(bool _)
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Complete los campos requeridos", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(periodo.CodigoPeriodo))
+        {
+            Snackbar.Add("El código es requerido", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(periodo.Nombre))
+        {
+            Snackbar.Add("El nombre es requerido", Severity.Warning);
+            return;
+        }
+
+        if (!periodo.IdSucursal.HasValue || periodo.IdSucursal <= 0)
+        {
+            Snackbar.Add("Seleccione una sucursal", Severity.Warning);
+            return;
+        }
+
+        if (!periodo.IdTipoConteo.HasValue || periodo.IdTipoConteo <= 0)
+        {
+            Snackbar.Add("Seleccione un tipo de conteo", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            periodo.FechaInicio = DateOnly.FromDateTime(fechaInicio ?? DateTime.Today);
+            periodo.FechaFin = fechaFin.HasValue ? DateOnly.FromDateTime(fechaFin.Value) : null;
+
+            ApiResponse<PeriodoConteoResponse> response;
+
+            if (Id.HasValue)
+            {
+                response = await _service.UpdateAsync(periodo, periodo.PkidPeriodoConteo);
+            }
+            else
+            {
+                response = await _service.CreateAsync(periodo);
+            }
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Guardado exitosamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al guardar", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

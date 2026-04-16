@@ -1,0 +1,197 @@
+@page "/conteociclico/periodo"
+@using EG.Web.Models.ConteoCiclico
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<PeriodoConteoResponse, PeriodoConteoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Períodos de Conteo"
+                    Subtitle="Gestión de períodos para conteo cíclico de inventario"
+                    Icon="@Icons.Material.Filled.EventRepeat"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="PeriodoConteoResponse"
+                      @ref="table"
+                      Title="Lista de Períodos de Conteo"
+                      SearchPlaceholder="Buscar por código, nombre o sucursal..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidPeriodoConteo" T="PeriodoConteoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoPeriodo" T="PeriodoConteoResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="PeriodoConteoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Sucursal" T="PeriodoConteoResponse">Sucursal</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoConteo" T="PeriodoConteoResponse">Tipo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="PeriodoConteoResponse">Inicio</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EstatusPeriodo" T="PeriodoConteoResponse">Estatus</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+
+            <Row Context="periodo">
+                <MudTd>
+                    @if (periodo.RequiereAprobacionSupervisor && periodo.Activo)
+                    {
+                        <MudTooltip Text="Iniciar Conteo">
+                            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                           Color="Color.Success"
+                                           Size="Size.Small"
+                                           OnClick="@(() => IniciarConteo(periodo.PkidPeriodoConteo, periodo.Nombre))" />
+                        </MudTooltip>
+                    }
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(periodo.PkidPeriodoConteo))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(periodo.PkidPeriodoConteo))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@periodo.PkidPeriodoConteo</MudTd>
+                <MudTd>@periodo.CodigoPeriodo</MudTd>
+                <MudTd>@periodo.Nombre</MudTd>
+                <MudTd>@periodo.Sucursal</MudTd>
+                <MudTd>@periodo.TipoConteo</MudTd>
+                <MudTd>@periodo.FechaInicio.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>
+                    <MudChip T="string" 
+                             Color="@GetEstatusColor(periodo.EstatusPeriodo)" 
+                             Size="Size.Small">
+                        @periodo.EstatusPeriodo
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudBadge Color="@(periodo.Activo == true ? Color.Success : Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(periodo.Activo == true ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<PeriodoConteoResponse> table = null!;
+
+    protected override string ModuleName => "conteociclico";
+    protected override string SubModuleName => "periodo";
+
+    protected override Type CreateDialogType => typeof(PeriodoConteoDialog);
+    protected override Type EditDialogType => typeof(PeriodoConteoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<PeriodoConteoResponse>);
+
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<PeriodoConteoResponse> items)
+    {
+        return items.Select(p => new
+        {
+            ID = p.PkidPeriodoConteo,
+            Código = p.CodigoPeriodo,
+            Nombre = p.Nombre,
+            Descripción = p.Descripcion ?? "",
+            Sucursal = p.Sucursal ?? "",
+            Tipo_Conteo = p.TipoConteo ?? "",
+            Estatus = p.EstatusPeriodo ?? "",
+            Fecha_Inicio = p.FechaInicio.ToString("dd/MM/yyyy"),
+            Fecha_Fin = p.FechaFin?.ToString("dd/MM/yyyy") ?? "Sin definir",
+            Requiere_Aprobación = p.RequiereAprobacionSupervisor ? "Sí" : "No",
+            Total_Artículos = p.TotalArticulos ?? 0,
+            Concluidos = p.ArticulosConcluidos ?? 0,
+            Con_Diferencia = p.ArticulosConDiferencia ?? 0,
+            Estado = p.Activo ? "Activo" : "Inactivo"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.Nombre ?? "el período";
+        }
+        catch
+        {
+            return "el período";
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+            StateHasChanged();
+        }
+    }
+
+    private async Task IniciarConteo(int id, string nombre)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Iniciar Conteo",
+            ["Message"] = $"¿Está seguro de iniciar el conteo para el período '{nombre}'? Se cargarán los artículos y el período estará listo para contar.",
+            ["ConfirmText"] = "Iniciar",
+            ["ConfirmColor"] = Color.Success,
+            ["Id"] = id
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmIniciarConteoDialog>("", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+
+        if (result.Data != null)
+        {
+            try
+            {
+                var response = await Service.IniciarConteoAsync(id);
+                if (response?.Success == true)
+                {
+                    Snackbar.Add(response.Message ?? "Conteo iniciado correctamente", Severity.Success);
+                    await table.ReloadData();
+                }
+                else
+                {
+                    Snackbar.Add(response?.Message ?? "Error al iniciar conteo", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetEstatusColor(string estatus)
+    {
+        return estatus?.ToLower() switch
+        {
+            "abierto" or "abierta" => Color.Success,
+            "cerrado" or "cerrada" => Color.Error,
+            "en proceso" or "proceso" => Color.Warning,
+            "pendiente" => Color.Info,
+            _ => Color.Default
+        };
+    }
+}

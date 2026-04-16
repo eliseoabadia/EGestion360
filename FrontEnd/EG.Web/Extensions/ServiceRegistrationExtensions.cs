@@ -1,7 +1,8 @@
-﻿using EG.Common.Helper;
+using EG.Common.Helper;
 using EG.Web.Contracs;
 using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;
+using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
 using Microsoft.JSInterop;
 
@@ -23,11 +24,13 @@ public static class ApiServiceExtensions
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
 
+        RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
+        RegisterCrud<ConteoResponse>(services, "api/Conteo");
+        RegisterCrud<ConteoDetalleEscaneoResponse>(services, "api/ConteoDetalleEscaneo");
         //RegisterCrud<ArticuloConteoResponse>(services, "api/ArticuloConteo");
         //RegisterCrud<RegistroConteoResponse>(services, "api/RegistroConteo");
         //RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
         //RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
-        //RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
         //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
         RegisterCrud<FamiliaResponse>(services, "api/Familia");

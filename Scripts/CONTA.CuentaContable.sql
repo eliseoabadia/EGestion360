@@ -1067,3 +1067,16 @@ CREATE TABLE [ALMA].[ConteoHist] (
     CONSTRAINT PK_ConteoHist PRIMARY KEY ([PKIdConteoHist])
 );
 GO
+
+
+-- Agregar la columna FKIdPeriodoConteo_ALMA en la tabla Conteo
+ALTER TABLE [ALMA].[Conteo]
+ADD [FKIdPeriodoConteo_ALMA] INT NULL;
+GO
+
+-- Agregar la restricción de clave foránea
+ALTER TABLE [ALMA].[Conteo]
+ADD CONSTRAINT [FK_Conteo_PeriodoConteo]
+FOREIGN KEY ([FKIdPeriodoConteo_ALMA])
+REFERENCES [ALMA].[PeriodoConteo] ([PKIdPeriodoConteo]);
+GO

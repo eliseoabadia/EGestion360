@@ -1,4 +1,4 @@
-﻿using EG.Common.GenericModel;
+using EG.Common.GenericModel;
 using EG.Common.Helper;
 using EG.Web.Contracs;
 using EG.Web.Models;
@@ -160,6 +160,24 @@ namespace EG.Web.Services
             {
                 Success = false,
                 Message = "Error al eliminar",
+                Code = "ERROR"
+            };
+        }
+
+        public async Task<ApiResponse<TResponse>> IniciarConteoAsync(int periodoId)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<TResponse>();
+
+            var response = await PostAsync<ApiResponse<TResponse>>(
+                $"{_endpoint}/IniciarConteo/{periodoId}",
+                new { },
+                useBaseUrl: false);
+
+            return response ?? new ApiResponse<TResponse>
+            {
+                Success = false,
+                Message = "Error al iniciar conteo",
                 Code = "ERROR"
             };
         }

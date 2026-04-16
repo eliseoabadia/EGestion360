@@ -70,7 +70,7 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<SP_CargaInicialConteoResult>> SP_CargaInicialConteoAsync(int? p_Partida, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<SP_CargaInicialConteoResult>> SP_CargaInicialConteoAsync(int? p_Partida, int? p_Periodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
             {
@@ -87,9 +87,15 @@ namespace EG.Infraestructure.Models
                     Value = p_Partida ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
                 },
+                new SqlParameter
+                {
+                    ParameterName = "P_Periodo",
+                    Value = p_Periodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_CargaInicialConteoResult>("EXEC @returnValue = [ALMA].[SP_CargaInicialConteo] @P_Partida = @P_Partida", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<SP_CargaInicialConteoResult>("EXEC @returnValue = [ALMA].[SP_CargaInicialConteo] @P_Partida = @P_Partida, @P_Periodo = @P_Periodo", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

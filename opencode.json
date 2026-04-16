@@ -8,8 +8,8 @@
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "mistral:instruct": {
-          "name": "mistral:instruct"
+        "localnet-crud:latest": {
+          "name": "localnet-crud:latest"
         }
       }
     }

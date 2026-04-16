@@ -29,9 +29,13 @@ public partial class Conteo
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidPeriodoConteoAlma { get; set; }
+
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; } = new List<ConteoDetalleEscaneo>();
 
     public virtual ICollection<ConteoDetalle> ConteoDetalles { get; set; } = new List<ConteoDetalle>();
+
+    public virtual PeriodoConteo FkidPeriodoConteoAlmaNavigation { get; set; }
 
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 

@@ -831,6 +831,7 @@ LEFT JOIN [NOM].[Persona] P
     ON CD.[FKIdPersona_NOM] = P.[PKIdPersona];
 GO
 
+
 -- =============================================
 -- VISTA: ALMA.VW_PeriodoConteo
 -- Descripción: Vista descriptiva de los periodos de conteo cíclico.
@@ -889,6 +890,153 @@ LEFT JOIN [SIS].[Usuario] r
     ON pc.[FKIdResponsable_SIS] = r.[PkIdUsuario]
 LEFT JOIN [SIS].[Usuario] sup
     ON pc.[FKIdSupervisor_SIS] = sup.[PkIdUsuario];
+GO
+
+
+-- =============================================
+-- VISTA: ALMA.VW_Conteo (con PeriodoConteo y TipoConteo)
+-- =============================================
+CREATE OR ALTER VIEW [ALMA].[VW_Conteo]
+AS
+SELECT
+    c.[PKIdConteo],
+    c.[CantidadInventario],
+    c.[Descripcion],
+    c.[FechaInicio],
+    c.[FechaFin],
+    c.[Activo],
+    c.[FechaCreacion],
+    c.[UsuarioCreacion],
+    c.[FechaModificacion],
+    c.[UsuarioModificacion],
+
+    -- Datos del periodo de conteo
+    pc.[PKIdPeriodoConteo]          AS [IdPeriodoConteo],
+    pc.[CodigoPeriodo]              AS [CodigoPeriodo],
+    pc.[Nombre]                     AS [NombrePeriodo],
+    pc.[FechaInicio]                AS [PeriodoFechaInicio],
+    pc.[FechaFin]                   AS [PeriodoFechaFin],
+
+    -- Tipo de conteo (a través de PeriodoConteo)
+    tc.[PKIdTipoConteo]             AS [IdTipoConteo],
+    tc.[Nombre]                     AS [TipoConteo],
+    tc.[Descripcion]                AS [DescripcionTipoConteo],
+
+    -- Estatus del periodo
+    ep.[PKIdEstatusPeriodo]         AS [IdEstatusPeriodo],
+    ep.[Nombre]                     AS [EstatusPeriodo],
+    ep.[Descripcion]                AS [DescripcionEstatusPeriodo],
+
+    -- Tipo de bien
+    tb.[PKIdTipoBien]               AS [IdTipoBien],
+    tb.[CodigoClave]                AS [CodigoClaveTipoBien],
+    tb.[Descripcion]                AS [DescripcionTipoBien],
+
+    -- Grupo y familia
+    gb.[PKIdGrupoBien]              AS [IdGrupoBien],
+    gb.[Descripcion]                AS [GrupoBien],
+    f.[PKIdFamilia]                 AS [IdFamilia],
+    f.[Descripcion]                 AS [Familia],
+
+    -- Unidad de medida
+    u.[PKIdUnidades]                AS [IdUnidad],
+    u.[Descripcion]                 AS [UnidadMedida],
+
+    -- Usuarios
+    uc.[PkIdUsuario]                AS [IdUsuarioCreacion],
+    CONCAT(uc.[Nombre], ' ', uc.[ApellidoPaterno], ' ', uc.[ApellidoMaterno]) AS [NombreUsuarioCreacion],
+    um.[PkIdUsuario]                AS [IdUsuarioModificacion],
+    CONCAT(um.[Nombre], ' ', um.[ApellidoPaterno], ' ', um.[ApellidoMaterno]) AS [NombreUsuarioModificacion],
+
+    -- Métricas desde ConteoDetalle
+    ISNULL(COUNT(DISTINCT cd.[PKIdDetalleConteo]), 0)      AS [TotalLecturas],
+    ISNULL(SUM(cd.[Cantidad]), 0)                          AS [TotalCantidadContada],
+    ISNULL(COUNT(DISTINCT cd.[FKIdPersona_NOM]), 0)        AS [PersonasParticipantes],
+
+    -- Estado del conteo individual
+    CASE
+        WHEN c.[FechaFin] IS NOT NULL AND c.[FechaFin] <= GETDATE() THEN 'Finalizado'
+        WHEN c.[FechaInicio] <= GETDATE() AND (c.[FechaFin] IS NULL OR c.[FechaFin] > GETDATE()) THEN 'En Proceso'
+        WHEN c.[FechaInicio] > GETDATE() THEN 'Programado'
+        ELSE 'Indeterminado'
+    END AS [EstadoConteo]
+
+FROM [ALMA].[Conteo] c
+
+INNER JOIN [ALMA].[PeriodoConteo] pc
+    ON c.[FKIdPeriodoConteo_ALMA] = pc.[PKIdPeriodoConteo]
+
+LEFT JOIN [ALMA].[TipoConteo] tc
+    ON pc.[FKIdTipoConteo_ALMA] = tc.[PKIdTipoConteo]
+
+LEFT JOIN [ALMA].[EstatusPeriodo] ep
+    ON pc.[FKIdEstatus_ALMA] = ep.[PKIdEstatusPeriodo]
+
+LEFT JOIN [ALMA].[TipoBien] tb
+    ON c.[FKIdTipoBien_ALMA] = tb.[PKIdTipoBien]
+
+LEFT JOIN [ALMA].[GrupoBien] gb
+    ON tb.[FKIdGrupoBien_ALMA] = gb.[PKIdGrupoBien]
+
+LEFT JOIN [ALMA].[Familia] f
+    ON gb.[FKIdFamilia_ALMA] = f.[PKIdFamilia]
+
+LEFT JOIN [ALMA].[Unidades] u
+    ON tb.[FKIdUnidades_ALMA] = u.[PKIdUnidades]
+
+LEFT JOIN [SIS].[Usuario] uc
+    ON c.[UsuarioCreacion] = uc.[PkIdUsuario]
+
+LEFT JOIN [SIS].[Usuario] um
+    ON c.[UsuarioModificacion] = um.[PkIdUsuario]
+
+LEFT JOIN [ALMA].[ConteoDetalle] cd
+    ON c.[PKIdConteo] = cd.[FKIdConteo_ALMA]
+       AND cd.[Activo] = 1
+
+WHERE c.[Activo] = 1
+
+GROUP BY
+    c.[PKIdConteo],
+    c.[CantidadInventario],
+    c.[Descripcion],
+    c.[FechaInicio],
+    c.[FechaFin],
+    c.[Activo],
+    c.[FechaCreacion],
+    c.[UsuarioCreacion],
+    c.[FechaModificacion],
+    c.[UsuarioModificacion],
+    pc.[PKIdPeriodoConteo],
+    pc.[CodigoPeriodo],
+    pc.[Nombre],
+    pc.[FechaInicio],
+    pc.[FechaFin],
+    tc.[PKIdTipoConteo],
+    tc.[Nombre],
+    tc.[Descripcion],
+    ep.[PKIdEstatusPeriodo],
+    ep.[Nombre],
+    ep.[Descripcion],
+    tb.[PKIdTipoBien],
+    tb.[CodigoClave],
+    tb.[Descripcion],
+    gb.[PKIdGrupoBien],
+    gb.[Descripcion],
+    f.[PKIdFamilia],
+    f.[Descripcion],
+    u.[PKIdUnidades],
+    u.[Descripcion],
+    uc.[PkIdUsuario],
+    uc.[Nombre],
+    uc.[ApellidoPaterno],
+    uc.[ApellidoMaterno],
+    um.[PkIdUsuario],
+    um.[Nombre],
+    um.[ApellidoPaterno],
+    um.[ApellidoMaterno];
+
+
 GO
 
 -- =============================================

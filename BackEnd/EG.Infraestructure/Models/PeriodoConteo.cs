@@ -51,6 +51,8 @@ public partial class PeriodoConteo
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Conteo> Conteos { get; set; } = new List<Conteo>();
+
     public virtual EstatusPeriodo FkidEstatusAlmaNavigation { get; set; }
 
     public virtual Usuario FkidResponsableSisNavigation { get; set; }

@@ -127,6 +127,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwBien> VwBiens { get; set; }
 
+    public virtual DbSet<VwConteo> VwConteos { get; set; }
+
     public virtual DbSet<VwConteoDetalle> VwConteoDetalles { get; set; }
 
     public virtual DbSet<VwConteoDetalleEscaneo> VwConteoDetalleEscaneos { get; set; }
@@ -443,7 +445,12 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaFin).HasColumnType("datetime");
             entity.Property(e => e.FechaInicio).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkidPeriodoConteoAlma).HasColumnName("FKIdPeriodoConteo_ALMA");
             entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+
+            entity.HasOne(d => d.FkidPeriodoConteoAlmaNavigation).WithMany(p => p.Conteos)
+                .HasForeignKey(d => d.FkidPeriodoConteoAlma)
+                .HasConstraintName("FK_Conteo_PeriodoConteo");
 
             entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.Conteos)
                 .HasForeignKey(d => d.FkidTipoBienAlma)
@@ -1998,6 +2005,47 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Ubicacion).HasMaxLength(50);
             entity.Property(e => e.ValorActual).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.ValorRescate).HasColumnType("decimal(20, 4)");
+        });
+
+        modelBuilder.Entity<VwConteo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Conteo", "ALMA");
+
+            entity.Property(e => e.CantidadInventario).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CodigoClaveTipoBien).HasMaxLength(200);
+            entity.Property(e => e.CodigoPeriodo)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion).IsRequired();
+            entity.Property(e => e.DescripcionEstatusPeriodo).HasMaxLength(100);
+            entity.Property(e => e.DescripcionTipoBien).HasMaxLength(1200);
+            entity.Property(e => e.DescripcionTipoConteo).HasMaxLength(100);
+            entity.Property(e => e.EstadoConteo)
+                .IsRequired()
+                .HasMaxLength(13)
+                .IsUnicode(false);
+            entity.Property(e => e.EstatusPeriodo).HasMaxLength(30);
+            entity.Property(e => e.Familia).HasMaxLength(80);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaFin).HasColumnType("datetime");
+            entity.Property(e => e.FechaInicio).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.GrupoBien).HasMaxLength(800);
+            entity.Property(e => e.NombrePeriodo)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.NombreUsuarioCreacion)
+                .IsRequired()
+                .HasMaxLength(194);
+            entity.Property(e => e.NombreUsuarioModificacion)
+                .IsRequired()
+                .HasMaxLength(194);
+            entity.Property(e => e.PkidConteo).HasColumnName("PKIdConteo");
+            entity.Property(e => e.TipoConteo).HasMaxLength(30);
+            entity.Property(e => e.TotalCantidadContada).HasColumnType("decimal(38, 2)");
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
         });
 
         modelBuilder.Entity<VwConteoDetalle>(entity =>
