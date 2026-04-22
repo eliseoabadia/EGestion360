@@ -9,6 +9,7 @@
     <Project Path="BackEnd/EG.Logger/EG.Logger.csproj" />
   </Folder>
   <Folder Name="/FrontEnd/">
+    <Project Path="FrontEnd/BlazorAppEG/BlazorAppEG.csproj" Id="97749181-30a8-49d5-a27e-de627883283c" />
     <Project Path="FrontEnd/EG.Web/EG.Web.csproj" Id="206bc5a3-0a74-47c3-a6ab-15d141b48ed6" />
   </Folder>
   <Project Path="EG.Builder/EG.Builder.csproj" />

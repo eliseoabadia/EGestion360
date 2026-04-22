@@ -7,7 +7,7 @@
         "Action": "Start"
       },
       {
-        "Path": "FrontEnd\\EG.Web\\EG.Web.csproj",
+        "Path": "FrontEnd\\BlazorAppEG\\BlazorAppEG.csproj",
         "Action": "Start"
       }
     ]

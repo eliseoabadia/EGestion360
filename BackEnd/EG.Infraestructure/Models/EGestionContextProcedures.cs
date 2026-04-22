@@ -102,6 +102,158 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<sp_RegistrarConteoResult>> sp_RegistrarConteoAsync(int? pKIdArticuloConteo, decimal? cantidadContada, int? fKIdUsuario_SIS, string observaciones, decimal? latitud, decimal? longitud, string fotoPath, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PKIdArticuloConteo",
+                    Value = pKIdArticuloConteo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CantidadContada",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = cantidadContada ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdUsuario_SIS",
+                    Value = fKIdUsuario_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Latitud",
+                    Precision = 9,
+                    Scale = 6,
+                    Value = latitud ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Longitud",
+                    Precision = 9,
+                    Scale = 6,
+                    Value = longitud ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FotoPath",
+                    Size = 1000,
+                    Value = fotoPath ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<sp_RegistrarConteoResult>("EXEC @returnValue = [ALMA].[sp_RegistrarConteo] @PKIdArticuloConteo = @PKIdArticuloConteo, @CantidadContada = @CantidadContada, @FKIdUsuario_SIS = @FKIdUsuario_SIS, @Observaciones = @Observaciones, @Latitud = @Latitud, @Longitud = @Longitud, @FotoPath = @FotoPath", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<int> sp_RegistrarEntidadAsync(string grupo, string subGrupo, string nombreMenu, string ruta, string menuPadreNombre, string icono, int? orden, string descripcion, string codigo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Grupo",
+                    Size = 200,
+                    Value = grupo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SubGrupo",
+                    Size = 200,
+                    Value = subGrupo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombreMenu",
+                    Size = 300,
+                    Value = nombreMenu ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Ruta",
+                    Size = 400,
+                    Value = ruta ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "MenuPadreNombre",
+                    Size = 300,
+                    Value = menuPadreNombre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Icono",
+                    Size = 240,
+                    Value = icono ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Orden",
+                    Value = orden ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = 400,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Codigo",
+                    Size = 20,
+                    Value = codigo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [dbo].[sp_RegistrarEntidad] @Grupo = @Grupo, @SubGrupo = @SubGrupo, @NombreMenu = @NombreMenu, @Ruta = @Ruta, @MenuPadreNombre = @MenuPadreNombre, @Icono = @Icono, @Orden = @Orden, @Descripcion = @Descripcion, @Codigo = @Codigo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spConfiguracionDeRolYClaimsResult>> spConfiguracionDeRolYClaimsAsync(string group, string subgroup, string code, string values, string description, string rolName, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

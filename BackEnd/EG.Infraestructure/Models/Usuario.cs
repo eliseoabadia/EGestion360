@@ -57,6 +57,10 @@ public partial class Usuario
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Anio> AnioUsuarioCreacionNavigations { get; set; } = new List<Anio>();
+
+    public virtual ICollection<Anio> AnioUsuarioModificacionNavigations { get; set; } = new List<Anio>();
+
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneoUsuarioCreacionNavigations { get; set; } = new List<ConteoDetalleEscaneo>();
@@ -75,6 +79,22 @@ public partial class Usuario
 
     public virtual ICollection<Departamento> DepartamentoUsuarioModificacionNavigations { get; set; } = new List<Departamento>();
 
+    public virtual ICollection<DestinoGasto> DestinoGastoUsuarioCreacionNavigations { get; set; } = new List<DestinoGasto>();
+
+    public virtual ICollection<DestinoGasto> DestinoGastoUsuarioModificacionNavigations { get; set; } = new List<DestinoGasto>();
+
+    public virtual ICollection<DetalleRequisicion> DetalleRequisicionUsuarioCreacionNavigations { get; set; } = new List<DetalleRequisicion>();
+
+    public virtual ICollection<DetalleRequisicion> DetalleRequisicionUsuarioModificacionNavigations { get; set; } = new List<DetalleRequisicion>();
+
+    public virtual ICollection<DigitoIdentificador> DigitoIdentificadorUsuarioCreacionNavigations { get; set; } = new List<DigitoIdentificador>();
+
+    public virtual ICollection<DigitoIdentificador> DigitoIdentificadorUsuarioModificacionNavigations { get; set; } = new List<DigitoIdentificador>();
+
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizadoUsuarioCreacionNavigations { get; set; } = new List<EgresoAutorizado>();
+
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizadoUsuarioModificacionNavigations { get; set; } = new List<EgresoAutorizado>();
+
     public virtual ICollection<Empresa> EmpresaUsuarioCreacionNavigations { get; set; } = new List<Empresa>();
 
     public virtual ICollection<Empresa> EmpresaUsuarioModificacionNavigations { get; set; } = new List<Empresa>();
@@ -84,6 +104,10 @@ public partial class Usuario
     public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
 
     public virtual Monedum FkidMonedaPreferidaSisNavigation { get; set; }
+
+    public virtual ICollection<FuenteFinanciamiento> FuenteFinanciamientoUsuarioCreacionNavigations { get; set; } = new List<FuenteFinanciamiento>();
+
+    public virtual ICollection<FuenteFinanciamiento> FuenteFinanciamientoUsuarioModificacionNavigations { get; set; } = new List<FuenteFinanciamiento>();
 
     public virtual ICollection<Usuario> InverseUsuarioCreacionNavigation { get; set; } = new List<Usuario>();
 
@@ -103,9 +127,29 @@ public partial class Usuario
 
     public virtual ICollection<PeriodoConteo> PeriodoConteoFkidSupervisorSisNavigations { get; set; } = new List<PeriodoConteo>();
 
+    public virtual ICollection<Programa> ProgramaUsuarioCreacionNavigations { get; set; } = new List<Programa>();
+
+    public virtual ICollection<Programa> ProgramaUsuarioModificacionNavigations { get; set; } = new List<Programa>();
+
+    public virtual ICollection<Proyecto> ProyectoUsuarioCreacionNavigations { get; set; } = new List<Proyecto>();
+
+    public virtual ICollection<Proyecto> ProyectoUsuarioModificacionNavigations { get; set; } = new List<Proyecto>();
+
+    public virtual ICollection<RequisicionPartidum> RequisicionPartidumUsuarioCreacionNavigations { get; set; } = new List<RequisicionPartidum>();
+
+    public virtual ICollection<RequisicionPartidum> RequisicionPartidumUsuarioModificacionNavigations { get; set; } = new List<RequisicionPartidum>();
+
+    public virtual ICollection<Requisicion> RequisicionUsuarioCreacionNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionUsuarioModificacionNavigations { get; set; } = new List<Requisicion>();
+
     public virtual ICollection<Sucursal> SucursalUsuarioCreacionNavigations { get; set; } = new List<Sucursal>();
 
     public virtual ICollection<Sucursal> SucursalUsuarioModificacionNavigations { get; set; } = new List<Sucursal>();
+
+    public virtual ICollection<Suficiencium> SuficienciumUsuarioCreacionNavigations { get; set; } = new List<Suficiencium>();
+
+    public virtual ICollection<Suficiencium> SuficienciumUsuarioModificacionNavigations { get; set; } = new List<Suficiencium>();
 
     public virtual ICollection<SystemParamCatalog> SystemParamCatalogUsuarioCreacionNavigations { get; set; } = new List<SystemParamCatalog>();
 
@@ -114,6 +158,10 @@ public partial class Usuario
     public virtual ICollection<SystemParamValue> SystemParamValueUsuarioCreacionNavigations { get; set; } = new List<SystemParamValue>();
 
     public virtual ICollection<SystemParamValue> SystemParamValueUsuarioModificacionNavigations { get; set; } = new List<SystemParamValue>();
+
+    public virtual ICollection<TipoGasto> TipoGastoUsuarioCreacionNavigations { get; set; } = new List<TipoGasto>();
+
+    public virtual ICollection<TipoGasto> TipoGastoUsuarioModificacionNavigations { get; set; } = new List<TipoGasto>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

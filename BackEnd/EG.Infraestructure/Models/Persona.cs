@@ -90,4 +90,22 @@ public partial class Persona
     public virtual ICollection<ConteoDetalle> ConteoDetalles { get; set; } = new List<ConteoDetalle>();
 
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidAutorizoNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidJefeAlmacenNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidPautorizoNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidPersonaNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidPjefeAlmacenNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidPsolicitaNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidPsuficienciaNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidPsupervisoNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<Requisicion> RequisicionFkidSupervisoNomNavigations { get; set; } = new List<Requisicion>();
 }

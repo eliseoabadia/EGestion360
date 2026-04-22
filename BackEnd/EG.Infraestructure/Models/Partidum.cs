@@ -27,7 +27,11 @@ public partial class Partidum
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
     public virtual Concepto FkidConceptoSisNavigation { get; set; }
+
+    public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();
 }

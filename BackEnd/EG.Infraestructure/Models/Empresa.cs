@@ -37,11 +37,17 @@ public partial class Empresa
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 
+    public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
+
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
 
     public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
 
     public virtual Monedum FkidMonedaBaseSisNavigation { get; set; }
+
+    public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
+
+    public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 

@@ -21,6 +21,8 @@ public partial class Unidade
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
+
     public virtual ICollection<TipoBien> TipoBienFkidUnidadesAlmaNavigations { get; set; } = new List<TipoBien>();
 
     public virtual ICollection<TipoBien> TipoBienFkidUnidadesEquivalenteNavigations { get; set; } = new List<TipoBien>();

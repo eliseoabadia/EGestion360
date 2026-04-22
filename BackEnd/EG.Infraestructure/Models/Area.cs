@@ -43,9 +43,13 @@ public partial class Area
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
     public virtual Area FkidAreaSisNavigation { get; set; }
 
     public virtual ICollection<Area> InverseFkidAreaSisNavigation { get; set; } = new List<Area>();
 
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
+
+    public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 }

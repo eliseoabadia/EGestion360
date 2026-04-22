@@ -355,36 +355,36 @@ CREATE TABLE dbo.AspNetClaims (
 );
 GO
 
--- Insert claims (role-independientes)
-INSERT INTO dbo.AspNetClaims (ClaimTypeId, Name, [Group], RoleId, TokenFormat, Created, SubGroup, Code, [Description], [Values], ReferenceId)
-VALUES 
-(1, 'administration', 'administration', NULL, 'app://{0}/{1}', GETDATE(), 'administration', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update', 0),
-(1, 'configuration', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
-(1, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'Configuración', 'view,view-menu', 0),
-(1, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Configuración', 'view,view-menu', 0),
-(2, 'administration', 'administration', NULL, 'app://{0}/{1}', GETDATE(), 'administration', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'perfil', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'usuarios', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'empresas', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'departamentos', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'menus', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0001', 'Número de conteo', 'view,view-menu', 0),
-(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
-(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'periodo', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'mis-periodos', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'almacen', 'view,view-menu', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'familia', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'tipo-bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'support', 'support', NULL, 'app://{0}/{1}', GETDATE(), 'support', 'SO0001', 'Soporte', 'view,view-menu', 0),
-(2, 'configuration', 'configuration', NULL, 'app://{0}/{1}', GETDATE(), 'configuration', 'CO0001', 'Configuracion', 'view,view-menu,delete,new,update', 0);
+---- Insert claims (role-independientes)
+--INSERT INTO dbo.AspNetClaims (ClaimTypeId, Name, [Group], RoleId, TokenFormat, Created, SubGroup, Code, [Description], [Values], ReferenceId)
+--VALUES 
+--(1, 'administration', 'administration', NULL, 'app://{0}/{1}', GETDATE(), 'administration', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update', 0),
+--(1, 'configuration', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
+--(1, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'Configuración', 'view,view-menu', 0),
+--(1, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Configuración', 'view,view-menu', 0),
+--(2, 'administration', 'administration', NULL, 'app://{0}/{1}', GETDATE(), 'administration', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'perfil', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'usuarios', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'empresas', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'departamentos', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'menus', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0001', 'Número de conteo', 'view,view-menu', 0),
+--(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
+--(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'periodo', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'mis-periodos', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'almacen', 'view,view-menu', 0),
+--(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'familia', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'tipo-bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'support', 'support', NULL, 'app://{0}/{1}', GETDATE(), 'support', 'SO0001', 'Soporte', 'view,view-menu', 0),
+--(2, 'configuration', 'configuration', NULL, 'app://{0}/{1}', GETDATE(), 'configuration', 'CO0001', 'Configuracion', 'view,view-menu,delete,new,update', 0);
 
-INSERT INTO dbo.AspNetClaims (ClaimTypeId, Name, [Group], RoleId, TokenFormat, Created, SubGroup, Code, [Description], [Values], ReferenceId)
-VALUES 
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0002', 'Número de conteo', 'view,view-menu', 0);
+--INSERT INTO dbo.AspNetClaims (ClaimTypeId, Name, [Group], RoleId, TokenFormat, Created, SubGroup, Code, [Description], [Values], ReferenceId)
+--VALUES 
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
+--(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0002', 'Número de conteo', 'view,view-menu', 0);
 
 
 -- Claim Values
@@ -400,98 +400,98 @@ GO
 
 
 
--- Ejecución del procedimiento para asignar valores a los roles
-EXEC spConfiguracionDeRolYClaims 'administration', 'administration', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'administration', 'administration', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'configuracion', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'configuracion', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'CanExportToExcel';
+---- Ejecución del procedimiento para asignar valores a los roles
+--EXEC spConfiguracionDeRolYClaims 'administration', 'administration', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'administration', 'administration', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'configuracion', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'configuracion', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'perfil', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'usuarios', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'empresas', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'departamentos', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'menus', '10000', 'CanExportToExcel';
 
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'almacen', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'almacen', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'almacen', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'almacen', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'CanExportToExcel';
 
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'almacen', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'almacen', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'view';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'new';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'update';
-EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'support', 'support', '20000', 'view';
-EXEC spConfiguracionDeRolYClaims 'support', 'support', '20000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'view';
-EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'view-menu';
-EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'delete';
-EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'new';
-EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'periodo', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'conteociclico', 'mis-periodos', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'almacen', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'almacen', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'familia', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'tipo-bien', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'update';
+--EXEC spConfiguracionDeRolYClaims 'almacen', 'bien', '10000', 'CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'support', 'support', '20000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'support', 'support', '20000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'view';
+--EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'view-menu';
+--EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'delete';
+--EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'new';
+--EXEC spConfiguracionDeRolYClaims 'configuration', 'configuration', '30000', 'update';
 
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
@@ -540,13 +540,14 @@ GO
 INSERT INTO [dbo].[AspNetUserRoles] ([UserId], [RoleId], [ExpireDate])
 SELECT [Id], '71804e93-9753-4684-84fd-cf037349c111', '2027-12-31'
 FROM [dbo].[AspNetUsers]
-WHERE PkIdUsuario IN (1);
+WHERE PkIdUsuario  IN (1,2,3);
 
 -- =============================================
 -- MENÚS
 -- =============================================
+--drop table SIS.Menu
 CREATE TABLE SIS.Menu (
-    PKIdMenu INT NOT NULL,
+    PKIdMenu INT IDENTITY NOT NULL,
     Nombre NVARCHAR(150) NOT NULL,
     Tipo INT NOT NULL,
     FKIdMenu_SIS INT NULL,
@@ -564,7 +565,7 @@ CREATE TABLE SIS.Menu (
     CONSTRAINT CONSTRAINT_FK_Menu_Padre FOREIGN KEY (FKIdMenu_SIS) REFERENCES SIS.Menu(PKIdMenu)
 );
 GO
-
+--drop table SIS.MenuRole
 CREATE TABLE SIS.MenuRole (
     FKIdMenu_SIS INT NOT NULL,
     RoleId NVARCHAR(128) NOT NULL,
@@ -579,46 +580,46 @@ CREATE TABLE SIS.MenuRole (
 );
 GO
 
--- Insertar menús
---select * from SIS.Menu
-MERGE INTO SIS.Menu AS TARGET
-USING (VALUES
-    (1, N'Principal', 2, NULL, N'Principal', N'/', N'FaHome', 'ESP', 100, 1000, GETDATE()),
-    (2, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaRegSun', 'ESP', 200, 1000, GETDATE()),
-    (3, N'Mi Perfíl', 2, 2, N'Perfil de Usuario', N'/configuracion/perfil', N'FaUser', 'ESP', 201, 1000, GETDATE()),
-    (4, N'Usuario', 2, 2, N'Administración de Usuarios', N'/configuracion/usuarios', N'FaUser', 'ESP', 202, 1000, GETDATE()),
-    (5, N'Empresa', 2, 2, N'Empresa', N'/configuracion/empresas', N'FaRegUser', 'ESP', 203, 1000, GETDATE()),
-    (6, N'Departamento', 2, 2, N'Departamento', N'/configuracion/departamentos', N'FaRegUser', 'ESP', 204, 1000, GETDATE()),
-    (7, N'Menu', 2, 2, N'Menu', N'/configuracion/menus', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
-	(8, N'Almacén', 2, 2, N'Almacen', N'/', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
-	(9, N'Número de Conteo', 2, 8, N'Número de Conteo', N'/configuracion/almacen/numero-conteo', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
-    (17, N'Unidades', 2, 8, N'Unidades', N'/configuracion/almacen/Unidades', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
-    (10, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 'ESP', 300, 1000, GETDATE()),
-    (11, N'Periodo', 2, 10, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
-    (12, N'Mis Periodo', 2, 10, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 'ESP', 302, 1000, GETDATE()),
-    (13, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaRegSun', 'ESP', 400, 1000, GETDATE()),
-    (14, N'Almacén', 2, 13, N'Familia', N'/almacen/familia', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
-    (15, N'Tipo Bien', 2, 13, N'Tipo Bien', N'/almacen/tipo-bien', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
-    (16, N'Bien', 2, 13, N'Bien', N'/almacen/bien', N'RiListCheck2', 'ESP', 402, 1000, GETDATE())
-) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Lenguaje, Orden, CreatedByOperatorId, CreatedDateTime)
-ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)
-WHEN MATCHED THEN
-    UPDATE SET
-        TARGET.Nombre = SOURCE.Nombre,
-        TARGET.Tipo = SOURCE.Tipo,
-        TARGET.FKIdMenu_SIS = SOURCE.FKIdMenu_SIS,
-        TARGET.LegacyName = SOURCE.LegacyName,
-        TARGET.Ruta = SOURCE.Ruta,
-        TARGET.ImageUrl = SOURCE.ImageUrl,
-        TARGET.Activo = 1,
-        TARGET.Lenguaje = SOURCE.Lenguaje,
-        TARGET.[Orden] = SOURCE.[Orden],
-        TARGET.CreatedByOperatorId = SOURCE.CreatedByOperatorId,
-        TARGET.CreatedDateTime = SOURCE.CreatedDateTime
-WHEN NOT MATCHED BY TARGET THEN
-    INSERT (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
-    VALUES (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, 1, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime);
-GO
+---- Insertar menús
+----select * from SIS.Menu
+--MERGE INTO SIS.Menu AS TARGET
+--USING (VALUES
+--    (1, N'Principal', 2, NULL, N'Principal', N'/', N'FaHome', 'ESP', 100, 1000, GETDATE()),
+--    (2, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaRegSun', 'ESP', 200, 1000, GETDATE()),
+--    (3, N'Mi Perfíl', 2, 2, N'Perfil de Usuario', N'/configuracion/perfil', N'FaUser', 'ESP', 201, 1000, GETDATE()),
+--    (4, N'Usuario', 2, 2, N'Administración de Usuarios', N'/configuracion/usuarios', N'FaUser', 'ESP', 202, 1000, GETDATE()),
+--    (5, N'Empresa', 2, 2, N'Empresa', N'/configuracion/empresas', N'FaRegUser', 'ESP', 203, 1000, GETDATE()),
+--    (6, N'Departamento', 2, 2, N'Departamento', N'/configuracion/departamentos', N'FaRegUser', 'ESP', 204, 1000, GETDATE()),
+--    (7, N'Menu', 2, 2, N'Menu', N'/configuracion/menus', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+--	(8, N'Almacén', 2, 2, N'Almacen', N'/', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+--	(9, N'Número de Conteo', 2, 8, N'Número de Conteo', N'/configuracion/almacen/numero-conteo', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+--    (17, N'Unidades', 2, 8, N'Unidades', N'/configuracion/almacen/Unidades', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+--    (10, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 'ESP', 300, 1000, GETDATE()),
+--    (11, N'Periodo', 2, 10, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
+--    (12, N'Mis Periodo', 2, 10, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 'ESP', 302, 1000, GETDATE()),
+--    (13, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaRegSun', 'ESP', 400, 1000, GETDATE()),
+--    (14, N'Almacén', 2, 13, N'Familia', N'/almacen/familia', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
+--    (15, N'Tipo Bien', 2, 13, N'Tipo Bien', N'/almacen/tipo-bien', N'RiListCheck2', 'ESP', 401, 1000, GETDATE()),
+--    (16, N'Bien', 2, 13, N'Bien', N'/almacen/bien', N'RiListCheck2', 'ESP', 402, 1000, GETDATE())
+--) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Lenguaje, Orden, CreatedByOperatorId, CreatedDateTime)
+--ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)
+--WHEN MATCHED THEN
+--    UPDATE SET
+--        TARGET.Nombre = SOURCE.Nombre,
+--        TARGET.Tipo = SOURCE.Tipo,
+--        TARGET.FKIdMenu_SIS = SOURCE.FKIdMenu_SIS,
+--        TARGET.LegacyName = SOURCE.LegacyName,
+--        TARGET.Ruta = SOURCE.Ruta,
+--        TARGET.ImageUrl = SOURCE.ImageUrl,
+--        TARGET.Activo = 1,
+--        TARGET.Lenguaje = SOURCE.Lenguaje,
+--        TARGET.[Orden] = SOURCE.[Orden],
+--        TARGET.CreatedByOperatorId = SOURCE.CreatedByOperatorId,
+--        TARGET.CreatedDateTime = SOURCE.CreatedDateTime
+--WHEN NOT MATCHED BY TARGET THEN
+--    INSERT (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
+--    VALUES (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, 1, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime);
+--GO
 
 -- Asignar menús a roles basado en claims
 MERGE INTO SIS.MenuRole AS TARGET
@@ -750,8 +751,8 @@ GO
 -- AGREGAR CLAVES FORÁNEAS FALTANTES
 -- =============================================
 -- Relación de SIS.Usuario con dbo.AspNetUsers
-ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_AspNetUsers FOREIGN KEY (AspNetUserId) REFERENCES dbo.AspNetUsers(Id);
-GO
+--ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_AspNetUsers FOREIGN KEY (AspNetUserId) REFERENCES dbo.AspNetUsers(Id);
+--GO
 
 -- Auditoría (columnas UsuarioCreacion, UsuarioModificacion) – todas referencian SIS.Usuario
 -- Se agregan después de que la tabla SIS.Usuario ya existe

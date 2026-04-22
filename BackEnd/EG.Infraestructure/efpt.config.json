@@ -147,6 +147,54 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[DetalleRequisicion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[Proyecto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[Requisicion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[RequisicionPartida]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[DestinoGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[DigitoIdentificador]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[EgresoAutorizado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[FuenteFinanciamiento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Programa]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Suficiencia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[TipoGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Anio]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Area]",
          "ObjectType": 0
       },
@@ -296,6 +344,14 @@
       },
       {
          "Name": "[ALMA].[SP_CargaInicialConteo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[sp_RegistrarConteo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_RegistrarEntidad]",
          "ObjectType": 1
       },
       {

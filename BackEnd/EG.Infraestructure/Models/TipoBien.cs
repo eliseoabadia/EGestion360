@@ -69,6 +69,8 @@ public partial class TipoBien
 
     public virtual ICollection<Conteo> Conteos { get; set; } = new List<Conteo>();
 
+    public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
+
     public virtual CuentaContable FkidCuentaContableContaNavigation { get; set; }
 
     public virtual GrupoBien FkidGrupoBienAlmaNavigation { get; set; }
