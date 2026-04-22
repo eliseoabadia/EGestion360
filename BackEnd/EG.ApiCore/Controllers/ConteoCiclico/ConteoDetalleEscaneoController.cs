@@ -134,4 +134,45 @@ public class ConteoDetalleEscaneoController : ControllerBase
             });
         }
     }
+
+    [HttpPost]
+    public async Task<ActionResult<PagedResult<ConteoDetalleEscaneoResponse>>> Create([FromBody] ConteoDetalleEscaneoResponse request)
+    {
+        try
+        {
+            var escaneo = new ConteoDetalleEscaneo
+            {
+                FkidConteoAlma = request.FkidConteoAlma,
+                FkidPersonaNom = request.FkidPersonaNom,
+                FkidBienAlma = request.FkidBienAlma,
+                FkidTipoBienAlma = request.FkidTipoBienAlma,
+                CodigoBarras = request.CodigoBarras ?? "",
+                FechaEscaneo = DateTime.Now,
+                Activo = true,
+                UsuarioCreacion = _userContext.GetCurrentUserId(),
+                FechaCreacion = DateTime.Now
+            };
+
+            var dbContext = HttpContext.RequestServices.GetRequiredService<EGestionContext>();
+            dbContext.ConteoDetalleEscaneos.Add(escaneo);
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new PagedResult<ConteoDetalleEscaneoResponse>
+            {
+                Success = true,
+                Message = "Escaneo creado correctamente",
+                Code = "SUCCESS",
+                TotalCount = 1
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new PagedResult<ConteoDetalleEscaneoResponse>
+            {
+                Success = false,
+                Message = ex.Message,
+                Code = "ERROR"
+            });
+        }
+    }
 }

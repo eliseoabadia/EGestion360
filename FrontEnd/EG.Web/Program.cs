@@ -36,6 +36,7 @@ internal class Program
         builder.Services.AddLocalization();
 
         // Registrar HttpClient PRIMERO para que pueda ser resuelto por otros servicios
+        // BaseAddress apunta al backend API en puerto 5163 (HTTP - mejor compatibilidad con Blazor WASM en desarrollo)
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44319/") });
 
         builder.Services.AddSingleton<ApplicationInstance>();

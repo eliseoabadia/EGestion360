@@ -1,0 +1,647 @@
+@using EG.Web.Contracs
+@using EG.Web.Models.Almacen
+@using EG.Web.Models.ConteoCiclico
+@using MudBlazor
+
+@inject IGenericCrudService<BienBusquedaResponse> _serviceBien
+@inject IGenericCrudService<ConteoDetalleEscaneoResponse> _service
+
+
+<MudDialog DisableSidePadding="true" ClassActions="px-4 pb-4">
+    <DialogContent>
+        <div class="scanner-container">
+            @* ===== TIPO BIEN INFO ===== *@
+            <div class="tipo-bien-header">
+                <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Large" Color="Color.Primary" />
+                <div class="tipo-bien-info">
+                    <MudText Typo="Typo.subtitle1" Color="Color.Primary">
+                        <strong>@DescripcionTipoBien</strong>
+                    </MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Default">
+                        Bienes del tipo seleccionado
+                    </MudText>
+                </div>
+            </div>
+
+            @* ===== HEADER WITH SCANNER INPUT ===== *@
+            <div class="scanner-header">
+                <div class="scanner-input-wrapper">
+                    <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Class="scanner-icon" />
+                    <MudTextField @bind-Value="codigoScanner"
+                                  Placeholder="Escanea código de barras y presiona Enter..."
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.None"
+                                  Class="scanner-input"
+                                  OnKeyDown="OnScannerKeyDown"
+                                  AutoFocus="true"
+                                  Immediate="true" />
+                    @if (!string.IsNullOrEmpty(codigoScanner))
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Clear"
+                                       Size="Size.Small"
+                                       OnClick="LimpiarScanner"
+                                       Class="clear-btn" />
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(mensajeScanner))
+                {
+                    <div class="scanner-feedback @mensajeTipo">
+                        @mensajeScanner
+                    </div>
+                }
+            </div>
+
+            @* ===== SEARCH BAR ===== *@
+            <div class="search-section">
+                <MudGrid GutterSize="2">
+                    <MudItem xs="10">
+                        <MudTextField @bind-Value="filtroBusqueda"
+                                      Placeholder="Buscar por clave, descripción, serie, modelo..."
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Dense="true"
+                                      Class="search-input"
+                                      OnDebouncedIntervalChanged="OnBusquedaChanged"
+                                      DebounceInterval="400" />
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   FullWidth="true"
+                                   OnClick="BuscarAhora"
+                                   StartIcon="@Icons.Material.Filled.Search">
+                            Buscar
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </div>
+
+            @* ===== SELECTED ITEMS SUMMARY ===== *@
+            @if (bienesSeleccionados.Any())
+            {
+                <div class="selected-section">
+                    <div class="selected-header">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">
+                            @bienesSeleccionados.Count @(bienesSeleccionados.Count == 1 ? "bien seleccionado" : "bienes seleccionados")
+                        </MudText>
+                        <MudSpacer />
+                        <MudButton Size="Size.Small"
+                                   Color="Color.Default"
+                                   Variant="Variant.Text"
+                                   OnClick="LimpiarSeleccion">
+                            Limpiar selección
+                        </MudButton>
+                    </div>
+                    <div class="selected-chips">
+                        @foreach (var item in bienesSeleccionados)
+                        {
+                            <MudChip T="string"
+                                     Color="Color.Success"
+                                     Size="Size.Small"
+                                     OnClick="@(() => QuitarSeleccion(item))"
+                                     CloseIcon="@Icons.Material.Filled.Close">
+                                @item.Clave - @item.Descripcion.Substring(0, Math.Min(20, item.Descripcion.Length))...
+                            </MudChip>
+                        }
+                    </div>
+                </div>
+            }
+
+            @* ===== RESULTS TABLE ===== *@
+            <div class="results-section">
+                @if (cargando)
+                {
+                    <div class="loading-state">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                        <MudText Typo="Typo.body2" Class="ml-2">Cargando bienes...</MudText>
+                    </div>
+                }
+                else
+                {
+                    <MudTable Items="@bienesEncontrados"
+                              Hover="true"
+                              Dense="true"
+                              Striped="true"
+                              Class="result-table"
+                              HeaderClass="table-header">
+                        <HeaderContent>
+                            <MudTh Style="width: 50px;">
+                                <MudCheckBox @bind-Value="seleccionarTodos"
+                                            Size="Size.Small"
+                                            Changed="ToggleSelectAll" />
+                            </MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Clave" T="BienBusquedaResponse">Clave</MudTableSortLabel></MudTh>
+                            <MudTh>Descripción</MudTh>
+                            <MudTh>Serie</MudTh>
+                            <MudTh>Modelo</MudTh>
+                            <MudTh>Ubicación</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudCheckBox @bind-Value="context.Seleccionado"
+                                            Size="Size.Small"
+                                            Disabled="@(yaEscaneado(context.PkidBien))"
+                                            Changed="@(() => OnSeleccionarItem(context))" />
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                    @context.Clave
+                                </MudChip>
+                                @if (!string.IsNullOrEmpty(context.ClaveAnt))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                        @context.ClaveAnt
+                                    </MudChip>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2">@context.Descripcion</MudText>
+                            </MudTd>
+                            <MudTd>
+                                @if (!string.IsNullOrEmpty(context.Serie))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.QrCode">
+                                        @context.Serie
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Default">-</MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.caption">@context.Modelo ?? "-"</MudText>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.caption">@context.Ubicacion ?? "-"</MudText>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText Align="Align.Center" Color="Color.Default">
+                                @(string.IsNullOrEmpty(filtroBusqueda) ? "Escribe un término de búsqueda para encontrar bienes" : "No se encontraron bienes con ese criterio")
+                            </MudText>
+                        </NoRecordsContent>
+                    </MudTable>
+
+                    @* ===== PAGINATION ===== *@
+                    <div class="pagination-section">
+                        <MudText Typo="Typo.caption" Color="Color.Default">
+                            Mostrando @(((paginaActual - 1) * elementosPorPagina) + 1) - @Math.Min(paginaActual * elementosPorPagina, totalElementos)
+                            de @totalElementos elementos
+                        </MudText>
+                        <MudPagination Count="@totalPaginas"
+                                      Selected="@paginaActual"
+                                      SelectedChanged="OnPageChanged"
+                                      Color="Color.Primary"
+                                      Size="Size.Small"
+                                      Class="ma-2" />
+                    </div>
+                }
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="action-summary">
+            <MudBadge Content="@bienesSeleccionados.Count" Color="Color.Primary" Overlap="false">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+            </MudBadge>
+            <MudText Class="ml-2">
+                <strong>@bienesSeleccionados.Count</strong> @(bienesSeleccionados.Count == 1 ? "bien seleccionado" : "bienes seleccionados")
+            </MudText>
+        </div>
+        <div class="action-buttons">
+            <MudButton OnClick="Cancel" Color="Color.Default" Variant="Variant.Text">
+                Cancelar
+            </MudButton>
+            <MudButton OnClick="ConfirmarYGardar"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       Disabled="@(!bienesSeleccionados.Any())"
+                       StartIcon="@Icons.Material.Filled.Save">
+                Guardar @bienesSeleccionados.Count @(bienesSeleccionados.Count == 1 ? "bien" : "bienes")
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .scanner-container {
+        width: 900px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .scanner-header {
+        background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+        padding: 16px;
+    }
+
+    .scanner-input-wrapper {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 8px;
+        padding: 4px 12px;
+    }
+
+    .scanner-icon {
+        color: #1b5e20;
+        margin-right: 8px;
+    }
+
+    .scanner-input {
+        flex: 1;
+    }
+
+    .scanner-input input {
+        font-size: 18px;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .scanner-feedback {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .scanner-feedback.success {
+        background: #c8e6c9;
+        color: #2e7d32;
+    }
+
+    .scanner-feedback.error {
+        background: #ffcdd2;
+        color: #c62828;
+    }
+
+    .scanner-feedback.info {
+        background: #bbdefb;
+        color: #1565c0;
+    }
+
+    .clear-btn {
+        color: #666;
+    }
+
+    .search-section {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+        background: #fafafa;
+    }
+
+    .search-input input {
+        text-transform: uppercase;
+    }
+
+    .selected-section {
+        padding: 12px 16px;
+        background: #e8f5e9;
+        border-bottom: 1px solid #c8e6c9;
+    }
+
+    .selected-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .selected-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .results-section {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .loading-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+    }
+
+    .result-table {
+        font-size: 13px;
+    }
+
+    .table-header {
+        background: #f5f5f5;
+    }
+
+    .pagination-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 12px;
+        border-top: 1px solid #e0e0e0;
+        background: #fafafa;
+    }
+
+    .action-summary {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    :deep(.mud-table-container) {
+        max-height: calc(85vh - 350px);
+    }
+</style>
+
+@code {
+    [Parameter] public int ConteoId { get; set; }
+    [Parameter] public int PersonaId { get; set; }
+    [Parameter] public int FkidTipoBienAlma { get; set; }
+    [Parameter] public string? CodigoClaveTipoBien { get; set; }
+    [Parameter] public string? DescripcionTipoBien { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+
+    private string codigoScanner = string.Empty;
+    private string filtroBusqueda = string.Empty;
+    private bool cargando = false;
+    private bool seleccionarTodos = false;
+    private string mensajeScanner = string.Empty;
+    private string mensajeTipo = string.Empty;
+
+    private int paginaActual = 1;
+    private int elementosPorPagina = 20;
+    private int totalElementos = 0;
+    private int totalPaginas => (int)Math.Ceiling((double)totalElementos / elementosPorPagina);
+
+    private List<BienBusquedaResponse> bienesEncontrados = new();
+    private List<BienBusquedaResponse> bienesSeleccionados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarBienes();
+    }
+
+    private async Task CargarBienes()
+    {
+        cargando = true;
+        mensajeScanner = string.Empty;
+        try
+        {
+            var searchString = filtroBusqueda;
+            var sortLabel = "Clave";
+            var sortDirection = SortDirection.Ascending;
+
+            var response = await _serviceBien.GetAllPaginadoAsync(
+                paginaActual,
+                elementosPorPagina,
+                searchString,
+                sortLabel,
+                sortDirection);
+
+            if (response != null && response.Success)
+            {
+                bienesEncontrados = response.Items?.ToList() ?? new();
+                totalElementos = response.TotalCount;
+            }
+            else
+            {
+                bienesEncontrados = new List<BienBusquedaResponse>();
+                totalElementos = 0;
+                if (response != null)
+                    Snackbar.Add(response.Message ?? "Error al cargar bienes", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar bienes: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task OnScannerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(codigoScanner))
+        {
+            await BuscarPorCodigo(codigoScanner.Trim().ToUpper());
+        }
+    }
+
+    private async Task BuscarPorCodigo(string codigo)
+    {
+        if (string.IsNullOrWhiteSpace(codigo)) return;
+
+        cargando = true;
+        mensajeScanner = string.Empty;
+        try
+        {
+            var response = await _serviceBien.GetAllPaginadoAsync(
+                1,
+                20,
+                codigo,
+                "Clave",
+                SortDirection.Ascending);
+
+            if (response != null && response.Success && response.Items != null && response.Items.Any())
+            {
+                var bien = response.Items.First();
+                
+                if (yaEscaneado(bien.PkidBien))
+                {
+                    mensajeScanner = $"El bien {codigo} ya fue agregado";
+                    mensajeTipo = "info";
+                }
+                else
+                {
+                    bienesSeleccionados.Add(bien);
+                    bienesEncontrados.Insert(0, bien);
+                    bien.Seleccionado = true;
+                    mensajeScanner = $"Bien {bien.Clave} - {bien.Descripcion} agregado";
+                    mensajeTipo = "success";
+                }
+            }
+            else
+            {
+                mensajeScanner = $"No se encontró ningún bien con código: {codigo}";
+                mensajeTipo = "error";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeScanner = $"Error: {ex.Message}";
+            mensajeTipo = "error";
+        }
+        finally
+        {
+            cargando = false;
+            codigoScanner = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnBusquedaChanged(string valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor) && paginaActual == 1)
+        {
+            await CargarBienes();
+        }
+    }
+
+    private async Task BuscarAhora()
+    {
+        paginaActual = 1;
+        await CargarBienes();
+    }
+
+    private void OnSeleccionarItem(BienBusquedaResponse bien)
+    {
+        if (bien.Seleccionado && !yaEscaneado(bien.PkidBien))
+        {
+            bienesSeleccionados.Add(bien);
+        }
+        else
+        {
+            bienesSeleccionados.RemoveAll(x => x.PkidBien == bien.PkidBien);
+        }
+        bien.Seleccionado = !yaEscaneado(bien.PkidBien) && bienesSeleccionados.Any(x => x.PkidBien == bien.PkidBien);
+        StateHasChanged();
+    }
+
+    private void ToggleSelectAll()
+    {
+        foreach (var bien in bienesEncontrados)
+        {
+            if (yaEscaneado(bien.PkidBien)) continue;
+
+            if (seleccionarTodos)
+            {
+                if (!bienesSeleccionados.Any(x => x.PkidBien == bien.PkidBien))
+                {
+                    bienesSeleccionados.Add(bien);
+                }
+                bien.Seleccionado = true;
+            }
+            else
+            {
+                bienesSeleccionados.RemoveAll(x => x.PkidBien == bien.PkidBien);
+                bien.Seleccionado = false;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void QuitarSeleccion(BienBusquedaResponse bien)
+    {
+        bienesSeleccionados.RemoveAll(x => x.PkidBien == bien.PkidBien);
+        var itemEnLista = bienesEncontrados.FirstOrDefault(x => x.PkidBien == bien.PkidBien);
+        if (itemEnLista != null)
+        {
+            itemEnLista.Seleccionado = false;
+        }
+        StateHasChanged();
+    }
+
+    private void LimpiarSeleccion()
+    {
+        bienesSeleccionados.Clear();
+        foreach (var bien in bienesEncontrados)
+        {
+            bien.Seleccionado = false;
+        }
+        seleccionarTodos = false;
+        StateHasChanged();
+    }
+
+    private bool yaEscaneado(int bienId)
+    {
+        return bienesSeleccionados.Any(x => x.PkidBien == bienId);
+    }
+
+    private void LimpiarScanner()
+    {
+        codigoScanner = string.Empty;
+        mensajeScanner = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        paginaActual = page;
+        await CargarBienes();
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+
+    private async Task ConfirmarYGardar()
+    {
+        if (!bienesSeleccionados.Any())
+        {
+            Snackbar.Add("No hay bienes seleccionados para guardar", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            int guardados = 0;
+            int errores = 0;
+
+            foreach (var bien in bienesSeleccionados)
+            {
+                var request = new ConteoDetalleEscaneoResponse
+                {
+                    FkidConteoAlma = ConteoId,
+                    FkidPersonaNom = PersonaId,
+                    FkidBienAlma = bien.PkidBien,
+                    FkidTipoBienAlma = FkidTipoBienAlma,
+                    CodigoBarras = bien.Serie ?? bien.Clave
+                };
+
+                var response = await _service.CreateAsync(request);
+                
+                if (response?.Success == true)
+                {
+                    guardados++;
+                }
+                else
+                {
+                    errores++;
+                    Snackbar.Add($"Error al agregar {bien.Clave}: {response?.Message ?? "Error desconocido"}", Severity.Error);
+                }
+            }
+
+            if (errores == 0)
+            {
+                Snackbar.Add($"{guardados} bienes agregados correctamente", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Guardados: {guardados}, Errores: {errores}", Severity.Warning);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

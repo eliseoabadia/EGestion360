@@ -54,7 +54,6 @@ public class ConteoDetalleEscaneoResponse
 
     public string? BienDescripcion { get; set; }
 
-    // Helper: nombre completo de la persona
-    public string PersonaNombreCompleto =>
+    public string? PersonaNombreCompleto =>
         $"{PersonaNombre} {PersonaPaterno} {PersonaMaterno}".Trim();
 }

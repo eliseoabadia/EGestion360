@@ -22,7 +22,10 @@ CREATE SCHEMA ALMA; -- Almacén
 GO
 CREATE SCHEMA CONTA; -- Contabilidad
 GO
-
+CREATE SCHEMA ORCO;
+GO
+CREATE SCHEMA PRES;
+GO
 -- =============================================
 -- TIPO DE DATO PERSONALIZADO
 -- =============================================
@@ -441,6 +444,12 @@ EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'del
 EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'new';
 EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'update';
 EXEC spConfiguracionDeRolYClaims 'configuracion', 'numero-conteo', '10000', 'CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'view';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'view-menu';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'delete';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'new';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'update';
+EXEC spConfiguracionDeRolYClaims 'configuracion', 'unidades', '10000', 'CanExportToExcel';
 
 EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view';
 EXEC spConfiguracionDeRolYClaims 'conteociclico', 'conteociclico', '10000', 'view-menu';
@@ -571,6 +580,7 @@ CREATE TABLE SIS.MenuRole (
 GO
 
 -- Insertar menús
+--select * from SIS.Menu
 MERGE INTO SIS.Menu AS TARGET
 USING (VALUES
     (1, N'Principal', 2, NULL, N'Principal', N'/', N'FaHome', 'ESP', 100, 1000, GETDATE()),
@@ -581,7 +591,8 @@ USING (VALUES
     (6, N'Departamento', 2, 2, N'Departamento', N'/configuracion/departamentos', N'FaRegUser', 'ESP', 204, 1000, GETDATE()),
     (7, N'Menu', 2, 2, N'Menu', N'/configuracion/menus', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
 	(8, N'Almacén', 2, 2, N'Almacen', N'/', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
-	(9, N'Número de Conteo', 2, 8, N'Número de Conteo', N'/numero-conteo', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+	(9, N'Número de Conteo', 2, 8, N'Número de Conteo', N'/configuracion/almacen/numero-conteo', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
+    (17, N'Unidades', 2, 8, N'Unidades', N'/configuracion/almacen/Unidades', N'RiMenuLine', 'ESP', 205, 1000, GETDATE()),
     (10, N'Conteo Cíclico', 1, NULL, N'Conteo Cíclico', N'/', N'FaRegSun', 'ESP', 300, 1000, GETDATE()),
     (11, N'Periodo', 2, 10, N'Periodo', N'/conteociclico/periodo', N'RiListCheck2', 'ESP', 301, 1000, GETDATE()),
     (12, N'Mis Periodo', 2, 10, N'Periodo', N'/conteociclico/mis-periodos', N'RiListCheck2', 'ESP', 302, 1000, GETDATE()),

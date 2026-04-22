@@ -27,6 +27,9 @@ public static class ApiServiceExtensions
         RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
         RegisterCrud<ConteoResponse>(services, "api/Conteo");
         RegisterCrud<ConteoDetalleEscaneoResponse>(services, "api/ConteoDetalleEscaneo");
+        RegisterCrud<ConteoDetalleResponse>(services, "api/ConteoDetalle");
+        RegisterCrud<BienBusquedaResponse>(services, "api/ConteoDetalle");
+   
         //RegisterCrud<ArticuloConteoResponse>(services, "api/ArticuloConteo");
         //RegisterCrud<RegistroConteoResponse>(services, "api/RegistroConteo");
         //RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
@@ -34,6 +37,7 @@ public static class ApiServiceExtensions
         //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
         RegisterCrud<FamiliaResponse>(services, "api/Familia");
+        RegisterCrud<UnidadResponse>(services, "api/Unidad");
         RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
         RegisterCrud<BienResponse>(services, "api/Bien");
         // Agrega más aquí...

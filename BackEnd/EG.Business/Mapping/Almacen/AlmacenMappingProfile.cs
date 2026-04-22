@@ -94,6 +94,10 @@ public class AlmacenMappingProfile : Profile
 
         // Bien mappings
         CreateMap<Bien, BienDto>().ReverseMap();
-        CreateMap<VwBien, BienResponse>();
+        CreateMap<VwBien,BienResponse>();
+
+        // Unidade mappings
+        CreateMap<Unidade, UnidadResponse>()
+            .ForMember(dest => dest.PkidUnidades, opt => opt.MapFrom(src => src.PkidUnidades)).ReverseMap();
     }
 }

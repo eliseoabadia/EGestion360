@@ -122,7 +122,7 @@ public partial class Program
         {
             options.AddPolicy("AllowAllOrigins", policy =>
             {
-                policy.WithOrigins("https://localhost:7279") // origen del WASM/DevServer
+                policy.WithOrigins("https://localhost:7279", "http://localhost:5242") // origen del WASM/DevServer (HTTP y HTTPS)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials(); // si usas credenciales; si no, quitar

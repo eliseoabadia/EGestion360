@@ -1,4 +1,4 @@
-@page "/conteociclico/mis-periodos"
+@page "/ALMAConteo"
 @using EG.Web.Models.ConteoCiclico
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -54,6 +54,12 @@
 
                     <Row Context="conteo">
                         <MudTd>
+                            <MudTooltip Text="Escanear Bienes">
+                                <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="@(() => AbrirScanner(conteo))" />
+                            </MudTooltip>
                             <MudTooltip Text="Editar">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Visible="@CanUpdate"
@@ -69,7 +75,7 @@
                                                OnClick="@(() => DeleteItem(conteo.PkidConteo))" />
                             </MudTooltip>
                             <MudTooltip Text="Ver Escaneos">
-                                <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner"
+                                <MudIconButton Icon="@Icons.Material.Filled.List"
                                                Color="Color.Secondary"
                                                Size="Size.Small"
                                                OnClick="@(() => VerEscaneosDeConteo(conteo))" />
@@ -431,4 +437,33 @@
             "cerrado" => Color.Error,
             _ => Color.Default
         };
+
+    private async Task AbrirScanner(ConteoResponse conteo)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ConteoId"] = conteo.PkidConteo,
+            ["PersonaId"] = 1,
+            ["FkidTipoBienAlma"] = conteo.IdTipoBien ?? 0,
+            ["CodigoClaveTipoBien"] = conteo.CodigoClaveTipoBien,
+            ["DescripcionTipoBien"] = conteo.DescripcionTipoBien ?? "Sin tipo de bien"
+        };
+
+        var dialog = await DialogService.ShowAsync<AgregarBienScannerDialog>(
+            $"Escanear Bienes - {conteo.Descripcion}",
+            parameters,
+            new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true
+            });
+
+        var result = await dialog.Result;
+        if (result?.Data is true)
+        {
+            Snackbar.Add("Bienes agregados exitosamente", Severity.Success);
+            await tableConteos.ReloadData();
+        }
+    }
 }

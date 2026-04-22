@@ -1,0 +1,151 @@
+@page "/configuracion/almacen/Unidades"
+@using EG.Web.Models.Almacen
+@using EG.Web.Models.Configuration
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<UnidadResponse, UnidadResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Unidades de Medida"
+                    Subtitle="Administra y mantén el registro de unidades de medida del sistema"
+                    Icon="@Icons.Material.Filled.Straighten"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="UnidadResponse"
+                      @ref="table"
+                      Title="Lista de Unidades"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidUnidades" T="UnidadResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="UnidadResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+
+            <Row Context="unidad">
+                <MudTd>
+                    <MudTooltip Text="Editar Unidad">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(unidad.PkidUnidades))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar Unidad">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(unidad.PkidUnidades))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@unidad.PkidUnidades</MudTd>
+                <MudTd>@unidad.Descripcion</MudTd>
+                <MudTd>
+                    <MudBadge Color="@(unidad.Activo == true ? Color.Success : Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(unidad.Activo == true ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<UnidadResponse> table = null!;
+
+    protected override string ModuleName => "configuracion";
+    protected override string SubModuleName => "unidades";
+
+    protected override Type CreateDialogType => typeof(UnidadDialog);
+    protected override Type EditDialogType => typeof(UnidadDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<UnidadResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<UnidadResponse> items)
+    {
+        return items.Select(d => new
+        {
+            ID = d.PkidUnidades,
+            Descripción = d.Descripcion,
+            Estado = d.Activo == true ? "Activo" : "Inactivo"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.Descripcion ?? "la unidad";
+        }
+        catch
+        {
+            return "la unidad";
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(id);
+        var unidadNombre = response?.Data?.Descripcion ?? "la unidad";
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = unidadNombre,
+            ["DeleteFunc"] = new Func<Task<bool>>(() => EliminarUnidad(id))
+        };
+
+        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        await dialog.Result;
+    }
+
+    private async Task<bool> EliminarUnidad(int id)
+    {
+        var deleteResponse = await Service.DeleteAsync(id);
+        if (deleteResponse?.Success == true)
+        {
+            Snackbar.Add(deleteResponse.Message ?? "Unidad eliminada correctamente", Severity.Success);
+            await table.ReloadData();
+            return true;
+        }
+        else
+        {
+            Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
+            return false;
+        }
+    }
+}
