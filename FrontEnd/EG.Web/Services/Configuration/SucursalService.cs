@@ -9,8 +9,8 @@ namespace EG.Web.Services.Configuration
 {
     public class SucursalService : BaseService, ISucursalService
     {
-        public SucursalService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
-            : base(httpClient, jsRuntime, application)
+        public SucursalService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+            : base(httpClient, jsRuntime, application, configuration)
         {
         }
 

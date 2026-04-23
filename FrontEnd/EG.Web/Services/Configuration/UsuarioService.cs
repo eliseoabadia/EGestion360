@@ -9,8 +9,8 @@ namespace EG.Web.Services.Configuration
 {
     public class UsuarioService : BaseService, IUsuarioService
     {
-        public UsuarioService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
-            : base(httpClient, jsRuntime, application)
+        public UsuarioService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+            : base(httpClient, jsRuntime, application, configuration)
         {
         }
 

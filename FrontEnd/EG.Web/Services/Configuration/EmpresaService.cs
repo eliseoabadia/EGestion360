@@ -9,8 +9,8 @@ namespace EG.Web.Services.Configuration
 {
     public class EmpresaService : BaseService, IEmpresaService
     {
-        public EmpresaService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
-            : base(httpClient, jsRuntime, application)
+        public EmpresaService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+            : base(httpClient, jsRuntime, application, configuration)
         {
         }
 

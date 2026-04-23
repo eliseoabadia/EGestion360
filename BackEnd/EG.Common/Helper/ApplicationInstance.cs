@@ -15,5 +15,11 @@ namespace EG.Common.Helper
         {
             Application.AddOrUpdate(key, value, (oldKey, oldValue) => value);
         }
+
+        // ✅ Agregar este método
+        public void RemoveVariable(string key)
+        {
+            Application.TryRemove(key, out _);
+        }
     }
 }

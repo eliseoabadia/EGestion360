@@ -2,10 +2,9 @@ using EG.Common.Helper;
 using EG.Web.Contracs;
 using EG.Web.Models;
 using EG.Web.Models.Configuration;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Configuration;
 using Microsoft.JSInterop;
-using System.Text;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Const = EG.Common.Constants;
 
@@ -15,16 +14,14 @@ namespace EG.Web.Services
     {
         private readonly ApplicationInstance _application;
         private readonly IJSRuntime _jsRuntime;
-        private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
+        private readonly IHttpClientFactory _httpClientFactory;
         public bool IsAuthenticated { get; private set; } = false;
 
-        public LoginService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
+        public LoginService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime, ApplicationInstance application)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _jsRuntime = jsRuntime;
             _application = application;
-            _baseUrl = httpClient.BaseAddress?.ToString() ?? string.Empty;
         }
 
         public async Task<UserResult> LoginAsync(string usuario, string password)
@@ -33,30 +30,24 @@ namespace EG.Web.Services
 
             try
             {
-                var jsonParams = new
-                {
-                    email = usuario,
-                    password = password
-                };
-
-                string jsonString = JsonSerializer.Serialize(jsonParams);
-
-                var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-
-                Console.WriteLine($"LoginService: Intentando login en {_httpClient.BaseAddress}api/Auth/Login/");
-
-                HttpResponseMessage response = await _httpClient.PostAsync("api/Auth/Login/", content);
+                var client = _httpClientFactory.CreateClient("ApiClient");
+                var requestBody = new { email = usuario, password = password };
+                var response = await client.PostAsJsonAsync("api/Auth/Login", requestBody);
 
                 if (response.IsSuccessStatusCode)
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
-
                     resultado = JsonSerializer.Deserialize<UserResult>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new UserResult();
+
                     if (!string.IsNullOrWhiteSpace(resultado.PayrollId))
                     {
                         IsAuthenticated = true;
                         _application.SetVariable(Const.KEY_USERID, resultado.PkIdUsuario);
                         _application.SetVariable(Const.KEY_TOKEN, resultado.AccessToken);
+
+                        // Opcional: guardar token en localStorage para persistencia entre recargas
+                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", resultado.AccessToken);
+
                         Console.WriteLine($"LoginService: Login exitoso para usuario {usuario}");
                     }
                 }
@@ -81,6 +72,7 @@ namespace EG.Web.Services
         {
             try
             {
+                // Obtener token desde localStorage (consistente con LoginAsync)
                 var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
                 if (string.IsNullOrEmpty(token))
                 {
@@ -90,17 +82,16 @@ namespace EG.Web.Services
 
                 // Normalizar el token (remover comillas si existen)
                 token = token.Trim('"', '\'');
-                if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                {
-                    token = token.Substring("Bearer ".Length);
-                }
 
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                // Crear cliente HTTP con la configuración "ApiClient"
+                var client = _httpClientFactory.CreateClient("ApiClient");
+                // Agregar el token Bearer al cliente para esta petición
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var url = $"api/UsuarioSucursal/usuario/{usuarioId}";
-                Console.WriteLine($"GetSucursalesUsuarioAsync: Llamando a {_httpClient.BaseAddress}{url}");
+                Console.WriteLine($"GetSucursalesUsuarioAsync: Llamando a {client.BaseAddress}{url}");
 
-                HttpResponseMessage response = await _httpClient.GetAsync(url);
+                HttpResponseMessage response = await client.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -129,7 +120,6 @@ namespace EG.Web.Services
                     var errorContent = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"GetSucursalesUsuarioAsync Error HTTP {response.StatusCode}");
                     Console.WriteLine($"Response: {errorContent}");
-                    Console.WriteLine($"Headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}: {string.Join(",", h.Value)}"))}");
                 }
             }
             catch (HttpRequestException ex)
@@ -146,9 +136,14 @@ namespace EG.Web.Services
             return new List<SucursalResponse>();
         }
 
-        public Task Logout()
+        public async Task Logout()
         {
-            throw new NotImplementedException();
+            // Limpiar estado de autenticación
+            IsAuthenticated = false;
+            _application.RemoveVariable(Const.KEY_USERID);
+            _application.RemoveVariable(Const.KEY_TOKEN);
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+            Console.WriteLine("Logout completado");
         }
     }
 }

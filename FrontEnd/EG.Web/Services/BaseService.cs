@@ -13,18 +13,22 @@ namespace EG.Web.Services
         protected readonly IJSRuntime _jsRuntime;
         protected readonly HttpClient _httpClient;
         protected readonly string _baseUrl;
+        protected readonly IConfiguration _configuration;
 
         public static readonly string TOKENKEY = "authToken";
         protected readonly JsonSerializerOptions _jsonOptions;
 
         public bool IsAuthenticated { get; protected set; } = false;
 
-        protected BaseService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
+        protected BaseService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
             _application = application;
-            _baseUrl = httpClient.BaseAddress?.ToString() ?? string.Empty;
+            _configuration = configuration;
+            _baseUrl = httpClient.BaseAddress?.ToString()
+              ?? _configuration["ApiSetting:baseUrl"]
+              ?? string.Empty;
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true

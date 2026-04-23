@@ -51,6 +51,7 @@ public static class ApiServiceExtensions
     {
         services.AddScoped<IGenericCrudService<TResponse>>(sp =>
             new GenericCrudService<TResponse>(
+                sp.GetRequiredService<IConfiguration>(),
                 sp.GetRequiredService<HttpClient>(),
                 sp.GetRequiredService<IJSRuntime>(),
                 sp.GetRequiredService<ApplicationInstance>(),

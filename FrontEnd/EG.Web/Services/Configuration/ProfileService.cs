@@ -9,8 +9,8 @@ namespace EG.Web.Services
 {
     public class ProfileService : BaseService, IProfileService
     {
-        public ProfileService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
-            : base(httpClient, jsRuntime, application)
+        public ProfileService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+            : base(httpClient, jsRuntime, application, configuration)
         {
         }
 

@@ -8,6 +8,7 @@
 @using MudBlazor
 
 
+@inject IGenericCrudService<UsuarioSucursalResponse> _serviceUS
 @inject IJSRuntime _jsRuntime
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
@@ -64,7 +65,7 @@
 
     private bool isShow;
     private bool isLoading = false;
-    private List<SucursalResponse> sucursalesUsuario = new();
+    //private List<SucursalResponse> sucursalesUsuario = new();
     
     private InputType PasswordInput = InputType.Password;
     private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
@@ -104,13 +105,17 @@
 
             await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
-            sucursalesUsuario = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
+            var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending);
+
+			var sucursalesUsuario = _sucursalesUsuario.Items.Where(s => s.PkIdUsuario == result.PkIdUsuario).ToList();
+
+            var _result = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
 
             if (sucursalesUsuario.Count > 1)
             {
-                var parameters = new DialogParameters<SelectSucursalDialog>
+                var parameters = new DialogParameters
                 {
-                    { x => x.Sucursales, sucursalesUsuario }
+                    { "Sucursales", sucursalesUsuario }
                 };
                 
                 var options = new DialogOptions 
@@ -127,16 +132,16 @@
                     return;
                 }
                 
-                var selectedSucursal = dialogResult.Data as SucursalResponse;
+                var selectedSucursal = dialogResult.Data as UsuarioSucursalResponse;
                 if (selectedSucursal != null)
                 {
-                    Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.Nombre}", Severity.Success);
+                    Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Success);
                     NavigationManager.NavigateTo("/", forceLoad: true);
                 }
             }
             else if (sucursalesUsuario.Count == 1)
             {
-                await SucursalStateService.SetSucursalAsync(sucursalesUsuario[0].PkidSucursal, sucursalesUsuario[0].Nombre);
+                await SucursalStateService.SetSucursalAsync(sucursalesUsuario[0].IdSucursal, sucursalesUsuario[0].NombreSucursal);
                 Snackbar.Add("¡Bienvenido!", Severity.Success);
                 NavigationManager.NavigateTo("/", forceLoad: true);
             }

@@ -132,7 +132,6 @@ namespace EG.ApiCore.Controllers.General
         /// <summary>
         /// Obtiene todas las sucursales asignadas a un usuario
         /// </summary>
-        [AllowAnonymous]
         [HttpGet("usuario/{usuarioId}")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetByUsuario(int usuarioId)
         {
@@ -260,119 +259,24 @@ namespace EG.ApiCore.Controllers.General
             }
         }
 
-        ///// <summary>
-        ///// Desactiva una asignación (baja lógica)
-        ///// </summary>
-        //[HttpPatch("{id}/desactivar")]
-        //public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> Desactivar(int id)
-        //{
-        //    try
-        //    {
-        //        var existente = await _service.GetByIdAsync(id);
-        //        if (existente == null)
-        //        {
-        //            return NotFound(new PagedResult<VwUsuarioSucursalResponse>
-        //            {
-        //                Success = false,
-        //                Message = "Asignación no encontrada",
-        //                Code = "NOTFOUND_ASIGNACION",
-        //                TotalCount = 0
-        //            });
-        //        }
+        
 
-        //        existente.UsuarioActivo = false;
-        //        existente.Fecha = DateTime.Now;
-
-        //        var result = await _service.UpdateAsync(id, existente);
-
-        //        return Ok(new PagedResult<VwUsuarioSucursalResponse>
-        //        {
-        //            Success = true,
-        //            Message = "Asignación desactivada correctamente",
-        //            Code = "SUCCESS",
-        //            Data = result,
-        //            TotalCount = 1
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new PagedResult<VwUsuarioSucursalResponse>
-        //        {
-        //            Success = false,
-        //            Message = $"Error al desactivar asignación: {ex.Message}",
-        //            Code = "ERROR",
-        //            TotalCount = 0
-        //        });
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Reactiva una asignación previamente desactivada
-        ///// </summary>
-        //[HttpPatch("{id}/reactivar")]
-        //public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> Reactivar(int id)
-        //{
-        //    try
-        //    {
-        //        var existente = await _service.GetByIdAsync(id);
-        //        if (existente == null)
-        //        {
-        //            return NotFound(new PagedResult<VwUsuarioSucursalResponse>
-        //            {
-        //                Success = false,
-        //                Message = "Asignación no encontrada",
-        //                Code = "NOTFOUND_ASIGNACION",
-        //                TotalCount = 0
-        //            });
-        //        }
-
-        //        existente.Activo = true;
-        //        existente.FechaFinAsignacion = null;
-
-        //        var result = await _service.UpdateAsync(id, existente);
-
-        //        return Ok(new PagedResult<VwUsuarioSucursalResponse>
-        //        {
-        //            Success = true,
-        //            Message = "Asignación reactivada correctamente",
-        //            Code = "SUCCESS",
-        //            Data = result,
-        //            TotalCount = 1
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new PagedResult<VwUsuarioSucursalResponse>
-        //        {
-        //            Success = false,
-        //            Message = $"Error al reactivar asignación: {ex.Message}",
-        //            Code = "ERROR",
-        //            TotalCount = 0
-        //        });
-        //    }
-        //}
-
-        /// <summary>
-        /// Obtiene todas las asignaciones paginadas
-        /// </summary>
-        [HttpPost("paginado")]
+        [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<VwUsuarioSucursalResponse>>> GetAllPaginado([FromBody] PagedRequest _params)
         {
-            try
+            //_appService.ClearConfiguration();
+            //ConfigureService(); // Reconfigurar includes si los necesitas para la vista
+
+            var result = await _appService.GetAllPaginadoAsync(_params);
+            return Ok(new PagedResult<VwUsuarioSucursalResponse>
             {
-                var result = await _appService.GetAllPaginadoAsync(_params);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new PagedResult<VwUsuarioSucursalResponse>
-                {
-                    Success = false,
-                    Message = $"Error al obtener asignaciones paginadas: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
+                Success = true,
+                Message = "Usuario Sucursal optenidos correctamente",
+                Code = "SUCCESS",
+                Items = result.Items,
+                TotalCount = result.TotalCount
+            });
         }
+
     }
 }

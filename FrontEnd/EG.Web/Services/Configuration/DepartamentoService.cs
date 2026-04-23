@@ -9,8 +9,8 @@ namespace EG.Web.Services.Configuration
 {
     public class DepartamentoService : BaseService, IDepartamentoService
     {
-        public DepartamentoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
-            : base(httpClient, jsRuntime, application)
+        public DepartamentoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+            : base(httpClient, jsRuntime, application, configuration)
         {
         }
 

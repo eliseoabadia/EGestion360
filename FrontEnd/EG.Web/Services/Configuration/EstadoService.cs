@@ -9,8 +9,8 @@ namespace EG.Web.Services.Configuration
 {
     public class EstadoService : BaseService, IEstadoService
     {
-        public EstadoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
-            : base(httpClient, jsRuntime, application)
+        public EstadoService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+            : base(httpClient, jsRuntime, application, configuration)
         {
         }
 

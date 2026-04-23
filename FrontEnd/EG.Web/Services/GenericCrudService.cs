@@ -13,12 +13,13 @@ namespace EG.Web.Services
         private readonly string? _paginatedAction;
 
         public GenericCrudService(
+            IConfiguration configuration,
             HttpClient httpClient,
             IJSRuntime jsRuntime,
             ApplicationInstance application,
             string endpoint,
             string? paginatedAction = null)
-            : base(httpClient, jsRuntime, application)
+            : base(httpClient, jsRuntime, application, configuration)
         {
             _endpoint = endpoint;
             _paginatedAction = paginatedAction;
