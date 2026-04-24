@@ -16,6 +16,12 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // Increase header size limit for large JWT tokens with many claims
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.Limits.MaxRequestHeadersTotalSize = 262144; // 256KB
+        });
+
         ////automapper
         ////builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
         //builder.Services.AddAutoMapper(cfg =>
@@ -77,8 +83,7 @@ public partial class Program
         {
             options.JsonSerializerOptions.PropertyNamingPolicy = null;
         });
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
+        builder.Services.AddSwaggerGen();
 
         // For authentication
         var _key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
@@ -113,28 +118,29 @@ public partial class Program
 
         builder.Services.AddMemoryCache();
 
-        builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
+        // No duplicar AddControllers ni AddOpenApi
 
         //CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAllOrigins", policy =>
             {
-                policy.WithOrigins("https://localhost:7279", "http://localhost:5242") // origen del WASM/DevServer (HTTP y HTTPS)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // si usas credenciales; si no, quitar
+                policy
+                    .AllowAnyOrigin() // Si necesitas credenciales, usa .WithOrigins("https://tudominio.com") y .AllowCredentials()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+                // .AllowCredentials(); // Solo si usas orígenes explícitos
             });
         });
 
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
 
         app.UseHttpsRedirection();

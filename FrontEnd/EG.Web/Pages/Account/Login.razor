@@ -107,15 +107,15 @@
 
             var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending);
 
-			var sucursalesUsuario = _sucursalesUsuario.Items.Where(s => s.PkIdUsuario == result.PkIdUsuario).ToList();
+			// var sucursalesUsuario = _sucursalesUsuario.Items.Where(s => s.PkIdUsuario == result.PkIdUsuario).ToList();
 
-            var _result = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
+   //          var _result = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
 
-            if (sucursalesUsuario.Count > 1)
+            if (_sucursalesUsuario.TotalCount > 1)
             {
                 var parameters = new DialogParameters
                 {
-                    { "Sucursales", sucursalesUsuario }
+                    { "Sucursales", _sucursalesUsuario }
                 };
                 
                 var options = new DialogOptions 
@@ -139,9 +139,9 @@
                     NavigationManager.NavigateTo("/", forceLoad: true);
                 }
             }
-            else if (sucursalesUsuario.Count == 1)
+            else if (_sucursalesUsuario.Items.Count == 1)
             {
-                await SucursalStateService.SetSucursalAsync(sucursalesUsuario[0].IdSucursal, sucursalesUsuario[0].NombreSucursal);
+                await SucursalStateService.SetSucursalAsync(_sucursalesUsuario.Items[0].IdSucursal, _sucursalesUsuario.Items[0].NombreSucursal);
                 Snackbar.Add("¡Bienvenido!", Severity.Success);
                 NavigationManager.NavigateTo("/", forceLoad: true);
             }

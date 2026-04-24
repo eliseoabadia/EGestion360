@@ -29,14 +29,13 @@ namespace EG.Application.Services
             var claims = new List<Claim>
             {
                 new Claim("Id", userId),
-                new Claim("id", userId), // lowercase para compatibilidad
+                new Claim("id", userId),
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Name, userName ?? string.Empty),
                 new Claim(ClaimTypes.Email, email ?? string.Empty),
                 new Claim(ClaimTypes.Expiration, expiration?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? string.Empty)
             };
 
-            // Agregar claims personalizados desde spGetClaimsByUserResult
             if (_claims != null && _claims.Any())
             {
                 foreach (var item in _claims)
