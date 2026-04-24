@@ -1,4 +1,307 @@
+update  sis.Menu set Ruta = replace(Ruta,'/~/','/')
+select * from sis.Menu
+select * from sis.MenuRole
 
+delete   sis.Menu
+truncate table  sis.MenuRole
+
+DECLARE @maxId INT;
+SELECT @maxId = ISNULL(MAX(PKIdMenu), 1) FROM sis.Menu;
+DBCC CHECKIDENT ('sis.Menu', RESEED, @maxId);
+
+
+UPDATE SIS.Menu
+SET ImageUrl = 'MudBlazorIcons.Filled.FolderSpecial'
+WHERE PKIdMenu IN (
+    SELECT DISTINCT FKIdMenu_SIS FROM SIS.Menu WHERE FKIdMenu_SIS IS NOT NULL
+);
+
+
+
+-- Ejemplo para algunos nodos finales (ajusta según tus necesidades)
+-- Catálogos de Configuración
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Settings' WHERE PKIdMenu = 1;
+-- Presupuesto
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.AttachMoney' WHERE PKIdMenu = 2;
+-- Contabilidad
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.AccountBalance' WHERE PKIdMenu = 3 OR PKIdMenu = 33;
+-- Adquisiciones
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.ShoppingCart' WHERE PKIdMenu = 4 OR PKIdMenu = 41;
+-- Patrimonio
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.HomeWork' WHERE PKIdMenu = 5 OR PKIdMenu = 50;
+-- Almacén
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Warehouse' WHERE PKIdMenu = 6 OR PKIdMenu = 62 OR PKIdMenu = 63;
+-- Reportes CxC
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Assessment' WHERE PKIdMenu = 7;
+-- Usuarios
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.People' WHERE PKIdMenu = 8 OR PKIdMenu = 1211;
+-- Ayuda
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.HelpOutline' WHERE PKIdMenu = 9 OR PKIdMenu = 162 OR PKIdMenu = 163 OR PKIdMenu = 164 OR PKIdMenu = 165;
+-- Manual de Usuario
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.MenuBook' WHERE PKIdMenu = 162;
+-- Reportes
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.BarChart' WHERE Nombre LIKE N'%Reporte%' OR Nombre LIKE N'%Reportes%';
+
+-- Bancos y dinero
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.AccountBalanceWallet' WHERE Nombre LIKE N'%Banco%' OR Nombre LIKE N'%Cuenta Bancaria%';
+
+-- Contratos
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Description' WHERE Nombre LIKE N'%Contrato%';
+
+-- Proveedores
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.LocalShipping' WHERE Nombre LIKE N'%Proveedor%';
+
+-- Inventarios
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Inventory' WHERE Nombre LIKE N'%Inventario%' OR Nombre LIKE N'%Inventarios%';
+
+-- Si no se asignó ningún ícono específico, dejar el genérico de descripción
+UPDATE SIS.Menu
+SET ImageUrl = 'MudBlazorIcons.Filled.Description'
+WHERE ImageUrl IS NULL OR ImageUrl = '';
+
+
+--otro
+
+-- Presupuesto, Egresos, Ingresos
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.AttachMoney'
+WHERE Nombre LIKE N'%Presupuesto%' OR Nombre LIKE N'%Egresos%' OR Nombre LIKE N'%Ingresos%' OR Nombre LIKE N'%Modificado%';
+
+-- Contabilidad, Pólizas, Balanza
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.AccountBalance'
+WHERE Nombre LIKE N'%Contabilidad%' OR Nombre LIKE N'%Póliza%' OR Nombre LIKE N'%Balanza%' OR Nombre LIKE N'%Auxiliar%' OR Nombre LIKE N'%Mayor%';
+
+-- Adquisiciones, Compra, Requisición, Cotización
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.ShoppingCart'
+WHERE Nombre LIKE N'%Adquisicion%' OR Nombre LIKE N'%Requisicion%' OR Nombre LIKE N'%Cotizacion%' OR Nombre LIKE N'%Compra%';
+
+-- Patrimonio, Bienes, Muebles
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.HomeWork'
+WHERE Nombre LIKE N'%Patrimonio%' OR Nombre LIKE N'%Bien%' OR Nombre LIKE N'%Mueble%' OR Nombre LIKE N'%Activo%';
+
+-- Almacén, Inventario, Almacenes, Existencia
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Warehouse'
+WHERE Nombre LIKE N'%Almacen%' OR Nombre LIKE N'%Inventario%' OR Nombre LIKE N'%Existencia%' OR Nombre LIKE N'%Pedido%' OR Nombre LIKE N'%Salida%';
+
+-- Reportes, Análisis
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.BarChart'
+WHERE Nombre LIKE N'%Reporte%' OR Nombre LIKE N'%Analisis%' OR Nombre LIKE N'%Análisis%' OR Nombre LIKE N'%Estado%' OR Nombre LIKE N'%Informe%';
+
+-- Usuarios, Personas, Empleados
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.People'
+WHERE Nombre LIKE N'%Usuario%' OR Nombre LIKE N'%Persona%' OR Nombre LIKE N'%Empleado%' OR Nombre LIKE N'%Personal%';
+
+-- Nómina
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.PaidOutlined'
+WHERE Nombre LIKE N'%Nomina%' OR Nombre LIKE N'%Calculo%' OR Nombre LIKE N'%Pago%';
+
+-- Tesorería, Bancos, Cheques
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.LocalAtm'
+WHERE Nombre LIKE N'%Tesoreria%' OR Nombre LIKE N'%Banco%' OR Nombre LIKE N'%Cheque%' OR Nombre LIKE N'%Cambio%' OR Nombre LIKE N'%Inversion%';
+
+-- Firma, Autorización, Aprobación
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.CheckCircle'
+WHERE Nombre LIKE N'%Firma%' OR Nombre LIKE N'%Autorizacion%' OR Nombre LIKE N'%Autoriza%' OR Nombre LIKE N'%Aprobacion%' OR Nombre LIKE N'%Aprueba%';
+
+-- Proveedores, Tratados
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.LocalShipping'
+WHERE Nombre LIKE N'%Proveedor%' OR Nombre LIKE N'%Tratado%';
+
+-- Recursos Humanos, Movimientos, Plazas
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Engineering'
+WHERE Nombre LIKE N'%Recursos Humanos%' OR Nombre LIKE N'%Movimiento%' OR Nombre LIKE N'%Plaza%' OR Nombre LIKE N'%Puesto%' OR Nombre LIKE N'%Nombramiento%';
+
+-- Catálogos, Configuración, Generales, Parámetros
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Settings'
+WHERE Nombre LIKE N'%Catalogo%' OR Nombre LIKE N'%Configuracion%' OR Nombre LIKE N'%General%' OR Nombre LIKE N'%Parametrizacion%' OR Nombre LIKE N'%Parametro%' OR Nombre LIKE N'%Tipo%';
+
+-- Conteo, Inventarios Cíclico, Anual
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Assignment'
+WHERE Nombre LIKE N'%Conteo%' OR Nombre LIKE N'%Ciclico%' OR Nombre LIKE N'%Anual%' OR Nombre LIKE N'%Diferencia%';
+
+-- Fideicomiso
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.BusinessCenter'
+WHERE Nombre LIKE N'%Fideicomiso%';
+
+-- Ayuda, Manual, Soporte
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.HelpOutline'
+WHERE Nombre LIKE N'%Ayuda%' OR Nombre LIKE N'%Manual%' OR Nombre LIKE N'%Soporte%' OR Nombre LIKE N'%Pregunta%' OR Nombre LIKE N'%Frecuente%' OR Nombre LIKE N'%Acerca%';
+
+-- Planeación, Indicadores, Estrategia
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Map'
+WHERE Nombre LIKE N'%Planeacion%' OR Nombre LIKE N'%Indicador%' OR Nombre LIKE N'%Resumen%' OR Nombre LIKE N'%Narrativo%';
+
+-- Suscripción, Certificados, Documentos
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.CardMembership'
+WHERE Nombre LIKE N'%Suscripcion%' OR Nombre LIKE N'%Certificado%' OR Nombre LIKE N'%Documento%';
+
+-- Roles, Privilegios, Seguridad
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.Security'
+WHERE Nombre LIKE N'%Rol%' OR Nombre LIKE N'%Privilegio%' OR Nombre LIKE N'%Seguridad%';
+
+-- Investigación de Mercado
+UPDATE SIS.Menu SET ImageUrl = 'MudBlazorIcons.Filled.SearchOutlined'
+WHERE Nombre LIKE N'%Investigacion%' OR Nombre LIKE N'%Mercado%';
+
+-- Asignar ícono genérico de descripción a todos los que no tengan asignado aún
+UPDATE SIS.Menu
+SET ImageUrl = 'MudBlazorIcons.Filled.Description'
+WHERE ImageUrl IS NULL OR ImageUrl = '';
+
+
+-- Permitir inserción explícita en columna IDENTITY
+SET IDENTITY_INSERT SIS.Menu ON;
+
+-- Insertar los menús raíz
+INSERT INTO SIS.Menu (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Lenguaje, Orden, Activo, CreatedByOperatorId, CreatedDateTime)
+SELECT 
+    m.Pk_IdMenu, p.Nombre, 1, NULL, NULL, 
+    CASE 
+        WHEN p.Controlador IS NULL OR p.Controlador = '-' OR p.Controlador = '' THEN '/'
+        WHEN p.Controlador LIKE '~/%~' THEN SUBSTRING(p.Controlador, CHARINDEX('/', p.Controlador, 2), LEN(p.Controlador))
+        ELSE '/' + ISNULL(p.Controlador, '')
+    END,
+    NULL, 'E', m.Orden, 1, 1, GETDATE()
+FROM BD_PRESUPUESTO.SIS.Menu m
+INNER JOIN BD_PRESUPUESTO.SIS.Pantalla p ON m.Fk_IdPantalla__SIS = p.Pk_IdPantalla
+WHERE m.Fk_IdMenu__SIS IS NULL AND m.CT_LIVE = 1;
+
+-- Insertar los menús hijos recursivamente
+;WITH MenuJerarquia AS (
+    SELECT 
+        m.Pk_IdMenu,
+        m.Fk_IdMenu__SIS AS ParentId,
+        p.Nombre,
+        m.Orden,
+        p.Controlador,
+        1 AS Nivel
+    FROM BD_PRESUPUESTO.SIS.Menu m
+    INNER JOIN BD_PRESUPUESTO.SIS.Pantalla p ON m.Fk_IdPantalla__SIS = p.Pk_IdPantalla
+    WHERE m.Fk_IdMenu__SIS IS NULL AND m.CT_LIVE = 1
+
+    UNION ALL
+
+    SELECT 
+        m.Pk_IdMenu,
+        m.Fk_IdMenu__SIS,
+        p.Nombre,
+        m.Orden,
+        p.Controlador,
+        h.Nivel + 1
+    FROM BD_PRESUPUESTO.SIS.Menu m
+    INNER JOIN BD_PRESUPUESTO.SIS.Pantalla p ON m.Fk_IdPantalla__SIS = p.Pk_IdPantalla
+    INNER JOIN MenuJerarquia h ON m.Fk_IdMenu__SIS = h.Pk_IdMenu
+    WHERE m.CT_LIVE = 1
+)
+INSERT INTO SIS.Menu (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Lenguaje, Orden, Activo, CreatedByOperatorId, CreatedDateTime)
+SELECT 
+    mj.Pk_IdMenu, mj.Nombre, 1, mj.ParentId, NULL,
+    CASE 
+        WHEN mj.Controlador IS NULL OR mj.Controlador = '-' OR mj.Controlador = '' THEN '/'
+        WHEN mj.Controlador LIKE '~/%~' THEN SUBSTRING(mj.Controlador, CHARINDEX('/', mj.Controlador, 2), LEN(mj.Controlador))
+        ELSE '/' + ISNULL(mj.Controlador, '')
+    END,
+    NULL, 'E', mj.Orden, 1, 1, GETDATE()
+FROM MenuJerarquia mj
+WHERE mj.Nivel > 1
+    AND NOT EXISTS (SELECT 1 FROM SIS.Menu sm WHERE sm.PKIdMenu = mj.Pk_IdMenu);
+
+-- Desactivar inserción explícita en columna IDENTITY
+SET IDENTITY_INSERT SIS.Menu OFF;
+
+
+
+
+
+---------------------------------------------------------------------------------------------------
+
+WITH MenuRecursivo AS (
+    -- Nivel base: todos los menús activos
+    SELECT 
+        PKIdMenu,
+        FKIdMenu_SIS,
+        0 AS Nivel
+    FROM SIS.Menu
+    WHERE Activo = 1
+
+    UNION ALL
+
+    -- Parte recursiva: busca hijos
+    SELECT 
+        m.PKIdMenu,
+        m.FKIdMenu_SIS,
+        r.Nivel + 1
+    FROM SIS.Menu m
+    INNER JOIN MenuRecursivo r ON m.FKIdMenu_SIS = r.PKIdMenu
+),
+MenusPadre AS (
+    -- Menús que tienen al menos un hijo (existe en la columna FKIdMenu_SIS de otro menú)
+    SELECT DISTINCT FKIdMenu_SIS AS PKIdMenu
+    FROM SIS.Menu
+    WHERE FKIdMenu_SIS IS NOT NULL
+)
+--DELETE cv
+--update C set [Values] = 'view,view-menu'
+select *
+FROM --dbo.AspNetClaimValues cv
+--INNER JOIN 
+dbo.AspNetClaims c --ON cv.ClaimId = c.Id
+INNER JOIN dbo.AspNetRoles r ON c.RoleId = r.Id
+INNER JOIN SIS.MenuRole mr ON mr.RoleId = r.Id
+INNER JOIN MenusPadre mp ON mr.FKIdMenu_SIS = mp.PKIdMenu
+WHERE cv.Value IN ('delete', 'new', 'update', 'CanExportToExcel');
+
+
+----------------------------------------------------------------------------------------------------
+
+    SELECT *--ANC.[Group], ANC.SubGroup, ANC.[Values],M.*
+    --update ANC set [Values] = 'view,view-menu'
+    FROM SIS.Usuario AS U (NOLOCK)
+    INNER JOIN dbo.AspNetUsers AS ANU (NOLOCK) ON U.PkIdUsuario = ANU.PkIdUsuario
+    INNER JOIN dbo.AspNetUserRoles AS ANUR (NOLOCK) ON ANUR.UserId = ANU.Id
+    INNER JOIN dbo.AspNetClaims AS ANC (NOLOCK) ON ANC.RoleId = ANUR.RoleId
+    INNER JOIN dbo.AspNetRoles AS R (NOLOCK) ON R.Id = ANUR.RoleId
+    --INNER JOIN SIS.MenuRole AS MR (NOLOCK) ON MR.RoleId = R.Id
+    INNER JOIN SIS.Menu AS M (NOLOCK) ON M.Nombre = ANC.Description
+    WHERE M.Tipo = 1
+    --U.PkIdUsuario = @PkIdUser 
+      AND U.Activo = 1
+      AND M.Activo = 1   -- Menú activo
+    GROUP BY ANC.[Group], ANC.SubGroup, ANC.[Values]
+END
+GO
+
+select * from SIS.Menu
+select * from SIS.MenuRole
+
+select * from dbo.AspNetClaims AS ANC (NOLOCK) 
+    INNER JOIN dbo.AspNetRoles AS R (NOLOCK) ON R.Id = ANC.RoleId
+
+
+    select * 
+    FROM SIS.Usuario AS U (NOLOCK)
+    INNER JOIN dbo.AspNetUsers AS ANU (NOLOCK) ON U.PkIdUsuario = ANU.PkIdUsuario
+    INNER JOIN dbo.AspNetUserRoles AS ANUR (NOLOCK) ON ANUR.UserId = ANU.Id
+    INNER JOIN dbo.AspNetClaims AS ANC (NOLOCK) ON ANC.RoleId = ANUR.RoleId
+
+
+    INSERT INTO dbo.AspNetClaimValues (ClaimId, [Value], Created)
+SELECT 
+    c.Id,
+    LTRIM(RTRIM(s.[value])) AS [Value],
+    GETDATE()
+FROM dbo.AspNetClaims c
+CROSS APPLY STRING_SPLIT(c.[Values], ',') s
+WHERE 
+    c.[Values] IS NOT NULL
+    AND LTRIM(RTRIM(s.[value])) != ''
+    AND NOT EXISTS (
+        SELECT 1 
+        FROM dbo.AspNetClaimValues cv
+        WHERE cv.ClaimId = c.Id 
+          AND cv.[Value] = LTRIM(RTRIM(s.[value]))
+    );
+
+---------------------------------------------------------------------------------------------------
 use [BD_PRESUPUESTO]
 
 
@@ -63,499 +366,6 @@ FROM OrdenMenu
 ORDER BY OrdenGlobal;
 
 SELECT @sql AS [GeneratedScript];
-
-
-
-use [GestionEmpresarial]
-
-MERGE INTO SIS.Menu AS TARGET
-USING (
-    VALUES
-        -- ==================== 1. Catálogos de Configuración ====================
-        ('catalogos-de-configuracion', 'catalogos-de-configuracion', N'Catálogos de Configuración', '/', NULL, 'FaCogs', 1, N'Catálogos de Configuración', 'M001'),
-        ('catalogos-presupuestales', 'catalogos-presupuestales', N'Catálogos presupuestales', '/', N'Catálogos de Configuración', 'FaBook', 1, N'Catálogos presupuestales', 'M010'),
-        ('programas-presupuestales-historico', 'programas-presupuestales-historico', N'Programas Presupuestales Histórico', '/Programa', N'Catálogos presupuestales', 'FaHistory', 1, N'Programas Presupuestales Histórico', '1001'),
-        ('programas-presupuestales', 'programas-presupuestales', N'Programas Presupuestales', '/PRESPrograma', N'Catálogos presupuestales', 'FaList', 2, N'Programas Presupuestales', '1002'),
-        ('clave-del-programa', 'clave-del-programa', N'Clave del Programa', '/', N'Catálogos presupuestales', 'FaKey', 3, N'Clave del Programa', 'M021'),
-        ('unidad-responsable', 'unidad-responsable', N'Unidad Responsable', '/SISArea', N'Clave del Programa', 'FaBuilding', 1, N'Unidad Responsable', '1003'),
-        ('finalidad', 'finalidad', N'Finalidad', '/PRESGF', N'Clave del Programa', 'FaBullseye', 2, N'Finalidad', '1004'),
-        ('funcion', 'funcion', N'Función', '/PRESFN', N'Clave del Programa', 'FaCogs', 3, N'Función', '1005'),
-        ('subfuncion', 'subfuncion', N'SubFunción', '/PRESSF', N'Clave del Programa', 'FaCodeBranch', 4, N'SubFunción', '1006'),
-        ('actividad-institucional', 'actividad-institucional', N'Actividad Institucional', '/SISActividadInstitucional', N'Clave del Programa', 'FaUniversity', 5, N'Actividad Institucional', '1007'),
-        ('eje', 'eje', N'Eje', '/PRESEje', N'Clave del Programa', 'FaChartLine', 6, N'Eje', '1008'),
-        ('subeje', 'subeje', N'SubEje', '/PRESSubEje', N'Clave del Programa', 'FaChartLine', 7, N'SubEje', '1009'),
-        ('subsubeje', 'subsubeje', N'SubSubEje', '/PRESSubSubEje', N'Clave del Programa', 'FaChartLine', 8, N'SubSubEje', '1010'),
-        ('programa-presupuestal', 'programa-presupuestal', N'Programa Presupuestal', '/PRESPP', N'Clave del Programa', 'FaListAlt', 9, N'Programa Presupuestal', '1011'),
-        ('vertiente-de-gasto', 'vertiente-de-gasto', N'Vertiente de Gasto', '/PRESVertienteGasto', N'Clave del Programa', 'FaTint', 10, N'Vertiente de Gasto', '1012'),
-        ('resultado', 'resultado', N'Resultado', '/PRESResultado', N'Clave del Programa', 'FaChartBar', 11, N'Resultado', '1013'),
-        ('subresultado', 'subresultado', N'Subresultado', '/PRESSubresultado', N'Clave del Programa', 'FaChartBar', 12, N'Subresultado', '1014'),
-        ('años', 'años', N'Años', '/SISAnio', N'Clave del Programa', 'FaCalendar', 13, N'Años', '1015'),
-        ('sector', 'sector', N'Sector', '/PRESSector', N'Clave del Programa', 'FaIndustry', 14, N'Sector', '1016'),
-        ('subsector', 'subsector', N'SubSector', '/PRESSubSector', N'Clave del Programa', 'FaIndustry', 15, N'SubSector', '1017'),
-        ('tipo-de-recurso', 'tipo-de-recurso', N'Tipo de Recurso', '/PRESTipoRecurso', N'Clave del Programa', 'FaDollarSign', 16, N'Tipo de Recurso', '1018'),
-        ('fuente-de-financiamiento', 'fuente-de-financiamiento', N'Fuente de Financiamiento', '/PRESFuenteFinanciamiento', N'Clave del Programa', 'FaMoneyBill', 17, N'Fuente de Financiamiento', '1019'),
-        ('pg', 'pg', N'PG', '/PRESPG', N'Clave del Programa', 'FaTag', 18, N'PG', '1020'),
-        ('ramo', 'ramo', N'Ramo', '/PRESRamo', N'Clave del Programa', 'FaTree', 19, N'Ramo', '1021'),
-        ('proyecto', 'proyecto', N'Proyecto', '/PRESPY', N'Clave del Programa', 'FaProjectDiagram', 20, N'Proyecto', '1154'),
-        ('contabilidad', 'contabilidad', N'Contabilidad', '/', N'Catálogos presupuestales', 'FaCalculator', 4, N'Contabilidad', 'M022'),
-        ('adquisiciones', 'adquisiciones', N'Adquisiciones', '/', N'Catálogos de Configuración', 'FaShoppingCart', 2, N'Adquisiciones', 'M011'),
-        ('patrimonio', 'patrimonio', N'Patrimonio', '/', N'Catálogos de Configuración', 'FaBuilding', 3, N'Patrimonio', 'M012'),
-        ('almacen', 'almacen', N'Almacén', '/', N'Catálogos de Configuración', 'FaWarehouse', 4, N'Almacén', 'M013'),
-        ('tesoreria', 'tesoreria', N'Tesorería', '/', N'Catálogos de Configuración', 'FaUniversity', 5, N'Tesorería', 'T000'),
-        ('tipo-cambio', 'tipo-cambio', N'Tipo Cambio', '/TESTipoCambio', N'Tesorería', 'FaExchangeAlt', 1, N'Tipo Cambio', 'T001'),
-        ('tipo-inversion', 'tipo-inversion', N'Tipo Inversion', '/TESTipoInversion', N'Tesorería', 'FaChartLine', 2, N'Tipo Inversion', 'T002'),
-        ('tipo-moneda', 'tipo-moneda', N'Tipo Moneda', '/TESTipoMoneda', N'Tesorería', 'FaCoins', 3, N'Tipo Moneda', 'T003'),
-        ('tipo-pago', 'tipo-pago', N'Tipo Pago', '/TESTipoPago', N'Tesorería', 'FaCreditCard', 4, N'Tipo Pago', 'T004'),
-        ('tipo-pagosf', 'tipo-pagosf', N'Tipo PagoSF', '/TESTipoPagoSF', N'Tesorería', 'FaMoneyCheck', 5, N'Tipo PagoSF', 'T005'),
-        ('tipo-solicitud-clc', 'tipo-solicitud-clc', N'Tipo Solicitud CLC', '/TESTipoSolicitudCLC', N'Tesorería', 'FaFileSignature', 6, N'Tipo Solicitud CLC', 'T006'),
-        ('tipo-de-documento-clc', 'tipo-de-documento-clc', N'Tipo de documento CLC', '/SISTipoDoctoCLC', N'Tesorería', 'FaFileAlt', 7, N'Tipo de documento CLC', '2179'),
-        -- ==================== 2. Recursos Humanos ====================
-        ('recursos-humanos', 'recursos-humanos', N'Recursos Humanos', '/', NULL, 'FaUsers', 2, N'Recursos Humanos', 'M201'),
-        ('catalogos', 'catalogos', N'Catálogos', '/', N'Recursos Humanos', 'FaBook', 1, N'Catálogos', 'M202'),
-        ('generales', 'generales', N'Generales', '/', N'Catálogos', 'FaList', 1, N'Generales', 'M203'),
-        ('estado-civil', 'estado-civil', N'Estado Civil', '/RH_EstadoCivil', N'Generales', 'FaHeart', 1, N'Estado Civil', '2001'),
-        ('nacionalidad', 'nacionalidad', N'Nacionalidad', '/RH_Nacionalidad', N'Generales', 'FaFlag', 2, N'Nacionalidad', '2002'),
-        ('escolaridad', 'escolaridad', N'Escolaridad', '/RH_Escolaridad', N'Generales', 'FaGraduationCap', 3, N'Escolaridad', '2003'),
-        ('parentesco', 'parentesco', N'Parentesco', '/RH_Parentesco', N'Generales', 'FaUsers', 4, N'Parentesco', '2004'),
-        ('universo', 'universo', N'Universo', '/RH_TipoPuesto', N'Generales', 'FaGlobe', 5, N'Universo', '2005'),
-        ('tipo-de-carrera', 'tipo-de-carrera', N'Tipo de Carrera', '/RH_TipoCarrera', N'Generales', 'FaRoad', 6, N'Tipo de Carrera', '2006'),
-        ('opcion-de-jubilacion', 'opcion-de-jubilacion', N'Opción de Jubilación', '/RH_OpcionJubilacion', N'Generales', 'FaUmbrellaBeach', 7, N'Opción de Jubilación', '2007'),
-        ('tipo-de-documentos', 'tipo-de-documentos', N'Tipo de Documentos', '/RH_TipoDocumento', N'Generales', 'FaFile', 8, N'Tipo de Documentos', '2008'),
-        ('otros', 'otros', N'Otros', '/', N'Catálogos', 'FaEllipsisH', 2, N'Otros', 'M204'),
-        ('basificado', 'basificado', N'Basificado', '/RH_Basificado', N'Otros', 'FaCheckCircle', 1, N'Basificado', '2009'),
-        ('credencial', 'credencial', N'Credencial', '/RH_Credencial', N'Otros', 'FaIdCard', 2, N'Credencial', '2010'),
-        ('cuenta-persona', 'cuenta-persona', N'Cuenta Persona', '/RH_CuentaPersona', N'Otros', 'FaUser', 3, N'Cuenta Persona', '2011'),
-        ('datos-cedula-registro', 'datos-cedula-registro', N'Datos Cedula Registro', '/RH_DAtosCedulaRegistro', N'Otros', 'FaAddressCard', 4, N'Datos Cedula Registro', '2012'),
-        ('dependencia', 'dependencia', N'Dependencia', '/RH_Dependencia', N'Otros', 'FaBuilding', 5, N'Dependencia', '2013'),
-        ('dias-derecho-empleado', 'dias-derecho-empleado', N'Dias Derecho Empleado', '/RH_DiasDerecho', N'Otros', 'FaCalendarDay', 6, N'Dias Derecho Empleado', '2014'),
-        ('dias-economicos-anuales', 'dias-economicos-anuales', N'Dias Economicos Anuales', '/RH_DiasEconomicos', N'Otros', 'FaCalendarAlt', 7, N'Dias Economicos Anuales', '2015'),
-        ('dias-laborados-empleado', 'dias-laborados-empleado', N'Dias Laborados Empleado', '/RH_DiasLaborados', N'Otros', 'FaBriefcase', 8, N'Dias Laborados Empleado', '2016'),
-        ('dias-no-habiles', 'dias-no-habiles', N'Dias no habiles', '/RH_DiasNoHabiles', N'Otros', 'FaBan', 9, N'Dias no habiles', '2017'),
-        ('dias-reales-vacaciones-empleado', 'dias-reales-vacaciones-empleado', N'Dias reales vacaciones empleado', '/RH_DiasRealesVacaciones', N'Otros', 'FaSun', 10, N'Dias reales vacaciones empleado', '2018'),
-        ('dias-economicos-empleado', 'dias-economicos-empleado', N'Dias Económicos Empleado', '/RH_DiasEconomicos', N'Otros', 'FaWallet', 11, N'Dias Económicos Empleado', '2019'),
-        ('fecha-ingreso-empleado', 'fecha-ingreso-empleado', N'Fecha Ingreso Empleado', '/RH_FechasIngreso', N'Otros', 'FaCalendarPlus', 12, N'Fecha Ingreso Empleado', '2020'),
-        ('fecha-vacaciones-empleado', 'fecha-vacaciones-empleado', N'Fecha Vacaciones Empleado', '/RH_EmpFechaVacSemes', N'Otros', 'FaCalendarWeek', 13, N'Fecha Vacaciones Empleado', '2021'),
-        ('fecha-vacaciones-semestre-empleado', 'fecha-vacaciones-semestre-empleado', N'Fecha Vacaciones Semestre Empleado', '/RH_EmpFechaVacSemes', N'Otros', 'FaCalendarWeek', 14, N'Fecha Vacaciones Semestre Empleado', '2022'),
-        ('tarjeta-observaciones-empleado', 'tarjeta-observaciones-empleado', N'Tarjeta Observaciones Empleado', '/RH_EmpleadoTarjetaObservaciones', N'Otros', 'FaStickyNote', 15, N'Tarjeta Observaciones Empleado', '2023'),
-        ('fecha-vacaciones', 'fecha-vacaciones', N'Fecha Vacaciones', '/RH_FechaVacaciones', N'Otros', 'FaCalendar', 16, N'Fecha Vacaciones', '2024'),
-        ('dias-prima-vacacional', 'dias-prima-vacacional', N'Dias Prima Vacacional', '/RH_DiasPrimaVacacional', N'Otros', 'FaGift', 17, N'Dias Prima Vacacional', '2025'),
-        ('institucion', 'institucion', N'Institución', '/', N'Catálogos', 'FaSchool', 3, N'Institución', 'M205'),
-        ('clase-de-puesto', 'clase-de-puesto', N'Clase de Puesto', '/RH_ClasePuesto', N'Institución', 'FaLayerGroup', 1, N'Clase de Puesto', '2026'),
-        ('clasificador-de-ingreso', 'clasificador-de-ingreso', N'Clasificador de Ingreso', '/RH_ClasificadorIngreso', N'Institución', 'FaSortAmountDown', 2, N'Clasificador de Ingreso', '2027'),
-        ('comedor', 'comedor', N'Comedor', '/RH_Comedor', N'Institución', 'FaUtensils', 3, N'Comedor', '2028'),
-        ('escala-salarial', 'escala-salarial', N'Escala Salarial', '/RH_EscalaSalarial', N'Institución', 'FaChartLine', 4, N'Escala Salarial', '2029'),
-        ('grupo-puesto', 'grupo-puesto', N'Grupo Puesto', '/RH_GrupoPuesto', N'Institución', 'FaUsers', 5, N'Grupo Puesto', '2030'),
-        ('rama', 'rama', N'Rama', '/RH_Rama', N'Institución', 'FaCodeBranch', 6, N'Rama', '2031'),
-        ('puesto-valido', 'puesto-valido', N'Puesto Valido', '/RH_PuestoValido', N'Institución', 'FaCheck', 7, N'Puesto Valido', '2032'),
-        ('puesto-alternativo', 'puesto-alternativo', N'Puesto Alternativo', '/RH_PuestoAlternativo', N'Institución', 'FaExchangeAlt', 8, N'Puesto Alternativo', '2033'),
-        ('puesto', 'puesto', N'Puesto', '/RH_Puesto', N'Institución', 'FaBriefcase', 9, N'Puesto', '2034'),
-        ('radicacion-del-pago', 'radicacion-del-pago', N'Radicación del Pago', '/RH_RadicacionPago', N'Institución', 'FaMoneyBill', 10, N'Radicación del Pago', '2035'),
-        ('horarios', 'horarios', N'Horarios', '/RH_Horario', N'Institución', 'FaClock', 11, N'Horarios', '2036'),
-        ('mandos', 'mandos', N'Mandos', '/RH_Mando', N'Institución', 'FaUserTie', 12, N'Mandos', '2037'),
-        ('nombramientos', 'nombramientos', N'Nombramientos', '/RH_Nombramiento', N'Institución', 'FaFileSignature', 13, N'Nombramientos', '2038'),
-        ('tipo-direccion', 'tipo-direccion', N'Tipo Dirección', '/RH_TipoDireccion', N'Institución', 'FaMapMarkerAlt', 14, N'Tipo Dirección', '2039'),
-        ('turno', 'turno', N'Turno', '/RH_Turno', N'Institución', 'FaClock', 15, N'Turno', '2040'),
-        ('empleados-autorizados-para-firmas', 'empleados-autorizados-para-firmas', N'Empleados Autorizados para firmas', '/RH_PersonaFirma', N'Institución', 'FaPenFancy', 16, N'Empleados Autorizados para firmas', '2041'),
-        ('plazas', 'plazas', N'Plazas', '/RH_Plaza', N'Institución', 'FaChair', 18, N'Plazas', '2043'),
-        ('nivel', 'nivel', N'Nivel', '/RH_Nivel', N'Institución', 'FaLayerGroup', 19, N'Nivel', '2044'),
-        ('movimientos-de-personal', 'movimientos-de-personal', N'Movimientos de Personal', '/', N'Catálogos', 'FaArrowsAlt', 4, N'Movimientos de Personal', 'M206'),
-        ('tipo-de-personal', 'tipo-de-personal', N'Tipo de Personal', '/RH_TipoPersonal', N'Movimientos de Personal', 'FaUserTag', 1, N'Tipo de Personal', '2045'),
-        ('clase-de-movimientos', 'clase-de-movimientos', N'Clase de Movimientos', '/RH_ClaseMovto', N'Movimientos de Personal', 'FaList', 2, N'Clase de Movimientos', '2046'),
-        ('movimiento', 'movimiento', N'Movimiento', '/RH_Movimiento', N'Movimientos de Personal', 'FaArrowsAlt', 3, N'Movimiento', '2047'),
-        ('motivo-de-movimiento', 'motivo-de-movimiento', N'Motivo de Movimiento', '/RH_MotivoMovto', N'Movimientos de Personal', 'FaQuestion', 4, N'Motivo de Movimiento', '2048'),
-        ('parametrizacion-empleado', 'parametrizacion-empleado', N'Parametrización Empleado', '/RH_ParametrizacionPersona', N'Movimientos de Personal', 'FaSlidersH', 5, N'Parametrización Empleado', '2049'),
-        ('situacion-empleado', 'situacion-empleado', N'Situación Empleado', '/RH_SituacionPersona', N'Movimientos de Personal', 'FaInfoCircle', 6, N'Situación Empleado', '2050'),
-        ('parametrizacion-plaza', 'parametrizacion-plaza', N'Parametrización Plaza', '/RH_ParametrizacionPlaza', N'Movimientos de Personal', 'FaSlidersH', 7, N'Parametrización Plaza', '2051'),
-        ('situacion-movimiento', 'situacion-movimiento', N'Situación movimiento', '/RH_SituacionMovimiento', N'Movimientos de Personal', 'FaExchangeAlt', 8, N'Situación movimiento', '2052'),
-        ('consecutivo-movimiento-personal', 'consecutivo-movimiento-personal', N'Consecutivo Movimiento Personal', '/RH_ConsecutivoMovimientoPersonal', N'Movimientos de Personal', 'FaSortNumericDown', 9, N'Consecutivo Movimiento Personal', '2053'),
-        ('licencias-medicas', 'licencias-medicas', N'Licencias Medicas', '/', N'Catálogos', 'FaMedkit', 5, N'Licencias Medicas', 'M207'),
-        ('motivo-licencia-medica', 'motivo-licencia-medica', N'Motivo Licencia Medica', '/RH_MotivoLicencia', N'Licencias Medicas', 'FaStethoscope', 1, N'Motivo Licencia Medica', '2054'),
-        ('dias-de-licencia-por-antiguedad', 'dias-de-licencia-por-antiguedad', N'Dias de licencia por antiguedad', '/RH_PeriodoLicencia', N'Licencias Medicas', 'FaCalendarAlt', 2, N'Dias de licencia por antiguedad', '2055'),
-        ('movimientos-de-plazas', 'movimientos-de-plazas', N'Movimientos de Plazas', '/', N'Recursos Humanos', 'FaArrowsAlt', 2, N'Movimientos de Plazas', 'M208'),
-        ('captura-de-movimientos-plazas', 'captura-de-movimientos-plazas', N'Captura de Movimientos Plazas', '/', N'Movimientos de Plazas', 'FaEdit', 1, N'Captura de Movimientos Plazas', 'M209'),
-        ('creacion', 'creacion', N'Creación', '/RH_MovimientoPlaza', N'Captura de Movimientos Plazas', 'FaPlusCircle', 1, N'Creación', '2057'),
-        ('reportes', 'reportes', N'Reportes', '/ErrConf', N'Captura de Movimientos Plazas', 'FaChartBar', 6, N'Reportes', '2062'),
-        ('aplicar-movimientos-de-plaza', 'aplicar-movimientos-de-plaza', N'Aplicar Movimientos de Plaza', '/ErrConf', N'Captura de Movimientos Plazas', 'FaCheckDouble', 7, N'Aplicar Movimientos de Plaza', '2063'),
-        ('consultas', 'consultas', N'Consultas', '/ErrConf', N'Captura de Movimientos Plazas', 'FaSearch', 8, N'Consultas', '2064'),
-        ('registro-y-control-de-personal', 'registro-y-control-de-personal', N'Registro y Control de Personal', '/', N'Recursos Humanos', 'FaClipboardList', 3, N'Registro y Control de Personal', 'M210'),
-        ('datos-generales-y-personales', 'datos-generales-y-personales', N'Datos Generales y Personales', '/RH_Persona', N'Registro y Control de Personal', 'FaUserCircle', 1, N'Datos Generales y Personales', '2065'),
-        ('movimiento-de-personal', 'movimiento-de-personal', N'Movimiento de Personal', '/', N'Recursos Humanos', 'FaUserPlus', 4, N'Movimiento de Personal', 'M211'),
-        ('alta-de-empleados', 'alta-de-empleados', N'Alta de Empleados', '/ErrConf', N'Movimiento de Personal', 'FaUserPlus', 1, N'Alta de Empleados', '2067'),
-        ('baja-de-empleados', 'baja-de-empleados', N'Baja de Empleados', '/ErrConf', N'Movimiento de Personal', 'FaUserMinus', 2, N'Baja de Empleados', '2068'),
-        ('aplicacion-de-movimientos', 'aplicacion-de-movimientos', N'Aplicación de Movimientos', '/ErrConf', N'Movimiento de Personal', 'FaCheck', 3, N'Aplicación de Movimientos', '2069'),
-        ('plantilla-de-personal', 'plantilla-de-personal', N'Plantilla de Personal', '/', N'Recursos Humanos', 'FaTable', 5, N'Plantilla de Personal', 'M213'),
-        ('plaza-de-adscripcion', 'plaza-de-adscripcion', N'Plaza de Adscripción', '/ErrConf', N'Plantilla de Personal', 'FaBuilding', 1, N'Plaza de Adscripción', '2070'),
-        ('movimientos-quincenales', 'movimientos-quincenales', N'Movimientos quincenales', '/ErrConf', N'Plantilla de Personal', 'FaCalendarWeek', 2, N'Movimientos quincenales', '2071'),
-        ('movimientos-quincenales-plaza', 'movimientos-quincenales-plaza', N'Movimientos quincenales Plaza', '/ErrConf', N'Plantilla de Personal', 'FaCalendarAlt', 3, N'Movimientos quincenales Plaza', '2072'),
-        ('kardex', 'kardex', N'Kardex', '/ErrConf', N'Plantilla de Personal', 'FaBook', 4, N'Kardex', '2073'),
-        ('kardex-plaza', 'kardex-plaza', N'Kardex Plaza', '/ErrConf', N'Plantilla de Personal', 'FaBook', 5, N'Kardex Plaza', '2074'),
-        ('reporteador', 'reporteador', N'Reporteador', '/ErrConf', N'Plantilla de Personal', 'FaChartBar', 6, N'Reporteador', '2075'),
-        -- ==================== 3. Nómina ====================
-        ('nomina', 'nomina', N'Nomina', '/', NULL, 'FaMoneyBillWave', 3, N'Nomina', 'M214'),
-        ('catalogos', 'catalogos', N'Catalogos', '/', N'Nomina', 'FaBook', 1, N'Catalogos', 'M215'),
-        ('generales', 'generales', N'Generales', '/', N'Catalogos', 'FaList', 1, N'Generales', 'M216'),
-        ('estructura-programatica', 'estructura-programatica', N'Estructura Programática', '/NO_EstructProgramatica', N'Generales', 'FaProjectDiagram', 1, N'Estructura Programática', '2076'),
-        ('tipo-contrato', 'tipo-contrato', N'Tipo Contrato', '/NO_TipoContrato', N'Generales', 'FaFileContract', 2, N'Tipo Contrato', '2077'),
-        ('estatus-pago', 'estatus-pago', N'Estatus Pago', '/No_EstatusPago', N'Generales', 'FaCheckCircle', 3, N'Estatus Pago', '2078'),
-        ('parametrizacion-generica', 'parametrizacion-generica', N'Parametrización Genérica', '/', N'Catalogos', 'FaSlidersH', 2, N'Parametrización Genérica', 'M217'),
-        ('i.s.p.t.-anual', 'i.s.p.t.-anual', N'I.S.P.T. Anual', '/NO_ISPTAnual', N'Parametrización Genérica', 'FaCalendarAlt', 1, N'I.S.P.T. Anual', '2079'),
-        ('i.s.p.t.-mensual', 'i.s.p.t.-mensual', N'I.S.P.T. Mensual', '/NO_ISPTMensual', N'Parametrización Genérica', 'FaCalendar', 2, N'I.S.P.T. Mensual', '2080'),
-        ('quincena-de-proceso', 'quincena-de-proceso', N'Quincena de Proceso', '/NO_Pago', N'Parametrización Genérica', 'FaCalendarWeek', 3, N'Quincena de Proceso', '2081'),
-        ('salario-minimo-zona-geografica', 'salario-minimo-zona-geografica', N'Salario Mínimo Zona Geográfica', '/NO_SalarioMinimoZonaGeografica', N'Parametrización Genérica', 'FaMapMarkerAlt', 4, N'Salario Mínimo Zona Geográfica', '2082'),
-        ('salario-minimo', 'salario-minimo', N'Salario Mínimo', '/NO_SalarioMinimo', N'Parametrización Genérica', 'FaDollarSign', 5, N'Salario Mínimo', '2083'),
-        ('subsidio', 'subsidio', N'Subsidio', '/NO_Subsidio', N'Parametrización Genérica', 'FaHandHoldingUsd', 6, N'Subsidio', '2084'),
-        ('tabla-reversa', 'tabla-reversa', N'Tabla Reversa', '/NO_TablaReversa', N'Parametrización Genérica', 'FaTable', 7, N'Tabla Reversa', '2085'),
-        ('calculo', 'calculo', N'Cálculo', '/NO_Calculo', N'Parametrización Genérica', 'FaCalculator', 8, N'Cálculo', '2086'),
-        ('tipos-de-nomina', 'tipos-de-nomina', N'Tipos de Nómina', '/NO_TipoNomina', N'Parametrización Genérica', 'FaList', 9, N'Tipos de Nómina', '2087'),
-        ('referencia-tipo-nomina', 'referencia-tipo-nomina', N'Referencia tipo Nómina', '/NO_ReferenciaTipoNomina', N'Parametrización Genérica', 'FaLink', 10, N'Referencia tipo Nómina', '2088'),
-        ('tipo-de-pago', 'tipo-de-pago', N'Tipo de Pago', '/NO_TipoPago', N'Parametrización Genérica', 'FaCreditCard', 11, N'Tipo de Pago', '2089'),
-        ('parametrizacion-por-concepto', 'parametrizacion-por-concepto', N'Parametrización por Concepto', '/', N'Catalogos', 'FaTags', 3, N'Parametrización por Concepto', 'M218'),
-        ('concepto-por-agrupacion', 'concepto-por-agrupacion', N'Concepto por Agrupación', '/NO_ConceptoAgrupacion', N'Parametrización por Concepto', 'FaLayerGroup', 1, N'Concepto por Agrupación', '2090'),
-        ('concepto-por-objeto-del-gasto', 'concepto-por-objeto-del-gasto', N'Concepto por Objeto del Gasto', '/NO_ConceptoOG', N'Parametrización por Concepto', 'FaDollarSign', 2, N'Concepto por Objeto del Gasto', '2091'),
-        ('concepto-por-tipo-de-nomina', 'concepto-por-tipo-de-nomina', N'Concepto por Tipo de Nómina', '/NO_ConceptoTipoNom', N'Parametrización por Concepto', 'FaList', 3, N'Concepto por Tipo de Nómina', '2092'),
-        ('concepto-por-periodicidad', 'concepto-por-periodicidad', N'Concepto por Periodicidad', '/NO_ConceptoPeriodicidad', N'Parametrización por Concepto', 'FaCalendar', 4, N'Concepto por Periodicidad', '2093'),
-        ('objeto-del-gasto', 'objeto-del-gasto', N'Objeto del Gasto', '/NO_ObjetoGasto', N'Parametrización por Concepto', 'FaMoneyBill', 5, N'Objeto del Gasto', '2094'),
-        ('concepto-calculo', 'concepto-calculo', N'Concepto Cálculo', '/NO_ConceptoCalculo', N'Parametrización por Concepto', 'FaCalculator', 6, N'Concepto Cálculo', '2095'),
-        ('concepto-dias', 'concepto-dias', N'Concepto Dias', '/NO_ConceptoDias', N'Parametrización por Concepto', 'FaCalendarDay', 7, N'Concepto Dias', '2096'),
-        ('concepto-factor', 'concepto-factor', N'Concepto Factor', '/NO_ConceptoFactor', N'Parametrización por Concepto', 'FaTimes', 8, N'Concepto Factor', '2097'),
-        ('concepto-importe', 'concepto-importe', N'Concepto Importe', '/NO_ConceptoImporte', N'Parametrización por Concepto', 'FaDollarSign', 9, N'Concepto Importe', '2098'),
-        ('concepto-periodo', 'concepto-periodo', N'Concepto Periodo', '/NO_ConceptoPeriodo', N'Parametrización por Concepto', 'FaCalendar', 10, N'Concepto Periodo', '2099'),
-        ('concepto-equivalencia', 'concepto-equivalencia', N'Concepto Equivalencia', '/NO_ConceptoEquivalencia', N'Parametrización por Concepto', 'FaEquals', 11, N'Concepto Equivalencia', '2100'),
-        ('puesto-quincena', 'puesto-quincena', N'Puesto Quincena', '/NO_PuestoQuicena', N'Parametrización por Concepto', 'FaBriefcase', 12, N'Puesto Quincena', '2101'),
-        ('referencia-concepto', 'referencia-concepto', N'Referencia Concepto', '/NO_ReferenciaConcepto', N'Parametrización por Concepto', 'FaLink', 13, N'Referencia Concepto', '2102'),
-        ('concepto-digito-sindical', 'concepto-digito-sindical', N'Concepto Dígito Sindical', '/NO_ConceptoDigSind', N'Parametrización por Concepto', 'FaHashtag', 14, N'Concepto Dígito Sindical', '2103'),
-        ('concepto-presupuesto', 'concepto-presupuesto', N'Concepto Presupuesto', '/NO_ConceptoPresupuesto', N'Parametrización por Concepto', 'FaChartLine', 15, N'Concepto Presupuesto', '2104'),
-        ('concepto-de-pago', 'concepto-de-pago', N'Concepto de Pago', '/NO_ConceptoPago', N'Parametrización por Concepto', 'FaCreditCard', 16, N'Concepto de Pago', '2105'),
-        ('concepto-partida', 'concepto-partida', N'Concepto Partida', '/NO_ConceptoPartida', N'Parametrización por Concepto', 'FaList', 17, N'Concepto Partida', '2106'),
-        ('parametrizacion-por-modelo-de-pago', 'parametrizacion-por-modelo-de-pago', N'Parametrización por módelo de págo', '/', N'Catalogos', 'FaMoneyCheck', 4, N'Parametrización por módelo de págo', 'M219'),
-        ('concepto-mando-antigüedad', 'concepto-mando-antigüedad', N'Concepto mando antigüedad', '/NO_ConcepMandoAntig', N'Parametrización por módelo de págo', 'FaUserTie', 1, N'Concepto mando antigüedad', '2107'),
-        ('conceptos-por-centro-de-trabajo-y-puestos', 'conceptos-por-centro-de-trabajo-y-puestos', N'Conceptos por Centro de Trabajo y Puestos', '/NO_CentroTrabajoPuestoConcepto', N'Parametrización por módelo de págo', 'FaBuilding', 2, N'Conceptos por Centro de Trabajo y Puestos', '2108'),
-        ('concepto-mando', 'concepto-mando', N'Concepto Mando', '/NO_ConceptoMando', N'Parametrización por módelo de págo', 'FaUserTie', 3, N'Concepto Mando', '2109'),
-        ('concepto-nombramiento', 'concepto-nombramiento', N'Concepto Nombramiento', '/NO_ConceptoNombramiento', N'Parametrización por módelo de págo', 'FaFileSignature', 4, N'Concepto Nombramiento', '2110'),
-        ('parametrizacion-por-empleado', 'parametrizacion-por-empleado', N'Parametrización por Empleado', '/', N'Catalogos', 'FaUserCog', 5, N'Parametrización por Empleado', 'M220'),
-        ('horas-extra-por-empleado', 'horas-extra-por-empleado', N'Horas Extra por Empleado', '/SISTratadoInt', N'Parametrización por Empleado', 'FaClock', 1, N'Horas Extra por Empleado', '2111'),
-        ('empleados-por-concepto-dias', 'empleados-por-concepto-dias', N'Empleados por Concepto Días', '/NO_ConceptoDias', N'Parametrización por Empleado', 'FaUsers', 2, N'Empleados por Concepto Días', '2112'),
-        ('quinquenios-y-concepto-de-antigüedad', 'quinquenios-y-concepto-de-antigüedad', N'Quinquenios y Concepto de Antigüedad', '/NO_ConceptoAntiguedad', N'Parametrización por Empleado', 'FaHistory', 3, N'Quinquenios y Concepto de Antigüedad', '2113'),
-        ('inasistencias-por-empleado', 'inasistencias-por-empleado', N'Inasistencias por Empleado', '/NO_PersonaInasistencia', N'Parametrización por Empleado', 'FaUserSlash', 4, N'Inasistencias por Empleado', '2114'),
-        ('pagos-adicionales', 'pagos-adicionales', N'Pagos Adicionales', '/NO_PagoAdicional', N'Parametrización por Empleado', 'FaPlusCircle', 5, N'Pagos Adicionales', '2115'),
-        ('concepto-variable-de-pago', 'concepto-variable-de-pago', N'Concepto Variable de Pago', '/NO_VariableConcepto', N'Parametrización por Empleado', 'FaSlidersH', 6, N'Concepto Variable de Pago', '2116'),
-        ('notas-buenas', 'notas-buenas', N'Notas Buenas', '/NO_ConceptoPersona', N'Parametrización por Empleado', 'FaStar', 7, N'Notas Buenas', '2117'),
-        ('empleado-del-mes', 'empleado-del-mes', N'Empleado del Mes', '/NO_VariableConceptoEM', N'Parametrización por Empleado', 'FaTrophy', 8, N'Empleado del Mes', '2118'),
-        ('reintegro-inasistencias', 'reintegro-inasistencias', N'Reintegro Inasistencias', '/NO_PersonaInasistenciaRI', N'Parametrización por Empleado', 'FaUndo', 9, N'Reintegro Inasistencias', '2119'),
-        ('imss', 'imss', N'IMSS', '/', N'Catalogos', 'FaHospital', 6, N'IMSS', 'M221'),
-        ('pagos-imss', 'pagos-imss', N'Pagos IMSS', '/NO_IMSS', N'IMSS', 'FaMoneyBill', 1, N'Pagos IMSS', '2120'),
-        ('dias-de-pago-imss', 'dias-de-pago-imss', N'Dias de Pago IMSS', '/NO_DiasPagoIMSS', N'IMSS', 'FaCalendar', 2, N'Dias de Pago IMSS', '2121'),
-        ('calculo', 'calculo', N'Calculo', '/', N'Nomina', 'FaCalculator', 2, N'Calculo', 'M222'),
-        ('incremento-general-por-nivel', 'incremento-general-por-nivel', N'Incremento General por nivel', '/ErrConf', N'Calculo', 'FaArrowUp', 1, N'Incremento General por nivel', '2122'),
-        ('calculo-de-nomina', 'calculo-de-nomina', N'Cálculo de Nómina', '/ErrConf', N'Calculo', 'FaCalculator', 2, N'Cálculo de Nómina', '2123'),
-        ('generacion-de-productos-de-nomina', 'generacion-de-productos-de-nomina', N'Generación de productos de nómina', '/ErrConf', N'Calculo', 'FaFileAlt', 3, N'Generación de productos de nómina', '2124'),
-        ('recibos-y-finiquitos', 'recibos-y-finiquitos', N'Recibos y Finiquitos', '/NO_PagoReciboFiniquito', N'Calculo', 'FaReceipt', 4, N'Recibos y Finiquitos', '2125'),
-        ('reportes', 'reportes', N'Reportes', '/', N'Nomina', 'FaChartBar', 3, N'Reportes', 'M223'),
-        ('reporte-de-retenciones', 'reporte-de-retenciones', N'Reporte de Retenciones', '/RepRetenciones', N'Reportes', 'FaChartLine', 6, N'Reporte de Retenciones', '2126'),
-        ('reporte-de-depreciacion-acumulada', 'reporte-de-depreciacion-acumulada', N'Reporte de Depreciación Acumulada', '/RepDepAcum', N'Reportes', 'FaChartLine', 7, N'Reporte de Depreciación Acumulada', '2127'),
-        ('reporte-de-activos-fijos', 'reporte-de-activos-fijos', N'Reporte de Activos Fijos', '/RepActFijos', N'Reportes', 'FaBuilding', 8, N'Reporte de Activos Fijos', '2128'),
-        ('reporte-de-facturas-emitidas', 'reporte-de-facturas-emitidas', N'Reporte de Facturas Emitidas', '/RepFactEmit', N'Reportes', 'FaFileInvoice', 9, N'Reporte de Facturas Emitidas', '2129'),
-        ('reporte-de-nomina-presupuestal-anual', 'reporte-de-nomina-presupuestal-anual', N'Reporte de nomina presupuestal anual', '/ErrConf', N'Reportes', 'FaChartBar', 5, N'Reporte de nomina presupuestal anual', '2130'),
-        ('reporte-listado-nomina-historico-personal', 'reporte-listado-nomina-historico-personal', N'Reporte listado nomina Historico personal', '/ErrConf', N'Reportes', 'FaList', 6, N'Reporte listado nomina Historico personal', '2131'),
-        ('timbrado', 'timbrado', N'Timbrado', '/ErrConf', N'Reportes', 'FaStamp', 7, N'Timbrado', '2132'),
-        ('reporte-listado-nomina-historico-personal-retroactivo', 'reporte-listado-nomina-historico-personal-retroactivo', N'Reporte listado nomina Historico personal Retroactivo', '/ErrConf', N'Reportes', 'FaHistory', 8, N'Reporte listado nomina Historico personal Retroactivo', '2133'),
-        ('fonac', 'fonac', N'Fonac', '/', N'Nomina', 'FaPiggyBank', 4, N'Fonac', 'M224'),
-        ('catalogo-de-aportaciones', 'catalogo-de-aportaciones', N'Catálogo de Aportaciones', '/NO_AportacionFONAC', N'Fonac', 'FaList', 1, N'Catálogo de Aportaciones', '2134'),
-        ('tasa-de-interes-anual-fonac', 'tasa-de-interes-anual-fonac', N'Tasa de interes Anual Fonac', '/NO_TasaInteresFonacAnual', N'Fonac', 'FaChartLine', 2, N'Tasa de interes Anual Fonac', '2135'),
-        ('tasa-de-interes-mensual-fonac', 'tasa-de-interes-mensual-fonac', N'Tasa de Interes mensual Fonac', '/NO_TasaInteresFonacMensual', N'Fonac', 'FaChartLine', 3, N'Tasa de Interes mensual Fonac', '2136'),
-        ('padron-de-empleados-fonac', 'padron-de-empleados-fonac', N'Padrón de Empleados Fonac', '/NO_PersonaFonac', N'Fonac', 'FaUsers', 4, N'Padrón de Empleados Fonac', '2137'),
-        ('pension-alimenticia', 'pension-alimenticia', N'Pensión Alimenticia', '/', N'Nomina', 'FaHandHoldingHeart', 5, N'Pensión Alimenticia', 'M225'),
-        ('pension-alimenticia', 'pension-alimenticia', N'Pensión Alimenticia', '/NO_PensionAlimenticia', N'Pensión Alimenticia', 'FaChild', 1, N'Pensión Alimenticia', '2138'),
-        ('tipo-de-pension', 'tipo-de-pension', N'Tipo de Pensión', '/NO_TipoPension', N'Pensión Alimenticia', 'FaList', 2, N'Tipo de Pensión', '2139'),
-        ('tabuladores', 'tabuladores', N'Tabuladores', '/', N'Nomina', 'FaTable', 6, N'Tabuladores', 'M226'),
-        ('tabulador-por-puesto', 'tabulador-por-puesto', N'Tabulador por puesto', '/ErrConf', N'Tabuladores', 'FaBriefcase', 1, N'Tabulador por puesto', '2140'),
-        ('tabulador-por-concepto', 'tabulador-por-concepto', N'Tabulador por Concepto', '/NO_ConceptoTabulador', N'Tabuladores', 'FaTags', 2, N'Tabulador por Concepto', '2141'),
-        ('tabulador-por-nivel', 'tabulador-por-nivel', N'Tabulador por Nivel', '/NO_NivelTabulador', N'Tabuladores', 'FaLayerGroup', 3, N'Tabulador por Nivel', '2142'),
-        ('tabulador-honorarios', 'tabulador-honorarios', N'Tabulador Honorarios', '/NO_VariableConceptoSueldo', N'Tabuladores', 'FaMoneyBill', 4, N'Tabulador Honorarios', '2143'),
-        ('historico', 'historico', N'Historico', '/', N'Nomina', 'FaHistory', 7, N'Historico', 'M227'),
-        ('nomina-historica', 'nomina-historica', N'Nomina Historica', '/NH_SueldoVertRep', N'Historico', 'FaFileAlt', 1, N'Nomina Historica', '2145'),
-        ('auditoria', 'auditoria', N'Auditoria', '/ErrConf', N'Historico', 'FaClipboardList', 2, N'Auditoria', '2146'),
-        ('acumulados', 'acumulados', N'Acumulados', '/ErrConf', N'Historico', 'FaCalculator', 3, N'Acumulados', '2147'),
-        -- ==================== 4. Presupuesto ====================
-        ('presupuesto', 'presupuesto', N'Presupuesto', '/', NULL, 'FaChartLine', 4, N'Presupuesto', 'M002'),
-        ('submodulo-de-egresos', 'submodulo-de-egresos', N'Submódulo de Egresos', '/', N'Presupuesto', 'FaArrowCircleDown', 1, N'Submódulo de Egresos', 'M015'),
-        ('planeacion', 'planeacion', N'Planeación', '/', N'Submódulo de Egresos', 'FaTasks', 1, N'Planeación', '2226'),
-        ('catalogos-planeacion', 'catalogos-planeacion', N'Catálogos Planeación', '/', N'Planeación', 'FaBook', 1, N'Catálogos Planeación', '2227'),
-        ('indicadores', 'indicadores', N'Indicadores', '/PBRIndicadores', N'Catálogos Planeación', 'FaChartLine', 1, N'Indicadores', '2228'),
-        ('resúmen-narrativo', 'resúmen-narrativo', N'Resúmen Narrativo', '/PBRResumenNarrativo', N'Catálogos Planeación', 'FaAlignLeft', 1, N'Resúmen Narrativo', '2229'),
-        ('anteproyecto-de-egresos', 'anteproyecto-de-egresos', N'Anteproyecto de Egresos', '/PRESVW_EgresoProyectado', N'Planeación', 'FaFileAlt', 2, N'Anteproyecto de Egresos', '1063'),
-        ('autoriza-/--desautoriza-anteproyecto', 'autoriza-/--desautoriza-anteproyecto', N'Autoriza /  Desautoriza Anteproyecto', '/PresAutAnteproyecto', N'Planeación', 'FaCheckDouble', 3, N'Autoriza /  Desautoriza Anteproyecto', '1145'),
-        ('presupuesto-autorizado-de-egresos', 'presupuesto-autorizado-de-egresos', N'Presupuesto Autorizado de Egresos', '/PRESVW_EgresoAutorizado', N'Submódulo de Egresos', 'FaCheckCircle', 4, N'Presupuesto Autorizado de Egresos', '1064'),
-        ('presupuesto-modificado-de-egresos-(adecuaciones)', 'presupuesto-modificado-de-egresos-(adecuaciones)', N'Presupuesto Modificado de Egresos (Adecuaciones)', '/', N'Submódulo de Egresos', 'FaEdit', 5, N'Presupuesto Modificado de Egresos (Adecuaciones)', 'M025'),
-        ('captura-adecuaciones-compensadas-egre', 'captura-adecuaciones-compensadas-egre', N'Captura Adecuaciones Compensadas Egre', '/PRESVW_EgreModMastComp', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaPen', 1, N'Captura Adecuaciones Compensadas Egre', '1065'),
-        ('autorizacion-adecuaciones-compensadas-egre', 'autorizacion-adecuaciones-compensadas-egre', N'Autorización Adecuaciones Compensadas Egre', '/PRESVW_EgreModMastCompAutorizado', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaCheck', 2, N'Autorización Adecuaciones Compensadas Egre', '2218'),
-        ('captura-ampliaciones-egre', 'captura-ampliaciones-egre', N'Captura Ampliaciones Egre', '/PRESAumento', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaPlusCircle', 3, N'Captura Ampliaciones Egre', '1066'),
-        ('autorizacion-ampliaciones-egre', 'autorizacion-ampliaciones-egre', N'Autorización Ampliaciones Egre', '/PRESAumentoAutorizado', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaCheck', 4, N'Autorización Ampliaciones Egre', '2219'),
-        ('captura-reducciones-egre', 'captura-reducciones-egre', N'Captura Reducciones Egre', '/PRESAdecuacion', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaMinusCircle', 5, N'Captura Reducciones Egre', '1067'),
-        ('autorizacion-reducciones-egre', 'autorizacion-reducciones-egre', N'Autorización Reducciones Egre', '/PRESAdecuacionAutorizado', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaCheck', 6, N'Autorización Reducciones Egre', '2220'),
-        ('carga-masiva-adecuaciones', 'carga-masiva-adecuaciones', N'Carga masiva adecuaciones', '/NOMIAdecuacionesMasivas', N'Presupuesto Modificado de Egresos (Adecuaciones)', 'FaUpload', 7, N'Carga masiva adecuaciones', '2217'),
-        ('presupuesto-disponible-pef', 'presupuesto-disponible-pef', N'Presupuesto Disponible PEF', '/PRESVW_EgreDisp', N'Submódulo de Egresos', 'FaEye', 6, N'Presupuesto Disponible PEF', '1068'),
-        ('presupuesto-comprometido-unipartida', 'presupuesto-comprometido-unipartida', N'Presupuesto Comprometido Unipartida', '/', N'Submódulo de Egresos', 'FaHandshake', 7, N'Presupuesto Comprometido Unipartida', 'M026'),
-        ('solicitud-de-suficiencia-presupuestal-pef', 'solicitud-de-suficiencia-presupuestal-pef', N'Solicitud de Suficiencia Presupuestal PEF', '/PRESVW_SolicitudSuficiencia', N'Presupuesto Comprometido Unipartida', 'FaPaperPlane', 1, N'Solicitud de Suficiencia Presupuestal PEF', '1069'),
-        ('autorizacion-de-suficiencia-presupuestal-pef', 'autorizacion-de-suficiencia-presupuestal-pef', N'Autorización de Suficiencia Presupuestal PEF', '/PRESVW_AutorizacionSuficiencia', N'Presupuesto Comprometido Unipartida', 'FaCheck', 2, N'Autorización de Suficiencia Presupuestal PEF', '1070'),
-        ('registro-de-compromiso-pef', 'registro-de-compromiso-pef', N'Registro de Compromiso PEF', '/PRESVW_Contrato', N'Presupuesto Comprometido Unipartida', 'FaFileSignature', 3, N'Registro de Compromiso PEF', '1071'),
-        ('presupuesto-comprometido-multipartidas', 'presupuesto-comprometido-multipartidas', N'Presupuesto Comprometido Multipartidas', '/', N'Submódulo de Egresos', 'FaHandshake', 8, N'Presupuesto Comprometido Multipartidas', 'M041'),
-        ('solicitud-de-suficiencia-presupuestal-mp', 'solicitud-de-suficiencia-presupuestal-mp', N'Solicitud de Suficiencia Presupuestal MP', '/PRESContenedorMultiSolicitudSuficiencia', N'Presupuesto Comprometido Multipartidas', 'FaPaperPlane', 1, N'Solicitud de Suficiencia Presupuestal MP', '2197'),
-        ('autorizacion-suficiencia-presupuestal-mp', 'autorizacion-suficiencia-presupuestal-mp', N'Autorización Suficiencia Presupuestal MP', '/PRESContenedorMultiAutorizacionSuficiencia', N'Presupuesto Comprometido Multipartidas', 'FaCheck', 2, N'Autorización Suficiencia Presupuestal MP', '2196'),
-        ('registro-de-compromiso-mp', 'registro-de-compromiso-mp', N'Registro de Compromiso MP', '/PRESContenedorMultiContrato', N'Presupuesto Comprometido Multipartidas', 'FaFileSignature', 3, N'Registro de Compromiso MP', '2195'),
-        ('egresos-no-planificados', 'egresos-no-planificados', N'Egresos No Planificados', '/', N'Submódulo de Egresos', 'FaExclamationTriangle', 9, N'Egresos No Planificados', 'M030'),
-        ('fondo-revolvente', 'fondo-revolvente', N'Fondo Revolvente', '/FondoRevolvente', N'Egresos No Planificados', 'FaMoneyBill', 1, N'Fondo Revolvente', '1138'),
-        ('gastos-a-comprobar', 'gastos-a-comprobar', N'Gastos a Comprobar', '/GastoComprobar', N'Egresos No Planificados', 'FaReceipt', 2, N'Gastos a Comprobar', '1139'),
-        ('devoluciones', 'devoluciones', N'Devoluciones', '/', N'Egresos No Planificados', 'FaUndo', 3, N'Devoluciones', 'M031'),
-        ('devolucion-de-fondos-revolventes', 'devolucion-de-fondos-revolventes', N'Devolución de Fondos Revolventes', '/DevolFondoRev', N'Devoluciones', 'FaUndoAlt', 1, N'Devolución de Fondos Revolventes', '1140'),
-        ('caja-chica', 'caja-chica', N'Caja Chica', '/CajaChica', N'Egresos No Planificados', 'FaBox', 4, N'Caja Chica', '1141'),
-        ('elaboracion-de-cheques', 'elaboracion-de-cheques', N'Elaboración de Cheques', '/ErrConf', N'Submódulo de Egresos', 'FaMoneyCheck', 10, N'Elaboración de Cheques', '2174'),
-        ('estatus-de-cheques', 'estatus-de-cheques', N'Estatus de Cheques', '/ErrConf', N'Submódulo de Egresos', 'FaCheckCircle', 11, N'Estatus de Cheques', '2175'),
-        ('sigevi', 'sigevi', N'SIGEVI', '/', N'Submódulo de Egresos', 'FaChartPie', 15, N'SIGEVI', '-   '),
-        ('presupuesto-reservado', 'presupuesto-reservado', N'Presupuesto Reservado', '/SIGEVIPresupuestoReservado', N'SIGEVI', 'FaLock', 12, N'Presupuesto Reservado', '2181'),
-        ('presupuesto-disponible-sig', 'presupuesto-disponible-sig', N'Presupuesto Disponible SIG', '/SIGEVIPresupuestoDisponible', N'SIGEVI', 'FaEye', 13, N'Presupuesto Disponible SIG', '2182'),
-        ('cuentas-por-liquidar', 'cuentas-por-liquidar', N'Cuentas por Liquidar', '/SIGEVIVW_CXL', N'SIGEVI', 'FaFileInvoice', 14, N'Cuentas por Liquidar', '-   '),
-        ('submodulo-fideicomiso', 'submodulo-fideicomiso', N'Submódulo Fideicomiso', '/', N'Presupuesto', 'FaHands', 2, N'Submódulo Fideicomiso', 'M032'),
-        ('presupuesto-autorizado-fideicomiso', 'presupuesto-autorizado-fideicomiso', N'Presupuesto Autorizado Fideicomiso', '/PRESVW_EgresoAutorizadoFide', N'Submódulo Fideicomiso', 'FaCheckCircle', 1, N'Presupuesto Autorizado Fideicomiso', '2163'),
-        ('presupuesto-disponible-fideicomiso', 'presupuesto-disponible-fideicomiso', N'Presupuesto Disponible Fideicomiso', '/PRESVW_EgreDispFide', N'Submódulo Fideicomiso', 'FaEye', 2, N'Presupuesto Disponible Fideicomiso', '2185'),
-        ('solicitud-suficiencia-fideicomiso', 'solicitud-suficiencia-fideicomiso', N'Solicitud Suficiencia Fideicomiso', '/PRESContenedorSolicitudSuficienciaFide', N'Submódulo Fideicomiso', 'FaPaperPlane', 4, N'Solicitud Suficiencia Fideicomiso', '2167'),
-        ('autorizacion-suficiencia-fideicomiso', 'autorizacion-suficiencia-fideicomiso', N'Autorización Suficiencia Fideicomiso', '/PRESContenedorAutorizacionSuficiencia', N'Submódulo Fideicomiso', 'FaCheck', 5, N'Autorización Suficiencia Fideicomiso', '2165'),
-        ('registro-compromiso-fideicomiso', 'registro-compromiso-fideicomiso', N'Registro Compromiso Fideicomiso', '/PRESContenedorContrato', N'Submódulo Fideicomiso', 'FaFileSignature', 6, N'Registro Compromiso Fideicomiso', '2158'),
-        ('registro-de-facturas-fideicomiso', 'registro-de-facturas-fideicomiso', N'Registro de Facturas Fideicomiso', '/PRESContenedorFactura', N'Submódulo Fideicomiso', 'FaFileInvoice', 7, N'Registro de Facturas Fideicomiso', '2159'),
-        ('solicitud-de-pagos-fideicomiso', 'solicitud-de-pagos-fideicomiso', N'Solicitud de Pagos Fideicomiso', '/PRESContenedorCLC', N'Submódulo Fideicomiso', 'FaMoneyBill', 8, N'Solicitud de Pagos Fideicomiso', '2160'),
-        ('registro-de-pagos-fideicomiso', 'registro-de-pagos-fideicomiso', N'Registro de Pagos Fideicomiso', '/PRESContenedorCheque', N'Submódulo Fideicomiso', 'FaCheck', 9, N'Registro de Pagos Fideicomiso', '2161'),
-        ('submodulo-tesoreria', 'submodulo-tesoreria', N'Submódulo Tesorería', '/', N'Presupuesto', 'FaUniversity', 3, N'Submódulo Tesorería', 'M014'),
-        ('cuentas-por-cobrar', 'cuentas-por-cobrar', N'Cuentas por Cobrar', '/', N'Submódulo Tesorería', 'FaFileInvoice', 1, N'Cuentas por Cobrar', 'M028'),
-        ('ley-de-ingresos-estimados', 'ley-de-ingresos-estimados', N'Ley de Ingresos Estimados', '/PRESVW_IngresoAutorizado', N'Cuentas por Cobrar', 'FaBook', 1, N'Ley de Ingresos Estimados', '1055'),
-        ('presupuesto-modificado-de-ingresos(adecuaciones)', 'presupuesto-modificado-de-ingresos(adecuaciones)', N'Presupuesto Modificado de Ingresos(Adecuaciones)', '/', N'Cuentas por Cobrar', 'FaEdit', 2, N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'M023'),
-        ('captura-adecuaciones-compensadas-ing', 'captura-adecuaciones-compensadas-ing', N'Captura Adecuaciones Compensadas Ing', '/PRESVW_IngreModMastComp', N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'FaPen', 1, N'Captura Adecuaciones Compensadas Ing', '1056'),
-        ('autorizacion-adecuaciones-compensadas-ing', 'autorizacion-adecuaciones-compensadas-ing', N'Autorización Adecuaciones Compensadas Ing', '/PRESVW_IngreModMastCompAutorizado', N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'FaCheck', 2, N'Autorización Adecuaciones Compensadas Ing', '2223'),
-        ('captura-ampliaciones-ing', 'captura-ampliaciones-ing', N'Captura Ampliaciones Ing', '/PRESIngresoAumento', N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'FaPlusCircle', 3, N'Captura Ampliaciones Ing', '1057'),
-        ('autorizacion-ampliaciones-ing', 'autorizacion-ampliaciones-ing', N'Autorización Ampliaciones Ing', '/PRESIngresoAumentoAutorizado', N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'FaCheck', 4, N'Autorización Ampliaciones Ing', '2224'),
-        ('captura-reducciones-ing', 'captura-reducciones-ing', N'Captura Reducciones Ing', '/PRESIngresoAdecuacion', N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'FaMinusCircle', 5, N'Captura Reducciones Ing', '1058'),
-        ('autorizacion-reducciones-ing', 'autorizacion-reducciones-ing', N'Autorización Reducciones Ing', '/PRESIngresoAdecuacionAutorizado', N'Presupuesto Modificado de Ingresos(Adecuaciones)', 'FaCheck', 6, N'Autorización Reducciones Ing', '2225'),
-        ('ingresos-devengados', 'ingresos-devengados', N'Ingresos Devengados', '/', N'Cuentas por Cobrar', 'FaArrowUp', 3, N'Ingresos Devengados', 'M024'),
-        ('ingresos-(clcs)', 'ingresos-(clcs)', N'Ingresos (CLCs)', '/PRESVW_CLCFactura', N'Ingresos Devengados', 'FaFileInvoice', 1, N'Ingresos (CLCs)', '1059'),
-        ('ingresos-propios-(recibos-y-facturas)', 'ingresos-propios-(recibos-y-facturas)', N'Ingresos Propios (Recibos y Facturas)', '/IngreDevCls', N'Ingresos Devengados', 'FaReceipt', 2, N'Ingresos Propios (Recibos y Facturas)', '1060'),
-        ('ingresos-por-recaudar', 'ingresos-por-recaudar', N'Ingresos por Recaudar', '/PRESVW_IngreXEjer', N'Cuentas por Cobrar', 'FaClock', 4, N'Ingresos por Recaudar', '1061'),
-        ('depositos-clc', 'depositos-clc', N'Depósitos CLC', '/PRESDeposito', N'Cuentas por Cobrar', 'FaMoneyBill', 5, N'Depósitos CLC', '1062'),
-        ('otros-ingresos', 'otros-ingresos', N'Otros Ingresos', '/IngreIntereses', N'Cuentas por Cobrar', 'FaPlusCircle', 6, N'Otros Ingresos', '1149'),
-        ('otros-depositos', 'otros-depositos', N'Otros depósitos', '/ErrConf', N'Cuentas por Cobrar', 'FaMoneyBill', 7, N'Otros depósitos', '2168'),
-        ('reportes-cxc', 'reportes-cxc', N'Reportes CxC', '/', N'Cuentas por Cobrar', 'FaChartBar', 8, N'Reportes CxC', 'M007'),
-        ('antigüedad-de-saldos', 'antigüedad-de-saldos', N'Antigüedad de saldos', '/RepAntigSaldosCuPa', N'Reportes CxC', 'FaHistory', 1, N'Antigüedad de saldos', '2042'),
-        ('integracion-de-saldos', 'integracion-de-saldos', N'Integración de saldos', '/RepInteSaldosCuPa', N'Reportes CxC', 'FaChartLine', 2, N'Integración de saldos', '2056'),
-        ('estado-de-cuenta', 'estado-de-cuenta', N'Estado de cuenta', '/RepEstatCuentaCuPa', N'Reportes CxC', 'FaFileAlt', 3, N'Estado de cuenta', '2058'),
-        ('analisis-de-saldos', 'analisis-de-saldos', N'Análisis de saldos', '/RepAnalisSaldosCuPa', N'Reportes CxC', 'FaChartBar', 4, N'Análisis de saldos', '2059'),
-        ('consulta-de-documentos', 'consulta-de-documentos', N'Consulta de documentos', '/ErrConf', N'Reportes CxC', 'FaSearch', 5, N'Consulta de documentos', '2060'),
-        ('cuentas-por-pagar', 'cuentas-por-pagar', N'Cuentas por Pagar', '/', N'Submódulo Tesorería', 'FaFileInvoice', 2, N'Cuentas por Pagar', 'M027'),
-        ('pef-unipartida-tes', 'pef-unipartida-tes', N'PEF Unipartida TES', '/', N'Cuentas por Pagar', 'FaFile', 5, N'PEF Unipartida TES', 'M240'),
-        ('recepcion-de-facturas-y-comprobantes-de-pago-pef', 'recepcion-de-facturas-y-comprobantes-de-pago-pef', N'Recepción de Facturas y Comprobantes de Pago PEF', '/PRESVW_Factura', N'PEF Unipartida TES', 'FaFileInvoice', 1, N'Recepción de Facturas y Comprobantes de Pago PEF', '1072'),
-        ('provision-del-pago-pef', 'provision-del-pago-pef', N'Provisión del Pago PEF', '/PRESVW_Clc', N'PEF Unipartida TES', 'FaClock', 1, N'Provisión del Pago PEF', '1073'),
-        ('elaboracion-de-cheque-o-transferencia-pef', 'elaboracion-de-cheque-o-transferencia-pef', N'Elaboración de Cheque o transferencia PEF', '/PRESVW_Cheque', N'PEF Unipartida TES', 'FaMoneyCheck', 3, N'Elaboración de Cheque o transferencia PEF', '1074'),
-        ('pef-multipartidas-tes', 'pef-multipartidas-tes', N'PEF Multipartidas TES', '/', N'Cuentas por Pagar', 'FaFiles', 6, N'PEF Multipartidas TES', 'M229'),
-        ('recepcion-de-facturas-y-comprobantes-de-pago-mp', 'recepcion-de-facturas-y-comprobantes-de-pago-mp', N'Recepción de Facturas y Comprobantes de Pago MP', '/PRESContenedorMultiFactura', N'PEF Multipartidas TES', 'FaFileInvoice', 1, N'Recepción de Facturas y Comprobantes de Pago MP', '1072'),
-        ('provision-del-pago-mp', 'provision-del-pago-mp', N'Provisión del Pago MP', '/PRESContenedorMultiCLC', N'PEF Multipartidas TES', 'FaClock', 2, N'Provisión del Pago MP', '2199'),
-        ('elaboracion-de-cheque-o-transferencia-mp', 'elaboracion-de-cheque-o-transferencia-mp', N'Elaboración de Cheque o transferencia MP', '/PRESContenedorMultiCheque', N'PEF Multipartidas TES', 'FaMoneyCheck', 3, N'Elaboración de Cheque o transferencia MP', '2200'),
-        ('estatus-de-cheques', 'estatus-de-cheques', N'Estatus de cheques', '/ErrConf', N'Cuentas por Pagar', 'FaCheckCircle', 6, N'Estatus de cheques', '2173'),
-        ('planeacion-de-gastos', 'planeacion-de-gastos', N'Planeación de gastos', '/ErrConf', N'Submódulo Tesorería', 'FaTasks', 10, N'Planeación de gastos', '2169'),
-        ('saldos-cuentas', 'saldos-cuentas', N'Saldos Cuentas', '/TESSaldosCuenta', N'Submódulo Tesorería', 'FaBalanceScale', 11, N'Saldos Cuentas', '2170'),
-        ('solicitud-de-reintegros', 'solicitud-de-reintegros', N'Solicitud de reintegros', '/ErrConf', N'Submódulo Tesorería', 'FaUndo', 12, N'Solicitud de reintegros', '2171'),
-        ('autorizar-solicitud-de-reingresos', 'autorizar-solicitud-de-reingresos', N'Autorizar solicitud de reingresos', '/ErrConf', N'Submódulo Tesorería', 'FaCheck', 13, N'Autorizar solicitud de reingresos', '2172'),
-        ('provision-del-pago-(importes)', 'provision-del-pago-(importes)', N'Provisión del Pago (Importes)', '/PRESVW_CLCFactura_Importe', N'Submódulo Tesorería', 'FaMoneyBill', 14, N'Provisión del Pago (Importes)', '-   '),
-        ('inversiones', 'inversiones', N'Inversiones', '/', N'Submódulo Tesorería', 'FaChartLine', 16, N'Inversiones', '2205'),
-        ('banco', 'banco', N'Banco', '/SISBanco', N'Inversiones', 'FaUniversity', 1, N'Banco', '1153'),
-        ('cuenta-bancaria', 'cuenta-bancaria', N'Cuenta Bancaria', '/TESCuentaBancaria', N'Inversiones', 'FaCreditCard', 2, N'Cuenta Bancaria', '2206'),
-        ('saldos-cuentas', 'saldos-cuentas', N'Saldos Cuentas', '/TESSaldosCuenta', N'Inversiones', 'FaBalanceScale', 3, N'Saldos Cuentas', '2207'),
-        ('intermediarios-financieros', 'intermediarios-financieros', N'Intermediarios Financieros', '/TESIntermediarioFinanciero', N'Inversiones', 'FaHandshake', 4, N'Intermediarios Financieros', '2208'),
-        ('instrumentos-de-inversion', 'instrumentos-de-inversion', N'Instrumentos de Inversión', '/TESInstrumento', N'Inversiones', 'FaChartLine', 5, N'Instrumentos de Inversión', '2209'),
-        ('listado-de-inversiones', 'listado-de-inversiones', N'Listado de Inversiones', '/TESVW_Inversiones', N'Inversiones', 'FaList', 6, N'Listado de Inversiones', '2210'),
-        ('tipo-de-instrumentos', 'tipo-de-instrumentos', N'Tipo de Instrumentos', '/', N'Inversiones', 'FaTag', 7, N'Tipo de Instrumentos', '2211'),
-        ('tipo-de-plazos', 'tipo-de-plazos', N'Tipo de Plazos', '/TESTipoPlazo', N'Inversiones', 'FaClock', 8, N'Tipo de Plazos', '2212'),
-        ('tipo-de-retiro', 'tipo-de-retiro', N'Tipo de Retiro', '/TESTipoRetiro', N'Inversiones', 'FaSignOutAlt', 9, N'Tipo de Retiro', '2213'),
-        ('simulador', 'simulador', N'Simulador', '/TESInversionSimulada', N'Inversiones', 'FaCalculator', 10, N'Simulador', '2214'),
-        ('submodulo-de-nomina', 'submodulo-de-nomina', N'Submódulo de Nómina', '/', N'Presupuesto', 'FaMoneyBillWave', 4, N'Submódulo de Nómina', 'M228'),
-        ('procesar-nomina', 'procesar-nomina', N'Procesar Nómina', '/NOMIVW_DevengaNomina', N'Submódulo de Nómina', 'FaCogs', 1, N'Procesar Nómina', '2191'),
-        ('requisicion-para-nomina', 'requisicion-para-nomina', N'Requisición para Nómina', '/ORCORequisicion_NOM', N'Submódulo de Nómina', 'FaClipboardList', 2, N'Requisición para Nómina', '1086'),
-        ('solicitud-de-suficiencia-nomina', 'solicitud-de-suficiencia-nomina', N'Solicitud de Suficiencia Nómina', '/PRESVW_SolicitudSuficiencia_NOM', N'Submódulo de Nómina', 'FaPaperPlane', 3, N'Solicitud de Suficiencia Nómina', '1069'),
-        ('autorizacion-de-suficiencia-nomina', 'autorizacion-de-suficiencia-nomina', N'Autorización de Suficiencia Nómina', '/PRESVW_AutorizacionSuficiencia_NOM', N'Submódulo de Nómina', 'FaCheck', 4, N'Autorización de Suficiencia Nómina', '1070'),
-        ('comprometer-nomina', 'comprometer-nomina', N'Comprometer Nomina', '/PRESVW_Contrato_NOM', N'Submódulo de Nómina', 'FaHandshake', 5, N'Comprometer Nomina', '1150'),
-        ('devengar-nomina', 'devengar-nomina', N'Devengar Nomina', '/PRESVW_Factura_Nom', N'Submódulo de Nómina', 'FaFileInvoice', 6, N'Devengar Nomina', '1151'),
-        ('provision-del-pago-de-nomina', 'provision-del-pago-de-nomina', N'Provisión del Pago de Nómina', '/PRESVW_Clc_Nom', N'Submódulo de Nómina', 'FaClock', 7, N'Provisión del Pago de Nómina', '2198'),
-        ('pago-de-nomina', 'pago-de-nomina', N'Pago de Nómina', '/PRESVW_Cheque_Nom', N'Submódulo de Nómina', 'FaMoneyCheck', 8, N'Pago de Nómina', '1074'),
-        ('conceptos-de-nomina', 'conceptos-de-nomina', N'Conceptos de Nómina', '/NOMIConcepto', N'Submódulo de Nómina', 'FaTags', 9, N'Conceptos de Nómina', '2203'),
-        ('totales-de-nomina-por-partida', 'totales-de-nomina-por-partida', N'Totales de Nómina por partida', '/NOMIVW_TotalesNominaXPartida', N'Submódulo de Nómina', 'FaChartBar', 10, N'Totales de Nómina por partida', '2204'),
-        -- ==================== 5. Contabilidad ====================
-        ('contabilidad', 'contabilidad', N'Contabilidad', '/', NULL, 'FaCalculator', 5, N'Contabilidad', 'M003'),
-        ('polizas', 'polizas', N'Pólizas', '/CONTAVW_Poliza', N'Contabilidad', 'FaFileInvoice', 1, N'Pólizas', '1075'),
-        ('autorizacion-de-polizas', 'autorizacion-de-polizas', N'Autorización de Pólizas', '/CONTAVW_PolizaAutorizado', N'Contabilidad', 'FaCheck', 2, N'Autorización de Pólizas', '2222'),
-        ('balanza-de-comprobacion', 'balanza-de-comprobacion', N'Balanza de Comprobación', '/ReporteBalanza', N'Contabilidad', 'FaBalanceScale', 4, N'Balanza de Comprobación', '1076'),
-        ('auxiliares', 'auxiliares', N'Auxiliares', '/RepAuxiliares', N'Contabilidad', 'FaList', 5, N'Auxiliares', '1077'),
-        ('reportes-contabilidad', 'reportes-contabilidad', N'Reportes Contabilidad', '/', N'Contabilidad', 'FaChartBar', 6, N'Reportes Contabilidad', 'M016'),
-        ('libro-diario', 'libro-diario', N'Libro Diario', '/RepLibroDiario', N'Reportes Contabilidad', 'FaBook', 1, N'Libro Diario', '1081'),
-        ('libro-mayor', 'libro-mayor', N'Libro Mayor', '/RepLibroMayor', N'Reportes Contabilidad', 'FaBook', 2, N'Libro Mayor', '1082'),
-        ('libro-inventarios-materiales', 'libro-inventarios-materiales', N'Libro Inventarios Materiales', '/RepLibroInveMate', N'Reportes Contabilidad', 'FaBoxes', 3, N'Libro Inventarios Materiales', '1078'),
-        ('libro-almacen-suministros', 'libro-almacen-suministros', N'Libro Almacén Suministros', '/RepLibroAlmaSumi', N'Reportes Contabilidad', 'FaWarehouse', 4, N'Libro Almacén Suministros', '1079'),
-        ('libro-inventarios-muebles', 'libro-inventarios-muebles', N'Libro Inventarios Muebles', '/ReportLibroInveMue', N'Reportes Contabilidad', 'FaCouch', 5, N'Libro Inventarios Muebles', '1080'),
-        ('polizas', 'polizas', N'Pólizas', '/ReportePoliza', N'Reportes Contabilidad', 'FaFileInvoice', 6, N'Pólizas', '1083'),
-        ('reporte-de-retenciones', 'reporte-de-retenciones', N'Reporte de Retenciones', '/RepRetenciones', N'Reportes Contabilidad', 'FaChartLine', 6, N'Reporte de Retenciones', '2126'),
-        ('reporte-de-depreciacion-acumulada', 'reporte-de-depreciacion-acumulada', N'Reporte de Depreciación Acumulada', '/RepDepAcum', N'Reportes Contabilidad', 'FaChartLine', 7, N'Reporte de Depreciación Acumulada', '2127'),
-        ('reporte-de-activos-fijos', 'reporte-de-activos-fijos', N'Reporte de Activos Fijos', '/RepActFijos', N'Reportes Contabilidad', 'FaBuilding', 8, N'Reporte de Activos Fijos', '2128'),
-        ('reporte-de-facturas-emitidas', 'reporte-de-facturas-emitidas', N'Reporte de Facturas Emitidas', '/RepFactEmit', N'Reportes Contabilidad', 'FaFileInvoice', 9, N'Reporte de Facturas Emitidas', '2129'),
-        ('reporte-diot', 'reporte-diot', N'Reporte DIOT', '/RepDIOT', N'Reportes Contabilidad', 'FaFile', 10, N'Reporte DIOT', '2190'),
-        ('estados-e-informacion-contable', 'estados-e-informacion-contable', N'Estados e Información Contable', '/', N'Contabilidad', 'FaFileAlt', 7, N'Estados e Información Contable', 'M032'),
-        ('estados-de-actividades', 'estados-de-actividades', N'Estados de Actividades', '/RepEstadoActividades', N'Estados e Información Contable', 'FaChartLine', 1, N'Estados de Actividades', '1113'),
-        ('estado-de-situacion-financiera', 'estado-de-situacion-financiera', N'Estado de Situación Financiera', '/RepEdoSituacionFin', N'Estados e Información Contable', 'FaBalanceScale', 2, N'Estado de Situación Financiera', '1112'),
-        ('estado-de-variaciones-en-la-hacienda-pública', 'estado-de-variaciones-en-la-hacienda-pública', N'Estado de Variaciones en la Hacienda Pública', '/RepVariacionHdaPub', N'Estados e Información Contable', 'FaChartLine', 3, N'Estado de Variaciones en la Hacienda Pública', '1116'),
-        ('estados-de-cambios-en-la-situacion-financiera', 'estados-de-cambios-en-la-situacion-financiera', N'Estados de Cambios en la Situación Financiera', '/RepEstadoCambiosSitFin', N'Estados e Información Contable', 'FaExchangeAlt', 4, N'Estados de Cambios en la Situación Financiera', '1114'),
-        ('estado-de-flujos-de-efectivo', 'estado-de-flujos-de-efectivo', N'Estado de Flujos de Efectivo', '/ReporteEdoFlujoEfec', N'Estados e Información Contable', 'FaMoneyBillWave', 5, N'Estado de Flujos de Efectivo', '1115'),
-        ('estado-analitico-del-activo', 'estado-analitico-del-activo', N'Estado Análitico del Activo', '/RepAnaActi', N'Estados e Información Contable', 'FaChartBar', 6, N'Estado Análitico del Activo', '1111'),
-        ('estado-analitico-de-la-deuda-y-otros-pasivos', 'estado-analitico-de-la-deuda-y-otros-pasivos', N'Estado Análitico de la Deuda y Otros Pasivos', '/RepEstadoAnaDeuda', N'Estados e Información Contable', 'FaChartLine', 7, N'Estado Análitico de la Deuda y Otros Pasivos', '1117'),
-        ('informe-sobre-pasivos-contingentes', 'informe-sobre-pasivos-contingentes', N'Informe sobre Pasivos Contingentes', '/RepPasivosContingentes', N'Estados e Información Contable', 'FaExclamationTriangle', 8, N'Informe sobre Pasivos Contingentes', '1119'),
-        ('notas-estados-financieros', 'notas-estados-financieros', N'Notas Estados Financieros', '/NotasEdosFin', N'Estados e Información Contable', 'FaStickyNote', 9, N'Notas Estados Financieros', '1118'),
-        ('estados-e-informes-presupuestarios', 'estados-e-informes-presupuestarios', N'Estados e Informes Presupuestarios', '/', N'Contabilidad', 'FaChartPie', 9, N'Estados e Informes Presupuestarios', 'M020'),
-        ('estado-analitico-de-ingresos', 'estado-analitico-de-ingresos', N'Estado Análitico de Ingresos', '/RepIngreAna', N'Estados e Informes Presupuestarios', 'FaArrowUp', 1, N'Estado Análitico de Ingresos', '1120'),
-        ('estado-analitico-de-egresos-con-clasificacion-administrativa', 'estado-analitico-de-egresos-con-clasificacion-administrativa', N'Estado Análitico de Egresos con Clasificación Administrativa', '/RepClasAdministrativa', N'Estados e Informes Presupuestarios', 'FaArrowDown', 2, N'Estado Análitico de Egresos con Clasificación Administrativa', '1121'),
-        ('estado-analitico-de-egresos-con-clasificacion-economica', 'estado-analitico-de-egresos-con-clasificacion-economica', N'Estado Análitico de Egresos con Clasificación Económica', '/RepClasEconomica', N'Estados e Informes Presupuestarios', 'FaChartLine', 3, N'Estado Análitico de Egresos con Clasificación Económica', '1122'),
-        ('estado-analitico-de-egresos-con-clasificacion-por-objeto-del-gasto', 'estado-analitico-de-egresos-con-clasificacion-por-objeto-del-gasto', N'Estado Análitico de Egresos con Clasificación por Objeto del Gasto', '/RepClasObjGasto', N'Estados e Informes Presupuestarios', 'FaDollarSign', 4, N'Estado Análitico de Egresos con Clasificación por Objeto del Gasto', '1123'),
-        ('estado-analitico-de-egresos-con-clasificacion-funcional', 'estado-analitico-de-egresos-con-clasificacion-funcional', N'Estado Análitico de Egresos con Clasificación Funcional', '/RepClasFuncional', N'Estados e Informes Presupuestarios', 'FaCogs', 5, N'Estado Análitico de Egresos con Clasificación Funcional', '1124'),
-        ('endeudamiento-neto', 'endeudamiento-neto', N'Endeudamiento Neto', '/RepEndeudamiento', N'Estados e Informes Presupuestarios', 'FaChartLine', 6, N'Endeudamiento Neto', '1125'),
-        ('intereses-de-la-deuda', 'intereses-de-la-deuda', N'Intereses de la Deuda', '/RepInteresesDeuda', N'Estados e Informes Presupuestarios', 'FaPercent', 7, N'Intereses de la Deuda', '1126'),
-        ('proyecciones-de-egresos', 'proyecciones-de-egresos', N'Proyecciones de Egresos', '/RepProyEgresos', N'Estados e Informes Presupuestarios', 'FaChartLine', 8, N'Proyecciones de Egresos', '1127'),
-        ('proyecciones-de-ingresos', 'proyecciones-de-ingresos', N'Proyecciones de Ingresos', '/RepProyIngresos', N'Estados e Informes Presupuestarios', 'FaChartLine', 9, N'Proyecciones de Ingresos', '1128'),
-        ('indicadores-asociados-a-programas-presupuestarios', 'indicadores-asociados-a-programas-presupuestarios', N'Indicadores Asociados a Programas Presupuestarios', '/ReporteIAPP', N'Estados e Informes Presupuestarios', 'FaChartBar', 10, N'Indicadores Asociados a Programas Presupuestarios', '1129'),
-        ('programas-y-proyectos-de-inversion', 'programas-y-proyectos-de-inversion', N'Programas y proyectos de Inversión', '/ReportePPI', N'Estados e Informes Presupuestarios', 'FaChartLine', 11, N'Programas y proyectos de Inversión', '1130'),
-        ('resultados-de-ingresos', 'resultados-de-ingresos', N'Resultados de Ingresos', '/RepResultIngresos', N'Estados e Informes Presupuestarios', 'FaArrowUp', 12, N'Resultados de Ingresos', '2201'),
-        ('resultados-de-egresos', 'resultados-de-egresos', N'Resultados de Egresos', '/RepResultEgre', N'Estados e Informes Presupuestarios', 'FaArrowDown', 13, N'Resultados de Egresos', '2202'),
-        ('estados-e-informes-programaticos', 'estados-e-informes-programaticos', N'Estados e Informes Programaticos', '/', N'Contabilidad', 'FaCode', 10, N'Estados e Informes Programaticos', 'M019'),
-        ('conciliacion-ingresos-egresos', 'conciliacion-ingresos-egresos', N'Conciliación Ingresos-Egresos', '/RepIngEgre', N'Contabilidad', 'FaExchangeAlt', 8, N'Conciliación Ingresos-Egresos', '1131'),
-        ('indicadores-de-postura-fiscal', 'indicadores-de-postura-fiscal', N'Indicadores de Postura Fiscal', '/RepIndicadoresPF', N'Contabilidad', 'FaChartLine', 11, N'Indicadores de Postura Fiscal', '2188'),
-        ('cierre-mensual', 'cierre-mensual', N'Cierre Mensual', '/CONTACierreMensual', N'Contabilidad', 'FaCalendarCheck', 12, N'Cierre Mensual', '2189'),
-        -- ==================== 6. Adquisiciones ====================
-        ('adquisiciones', 'adquisiciones', N'Adquisiciones', '/', NULL, 'FaShoppingCart', 6, N'Adquisiciones', 'M004'),
-        ('programa-anual-de-adquisiciones', 'programa-anual-de-adquisiciones', N'Programa Anual de Adquisiciones', '/ADQPAAAS', N'Adquisiciones', 'FaCalendarAlt', 1, N'Programa Anual de Adquisiciones', '1084'),
-        ('investigacion-de-mercado', 'investigacion-de-mercado', N'Investigación de Mercado', '/ORCOEstudioMercado', N'Adquisiciones', 'FaSearch', 2, N'Investigación de Mercado', '1085'),
-        ('pef-unipartida-adq', 'pef-unipartida-adq', N'PEF Unipartida ADQ', '/', N'Adquisiciones', 'FaFile', 4, N'PEF Unipartida ADQ', 'M230'),
-        ('requisicion-pef', 'requisicion-pef', N'Requisición PEF', '/ORCORequisicion', N'PEF Unipartida ADQ', 'FaClipboardList', 3, N'Requisición PEF', '1086'),
-        ('cotizacion-pef', 'cotizacion-pef', N'Cotización PEF', '/ORCOCotizacion', N'PEF Unipartida ADQ', 'FaFileInvoice', 5, N'Cotización PEF', '1087'),
-        ('solicitud-de-suficiencia-presupuestal-pef-adq', 'solicitud-de-suficiencia-presupuestal-pef-adq', N'Solicitud de Suficiencia Presupuestal PEF ADQ', '/PRESVW_SolicitudSuficienciaADQ', N'PEF Unipartida ADQ', 'FaPaperPlane', 6, N'Solicitud de Suficiencia Presupuestal PEF ADQ', '1088'),
-        ('pef-multipartidas-adq', 'pef-multipartidas-adq', N'PEF Multipartidas ADQ', '/', N'Adquisiciones', 'FaFiles', 7, N'PEF Multipartidas ADQ', 'M029'),
-        ('elaboracion-de-especificaciones-tecnicas-mp', 'elaboracion-de-especificaciones-tecnicas-mp', N'Elaboración de Especificaciones Técnicas MP', '/ORCOContenedorMultiReq', N'PEF Multipartidas ADQ', 'FaClipboardList', 1, N'Elaboración de Especificaciones Técnicas MP', '2192'),
-        ('investigacion-de-mercado-mp', 'investigacion-de-mercado-mp', N'Investigación de Mercado MP', '/ORCOContenedorMultiCot', N'PEF Multipartidas ADQ', 'FaSearch', 2, N'Investigación de Mercado MP', '2193'),
-        ('solicitud-de-suficiencia-presupuestal-mp-adq', 'solicitud-de-suficiencia-presupuestal-mp-adq', N'Solicitud de Suficiencia Presupuestal MP ADQ', '/PRESContenedorMultiSolicitudSuficienciaADQ', N'PEF Multipartidas ADQ', 'FaPaperPlane', 3, N'Solicitud de Suficiencia Presupuestal MP ADQ', '2194'),
-        ('requisicion', 'requisicion', N'Requisición', '/ORCOOrdenCompra', N'Adquisiciones', 'FaClipboardList', 9, N'Requisición', '1094'),
-        ('fideicomiso', 'fideicomiso', N'Fideicomiso', '/FEDISeguimientoFirmas', N'Adquisiciones', 'FaHands', 8, N'Fideicomiso', 'M050'),
-        ('elaboracion-de-especificaciones-tecnicas-fide', 'elaboracion-de-especificaciones-tecnicas-fide', N'Elaboración de Especificaciones Técnicas FIDE', '/ORCOContenedorReq', N'Fideicomiso', 'FaClipboardList', 1, N'Elaboración de Especificaciones Técnicas FIDE', '2164'),
-        ('investigacion-de-mercado-fide', 'investigacion-de-mercado-fide', N'Investigación de Mercado FIDE', '/ORCOContenedorCot', N'Fideicomiso', 'FaSearch', 2, N'Investigación de Mercado FIDE', '2176'),
-        ('solicitud-suficiencia-presupuestal-fide', 'solicitud-suficiencia-presupuestal-fide', N'Solicitud Suficiencia Presupuestal FIDE', '/PRESContenedorSolicitudSuficiencia', N'Fideicomiso', 'FaPaperPlane', 3, N'Solicitud Suficiencia Presupuestal FIDE', '2166'),
-        ('requisicion-fideicomiso', 'requisicion-fideicomiso', N'Requisición Fideicomiso', '/ORCOOrdenCompra', N'Adquisiciones', 'FaClipboardList', 11, N'Requisición Fideicomiso', '2184'),
-        ('investigacion-de-mercado-personalizada', 'investigacion-de-mercado-personalizada', N'Investigación de Mercado Personalizada', '/ORCOSolEstudioMercado', N'Adquisiciones', 'FaSearch', 13, N'Investigación de Mercado Personalizada', '1146'),
-        ('investigacion-de-mercado-(proveedores)', 'investigacion-de-mercado-(proveedores)', N'Investigación de Mercado (Proveedores)', '/ADQSolEstMercProv', N'Adquisiciones', 'FaSearch', 14, N'Investigación de Mercado (Proveedores)', '1147'),
-        ('contratos', 'contratos', N'Contratos', '/', N'Adquisiciones', 'FaFileContract', 12, N'Contratos', '-   '),
-        ('registro-de-contrato', 'registro-de-contrato', N'Registro de Contrato', '/ORCOContratos', N'Contratos', 'FaFileSignature', 1, N'Registro de Contrato', '1095'),
-        ('registro-de-contrato-fideicomiso', 'registro-de-contrato-fideicomiso', N'Registro de Contrato Fideicomiso', '/ORCOContratosFide', N'Contratos', 'FaFileSignature', 2, N'Registro de Contrato Fideicomiso', '2162'),
-        ('saldo-de-contratos', 'saldo-de-contratos', N'Saldo de Contratos', '/PRESVW_EgreCompNoDev', N'Contratos', 'FaBalanceScale', 3, N'Saldo de Contratos', '1152'),
-        ('saldo-de-contratos-fideicomiso', 'saldo-de-contratos-fideicomiso', N'Saldo de Contratos Fideicomiso', '/PRESEgreCompNoDevFide', N'Contratos', 'FaBalanceScale', 4, N'Saldo de Contratos Fideicomiso', '2183'),
-        ('estado-del-contrato', 'estado-del-contrato', N'Estado del Contrato', '/PRESVW_ContratoTerminacionAnticipada', N'Contratos', 'FaInfoCircle', 5, N'Estado del Contrato', '2148'),
-        ('modalidad', 'modalidad', N'Modalidad', '/ORCOModalidad', N'Adquisiciones', 'FaTags', 1, N'Modalidad', '1029'),
-        ('tipo-de-contrato', 'tipo-de-contrato', N'Tipo de Contrato', '/ORCOTipoContrato', N'Adquisiciones', 'FaFileContract', 2, N'Tipo de Contrato', '1030'),
-        ('tipo-de-documentos', 'tipo-de-documentos', N'Tipo de Documentos', '/ORCOTipoDocumento', N'Adquisiciones', 'FaFile', 3, N'Tipo de Documentos', '1031'),
-        ('tipo-de-garantias', 'tipo-de-garantias', N'Tipo de Garantías', '/ORCOTipoGarantia', N'Adquisiciones', 'FaShieldAlt', 4, N'Tipo de Garantías', '1032'),
-        ('procedimientos-de-contratacion', 'procedimientos-de-contratacion', N'Procedimientos de Contratación', '/ORCOProcedimientoContratacion', N'Adquisiciones', 'FaClipboardList', 5, N'Procedimientos de Contratación', '1033'),
-        ('estatus-requisicion', 'estatus-requisicion', N'Estatus Requisición', '/ORCOEstatusOrdenCompra', N'Adquisiciones', 'FaCheckCircle', 6, N'Estatus Requisición', '1034'),
-        ('consecutivo-elaboracion-de-especificaciones-tecnicas', 'consecutivo-elaboracion-de-especificaciones-tecnicas', N'Consecutivo Elaboración de Especificaciones Técnicas', '/ORCOConsecutivoRequisicion', N'Adquisiciones', 'FaSortNumericDown', 7, N'Consecutivo Elaboración de Especificaciones Técnicas', '1035'),
-        ('consecutivo-de-solicitudes-de-compra', 'consecutivo-de-solicitudes-de-compra', N'Consecutivo de Solicitudes de Compra', '/ORCOConsecutivoOrdenCompra', N'Adquisiciones', 'FaSortNumericDown', 8, N'Consecutivo de Solicitudes de Compra', '1036'),
-        ('proveedores', 'proveedores', N'Proveedores', '/SISProveedor', N'Adquisiciones', 'FaTruck', 9, N'Proveedores', '1143'),
-        ('tratados-internacionales', 'tratados-internacionales', N'Tratados Internacionales', '/ADQTratadoInt', N'Adquisiciones', 'FaGlobe', 10, N'Tratados Internacionales', '1144'),
-        ('articulo', 'articulo', N'Artículo', '/ORCOArticulo', N'Adquisiciones', 'FaBox', 10, N'Artículo', '2177'),
-        ('fraccion', 'fraccion', N'Fracción', '/ORCOFraccion', N'Adquisiciones', 'FaDivide', 11, N'Fracción', '2178'),
-        -- ==================== 7. Patrimonio ====================
-        ('patrimonio', 'patrimonio', N'Patrimonio', '/', NULL, 'FaBuilding', 7, N'Patrimonio', 'M005'),
-        ('bienes', 'bienes', N'Bienes', '/SICOPBien', N'Patrimonio', 'FaBox', 1, N'Bienes', '1096'),
-        ('clasificacion-de-bienes-muebles', 'clasificacion-de-bienes-muebles', N'Clasificación de bienes Muebles', '/ORCOVW_OrdenCompraClasificacionBienes', N'Patrimonio', 'FaList', 2, N'Clasificación de bienes Muebles', '2152'),
-        ('bienes-no-pertenecientes-al-instituto', 'bienes-no-pertenecientes-al-instituto', N'Bienes No pertenecientes al Instituto', '/SICOPBienNoPropio', N'Patrimonio', 'FaBuilding', 3, N'Bienes No pertenecientes al Instituto', '2157'),
-        ('bajas', 'bajas', N'Bajas', '/SICOPBajas', N'Patrimonio', 'FaTrashAlt', 4, N'Bajas', '1097'),
-        ('inventarios', 'inventarios', N'Inventarios', '/SICOPInventario', N'Patrimonio', 'FaClipboardList', 6, N'Inventarios', '1098'),
-        ('calendario-de-inventarios', 'calendario-de-inventarios', N'Calendario de Inventarios', '/SICOPCalendario', N'Patrimonio', 'FaCalendarAlt', 5, N'Calendario de Inventarios', 'SC01'),
-        ('cedula-diferencias-de-inventario', 'cedula-diferencias-de-inventario', N'Cédula diferencias de inventario', '/SICOPCedulaDiferencias', N'Patrimonio', 'FaFileAlt', 7, N'Cédula diferencias de inventario', '2216'),
-        ('resguardos', 'resguardos', N'Resguardos', '/SICOPResguardo', N'Patrimonio', 'FaShieldAlt', 8, N'Resguardos', '1099'),
-        ('firma-de-resguardos', 'firma-de-resguardos', N'Firma de Resguardos', '/SICOPResguardoFirma', N'Patrimonio', 'FaPenFancy', 9, N'Firma de Resguardos', '1100'),
-        ('historicos-de-patrimonio', 'historicos-de-patrimonio', N'Historicos de Patrimonio', '/', N'Patrimonio', 'FaHistory', 10, N'Historicos de Patrimonio', 'M017'),
-        ('resguardos-historicos', 'resguardos-historicos', N'Resguardos Históricos', '/SICOPResguardoHistorico', N'Historicos de Patrimonio', 'FaHistory', 1, N'Resguardos Históricos', '1101'),
-        ('familia', 'familia', N'Familia', '/SICOPFamilia', N'Patrimonio', 'FaUsers', 1, N'Familia', '1037'),
-        ('grupo-de-bien', 'grupo-de-bien', N'Grupo de Bien', '/SICOPGrupoBien', N'Patrimonio', 'FaLayerGroup', 2, N'Grupo de Bien', '1038'),
-        ('catalogo-de-bienes-y-servicios', 'catalogo-de-bienes-y-servicios', N'Catálogo de Bienes y Servicios', '/SICOPTipoBien', N'Patrimonio', 'FaBook', 3, N'Catálogo de Bienes y Servicios', '1039'),
-        ('tipo-de-patrimonio', 'tipo-de-patrimonio', N'Tipo de Patrimonio', '/SICOPTipoPatrimonio', N'Patrimonio', 'FaTag', 4, N'Tipo de Patrimonio', '1040'),
-        ('tipo-de-servicio', 'tipo-de-servicio', N'Tipo de Servicio', '/SICOPTipoServicio', N'Patrimonio', 'FaConciergeBell', 5, N'Tipo de Servicio', '1041'),
-        ('tipo-de-siniestro', 'tipo-de-siniestro', N'Tipo de Siniestro', '/SICOPTipoSiniestro', N'Patrimonio', 'FaExclamationTriangle', 6, N'Tipo de Siniestro', '1042'),
-        ('tipo-de-depreciacion', 'tipo-de-depreciacion', N'Tipo de Depreciación', '/SICOPTipoDepreciacion', N'Patrimonio', 'FaChartLine', 7, N'Tipo de Depreciación', '1043'),
-        ('tipo-de-adquisicion', 'tipo-de-adquisicion', N'Tipo de Adquisición', '/SICOPTipoAdq', N'Patrimonio', 'FaShoppingCart', 8, N'Tipo de Adquisición', '1044'),
-        ('marca', 'marca', N'Marca', '/SICOPMarca', N'Patrimonio', 'FaTag', 9, N'Marca', '1045'),
-        ('material', 'material', N'Material', '/SICOPMaterial', N'Patrimonio', 'FaBoxes', 10, N'Material', '1046'),
-        ('color', 'color', N'Color', '/SICOPColor', N'Patrimonio', 'FaPalette', 11, N'Color', '1047'),
-        ('catalogo-de-personas', 'catalogo-de-personas', N'Catálogo de Personas', '/RHCTPersona', N'Patrimonio', 'FaUsers', 12, N'Catálogo de Personas', '1148'),
-        -- ==================== 8. Almacén ====================
-        ('almacen', 'almacen', N'Almacén', '/', NULL, 'FaWarehouse', 8, N'Almacén', 'M006'),
-        ('recepcion-de-pedidos', 'recepcion-de-pedidos', N'Recepción de Pedidos', '/ORCOVW_OrdenCompra', N'Almacén', 'FaTruck', 1, N'Recepción de Pedidos', '1102'),
-        ('entradas-por-ajuste', 'entradas-por-ajuste', N'Entradas por Ajuste', '/ALMAAlmacen', N'Almacén', 'FaArrowCircleDown', 2, N'Entradas por Ajuste', '1103'),
-        ('solicitudes-de-salida', 'solicitudes-de-salida', N'Solicitudes de Salida', '/ALMAVW_SolicitudSalida', N'Almacén', 'FaClipboardList', 3, N'Solicitudes de Salida', '1104'),
-        ('suministro-/-salidas', 'suministro-/-salidas', N'Suministro / Salidas', '/ALMAVWSolicitudSalida', N'Almacén', 'FaArrowCircleUp', 4, N'Suministro / Salidas', '1105'),
-        ('salidas-por-ajuste', 'salidas-por-ajuste', N'Salidas por Ajuste', '/ALMAAlmacenSalida', N'Almacén', 'FaArrowCircleUp', 5, N'Salidas por Ajuste', '1106'),
-        ('existencias-registradas', 'existencias-registradas', N'Existencias Registradas', '/ALMAVWCierreInventario', N'Almacén', 'FaClipboardCheck', 6, N'Existencias Registradas', '1107'),
-        ('conteo-ciclico', 'conteo-ciclico', N'Conteo Cíclico', '/ALMAConteo', N'Almacén', 'FaClipboardList', 7, N'Conteo Cíclico', '1108'),
-        ('reporte-de-diferencias-de-conteo-ciclico', 'reporte-de-diferencias-de-conteo-ciclico', N'Reporte de Diferencias de Conteo Cíclico', '/ALMAVW_ReporteDiferenciasConteo', N'Almacén', 'FaChartBar', 8, N'Reporte de Diferencias de Conteo Cíclico', '2151'),
-        ('historico-conteo-ciclico', 'historico-conteo-ciclico', N'Histórico Conteo Cíclico', '/ALMAVW_ReporteDiferenciasConteo', N'Almacén', 'FaHistory', 9, N'Histórico Conteo Cíclico', '2186'),
-        ('conteo-anual', 'conteo-anual', N'Conteo Anual', '/ALMAConteoAnual', N'Almacén', 'FaCalendarAlt', 10, N'Conteo Anual', '2154'),
-        ('reporte-de-diferencias-de-conteo-anual', 'reporte-de-diferencias-de-conteo-anual', N'Reporte de Diferencias de Conteo Anual', '/ALMAVW_ReporteDiferenciasConteoAnual', N'Almacén', 'FaChartBar', 11, N'Reporte de Diferencias de Conteo Anual', '2155'),
-        ('historico-conteo-anual', 'historico-conteo-anual', N'Histórico Conteo Anual', '/ALMAVW_ReporteDiferenciasConteoAnual', N'Almacén', 'FaHistory', 12, N'Histórico Conteo Anual', '2187'),
-        ('estadisticas', 'estadisticas', N'Estadísticas', '/', N'Almacén', 'FaChartBar', 13, N'Estadísticas', 'M018'),
-        ('cierre-inventario', 'cierre-inventario', N'Cierre Inventario', '/ALMAVWCierreInventario', N'Estadísticas', 'FaLock', 1, N'Cierre Inventario', '1109'),
-        ('analisis-de-almacen', 'analisis-de-almacen', N'Análisis de Almacén', '/ALMACierrePivot', N'Estadísticas', 'FaChartPie', 2, N'Análisis de Almacén', '1110'),
-        ('autorizacion-de-solicitudes-de-salida', 'autorizacion-de-solicitudes-de-salida', N'Autorización de Solicitudes de Salida', '/ALMAVW_AutorizacionSolicitudSalida', N'Almacén', 'FaCheck', 14, N'Autorización de Solicitudes de Salida', '2156'),
-        ('almacenes', 'almacenes', N'Almacenes', '/ALMAAlmacenes', N'Almacén', 'FaWarehouse', 1, N'Almacenes', '1048'),
-        ('motivo-de-entradas/salidas', 'motivo-de-entradas/salidas', N'Motivo de Entradas/Salidas', '/ALMAMotivoES', N'Almacén', 'FaQuestion', 2, N'Motivo de Entradas/Salidas', '1049'),
-        ('estatus-solicitud', 'estatus-solicitud', N'Estatus Solicitud', '/ALMAEstatusSol', N'Almacén', 'FaCheckCircle', 3, N'Estatus Solicitud', '1050'),
-        ('unidades', 'unidades', N'Unidades', '/ALMAUnidades', N'Almacén', 'FaRulerCombined', 4, N'Unidades', '1051'),
-        ('consecutivo-de-entradas-de-almacen', 'consecutivo-de-entradas-de-almacen', N'Consecutivo de Entradas de Almacén', '/ALMAConsecEnt', N'Almacén', 'FaSortNumericDown', 5, N'Consecutivo de Entradas de Almacén', '1052'),
-        ('consecutivo-de-solicitudes-de-salidas-de-almacen', 'consecutivo-de-solicitudes-de-salidas-de-almacen', N'Consecutivo de Solicitudes de Salidas de Almacén', '/ALMAConsecSolSal', N'Almacén', 'FaSortNumericDown', 6, N'Consecutivo de Solicitudes de Salidas de Almacén', '1053'),
-        ('consecutivo-de-salidas-de-almacen', 'consecutivo-de-salidas-de-almacen', N'Consecutivo de Salidas de Almacén', '/ALMAConsecSal', N'Almacén', 'FaSortNumericDown', 7, N'Consecutivo de Salidas de Almacén', '1054'),
-        ('número-de-conteo', 'número-de-conteo', N'Número de Conteo', '/ALMANumeroConteo', N'Almacén', 'FaHashtag', 7, N'Número de Conteo', '2150'),
-        -- ==================== 9. Usuarios ====================
-        ('usuarios', 'usuarios', N'Usuarios', '/', NULL, 'FaUserCog', 9, N'Usuarios', 'M008'),
-        ('privilegios-por-rol', 'privilegios-por-rol', N'Privilegios por Rol', '/SISPrivilegiosXrol', N'Usuarios', 'FaLock', 2, N'Privilegios por Rol', 'U001'),
-        ('roles', 'roles', N'Roles', '/SISRol', N'Usuarios', 'FaUsers', 3, N'Roles', 'U002'),
-        ('usuarios', 'usuarios', N'Usuarios', '/SISUsuario', N'Usuarios', 'FaUser', 4, N'Usuarios', 'U003'),
-        ('persona-por-area', 'persona-por-area', N'Persona por Área', '/RHCTPersonaArea', N'Usuarios', 'FaBuilding', 5, N'Persona por Área', 'U004'),
-        ('bandeja-de-notificaciones', 'bandeja-de-notificaciones', N'Bandeja de notificaciones', '/SISVW_NotificacionesByUser', N'Usuarios', 'FaBell', 6, N'Bandeja de notificaciones', 'U005'),
-        ('bitacora', 'bitacora', N'Bitácora', '/SISBitacora', N'Usuarios', 'FaBook', 6, N'Bitácora', '2221'),
-        ('suscripcion-por-usuario', 'suscripcion-por-usuario', N'Suscripción por Usuario', '/SISSuscripcionPorUsuario', N'Usuarios', 'FaEnvelope', 7, N'Suscripción por Usuario', '2230'),
-        ('certificado', 'certificado', N'Certificado', '/ConfigurarCertificado', N'Usuarios', 'FaCertificate', 8, N'Certificado', '2231'),
-        -- ==================== 10. Firmas ====================
-        ('firmas', 'firmas', N'Firmas', '/', NULL, 'FaSignature', 10, N'Firmas', 'M100'),
-        ('tipo-firma', 'tipo-firma', N'Tipo Firma', '/SISTipoFirma', N'Firmas', 'FaPen', 21, N'Tipo Firma', '1155'),
-        ('reporte', 'reporte', N'Reporte', '/SISReporte', N'Firmas', 'FaChartBar', 22, N'Reporte', '1156'),
-        ('firma-autorizada', 'firma-autorizada', N'Firma autorizada', '/SISFirmaAutorizada', N'Firmas', 'FaCheckCircle', 23, N'Firma autorizada', '1157'),
-        ('seguimiento-a-firmas', 'seguimiento-a-firmas', N'Seguimiento a Firmas', '/FEDISeguimientoFirmas', N'Firmas', 'FaHistory', 24, N'Seguimiento a Firmas', '2215'),
-        -- ==================== 11. Ayuda ====================
-        ('ayuda', 'ayuda', N'Ayuda', '/', NULL, 'FaQuestionCircle', 11, N'Ayuda', 'M009'),
-        ('manual-de-usuario', 'manual-de-usuario', N'Manual de Usuario', '/#', N'Ayuda', 'FaBook', 1, N'Manual de Usuario', '1133'),
-        ('preguntas-frecuentes', 'preguntas-frecuentes', N'Preguntas Frecuentes', '/#', N'Ayuda', 'FaComments', 2, N'Preguntas Frecuentes', '1134'),
-        ('soporte-tecnico', 'soporte-tecnico', N'Soporte Técnico', '/#', N'Ayuda', 'FaHeadset', 3, N'Soporte Técnico', '1135'),
-        ('acerca-de...', 'acerca-de...', N'Acerca de...', '/SISAcercaDe', N'Ayuda', 'FaInfoCircle', 4, N'Acerca de...', '1136')
-) AS SOURCE (Grupo, SubGrupo, NombreMenu, Ruta, MenuPadreNombre, Icono, Orden, Descripcion, Codigo)
-ON (TARGET.grupo = SOURCE.grupo AND TARGET.SubGrupo = SOURCE.SubGrupo AND TARGET.Descripcion = SOURCE.Descripcion )
-WHEN MATCHED THEN
-    UPDATE SET
-        Grupo = SOURCE.Grupo,
-        SubGrupo = SOURCE.SubGrupo,
-        NombreMenu = SOURCE.NombreMenu,
-        Ruta = SOURCE.Ruta,
-        MenuPadreNombre = SOURCE.MenuPadreNombre,
-        Icono = SOURCE.Icono,
-        Orden = SOURCE.Orden,
-        Descripcion = SOURCE.Descripcion
-WHEN NOT MATCHED THEN
-    INSERT (Grupo, SubGrupo, NombreMenu, Ruta, MenuPadreNombre, Icono, Orden, Descripcion, Codigo)
-    VALUES (SOURCE.Grupo, SOURCE.SubGrupo, SOURCE.NombreMenu, SOURCE.Ruta, SOURCE.MenuPadreNombre, SOURCE.Icono, SOURCE.Orden, SOURCE.Descripcion, SOURCE.Codigo);
 
 
 

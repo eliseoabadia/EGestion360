@@ -19,7 +19,8 @@ public partial class Program
         // Increase header size limit for large JWT tokens with many claims
         builder.WebHost.ConfigureKestrel(options =>
         {
-            options.Limits.MaxRequestHeadersTotalSize = 262144; // 256KB
+            //options.Limits.MaxRequestHeadersTotalSize = 262144; // 256KB
+            options.Limits.MaxRequestHeadersTotalSize = 524288; // 512KB
         });
 
         ////automapper

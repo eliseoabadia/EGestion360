@@ -30,6 +30,12 @@ builder.Services.AddAutoMapper(cfg =>
     }
 });
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    //options.Limits.MaxRequestHeadersTotalSize = 262144; // 256KB
+    //options.Limits.MaxRequestHeadersTotalSize = 524288; // 512KB
+    //options.Limits.MaxRequestHeadersTotalSize = 1048576; // 1024KB (1MB)
+});
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
 
