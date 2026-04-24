@@ -7,21 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="CommonModel\**" />
-    <Compile Remove="Interfaces\ConteoCiclico\**" />
-    <Compile Remove="Services\ConteoCiclico\**" />
-    <EmbeddedResource Remove="CommonModel\**" />
-    <EmbeddedResource Remove="Interfaces\ConteoCiclico\**" />
-    <EmbeddedResource Remove="Services\ConteoCiclico\**" />
-    <None Remove="CommonModel\**" />
-    <None Remove="Interfaces\ConteoCiclico\**" />
-    <None Remove="Services\ConteoCiclico\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>

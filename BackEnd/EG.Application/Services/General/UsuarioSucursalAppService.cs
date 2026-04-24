@@ -12,14 +12,14 @@ namespace EG.Application.Services.General
 {
     public class UsuarioSucursalAppService : IUsuarioSucursalAppService
     {
-        private readonly GenericService<UsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> _service;
-        private readonly GenericService<VwUsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> _serviceView;
+        private readonly GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _service;
+        private readonly GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _serviceView;
         private readonly IRepositorySP<spEliminarUsuarioSucursalResult> _repositorySP;
         private readonly IMapper _mapper;
 
         public UsuarioSucursalAppService(
-            GenericService<UsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> service,
-            GenericService<VwUsuarioSucursal, UsuarioSucursalDto, VwUsuarioSucursalResponse> serviceView,
+            GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> service,
+            GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> serviceView,
             IRepositorySP<spEliminarUsuarioSucursalResult> repositorySP,
             IMapper mapper)
         {
@@ -38,10 +38,10 @@ namespace EG.Application.Services.General
             _service.AddRelationFilter("Sucursal", new List<string> { "Nombre", "CodigoSucursal" });
         }
 
-        public async Task<PagedResult<VwUsuarioSucursalResponse>> GetAllAsync()
+        public async Task<PagedResult<UsuarioSucursalResponse>> GetAllAsync()
         {
             var result = await _serviceView.GetAllAsync();
-            return new PagedResult<VwUsuarioSucursalResponse>
+            return new PagedResult<UsuarioSucursalResponse>
             {
                 Success = true,
                 Message = "Asignaciones obtenidas correctamente",
@@ -51,23 +51,23 @@ namespace EG.Application.Services.General
             };
         }
 
-        public async Task<VwUsuarioSucursalResponse> GetByIdAsync(int id)
+        public async Task<UsuarioSucursalResponse> GetByIdAsync(int id)
         {
             return await _serviceView.GetByIdAsync(id);
         }
 
-        public async Task<VwUsuarioSucursalResponse> GetByUsuarioAndSucursalAsync(int usuarioId, int sucursalId)
+        public async Task<UsuarioSucursalResponse> GetByUsuarioAndSucursalAsync(int usuarioId, int sucursalId)
         {
             var todos = await _serviceView.GetAllAsync();
             return todos.FirstOrDefault(x => x.PkIdUsuario == usuarioId && x.IdSucursal == sucursalId);
         }
 
-        public async Task<PagedResult<VwUsuarioSucursalResponse>> GetByUsuarioAsync(int usuarioId)
+        public async Task<PagedResult<UsuarioSucursalResponse>> GetByUsuarioAsync(int usuarioId)
         {
             var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.PkIdUsuario == usuarioId && x.AsignacionActiva.Value).ToList();
+            var result = todos.Where(x => x.PkIdUsuario == usuarioId && x.AsignacionActiva).ToList();
 
-            return new PagedResult<VwUsuarioSucursalResponse>
+            return new PagedResult<UsuarioSucursalResponse>
             {
                 Success = true,
                 Message = "Sucursales del usuario obtenidas correctamente",
@@ -77,12 +77,12 @@ namespace EG.Application.Services.General
             };
         }
 
-        public async Task<PagedResult<VwUsuarioSucursalResponse>> GetBySucursalAsync(int sucursalId)
+        public async Task<PagedResult<UsuarioSucursalResponse>> GetBySucursalAsync(int sucursalId)
         {
             var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.IdSucursal == sucursalId && x.AsignacionActiva.Value).ToList();
+            var result = todos.Where(x => x.IdSucursal == sucursalId && x.AsignacionActiva).ToList();
 
-            return new PagedResult<VwUsuarioSucursalResponse>
+            return new PagedResult<UsuarioSucursalResponse>
             {
                 Success = true,
                 Message = "Usuarios de la sucursal obtenidos correctamente",
@@ -92,12 +92,12 @@ namespace EG.Application.Services.General
             };
         }
 
-        public async Task<PagedResult<VwUsuarioSucursalResponse>> GetGerentesBySucursalAsync(int sucursalId)
+        public async Task<PagedResult<UsuarioSucursalResponse>> GetGerentesBySucursalAsync(int sucursalId)
         {
             var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.IdSucursal == sucursalId && x.EsGerente.Value && x.AsignacionActiva.Value).ToList();
+            var result = todos.Where(x => x.IdSucursal == sucursalId && x.EsGerente && x.AsignacionActiva).ToList();
 
-            return new PagedResult<VwUsuarioSucursalResponse>
+            return new PagedResult<UsuarioSucursalResponse>
             {
                 Success = true,
                 Message = "Gerentes de la sucursal obtenidos correctamente",
@@ -107,7 +107,7 @@ namespace EG.Application.Services.General
             };
         }
 
-        public async Task<VwUsuarioSucursalResponse> AddAsync(VwUsuarioSucursalResponse _dto, int usuarioActual)
+        public async Task<UsuarioSucursalResponse> AddAsync(UsuarioSucursalResponse _dto, int usuarioActual)
         {
             var result = await _serviceView.GetByIdAsync(_dto.PkIdUsuario);
 
@@ -115,14 +115,14 @@ namespace EG.Application.Services.General
             var dto = _mapper.Map<UsuarioSucursalDto>(result);
 
             // Establecer valores por defecto
-            dto.FkidSucursalSis = _dto.IdSucursal.Value;
+            dto.FkidSucursalSis = _dto.IdSucursal;
             dto.FechaAsignacion = DateTime.Now;
             dto.Activo = true;
 
             await _service.AddAsync(dto);
 
             // Mapear y devolver el DTO
-            return _mapper.Map<VwUsuarioSucursalResponse>(dto);
+            return _mapper.Map<UsuarioSucursalResponse>(dto);
         }
 
         public async Task<bool> DeleteAsync(int usuarioId, int sucursalId, int usuarioActual)
@@ -151,14 +151,14 @@ namespace EG.Application.Services.General
             return result != null && result.Count() > 0;
         }
 
-        public async Task<PagedResult<VwUsuarioSucursalResponse>> GetAllPaginadoAsync(PagedRequest _params)
+        public async Task<PagedResult<UsuarioSucursalResponse>> GetAllPaginadoAsync(PagedRequest _params)
         {
             _serviceView.ClearConfiguration();
             ConfigureService();
 
             var result = await _serviceView.GetAllPaginadoAsync(_params);
 
-            return new PagedResult<VwUsuarioSucursalResponse>
+            return new PagedResult<UsuarioSucursalResponse>
             {
                 Success = true,
                 Message = "Asignaciones obtenidas correctamente",

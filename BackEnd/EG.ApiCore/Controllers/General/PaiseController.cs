@@ -1,6 +1,6 @@
-using EG.Business.Services;
+using EG.Application.Interfaces.General;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,44 +8,51 @@ namespace EG.ApiCore.Controllers.General
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[RequiredScope(RequiredScopesConfigurationKey = "AzureAdB2C:Scopes:Read")]
     [Authorize]
-    public class PaiseController(GenericService<Paise, PaiseDto> service) : ControllerBase
+    public class PaiseController : ControllerBase
     {
-        private readonly GenericService<Paise, PaiseDto> _service = service;
+        private readonly IPaisAppService _appService;
+
+        public PaiseController(IPaisAppService appService)
+        {
+            _appService = appService;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PaiseDto>>> GetAll()
+        public async Task<ActionResult<PagedResult<PaiseDto>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
+            var result = await _appService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PaiseDto>> GetById(int id)
+        public async Task<ActionResult<PagedResult<PaiseDto>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            return result == null ? NotFound() : Ok(result);
+            var result = await _appService.GetByIdAsync(id);
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Add(PaiseDto dto)
+        public async Task<ActionResult> Create([FromBody] PaiseDto dto)
         {
-            await _service.AddAsync(dto);
-            return CreatedAtAction(nameof(GetById), dto);
+            await _appService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = dto.PkidPais }, dto);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, PaiseDto dto)
+        public async Task<ActionResult> Update(int id, [FromBody] PaiseDto dto)
         {
-            await _service.UpdateAsync(id, dto);
+            await _appService.UpdateAsync(id, dto);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            await _service.DeleteAsync(id);
+            await _appService.DeleteAsync(id);
             return NoContent();
         }
     }

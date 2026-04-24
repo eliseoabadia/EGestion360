@@ -1,10 +1,7 @@
-using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,38 +12,24 @@ namespace EG.ApiCore.Controllers.General
     [Authorize]
     public class EstadoController : ControllerBase
     {
-        private readonly GenericService<Estado, EstadoDto, EstadoResponse> _service;
-        private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext;
+        private readonly IEstadoAppService _appService;
 
-        public EstadoController(
-            GenericService<Estado, EstadoDto, EstadoResponse> service,
-            IMapper mapper,
-            IUserContextService userContext)
+        public EstadoController(IEstadoAppService appService)
         {
-            _service = service;
-            _mapper = mapper;
-            _userContext = userContext;
+            _appService = appService;
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<EstadoResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<EstadoResponse>
-            {
-                Success = true,
-                Message = "Estados obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+            var result = await _appService.GetAllAsync();
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<EstadoResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PKIdEstado");
+            var result = await _appService.GetByIdAsync(id);
             if (result == null)
                 return NotFound(new PagedResult<EstadoResponse>
                 {
@@ -72,13 +55,15 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                var dto = _mapper.Map<EstadoDto>(response);
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-
-                await _service.AddAsync(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidEstado },
+                var dto = new EstadoDto
+                {
+                    FkidPaisSis = response.FkidPaisSis,
+                    Nombre = response.Nombre,
+                    CodigoEstado = response.CodigoEstado,
+                    Activo = response.Activo
+                };
+                var result = await _appService.CreateAsync(dto, response.UsuarioCreacion);
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidEstado },
                     new PagedResult<EstadoResponse>
                     {
                         Success = true,
@@ -104,29 +89,20 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                var dto = _mapper.Map<EstadoDto>(response);
-                dto.PkidEstado = id;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
-
-                await _service.UpdateAsync(id, dto);
-
+                var dto = new EstadoDto
+                {
+                    FkidPaisSis = response.FkidPaisSis,
+                    Nombre = response.Nombre,
+                    CodigoEstado = response.CodigoEstado,
+                    Activo = response.Activo
+                };
+                var result = await _appService.UpdateAsync(id, dto, response.UsuarioModificacion ?? 0);
                 return Ok(new PagedResult<EstadoResponse>
                 {
                     Success = true,
                     Message = "Estado actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<EstadoResponse>
-                {
-                    Success = false,
-                    Message = $"Estado con ID {id} no encontrado",
-                    Code = "NOTFOUND_ESTADO",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -146,7 +122,7 @@ namespace EG.ApiCore.Controllers.General
         {
             try
             {
-                await _service.DeleteAsync(id);
+                await _appService.DeleteAsync(id);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -155,16 +131,6 @@ namespace EG.ApiCore.Controllers.General
                     Data = true,
                     Items = new List<bool> { true },
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Estado con ID {id} no encontrado",
-                    Code = "NOTFOUND_ESTADO",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)

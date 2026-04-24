@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EG.Dommain.DTOs.Responses;
+namespace EG.Domain.DTOs.Responses.General;
 
 
 public partial class SucursalResponse

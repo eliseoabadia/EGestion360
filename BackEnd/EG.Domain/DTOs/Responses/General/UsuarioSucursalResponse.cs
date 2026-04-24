@@ -1,6 +1,6 @@
 ﻿namespace EG.Domain.DTOs.Responses.General;
 
-public partial class VwUsuarioSucursalResponse
+public partial class UsuarioSucursalResponse
 {
     public int PkIdUsuario { get; set; }
 
@@ -36,7 +36,7 @@ public partial class VwUsuarioSucursalResponse
 
     public string Gafete { get; set; }
 
-    public bool? Sexo { get; set; }
+    public bool Sexo { get; set; }
 
     public string SexoDescripcion { get; set; }
 
@@ -56,11 +56,11 @@ public partial class VwUsuarioSucursalResponse
 
     public string SimboloMoneda { get; set; }
 
-    public bool? EsAdministrador { get; set; }
+    public bool EsAdministrador { get; set; }
 
-    public bool? UsuarioActivo { get; set; }
+    public bool UsuarioActivo { get; set; }
 
-    public int? PkidEmpresa { get; set; }
+    public int PkidEmpresa { get; set; }
 
     public string NombreEmpresa { get; set; }
 
@@ -70,7 +70,7 @@ public partial class VwUsuarioSucursalResponse
 
     public string GiroEmpresa { get; set; }
 
-    public int? IdMonedaBaseEmpresa { get; set; }
+    public int IdMonedaBaseEmpresa { get; set; }
 
     public string MonedaBaseEmpresa { get; set; }
 
@@ -78,7 +78,7 @@ public partial class VwUsuarioSucursalResponse
 
     public DateTime? EmpresaFechaCreacion { get; set; }
 
-    public int? IdSucursal { get; set; }
+    public int IdSucursal { get; set; }
 
     public string NombreSucursal { get; set; }
 
@@ -86,21 +86,29 @@ public partial class VwUsuarioSucursalResponse
 
     public string DireccionSucursal { get; set; }
 
-    public bool? EsMatriz { get; set; }
+    public bool EsMatriz { get; set; }
 
-    public bool? PuedeAcceder { get; set; }
+    public bool PuedeAcceder { get; set; }
 
-    public bool? PuedeConfigurar { get; set; }
+    public bool PuedeConfigurar { get; set; }
 
-    public bool? PuedeOperar { get; set; }
+    public bool PuedeOperar { get; set; }
 
-    public bool? PuedeReportes { get; set; }
+    public bool PuedeReportes { get; set; }
 
-    public bool? EsGerente { get; set; }
+    public bool EsGerente { get; set; }
 
-    public bool? EsSupervisor { get; set; }
+    public bool EsSupervisor { get; set; }
 
-    public bool? AsignacionActiva { get; set; }
+    public bool AsignacionActiva { get; set; }
 
-    public int? EsJefeEnSucursal { get; set; }
+    public int EsJefeEnSucursal { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 }

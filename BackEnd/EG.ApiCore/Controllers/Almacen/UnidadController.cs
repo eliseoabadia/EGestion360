@@ -1,202 +1,165 @@
-using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.Almacen;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCore.Controllers.Almacen;
-
-[ApiController]
-[Route("api/[controller]")]
-public class UnidadController : ControllerBase
+namespace EG.ApiCore.Controllers.Almacen
 {
-    private readonly GenericService<Unidade, UnidadDto, UnidadResponse> _service;
-    private readonly GenericService<Unidade, UnidadDto, UnidadResponse> _serviceView;
-    private readonly IMapper _mapper;
-    private readonly IUserContextService _userContext;
-
-    public UnidadController(
-        GenericService<Unidade, UnidadDto, UnidadResponse> service,
-        GenericService<Unidade, UnidadDto, UnidadResponse> serviceView,
-        IMapper mapper,
-        IUserContextService userContext)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UnidadController : ControllerBase
     {
-        _service = service;
-        _serviceView = serviceView;
-        _mapper = mapper;
-        _userContext = userContext;
-    }
+        private readonly IUnidadAppService _appService;
 
-    [HttpGet]
-    public async Task<ActionResult<PagedResult<UnidadResponse>>> GetAll()
-    {
-        var result = await _serviceView.GetAllAsync();
-        return Ok(new PagedResult<UnidadResponse>
+        public UnidadController(IUnidadAppService appService)
         {
-            Success = true,
-            Message = "Unidades obtenidas correctamente",
-            Code = "SUCCESS",
-            Items = result.ToList(),
-            TotalCount = result.Count()
-        });
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<PagedResult<UnidadResponse>>> GetById(int id)
-    {
-        var result = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidUnidades");
-        if (result == null)
-        {
-            return NotFound(new PagedResult<UnidadResponse>
-            {
-                Success = false,
-                Message = "Unidad no encontrada",
-                Code = "NOT_FOUND"
-            });
+            _appService = appService;
         }
 
-        return Ok(new PagedResult<UnidadResponse>
+        [HttpGet]
+        public async Task<ActionResult<PagedResult<UnidadResponse>>> GetAll()
         {
-            Success = true,
-            Message = "Unidad encontrada",
-            Code = "SUCCESS",
-            Data = result,
-            Items = new List<UnidadResponse> { result },
-            TotalCount = 1
-        });
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<PagedResult<UnidadResponse>>> Create([FromBody] UnidadResponse response)
-    {
-        try
-        {
-            var dto = _mapper.Map<UnidadDto>(response);
-            dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-            dto.FechaCreacion = DateTime.Now;
-
-            await _service.AddAsync(dto);
-
-            return CreatedAtAction(nameof(GetById), new { id = dto.PkidUnidades }, new PagedResult<UnidadResponse>
-            {
-                Success = true,
-                Message = "Unidad creada correctamente",
-                Code = "SUCCESS",
-                Data = dto.PkidUnidades > 0 ? _mapper.Map<UnidadResponse>(dto) : null,
-                TotalCount = 1
-            });
+            var result = await _appService.GetAllAsync();
+            return Ok(result);
         }
-        catch (Exception ex)
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PagedResult<UnidadResponse>>> GetById(int id)
         {
-            return BadRequest(new PagedResult<UnidadResponse>
+            var result = await _appService.GetByIdAsync(id);
+            if (result == null)
             {
-                Success = false,
-                Message = $"Error al crear: {ex.Message}",
-                Code = "ERROR"
-            });
-        }
-    }
-
-    [HttpPut("{id}")]
-    public async Task<ActionResult<PagedResult<UnidadResponse>>> Update(int id, [FromBody] UnidadResponse response)
-    {
-        try
-        {
-            var dto = _mapper.Map<UnidadDto>(response);
-            dto.PkidUnidades = id;
-            dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-            dto.FechaModificacion = DateTime.Now;
-
-            await _service.UpdateAsync(id, dto);
+                return NotFound(new PagedResult<UnidadResponse>
+                {
+                    Success = false,
+                    Message = "Unidad no encontrada",
+                    Code = "NOT_FOUND"
+                });
+            }
 
             return Ok(new PagedResult<UnidadResponse>
             {
                 Success = true,
-                Message = "Unidad actualizada correctamente",
+                Message = "Unidad encontrada",
                 Code = "SUCCESS",
+                Data = result,
+                Items = new List<UnidadResponse> { result },
                 TotalCount = 1
             });
         }
-        catch (KeyNotFoundException)
-        {
-            return NotFound(new PagedResult<UnidadResponse>
-            {
-                Success = false,
-                Message = $"Unidad con ID {id} no encontrada",
-                Code = "NOT_FOUND"
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new PagedResult<UnidadResponse>
-            {
-                Success = false,
-                Message = $"Error al actualizar: {ex.Message}",
-                Code = "ERROR"
-            });
-        }
-    }
 
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
-    {
-        try
+        [HttpPost]
+        public async Task<ActionResult<PagedResult<UnidadResponse>>> Create([FromBody] UnidadResponse response)
         {
-            await _service.DeleteAsync(id);
-            return Ok(new PagedResult<bool>
+            try
             {
-                Success = true,
-                Message = "Unidad eliminada correctamente",
-                Code = "SUCCESS",
-                Data = true,
-                Items = new List<bool> { true },
-                TotalCount = 1
-            });
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound(new PagedResult<bool>
+                var dto = new UnidadDto
+                {
+                    Descripcion = response.Descripcion,
+                    Activo = response.Activo
+                };
+                var result = await _appService.CreateAsync(dto, response.UsuarioCreacion);
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidUnidades },
+                    new PagedResult<UnidadResponse>
+                    {
+                        Success = true,
+                        Message = "Unidad creada correctamente",
+                        Code = "SUCCESS",
+                        Data = result,
+                        TotalCount = 1
+                    });
+            }
+            catch (Exception ex)
             {
-                Success = false,
-                Message = $"Unidad con ID {id} no encontrada",
-                Code = "NOT_FOUND"
-            });
+                return BadRequest(new PagedResult<UnidadResponse>
+                {
+                    Success = false,
+                    Message = $"Error al crear: {ex.Message}",
+                    Code = "ERROR"
+                });
+            }
         }
-        catch (Exception ex)
-        {
-            return BadRequest(new PagedResult<bool>
-            {
-                Success = false,
-                Message = $"Error al eliminar: {ex.Message}",
-                Code = "ERROR"
-            });
-        }
-    }
 
-    [HttpPost("GetAllPaginado")]
-    public async Task<ActionResult<PagedResult<UnidadResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
-    {
-        try
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PagedResult<UnidadResponse>>> Update(int id, [FromBody] UnidadResponse response)
         {
-            var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
-            return Ok(new PagedResult<UnidadResponse>
+            try
             {
-                Success = true,
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+                var dto = new UnidadDto
+                {
+                    Descripcion = response.Descripcion,
+                    Activo = response.Activo
+                };
+                var result = await _appService.UpdateAsync(id, dto, response.UsuarioModificacion ?? 0);
+                return Ok(new PagedResult<UnidadResponse>
+                {
+                    Success = true,
+                    Message = "Unidad actualizada correctamente",
+                    Code = "SUCCESS",
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new PagedResult<UnidadResponse>
+                {
+                    Success = false,
+                    Message = $"Error al actualizar: {ex.Message}",
+                    Code = "ERROR"
+                });
+            }
         }
-        catch (Exception ex)
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
-            return BadRequest(new PagedResult<UnidadResponse>
+            try
             {
-                Success = false,
-                Message = ex.Message,
-                Code = "ERROR"
-            });
+                await _appService.DeleteAsync(id);
+                return Ok(new PagedResult<bool>
+                {
+                    Success = true,
+                    Message = "Unidad eliminada correctamente",
+                    Code = "SUCCESS",
+                    Data = true,
+                    Items = new List<bool> { true },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = $"Error al eliminar: {ex.Message}",
+                    Code = "ERROR"
+                });
+            }
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<UnidadResponse>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
+        {
+            try
+            {
+                var result = await _appService.GetAllPaginadoAsync(pageRequest);
+                return Ok(new PagedResult<UnidadResponse>
+                {
+                    Success = true,
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new PagedResult<UnidadResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR"
+                });
+            }
         }
     }
 }

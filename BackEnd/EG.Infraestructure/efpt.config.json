@@ -347,10 +347,6 @@
          "ObjectType": 1
       },
       {
-         "Name": "[ALMA].[sp_RegistrarConteo]",
-         "ObjectType": 1
-      },
-      {
          "Name": "[dbo].[sp_RegistrarEntidad]",
          "ObjectType": 1
       },
