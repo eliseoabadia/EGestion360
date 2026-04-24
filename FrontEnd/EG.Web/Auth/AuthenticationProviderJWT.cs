@@ -1,4 +1,5 @@
-﻿using EG.Web.Helpers;
+using EG.Web.Helpers;
+using EG.Web.Models.Configuration;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
@@ -288,6 +289,29 @@ namespace EG.Web.Auth
             await js.SetInLocalStorage(TOKENKEY, normalized);
             var authState = BuildAuthenticationState(normalized);
             NotifyAuthenticationStateChanged(Task.FromResult(authState));
+        }
+
+        /// <summary>
+        /// Carga los claims provenientes de la base de datos en el store de permisos.
+        /// Llamar después de LoginAsync y antes de navegar a la app.
+        /// </summary>
+        public void LoadClaimsFromDb(List<ClaimItemModel> claimsFromDb)
+        {
+            if (claimsFromDb == null || claimsFromDb.Count == 0)
+            {
+                Console.WriteLine("LoadClaimsFromDb: Sin claims para cargar.");
+                return;
+            }
+
+            // Limpiar los permisos actuales (pueden venir sólo del token JWT)
+            _permissions.Clear();
+
+            foreach (var item in claimsFromDb)
+            {
+                AddPermissionEntry(item.Group, item.SubGroup, item.Values);
+            }
+
+            Console.WriteLine($"LoadClaimsFromDb: {claimsFromDb.Count} claim(s) cargados en permisos.");
         }
 
         public async Task Logout()

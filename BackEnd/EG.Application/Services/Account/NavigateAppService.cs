@@ -1,6 +1,7 @@
 using EG.Application.Interfaces.Account;
 using EG.Business.Interfaces;
 using EG.Dommain.DTOs.Responses;
+using EG.Infraestructure.Models;
 
 namespace EG.Application.Services.Account
 {
@@ -36,6 +37,24 @@ namespace EG.Application.Services.Account
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Error al obtener menú: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todos los claims del usuario desde la base de datos
+        /// </summary>
+        public async Task<List<spGetClaimsByUserResult>> GetAllClaimsByUser(int userId)
+        {
+            if (userId <= 0)
+                throw new ArgumentException("Usuario ID debe ser mayor a 0");
+
+            try
+            {
+                return await _navigateService.ObtenerClaimsUsuarioAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al obtener claims para usuario {userId}: {ex.Message}", ex);
             }
         }
     }

@@ -6,9 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EG.Infraestructure.Models
 {
-    public partial class spConfiguracionDeRolYClaimsResult
+    public partial class SP_CargaInicialConteoResult2
     {
-        [StringLength(200)]
-        public string AspNetClaims { get; set; }
+        [StringLength(2147483647)]
+        public string ResultJson { get; set; }
     }
 }

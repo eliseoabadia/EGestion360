@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EG.Infraestructure.Models
 {
-    public partial class spEliminarUsuarioSucursalResult
+    public partial class spEliminarUsuarioSucursalResult1
     {
         public int Success { get; set; }
         [StringLength(41)]

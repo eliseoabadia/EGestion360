@@ -86,11 +86,17 @@ namespace EG.Business.Services
 
             try
             {
-                // 🔧 OBTENER CLAIMS DEL USUARIO
-                var paramClaims = new SqlParameter("@PkIdUser", usuarioId);
+                bool esParaLogin = true;
+                // 🔧 PARÁMETROS PARA EL SP
+                var parameters = new[]
+                {
+                    new SqlParameter("@PkIdUser", usuarioId),
+                    new SqlParameter("@EsParaLogin", esParaLogin)
+                };
+
                 var resultClaims = await _repositorySP.ExecuteStoredProcedureAsync<spGetClaimsByUserResult>(
                     "[SIS].[spGetClaimsByUser]",
-                    paramClaims);
+                    parameters);
 
                 return resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
             }

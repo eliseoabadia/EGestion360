@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EG.Business.Interfaces;
 using EG.Domain.Interfaces;
 using EG.Dommain.DTOs.Responses;
@@ -22,5 +22,30 @@ namespace EG.Business.Services
             return _mapper.Map<IEnumerable<spNodeMenuResponse>>(menu);
         }
 
+        /// <summary>
+        /// Obtiene los claims del usuario desde la base de datos.
+        /// EsParaLogin NO se envía (default en SP) — este método es para cargar permisos post-login.
+        /// </summary>
+        public async Task<List<spGetClaimsByUserResult>> ObtenerClaimsUsuarioAsync(int usuarioId)
+        {
+            if (usuarioId <= 0)
+                throw new ArgumentException("Usuario ID debe ser mayor a 0", nameof(usuarioId));
+
+            try
+            {
+                // Solo se pasa @PkIdUser; @EsParaLogin NO se envía (queda NULL/0 en el SP)
+                var paramUserId = new SqlParameter("@PkIdUser", usuarioId);
+                var resultClaims = await _repositorySP.ExecuteStoredProcedureAsync<spGetClaimsByUserResult>(
+                    "[SIS].[spGetClaimsByUser]",
+                    paramUserId);
+
+                return resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error obteniendo claims para usuario {usuarioId}: {ex.Message}");
+                throw;
+            }
+        }
     }
 }

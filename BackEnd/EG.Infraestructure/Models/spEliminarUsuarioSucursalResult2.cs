@@ -6,9 +6,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EG.Infraestructure.Models
 {
-    public partial class SP_CargaInicialConteoResult
+    public partial class spEliminarUsuarioSucursalResult2
     {
-        [StringLength(2147483647)]
-        public string ResultJson { get; set; }
+        public int Success { get; set; }
+        [StringLength(34)]
+        public string Message { get; set; }
+        [StringLength(7)]
+        public string Code { get; set; }
     }
 }

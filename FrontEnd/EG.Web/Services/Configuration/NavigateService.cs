@@ -1,4 +1,4 @@
-﻿using EG.Common.Helper;
+using EG.Common.Helper;
 using EG.Web.Contracs.Configuration;
 using EG.Web.Helpers;
 using EG.Web.Models.Configuration;
@@ -159,6 +159,64 @@ namespace EG.Web.Services
                     SortMenu(child);
                 }
             }
+        }
+
+        /// <summary>
+        /// Llama a GET api/Navigate/claims/{userId} y retorna la lista de claims (Group/SubGroup/Values)
+        /// </summary>
+        public async Task<List<ClaimItemModel>> GetAllClaimsByUserAsync(int userId)
+        {
+            try
+            {
+                // Leer y normalizar token
+                string? rawToken = null;
+                try
+                {
+                    rawToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKENKEY);
+                }
+                catch
+                {
+                    rawToken = await _jsRuntime.GetFromLocalStorage(TOKENKEY);
+                }
+
+                if (string.IsNullOrWhiteSpace(rawToken))
+                {
+                    Console.WriteLine("GetAllClaimsByUserAsync: No hay token disponible.");
+                    return new List<ClaimItemModel>();
+                }
+
+                rawToken = rawToken.Trim();
+                if ((rawToken.StartsWith("\"") && rawToken.EndsWith("\"")) || (rawToken.StartsWith("'") && rawToken.EndsWith("'")))
+                    rawToken = rawToken.Substring(1, rawToken.Length - 2);
+
+                string tokenValue = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? rawToken.Substring("Bearer ".Length)
+                    : rawToken;
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"api/Navigate/claims/{userId}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenValue);
+
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string body = await response.Content.ReadAsStringAsync();
+                    var claims = JsonSerializer.Deserialize<List<ClaimItemModel>>(body, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    Console.WriteLine($"GetAllClaimsByUserAsync: {claims?.Count ?? 0} claims obtenidos.");
+                    return claims ?? new List<ClaimItemModel>();
+                }
+
+                Console.WriteLine($"GetAllClaimsByUserAsync: Error HTTP {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetAllClaimsByUserAsync Exception: {ex.Message}");
+            }
+
+            return new List<ClaimItemModel>();
         }
 
     }

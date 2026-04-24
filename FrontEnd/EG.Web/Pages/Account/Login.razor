@@ -1,15 +1,17 @@
 @page "/login"
 @using EG.Web.Auth
 @using EG.Web.Contracs
+@using EG.Web.Contracs.Configuration
 @using EG.Web.Models
 @using EG.Web.Models.DTO
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
 @using MudBlazor
 
-
+@inject SucursalStateService SucursalStateService
 @inject IGenericCrudService<UsuarioSucursalResponse> _serviceUS
 @inject IJSRuntime _jsRuntime
+@inject INavigateService _navigateService
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
     <MudPaper Class="pa-6 rounded-lg" Elevation="25">
@@ -60,7 +62,6 @@
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Inject] private ILoginService LoginService { get; set; } = null!;
-    [Inject] private SucursalStateService SucursalStateService { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private bool isShow;
@@ -105,11 +106,15 @@
 
             await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
+            // Obtener claims de BD y cargarlos en el AuthProvider
+            var claims = await _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
+            ((AuthenticationProviderJWT)AuthenticationStateProvider).LoadClaimsFromDb(claims);
+
             var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending);
 
 			// var sucursalesUsuario = _sucursalesUsuario.Items.Where(s => s.PkIdUsuario == result.PkIdUsuario).ToList();
 
-             var _result = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
+             //var _result = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
 
             if (_sucursalesUsuario.TotalCount > 1)
             {
@@ -142,6 +147,7 @@
             else if (_sucursalesUsuario.Items.Count == 1)
             {
                 await SucursalStateService.SetSucursalAsync(_sucursalesUsuario.Items[0].IdSucursal, _sucursalesUsuario.Items[0].NombreSucursal);
+
                 Snackbar.Add("¡Bienvenido!", Severity.Success);
                 NavigationManager.NavigateTo("/", forceLoad: true);
             }

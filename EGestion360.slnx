@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/BackEnd/">
-    <Project Path="BackEnd/EG.ApiCore/EG.ApiCore.csproj" />
     <Project Path="BackEnd/EG.ApiCoreBS/EG.ApiCoreBS.csproj" Id="27c9ef80-86be-4a73-ab7b-d84401bdb77e" />
     <Project Path="BackEnd/EG.Application/EG.Application.csproj" />
     <Project Path="BackEnd/EG.Business/EG.Business.csproj" />
@@ -10,7 +9,6 @@
     <Project Path="BackEnd/EG.Logger/EG.Logger.csproj" />
   </Folder>
   <Folder Name="/FrontEnd/">
-    <Project Path="FrontEnd/BlazorAppEG/BlazorAppEG.csproj" Id="97749181-30a8-49d5-a27e-de627883283c" />
     <Project Path="FrontEnd/EG.Web/EG.Web.csproj" Id="206bc5a3-0a74-47c3-a6ab-15d141b48ed6" />
   </Folder>
   <Project Path="EG.Builder/EG.Builder.csproj" />

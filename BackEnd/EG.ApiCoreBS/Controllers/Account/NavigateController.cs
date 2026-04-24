@@ -1,4 +1,4 @@
-﻿using EG.Application.Interfaces.Account;
+using EG.Application.Interfaces.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,6 +41,30 @@ namespace EG.ApiCoreBS.Controllers.Account
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error obteniendo menú para usuario {Id}", id);
+                return StatusCode(500, new { success = false, message = "Error interno" });
+            }
+        }
+
+        [HttpGet("claims/{userId}")]
+        public async Task<IActionResult> GetAllClaimsByUser(int userId)
+        {
+            try
+            {
+                var claims = await _navigateAppService.GetAllClaimsByUser(userId);
+                return Ok(claims);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Error obteniendo claims para usuario {UserId}", userId);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado obteniendo claims para usuario {UserId}", userId);
                 return StatusCode(500, new { success = false, message = "Error interno" });
             }
         }
