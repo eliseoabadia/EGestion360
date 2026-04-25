@@ -113,16 +113,6 @@ namespace EG.Web.Auth
             if (subDict.TryGetValue(string.Empty, out var generalActions) && generalActions.Contains(normalizedAction))
                 return true;
 
-            // Buscar recursivamente en subgrupos hijos (si se requiere herencia)
-            foreach (var kvp in subDict)
-            {
-                if (string.IsNullOrEmpty(kvp.Key)) continue; // evitar el caso general
-                if (kvp.Value.Contains(normalizedAction))
-                    return true;
-                if (HasPermission(normalizedGroup, kvp.Key, normalizedAction))
-                    return true;
-            }
-
             return false;
         }
 
