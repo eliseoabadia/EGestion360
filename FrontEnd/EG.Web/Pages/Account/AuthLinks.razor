@@ -56,7 +56,7 @@
     {
         if (AuthenticationStateProvider is AuthenticationProviderJWT customProvider)
         {
-            await customProvider.Logout();
+            await customProvider.LogoutAsync();
         }
 
         NavigationManager.NavigateTo("/login");

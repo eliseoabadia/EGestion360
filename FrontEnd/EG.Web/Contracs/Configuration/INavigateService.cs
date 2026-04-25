@@ -1,4 +1,5 @@
 
+using EG.Common.GenericModel;
 using EG.Web.Models.Configuration;
 
 namespace EG.Web.Contracs.Configuration

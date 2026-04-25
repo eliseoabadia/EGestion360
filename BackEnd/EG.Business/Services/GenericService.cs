@@ -1,8 +1,10 @@
 using AutoMapper;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 
 namespace EG.Business.Services
 {
@@ -274,6 +276,21 @@ namespace EG.Business.Services
                     query = ApplyFilterWithRelations(query, _params.Filtro);
                 }
 
+                // 2. Aplicar filtros adicionales del diccionario
+                if (_params.AdditionalFilters != null && _params.AdditionalFilters.Any())
+                {
+                    foreach (var filter in _params.AdditionalFilters)
+                    {
+                        string propertyName = filter.Key;
+                        object? value = filter.Value;
+
+                        if (value == null) continue;
+
+                        // Construir expresión dinámica: x => x.PropertyName == value
+                        query = ApplyEqualsFilter(query, propertyName, value);
+                    }
+                }
+
                 query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
                 var totalCount = await Task.Run(() => query.Count());
@@ -302,6 +319,58 @@ namespace EG.Business.Services
                 Items = null,
                 TotalCount = 0
             };
+        }
+
+        private IQueryable<TEntity> ApplyEqualsFilter(IQueryable<TEntity> query, string propertyName, object value)
+        {
+            var parameter = Expression.Parameter(typeof(TEntity), "x");
+            var property = Expression.Property(parameter, propertyName);
+            var propertyType = property.Type;
+
+            object convertedValue;
+            if (value is JsonElement jsonElement)
+            {
+                // Convert JsonElement to the target property type
+                convertedValue = ConvertJsonElement(jsonElement, propertyType);
+            }
+            else
+            {
+                // Try direct conversion
+                convertedValue = Convert.ChangeType(value, propertyType, CultureInfo.InvariantCulture);
+            }
+
+            var constant = Expression.Constant(convertedValue, propertyType);
+            var equality = Expression.Equal(property, constant);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
+            return query.Where(lambda);
+        }
+
+        private object ConvertJsonElement(JsonElement jsonElement, Type targetType)
+        {
+            // Handle nullable types
+            var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+            if (underlyingType == typeof(int))
+                return jsonElement.GetInt32();
+            if (underlyingType == typeof(long))
+                return jsonElement.GetInt64();
+            if (underlyingType == typeof(decimal))
+                return jsonElement.GetDecimal();
+            if (underlyingType == typeof(double))
+                return jsonElement.GetDouble();
+            if (underlyingType == typeof(float))
+                return jsonElement.GetSingle();
+            if (underlyingType == typeof(string))
+                return jsonElement.GetString();
+            if (underlyingType == typeof(bool))
+                return jsonElement.GetBoolean();
+            if (underlyingType == typeof(DateTime))
+                return jsonElement.GetDateTime();
+            if (underlyingType == typeof(Guid))
+                return jsonElement.GetGuid();
+            // For other types, try to get the raw text and parse or convert
+            // Alternatively, use JsonSerializer.Deserialize
+            return JsonSerializer.Deserialize(jsonElement.GetRawText(), underlyingType);
         }
 
         public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(

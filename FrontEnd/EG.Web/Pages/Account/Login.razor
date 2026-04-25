@@ -1,4 +1,5 @@
 @page "/login"
+@using EG.Common.GenericModel
 @using EG.Web.Auth
 @using EG.Web.Contracs
 @using EG.Web.Contracs.Configuration
@@ -108,13 +109,17 @@
 
             // Obtener claims de BD y cargarlos en el AuthProvider
             var claims = await _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
-            ((AuthenticationProviderJWT)AuthenticationStateProvider).LoadClaimsFromDb(claims);
+        
+            IEnumerable<Claim> _claims = claims.ToClaims();
 
-            var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending);
+            ((AuthenticationProviderJWT)AuthenticationStateProvider).LoadPermissionsFromClaims(_claims);
 
-			// var sucursalesUsuario = _sucursalesUsuario.Items.Where(s => s.PkIdUsuario == result.PkIdUsuario).ToList();
+            var filters = new Dictionary<string, object>
+            {
+                { "PkIdUsuario", result.PkIdUsuario }  // Reemplaza 123 por el ID deseado
+            };
 
-             //var _result = await LoginService.GetSucursalesUsuarioAsync(result.PkIdUsuario);
+            var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending, filters);
 
             if (_sucursalesUsuario.TotalCount > 1)
             {

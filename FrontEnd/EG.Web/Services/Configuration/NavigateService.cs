@@ -1,3 +1,4 @@
+using EG.Common.GenericModel;
 using EG.Common.Helper;
 using EG.Web.Contracs.Configuration;
 using EG.Web.Helpers;

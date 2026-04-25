@@ -107,6 +107,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 SearchString,
                 SortLabel,
                 SortDirection
+                ,null
             );
 
             if (response?.Success == true && response.Items != null)

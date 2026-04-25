@@ -82,7 +82,9 @@
                ClipMode="DrawerClipMode.Always"
                Elevation="2"
                Width="220px"
-               Class="custom-drawer">
+               Class="@GetDrawerClass()"
+               @onmouseenter="@OnDrawerMouseEnter"
+               @onmouseleave="@OnDrawerMouseLeave">
         <DynamicMenu />
     </MudDrawer>
 
@@ -112,6 +114,7 @@
     private ThemeOption _selectedThemeOption { get; set; } = ThemeOption.Oscuro;
 
     private bool _drawerOpen = true;
+    private bool _drawerHovered = false;
     private bool _isDarkMode = true;
     private string _selectedTheme = "default";
     private MudTheme _theme = new MudTheme();
@@ -358,5 +361,33 @@
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private void OnDrawerMouseEnter()
+    {
+        if (!_drawerOpen)
+        {
+            _drawerHovered = true;
+            StateHasChanged();
+        }
+    }
+
+    private void OnDrawerMouseLeave()
+    {
+        if (!_drawerOpen)
+        {
+            _drawerHovered = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetDrawerClass()
+    {
+        var classes = "custom-drawer";
+        if (_drawerHovered && !_drawerOpen)
+        {
+            classes += " drawer-hovered";
+        }
+        return classes;
     }
 }

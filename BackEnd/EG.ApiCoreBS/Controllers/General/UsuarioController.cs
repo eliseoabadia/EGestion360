@@ -108,7 +108,14 @@ namespace EG.ApiCoreBS.Controllers.General
             try
             {
                 var result = await _appService.GetAllPaginadoAsync(pageRequest);
-                return Ok(result);
+                return Ok(new PagedResult<UsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Usuario optenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                });
             }
             catch (Exception ex)
             {

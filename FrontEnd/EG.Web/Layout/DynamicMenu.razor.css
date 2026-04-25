@@ -1,0 +1,41 @@
+/* Animación de expansión */
+@keyframes expandMenu {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mud-nav-group-expanded {
+    animation: expandMenu 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scrollbar personalizado */
+.mud-nav-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.mud-nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mud-nav-menu::-webkit-scrollbar-thumb {
+    background: rgba(66, 150, 255, 0.4);
+    border-radius: 4px;
+}
+
+.mud-nav-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(66, 150, 255, 0.6);
+}
+
+.mud-theme-light .mud-nav-menu::-webkit-scrollbar-thumb {
+    background: rgba(33, 150, 243, 0.3);
+}
+
+.mud-theme-light .mud-nav-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(33, 150, 243, 0.5);
+}

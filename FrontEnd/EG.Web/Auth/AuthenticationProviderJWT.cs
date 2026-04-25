@@ -1,115 +1,201 @@
+using EG.Common.GenericModel;
 using EG.Web.Helpers;
 using EG.Web.Models.Configuration;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 
 namespace EG.Web.Auth
 {
-    public class AuthenticationProviderJWT(IJSRuntime js, HttpClient httpClient) : AuthenticationStateProvider
+    public class AuthenticationProviderJWT : AuthenticationStateProvider
     {
-        private readonly IJSRuntime js = js;
-        private readonly HttpClient httpClient = httpClient;
-        public static readonly string TOKENKEY = "authToken";
-        private static AuthenticationState Anonimo => new(new ClaimsPrincipal(new ClaimsIdentity()));
+        private readonly IJSRuntime _js;
+        private readonly HttpClient _httpClient;
+        private static readonly string TOKEN_KEY = "authToken";
+        private static readonly string DB_CLAIMS_KEY = "dbPermissionClaims";
+        private static readonly AuthenticationState ANONYMOUS = new(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        // Estructura interna de permisos: Group -> SubGroup -> set(Values)
-        private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _permissions = new();
+        // Almacén de permisos: Group -> SubGroup -> HashSet<Action>
+        private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _permissions = new(StringComparer.OrdinalIgnoreCase);
+
+        public AuthenticationProviderJWT(IJSRuntime js, HttpClient httpClient)
+        {
+            _js = js;
+            _httpClient = httpClient;
+        }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var token = await js.GetFromLocalStorage(TOKENKEY);
+            var token = await _js.GetFromLocalStorage(TOKEN_KEY);
+            if (string.IsNullOrWhiteSpace(token))
+                return ANONYMOUS;
 
-            if (string.IsNullOrEmpty(token))
-            {
-                return Anonimo;
-            }
+            var normalizedToken = NormalizeToken(token);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", normalizedToken);
 
-            return BuildAuthenticationState(token);
-        }
+            // 1. Obtener claims del JWT
+            var jwtClaims = ParseClaimsFromJwt(normalizedToken);
 
-        private AuthenticationState BuildAuthenticationState(string token)
-        {
-            // Normalizar token y asignar header
-            var tokenValue = NormalizeToken(token);
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", tokenValue);
+            // 2. Limpiar y cargar permisos desde el JWT (si trae Group/SubGroup/Values)
+            _permissions.Clear();
+            LoadPermissionsFromClaims(jwtClaims);
 
-            // Extraer claims y permisos
-            var claims = ParseClaimsFromJwt(tokenValue);
-            BuildPermissionStore(claims);
+            // 3. Cargar permisos guardados desde BD (localStorage) y fusionarlos
+            await LoadPersistedDbPermissions();
 
-            // Asegurar NameIdentifier si existe id/Id
-            var identity = new ClaimsIdentity(claims, "jwt");
-            EnsureNameIdentifier(identity);
+            // 4. Construir identidad con todos los claims (los del JWT + los que necesitemos)
+            var identity = new ClaimsIdentity(jwtClaims, "jwt");
+            EnsureNameIdentifier(identity, jwtClaims);
 
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
 
+        public async Task LoginAsync(string token)
+        {
+            var normalized = NormalizeToken(token);
+            await _js.SetInLocalStorage(TOKEN_KEY, normalized);
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
+
+        public async Task LogoutAsync()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            await _js.RemoveItem(TOKEN_KEY);
+            await _js.RemoveItem(DB_CLAIMS_KEY);  // Limpiar también permisos de BD
+            _permissions.Clear();
+            NotifyAuthenticationStateChanged(Task.FromResult(ANONYMOUS));
+        }
+
+        /// <summary>
+        /// Carga los permisos provenientes de la base de datos, los guarda en localStorage
+        /// y los añade al almacén en memoria.
+        /// Llamar después del login exitoso.
+        /// </summary>
+        public async Task LoadClaimsFromDbAsync(List<ClaimItemModel> claimsFromDb)
+        {
+            if (claimsFromDb == null || claimsFromDb.Count == 0)
+                return;
+
+            // Guardar en localStorage para persistencia
+            var json = JsonSerializer.Serialize(claimsFromDb);
+            await _js.SetInLocalStorage(DB_CLAIMS_KEY, json);
+
+            // Cargar en memoria (fusionando)
+            foreach (var item in claimsFromDb)
+                AddPermissionEntry(item.Group, item.SubGroup, item.Values);
+
+            // Opcional: notificar cambio de estado si quieres que los componentes se actualicen
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
+
+        #region Métodos públicos de permisos
+
+        public bool HasPermission(string group, string subGroup, string action)
+        {
+            if (string.IsNullOrWhiteSpace(group) || string.IsNullOrWhiteSpace(action))
+                return false;
+
+            var normalizedGroup = group.Trim();
+            var normalizedSubGroup = subGroup?.Trim() ?? string.Empty;
+            var normalizedAction = action.Trim();
+
+            if (!_permissions.TryGetValue(normalizedGroup, out var subDict))
+                return false;
+
+            // Permiso exacto en subgrupo
+            if (subDict.TryGetValue(normalizedSubGroup, out var actions) && actions.Contains(normalizedAction))
+                return true;
+
+            // Permiso general del grupo (subgrupo vacío)
+            if (subDict.TryGetValue(string.Empty, out var generalActions) && generalActions.Contains(normalizedAction))
+                return true;
+
+            // Buscar recursivamente en subgrupos hijos (si se requiere herencia)
+            foreach (var kvp in subDict)
+            {
+                if (string.IsNullOrEmpty(kvp.Key)) continue; // evitar el caso general
+                if (kvp.Value.Contains(normalizedAction))
+                    return true;
+                if (HasPermission(normalizedGroup, kvp.Key, normalizedAction))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public int? GetUserId()
+        {
+            var state = GetAuthenticationStateAsync().GetAwaiter().GetResult();
+            var user = state.User;
+            var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)
+                          ?? user.FindFirst("id")
+                          ?? user.FindFirst("Id");
+            return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
+        }
+
+        #endregion
+
+        #region Métodos privados auxiliares
+
         private static string NormalizeToken(string rawToken)
         {
             if (string.IsNullOrWhiteSpace(rawToken)) return string.Empty;
-            var t = rawToken.Trim();
-            if ((t.StartsWith("\"") && t.EndsWith("\"")) || (t.StartsWith("'") && t.EndsWith("'")))
-                t = t.Substring(1, t.Length - 2);
-            return t.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? t.Substring("Bearer ".Length) : t;
+            var trimmed = rawToken.Trim();
+            // Quitar comillas dobles o simples al inicio/fin si existen
+            if ((trimmed.StartsWith('"') && trimmed.EndsWith('"')) ||
+                (trimmed.StartsWith('\'') && trimmed.EndsWith('\'')))
+                trimmed = trimmed[1..^1];
+            // Quitar prefijo "Bearer " si existe
+            const string bearer = "Bearer ";
+            return trimmed.StartsWith(bearer, StringComparison.OrdinalIgnoreCase)
+                ? trimmed[bearer.Length..]
+                : trimmed;
         }
 
         private static List<Claim> ParseClaimsFromJwt(string jwt)
         {
             try
             {
-                var claims = new List<Claim>();
                 var payload = jwt.Split('.')[1];
                 var jsonBytes = ParseBase64WithoutPadding(payload);
-                var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+                var json = Encoding.UTF8.GetString(jsonBytes);
+                var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                if (keyValuePairs == null) return new List<Claim>();
 
-                if (keyValuePairs == null)
-                    return claims;
-
+                var claims = new List<Claim>();
                 foreach (var kvp in keyValuePairs)
                 {
-                    // Manejar arrays o valores escalares
-                    if (kvp.Value is JsonElement je)
+                    if (kvp.Value is JsonElement element)
                     {
-                        switch (je.ValueKind)
+                        if (element.ValueKind == JsonValueKind.Array)
                         {
-                            case JsonValueKind.Array:
-                                foreach (var el in je.EnumerateArray())
-                                {
-                                    claims.Add(new Claim(kvp.Key, el.ToString() ?? string.Empty));
-                                }
-                                break;
-                            default:
-                                claims.Add(new Claim(kvp.Key, je.ToString() ?? string.Empty));
-                                break;
+                            foreach (var item in element.EnumerateArray())
+                                claims.Add(new Claim(kvp.Key, item.ToString()));
+                        }
+                        else
+                        {
+                            claims.Add(new Claim(kvp.Key, element.ToString()));
                         }
                     }
-                    else
+                    else if (kvp.Value != null)
                     {
-                        claims.Add(new Claim(kvp.Key, kvp.Value?.ToString() ?? string.Empty));
+                        claims.Add(new Claim(kvp.Key, kvp.Value.ToString()!));
                     }
                 }
 
-                // Mapear role si viene como 'role' o 'roles'
-                if (keyValuePairs.TryGetValue("role", out var roleValue) && roleValue != null)
+                // Normalizar roles
+                if (keyValuePairs.TryGetValue("role", out var roleObj) && roleObj != null)
+                    claims.Add(new Claim(ClaimTypes.Role, roleObj.ToString()!));
+                if (keyValuePairs.TryGetValue("roles", out var rolesObj) && rolesObj != null)
                 {
-                    claims.Add(new Claim(ClaimTypes.Role, roleValue.ToString()!));
-                }
-                if (keyValuePairs.TryGetValue("roles", out var rolesValue) && rolesValue != null)
-                {
-                    // Si roles es array o CSV, agregar cada rol
-                    if (rolesValue is JsonElement rje && rje.ValueKind == JsonValueKind.Array)
+                    var roles = rolesObj.ToString();
+                    if (!string.IsNullOrEmpty(roles))
                     {
-                        foreach (var r in rje.EnumerateArray())
-                            claims.Add(new Claim(ClaimTypes.Role, r.ToString()!));
-                    }
-                    else
-                    {
-                        var s = rolesValue.ToString() ?? string.Empty;
-                        foreach (var part in s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                            claims.Add(new Claim(ClaimTypes.Role, part));
+                        foreach (var role in roles.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                            claims.Add(new Claim(ClaimTypes.Role, role));
                     }
                 }
 
@@ -123,203 +209,97 @@ namespace EG.Web.Auth
 
         private static byte[] ParseBase64WithoutPadding(string base64)
         {
-            switch (base64.Length % 4)
+            if (string.IsNullOrEmpty(base64))
+                return Array.Empty<byte>();
+
+            // Calcular el padding necesario (JWT usa base64 sin padding)
+            int mod4 = base64.Length % 4;
+            string padded = mod4 switch
             {
-                case 2: base64 += "=="; break;
-                case 3: base64 += "="; break;
-            }
-            return Convert.FromBase64String(base64);
+                2 => base64 + "==",
+                3 => base64 + "=",
+                _ => base64
+            };
+            return Convert.FromBase64String(padded);
         }
 
-        private void BuildPermissionStore(IEnumerable<Claim> claims)
+        public void LoadPermissionsFromClaims(IEnumerable<Claim> claims)
         {
-            _permissions.Clear();
+            var groups = claims.Where(c => string.Equals(c.Type, "Group", StringComparison.OrdinalIgnoreCase)).ToList();
+            var subGroups = claims.Where(c => string.Equals(c.Type, "SubGroup", StringComparison.OrdinalIgnoreCase)).ToList();
+            var values = claims.Where(c => string.Equals(c.Type, "Values", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            // Recoger todas las claims Group/SubGroup/Values que vienen del servidor
-            // Pueden venir repetidas; consolidamos por índice si aparecen como arrays en el token
-            var groupClaims = claims.Where(c => string.Equals(c.Type, "Group", StringComparison.OrdinalIgnoreCase)).ToList();
-            var subGroupClaims = claims.Where(c => string.Equals(c.Type, "SubGroup", StringComparison.OrdinalIgnoreCase)).ToList();
-            var valuesClaims = claims.Where(c => string.Equals(c.Type, "Values", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (!groups.Any()) return;
 
-            // Si no hay group/subgroup/values agrupadas, también soportamos claims individuales con structure 'app://group/subgroup' o claves personalizadas
-            if (groupClaims.Any())
+            int maxCount = Math.Max(groups.Count, Math.Max(subGroups.Count, values.Count));
+            for (int i = 0; i < maxCount; i++)
             {
-                int count = Math.Max(groupClaims.Count, Math.Max(subGroupClaims.Count, valuesClaims.Count));
-
-                for (int i = 0; i < count; i++)
-                {
-                    var group = i < groupClaims.Count ? groupClaims[i].Value : groupClaims.First().Value;
-                    var subgroup = i < subGroupClaims.Count ? subGroupClaims[i].Value : subGroupClaims.FirstOrDefault()?.Value ?? string.Empty;
-                    var valuesRaw = i < valuesClaims.Count ? valuesClaims[i].Value : valuesClaims.FirstOrDefault()?.Value ?? string.Empty;
-
-                    AddPermissionEntry(group, subgroup, valuesRaw);
-                }
+                var group = (i < groups.Count) ? groups[i].Value : groups[0].Value;
+                var subgroup = (i < subGroups.Count) ? subGroups[i].Value : (subGroups.FirstOrDefault()?.Value ?? string.Empty);
+                var value = (i < values.Count) ? values[i].Value : (values.FirstOrDefault()?.Value ?? string.Empty);
+                AddPermissionEntry(group, subgroup, value);
             }
-            else
-            {
-                // Fallback: buscar claims cuyo tipo contenga "app://" o formatos personalizados y parsearlos
-                var appClaims = claims.Where(c => c.Value?.Contains("app://", StringComparison.OrdinalIgnoreCase) == true).ToList();
-                foreach (var c in appClaims)
-                {
-                    // ejemplo tokenFormat 'app://{0}/{1}' no contiene valores, así que no es útil; ignoramos
-                }
+        }
 
-                // También soportar claims con nombre 'administration' y valores 'view,view-menu' (rare)
-                var possibleGroups = claims.Where(c => c.Value?.Contains(",") == true).ToList();
-                foreach (var c in possibleGroups)
-                {
-                    // intentar deducir group y values separando por ':' o similar
-                    // si no, lo descartamos
-                }
+        private async Task LoadPersistedDbPermissions()
+        {
+            try
+            {
+                var json = await _js.GetFromLocalStorage(DB_CLAIMS_KEY);
+                if (string.IsNullOrWhiteSpace(json)) return;
+
+                var dbClaims = JsonSerializer.Deserialize<List<ClaimItemModel>>(json);
+                if (dbClaims == null) return;
+
+                foreach (var item in dbClaims)
+                    AddPermissionEntry(item.Group, item.SubGroup, item.Values);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading DB permissions: {ex.Message}");
             }
         }
 
         private void AddPermissionEntry(string group, string subgroup, string valuesRaw)
         {
             if (string.IsNullOrWhiteSpace(group)) return;
+
             group = group.Trim();
-            subgroup = (subgroup ?? string.Empty).Trim();
+            subgroup = subgroup?.Trim() ?? string.Empty;
 
-            var actions = (valuesRaw ?? string.Empty)
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(v => v.Trim())
-                .Where(v => !string.IsNullOrWhiteSpace(v))
-                .ToList();
+            var actions = valuesRaw?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                   .Where(v => !string.IsNullOrWhiteSpace(v))
+                                   .Select(v => v.Trim())
+                                   .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                          ?? new HashSet<string>();
 
-            if (!_permissions.TryGetValue(group, out var subdict))
+            if (!_permissions.TryGetValue(group, out var subDict))
             {
-                subdict = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-                _permissions[group] = subdict;
+                subDict = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                _permissions[group] = subDict;
             }
 
-            var key = string.IsNullOrWhiteSpace(subgroup) ? string.Empty : subgroup;
-            if (!subdict.TryGetValue(key, out var set))
+            if (!subDict.TryGetValue(subgroup, out var actionSet))
             {
-                set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                subdict[key] = set;
+                actionSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                subDict[subgroup] = actionSet;
             }
 
-            foreach (var a in actions)
-                set.Add(a);
+            foreach (var action in actions)
+                actionSet.Add(action);
         }
 
-        private void EnsureNameIdentifier(ClaimsIdentity identity)
+        private static void EnsureNameIdentifier(ClaimsIdentity identity, IEnumerable<Claim> allClaims)
         {
-            // Añadir ClaimTypes.NameIdentifier si está presente 'id' o 'Id' como claim distinto
-            var idClaim = identity.Claims.FirstOrDefault(c => string.Equals(c.Type, "id", StringComparison.OrdinalIgnoreCase)
-                                                           || string.Equals(c.Type, "Id", StringComparison.OrdinalIgnoreCase)
-                                                           || string.Equals(c.Type, ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase));
-            if (idClaim != null && !identity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
-            {
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, idClaim.Value));
-            }
-        }
-
-        // Helpers públicos para consumir permisos desde componentes
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>> GetPermissions()
-        {
-            return _permissions.ToDictionary(
-                g => g.Key,
-                g => (IReadOnlyDictionary<string, IReadOnlyCollection<string>>)g.Value.ToDictionary(s => s.Key, s => (IReadOnlyCollection<string>)s.Value.ToList()),
-                StringComparer.OrdinalIgnoreCase);
-        }
-
-
-        public bool HasPermission(string group, string subGroup, string action)
-        {
-            if (string.IsNullOrWhiteSpace(group) || string.IsNullOrWhiteSpace(action))
-                return false;
-
-            var normalizedGroup = group.Trim().ToLowerInvariant();
-            var normalizedSubGroup = (subGroup ?? string.Empty).Trim().ToLowerInvariant();
-            var normalizedAction = action.Trim();
-
-            // Si no existe el grupo, no hay permisos
-            if (!_permissions.TryGetValue(normalizedGroup, out var subDict))
-                return false;
-
-            // 1. Verificar permisos en el subgrupo exacto
-            if (subDict.TryGetValue(normalizedSubGroup, out var set) && set.Contains(normalizedAction))
-                return true;
-
-            // 2. Verificar permisos generales del grupo
-            if (subDict.TryGetValue(string.Empty, out var general) && general.Contains(normalizedAction))
-                return true;
-
-            // 3. Recursivamente revisar hijos (otros subgrupos dentro del mismo grupo)
-            foreach (var kvp in subDict)
-            {
-                var childSubGroup = kvp.Key;
-
-                // No recursar en el entry general (string.Empty) para evitar ciclos infinitos
-                if (string.IsNullOrEmpty(childSubGroup))
-                    continue;
-
-                var childActions = kvp.Value;
-
-                if (childActions.Contains(normalizedAction))
-                    return true;
-
-                // Llamada recursiva: buscar dentro de cada hijo
-                if (HasPermission(normalizedGroup, childSubGroup, normalizedAction))
-                    return true;
-            }
-
-            return false;
-        }
-
-        public int? GetUserId()
-        {
-            // intenta leer ClaimTypes.NameIdentifier
-            var identity = (BuildAuthenticationStateFromCurrent()?.Result.User.Identity) as ClaimsIdentity;
-            var claim = identity?.FindFirst(ClaimTypes.NameIdentifier) ?? identity?.FindFirst("id") ?? identity?.FindFirst("Id");
-            if (claim == null) return null;
-            return int.TryParse(claim.Value, out var id) ? id : null;
-        }
-
-        private Task<AuthenticationState> BuildAuthenticationStateFromCurrent()
-        {
-            // Construye estado a partir del token en localStorage (sin notificar)
-            return GetAuthenticationStateAsync();
-        }
-
-        public async Task LoginAsync(string token)
-        {
-            var normalized = NormalizeToken(token);
-            await js.SetInLocalStorage(TOKENKEY, normalized);
-            var authState = BuildAuthenticationState(normalized);
-            NotifyAuthenticationStateChanged(Task.FromResult(authState));
-        }
-
-        /// <summary>
-        /// Carga los claims provenientes de la base de datos en el store de permisos.
-        /// Llamar después de LoginAsync y antes de navegar a la app.
-        /// </summary>
-        public void LoadClaimsFromDb(List<ClaimItemModel> claimsFromDb)
-        {
-            if (claimsFromDb == null || claimsFromDb.Count == 0)
-            {
-                Console.WriteLine("LoadClaimsFromDb: Sin claims para cargar.");
+            if (identity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
                 return;
-            }
 
-            // Limpiar los permisos actuales (pueden venir sólo del token JWT)
-            _permissions.Clear();
-
-            foreach (var item in claimsFromDb)
-            {
-                AddPermissionEntry(item.Group, item.SubGroup, item.Values);
-            }
-
-            Console.WriteLine($"LoadClaimsFromDb: {claimsFromDb.Count} claim(s) cargados en permisos.");
+            var idClaim = allClaims.FirstOrDefault(c => string.Equals(c.Type, "id", StringComparison.OrdinalIgnoreCase)
+                                                     || string.Equals(c.Type, "Id", StringComparison.OrdinalIgnoreCase));
+            if (idClaim != null)
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, idClaim.Value));
         }
 
-        public async Task Logout()
-        {
-            httpClient.DefaultRequestHeaders.Authorization = null;
-            await js.RemoveItem(TOKENKEY);
-            _permissions.Clear();
-            NotifyAuthenticationStateChanged(Task.FromResult(Anonimo));
-        }
+        #endregion
     }
 }
