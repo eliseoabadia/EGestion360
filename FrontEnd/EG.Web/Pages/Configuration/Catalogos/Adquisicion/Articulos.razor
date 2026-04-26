@@ -1,0 +1,103 @@
+@page "/configuracion/adquisiciones/articulos"
+@using EG.Web.Models.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<ArticuloResponse, ArticuloResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Artículos"
+                    Subtitle="Catálogo de artículos"
+                    Icon="@Icons.Material.Filled.Inventory2"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="ArticuloResponse"
+                      @ref="table"
+                      Title="Lista de Artículos"
+                      SearchPlaceholder="Buscar por clave o descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidArticulo" T="ArticuloResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="ArticuloResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ArticuloResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="ArticuloResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidArticulo))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidArticulo))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidArticulo</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ArticuloResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "Articulo";
+
+    protected override Type CreateDialogType => typeof(ArticuloDialog);
+    protected override Type EditDialogType => typeof(ArticuloDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ArticuloResponse>);
+
+    protected override string GetDefaultSortLabel() => "Clave";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ArticuloResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidArticulo,
+            Clave = u.Clave,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "el artículo";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

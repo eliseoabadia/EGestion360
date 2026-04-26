@@ -1,0 +1,111 @@
+@page "/configuracion/adquisiciones/estatus-requisiciones"
+@using EG.Web.Models.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<EstatusRequisicionResponse, EstatusRequisicionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Estatus de Requisiciones"
+                    Subtitle="Catálogo de estatus de requisiciones"
+                    Icon="@Icons.Material.Filled.Flag"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="EstatusRequisicionResponse"
+                      @ref="table"
+                      Title="Lista de Estatus"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidEstatusRequisicion" T="EstatusRequisicionResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EstatusRequisicionResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Color" T="EstatusRequisicionResponse">Color</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Orden" T="EstatusRequisicionResponse">Orden</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="EstatusRequisicionResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidEstatusRequisicion))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidEstatusRequisicion))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidEstatusRequisicion</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@Color.Primary" Style="@($"background-color: {item.Color}; color: white;")" Size="Size.Small">
+                        @item.Color
+                    </MudChip>
+                </MudTd>
+                <MudTd>@item.Orden</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<EstatusRequisicionResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "Estatus_Requisicion";
+
+    protected override Type CreateDialogType => typeof(EstatusRequisicionDialog);
+    protected override Type EditDialogType => typeof(EstatusRequisicionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EstatusRequisicionResponse>);
+
+    protected override string GetDefaultSortLabel() => "Orden";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EstatusRequisicionResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidEstatusRequisicion,
+            Descripcion = u.Descripcion,
+            Color = u.Color,
+            Orden = u.Orden,
+            Icono = u.Icono,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "el estatus";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

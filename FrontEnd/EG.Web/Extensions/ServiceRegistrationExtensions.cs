@@ -1,5 +1,6 @@
 using EG.Common.Helper;
 using EG.Web.Contracs;
+using EG.Web.Models.Adquisicion;
 using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;
 using EG.Web.Models.ConteoCiclico;
@@ -40,9 +41,18 @@ public static class ApiServiceExtensions
         RegisterCrud<UnidadResponse>(services, "api/Unidad");
         RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
         RegisterCrud<BienResponse>(services, "api/Bien");
-        // Agrega más aquí...
-        
 
+        // Catálogos de Adquisiciones
+        RegisterCrud<ModalidadResponse>(services, "api/Modalidad");
+        RegisterCrud<TipoContratoResponse>(services, "api/TipoContrato");
+        RegisterCrud<TipoDocumentoResponse>(services, "api/TipoDocumento");
+        RegisterCrud<TipoGarantiaResponse>(services, "api/TipoGarantia");
+        RegisterCrud<ProcedimientoContratacionResponse>(services, "api/ProcedimientoContratacion");
+        RegisterCrud<EstatusRequisicionResponse>(services, "api/EstatusRequisicion");
+        RegisterCrud<ArticuloResponse>(services, "api/Articulo");
+        RegisterCrud<FraccionResponse>(services, "api/Fraccion");
+        RegisterCrud<ProveedorResponse>(services, "api/Proveedor");
+        
         return services;
     }
 

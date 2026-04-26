@@ -1,0 +1,124 @@
+@page "/configuracion/adquisiciones/proveedores"
+@using EG.Web.Models.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<ProveedorResponse, ProveedorResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Proveedores"
+                    Subtitle="Catálogo de proveedores"
+                    Icon="@Icons.Material.Filled.LocalShipping"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="ProveedorResponse"
+                      @ref="table"
+                      Title="Lista de Proveedores"
+                      SearchPlaceholder="Buscar por nombre, RFC o clave..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidProveedor" T="ProveedorResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProveedorResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="ProveedorResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Rfc" T="ProveedorResponse">RFC</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Email" T="ProveedorResponse">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="MunicipioNombre" T="ProveedorResponse">Municipio</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProveedorResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidProveedor))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidProveedor))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidProveedor</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd Style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.Nombre</MudTd>
+                <MudTd>@item.Rfc</MudTd>
+                <MudTd>@item.Email</MudTd>
+                <MudTd>@item.MunicipioNombre</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ProveedorResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "Proveedores";
+
+    protected override Type CreateDialogType => typeof(ProveedorDialog);
+    protected override Type EditDialogType => typeof(ProveedorDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ProveedorResponse>);
+
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ProveedorResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidProveedor,
+            Clave = u.Clave,
+            Nombre = u.Nombre,
+            RFC = u.Rfc,
+            Calle = u.Calle,
+            Numero = u.Numero,
+            Colonia = u.Colonia,
+            CP = u.Cp,
+            Ciudad = u.Ciudad,
+            Email = u.Email,
+            Telefono = u.TelefonoInstitucional,
+            PaginaWeb = u.PaginaWeb,
+            Tipo = u.TipoProveedorNombre,
+            Estatus = u.EstatusProveedorNombre,
+            Municipio = u.MunicipioNombre,
+            Estado = u.EstadoNombre,
+            Pais = u.PaisNombre,
+            Notas = u.Notas,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Nombre ?? "el proveedor";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

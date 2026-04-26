@@ -1,0 +1,103 @@
+@page "/configuracion/adquisiciones/procedimientos-contratacion"
+@using EG.Web.Models.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<ProcedimientoContratacionResponse, ProcedimientoContratacionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Procedimientos de Contratación"
+                    Subtitle="Catálogo de procedimientos de contratación"
+                    Icon="@Icons.Material.Filled.Gavel"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="ProcedimientoContratacionResponse"
+                      @ref="table"
+                      Title="Lista de Procedimientos"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidProcedimientoContratacion" T="ProcedimientoContratacionResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProcedimientoContratacionResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FundamentoJuridico" T="ProcedimientoContratacionResponse">Fundamento Jurídico</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProcedimientoContratacionResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidProcedimientoContratacion))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidProcedimientoContratacion))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidProcedimientoContratacion</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd Style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.FundamentoJuridico</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ProcedimientoContratacionResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "Procedimientos_Contratacion";
+
+    protected override Type CreateDialogType => typeof(ProcedimientoContratacionDialog);
+    protected override Type EditDialogType => typeof(ProcedimientoContratacionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ProcedimientoContratacionResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ProcedimientoContratacionResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidProcedimientoContratacion,
+            Descripcion = u.Descripcion,
+            Fundamento_Juridico = u.FundamentoJuridico,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "el procedimiento";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

@@ -25,8 +25,8 @@ namespace EG.ApiCore.Extensions
 
             // ===== REPOSITORIES (IRepositorySP) =====
             services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
-            services.AddScoped<IRepositorySP<spGetClaimsByUserResult>, RepositorySP<spGetClaimsByUserResult>>();  // ✅ AGREGADO
-            services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
+            //services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();  // ✅ AGREGADO
+            //services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
             services.AddScoped<IRepositorySP<spNodeMenuResult>, RepositorySP<spNodeMenuResult>>();
             //services.AddScoped<IRepositorySP<sp_RegistrarConteoResult>, RepositorySP<sp_RegistrarConteoResult>>();
             services.AddScoped<IRepository<PerfilUsuario>, Repository<PerfilUsuario>>();
