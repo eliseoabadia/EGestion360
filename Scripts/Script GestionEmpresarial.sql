@@ -379,9 +379,9 @@ VALUES
 (2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Departamento', 'CONSIS05', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP01', 'Configuracion', 'view,view-menu', 0),
-(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Historico', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP03', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'ClavePrograma', 'CONCP04', 'Catalogos_presupuestales', 'view,view-menu', 0),
+--(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Historico', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP03', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'ClavePrograma', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'UnidadResponsable', 'CONCP01', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Finalidad', 'CONCP02', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Funcion', 'CONCP03', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -416,6 +416,18 @@ VALUES
 
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Adquisiciones', 'CON002', 'Configuracion', 'view,view-menu', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Modalidad', 'CONADQ01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Contrato', 'CONADQ02', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Documentos', 'CONADQ03', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Garantia', 'CONADQ04', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Procedimientos_Contratacion', 'CONADQ05', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Estatus_Requisicion', 'CONADQ06', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Proveedores', 'CONADQ07', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Articulo', 'CONADQ07', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Fraccion', 'CONADQ07', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+
+
+
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Patrimonio', 'CON002', 'Configuracion', 'view,view-menu', 0),
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Almacen', 'CON002', 'Configuracion', 'view,view-menu', 0),
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Tesoreria', 'CON002', 'Configuracion', 'view,view-menu', 0)
@@ -423,10 +435,6 @@ VALUES
 
 
 
-Programas Presupuestales Histórico
-Programas Presupuestales
-Clave del Programa
-Contabilidad
 
 
 (1, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Configuración', 'view,view-menu', 0),
@@ -486,8 +494,6 @@ EXEC spConfiguracionDeRolYClaims 'Sistema', 'General', '10000', 'view,view-menu,
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Empresa', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Departamento', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Catalogos_presupuestales', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'Historico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'Catalogos_presupuestales', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'ClavePrograma', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'UnidadResponsable', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Finalidad', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -518,10 +524,18 @@ EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Cuentas_Contables', '10000', '
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Formas_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Sigevi_Partidas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Adquisiciones', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Modalidad',              '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Contrato',          '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Documentos',        '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Garantia',          '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Procedimientos_Contratacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Estatus_Requisicion',    '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Proveedores',            '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Articulo',               '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Fraccion',               '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Patrimonio', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Almacen', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Tesoreria', '10000', 'view,view-menu';
-
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -639,6 +653,8 @@ USING (VALUES
     (204, N'Empresa', 2, 200, N'Empresa', N'/configuracion/sistema/empresa', N'FaBuilding', 1, 'ESP', 114, 1000, GETDATE()),
     (205, N'Departamento', 2, 200, N'Departamento', N'/configuracion/sistema/departamento', N'FaUsers', 1, 'ESP', 115, 1000, GETDATE()),
 
+    
+
     -- Configuración -> Catálogos presupuestales
     (210, N'Catálogos presupuestales', 1, 100, N'Catálogos presupuestales', N'/', N'FaListAlt', 1, 'ESP', 120, 1000, GETDATE()),
     (211, N'Histórico', 2, 210, N'Histórico', N'/configuracion/catalogos-presupuestales/historico', N'FaHistory', 1, 'ESP', 121, 1000, GETDATE()),
@@ -676,7 +692,15 @@ USING (VALUES
 
     -- Configuración -> Adquisiciones
     (250, N'Adquisiciones', 1, 100, N'Adquisiciones', N'/', N'FaShoppingCart', 1, 'ESP', 160, 1000, GETDATE()),
-    (251, N'Parámetros Adquisiciones', 2, 250, N'Parámetros Adquisiciones', N'/configuracion/adquisiciones', N'FaShoppingCart', 1, 'ESP', 161, 1000, GETDATE()),
+    (251, N'Modalidad', 2, 250, N'Modalidad', N'/configuracion/adquisiciones/modalidad', N'FaTags', 1, 'ESP', 161, 1000, GETDATE()),
+    (252, N'Tipo de Contrato', 2, 250, N'Tipo de Contrato', N'/configuracion/adquisiciones/tipo-contrato', N'FaFileSignature', 1, 'ESP', 162, 1000, GETDATE()),
+    (253, N'Tipo de Documentos', 2, 250, N'Tipo de Documentos', N'/configuracion/adquisiciones/tipo-documento', N'FaFileAlt', 1, 'ESP', 163, 1000, GETDATE()),
+    (254, N'Tipo de Garantía', 2, 250, N'Tipo de Garantía', N'/configuracion/adquisiciones/tipo-garantia', N'FaShieldAlt', 1, 'ESP', 164, 1000, GETDATE()),
+    (255, N'Procedimientos de Contratación', 2, 250, N'Procedimientos de Contratación', N'/configuracion/adquisiciones/procedimientos-contratacion', N'FaGavel', 1, 'ESP', 165, 1000, GETDATE()),
+    (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisición', N'FaFlagCheckered', 1, 'ESP', 166, 1000, GETDATE()),
+    (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaTruck', 1, 'ESP', 167, 1000, GETDATE()),
+    (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaBox', 1, 'ESP', 168, 1000, GETDATE()),
+    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 169, 1000, GETDATE()),
 
     -- Configuración -> Patrimonio
     (260, N'Patrimonio', 1, 100, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 170, 1000, GETDATE()),

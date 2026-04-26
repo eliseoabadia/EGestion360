@@ -17,6 +17,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Area> Areas { get; set; }
 
+    public virtual DbSet<Articulo> Articulos { get; set; }
+
     public virtual DbSet<AspNetClaim> AspNetClaims { get; set; }
 
     public virtual DbSet<AspNetClaimType> AspNetClaimTypes { get; set; }
@@ -71,7 +73,11 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<EstatusProveedor> EstatusProveedors { get; set; }
 
+    public virtual DbSet<EstatusRequisicion> EstatusRequisicions { get; set; }
+
     public virtual DbSet<Familium> Familia { get; set; }
+
+    public virtual DbSet<Fraccion> Fraccions { get; set; }
 
     public virtual DbSet<FuenteFinanciamiento> FuenteFinanciamientos { get; set; }
 
@@ -86,6 +92,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Menu> Menus { get; set; }
 
     public virtual DbSet<MenuRole> MenuRoles { get; set; }
+
+    public virtual DbSet<Modalidad> Modalidads { get; set; }
 
     public virtual DbSet<Monedum> Moneda { get; set; }
 
@@ -106,6 +114,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Persona> Personas { get; set; }
 
     public virtual DbSet<PersonaArea> PersonaAreas { get; set; }
+
+    public virtual DbSet<ProcedimientoContratacion> ProcedimientoContratacions { get; set; }
 
     public virtual DbSet<Programa> Programas { get; set; }
 
@@ -133,7 +143,13 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<TipoConteo> TipoConteos { get; set; }
 
+    public virtual DbSet<TipoContrato> TipoContratos { get; set; }
+
     public virtual DbSet<TipoCuentum> TipoCuenta { get; set; }
+
+    public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
+
+    public virtual DbSet<TipoGarantium> TipoGarantia { get; set; }
 
     public virtual DbSet<TipoGasto> TipoGastos { get; set; }
 
@@ -229,6 +245,32 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.FkidAreaSisNavigation).WithMany(p => p.InverseFkidAreaSisNavigation)
                 .HasForeignKey(d => d.FkidAreaSis)
                 .HasConstraintName("FK_Area_Padre");
+        });
+
+        modelBuilder.Entity<Articulo>(entity =>
+        {
+            entity.HasKey(e => e.PkidArticulo);
+
+            entity.ToTable("Articulo", "ORCO");
+
+            entity.Property(e => e.PkidArticulo).HasColumnName("PKIdArticulo");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Articulo_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Articulo_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ArticuloUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Articulo_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ArticuloUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Articulo_UsuarioModificacion");
         });
 
         modelBuilder.Entity<AspNetClaim>(entity =>
@@ -1037,6 +1079,31 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<EstatusRequisicion>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstatusRequisicion);
+
+            entity.ToTable("EstatusRequisicion", "ORCO");
+
+            entity.Property(e => e.PkidEstatusRequisicion).HasColumnName("PKIdEstatusRequisicion");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_EstatusRequisicion_Activo");
+            entity.Property(e => e.Color).HasMaxLength(8);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EstatusRequisicion_FechaCreacion");
+            entity.Property(e => e.Icono).HasMaxLength(50);
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.EstatusRequisicionUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstatusRequisicion_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.EstatusRequisicionUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_EstatusRequisicion_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Familium>(entity =>
         {
             entity.HasKey(e => e.PkidFamilia);
@@ -1053,6 +1120,38 @@ public partial class EGestionContext : DbContext
                 .HasDefaultValueSql("(sysdatetime())", "DF_Familia_FechaCreacion")
                 .HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<Fraccion>(entity =>
+        {
+            entity.HasKey(e => e.PkidFraccion);
+
+            entity.ToTable("Fraccion", "ORCO");
+
+            entity.Property(e => e.PkidFraccion).HasColumnName("PKIdFraccion");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Fraccion_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Fraccion_FechaCreacion");
+            entity.Property(e => e.FkidArticuloOrco).HasColumnName("FKIdArticulo_ORCO");
+
+            entity.HasOne(d => d.FkidArticuloOrcoNavigation).WithMany(p => p.Fraccions)
+                .HasForeignKey(d => d.FkidArticuloOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Fraccion_Articulo");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.FraccionUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Fraccion_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.FraccionUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Fraccion_UsuarioModificacion");
         });
 
         modelBuilder.Entity<FuenteFinanciamiento>(entity =>
@@ -1221,6 +1320,29 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("CONSTRAINT_FK_MenuRole_Role");
+        });
+
+        modelBuilder.Entity<Modalidad>(entity =>
+        {
+            entity.HasKey(e => e.PkidModalidad);
+
+            entity.ToTable("Modalidad", "ORCO");
+
+            entity.Property(e => e.PkidModalidad).HasColumnName("PKIdModalidad");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Modalidad_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Modalidad_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ModalidadUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Modalidad_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ModalidadUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Modalidad_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Monedum>(entity =>
@@ -1580,6 +1702,32 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidPersonaNom)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PersonaArea_Persona");
+        });
+
+        modelBuilder.Entity<ProcedimientoContratacion>(entity =>
+        {
+            entity.HasKey(e => e.PkidProcedimientoContratacion);
+
+            entity.ToTable("ProcedimientoContratacion", "ORCO");
+
+            entity.Property(e => e.PkidProcedimientoContratacion).HasColumnName("PKIdProcedimientoContratacion");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ProcedimientoContratacion_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_ProcedimientoContratacion_FechaCreacion");
+            entity.Property(e => e.FundamentoJuridico)
+                .IsRequired()
+                .HasColumnType("text");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ProcedimientoContratacionUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProcedimientoContratacion_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ProcedimientoContratacionUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_ProcedimientoContratacion_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Programa>(entity =>
@@ -2176,6 +2324,29 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(30);
         });
 
+        modelBuilder.Entity<TipoContrato>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoContrato);
+
+            entity.ToTable("TipoContrato", "ORCO");
+
+            entity.Property(e => e.PkidTipoContrato).HasColumnName("PKIdTipoContrato");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoContrato_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoContrato_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoContratoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoContrato_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoContratoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoContrato_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<TipoCuentum>(entity =>
         {
             entity.HasKey(e => e.PkidTipoCuenta);
@@ -2194,6 +2365,52 @@ public partial class EGestionContext : DbContext
                 .HasDefaultValueSql("(sysdatetime())", "DF_TipoCuenta_FechaCreacion")
                 .HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<TipoDocumento>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoDocumento);
+
+            entity.ToTable("TipoDocumento", "ORCO");
+
+            entity.Property(e => e.PkidTipoDocumento).HasColumnName("PKIdTipoDocumento");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoDocumento_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoDocumento_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoDocumentoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoDocumento_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoDocumentoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoDocumento_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoGarantium>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoGarantia);
+
+            entity.ToTable("TipoGarantia", "ORCO");
+
+            entity.Property(e => e.PkidTipoGarantia).HasColumnName("PKIdTipoGarantia");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoGarantia_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoGarantia_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoGarantiumUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoGarantia_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoGarantiumUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoGarantia_UsuarioModificacion");
         });
 
         modelBuilder.Entity<TipoGasto>(entity =>

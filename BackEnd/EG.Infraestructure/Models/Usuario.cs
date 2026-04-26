@@ -61,6 +61,10 @@ public partial class Usuario
 
     public virtual ICollection<Anio> AnioUsuarioModificacionNavigations { get; set; } = new List<Anio>();
 
+    public virtual ICollection<Articulo> ArticuloUsuarioCreacionNavigations { get; set; } = new List<Articulo>();
+
+    public virtual ICollection<Articulo> ArticuloUsuarioModificacionNavigations { get; set; } = new List<Articulo>();
+
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneoUsuarioCreacionNavigations { get; set; } = new List<ConteoDetalleEscaneo>();
@@ -99,11 +103,19 @@ public partial class Usuario
 
     public virtual ICollection<Empresa> EmpresaUsuarioModificacionNavigations { get; set; } = new List<Empresa>();
 
+    public virtual ICollection<EstatusRequisicion> EstatusRequisicionUsuarioCreacionNavigations { get; set; } = new List<EstatusRequisicion>();
+
+    public virtual ICollection<EstatusRequisicion> EstatusRequisicionUsuarioModificacionNavigations { get; set; } = new List<EstatusRequisicion>();
+
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
 
     public virtual Monedum FkidMonedaPreferidaSisNavigation { get; set; }
+
+    public virtual ICollection<Fraccion> FraccionUsuarioCreacionNavigations { get; set; } = new List<Fraccion>();
+
+    public virtual ICollection<Fraccion> FraccionUsuarioModificacionNavigations { get; set; } = new List<Fraccion>();
 
     public virtual ICollection<FuenteFinanciamiento> FuenteFinanciamientoUsuarioCreacionNavigations { get; set; } = new List<FuenteFinanciamiento>();
 
@@ -112,6 +124,10 @@ public partial class Usuario
     public virtual ICollection<Usuario> InverseUsuarioCreacionNavigation { get; set; } = new List<Usuario>();
 
     public virtual ICollection<Usuario> InverseUsuarioModificacionNavigation { get; set; } = new List<Usuario>();
+
+    public virtual ICollection<Modalidad> ModalidadUsuarioCreacionNavigations { get; set; } = new List<Modalidad>();
+
+    public virtual ICollection<Modalidad> ModalidadUsuarioModificacionNavigations { get; set; } = new List<Modalidad>();
 
     public virtual ICollection<OrigenLogMessage> OrigenLogMessageUsuarioCreacionNavigations { get; set; } = new List<OrigenLogMessage>();
 
@@ -126,6 +142,10 @@ public partial class Usuario
     public virtual ICollection<PeriodoConteo> PeriodoConteoFkidResponsableSisNavigations { get; set; } = new List<PeriodoConteo>();
 
     public virtual ICollection<PeriodoConteo> PeriodoConteoFkidSupervisorSisNavigations { get; set; } = new List<PeriodoConteo>();
+
+    public virtual ICollection<ProcedimientoContratacion> ProcedimientoContratacionUsuarioCreacionNavigations { get; set; } = new List<ProcedimientoContratacion>();
+
+    public virtual ICollection<ProcedimientoContratacion> ProcedimientoContratacionUsuarioModificacionNavigations { get; set; } = new List<ProcedimientoContratacion>();
 
     public virtual ICollection<Programa> ProgramaUsuarioCreacionNavigations { get; set; } = new List<Programa>();
 
@@ -158,6 +178,18 @@ public partial class Usuario
     public virtual ICollection<SystemParamValue> SystemParamValueUsuarioCreacionNavigations { get; set; } = new List<SystemParamValue>();
 
     public virtual ICollection<SystemParamValue> SystemParamValueUsuarioModificacionNavigations { get; set; } = new List<SystemParamValue>();
+
+    public virtual ICollection<TipoContrato> TipoContratoUsuarioCreacionNavigations { get; set; } = new List<TipoContrato>();
+
+    public virtual ICollection<TipoContrato> TipoContratoUsuarioModificacionNavigations { get; set; } = new List<TipoContrato>();
+
+    public virtual ICollection<TipoDocumento> TipoDocumentoUsuarioCreacionNavigations { get; set; } = new List<TipoDocumento>();
+
+    public virtual ICollection<TipoDocumento> TipoDocumentoUsuarioModificacionNavigations { get; set; } = new List<TipoDocumento>();
+
+    public virtual ICollection<TipoGarantium> TipoGarantiumUsuarioCreacionNavigations { get; set; } = new List<TipoGarantium>();
+
+    public virtual ICollection<TipoGarantium> TipoGarantiumUsuarioModificacionNavigations { get; set; } = new List<TipoGarantium>();
 
     public virtual ICollection<TipoGasto> TipoGastoUsuarioCreacionNavigations { get; set; } = new List<TipoGasto>();
 

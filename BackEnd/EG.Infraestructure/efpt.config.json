@@ -147,7 +147,27 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[Articulo]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[DetalleRequisicion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[EstatusRequisicion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[Fraccion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[Modalidad]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[ProcedimientoContratacion]",
          "ObjectType": 0
       },
       {
@@ -160,6 +180,18 @@
       },
       {
          "Name": "[ORCO].[RequisicionPartida]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[TipoContrato]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[TipoDocumento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[TipoGarantia]",
          "ObjectType": 0
       },
       {
