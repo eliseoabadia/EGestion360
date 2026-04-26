@@ -108,11 +108,11 @@
             await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
             // Obtener claims de BD y cargarlos en el AuthProvider
-            var claims = await _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
+            // var claims = await _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
         
-            IEnumerable<Claim> _claims = claims.ToClaims();
+            // IEnumerable<Claim> _claims = claims.ToClaims();
 
-            ((AuthenticationProviderJWT)AuthenticationStateProvider).LoadPermissionsFromClaims(_claims);
+            // ((AuthenticationProviderJWT)AuthenticationStateProvider).LoadPermissionsFromClaims(_claims);
 
             var filters = new Dictionary<string, object>
             {

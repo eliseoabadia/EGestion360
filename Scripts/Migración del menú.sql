@@ -1,13 +1,23 @@
 update  sis.Menu set Ruta = replace(Ruta,'/~/','/')
 select * from sis.Menu
 select * from sis.MenuRole
+select * from dbo.AspNetClaims
+select * from dbo.AspNetClaimValues
 
-delete   sis.Menu
+truncate table  dbo.aspnetclaimvalues
+delete  dbo.AspNetClaims
+
+delete  dbo.AspNetClaims
 truncate table  sis.MenuRole
+delete   sis.Menu
 
 DECLARE @maxId INT;
-SELECT @maxId = ISNULL(MAX(PKIdMenu), 1) FROM sis.Menu;
-DBCC CHECKIDENT ('sis.Menu', RESEED, @maxId);
+SELECT @maxId = ISNULL(MAX(Id), 0) FROM dbo.AspNetClaims;
+DBCC CHECKIDENT ('dbo.AspNetClaims', RESEED, @maxId);
+
+DECLARE @maxId2 INT;
+SELECT @maxId2 = ISNULL(MAX(PKIdMenu), 0) FROM sis.Menu;
+DBCC CHECKIDENT ('sis.Menu', RESEED, @maxId2);
 
 
 UPDATE SIS.Menu
@@ -270,7 +280,8 @@ WHERE cv.Value IN ('delete', 'new', 'update', 'CanExportToExcel');
 END
 GO
 
-select * from SIS.Menu
+select * from SIS.Menu where nombre like N'%Menu%' or nombre like N'%Pantalla%'
+select * from SIS.Menu where PKIdMenu = 1 or FKIdMenu_SIS = 1
 select * from SIS.MenuRole
 
 select * from dbo.AspNetClaims AS ANC (NOLOCK) 

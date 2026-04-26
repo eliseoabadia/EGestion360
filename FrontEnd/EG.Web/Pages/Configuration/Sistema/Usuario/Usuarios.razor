@@ -1,4 +1,4 @@
-﻿@page "/SISUsuario"
+﻿@page "/configuracion/sistema/usuarios"
 @using EG.Web.Models.Configuration
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -78,8 +78,8 @@
 @code {
     private GenericTable<UsuarioResponse> table = null!;
 
-    protected override string ModuleName => "usuarios";
-    protected override string SubModuleName => "usuarios";
+    protected override string ModuleName => "Sistema";
+    protected override string SubModuleName => "Usuario";
 
     protected override Type CreateDialogType => typeof(UsuarioDialog);
     protected override Type EditDialogType => typeof(UsuarioDialog);

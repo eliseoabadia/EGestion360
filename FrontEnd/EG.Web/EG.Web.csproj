@@ -25,6 +25,7 @@
     <Folder Include="Contracs\ConteoCiclico\" />
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
+    <Folder Include="Pages\Configuration\Catalogos\" />
     <Folder Include="Pages\ConteoCiclico\" />
     <Folder Include="Services\Almacen\" />
     <Folder Include="Services\ConteoCiclico\" />
