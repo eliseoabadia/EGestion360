@@ -10,6 +10,9 @@ namespace EG.Web.Models.Adquisicion
         public int Orden { get; set; }
         public string Icono { get; set; } = string.Empty;
         public bool Activo { get; set; }
+        public int UsuarioCreacion { get; set; }
         public DateTime? FechaCreacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
     }
 }

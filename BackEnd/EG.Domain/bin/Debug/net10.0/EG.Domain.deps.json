@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v10.0": {
       "EG.Domain/1.0.0": {
         "dependencies": {
-          "Microsoft.Data.SqlClient": "7.0.0"
+          "Microsoft.Data.SqlClient": "7.0.1"
         },
         "runtime": {
           "EG.Domain.dll": {}
@@ -22,7 +22,7 @@
           }
         }
       },
-      "Microsoft.Data.SqlClient/7.0.0": {
+      "Microsoft.Data.SqlClient/7.0.1": {
         "dependencies": {
           "Microsoft.Bcl.Cryptography": "9.0.13",
           "Microsoft.Data.SqlClient.Extensions.Abstractions": "1.0.0",
@@ -38,7 +38,7 @@
         "runtime": {
           "lib/net9.0/Microsoft.Data.SqlClient.dll": {
             "assemblyVersion": "7.0.0.0",
-            "fileVersion": "7.0.0.26076"
+            "fileVersion": "7.0.1.26114"
           }
         },
         "resources": {
@@ -87,13 +87,13 @@
             "rid": "unix",
             "assetType": "runtime",
             "assemblyVersion": "7.0.0.0",
-            "fileVersion": "7.0.0.26076"
+            "fileVersion": "7.0.1.26114"
           },
           "runtimes/win/lib/net9.0/Microsoft.Data.SqlClient.dll": {
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "7.0.0.0",
-            "fileVersion": "7.0.0.26076"
+            "fileVersion": "7.0.1.26114"
           }
         }
       },
@@ -358,12 +358,12 @@
       "path": "microsoft.bcl.cryptography/9.0.13",
       "hashPath": "microsoft.bcl.cryptography.9.0.13.nupkg.sha512"
     },
-    "Microsoft.Data.SqlClient/7.0.0": {
+    "Microsoft.Data.SqlClient/7.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-/oolEwtHuDtpLKU8OItOTTxVJalgPtIkcNBwzXJ3YGyrkOAvLYqMtin9Z1jxqryJpds3PjuZBF5iKIYVVYVSvQ==",
-      "path": "microsoft.data.sqlclient/7.0.0",
-      "hashPath": "microsoft.data.sqlclient.7.0.0.nupkg.sha512"
+      "sha512": "sha512-9jZFXAJ2ThNYK7lhj2RhH7klXVNaWSvZpQncq3bPIOjmHBrdjwgeO4c8wucUVxQwFT8rAA13Z2F2jzoYR7ICDw==",
+      "path": "microsoft.data.sqlclient/7.0.1",
+      "hashPath": "microsoft.data.sqlclient.7.0.1.nupkg.sha512"
     },
     "Microsoft.Data.SqlClient.Extensions.Abstractions/1.0.0": {
       "type": "package",
