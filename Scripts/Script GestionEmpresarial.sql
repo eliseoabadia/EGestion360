@@ -697,7 +697,7 @@ USING (VALUES
     (253, N'Tipo de Documentos', 2, 250, N'Tipo de Documentos', N'/configuracion/adquisiciones/tipo-documento', N'FaFileAlt', 1, 'ESP', 163, 1000, GETDATE()),
     (254, N'Tipo de Garantía', 2, 250, N'Tipo de Garantía', N'/configuracion/adquisiciones/tipo-garantia', N'FaShieldAlt', 1, 'ESP', 164, 1000, GETDATE()),
     (255, N'Procedimientos de Contratación', 2, 250, N'Procedimientos de Contratación', N'/configuracion/adquisiciones/procedimientos-contratacion', N'FaGavel', 1, 'ESP', 165, 1000, GETDATE()),
-    (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisición', N'FaFlagCheckered', 1, 'ESP', 166, 1000, GETDATE()),
+    (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlagCheckered', 1, 'ESP', 166, 1000, GETDATE()),
     (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaTruck', 1, 'ESP', 167, 1000, GETDATE()),
     (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaBox', 1, 'ESP', 168, 1000, GETDATE()),
     (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 169, 1000, GETDATE()),

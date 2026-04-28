@@ -338,7 +338,7 @@
                try
                {
                    // Verificar permisos usando AuthenticationProviderJWT
-                   _canView = AuthProvider.HasPermission("configuracion", "menus", "view");
+                   _canView = AuthProvider.HasPermission("Sistema", "Menu", "view");
 
                    if (!_canView)
                    {
@@ -351,10 +351,10 @@
                    }
 
                    // Si tiene acceso, verificar permisos específicos
-                   _canCreate = AuthProvider.HasPermission("configuracion", "menus", "new");
-                   _canUpdate = AuthProvider.HasPermission("configuracion", "menus", "update");
-                   _canDelete = AuthProvider.HasPermission("configuracion", "menus", "delete");
-                   _canExport = AuthProvider.HasPermission("configuracion", "menus", "CanExportToExcel");
+                   _canCreate = AuthProvider.HasPermission("Sistema", "Menu", "new");
+                   _canUpdate = AuthProvider.HasPermission("Sistema", "Menu", "update");
+                   _canDelete = AuthProvider.HasPermission("Sistema", "Menu", "delete");
+                   _canExport = AuthProvider.HasPermission("Sistema", "Menu", "CanExportToExcel");
 
                    _hasAccess = true;
                    loading = false;
