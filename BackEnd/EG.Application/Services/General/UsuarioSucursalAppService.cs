@@ -14,13 +14,13 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _service;
         private readonly GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _serviceView;
-        private readonly IRepositorySP<spEliminarUsuarioSucursalResult1> _repositorySP;
+        private readonly IRepositorySP<spEliminarUsuarioSucursalResult> _repositorySP;
         private readonly IMapper _mapper;
 
         public UsuarioSucursalAppService(
             GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> service,
             GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> serviceView,
-            IRepositorySP<spEliminarUsuarioSucursalResult1> repositorySP,
+            IRepositorySP<spEliminarUsuarioSucursalResult> repositorySP,
             IMapper mapper)
         {
             _service = service;
@@ -145,7 +145,7 @@ namespace EG.Application.Services.General
                 new SqlParameter("@UsuarioModificacion", usuarioActual)
             };
 
-            var result = await _repositorySP.ExecuteStoredProcedureAsync<spEliminarUsuarioSucursalResult1>(
+            var result = await _repositorySP.ExecuteStoredProcedureAsync<spEliminarUsuarioSucursalResult>(
                 "SIS.spEliminarUsuarioSucursal", parameters);
 
             return result != null && result.Count() > 0;

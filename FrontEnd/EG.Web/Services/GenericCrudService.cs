@@ -1,6 +1,6 @@
 using EG.Common.GenericModel;
 using EG.Common.Helper;
-using EG.Web.Contracs;
+using EG.Web.Contracts;
 using EG.Web.Models;
 using Microsoft.JSInterop;
 using MudBlazor;

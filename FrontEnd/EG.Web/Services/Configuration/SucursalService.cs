@@ -1,5 +1,5 @@
 using EG.Common.Helper;
-using EG.Web.Contracs.Configuration;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;

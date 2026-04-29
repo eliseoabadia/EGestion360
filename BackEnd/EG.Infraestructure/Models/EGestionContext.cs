@@ -13,6 +13,8 @@ public partial class EGestionContext : DbContext
     {
     }
 
+    public virtual DbSet<ActividadInstitucional> ActividadInstitucionals { get; set; }
+
     public virtual DbSet<Anio> Anios { get; set; }
 
     public virtual DbSet<Area> Areas { get; set; }
@@ -77,9 +79,13 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Familium> Familia { get; set; }
 
+    public virtual DbSet<Fn> Fns { get; set; }
+
     public virtual DbSet<Fraccion> Fraccions { get; set; }
 
     public virtual DbSet<FuenteFinanciamiento> FuenteFinanciamientos { get; set; }
+
+    public virtual DbSet<Gf> Gfs { get; set; }
 
     public virtual DbSet<GrupoBien> GrupoBiens { get; set; }
 
@@ -115,6 +121,10 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<PersonaArea> PersonaAreas { get; set; }
 
+    public virtual DbSet<Pg> Pgs { get; set; }
+
+    public virtual DbSet<Pp> Pps { get; set; }
+
     public virtual DbSet<ProcedimientoContratacion> ProcedimientoContratacions { get; set; }
 
     public virtual DbSet<Programa> Programas { get; set; }
@@ -123,9 +133,17 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Proyecto> Proyectos { get; set; }
 
+    public virtual DbSet<Py> Pies { get; set; }
+
+    public virtual DbSet<Ramo> Ramos { get; set; }
+
     public virtual DbSet<Requisicion> Requisicions { get; set; }
 
     public virtual DbSet<RequisicionPartidum> RequisicionPartida { get; set; }
+
+    public virtual DbSet<Sector> Sectors { get; set; }
+
+    public virtual DbSet<Sf> Sfs { get; set; }
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
@@ -156,6 +174,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<TipoPatrimonio> TipoPatrimonios { get; set; }
 
     public virtual DbSet<TipoProveedor> TipoProveedors { get; set; }
+
+    public virtual DbSet<TipoRecurso> TipoRecursos { get; set; }
 
     public virtual DbSet<Unidade> Unidades { get; set; }
 
@@ -193,6 +213,32 @@ public partial class EGestionContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ActividadInstitucional>(entity =>
+        {
+            entity.HasKey(e => e.PkidActividadInstitucional);
+
+            entity.ToTable("ActividadInstitucional", "SIS");
+
+            entity.Property(e => e.PkidActividadInstitucional).HasColumnName("PKIdActividadInstitucional");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ActividadInstitucional_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(3);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(64);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_ActividadInstitucional_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ActividadInstitucionalUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActividadInstitucional_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ActividadInstitucionalUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_ActividadInstitucional_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Anio>(entity =>
         {
             entity.HasKey(e => e.PkidAnio);
@@ -1122,6 +1168,35 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<Fn>(entity =>
+        {
+            entity.HasKey(e => e.PkidFn);
+
+            entity.ToTable("FN", "PRES");
+
+            entity.Property(e => e.PkidFn).HasColumnName("PKIdFN");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_FN_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_FN_FechaCreacion");
+            entity.Property(e => e.FkidGfPres).HasColumnName("FKIdGF_PRES");
+
+            entity.HasOne(d => d.FkidGfPresNavigation).WithMany(p => p.Fns)
+                .HasForeignKey(d => d.FkidGfPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FN_GF");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.FnUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FN_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.FnUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_FN_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Fraccion>(entity =>
         {
             entity.HasKey(e => e.PkidFraccion);
@@ -1162,11 +1237,27 @@ public partial class EGestionContext : DbContext
 
             entity.Property(e => e.PkidFuenteFinanciamiento).HasColumnName("PKIdFuenteFinanciamiento");
             entity.Property(e => e.Activo).HasDefaultValue(true, "DF_FuenteFinanciamiento_Activo");
+            entity.Property(e => e.Ad)
+                .HasMaxLength(1)
+                .HasColumnName("AD");
             entity.Property(e => e.Clave).HasMaxLength(6);
             entity.Property(e => e.Descripcion)
                 .IsRequired()
                 .HasMaxLength(200);
+            entity.Property(e => e.Fe)
+                .HasMaxLength(1)
+                .HasColumnName("FE");
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_FuenteFinanciamiento_FechaCreacion");
+            entity.Property(e => e.Ff)
+                .HasMaxLength(2)
+                .HasColumnName("FF");
+            entity.Property(e => e.Fg)
+                .HasMaxLength(1)
+                .HasColumnName("FG");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.Ori)
+                .HasMaxLength(1)
+                .HasColumnName("ORI");
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.FuenteFinanciamientoUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
@@ -1176,6 +1267,29 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.FuenteFinanciamientoUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_FuenteFinanciamiento_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Gf>(entity =>
+        {
+            entity.HasKey(e => e.PkidGf);
+
+            entity.ToTable("GF", "PRES");
+
+            entity.Property(e => e.PkidGf).HasColumnName("PKIdGF");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_GF_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_GF_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.GfUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_GF_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.GfUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_GF_UsuarioModificacion");
         });
 
         modelBuilder.Entity<GrupoBien>(entity =>
@@ -1704,6 +1818,53 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_PersonaArea_Persona");
         });
 
+        modelBuilder.Entity<Pg>(entity =>
+        {
+            entity.HasKey(e => e.PkidPg);
+
+            entity.ToTable("PG", "PRES");
+
+            entity.Property(e => e.PkidPg).HasColumnName("PKIdPG");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_PG_Activo");
+            entity.Property(e => e.Descripcion).HasMaxLength(1000);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_PG_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.PgUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PG_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.PgUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_PG_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Pp>(entity =>
+        {
+            entity.HasKey(e => e.PkidPp);
+
+            entity.ToTable("PP", "PRES");
+
+            entity.Property(e => e.PkidPp).HasColumnName("PKIdPP");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_PP_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(4);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_PP_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.PpUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PP_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.PpUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_PP_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<ProcedimientoContratacion>(entity =>
         {
             entity.HasKey(e => e.PkidProcedimientoContratacion);
@@ -1853,6 +2014,69 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ProyectoUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_Proyecto_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Py>(entity =>
+        {
+            entity.HasKey(e => e.PkidPy);
+
+            entity.ToTable("PY", "PRES");
+
+            entity.Property(e => e.PkidPy).HasColumnName("PKIdPY");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_PY_Activo");
+            entity.Property(e => e.Beneficios).HasMaxLength(500);
+            entity.Property(e => e.Clave)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.DescripcionProyecto).HasMaxLength(500);
+            entity.Property(e => e.EsPat).HasColumnName("EsPAT");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_PY_FechaCreacion");
+            entity.Property(e => e.FuenteFinanciamiento).HasMaxLength(500);
+            entity.Property(e => e.FundamentoLegal).HasMaxLength(500);
+            entity.Property(e => e.Indicador).HasMaxLength(128);
+            entity.Property(e => e.Justificacion).HasMaxLength(500);
+            entity.Property(e => e.LineaAccionRegulatoria).HasMaxLength(500);
+            entity.Property(e => e.LineaEstrategica).HasMaxLength(500);
+            entity.Property(e => e.Meta).HasMaxLength(128);
+            entity.Property(e => e.NombreProyecto).HasMaxLength(500);
+            entity.Property(e => e.ObjetivoProyecto).HasMaxLength(500);
+            entity.Property(e => e.ProgramaPresupuestario).HasMaxLength(24);
+            entity.Property(e => e.ResponsableProyecto).HasMaxLength(128);
+            entity.Property(e => e.TemaAccionRegulatoria).HasMaxLength(500);
+            entity.Property(e => e.TieneTics).HasColumnName("TieneTICS");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.PyUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PY_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.PyUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_PY_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Ramo>(entity =>
+        {
+            entity.HasKey(e => e.PkidRamo);
+
+            entity.ToTable("Ramo", "PRES");
+
+            entity.Property(e => e.PkidRamo).HasColumnName("PKIdRamo");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Ramo_Activo");
+            entity.Property(e => e.Descripcion).HasMaxLength(1000);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Ramo_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.RamoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Ramo_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.RamoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Ramo_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Requisicion>(entity =>
@@ -2031,6 +2255,61 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.RequisicionPartidumUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_RequisicionPartida_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Sector>(entity =>
+        {
+            entity.HasKey(e => e.PkidSector);
+
+            entity.ToTable("Sector", "PRES");
+
+            entity.Property(e => e.PkidSector).HasColumnName("PKIdSector");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Sector_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Sector_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.SectorUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Sector_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.SectorUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Sector_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Sf>(entity =>
+        {
+            entity.HasKey(e => e.PkidSf);
+
+            entity.ToTable("SF", "PRES");
+
+            entity.Property(e => e.PkidSf).HasColumnName("PKIdSF");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SF_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_SF_FechaCreacion");
+            entity.Property(e => e.FkidFnPres).HasColumnName("FKIdFN_PRES");
+
+            entity.HasOne(d => d.FkidFnPresNavigation).WithMany(p => p.Sfs)
+                .HasForeignKey(d => d.FkidFnPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SF_FN");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.SfUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SF_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.SfUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_SF_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Sucursal>(entity =>
@@ -2466,6 +2745,32 @@ public partial class EGestionContext : DbContext
                 .HasDefaultValueSql("(sysdatetime())", "DF_TipoProveedor_FechaCreacion")
                 .HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<TipoRecurso>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoRecurso);
+
+            entity.ToTable("TipoRecurso", "PRES");
+
+            entity.Property(e => e.PkidTipoRecurso).HasColumnName("PKIdTipoRecurso");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoRecurso_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(1);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoRecurso_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoRecursoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoRecurso_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoRecursoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoRecurso_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Unidade>(entity =>

@@ -1,8 +1,8 @@
-Ôªø@using EG.Web.Extensions
+@using EG.Web.Extensions
 @using EG.Web.Helpers
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
-@using EG.Web.Contracs.Configuration
+@using EG.Web.Contracts.Configuration
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Routing
@@ -21,7 +21,7 @@
         box-shadow: inset 2px 0 8px rgba(0, 0, 0, 0.4);
     }
 
-    /* NIVEL 0 - Categor√≠as principales (Azul profesional) */
+    /* NIVEL 0 - CategorÌas principales (Azul profesional) */
     .menu-level-0 .mud-nav-link,
     .menu-level-0 .mud-nav-group-header {
         background: linear-gradient(90deg, rgba(66, 150, 255, 0.12) 0%, rgba(66, 150, 255, 0.04) 100%);
@@ -50,7 +50,7 @@
         box-shadow: 0 4px 16px rgba(66, 150, 255, 0.2);
     }
 
-    /* NIVEL 1 - Subcategor√≠as (Verde din√°mico) */
+    /* NIVEL 1 - SubcategorÌas (Verde din·mico) */
     .menu-level-1 .mud-nav-link,
     .menu-level-1 .mud-nav-group-header {
         background: linear-gradient(90deg, rgba(76, 175, 80, 0.10) 0%, rgba(76, 175, 80, 0.03) 100%);
@@ -78,7 +78,7 @@
         box-shadow: 0 2px 10px rgba(76, 175, 80, 0.15);
     }
 
-    /* NIVEL 2 - Sub-subcategor√≠as (Naranja vibrante) */
+    /* NIVEL 2 - Sub-subcategorÌas (Naranja vibrante) */
     .menu-level-2 .mud-nav-link {
         background: linear-gradient(90deg, rgba(255, 152, 0, 0.08) 0%, rgba(255, 152, 0, 0.02) 100%);
         margin: 3px 24px;
@@ -390,7 +390,7 @@
             expandedStates[ancestor.PkidMenu] = true;
         }
 
-        // Si el item actual tiene hijos, expandirlo tambi√©n
+        // Si el item actual tiene hijos, expandirlo tambiÈn
         if (item.Children?.Any() == true)
         {
             expandedStates[item.PkidMenu] = true;

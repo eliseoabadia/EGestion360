@@ -524,18 +524,15 @@ EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Cuentas_Contables', '10000', '
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Formas_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Sigevi_Partidas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Adquisiciones', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Modalidad',              '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Contrato',          '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Documentos',        '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Garantia',          '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Modalidad', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Documentos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Garantia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Procedimientos_Contratacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Estatus_Requisicion',    '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Proveedores',            '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Articulo',               '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Fraccion',               '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Patrimonio', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Almacen', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Tesoreria', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Estatus_Requisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Proveedores', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Articulo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Fraccion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -656,28 +653,27 @@ USING (VALUES
     
 
     -- Configuración -> Catálogos presupuestales
-    (210, N'Catálogos presupuestales', 1, 100, N'Catálogos presupuestales', N'/', N'FaListAlt', 1, 'ESP', 120, 1000, GETDATE()),
-    (211, N'Histórico', 2, 210, N'Histórico', N'/configuracion/catalogos-presupuestales/historico', N'FaHistory', 1, 'ESP', 121, 1000, GETDATE()),
+    (210, N'Presupuestales', 1, 100, N'Presupuestales', N'/', N'FaListAlt', 1, 'ESP', 120, 1000, GETDATE()),
     (220, N'ClavePrograma', 1, 210, N'ClavePrograma', N'/', N'FaKey', 1, 'ESP', 122, 1000, GETDATE()),
-    (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/catalogos-presupuestales/clave-programa/unidad-responsable', N'FaUserTie', 1, 'ESP', 123, 1000, GETDATE()),
-    (222, N'Finalidad', 2, 220, N'Finalidad', N'/configuracion/catalogos-presupuestales/clave-programa/finalidad', N'FaBullseye', 1, 'ESP', 124, 1000, GETDATE()),
-    (223, N'Función', 2, 220, N'Función', N'/configuracion/catalogos-presupuestales/clave-programa/funcion', N'FaCogs', 1, 'ESP', 125, 1000, GETDATE()),
-    (224, N'SubFunción', 2, 220, N'SubFunción', N'/configuracion/catalogos-presupuestales/clave-programa/subfuncion', N'FaCog', 1, 'ESP', 126, 1000, GETDATE()),
-    (225, N'Actividad Institucional', 2, 220, N'Actividad Institucional', N'/configuracion/catalogos-presupuestales/clave-programa/actividad-institucional', N'FaTasks', 1, 'ESP', 127, 1000, GETDATE()),
-    (226, N'Eje', 2, 220, N'Eje', N'/configuracion/catalogos-presupuestales/clave-programa/eje', N'FaArrowsAlt', 1, 'ESP', 128, 1000, GETDATE()),
-    (227, N'SubEje', 2, 220, N'SubEje', N'/configuracion/catalogos-presupuestales/clave-programa/subeje', N'FaArrowsAltH', 1, 'ESP', 129, 1000, GETDATE()),
-    (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/catalogos-presupuestales/clave-programa/programa-presupuestal', N'FaCalendarAlt', 1, 'ESP', 130, 1000, GETDATE()),
-    (229, N'Vertiente Gasto', 2, 220, N'Vertiente Gasto', N'/configuracion/catalogos-presupuestales/clave-programa/vertiente-gasto', N'FaChartPie', 1, 'ESP', 131, 1000, GETDATE()),
-    (230, N'Resultado', 2, 220, N'Resultado', N'/configuracion/catalogos-presupuestales/clave-programa/resultado', N'FaChartLine', 1, 'ESP', 132, 1000, GETDATE()),
-    (231, N'Subresultado', 2, 220, N'Subresultado', N'/configuracion/catalogos-presupuestales/clave-programa/subresultado', N'FaChartLine', 1, 'ESP', 133, 1000, GETDATE()),
-    (232, N'Años', 2, 220, N'Años', N'/configuracion/catalogos-presupuestales/clave-programa/anios', N'FaCalendar', 1, 'ESP', 134, 1000, GETDATE()),
-    (233, N'Sector', 2, 220, N'Sector', N'/configuracion/catalogos-presupuestales/clave-programa/sector', N'FaIndustry', 1, 'ESP', 135, 1000, GETDATE()),
-    (234, N'SubSector', 2, 220, N'SubSector', N'/configuracion/catalogos-presupuestales/clave-programa/subsector', N'FaIndustry', 1, 'ESP', 136, 1000, GETDATE()),
-    (235, N'Tipo Recurso', 2, 220, N'Tipo Recurso', N'/configuracion/catalogos-presupuestales/clave-programa/tipo-recurso', N'FaDollarSign', 1, 'ESP', 137, 1000, GETDATE()),
-    (236, N'Fuente Financiamiento', 2, 220, N'Fuente Financiamiento', N'/configuracion/catalogos-presupuestales/clave-programa/fuente-financiamiento', N'FaMoneyBillWave', 1, 'ESP', 138, 1000, GETDATE()),
-    (237, N'PG', 2, 220, N'PG', N'/configuracion/catalogos-presupuestales/clave-programa/pg', N'FaFileAlt', 1, 'ESP', 139, 1000, GETDATE()),
-    (238, N'Ramo', 2, 220, N'Ramo', N'/configuracion/catalogos-presupuestales/clave-programa/ramo', N'FaTree', 1, 'ESP', 140, 1000, GETDATE()),
-    (239, N'Proyecto', 2, 220, N'Proyecto', N'/configuracion/catalogos-presupuestales/clave-programa/proyecto', N'FaProjectDiagram', 1, 'ESP', 141, 1000, GETDATE()),
+    (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaUserTie', 1, 'ESP', 123, 1000, GETDATE()),
+    (222, N'Finalidad', 2, 220, N'Finalidad', N'/configuracion/presupuestales/clave-programa/finalidad', N'FaBullseye', 1, 'ESP', 124, 1000, GETDATE()),
+    (223, N'Función', 2, 220, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaCogs', 1, 'ESP', 125, 1000, GETDATE()),
+    (224, N'SubFunción', 2, 220, N'SubFunción', N'/configuracion/presupuestales/clave-programa/subfuncion', N'FaCog', 1, 'ESP', 126, 1000, GETDATE()),
+    (225, N'Actividad Institucional', 2, 220, N'Actividad Institucional', N'/configuracion/presupuestales/clave-programa/actividad-institucional', N'FaTasks', 1, 'ESP', 127, 1000, GETDATE()),
+    (226, N'Eje', 2, 220, N'Eje', N'/configuracion/presupuestales/clave-programa/eje', N'FaArrowsAlt', 1, 'ESP', 128, 1000, GETDATE()),
+    (227, N'SubEje', 2, 220, N'SubEje', N'/configuracion/presupuestales/clave-programa/subeje', N'FaArrowsAltH', 1, 'ESP', 129, 1000, GETDATE()),
+    (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/presupuestales/clave-programa/programa-presupuestal', N'FaCalendarAlt', 1, 'ESP', 130, 1000, GETDATE()),
+    (229, N'Vertiente Gasto', 2, 220, N'Vertiente Gasto', N'/configuracion/presupuestales/clave-programa/vertiente-gasto', N'FaChartPie', 1, 'ESP', 131, 1000, GETDATE()),
+    (230, N'Resultado', 2, 220, N'Resultado', N'/configuracion/presupuestales/clave-programa/resultado', N'FaChartLine', 1, 'ESP', 132, 1000, GETDATE()),
+    (231, N'Subresultado', 2, 220, N'Subresultado', N'/configuracion/presupuestales/clave-programa/subresultado', N'FaChartLine', 1, 'ESP', 133, 1000, GETDATE()),
+    (232, N'Años', 2, 220, N'Años', N'/configuracion/presupuestales/clave-programa/anios', N'FaCalendar', 1, 'ESP', 134, 1000, GETDATE()),
+    (233, N'Sector', 2, 220, N'Sector', N'/configuracion/presupuestales/clave-programa/sector', N'FaIndustry', 1, 'ESP', 135, 1000, GETDATE()),
+    (234, N'SubSector', 2, 220, N'SubSector', N'/configuracion/presupuestales/clave-programa/subsector', N'FaIndustry', 1, 'ESP', 136, 1000, GETDATE()),
+    (235, N'Tipo Recurso', 2, 220, N'Tipo Recurso', N'/configuracion/presupuestales/clave-programa/tipo-recurso', N'FaDollarSign', 1, 'ESP', 137, 1000, GETDATE()),
+    (236, N'Fuente Financiamiento', 2, 220, N'Fuente Financiamiento', N'/configuracion/presupuestales/clave-programa/fuente-financiamiento', N'FaMoneyBillWave', 1, 'ESP', 138, 1000, GETDATE()),
+    (237, N'PG', 2, 220, N'PG', N'/configuracion/presupuestales/clave-programa/pg', N'FaFileAlt', 1, 'ESP', 139, 1000, GETDATE()),
+    (238, N'Ramo', 2, 220, N'Ramo', N'/configuracion/presupuestales/clave-programa/ramo', N'FaTree', 1, 'ESP', 140, 1000, GETDATE()),
+    (239, N'Proyecto', 2, 220, N'Proyecto', N'/configuracion/presupuestales/clave-programa/proyecto', N'FaProjectDiagram', 1, 'ESP', 141, 1000, GETDATE()),
 
     -- Configuración -> Contabilidad
     (240, N'Contabilidad', 1, 100, N'Contabilidad', N'/', N'FaCalculator', 1, 'ESP', 150, 1000, GETDATE()),
@@ -700,19 +696,19 @@ USING (VALUES
     (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlagCheckered', 1, 'ESP', 166, 1000, GETDATE()),
     (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaTruck', 1, 'ESP', 167, 1000, GETDATE()),
     (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaBox', 1, 'ESP', 168, 1000, GETDATE()),
-    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 169, 1000, GETDATE()),
+    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 169, 1000, GETDATE())
 
-    -- Configuración -> Patrimonio
-    (260, N'Patrimonio', 1, 100, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 170, 1000, GETDATE()),
-    (261, N'Parámetros Patrimonio', 2, 260, N'Parámetros Patrimonio', N'/configuracion/patrimonio', N'FaBuilding', 1, 'ESP', 171, 1000, GETDATE()),
+    ---- Configuración -> Patrimonio
+    --(260, N'Patrimonio', 1, 100, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 170, 1000, GETDATE()),
+    --(261, N'Parámetros Patrimonio', 2, 260, N'Parámetros Patrimonio', N'/configuracion/patrimonio', N'FaBuilding', 1, 'ESP', 171, 1000, GETDATE()),
 
-    -- Configuración -> Almacén
-    (270, N'Almacén', 1, 100, N'Almacén', N'/', N'FaWarehouse', 1, 'ESP', 180, 1000, GETDATE()),
-    (271, N'Parámetros Almacén', 2, 270, N'Parámetros Almacén', N'/configuracion/almacen', N'FaWarehouse', 1, 'ESP', 181, 1000, GETDATE()),
+    ---- Configuración -> Almacén
+    --(270, N'Almacén', 1, 100, N'Almacén', N'/', N'FaWarehouse', 1, 'ESP', 180, 1000, GETDATE()),
+    --(271, N'Parámetros Almacén', 2, 270, N'Parámetros Almacén', N'/configuracion/almacen', N'FaWarehouse', 1, 'ESP', 181, 1000, GETDATE()),
 
-    -- Configuración -> Tesorería
-    (280, N'Tesoreria', 1, 100, N'Tesoreria', N'/', N'FaMoneyBill', 1, 'ESP', 190, 1000, GETDATE()),
-    (281, N'Parámetros Tesorería', 2, 280, N'Parámetros Tesorería', N'/configuracion/tesoreria', N'FaMoneyBill', 1, 'ESP', 191, 1000, GETDATE())
+    ---- Configuración -> Tesorería
+    --(280, N'Tesoreria', 1, 100, N'Tesoreria', N'/', N'FaMoneyBill', 1, 'ESP', 190, 1000, GETDATE()),
+    --(281, N'Parámetros Tesorería', 2, 280, N'Parámetros Tesorería', N'/configuracion/tesoreria', N'FaMoneyBill', 1, 'ESP', 191, 1000, GETDATE())
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)
 WHEN MATCHED THEN

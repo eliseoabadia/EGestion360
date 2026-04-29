@@ -1,11 +1,12 @@
 ﻿using EG.Common.Helper;
 using EG.Web;
 using EG.Web.Auth;
-using EG.Web.Contracs;
-using EG.Web.Contracs.Configuration;
+using EG.Web.Contracts;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Extensions;
 using EG.Web.Services;
 using EG.Web.Services.Configuration;
+using EG.Domain.DTOs.Responses.Presupuestales;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -61,6 +62,20 @@ internal class Program
         builder.Services.AddScoped<IRequestService, RequestService>();
         builder.Services.AddScoped<ISucursalService, SucursalService>(); 
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+        
+        // Registrar servicios para los catálogos presupuestales
+        builder.Services.AddScoped<IGenericCrudService<UnidadResponsableResponse>, GenericCrudService<UnidadResponsableResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<FuncionResponse>, GenericCrudService<FuncionResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>, GenericCrudService<SubFuncionResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<ActividadInstitucionalResponse>, GenericCrudService<ActividadInstitucionalResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<ProgramaPresupuestalResponse>, GenericCrudService<ProgramaPresupuestalResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<AniosResponse>, GenericCrudService<AniosResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<SectorResponse>, GenericCrudService<SectorResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<TipoRecursoResponse>, GenericCrudService<TipoRecursoResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<FuenteFinanciamientoResponse>, GenericCrudService<FuenteFinanciamientoResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<PgResponse>, GenericCrudService<PgResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<RamoResponse>, GenericCrudService<RamoResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<ProyectoResponse>, GenericCrudService<ProyectoResponse>>();
         //builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
 
         //builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();

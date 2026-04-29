@@ -1,4 +1,4 @@
-ï»¿@using EG.Web.Contracs
+@using EG.Web.Contracts
 @using EG.Web.Extensions
 @using EG.Web.Models.Configuration
 @using Microsoft.AspNetCore.Components.Forms
@@ -12,7 +12,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Class="mr-2" />
-            Crear Nuevo MenÃº @(!string.IsNullOrEmpty(NombreMenuPadre) ? $"(SubmenÃº de: {NombreMenuPadre})" : "(MenÃº Principal)")
+            Crear Nuevo Menú @(!string.IsNullOrEmpty(NombreMenuPadre) ? $"(Submenú de: {NombreMenuPadre})" : "(Menú Principal)")
         </MudText>
     </TitleContent>
 
@@ -20,7 +20,7 @@
         <MudGrid Spacing="3" Class="mt-2">
             <MudItem xs="12">
                 <MudTextField @bind-Value="menu.Nombre"
-                              Label="Nombre del MenÃº *"
+                              Label="Nombre del Menú *"
                               Variant="Variant.Outlined"
                               For="@(() => menu.Nombre)"
                               Required="true"
@@ -48,7 +48,7 @@
                                  Max="999"
                                  Required="true"
                                  RequiredError="El orden es requerido"
-                                 HelperText="NÃºmero de orden de visualizaciÃ³n" />
+                                 HelperText="Número de orden de visualización" />
             </MudItem>
 
             <MudItem xs="12">
@@ -87,7 +87,7 @@
                 </MudAutocomplete>
 
                 <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mt-1">
-                    Selecciona un icono para el menÃº
+                    Selecciona un icono para el menú
                 </MudText>
             </MudItem>
 
@@ -99,10 +99,10 @@
 
             <MudItem xs="12">
                 <MudTextField @bind-Value="menu.ValidacionEstructura"
-                              Label="ValidaciÃ³n"
+                              Label="Validación"
                               Variant="Variant.Outlined"
                               MaxLength="500"
-                              HelperText="Reglas de validaciÃ³n (opcional)" />
+                              HelperText="Reglas de validación (opcional)" />
             </MudItem>
         </MudGrid>
     </DialogContent>
@@ -179,7 +179,7 @@
         {
             if (string.IsNullOrWhiteSpace(menu.Nombre))
             {
-                Snackbar.Add("El nombre del menÃº es requerido", Severity.Warning);
+                Snackbar.Add("El nombre del menú es requerido", Severity.Warning);
                 return;
             }
 
@@ -192,12 +192,12 @@
             var response = await _service.CreateAsync(menu);
             if (response != null && response.Success)
             {
-                Snackbar.Add("MenÃº creado exitosamente", Severity.Success);
+                Snackbar.Add("Menú creado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al crear el menÃº", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al crear el menú", Severity.Error);
             }
         }
         catch (Exception ex)

@@ -1,5 +1,5 @@
-﻿using EG.Common.Helper;
-using EG.Web.Contracs.Configuration;
+using EG.Common.Helper;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
@@ -105,7 +105,7 @@ namespace EG.Web.Services.Configuration
                 return new ApiResponse<EmpresaResponse>
                 {
                     Success = false,
-                    Message = "ID de empresa no válido",
+                    Message = "ID de empresa no v�lido",
                     Code = "INVALID_ID"
                 };
 

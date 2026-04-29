@@ -207,11 +207,43 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[FN]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[FuenteFinanciamiento]",
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[GF]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[PG]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[PP]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[Programa]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[PY]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Ramo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Sector]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[SF]",
          "ObjectType": 0
       },
       {
@@ -220,6 +252,14 @@
       },
       {
          "Name": "[PRES].[TipoGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[TipoRecurso]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[ActividadInstitucional]",
          "ObjectType": 0
       },
       {
@@ -433,6 +473,5 @@
    "UseSchemaNamespaces": false,
    "UseSpatial": false,
    "UseT4": false,
-   "UseT4Split": false,
-   "UseTypedTvpParameters": true
+   "UseT4Split": false
 }

@@ -1,5 +1,5 @@
-﻿using EG.Common.Helper;
-using EG.Web.Contracs.Configuration;
+using EG.Common.Helper;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Models.Configuration;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -191,7 +191,7 @@ namespace EG.Web.Services
         }
     }
 
-    // Modelo auxiliar para paginación
+    // Modelo auxiliar para paginaci�n
     public class PagedResult<T>
     {
         public List<T>? Items { get; set; }

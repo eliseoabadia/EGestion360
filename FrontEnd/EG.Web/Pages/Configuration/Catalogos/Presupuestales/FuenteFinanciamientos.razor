@@ -1,0 +1,103 @@
+@page "/configuracion/presupuestales/clave-programa/fuente-financiamiento"
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<FuenteFinanciamientoResponse, FuenteFinanciamientoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Fuentes de Financiamiento"
+                    Subtitle="Catálogo de fuentes de financiamiento"
+                    Icon="@Icons.Material.Filled.Payments"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="FuenteFinanciamientoResponse"
+                      @ref="table"
+                      Title="Lista de Fuentes de Financiamiento"
+                      SearchPlaceholder="Buscar por clave o descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidFuenteFinanciamiento" T="FuenteFinanciamientoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="FuenteFinanciamientoResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FuenteFinanciamientoResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="FuenteFinanciamientoResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidFuenteFinanciamiento))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidFuenteFinanciamiento))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidFuenteFinanciamiento</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<FuenteFinanciamientoResponse> table = null!;
+
+    protected override string ModuleName => "ClavePrograma";
+    protected override string SubModuleName => "Fuente_Financiamiento";
+
+    protected override Type CreateDialogType => typeof(FuenteFinanciamientoDialog);
+    protected override Type EditDialogType => typeof(FuenteFinanciamientoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<FuenteFinanciamientoResponse>);
+
+    protected override string GetDefaultSortLabel() => "Clave";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<FuenteFinanciamientoResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidFuenteFinanciamiento,
+            Clave = u.Clave,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "la fuente de financiamiento";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

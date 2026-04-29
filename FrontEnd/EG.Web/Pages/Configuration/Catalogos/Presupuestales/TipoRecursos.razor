@@ -1,0 +1,103 @@
+@page "/configuracion/presupuestales/clave-programa/tipo-recurso"
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoRecursoResponse, TipoRecursoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Recurso"
+                    Subtitle="Catálogo de tipos de recurso"
+                    Icon="@Icons.Material.Filled.AttachMoney"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="TipoRecursoResponse"
+                      @ref="table"
+                      Title="Lista de Tipos de Recurso"
+                      SearchPlaceholder="Buscar por clave o descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoRecurso" T="TipoRecursoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoRecursoResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoRecursoResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoRecursoResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoRecurso))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoRecurso))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoRecurso</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<TipoRecursoResponse> table = null!;
+
+    protected override string ModuleName => "ClavePrograma";
+    protected override string SubModuleName => "TipoRecurso";
+
+    protected override Type CreateDialogType => typeof(TipoRecursoDialog);
+    protected override Type EditDialogType => typeof(TipoRecursoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoRecursoResponse>);
+
+    protected override string GetDefaultSortLabel() => "Clave";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoRecursoResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidTipoRecurso,
+            Clave = u.Clave,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "el tipo de recurso";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

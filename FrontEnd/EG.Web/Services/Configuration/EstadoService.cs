@@ -1,5 +1,5 @@
-ï»¿using EG.Common.Helper;
-using EG.Web.Contracs.Configuration;
+using EG.Common.Helper;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
@@ -32,7 +32,7 @@ namespace EG.Web.Services.Configuration
             return await GetAsync<ApiResponse<EstadoResponse>>($"api/Estado/{estadoId}");
         }
 
-        // ============ PAGINACIÃ“N ============
+        // ============ PAGINACIÓN ============
 
         public async Task<(List<EstadoResponse> Estados, int TotalCount)> GetAllEstadosPaginadoAsync(
             int page = 1,
@@ -91,7 +91,7 @@ namespace EG.Web.Services.Configuration
         public async Task<(bool resultado, string mensaje)> UpdateEstadoAsync(EstadoResponse estado)
         {
             if (estado.PkidEstado <= 0)
-                return (false, "ID de estado no vÃ¡lido");
+                return (false, "ID de estado no válido");
 
             var operationResult = await ExecuteOperationAsync(async () =>
             {

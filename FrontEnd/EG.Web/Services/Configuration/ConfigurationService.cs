@@ -1,5 +1,5 @@
-ï»¿// ConfigurationService.cs
-using EG.Web.Contracs.Configuration;
+// ConfigurationService.cs
+using EG.Web.Contracts.Configuration;
 using Microsoft.JSInterop;
 using System.Text.Json;
 
@@ -19,7 +19,7 @@ namespace EG.Web.Services.Configuration
         {
             try
             {
-                // Intenta obtener desde localStorage (si guardaste la configuraciÃ³n allÃ­)
+                // Intenta obtener desde localStorage (si guardaste la configuración allí)
                 var json = await _jsRuntime.InvokeAsync<string>(
                     "localStorage.getItem",
                     $"config_{key}");
@@ -44,7 +44,7 @@ namespace EG.Web.Services.Configuration
             var compiledConfig = new Dictionary<string, object>
             {
                 ["ApiBaseUrl"] = "https://tu-api.com",
-                // Agrega mÃ¡s valores segÃºn necesites
+                // Agrega más valores según necesites
             };
 
             if (compiledConfig.TryGetValue(key, out var value) && value is T typedValue)
@@ -58,7 +58,7 @@ namespace EG.Web.Services.Configuration
         public async Task<string> GetBaseUrlAsync()
         {
             // Para WASM, puedes usar NavigationManager.BaseUri
-            // O obtenerlo desde configuraciÃ³n
+            // O obtenerlo desde configuración
             var baseUrl = await GetAsync<string>("ApiBaseUrl");
             return baseUrl ?? "https://localhost:5001";
         }

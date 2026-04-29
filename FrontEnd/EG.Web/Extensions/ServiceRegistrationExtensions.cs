@@ -1,5 +1,5 @@
 using EG.Common.Helper;
-using EG.Web.Contracs;
+using EG.Web.Contracts;
 using EG.Web.Models.Adquisicion;
 using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;

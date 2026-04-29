@@ -1,5 +1,5 @@
-Ôªøusing EG.Common.Helper;
-using EG.Web.Contracs.Configuration;
+using EG.Common.Helper;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
@@ -92,7 +92,7 @@ namespace EG.Web.Services.Configuration
                 return new ApiResponse<UsuarioResponse>
                 {
                     Success = false,
-                    Message = "ID de usuario no v√°lido",
+                    Message = "ID de usuario no v·lido",
                     Code = "INVALID_ID"
                 };
 
@@ -239,7 +239,7 @@ namespace EG.Web.Services.Configuration
             return response ?? new ApiResponse<UsuarioResponse>
             {
                 Success = false,
-                Message = "Error al cambiar estado de relaci√≥n",
+                Message = "Error al cambiar estado de relaciÛn",
                 Code = "ERROR"
             };
         }

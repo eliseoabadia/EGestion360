@@ -1,5 +1,5 @@
-Ôªøusing EG.Web.Auth;
-using EG.Web.Contracs;
+using EG.Web.Auth;
+using EG.Web.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MiniExcelLibs;
@@ -165,7 +165,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         catch (TaskCanceledException) { }
     }
 
-    // ==================== M√âTODOS CRUD MEJORADOS ====================
+    // ==================== M…TODOS CRUD MEJORADOS ====================
 
     protected virtual async Task CreateItem()
     {
@@ -175,26 +175,26 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        Console.WriteLine("üîÑ Abriendo di√°logo de crear...");
+        Console.WriteLine("?? Abriendo di·logo de crear...");
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}",
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-        Console.WriteLine("‚è≥ Esperando resultado del di√°logo...");
+        Console.WriteLine("? Esperando resultado del di·logo...");
         var result = await dialog.Result;
         
         if (result == null)
         {
-            Console.WriteLine("‚ö†Ô∏è Resultado es null");
+            Console.WriteLine("?? Resultado es null");
             return;
         }
         
-        Console.WriteLine($"üìã Resultado del di√°logo: Canceled={result.Canceled}");
+        Console.WriteLine($"?? Resultado del di·logo: Canceled={result.Canceled}");
         
         if (!result.Canceled)
         {
-            Console.WriteLine("üîÑ Recargando datos...");
+            Console.WriteLine("?? Recargando datos...");
             await ReloadData();
-            Console.WriteLine("‚úÖ Datos recargados");
+            Console.WriteLine("? Datos recargados");
         }
     }
 
@@ -206,27 +206,27 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        Console.WriteLine($"üîÑ Abriendo di√°logo de editar para ID: {id}");
+        Console.WriteLine($"?? Abriendo di·logo de editar para ID: {id}");
         var parameters = new DialogParameters { ["Id"] = id };
         var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-        Console.WriteLine("‚è≥ Esperando resultado del di√°logo...");
+        Console.WriteLine("? Esperando resultado del di·logo...");
         var result = await dialog.Result;
         
         if (result == null)
         {
-            Console.WriteLine("‚ö†Ô∏è Resultado es null");
+            Console.WriteLine("?? Resultado es null");
             return;
         }
         
-        Console.WriteLine($"üìã Resultado del di√°logo: Canceled={result.Canceled}, Data={result.Data}");
+        Console.WriteLine($"?? Resultado del di·logo: Canceled={result.Canceled}, Data={result.Data}");
 
         if (!result.Canceled)
         {
-            Console.WriteLine("üîÑ Recargando datos...");
+            Console.WriteLine("?? Recargando datos...");
             await ReloadData();
-            Console.WriteLine("‚úÖ Datos recargados");
+            Console.WriteLine("? Datos recargados");
         }
     }
 
@@ -238,7 +238,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        // Obtener el nombre del item para mostrarlo en el di√°logo
+        // Obtener el nombre del item para mostrarlo en el di·logo
         var itemName = await GetItemNameForDelete(id);
 
         var parameters = new DialogParameters
@@ -263,13 +263,13 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         await dialog.Result;
     }
 
-    // M√©todo para obtener el nombre del item (sobrescribir en cada p√°gina)
+    // MÈtodo para obtener el nombre del item (sobrescribir en cada p·gina)
     protected virtual Task<string> GetItemNameForDelete(int id)
     {
         return Task.FromResult(string.Empty);
     }
 
-    // M√©todo que ejecuta la eliminaci√≥n real
+    // MÈtodo que ejecuta la eliminaciÛn real
     private async Task<bool> ExecuteDelete(int id)
     {
         try
@@ -301,14 +301,14 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // M√©todo para recargar datos (sobrescribir en las p√°ginas hijas)
+    // MÈtodo para recargar datos (sobrescribir en las p·ginas hijas)
     protected virtual async Task ReloadData()
     {
-        // Este m√©todo ser√° sobrescrito en las p√°ginas hijas
+        // Este mÈtodo ser· sobrescrito en las p·ginas hijas
         await Task.CompletedTask;
     }
 
-    // ==================== FIN M√âTODOS CRUD ====================
+    // ==================== FIN M…TODOS CRUD ====================
 
     protected virtual async Task ExportToExcel()
     {
@@ -342,7 +342,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"‚úÖ Exportaci√≥n exitosa: {response.Items.Count()} registros", Severity.Success);
+            Snackbar.Add($"? ExportaciÛn exitosa: {response.Items.Count()} registros", Severity.Success);
         }
         catch (Exception ex)
         {

@@ -23,6 +23,18 @@ public partial class FuenteFinanciamiento
 
     public int? UsuarioModificacion { get; set; }
 
+    public string Ff { get; set; }
+
+    public string Fg { get; set; }
+
+    public string Fe { get; set; }
+
+    public string Ad { get; set; }
+
+    public string Ori { get; set; }
+
+    public int? FkidAnioSis { get; set; }
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

@@ -1,5 +1,5 @@
-﻿using EG.Common.Helper;
-using EG.Web.Contracs.Configuration;
+using EG.Common.Helper;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
@@ -109,7 +109,7 @@ namespace EG.Web.Services.Configuration
                 return new ApiResponse<DepartamentoResponse>
                 {
                     Success = false,
-                    Message = "ID de departamento no válido",
+                    Message = "ID de departamento no v�lido",
                     Code = "INVALID_ID"
                 };
 

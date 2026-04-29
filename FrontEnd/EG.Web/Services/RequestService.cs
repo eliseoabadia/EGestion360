@@ -1,4 +1,4 @@
-﻿using EG.Web.Contracs;
+using EG.Web.Contracts;
 using EG.Web.Helpers;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;

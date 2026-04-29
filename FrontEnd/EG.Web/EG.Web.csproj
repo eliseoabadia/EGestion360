@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Contracs\**" />
+    <Content Remove="Contracs\**" />
+    <EmbeddedResource Remove="Contracs\**" />
+    <None Remove="Contracs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazorise.Snackbar" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.7" />
@@ -17,15 +24,17 @@
     <PackageReference Include="MudBlazor" Version="9.4.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\BackEnd\EG.Common\EG.Common.csproj" />
-  </ItemGroup>
+   <ItemGroup>
+     <ProjectReference Include="..\..\BackEnd\EG.Common\EG.Common.csproj" />
+     <ProjectReference Include="..\..\BackEnd\EG.Domain\EG.Domain.csproj" />
+   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Contracs\ConteoCiclico\" />
+	<Folder Include="Contracs\ConteoCiclico\" />
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
     <Folder Include="Pages\Configuration\Catalogos\Adquisicion\" />
+    <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
     <Folder Include="Pages\ConteoCiclico\" />
     <Folder Include="Services\Almacen\" />
     <Folder Include="Services\ConteoCiclico\" />

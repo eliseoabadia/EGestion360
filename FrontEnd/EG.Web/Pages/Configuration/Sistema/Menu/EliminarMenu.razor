@@ -1,4 +1,4 @@
-ï»¿@using EG.Web.Contracs
+@using EG.Web.Contracts
 @using EG.Web.Models.Configuration
 @using MudBlazor
 
@@ -9,7 +9,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6" Color="Color.Error">
             <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Class="mr-2" />
-            Confirmar EliminaciÃ³n
+            Confirmar Eliminación
         </MudText>
     </TitleContent>
 
@@ -22,7 +22,7 @@
         {
             <MudStack Spacing="3">
                 <MudAlert Severity="Severity.Warning" Variant="Variant.Filled">
-                    Â¿EstÃ¡ seguro que desea eliminar este menÃº?
+                    ¿Está seguro que desea eliminar este menú?
                 </MudAlert>
 
                 @if (menu != null)
@@ -63,7 +63,7 @@
                         @if (menu.FkidMenuSis.HasValue)
                         {
                             <MudText Typo="Typo.caption" Class="mt-2">
-                                MenÃº Padre: <strong>@menu.NombreMenuPadre</strong>
+                                Menú Padre: <strong>@menu.NombreMenuPadre</strong>
                             </MudText>
                         }
 
@@ -72,7 +72,7 @@
                             <MudAlert Severity="Severity.Error" Class="mt-3" Variant="Variant.Outlined">
                                 <MudText>
                                     <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" />
-                                    Este menÃº tiene submenÃºs. No se puede eliminar.
+                                    Este menú tiene submenús. No se puede eliminar.
                                 </MudText>
                             </MudAlert>
                         }
@@ -125,7 +125,7 @@
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al cargar el menÃº", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al cargar el menú", Severity.Error);
                 MudDialog.Cancel();
             }
         }
@@ -152,7 +152,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al verificar submenÃºs: {ex.Message}", Severity.Warning);
+            Snackbar.Add($"Error al verificar submenús: {ex.Message}", Severity.Warning);
         }
     }
 
@@ -162,19 +162,19 @@
         {
             if (tieneHijos)
             {
-                Snackbar.Add("No se puede eliminar un menÃº que tiene submenÃºs", Severity.Error);
+                Snackbar.Add("No se puede eliminar un menú que tiene submenús", Severity.Error);
                 return;
             }
 
             var response = await _service.DeleteAsync(MenuId);
             if (response != null && response.Success)
             {
-                Snackbar.Add("MenÃº eliminado exitosamente", Severity.Success);
+                Snackbar.Add("Menú eliminado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al eliminar el menÃº", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al eliminar el menú", Severity.Error);
             }
         }
         catch (Exception ex)
