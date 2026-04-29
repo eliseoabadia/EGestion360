@@ -1,4 +1,4 @@
-using EG.Web.Models;
+﻿using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using SortDirection = MudBlazor.SortDirection;
 
@@ -11,7 +11,7 @@ namespace EG.Web.Contracts.Configuration
 
         Task<ApiResponse<EstadoResponse>> GetEstadoByIdAsync(int estadoId);
 
-        // ============ PAGINACI�N ============
+        // ============ PAGINACIÓN ============
         Task<(List<EstadoResponse> Estados, int TotalCount)> GetAllEstadosPaginadoAsync(
             int page = 1,
             int pageSize = 10,

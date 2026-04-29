@@ -8,13 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Contracs\**" />
-    <Content Remove="Contracs\**" />
-    <EmbeddedResource Remove="Contracs\**" />
-    <None Remove="Contracs\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Blazorise.Snackbar" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.7" />
@@ -30,7 +23,6 @@
    </ItemGroup>
 
   <ItemGroup>
-	<Folder Include="Contracs\ConteoCiclico\" />
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
     <Folder Include="Pages\Configuration\Catalogos\Adquisicion\" />

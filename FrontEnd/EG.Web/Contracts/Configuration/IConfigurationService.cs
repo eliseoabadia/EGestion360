@@ -1,4 +1,4 @@
-namespace EG.Web.Contracts.Configuration
+﻿namespace EG.Web.Contracts.Configuration
 {
     public interface IConfigurationService
     {

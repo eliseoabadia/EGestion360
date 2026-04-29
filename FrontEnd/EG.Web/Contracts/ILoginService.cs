@@ -1,4 +1,4 @@
-using EG.Web.Models;
+﻿using EG.Web.Models;
 using EG.Web.Models.Configuration;
 
 namespace EG.Web.Contracts

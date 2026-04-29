@@ -1,11 +1,11 @@
-using EG.Web.Models;
+﻿using EG.Web.Models;
 using EG.Web.Models.Configuration;
 using SortDirection = MudBlazor.SortDirection;
 
 namespace EG.Web.Contracts.Configuration
 {
     /// <summary>
-    /// Servicio para la gesti�n de empresas
+    /// Servicio para la gestión de empresas
     /// </summary>
     public interface IEmpresaService
     {

@@ -1,4 +1,4 @@
-namespace EG.Web.Contracts
+﻿namespace EG.Web.Contracts
 {
     public interface IRequestService
     {
