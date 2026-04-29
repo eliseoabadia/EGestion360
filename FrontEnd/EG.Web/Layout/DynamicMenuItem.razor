@@ -1,0 +1,40 @@
+@using EG.Web.Models.Configuration
+@using MudBlazor
+
+@if (Item.Children?.Any() == true)
+{
+    <MudNavGroup Title="@Item.Nombre"
+                 Icon="@GetIcon(Item.ImageUrl)"
+                 Expanded="@GetExpandedState(Item.PkidMenu)"
+                 ExpandedChanged="(v) => SetExpandedState(Item.PkidMenu, v)"
+                 Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+        @foreach (var child in Item.Children.OrderBy(m => m.Orden))
+        {
+            <DynamicMenuItem Item="child" Level="@(Level + 1)" 
+                             GetExpandedState="GetExpandedState"
+                             SetExpandedState="SetExpandedState"
+                             GetIcon="GetIcon"
+                             FindItemByRoute="FindItemByRoute"
+                             AllItems="AllItems" />
+        }
+    </MudNavGroup>
+}
+else
+{
+    <MudNavLink Href="@(Item.Ruta ?? "")"
+                Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                Icon="@GetIcon(Item.ImageUrl)"
+                Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+        @Item.Nombre
+    </MudNavLink>
+}
+
+@code {
+    [Parameter] public MenuItem Item { get; set; } = default!;
+    [Parameter] public int Level { get; set; }
+    [Parameter] public Func<long?, bool> GetExpandedState { get; set; } = default!;
+    [Parameter] public Action<long?, bool> SetExpandedState { get; set; } = default!;
+    [Parameter] public Func<string, string> GetIcon { get; set; } = default!;
+    [Parameter] public Func<List<MenuItem>, string, MenuItem?> FindItemByRoute { get; set; } = default!;
+    [Parameter] public List<MenuItem> AllItems { get; set; } = default!;
+}

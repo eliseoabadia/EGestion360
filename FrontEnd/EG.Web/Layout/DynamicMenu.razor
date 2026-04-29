@@ -15,266 +15,41 @@
 @inject IJSRuntime _jsRuntime
 
 <style>
-    /* ============ TEMA OSCURO ============ */
-    .mud-nav-menu {
-        background: linear-gradient(180deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%) !important;
-        box-shadow: inset 2px 0 8px rgba(0, 0, 0, 0.4);
+    .professional-nav-menu {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3462 100%) !important;
+        box-shadow: inset 3px 0 12px rgba(0, 0, 0, 0.5);
+        padding: 8px 4px;
+        min-height: 100vh;
+        overflow-y: auto;
     }
 
-    /* NIVEL 0 - Categorías principales (Azul profesional) */
-    .menu-level-0 .mud-nav-link,
-    .menu-level-0 .mud-nav-group-header {
-        background: linear-gradient(90deg, rgba(66, 150, 255, 0.12) 0%, rgba(66, 150, 255, 0.04) 100%);
-        border-left: 5px solid rgba(66, 150, 255, 0.3);
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        margin: 6px 8px;
-        border-radius: 10px;
-        padding: 10px 12px !important;
-        font-weight: 550;
-        letter-spacing: 0.3px;
-    }
-
-    .menu-level-0 .mud-nav-link:hover,
-    .menu-level-0 .mud-nav-group-header:hover {
-        background: linear-gradient(90deg, rgba(66, 150, 255, 0.25) 0%, rgba(66, 150, 255, 0.12) 100%);
-        border-left-color: #4296ff;
-        transform: translateX(6px);
-        box-shadow: 0 4px 12px rgba(66, 150, 255, 0.15);
-    }
-
-    .menu-level-0 .mud-nav-link.active,
-    .menu-level-0 .mud-nav-group-header.active {
-        background: linear-gradient(90deg, rgba(66, 150, 255, 0.35) 0%, rgba(66, 150, 255, 0.18) 100%);
-        border-left-color: #4296ff;
-        font-weight: 650;
-        box-shadow: 0 4px 16px rgba(66, 150, 255, 0.2);
-    }
-
-    /* NIVEL 1 - Subcategorías (Verde dinámico) */
-    .menu-level-1 .mud-nav-link,
-    .menu-level-1 .mud-nav-group-header {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.10) 0%, rgba(76, 175, 80, 0.03) 100%);
-        margin: 4px 16px;
-        border-left: 4px solid rgba(76, 175, 80, 0.25);
-        border-radius: 8px;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        padding: 8px 10px !important;
-        font-weight: 500;
-    }
-
-    .menu-level-1 .mud-nav-link:hover,
-    .menu-level-1 .mud-nav-group-header:hover {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.18) 0%, rgba(76, 175, 80, 0.08) 100%);
-        border-left-color: #4caf50;
-        transform: translateX(5px);
-        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.12);
-    }
-
-    .menu-level-1 .mud-nav-link.active,
-    .menu-level-1 .mud-nav-group-header.active {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.25) 0%, rgba(76, 175, 80, 0.12) 100%);
-        border-left-color: #4caf50;
-        font-weight: 600;
-        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.15);
-    }
-
-    /* NIVEL 2 - Sub-subcategorías (Naranja vibrante) */
-    .menu-level-2 .mud-nav-link {
-        background: linear-gradient(90deg, rgba(255, 152, 0, 0.08) 0%, rgba(255, 152, 0, 0.02) 100%);
-        margin: 3px 24px;
-        border-left: 3px solid rgba(255, 152, 0, 0.2);
-        border-radius: 6px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 0.92rem;
-        padding: 6px 8px !important;
-        font-weight: 500;
-    }
-
-    .menu-level-2 .mud-nav-link:hover {
-        background: linear-gradient(90deg, rgba(255, 152, 0, 0.16) 0%, rgba(255, 152, 0, 0.06) 100%);
-        border-left-color: #ff9800;
-        transform: translateX(4px);
-        box-shadow: 0 2px 6px rgba(255, 152, 0, 0.1);
-    }
-
-    .menu-level-2 .mud-nav-link.active {
-        background: linear-gradient(90deg, rgba(255, 152, 0, 0.22) 0%, rgba(255, 152, 0, 0.08) 100%);
-        border-left-color: #ff9800;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.12);
-    }
-
-    /* Estilos comunes para los iconos */
-    .menu-level-0 svg, .menu-level-1 svg, .menu-level-2 svg {
-        transition: all 0.3s ease;
-        opacity: 0.85;
-    }
-
-    .menu-level-0:hover svg, 
-    .menu-level-1:hover svg,
-    .menu-level-2:hover svg,
-    .menu-level-0.active svg,
-    .menu-level-1.active svg,
-    .menu-level-2.active svg {
-        opacity: 1;
-        filter: brightness(1.2);
-    }
-
-    .mud-nav-group-expanded .mud-nav-group-header {
-        font-weight: 600;
-    }
-
-    .mud-nav-link, .mud-nav-group-header {
-        color: #e8e8f0;
-        transition: color 0.3s ease;
-    }
-
-    .mud-nav-link:hover, .mud-nav-group-header:hover {
-        color: #ffffff;
-    }
-
-    .mud-nav-link.active, .mud-nav-group-header.active {
-        color: #fff;
-        font-weight: 650;
-    }
-
-    .menu-badge {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-        color: white;
-        border-radius: 14px;
-        padding: 3px 10px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        margin-left: auto;
-        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-    }
-
-    /* ============ TEMA CLARO ============ */
-    .mud-theme-light .mud-nav-menu {
-        background: linear-gradient(180deg, #fafbfc 0%, #f5f7fa 50%, #f0f2f5 100%) !important;
+    .mud-theme-light .professional-nav-menu {
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 50%, #f0f2f5 100%) !important;
         border-right: 3px solid #e3f2fd;
-        box-shadow: inset -2px 0 8px rgba(0, 0, 0, 0.03);
+        box-shadow: inset -3px 0 10px rgba(0, 0, 0, 0.03);
     }
 
-    /* NIVEL 0 - Tema claro */
-    .mud-theme-light .menu-level-0 .mud-nav-link,
-    .mud-theme-light .menu-level-0 .mud-nav-group-header {
-        background: linear-gradient(90deg, rgba(33, 150, 243, 0.14) 0%, rgba(33, 150, 243, 0.06) 100%);
-        border-left: 5px solid rgba(33, 150, 243, 0.35);
-        margin: 6px 8px;
-        border-radius: 10px;
-        padding: 10px 12px !important;
-        font-weight: 550;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    .menu-item-level-0 { border-left: 5px solid rgba(66, 150, 255, 0.4); margin: 2px 6px; padding: 6px 14px !important; font-weight: 600; font-size: 0.95rem; }
+    .menu-item-level-1 { border-left: 4px solid rgba(76, 175, 80, 0.35); margin: 2px 6px 2px 12px; padding: 5px 12px !important; font-size: 0.92rem; }
+    .menu-item-level-2 { border-left: 4px solid rgba(255, 152, 0, 0.3); margin: 2px 6px 2px 24px; padding: 4px 10px !important; font-size: 0.9rem; }
+    .menu-item-level-3 { border-left: 3px solid rgba(156, 39, 176, 0.25); margin: 2px 6px 2px 36px; padding: 4px 10px !important; font-size: 0.88rem; }
+    .menu-item-level-4 { border-left: 3px solid rgba(156, 39, 176, 0.25); margin: 2px 6px 2px 48px; padding: 4px 10px !important; font-size: 0.86rem; }
+    .menu-item-level-5 { border-left: 3px solid rgba(156, 39, 176, 0.25); margin: 2px 6px 2px 60px; padding: 4px 10px !important; font-size: 0.86rem; }
+    .menu-item-level-6 { border-left: 3px solid rgba(156, 39, 176, 0.25); margin: 2px 6px 2px 72px; padding: 4px 10px !important; font-size: 0.84rem; }
+    
+    /* Reducir altura en MudBlazor components */
+    .professional-nav-menu .mud-nav-link, 
+    .professional-nav-menu .mud-nav-group-header {
+        min-height: 32px !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
     }
 
-    .mud-theme-light .menu-level-0 .mud-nav-link:hover,
-    .mud-theme-light .menu-level-0 .mud-nav-group-header:hover {
-        background: linear-gradient(90deg, rgba(33, 150, 243, 0.24) 0%, rgba(33, 150, 243, 0.14) 100%);
-        border-left-color: #1976d2;
-        transform: translateX(6px);
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
-    }
-
-    .mud-theme-light .menu-level-0 .mud-nav-link.active,
-    .mud-theme-light .menu-level-0 .mud-nav-group-header.active {
-        background: linear-gradient(90deg, rgba(33, 150, 243, 0.32) 0%, rgba(33, 150, 243, 0.18) 100%);
-        border-left-color: #1565c0;
-        font-weight: 650;
-        box-shadow: 0 4px 16px rgba(33, 150, 243, 0.2);
-    }
-
-    /* NIVEL 1 - Tema claro */
-    .mud-theme-light .menu-level-1 .mud-nav-link,
-    .mud-theme-light .menu-level-1 .mud-nav-group-header {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.11) 0%, rgba(76, 175, 80, 0.04) 100%);
-        border-left: 4px solid rgba(76, 175, 80, 0.3);
-        margin: 4px 16px;
-        border-radius: 8px;
-        padding: 8px 10px !important;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .mud-theme-light .menu-level-1 .mud-nav-link:hover,
-    .mud-theme-light .menu-level-1 .mud-nav-group-header:hover {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.20) 0%, rgba(76, 175, 80, 0.10) 100%);
-        border-left-color: #388e3c;
-        transform: translateX(5px);
-        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.12);
-    }
-
-    .mud-theme-light .menu-level-1 .mud-nav-link.active,
-    .mud-theme-light .menu-level-1 .mud-nav-group-header.active {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.28) 0%, rgba(76, 175, 80, 0.16) 100%);
-        border-left-color: #2e7d32;
-        font-weight: 600;
-        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.15);
-    }
-
-    /* NIVEL 2 - Tema claro */
-    .mud-theme-light .menu-level-2 .mud-nav-link {
-        background: linear-gradient(90deg, rgba(255, 152, 0, 0.09) 0%, rgba(255, 152, 0, 0.03) 100%);
-        border-left: 3px solid rgba(255, 152, 0, 0.25);
-        margin: 3px 24px;
-        border-radius: 6px;
-        font-size: 0.92rem;
-        padding: 6px 8px !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .mud-theme-light .menu-level-2 .mud-nav-link:hover {
-        background: linear-gradient(90deg, rgba(255, 152, 0, 0.18) 0%, rgba(255, 152, 0, 0.08) 100%);
-        border-left-color: #f57c00;
-        transform: translateX(4px);
-        box-shadow: 0 2px 6px rgba(255, 152, 0, 0.1);
-    }
-
-    .mud-theme-light .menu-level-2 .mud-nav-link.active {
-        background: linear-gradient(90deg, rgba(255, 152, 0, 0.25) 0%, rgba(255, 152, 0, 0.14) 100%);
-        border-left-color: #e65100;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.12);
-    }
-
-    /* Colores de texto - Tema claro */
-    .mud-theme-light .mud-nav-link, 
-    .mud-theme-light .mud-nav-group-header {
-        color: #212121;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
-
-    .mud-theme-light .mud-nav-link:hover,
-    .mud-theme-light .mud-nav-group-header:hover {
-        color: #0d47a1;
-    }
-
-    .mud-theme-light .mud-nav-link.active, 
-    .mud-theme-light .mud-nav-group-header.active {
-        color: #0d47a1;
-        font-weight: 700;
-    }
-
-    .mud-theme-light .mud-nav-group-header svg {
-        color: #1565c0;
-        opacity: 0.9;
-    }
-
-    .mud-theme-light .mud-nav-link svg {
-        color: #424242;
-        opacity: 0.8;
-    }
-
-    .mud-theme-light .mud-nav-link:hover svg,
-    .mud-theme-light .mud-nav-group-header:hover svg,
-    .mud-theme-light .nav-link:hover svg,
-    .mud-theme-light .mud-nav-group-header:hover svg,
-    .mud-theme-light .mud-nav-link.active svg,
-    .mud-theme-light .mud-nav-group-header.active svg {
-        color: #0d47a1;
-        opacity: 1;
-    }
-
+    .mud-theme-light .menu-item-level-0 { border-left-color: rgba(33, 150, 243, 0.4); }
+    .mud-theme-light .menu-item-level-1 { border-left-color: rgba(76, 175, 80, 0.35); }
+    .mud-theme-light .menu-item-level-2 { border-left-color: rgba(255, 152, 0, 0.3); }
+    .mud-theme-light .menu-item-level-3, .mud-theme-light .menu-item-level-4,
+    .mud-theme-light .menu-item-level-5, .mud-theme-light .menu-item-level-6 { border-left-color: rgba(156, 39, 176, 0.25); }
 </style>
 
 <AuthorizeView>
@@ -284,54 +59,9 @@
             {
                 @foreach (var item in Items.OrderBy(m => m.Orden))
                 {
-                    @if (item.Children?.Any() == true)
-                    {
-                        <MudNavGroup Title="@item.Nombre"
-                                     Icon="@GetIcon(item.ImageUrl)"
-                                     Expanded="@GetExpandedState(item.PkidMenu)"
-                                     ExpandedChanged="@(EventCallback.Factory.Create<bool>(this, (v) => SetExpandedState(item.PkidMenu, v)))"
-                                     Class="menu-level-0">
-                            @foreach (var subItem in item.Children.OrderBy(m => m.Orden))
-                            {
-                                @if (subItem.Children?.Any() == true)
-                                {
-                                    <MudNavGroup Title="@subItem.Nombre"
-                                                 Icon="@GetIcon(subItem.ImageUrl)"
-                                                 Expanded="@GetExpandedState(subItem.PkidMenu)"
-                                                 ExpandedChanged="@(EventCallback.Factory.Create<bool>(this, (v) => SetExpandedState(subItem.PkidMenu, v)))"
-                                                 Class="menu-level-1">
-                                        @foreach (var thirdItem in subItem.Children.OrderBy(m => m.Orden))
-                                        {
-                                            <MudNavLink Href="@thirdItem.Ruta"
-                                                        Match="@(thirdItem.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                                                        Icon="@GetIcon(thirdItem.ImageUrl)"
-                                                        Class="menu-level-2">
-                                                @thirdItem.Nombre
-                                            </MudNavLink>
-                                        }
-                                    </MudNavGroup>
-                                }
-                                else
-                                {
-                                    <MudNavLink Href="@subItem.Ruta"
-                                                Match="@(subItem.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                                                Icon="@GetIcon(subItem.ImageUrl)"
-                                                Class="menu-level-1">
-                                        @subItem.Nombre
-                                    </MudNavLink>
-                                }
-                            }
-                        </MudNavGroup>
-                    }
-                    else
-                    {
-                        <MudNavLink Href="@item.Ruta"
-                                    Match="@(item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                                    Icon="@GetIcon(item.ImageUrl)"
-                                    Class="menu-level-0">
-                            @item.Nombre
-                        </MudNavLink>
-                    }
+                    <DynamicMenuItem Item="item" Level="0" GetExpandedState="GetExpandedState" 
+                                     SetExpandedState="SetExpandedState" GetIcon="GetIcon" 
+                                     FindItemByRoute="FindItemByRoute" AllItems="Items" />
                 }
             }
         </MudNavMenu>
@@ -366,31 +96,24 @@
     private void CollapseSameLevelGroups()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
-
         var activeItem = FindItemByRoute(Items, _currentPath);
         if (activeItem == null) return;
 
-        // Primero, colapsamos todos los elementos
         var allMenuItems = GetAllMenuItems(Items);
         foreach (var item in allMenuItems.Where(i => i.Children?.Any() == true))
         {
             expandedStates[item.PkidMenu] = false;
         }
-
-        // Luego, expandimos el camino hacia el elemento activo
         ExpandPathToItem(activeItem);
     }
 
     private void ExpandPathToItem(MenuItem item)
     {
-        // Expandir todos los ancestros del item actual
         var ancestors = GetAncestors(item);
         foreach (var ancestor in ancestors.Where(a => a.Children?.Any() == true))
         {
             expandedStates[ancestor.PkidMenu] = true;
         }
-
-        // Si el item actual tiene hijos, expandirlo también
         if (item.Children?.Any() == true)
         {
             expandedStates[item.PkidMenu] = true;
@@ -401,7 +124,6 @@
     {
         var ancestors = new List<MenuItem>();
         var current = item;
-
         while (current.FkidMenuSis.HasValue)
         {
             var parent = FindItemById(Items, current.FkidMenuSis.Value);
@@ -410,12 +132,8 @@
                 ancestors.Add(parent);
                 current = parent;
             }
-            else
-            {
-                break;
-            }
+            else break;
         }
-
         return ancestors;
     }
 
@@ -459,8 +177,7 @@
     private async Task LoadMenuAsync()
     {
         var uri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
-        if (uri == "login" || uri.StartsWith("login?"))
-            return;
+        if (uri == "login" || uri.StartsWith("login?")) return;
 
         loading = true;
         StateHasChanged();
@@ -468,7 +185,6 @@
         try
         {
             string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", 2000);
-
             if (string.IsNullOrWhiteSpace(rawToken))
             {
                 NavigationManager.NavigateTo("/login", forceLoad: true);
@@ -483,11 +199,9 @@
             }
 
             _token = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                ? rawToken.Substring("Bearer ".Length)
-                : rawToken;
+                ? rawToken.Substring("Bearer ".Length) : rawToken;
 
             _userId = await GetUserIdAsync();
-
             if (_userId == 0)
             {
                 NavigationManager.NavigateTo("/login", forceLoad: true);
@@ -495,7 +209,6 @@
             }
 
             var result = await NavigateService.GetMenuAsync(_userId);
-
             if (result?.Items?.Any() == true)
             {
                 Items = result.Items;
@@ -508,7 +221,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos del usuario: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -537,8 +250,7 @@
         if (parsed.HasValue) return parsed.Value;
 
         var stored = await GetLocalStorageItemWithTimeoutAsync("userId", 1000);
-        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId))
-            return sId;
+        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId)) return sId;
 
         return 0;
     }
@@ -551,10 +263,7 @@
             var completed = await Task.WhenAny(task, Task.Delay(timeoutMs));
             return completed == task ? await task : null;
         }
-        catch
-        {
-            return null;
-        }
+        catch { return null; }
     }
 
     private static int? ParseUserIdFromToken(string jwt)
@@ -563,16 +272,13 @@
         {
             var parts = jwt.Split('.');
             if (parts.Length < 2) return null;
-
             string payload = parts[1];
             int mod4 = payload.Length % 4;
             if (mod4 > 0) payload += new string('=', 4 - mod4);
-
             var bytes = Convert.FromBase64String(payload);
             var json = System.Text.Encoding.UTF8.GetString(bytes);
             using var doc = System.Text.Json.JsonDocument.Parse(json);
             var root = doc.RootElement;
-
             string[] keys = { "UserId", "userId", "id", "Id", "sub", "nameid", "pkIdUsuario" };
             foreach (var prop in root.EnumerateObject())
             {
@@ -580,10 +286,8 @@
                 {
                     var val = prop.Value.GetString() ?? prop.Value.ToString();
                     if (int.TryParse(val, out var numeric)) return numeric;
-
                     var match = System.Text.RegularExpressions.Regex.Match(val ?? "", @"\d+");
-                    if (match.Success && int.TryParse(match.Value, out var numeric2))
-                        return numeric2;
+                    if (match.Success && int.TryParse(match.Value, out var numeric2)) return numeric2;
                 }
             }
         }
@@ -591,36 +295,25 @@
         return null;
     }
 
-    private bool GetExpandedState(long? pkId)
-    {
-        return pkId.HasValue && expandedStates.TryGetValue(pkId.Value, out var state) ? state : false;
-    }
+    private bool GetExpandedState(long? pkId) => 
+        pkId.HasValue && expandedStates.TryGetValue(pkId.Value, out var state) ? state : false;
 
     private void SetExpandedState(long? pkId, bool expanded)
     {
-        if (pkId.HasValue)
-        {
-            expandedStates[pkId.Value] = expanded;
-
-            if (expanded)
-            {
-                CollapseSiblings(pkId.Value);
-            }
-
-            StateHasChanged();
-        }
+        if (!pkId.HasValue) return;
+        expandedStates[pkId.Value] = expanded;
+        if (expanded) CollapseSiblings(pkId.Value);
+        StateHasChanged();
     }
 
     private void CollapseSiblings(long expandedId)
     {
         var expandedItem = FindItemById(Items, expandedId);
         if (expandedItem == null) return;
-
         var parentId = expandedItem.FkidMenuSis;
         var siblings = parentId == null 
             ? Items.Where(i => i.PkidMenu != expandedId && i.Children?.Any() == true)
             : GetChildrenById(Items, parentId)?.Where(i => i.PkidMenu != expandedId && i.Children?.Any() == true);
-
         if (siblings != null)
         {
             foreach (var sibling in siblings)
@@ -647,7 +340,6 @@
     private List<MenuItem>? GetChildrenById(List<MenuItem> items, long? parentId)
     {
         if (!parentId.HasValue) return null;
-
         var item = FindItemById(items, parentId.Value);
         return item?.Children;
     }
@@ -658,9 +350,7 @@
 
     private string GetIcon(string imageUrl)
     {
-        if (string.IsNullOrEmpty(imageUrl))
-            return Icons.Material.Filled.Info;
-
+        if (string.IsNullOrEmpty(imageUrl)) return Icons.Material.Filled.Info;
         return _iconMap.TryGetValue(imageUrl, out var icon) ? icon : Icons.Material.Filled.Info;
     }
 }
