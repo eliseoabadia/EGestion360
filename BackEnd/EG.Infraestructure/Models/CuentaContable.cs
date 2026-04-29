@@ -69,6 +69,34 @@ public partial class CuentaContable
 
     public virtual TipoCuentum FkidTipoCuentaContaNavigation { get; set; }
 
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContableAprobadoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContableComprometidoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContableDevengadoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContableEjercidoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContableGastoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContableModificadoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContablePagadoNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionFkidCuentaContablePorEjercerNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContableAutorizadoNavigations { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContableDepositoNavigations { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContableDevengadoNavigations { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContableModificadoNavigations { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContablePorEjercerNavigations { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContableRecaudadoNavigations { get; set; } = new List<MatrizIngreso>();
+
     public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();

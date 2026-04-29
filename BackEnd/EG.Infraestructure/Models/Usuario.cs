@@ -71,6 +71,14 @@ public partial class Usuario
 
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
+    public virtual ICollection<Capitulo1> Capitulo1UsuarioCreacionNavigations { get; set; } = new List<Capitulo1>();
+
+    public virtual ICollection<Capitulo1> Capitulo1UsuarioModificacionNavigations { get; set; } = new List<Capitulo1>();
+
+    public virtual ICollection<Concepto1> Concepto1UsuarioCreacionNavigations { get; set; } = new List<Concepto1>();
+
+    public virtual ICollection<Concepto1> Concepto1UsuarioModificacionNavigations { get; set; } = new List<Concepto1>();
+
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneoUsuarioCreacionNavigations { get; set; } = new List<ConteoDetalleEscaneo>();
 
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneoUsuarioModificacionNavigations { get; set; } = new List<ConteoDetalleEscaneo>();
@@ -137,6 +145,14 @@ public partial class Usuario
 
     public virtual ICollection<Usuario> InverseUsuarioModificacionNavigation { get; set; } = new List<Usuario>();
 
+    public virtual ICollection<MatrizConversion> MatrizConversionUsuarioCreacionNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversionUsuarioModificacionNavigations { get; set; } = new List<MatrizConversion>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoUsuarioCreacionNavigations { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<MatrizIngreso> MatrizIngresoUsuarioModificacionNavigations { get; set; } = new List<MatrizIngreso>();
+
     public virtual ICollection<Modalidad> ModalidadUsuarioCreacionNavigations { get; set; } = new List<Modalidad>();
 
     public virtual ICollection<Modalidad> ModalidadUsuarioModificacionNavigations { get; set; } = new List<Modalidad>();
@@ -144,6 +160,14 @@ public partial class Usuario
     public virtual ICollection<OrigenLogMessage> OrigenLogMessageUsuarioCreacionNavigations { get; set; } = new List<OrigenLogMessage>();
 
     public virtual ICollection<OrigenLogMessage> OrigenLogMessageUsuarioModificacionNavigations { get; set; } = new List<OrigenLogMessage>();
+
+    public virtual ICollection<Origen> OrigenUsuarioCreacionNavigations { get; set; } = new List<Origen>();
+
+    public virtual ICollection<Origen> OrigenUsuarioModificacionNavigations { get; set; } = new List<Origen>();
+
+    public virtual ICollection<Partidum1> Partidum1UsuarioCreacionNavigations { get; set; } = new List<Partidum1>();
+
+    public virtual ICollection<Partidum1> Partidum1UsuarioModificacionNavigations { get; set; } = new List<Partidum1>();
 
     public virtual PerfilUsuario PerfilUsuarioFkidUsuarioSisNavigation { get; set; }
 
@@ -219,6 +243,10 @@ public partial class Usuario
 
     public virtual ICollection<TipoContrato> TipoContratoUsuarioModificacionNavigations { get; set; } = new List<TipoContrato>();
 
+    public virtual ICollection<TipoDetallePoliza> TipoDetallePolizaUsuarioCreacionNavigations { get; set; } = new List<TipoDetallePoliza>();
+
+    public virtual ICollection<TipoDetallePoliza> TipoDetallePolizaUsuarioModificacionNavigations { get; set; } = new List<TipoDetallePoliza>();
+
     public virtual ICollection<TipoDocumento> TipoDocumentoUsuarioCreacionNavigations { get; set; } = new List<TipoDocumento>();
 
     public virtual ICollection<TipoDocumento> TipoDocumentoUsuarioModificacionNavigations { get; set; } = new List<TipoDocumento>();
@@ -230,6 +258,10 @@ public partial class Usuario
     public virtual ICollection<TipoGasto> TipoGastoUsuarioCreacionNavigations { get; set; } = new List<TipoGasto>();
 
     public virtual ICollection<TipoGasto> TipoGastoUsuarioModificacionNavigations { get; set; } = new List<TipoGasto>();
+
+    public virtual ICollection<TipoPoliza> TipoPolizaUsuarioCreacionNavigations { get; set; } = new List<TipoPoliza>();
+
+    public virtual ICollection<TipoPoliza> TipoPolizaUsuarioModificacionNavigations { get; set; } = new List<TipoPoliza>();
 
     public virtual ICollection<TipoRecurso> TipoRecursoUsuarioCreacionNavigations { get; set; } = new List<TipoRecurso>();
 

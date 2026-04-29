@@ -273,7 +273,7 @@
     {
         try
         {
-            _canView = AuthProvider.HasPermission("configuracion", "perfil", "view");
+            _canView = AuthProvider.HasPermission("Sistema", "General", "view");
 
             if (!_canView)
             {
@@ -285,10 +285,10 @@
                 return;
             }
 
-            _canCreate = AuthProvider.HasPermission("configuracion", "perfil", "new");
-            _canUpdate = AuthProvider.HasPermission("configuracion", "perfil", "update");
-            _canDelete = AuthProvider.HasPermission("configuracion", "perfil", "delete");
-            _canExport = AuthProvider.HasPermission("configuracion", "perfil", "CanExportToExcel");
+            _canCreate = AuthProvider.HasPermission("Sistema", "General", "new");
+            _canUpdate = AuthProvider.HasPermission("Sistema", "General", "update");
+            _canDelete = AuthProvider.HasPermission("Sistema", "General", "delete");
+            _canExport = AuthProvider.HasPermission("Sistema", "General", "CanExportToExcel");
 
             _hasAccess = true;
             _isInitialized = true;

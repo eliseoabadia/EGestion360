@@ -31,6 +31,32 @@ INSERT INTO SIS.Empresa (Nombre, RFC, RazonSocial, Giro, FKIdMonedaBase_SIS, FKI
 ('IFT', 'IFT110101AAA', 'Instituto Federal de Telecomunicaciones', 'Tecnología', 1, 1, 1),
 ('Grupo Constructor Delta', 'GCD020202BBB', 'Delta Construcciones y Servicios', 'Construcción', 1, 1, 1);
 
+
+INSERT INTO [SIS].[EmpresaEstado]
+           ([FKIdEmpresa_SIS]
+           ,[FKIdEstado_SIS]
+           ,[FechaApertura]
+           ,[EsOficinaPrincipal]
+           ,[Activo])
+     VALUES
+           (1
+           ,1
+           ,getdate()
+           ,1
+           ,1)
+INSERT INTO [SIS].[EmpresaEstado]
+           ([FKIdEmpresa_SIS]
+           ,[FKIdEstado_SIS]
+           ,[FechaApertura]
+           ,[EsOficinaPrincipal]
+           ,[Activo])
+     VALUES
+           (2
+           ,2
+           ,getdate()
+           ,1
+           ,1)
+
 -- =============================================
 -- 3. SUCURSALES (una matriz por empresa)
 -- =============================================

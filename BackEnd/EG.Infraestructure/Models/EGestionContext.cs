@@ -37,9 +37,13 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Capitulo> Capitulos { get; set; }
 
+    public virtual DbSet<Capitulo1> Capitulos1 { get; set; }
+
     public virtual DbSet<CatTipoSucursal> CatTipoSucursals { get; set; }
 
     public virtual DbSet<Concepto> Conceptos { get; set; }
+
+    public virtual DbSet<Concepto1> Conceptos1 { get; set; }
 
     public virtual DbSet<Conteo> Conteos { get; set; }
 
@@ -95,6 +99,10 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Material> Materials { get; set; }
 
+    public virtual DbSet<MatrizConversion> MatrizConversions { get; set; }
+
+    public virtual DbSet<MatrizIngreso> MatrizIngresos { get; set; }
+
     public virtual DbSet<Menu> Menus { get; set; }
 
     public virtual DbSet<MenuRole> MenuRoles { get; set; }
@@ -107,11 +115,15 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Nivel> Nivels { get; set; }
 
+    public virtual DbSet<Origen> Origens { get; set; }
+
     public virtual DbSet<OrigenLogMessage> OrigenLogMessages { get; set; }
 
     public virtual DbSet<Paise> Paises { get; set; }
 
     public virtual DbSet<Partidum> Partida { get; set; }
+
+    public virtual DbSet<Partidum1> Partida1 { get; set; }
 
     public virtual DbSet<PerfilUsuario> PerfilUsuarios { get; set; }
 
@@ -165,6 +177,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<TipoCuentum> TipoCuenta { get; set; }
 
+    public virtual DbSet<TipoDetallePoliza> TipoDetallePolizas { get; set; }
+
     public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
 
     public virtual DbSet<TipoGarantium> TipoGarantia { get; set; }
@@ -172,6 +186,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<TipoGasto> TipoGastos { get; set; }
 
     public virtual DbSet<TipoPatrimonio> TipoPatrimonios { get; set; }
+
+    public virtual DbSet<TipoPoliza> TipoPolizas { get; set; }
 
     public virtual DbSet<TipoProveedor> TipoProveedors { get; set; }
 
@@ -524,6 +540,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<Capitulo1>(entity =>
+        {
+            entity.HasKey(e => e.PkidCapitulo);
+
+            entity.ToTable("Capitulo", "SIS");
+
+            entity.Property(e => e.PkidCapitulo).HasColumnName("PKIdCapitulo");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Capitulo_Activo");
+            entity.Property(e => e.Clave).HasMaxLength(30);
+            entity.Property(e => e.Descripcion).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Capitulo_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.Capitulo1UsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Capitulo_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.Capitulo1UsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Capitulo_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<CatTipoSucursal>(entity =>
         {
             entity.HasKey(e => e.PkidTipoSucursal).HasName("PK_TipoSucursal");
@@ -559,6 +597,34 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidCapituloConta)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Concepto_Capitulo");
+        });
+
+        modelBuilder.Entity<Concepto1>(entity =>
+        {
+            entity.HasKey(e => e.PkidConcepto);
+
+            entity.ToTable("Concepto", "SIS");
+
+            entity.Property(e => e.PkidConcepto).HasColumnName("PKIdConcepto");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Concepto_Activo");
+            entity.Property(e => e.Clave).HasMaxLength(30);
+            entity.Property(e => e.Descripcion).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Concepto_FechaCreacion");
+            entity.Property(e => e.FkidCapituloSis).HasColumnName("FKIdCapitulo_SIS");
+
+            entity.HasOne(d => d.FkidCapituloSisNavigation).WithMany(p => p.Concepto1s)
+                .HasForeignKey(d => d.FkidCapituloSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Concepto_Capitulo");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.Concepto1UsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Concepto_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.Concepto1UsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Concepto_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Conteo>(entity =>
@@ -1381,6 +1447,157 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<MatrizConversion>(entity =>
+        {
+            entity.HasKey(e => e.PkidMatrizConversion);
+
+            entity.ToTable("MatrizConversion", "CONTA");
+
+            entity.Property(e => e.PkidMatrizConversion).HasColumnName("PKIdMatrizConversion");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_MatrizConversion_Activo");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_MatrizConversion_FechaCreacion");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidCuentaContableAprobado).HasColumnName("FKIdCuentaContableAprobado");
+            entity.Property(e => e.FkidCuentaContableComprometido).HasColumnName("FKIdCuentaContableComprometido");
+            entity.Property(e => e.FkidCuentaContableDevengado).HasColumnName("FKIdCuentaContableDevengado");
+            entity.Property(e => e.FkidCuentaContableEjercido).HasColumnName("FKIdCuentaContableEjercido");
+            entity.Property(e => e.FkidCuentaContableGasto).HasColumnName("FKIdCuentaContableGasto");
+            entity.Property(e => e.FkidCuentaContableModificado).HasColumnName("FKIdCuentaContableModificado");
+            entity.Property(e => e.FkidCuentaContablePagado).HasColumnName("FKIdCuentaContablePagado");
+            entity.Property(e => e.FkidCuentaContablePorEjercer).HasColumnName("FKIdCuentaContablePorEjercer");
+            entity.Property(e => e.FkidPartidaSis).HasColumnName("FKIdPartida_SIS");
+            entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+
+            entity.HasOne(d => d.FkidAnioSisNavigation).WithMany(p => p.MatrizConversions)
+                .HasForeignKey(d => d.FkidAnioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_Anio");
+
+            entity.HasOne(d => d.FkidCuentaContableAprobadoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContableAprobadoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContableAprobado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaAprobado");
+
+            entity.HasOne(d => d.FkidCuentaContableComprometidoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContableComprometidoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContableComprometido)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaComprometido");
+
+            entity.HasOne(d => d.FkidCuentaContableDevengadoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContableDevengadoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContableDevengado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaDevengado");
+
+            entity.HasOne(d => d.FkidCuentaContableEjercidoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContableEjercidoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContableEjercido)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaEjercido");
+
+            entity.HasOne(d => d.FkidCuentaContableGastoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContableGastoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContableGasto)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaGasto");
+
+            entity.HasOne(d => d.FkidCuentaContableModificadoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContableModificadoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContableModificado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaModificado");
+
+            entity.HasOne(d => d.FkidCuentaContablePagadoNavigation).WithMany(p => p.MatrizConversionFkidCuentaContablePagadoNavigations)
+                .HasForeignKey(d => d.FkidCuentaContablePagado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaPagado");
+
+            entity.HasOne(d => d.FkidCuentaContablePorEjercerNavigation).WithMany(p => p.MatrizConversionFkidCuentaContablePorEjercerNavigations)
+                .HasForeignKey(d => d.FkidCuentaContablePorEjercer)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_CtaPorEjercer");
+
+            entity.HasOne(d => d.FkidPartidaSisNavigation).WithMany(p => p.MatrizConversions)
+                .HasForeignKey(d => d.FkidPartidaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_Partida");
+
+            entity.HasOne(d => d.FkidProgramaPresNavigation).WithMany(p => p.MatrizConversions)
+                .HasForeignKey(d => d.FkidProgramaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_Programa");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.MatrizConversionUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.MatrizConversionUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_MatrizConversion_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<MatrizIngreso>(entity =>
+        {
+            entity.HasKey(e => e.PkIdMatrizIngreso);
+
+            entity.ToTable("MatrizIngreso", "CONTA");
+
+            entity.Property(e => e.PkIdMatrizIngreso).HasColumnName("Pk_IdMatrizIngreso");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_MatrizIngreso_Activo");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_MatrizIngreso_FechaCreacion");
+            entity.Property(e => e.FkIdAnioSis).HasColumnName("FK_IdAnio__SIS");
+            entity.Property(e => e.FkIdCuentaContableAutorizado).HasColumnName("Fk_IdCuentaContableAutorizado");
+            entity.Property(e => e.FkIdCuentaContableDeposito).HasColumnName("Fk_IdCuentaContableDeposito");
+            entity.Property(e => e.FkIdCuentaContableDevengado).HasColumnName("Fk_IdCuentaContableDevengado");
+            entity.Property(e => e.FkIdCuentaContableModificado).HasColumnName("Fk_IdCuentaContableModificado");
+            entity.Property(e => e.FkIdCuentaContablePorEjercer).HasColumnName("Fk_IdCuentaContablePorEjercer");
+            entity.Property(e => e.FkIdCuentaContableRecaudado).HasColumnName("Fk_IdCuentaContableRecaudado");
+            entity.Property(e => e.FkIdOrigen).HasColumnName("Fk_IdOrigen");
+            entity.Property(e => e.FkIdPrograma).HasColumnName("Fk_IdPrograma");
+
+            entity.HasOne(d => d.FkIdAnioSisNavigation).WithMany(p => p.MatrizIngresos)
+                .HasForeignKey(d => d.FkIdAnioSis)
+                .HasConstraintName("FK_MatrizIngreso_Anio");
+
+            entity.HasOne(d => d.FkIdCuentaContableAutorizadoNavigation).WithMany(p => p.MatrizIngresoFkIdCuentaContableAutorizadoNavigations)
+                .HasForeignKey(d => d.FkIdCuentaContableAutorizado)
+                .HasConstraintName("FK_MatrizIngreso_CtaAutorizado");
+
+            entity.HasOne(d => d.FkIdCuentaContableDepositoNavigation).WithMany(p => p.MatrizIngresoFkIdCuentaContableDepositoNavigations)
+                .HasForeignKey(d => d.FkIdCuentaContableDeposito)
+                .HasConstraintName("FK_MatrizIngreso_CtaDeposito");
+
+            entity.HasOne(d => d.FkIdCuentaContableDevengadoNavigation).WithMany(p => p.MatrizIngresoFkIdCuentaContableDevengadoNavigations)
+                .HasForeignKey(d => d.FkIdCuentaContableDevengado)
+                .HasConstraintName("FK_MatrizIngreso_CtaDevengado");
+
+            entity.HasOne(d => d.FkIdCuentaContableModificadoNavigation).WithMany(p => p.MatrizIngresoFkIdCuentaContableModificadoNavigations)
+                .HasForeignKey(d => d.FkIdCuentaContableModificado)
+                .HasConstraintName("FK_MatrizIngreso_CtaModificado");
+
+            entity.HasOne(d => d.FkIdCuentaContablePorEjercerNavigation).WithMany(p => p.MatrizIngresoFkIdCuentaContablePorEjercerNavigations)
+                .HasForeignKey(d => d.FkIdCuentaContablePorEjercer)
+                .HasConstraintName("FK_MatrizIngreso_CtaPorEjercer");
+
+            entity.HasOne(d => d.FkIdCuentaContableRecaudadoNavigation).WithMany(p => p.MatrizIngresoFkIdCuentaContableRecaudadoNavigations)
+                .HasForeignKey(d => d.FkIdCuentaContableRecaudado)
+                .HasConstraintName("FK_MatrizIngreso_CtaRecaudado");
+
+            entity.HasOne(d => d.FkIdOrigenNavigation).WithMany(p => p.MatrizIngresos)
+                .HasForeignKey(d => d.FkIdOrigen)
+                .HasConstraintName("FK_MatrizIngreso_Origen");
+
+            entity.HasOne(d => d.FkIdProgramaNavigation).WithMany(p => p.MatrizIngresos)
+                .HasForeignKey(d => d.FkIdPrograma)
+                .HasConstraintName("FK_MatrizIngreso_Programa");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.MatrizIngresoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizIngreso_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.MatrizIngresoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_MatrizIngreso_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Menu>(entity =>
         {
             entity.HasKey(e => e.PkidMenu).HasName("CONSTRAINT_PK_Menu");
@@ -1526,6 +1743,29 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Nivel1).HasColumnName("Nivel");
         });
 
+        modelBuilder.Entity<Origen>(entity =>
+        {
+            entity.HasKey(e => e.PkidOrigen);
+
+            entity.ToTable("Origen", "PRES");
+
+            entity.Property(e => e.PkidOrigen).HasColumnName("PKIdOrigen");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Origen_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Origen_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.OrigenUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Origen_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.OrigenUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Origen_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<OrigenLogMessage>(entity =>
         {
             entity.HasKey(e => e.PkidOrigenLogMessage).HasName("CONSTRAINT_PK_OrigenLogMessage");
@@ -1613,6 +1853,37 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.FkidConceptoSisNavigation).WithMany(p => p.Partida)
                 .HasForeignKey(d => d.FkidConceptoSis)
                 .HasConstraintName("FK_Partida_Concepto");
+        });
+
+        modelBuilder.Entity<Partidum1>(entity =>
+        {
+            entity.HasKey(e => e.PkidPartida);
+
+            entity.ToTable("Partida", "SIS");
+
+            entity.Property(e => e.PkidPartida).HasColumnName("PKIdPartida");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Partida_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(255);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Partida_FechaCreacion");
+            entity.Property(e => e.FkidConceptoSis).HasColumnName("FKIdConcepto_SIS");
+
+            entity.HasOne(d => d.FkidConceptoSisNavigation).WithMany(p => p.Partidum1s)
+                .HasForeignKey(d => d.FkidConceptoSis)
+                .HasConstraintName("FK_Partida_Concepto");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.Partidum1UsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Partida_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.Partidum1UsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Partida_UsuarioModificacion");
         });
 
         modelBuilder.Entity<PerfilUsuario>(entity =>
@@ -2646,6 +2917,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<TipoDetallePoliza>(entity =>
+        {
+            entity.HasKey(e => e.PkIdTipoDetallePoliza);
+
+            entity.ToTable("TipoDetallePoliza", "SIS");
+
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoDetallePoliza_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoDetallePoliza_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoDetallePolizaUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoDetallePoliza_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoDetallePolizaUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoDetallePoliza_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<TipoDocumento>(entity =>
         {
             entity.HasKey(e => e.PkidTipoDocumento);
@@ -2728,6 +3021,29 @@ public partial class EGestionContext : DbContext
                 .HasDefaultValueSql("(sysdatetime())", "DF_TipoPatrimonio_FechaCreacion")
                 .HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<TipoPoliza>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoPoliza);
+
+            entity.ToTable("TipoPoliza", "SIS");
+
+            entity.Property(e => e.PkidTipoPoliza).HasColumnName("PKIdTipoPoliza");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoPoliza_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoPoliza_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoPolizaUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoPoliza_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoPolizaUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoPoliza_UsuarioModificacion");
         });
 
         modelBuilder.Entity<TipoProveedor>(entity =>

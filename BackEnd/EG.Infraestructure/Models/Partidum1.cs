@@ -5,9 +5,11 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Programa
+public partial class Partidum1
 {
-    public int PkidPrograma { get; set; }
+    public int PkidPartida { get; set; }
+
+    public int? FkidConceptoSis { get; set; }
 
     public string Clave { get; set; }
 
@@ -23,13 +25,9 @@ public partial class Programa
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+    public virtual Concepto1 FkidConceptoSisNavigation { get; set; }
 
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
-
-    public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();
-
-    public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

@@ -7,9 +7,11 @@ using EG.Web.Extensions;
 using EG.Web.Services;
 using EG.Web.Services.Configuration;
 using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Domain.DTOs.Responses.Contabilidad;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Services;
 
@@ -64,18 +66,135 @@ internal class Program
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
         
         // Registrar servicios para los catálogos presupuestales
-        builder.Services.AddScoped<IGenericCrudService<UnidadResponsableResponse>, GenericCrudService<UnidadResponsableResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<FuncionResponse>, GenericCrudService<FuncionResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>, GenericCrudService<SubFuncionResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<ActividadInstitucionalResponse>, GenericCrudService<ActividadInstitucionalResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<ProgramaPresupuestalResponse>, GenericCrudService<ProgramaPresupuestalResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<AniosResponse>, GenericCrudService<AniosResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<SectorResponse>, GenericCrudService<SectorResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<TipoRecursoResponse>, GenericCrudService<TipoRecursoResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<FuenteFinanciamientoResponse>, GenericCrudService<FuenteFinanciamientoResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<PgResponse>, GenericCrudService<PgResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<RamoResponse>, GenericCrudService<RamoResponse>>();
-        builder.Services.AddScoped<IGenericCrudService<ProyectoResponse>, GenericCrudService<ProyectoResponse>>();
+        builder.Services.AddScoped<IGenericCrudService<UnidadResponsableResponse>>(sp =>
+            new GenericCrudService<UnidadResponsableResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/UnidadResponsable"));
+        builder.Services.AddScoped<IGenericCrudService<FuncionResponse>>(sp =>
+            new GenericCrudService<FuncionResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Funcion"));
+        builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>>(sp =>
+            new GenericCrudService<SubFuncionResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/SubFuncion"));
+        builder.Services.AddScoped<IGenericCrudService<ActividadInstitucionalResponse>>(sp =>
+            new GenericCrudService<ActividadInstitucionalResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/ActividadInstitucional"));
+        builder.Services.AddScoped<IGenericCrudService<ProgramaPresupuestalResponse>>(sp =>
+            new GenericCrudService<ProgramaPresupuestalResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/ProgramaPresupuestal"));
+        builder.Services.AddScoped<IGenericCrudService<AniosResponse>>(sp =>
+            new GenericCrudService<AniosResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Anios"));
+        builder.Services.AddScoped<IGenericCrudService<SectorResponse>>(sp =>
+            new GenericCrudService<SectorResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Sector"));
+        builder.Services.AddScoped<IGenericCrudService<TipoRecursoResponse>>(sp =>
+            new GenericCrudService<TipoRecursoResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/TipoRecurso"));
+        builder.Services.AddScoped<IGenericCrudService<FuenteFinanciamientoResponse>>(sp =>
+            new GenericCrudService<FuenteFinanciamientoResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/FuenteFinanciamiento"));
+        builder.Services.AddScoped<IGenericCrudService<PgResponse>>(sp =>
+            new GenericCrudService<PgResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Pg"));
+        builder.Services.AddScoped<IGenericCrudService<RamoResponse>>(sp =>
+            new GenericCrudService<RamoResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Ramo"));
+        builder.Services.AddScoped<IGenericCrudService<ProyectoResponse>>(sp =>
+            new GenericCrudService<ProyectoResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Proyecto"));
+        
+        // Registrar servicios para los catálogos de Contabilidad
+        builder.Services.AddScoped<IGenericCrudService<TipoPolizaResponse>>(sp =>
+            new GenericCrudService<TipoPolizaResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/TipoPoliza"));
+        builder.Services.AddScoped<IGenericCrudService<TipoDetallePolizaResponse>>(sp =>
+            new GenericCrudService<TipoDetallePolizaResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/TipoDetallePoliza"));
+        builder.Services.AddScoped<IGenericCrudService<MatrizConversionResponse>>(sp =>
+            new GenericCrudService<MatrizConversionResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/MatrizConversion"));
+        builder.Services.AddScoped<IGenericCrudService<MatrizIngresoResponse>>(sp =>
+            new GenericCrudService<MatrizIngresoResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/MatrizIngreso"));
+        builder.Services.AddScoped<IGenericCrudService<ConceptoResponse>>(sp =>
+            new GenericCrudService<ConceptoResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/Concepto"));
+        builder.Services.AddScoped<IGenericCrudService<CuentaContableResponse>>(sp =>
+            new GenericCrudService<CuentaContableResponse>(
+                sp.GetRequiredService<IConfiguration>(),
+                sp.GetRequiredService<HttpClient>(),
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<ApplicationInstance>(),
+                "api/CuentaContable"));
+        
         //builder.Services.AddScoped<IPeriodoConteoService, PeriodoConteoService>();
 
         //builder.Services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();

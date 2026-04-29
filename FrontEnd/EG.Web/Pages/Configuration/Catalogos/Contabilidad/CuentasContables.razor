@@ -1,0 +1,103 @@
+@page "/configuracion/contabilidad/cuentas-contables"
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<CuentaContableResponse, CuentaContableResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Cuentas Contables"
+                    Subtitle="Catálogo de cuentas contables"
+                    Icon="@Icons.Material.Filled.Book"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="CuentaContableResponse"
+                  @ref="table"
+                  Title="Lista de Cuentas Contables"
+                  SearchPlaceholder="Buscar por cuenta o descripción..."
+                  ShowExportButton="@CanExport"
+                  ServerDataFunc="LoadServerData"
+                  ExportFunc="ExportToExcel"
+                  SearchString="@SearchString"
+                  SearchStringChanged="(s) => SearchString = s"
+                  OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidCuentaContable" T="CuentaContableResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Cuenta" T="CuentaContableResponse">Cuenta</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="CuentaContableResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="CuentaContableResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidCuentaContable))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidCuentaContable))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidCuentaContable</MudTd>
+                <MudTd>@item.Cuenta</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<CuentaContableResponse> table = null!;
+
+    protected override string ModuleName => "Contabilidad";
+    protected override string SubModuleName => "CuentaContable";
+
+    protected override Type CreateDialogType => typeof(CuentaContableDialog);
+    protected override Type EditDialogType => typeof(CuentaContableDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<CuentaContableResponse>);
+
+    protected override string GetDefaultSortLabel() => "Cuenta";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<CuentaContableResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidCuentaContable,
+            Cuenta = u.Cuenta,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "la cuenta contable";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

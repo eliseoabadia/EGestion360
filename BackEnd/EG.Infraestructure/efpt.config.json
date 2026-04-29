@@ -107,6 +107,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[CONTA].[MatrizConversion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[MatrizIngreso]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[CONTA].[Partida]",
          "ObjectType": 0
       },
@@ -219,6 +227,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[Origen]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[PG]",
          "ObjectType": 0
       },
@@ -271,7 +283,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Capitulo]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[CatTipoSucursal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Concepto]",
          "ObjectType": 0
       },
       {
@@ -323,6 +343,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Partida]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[PerfilUsuario]",
          "ObjectType": 0
       },
@@ -344,6 +368,14 @@
       },
       {
          "Name": "[SIS].[SystemParamValue]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[TipoDetallePoliza]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[TipoPoliza]",
          "ObjectType": 0
       },
       {

@@ -1,0 +1,111 @@
+@using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Services
+
+@inject IGenericCrudService<MatrizIngresoResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="MatrizIngresoResponse"
+             Title="@dialogTitle"
+             MaxWidth="MaxWidth.Small"
+             ActionText="@actionText"
+             ProcessingText="@processingText"
+             LoadingMessage="Cargando datos..."
+             OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="MatrizIngresoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave"
+                      Label="Clave"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Numbers"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Clave)" />
+
+        <MudTextField @bind-Value="item.Descripcion"
+                      Label="Descripción"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Description"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Descripcion)" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<MatrizIngresoResponse> form = null!;
+    private MatrizIngresoResponse item = new() { Activo = true };
+
+    private string dialogTitle => Id.HasValue ? "Editar Matriz de Ingresos" : "Nueva Matriz de Ingresos";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Matriz de ingresos actualizada correctamente" : "Matriz de ingresos creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}
