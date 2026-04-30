@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class TipoRecursoController : ControllerBase
+    public class SubFuncionController : ControllerBase
     {
-        private readonly GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> _service;
+        private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public TipoRecursoController(
-            GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> service,
+        public SubFuncionController(
+            GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -32,35 +32,38 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             ConfigureValidations();
         }
 
-        private void ConfigureService() { }
+        private void ConfigureService()
+        {
+            _service.AddInclude(s => s.FkidFnPresNavigation);
+        }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueTipoRecurso", async (dto) =>
+            _service.AddValidationRule("UniqueSubFuncion", async (dto) =>
             {
-                var itemDto = dto as TipoRecursoDto;
+                var itemDto = dto as SubFuncionDto;
                 if (itemDto == null) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(t => t.Clave.ToLower() == itemDto.Clave.ToLower() && t.Activo);
+                    .Any(s => s.Clave == itemDto.Clave && s.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueTipoRecursoUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueSubFuncionUpdate", async (dto, id) =>
             {
-                var itemDto = dto as TipoRecursoDto;
+                var itemDto = dto as SubFuncionDto;
                 if (itemDto == null || !id.HasValue) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(t => t.Clave.ToLower() == itemDto.Clave.ToLower() && t.PkidTipoRecurso != id.Value && t.Activo);
+                    .Any(s => s.Clave == itemDto.Clave && s.PkidSf != id.Value && s.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<TipoRecursoResponse>
+            return Ok(new PagedResult<SubFuncionResponse>
             {
                 Success = true,
-                Message = "Tipos de Recurso obtenidos correctamente",
+                Message = "SubFunciones obtenidas correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -68,61 +71,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidTipoRecurso");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidSf");
             if (result == null)
-                return NotFound(new PagedResult<TipoRecursoResponse>
+                return NotFound(new PagedResult<SubFuncionResponse>
                 {
                     Success = false,
-                    Message = "Tipo de Recurso no encontrado",
+                    Message = "SubFunción no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<TipoRecursoResponse>
+            return Ok(new PagedResult<SubFuncionResponse>
             {
                 Success = true,
-                Message = "Tipo de Recurso encontrado",
+                Message = "SubFunción encontrada",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<TipoRecursoResponse> { result },
+                Items = new List<SubFuncionResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> Create([FromBody] TipoRecursoResponse response)
+        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Create([FromBody] SubFuncionResponse response)
         {
             try
             {
-                var dto = _mapper.Map<TipoRecursoDto>(response);
+                var dto = _mapper.Map<SubFuncionDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<TipoRecursoResponse>
+                    return Conflict(new PagedResult<SubFuncionResponse>
                     {
                         Success = false,
-                        Message = "Ya existe un Tipo de Recurso activo con esa clave",
+                        Message = "Ya existe una SubFunción activa con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidTipoRecurso },
-                    new PagedResult<TipoRecursoResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidSf },
+                    new PagedResult<SubFuncionResponse>
                     {
                         Success = true,
-                        Message = "Tipo de Recurso creado correctamente",
+                        Message = "SubFunción creada correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<TipoRecursoResponse>
+                return BadRequest(new PagedResult<SubFuncionResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -133,46 +136,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> Update(int id, [FromBody] TipoRecursoResponse response)
+        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Update(int id, [FromBody] SubFuncionResponse response)
         {
             try
             {
-                var dto = _mapper.Map<TipoRecursoDto>(response);
-                dto.PkidTipoRecurso = id;
+                var dto = _mapper.Map<SubFuncionDto>(response);
+                dto.PkidSf = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<TipoRecursoResponse>
+                    return Conflict(new PagedResult<SubFuncionResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro Tipo de Recurso activo con esa clave",
+                        Message = "Ya existe otra SubFunción activa con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<TipoRecursoResponse>
+                return Ok(new PagedResult<SubFuncionResponse>
                 {
                     Success = true,
-                    Message = "Tipo de Recurso actualizado correctamente",
+                    Message = "SubFunción actualizada correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<TipoRecursoResponse>
+                return NotFound(new PagedResult<SubFuncionResponse>
                 {
                     Success = false,
-                    Message = $"Tipo de Recurso con ID {id} no encontrado",
+                    Message = $"SubFunción con ID {id} no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<TipoRecursoResponse>
+                return BadRequest(new PagedResult<SubFuncionResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -191,10 +194,9 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Tipo de Recurso eliminado correctamente",
+                    Message = "SubFunción eliminada correctamente",
                     Code = "SUCCESS",
                     Data = true,
-                    Items = new List<bool> { true },
                     TotalCount = 1
                 });
             }
@@ -203,7 +205,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Tipo de Recurso con ID {id} no encontrado",
+                    Message = $"SubFunción con ID {id} no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -221,13 +223,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<TipoRecursoResponse>
+            return Ok(new PagedResult<SubFuncionResponse>
             {
                 Success = true,
-                Message = "Tipos de Recurso obtenidos correctamente",
+                Message = "SubFunciones obtenidas correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -235,7 +237,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -247,10 +249,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<TipoRecursoResponse>
+            return Ok(new PagedResult<SubFuncionResponse>
             {
                 Success = true,
-                Message = "Tipos de Recurso filtrados correctamente",
+                Message = "SubFunciones filtradas correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

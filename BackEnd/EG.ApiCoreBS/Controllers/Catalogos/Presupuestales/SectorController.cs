@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class FuncionController : ControllerBase
+    public class SectorController : ControllerBase
     {
-        private readonly GenericService<Fn, FuncionDto, FuncionResponse> _service;
+        private readonly GenericService<Sector, SectorDto, SectorResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public FuncionController(
-            GenericService<Fn, FuncionDto, FuncionResponse> service,
+        public SectorController(
+            GenericService<Sector, SectorDto, SectorResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -32,40 +32,35 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             ConfigureValidations();
         }
 
-        private void ConfigureService()
-        {
-            _service.AddInclude(f => f.FkidGfPresNavigation);
-        }
+        private void ConfigureService() { }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueFuncion", async (dto) =>
+            _service.AddValidationRule("UniqueSector", async (dto) =>
             {
-                var itemDto = dto as FuncionDto;
+                var itemDto = dto as SectorDto;
                 if (itemDto == null) return true;
-
                 return !_service.GetQueryWithIncludes()
-                    .Any(f => f.Clave == itemDto.Clave && f.Activo);
+                    .Any(s => s.Clave.ToLower() == itemDto.Clave.ToLower() && s.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueFuncionUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueSectorUpdate", async (dto, id) =>
             {
-                var itemDto = dto as FuncionDto;
+                var itemDto = dto as SectorDto;
                 if (itemDto == null || !id.HasValue) return true;
-
                 return !_service.GetQueryWithIncludes()
-                    .Any(f => f.Clave == itemDto.Clave && f.PkidFn != id.Value && f.Activo);
+                    .Any(s => s.Clave.ToLower() == itemDto.Clave.ToLower() && s.PkidSector != id.Value && s.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<FuncionResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<SectorResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<FuncionResponse>
+            return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,
-                Message = "Funciones obtenidas correctamente",
+                Message = "Sectores obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -73,66 +68,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<FuncionResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<SectorResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidFn");
-
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidSector");
             if (result == null)
-                return NotFound(new PagedResult<FuncionResponse>
+                return NotFound(new PagedResult<SectorResponse>
                 {
                     Success = false,
-                    Message = "Función no encontrada",
+                    Message = "Sector no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<FuncionResponse>
+            return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,
-                Message = "Función encontrada",
+                Message = "Sector encontrado",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<FuncionResponse> { result },
+                Items = new List<SectorResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<FuncionResponse>>> Create([FromBody] FuncionResponse response)
+        public async Task<ActionResult<PagedResult<SectorResponse>>> Create([FromBody] SectorResponse response)
         {
             try
             {
-                var dto = _mapper.Map<FuncionDto>(response);
-
+                var dto = _mapper.Map<SectorDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<FuncionResponse>
+                    return Conflict(new PagedResult<SectorResponse>
                     {
                         Success = false,
-                        Message = "Ya existe una Función activa con esa clave",
+                        Message = "Ya existe un Sector activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
-                }
 
                 await _service.AddAsync(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidFn },
-                    new PagedResult<FuncionResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidSector },
+                    new PagedResult<SectorResponse>
                     {
                         Success = true,
-                        Message = "Función creada correctamente",
+                        Message = "Sector creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<FuncionResponse>
+                return BadRequest(new PagedResult<SectorResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -143,49 +133,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<FuncionResponse>>> Update(int id, [FromBody] FuncionResponse response)
+        public async Task<ActionResult<PagedResult<SectorResponse>>> Update(int id, [FromBody] SectorResponse response)
         {
             try
             {
-                var dto = _mapper.Map<FuncionDto>(response);
-                dto.PkidFn = id;
+                var dto = _mapper.Map<SectorDto>(response);
+                dto.PkidSector = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<FuncionResponse>
+                    return Conflict(new PagedResult<SectorResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otra Función activa con esa clave",
+                        Message = "Ya existe otro Sector activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
-                }
 
                 await _service.UpdateAsync(id, dto);
-
-                return Ok(new PagedResult<FuncionResponse>
+                return Ok(new PagedResult<SectorResponse>
                 {
                     Success = true,
-                    Message = "Función actualizada correctamente",
+                    Message = "Sector actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<FuncionResponse>
+                return NotFound(new PagedResult<SectorResponse>
                 {
                     Success = false,
-                    Message = $"Función con ID {id} no encontrada",
+                    Message = $"Sector con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<FuncionResponse>
+                return BadRequest(new PagedResult<SectorResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -204,7 +191,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Función eliminada correctamente",
+                    Message = "Sector eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -216,7 +203,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Función con ID {id} no encontrada",
+                    Message = $"Sector con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -234,13 +221,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<FuncionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<SectorResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<FuncionResponse>
+            return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,
-                Message = "Funciones obtenidas correctamente",
+                Message = "Sectores obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -248,7 +235,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<FuncionResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<SectorResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -260,11 +247,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<FuncionResponse>
+            return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,
-                Message = "Funciones filtradas correctamente",
+                Message = "Sectores filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

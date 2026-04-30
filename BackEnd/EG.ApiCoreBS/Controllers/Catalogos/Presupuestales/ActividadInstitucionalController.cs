@@ -9,7 +9,7 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]

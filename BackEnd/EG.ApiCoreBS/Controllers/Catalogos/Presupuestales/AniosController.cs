@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SectorController : ControllerBase
+    public class AniosController : ControllerBase
     {
-        private readonly GenericService<Sector, SectorDto, SectorResponse> _service;
+        private readonly GenericService<Anio, AniosDto, AniosResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public SectorController(
-            GenericService<Sector, SectorDto, SectorResponse> service,
+        public AniosController(
+            GenericService<Anio, AniosDto, AniosResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -36,31 +36,31 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueSector", async (dto) =>
+            _service.AddValidationRule("UniqueAnio", async (dto) =>
             {
-                var itemDto = dto as SectorDto;
+                var itemDto = dto as AniosDto;
                 if (itemDto == null) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave.ToLower() == itemDto.Clave.ToLower() && s.Activo);
+                    .Any(a => a.Clave == itemDto.Clave && a.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueSectorUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueAnioUpdate", async (dto, id) =>
             {
-                var itemDto = dto as SectorDto;
+                var itemDto = dto as AniosDto;
                 if (itemDto == null || !id.HasValue) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave.ToLower() == itemDto.Clave.ToLower() && s.PkidSector != id.Value && s.Activo);
+                    .Any(a => a.Clave == itemDto.Clave && a.PkidAnio != id.Value && a.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<SectorResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<AniosResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<SectorResponse>
+            return Ok(new PagedResult<AniosResponse>
             {
                 Success = true,
-                Message = "Sectores obtenidos correctamente",
+                Message = "Años obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -68,61 +68,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<SectorResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<AniosResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidSector");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidAnio");
             if (result == null)
-                return NotFound(new PagedResult<SectorResponse>
+                return NotFound(new PagedResult<AniosResponse>
                 {
                     Success = false,
-                    Message = "Sector no encontrado",
+                    Message = "Año no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<SectorResponse>
+            return Ok(new PagedResult<AniosResponse>
             {
                 Success = true,
-                Message = "Sector encontrado",
+                Message = "Año encontrado",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<SectorResponse> { result },
+                Items = new List<AniosResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<SectorResponse>>> Create([FromBody] SectorResponse response)
+        public async Task<ActionResult<PagedResult<AniosResponse>>> Create([FromBody] AniosResponse response)
         {
             try
             {
-                var dto = _mapper.Map<SectorDto>(response);
+                var dto = _mapper.Map<AniosDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<SectorResponse>
+                    return Conflict(new PagedResult<AniosResponse>
                     {
                         Success = false,
-                        Message = "Ya existe un Sector activo con esa clave",
+                        Message = "Ya existe un Año activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidSector },
-                    new PagedResult<SectorResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidAnio },
+                    new PagedResult<AniosResponse>
                     {
                         Success = true,
-                        Message = "Sector creado correctamente",
+                        Message = "Año creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<SectorResponse>
+                return BadRequest(new PagedResult<AniosResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -133,46 +133,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<SectorResponse>>> Update(int id, [FromBody] SectorResponse response)
+        public async Task<ActionResult<PagedResult<AniosResponse>>> Update(int id, [FromBody] AniosResponse response)
         {
             try
             {
-                var dto = _mapper.Map<SectorDto>(response);
-                dto.PkidSector = id;
+                var dto = _mapper.Map<AniosDto>(response);
+                dto.PkidAnio = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<SectorResponse>
+                    return Conflict(new PagedResult<AniosResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro Sector activo con esa clave",
+                        Message = "Ya existe otro Año activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<SectorResponse>
+                return Ok(new PagedResult<AniosResponse>
                 {
                     Success = true,
-                    Message = "Sector actualizado correctamente",
+                    Message = "Año actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<SectorResponse>
+                return NotFound(new PagedResult<AniosResponse>
                 {
                     Success = false,
-                    Message = $"Sector con ID {id} no encontrado",
+                    Message = $"Año con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<SectorResponse>
+                return BadRequest(new PagedResult<AniosResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -191,7 +191,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Sector eliminado correctamente",
+                    Message = "Año eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -203,7 +203,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Sector con ID {id} no encontrado",
+                    Message = $"Año con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -221,13 +221,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<SectorResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<AniosResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<SectorResponse>
+            return Ok(new PagedResult<AniosResponse>
             {
                 Success = true,
-                Message = "Sectores obtenidos correctamente",
+                Message = "Años obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -235,7 +235,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<SectorResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<AniosResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -247,10 +247,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<SectorResponse>
+            return Ok(new PagedResult<AniosResponse>
             {
                 Success = true,
-                Message = "Sectores filtrados correctamente",
+                Message = "Años filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

@@ -8,21 +8,20 @@ using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UnidadResponsableController : ControllerBase
+    public class TipoRecursoController : ControllerBase
     {
-        private readonly GenericService<Area, UnidadResponsableDto, UnidadResponsableResponse> _service;
+        private readonly GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public UnidadResponsableController(
-            GenericService<Area, UnidadResponsableDto, UnidadResponsableResponse> service,
+        public TipoRecursoController(
+            GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -33,42 +32,35 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             ConfigureValidations();
         }
 
-        private void ConfigureService()
-        {
-            // Incluir la relación con el área padre para obtener datos completos
-            _service.AddInclude(a => a.FkidAreaSisNavigation);
-            _service.AddInclude(a => a.InverseFkidAreaSisNavigation);
-        }
+        private void ConfigureService() { }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueUnidadResponsable", async (dto) =>
+            _service.AddValidationRule("UniqueTipoRecurso", async (dto) =>
             {
-                var itemDto = dto as UnidadResponsableDto;
+                var itemDto = dto as TipoRecursoDto;
                 if (itemDto == null) return true;
-
                 return !_service.GetQueryWithIncludes()
-                    .Any(d => d.Clave.ToLower() == itemDto.Clave.ToLower() && d.Activo);
+                    .Any(t => t.Clave.ToLower() == itemDto.Clave.ToLower() && t.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueUnidadResponsableUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueTipoRecursoUpdate", async (dto, id) =>
             {
-                var itemDto = dto as UnidadResponsableDto;
+                var itemDto = dto as TipoRecursoDto;
                 if (itemDto == null || !id.HasValue) return true;
-
                 return !_service.GetQueryWithIncludes()
-                    .Any(d => d.Clave.ToLower() == itemDto.Clave.ToLower() && d.PkidArea != id.Value && d.Activo);
+                    .Any(t => t.Clave.ToLower() == itemDto.Clave.ToLower() && t.PkidTipoRecurso != id.Value && t.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<UnidadResponsableResponse>
+            return Ok(new PagedResult<TipoRecursoResponse>
             {
                 Success = true,
-                Message = "Unidades Responsables obtenidas correctamente",
+                Message = "Tipos de Recurso obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -76,66 +68,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidArea");
-
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidTipoRecurso");
             if (result == null)
-                return NotFound(new PagedResult<UnidadResponsableResponse>
+                return NotFound(new PagedResult<TipoRecursoResponse>
                 {
                     Success = false,
-                    Message = "Unidad Responsable no encontrada",
+                    Message = "Tipo de Recurso no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<UnidadResponsableResponse>
+            return Ok(new PagedResult<TipoRecursoResponse>
             {
                 Success = true,
-                Message = "Unidad Responsable encontrada",
+                Message = "Tipo de Recurso encontrado",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<UnidadResponsableResponse> { result },
+                Items = new List<TipoRecursoResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> Create([FromBody] UnidadResponsableResponse response)
+        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> Create([FromBody] TipoRecursoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<UnidadResponsableDto>(response);
-
+                var dto = _mapper.Map<TipoRecursoDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<UnidadResponsableResponse>
+                    return Conflict(new PagedResult<TipoRecursoResponse>
                     {
                         Success = false,
-                        Message = "Ya existe una Unidad Responsable activa con esa clave",
+                        Message = "Ya existe un Tipo de Recurso activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
-                }
 
                 await _service.AddAsync(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidUnidadResponsable },
-                    new PagedResult<UnidadResponsableResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidTipoRecurso },
+                    new PagedResult<TipoRecursoResponse>
                     {
                         Success = true,
-                        Message = "Unidad Responsable creada correctamente",
+                        Message = "Tipo de Recurso creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<UnidadResponsableResponse>
+                return BadRequest(new PagedResult<TipoRecursoResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -146,49 +133,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> Update(int id, [FromBody] UnidadResponsableResponse response)
+        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> Update(int id, [FromBody] TipoRecursoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<UnidadResponsableDto>(response);
-                dto.PkidUnidadResponsable = id;
+                var dto = _mapper.Map<TipoRecursoDto>(response);
+                dto.PkidTipoRecurso = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<UnidadResponsableResponse>
+                    return Conflict(new PagedResult<TipoRecursoResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otra Unidad Responsable activa con esa clave",
+                        Message = "Ya existe otro Tipo de Recurso activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
-                }
 
                 await _service.UpdateAsync(id, dto);
-
-                return Ok(new PagedResult<UnidadResponsableResponse>
+                return Ok(new PagedResult<TipoRecursoResponse>
                 {
                     Success = true,
-                    Message = "Unidad Responsable actualizada correctamente",
+                    Message = "Tipo de Recurso actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<UnidadResponsableResponse>
+                return NotFound(new PagedResult<TipoRecursoResponse>
                 {
                     Success = false,
-                    Message = $"Unidad Responsable con ID {id} no encontrada",
+                    Message = $"Tipo de Recurso con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<UnidadResponsableResponse>
+                return BadRequest(new PagedResult<TipoRecursoResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -207,7 +191,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Unidad Responsable eliminada correctamente",
+                    Message = "Tipo de Recurso eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -219,7 +203,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Unidad Responsable con ID {id} no encontrada",
+                    Message = $"Tipo de Recurso con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -237,13 +221,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<UnidadResponsableResponse>
+            return Ok(new PagedResult<TipoRecursoResponse>
             {
                 Success = true,
-                Message = "Unidades Responsables obtenidas correctamente",
+                Message = "Tipos de Recurso obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -251,7 +235,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<TipoRecursoResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -263,11 +247,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<UnidadResponsableResponse>
+            return Ok(new PagedResult<TipoRecursoResponse>
             {
                 Success = true,
-                Message = "Unidades Responsables filtradas correctamente",
+                Message = "Tipos de Recurso filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

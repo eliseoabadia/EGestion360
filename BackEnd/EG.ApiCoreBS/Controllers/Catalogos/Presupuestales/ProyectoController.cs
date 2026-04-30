@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class FuenteFinanciamientoController : ControllerBase
+    public class ProyectoController : ControllerBase
     {
-        private readonly GenericService<FuenteFinanciamiento, FuenteFinanciamientoDto, FuenteFinanciamientoResponse> _service;
+        private readonly GenericService<Proyecto, ProyectoDto, ProyectoResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public FuenteFinanciamientoController(
-            GenericService<FuenteFinanciamiento, FuenteFinanciamientoDto, FuenteFinanciamientoResponse> service,
+        public ProyectoController(
+            GenericService<Proyecto, ProyectoDto, ProyectoResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -36,31 +36,31 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueFuenteFinanciamiento", async (dto) =>
+            _service.AddValidationRule("UniqueProyecto", async (dto) =>
             {
-                var itemDto = dto as FuenteFinanciamientoDto;
+                var itemDto = dto as ProyectoDto;
                 if (itemDto == null) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(f => f.Clave.ToLower() == itemDto.Clave.ToLower() && f.Activo);
+                    .Any(p => p.Descripcion.ToLower() == itemDto.Descripcion.ToLower() && p.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueFuenteFinanciamientoUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueProyectoUpdate", async (dto, id) =>
             {
-                var itemDto = dto as FuenteFinanciamientoDto;
+                var itemDto = dto as ProyectoDto;
                 if (itemDto == null || !id.HasValue) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(f => f.Clave.ToLower() == itemDto.Clave.ToLower() && f.PkidFuenteFinanciamiento != id.Value && f.Activo);
+                    .Any(p => p.Descripcion.ToLower() == itemDto.Descripcion.ToLower() && p.PkidProyecto != id.Value && p.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<FuenteFinanciamientoResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<ProyectoResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<FuenteFinanciamientoResponse>
+            return Ok(new PagedResult<ProyectoResponse>
             {
                 Success = true,
-                Message = "Fuentes de Financiamiento obtenidas correctamente",
+                Message = "Proyectos obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -68,61 +68,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<FuenteFinanciamientoResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<ProyectoResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidFuenteFinanciamiento");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidProyecto");
             if (result == null)
-                return NotFound(new PagedResult<FuenteFinanciamientoResponse>
+                return NotFound(new PagedResult<ProyectoResponse>
                 {
                     Success = false,
-                    Message = "Fuente de Financiamiento no encontrada",
+                    Message = "Proyecto no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<FuenteFinanciamientoResponse>
+            return Ok(new PagedResult<ProyectoResponse>
             {
                 Success = true,
-                Message = "Fuente de Financiamiento encontrada",
+                Message = "Proyecto encontrado",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<FuenteFinanciamientoResponse> { result },
+                Items = new List<ProyectoResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<FuenteFinanciamientoResponse>>> Create([FromBody] FuenteFinanciamientoResponse response)
+        public async Task<ActionResult<PagedResult<ProyectoResponse>>> Create([FromBody] ProyectoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<FuenteFinanciamientoDto>(response);
+                var dto = _mapper.Map<ProyectoDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<FuenteFinanciamientoResponse>
+                    return Conflict(new PagedResult<ProyectoResponse>
                     {
                         Success = false,
-                        Message = "Ya existe una Fuente de Financiamiento activa con esa clave",
+                        Message = "Ya existe un Proyecto activo con esa descripción",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidFuenteFinanciamiento },
-                    new PagedResult<FuenteFinanciamientoResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidProyecto },
+                    new PagedResult<ProyectoResponse>
                     {
                         Success = true,
-                        Message = "Fuente de Financiamiento creada correctamente",
+                        Message = "Proyecto creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<FuenteFinanciamientoResponse>
+                return BadRequest(new PagedResult<ProyectoResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -133,46 +133,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<FuenteFinanciamientoResponse>>> Update(int id, [FromBody] FuenteFinanciamientoResponse response)
+        public async Task<ActionResult<PagedResult<ProyectoResponse>>> Update(int id, [FromBody] ProyectoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<FuenteFinanciamientoDto>(response);
-                dto.PkidFuenteFinanciamiento = id;
+                var dto = _mapper.Map<ProyectoDto>(response);
+                dto.PkidProyecto = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<FuenteFinanciamientoResponse>
+                    return Conflict(new PagedResult<ProyectoResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otra Fuente de Financiamiento activa con esa clave",
+                        Message = "Ya existe otro Proyecto activo con esa descripción",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<FuenteFinanciamientoResponse>
+                return Ok(new PagedResult<ProyectoResponse>
                 {
                     Success = true,
-                    Message = "Fuente de Financiamiento actualizada correctamente",
+                    Message = "Proyecto actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<FuenteFinanciamientoResponse>
+                return NotFound(new PagedResult<ProyectoResponse>
                 {
                     Success = false,
-                    Message = $"Fuente de Financiamiento con ID {id} no encontrada",
+                    Message = $"Proyecto con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<FuenteFinanciamientoResponse>
+                return BadRequest(new PagedResult<ProyectoResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -191,7 +191,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Fuente de Financiamiento eliminada correctamente",
+                    Message = "Proyecto eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -203,7 +203,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Fuente de Financiamiento con ID {id} no encontrada",
+                    Message = $"Proyecto con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -221,13 +221,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<FuenteFinanciamientoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<ProyectoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<FuenteFinanciamientoResponse>
+            return Ok(new PagedResult<ProyectoResponse>
             {
                 Success = true,
-                Message = "Fuentes de Financiamiento obtenidas correctamente",
+                Message = "Proyectos obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -235,7 +235,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<FuenteFinanciamientoResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<ProyectoResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -247,10 +247,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<FuenteFinanciamientoResponse>
+            return Ok(new PagedResult<ProyectoResponse>
             {
                 Success = true,
-                Message = "Fuentes de Financiamiento filtradas correctamente",
+                Message = "Proyectos filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

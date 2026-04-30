@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class RamoController : ControllerBase
+    public class PgController : ControllerBase
     {
-        private readonly GenericService<Ramo, RamoDto, RamoResponse> _service;
+        private readonly GenericService<Pg, PgDto, PgResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public RamoController(
-            GenericService<Ramo, RamoDto, RamoResponse> service,
+        public PgController(
+            GenericService<Pg, PgDto, PgResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -36,31 +36,31 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueRamo", async (dto) =>
+            _service.AddValidationRule("UniquePg", async (dto) =>
             {
-                var itemDto = dto as RamoDto;
+                var itemDto = dto as PgDto;
                 if (itemDto == null) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(r => r.Clave == itemDto.Clave && r.Activo);
+                    .Any(p => p.Clave == itemDto.Clave && p.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueRamoUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniquePgUpdate", async (dto, id) =>
             {
-                var itemDto = dto as RamoDto;
+                var itemDto = dto as PgDto;
                 if (itemDto == null || !id.HasValue) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(r => r.Clave == itemDto.Clave && r.PkidRamo != id.Value && r.Activo);
+                    .Any(p => p.Clave == itemDto.Clave && p.PkidPg != id.Value && p.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<RamoResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<PgResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<RamoResponse>
+            return Ok(new PagedResult<PgResponse>
             {
                 Success = true,
-                Message = "Ramos obtenidos correctamente",
+                Message = "PGs obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -68,61 +68,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<RamoResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<PgResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidRamo");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidPg");
             if (result == null)
-                return NotFound(new PagedResult<RamoResponse>
+                return NotFound(new PagedResult<PgResponse>
                 {
                     Success = false,
-                    Message = "Ramo no encontrado",
+                    Message = "PG no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<RamoResponse>
+            return Ok(new PagedResult<PgResponse>
             {
                 Success = true,
-                Message = "Ramo encontrado",
+                Message = "PG encontrado",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<RamoResponse> { result },
+                Items = new List<PgResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<RamoResponse>>> Create([FromBody] RamoResponse response)
+        public async Task<ActionResult<PagedResult<PgResponse>>> Create([FromBody] PgResponse response)
         {
             try
             {
-                var dto = _mapper.Map<RamoDto>(response);
+                var dto = _mapper.Map<PgDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<RamoResponse>
+                    return Conflict(new PagedResult<PgResponse>
                     {
                         Success = false,
-                        Message = "Ya existe un Ramo activo con esa clave",
+                        Message = "Ya existe un PG activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidRamo },
-                    new PagedResult<RamoResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidPg },
+                    new PagedResult<PgResponse>
                     {
                         Success = true,
-                        Message = "Ramo creado correctamente",
+                        Message = "PG creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<RamoResponse>
+                return BadRequest(new PagedResult<PgResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -133,46 +133,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<RamoResponse>>> Update(int id, [FromBody] RamoResponse response)
+        public async Task<ActionResult<PagedResult<PgResponse>>> Update(int id, [FromBody] PgResponse response)
         {
             try
             {
-                var dto = _mapper.Map<RamoDto>(response);
-                dto.PkidRamo = id;
+                var dto = _mapper.Map<PgDto>(response);
+                dto.PkidPg = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<RamoResponse>
+                    return Conflict(new PagedResult<PgResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro Ramo activo con esa clave",
+                        Message = "Ya existe otro PG activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<RamoResponse>
+                return Ok(new PagedResult<PgResponse>
                 {
                     Success = true,
-                    Message = "Ramo actualizado correctamente",
+                    Message = "PG actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<RamoResponse>
+                return NotFound(new PagedResult<PgResponse>
                 {
                     Success = false,
-                    Message = $"Ramo con ID {id} no encontrado",
+                    Message = $"PG con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<RamoResponse>
+                return BadRequest(new PagedResult<PgResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -191,7 +191,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Ramo eliminado correctamente",
+                    Message = "PG eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -203,7 +203,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Ramo con ID {id} no encontrado",
+                    Message = $"PG con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -221,13 +221,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<RamoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<PgResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<RamoResponse>
+            return Ok(new PagedResult<PgResponse>
             {
                 Success = true,
-                Message = "Ramos obtenidos correctamente",
+                Message = "PGs obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -235,7 +235,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<RamoResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<PgResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -247,10 +247,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<RamoResponse>
+            return Ok(new PagedResult<PgResponse>
             {
                 Success = true,
-                Message = "Ramos filtrados correctamente",
+                Message = "PGs filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

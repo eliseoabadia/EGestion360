@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class PgController : ControllerBase
+    public class FuncionController : ControllerBase
     {
-        private readonly GenericService<Pg, PgDto, PgResponse> _service;
+        private readonly GenericService<Fn, FuncionDto, FuncionResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public PgController(
-            GenericService<Pg, PgDto, PgResponse> service,
+        public FuncionController(
+            GenericService<Fn, FuncionDto, FuncionResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -32,35 +32,40 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             ConfigureValidations();
         }
 
-        private void ConfigureService() { }
+        private void ConfigureService()
+        {
+            _service.AddInclude(f => f.FkidGfPresNavigation);
+        }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniquePg", async (dto) =>
+            _service.AddValidationRule("UniqueFuncion", async (dto) =>
             {
-                var itemDto = dto as PgDto;
+                var itemDto = dto as FuncionDto;
                 if (itemDto == null) return true;
+
                 return !_service.GetQueryWithIncludes()
-                    .Any(p => p.Clave == itemDto.Clave && p.Activo);
+                    .Any(f => f.Clave == itemDto.Clave && f.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniquePgUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueFuncionUpdate", async (dto, id) =>
             {
-                var itemDto = dto as PgDto;
+                var itemDto = dto as FuncionDto;
                 if (itemDto == null || !id.HasValue) return true;
+
                 return !_service.GetQueryWithIncludes()
-                    .Any(p => p.Clave == itemDto.Clave && p.PkidPg != id.Value && p.Activo);
+                    .Any(f => f.Clave == itemDto.Clave && f.PkidFn != id.Value && f.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<PgResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<FuncionResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<PgResponse>
+            return Ok(new PagedResult<FuncionResponse>
             {
                 Success = true,
-                Message = "PGs obtenidos correctamente",
+                Message = "Funciones obtenidas correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -68,61 +73,66 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<PgResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<FuncionResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidPg");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidFn");
+
             if (result == null)
-                return NotFound(new PagedResult<PgResponse>
+                return NotFound(new PagedResult<FuncionResponse>
                 {
                     Success = false,
-                    Message = "PG no encontrado",
+                    Message = "Función no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<PgResponse>
+            return Ok(new PagedResult<FuncionResponse>
             {
                 Success = true,
-                Message = "PG encontrado",
+                Message = "Función encontrada",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<PgResponse> { result },
+                Items = new List<FuncionResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<PgResponse>>> Create([FromBody] PgResponse response)
+        public async Task<ActionResult<PagedResult<FuncionResponse>>> Create([FromBody] FuncionResponse response)
         {
             try
             {
-                var dto = _mapper.Map<PgDto>(response);
+                var dto = _mapper.Map<FuncionDto>(response);
+
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<PgResponse>
+                {
+                    return Conflict(new PagedResult<FuncionResponse>
                     {
                         Success = false,
-                        Message = "Ya existe un PG activo con esa clave",
+                        Message = "Ya existe una Función activa con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
+                }
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidPg },
-                    new PagedResult<PgResponse>
+
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidFn },
+                    new PagedResult<FuncionResponse>
                     {
                         Success = true,
-                        Message = "PG creado correctamente",
+                        Message = "Función creada correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<PgResponse>
+                return BadRequest(new PagedResult<FuncionResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -133,46 +143,49 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<PgResponse>>> Update(int id, [FromBody] PgResponse response)
+        public async Task<ActionResult<PagedResult<FuncionResponse>>> Update(int id, [FromBody] FuncionResponse response)
         {
             try
             {
-                var dto = _mapper.Map<PgDto>(response);
-                dto.PkidPg = id;
+                var dto = _mapper.Map<FuncionDto>(response);
+                dto.PkidFn = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<PgResponse>
+                {
+                    return Conflict(new PagedResult<FuncionResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro PG activo con esa clave",
+                        Message = "Ya existe otra Función activa con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
+                }
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<PgResponse>
+
+                return Ok(new PagedResult<FuncionResponse>
                 {
                     Success = true,
-                    Message = "PG actualizado correctamente",
+                    Message = "Función actualizada correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<PgResponse>
+                return NotFound(new PagedResult<FuncionResponse>
                 {
                     Success = false,
-                    Message = $"PG con ID {id} no encontrado",
+                    Message = $"Función con ID {id} no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<PgResponse>
+                return BadRequest(new PagedResult<FuncionResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -191,7 +204,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "PG eliminado correctamente",
+                    Message = "Función eliminada correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -203,7 +216,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"PG con ID {id} no encontrado",
+                    Message = $"Función con ID {id} no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -221,13 +234,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<PgResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<FuncionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<PgResponse>
+            return Ok(new PagedResult<FuncionResponse>
             {
                 Success = true,
-                Message = "PGs obtenidos correctamente",
+                Message = "Funciones obtenidas correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -235,7 +248,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<PgResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<FuncionResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -247,10 +260,11 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<PgResponse>
+
+            return Ok(new PagedResult<FuncionResponse>
             {
                 Success = true,
-                Message = "PGs filtrados correctamente",
+                Message = "Funciones filtradas correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

@@ -9,19 +9,19 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SubFuncionController : ControllerBase
+    public class RamoController : ControllerBase
     {
-        private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
+        private readonly GenericService<Ramo, RamoDto, RamoResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public SubFuncionController(
-            GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
+        public RamoController(
+            GenericService<Ramo, RamoDto, RamoResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -32,38 +32,35 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             ConfigureValidations();
         }
 
-        private void ConfigureService()
-        {
-            _service.AddInclude(s => s.FkidFnPresNavigation);
-        }
+        private void ConfigureService() { }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueSubFuncion", async (dto) =>
+            _service.AddValidationRule("UniqueRamo", async (dto) =>
             {
-                var itemDto = dto as SubFuncionDto;
+                var itemDto = dto as RamoDto;
                 if (itemDto == null) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave == itemDto.Clave && s.Activo);
+                    .Any(r => r.Clave == itemDto.Clave && r.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueSubFuncionUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueRamoUpdate", async (dto, id) =>
             {
-                var itemDto = dto as SubFuncionDto;
+                var itemDto = dto as RamoDto;
                 if (itemDto == null || !id.HasValue) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave == itemDto.Clave && s.PkidSf != id.Value && s.Activo);
+                    .Any(r => r.Clave == itemDto.Clave && r.PkidRamo != id.Value && r.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<RamoResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<RamoResponse>
             {
                 Success = true,
-                Message = "SubFunciones obtenidas correctamente",
+                Message = "Ramos obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -71,61 +68,61 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<RamoResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidSf");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidRamo");
             if (result == null)
-                return NotFound(new PagedResult<SubFuncionResponse>
+                return NotFound(new PagedResult<RamoResponse>
                 {
                     Success = false,
-                    Message = "SubFunción no encontrada",
+                    Message = "Ramo no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<RamoResponse>
             {
                 Success = true,
-                Message = "SubFunción encontrada",
+                Message = "Ramo encontrado",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<SubFuncionResponse> { result },
+                Items = new List<RamoResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Create([FromBody] SubFuncionResponse response)
+        public async Task<ActionResult<PagedResult<RamoResponse>>> Create([FromBody] RamoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<SubFuncionDto>(response);
+                var dto = _mapper.Map<RamoDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<SubFuncionResponse>
+                    return Conflict(new PagedResult<RamoResponse>
                     {
                         Success = false,
-                        Message = "Ya existe una SubFunción activa con esa clave",
+                        Message = "Ya existe un Ramo activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidSf },
-                    new PagedResult<SubFuncionResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidRamo },
+                    new PagedResult<RamoResponse>
                     {
                         Success = true,
-                        Message = "SubFunción creada correctamente",
+                        Message = "Ramo creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<SubFuncionResponse>
+                return BadRequest(new PagedResult<RamoResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -136,46 +133,46 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Update(int id, [FromBody] SubFuncionResponse response)
+        public async Task<ActionResult<PagedResult<RamoResponse>>> Update(int id, [FromBody] RamoResponse response)
         {
             try
             {
-                var dto = _mapper.Map<SubFuncionDto>(response);
-                dto.PkidSf = id;
+                var dto = _mapper.Map<RamoDto>(response);
+                dto.PkidRamo = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<SubFuncionResponse>
+                    return Conflict(new PagedResult<RamoResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otra SubFunción activa con esa clave",
+                        Message = "Ya existe otro Ramo activo con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<SubFuncionResponse>
+                return Ok(new PagedResult<RamoResponse>
                 {
                     Success = true,
-                    Message = "SubFunción actualizada correctamente",
+                    Message = "Ramo actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<SubFuncionResponse>
+                return NotFound(new PagedResult<RamoResponse>
                 {
                     Success = false,
-                    Message = $"SubFunción con ID {id} no encontrada",
+                    Message = $"Ramo con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<SubFuncionResponse>
+                return BadRequest(new PagedResult<RamoResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -194,9 +191,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "SubFunción eliminada correctamente",
+                    Message = "Ramo eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
+                    Items = new List<bool> { true },
                     TotalCount = 1
                 });
             }
@@ -205,7 +203,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"SubFunción con ID {id} no encontrada",
+                    Message = $"Ramo con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -223,13 +221,13 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<RamoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<RamoResponse>
             {
                 Success = true,
-                Message = "SubFunciones obtenidas correctamente",
+                Message = "Ramos obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -237,7 +235,7 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<RamoResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -249,10 +247,10 @@ namespace EG.ApiCoreBS.Controllers.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<RamoResponse>
             {
                 Success = true,
-                Message = "SubFunciones filtradas correctamente",
+                Message = "Ramos filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
