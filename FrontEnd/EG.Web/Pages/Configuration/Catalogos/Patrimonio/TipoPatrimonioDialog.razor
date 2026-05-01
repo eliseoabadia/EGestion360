@@ -1,0 +1,101 @@
+@using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Services
+
+@inject IGenericCrudService<TipoPatrimonioResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="TipoPatrimonioResponse"
+    Title="@dialogTitle"
+    MaxWidth="MaxWidth.Small"
+    ActionText="@actionText"
+    ProcessingText="@processingText"
+    LoadingMessage="Cargando datos..."
+    OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="TipoPatrimonioResponse"
+        @ref="form"
+        ShowHeader="true"
+        HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Descripcion"
+            Label="Descripción"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            Required="true"
+            For="@(() => item.Descripcion)" />
+
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<TipoPatrimonioResponse> form = null!;
+    private TipoPatrimonioResponse item = new() { Activo = true };
+
+    private string dialogTitle => Id.HasValue ? "Editar Tipo de Patrimonio" : "Nuevo Tipo de Patrimonio";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Tipo de patrimonio actualizado correctamente" : "Tipo de patrimonio creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

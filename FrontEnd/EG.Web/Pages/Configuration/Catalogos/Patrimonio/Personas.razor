@@ -1,0 +1,112 @@
+@page "/configuracion/patrimonio/personas"
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<PersonaResponse, PersonaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Personas"
+                    Subtitle="Catálogo de personas"
+                    Icon="@Icons.Material.Filled.People"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="PersonaResponse"
+                  @ref="table"
+                  Title="Lista de Personas"
+                  SearchPlaceholder="Buscar por nombre, RFC o CURP..."
+                  ShowExportButton="@CanExport"
+                  ServerDataFunc="LoadServerData"
+                  ExportFunc="ExportToExcel"
+                  SearchString="@SearchString"
+                  SearchStringChanged="(s) => SearchString = s"
+                  OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidPersona" T="PersonaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="PersonaResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="PersonaResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Paterno" T="PersonaResponse">Paterno</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Materno" T="PersonaResponse">Materno</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Rfc" T="PersonaResponse">RFC</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="PersonaResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidPersona))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidPersona))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidPersona</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Nombre</MudTd>
+                <MudTd>@item.Paterno</MudTd>
+                <MudTd>@item.Materno</MudTd>
+                <MudTd>@item.Rfc</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<PersonaResponse> table = null!;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Personas";
+
+    protected override Type CreateDialogType => typeof(PersonaDialog);
+    protected override Type EditDialogType => typeof(PersonaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<PersonaResponse>);
+
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<PersonaResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidPersona,
+            Clave = u.Clave,
+            Nombre = u.Nombre,
+            Paterno = u.Paterno,
+            Materno = u.Materno,
+            RFC = u.Rfc,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Nombre ?? "la persona";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

@@ -6,6 +6,8 @@ using EG.Web.Models.Configuration;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
 using Microsoft.JSInterop;
+using EG.Domain.DTOs.Responses.Contabilidad;
+using EG.Domain.DTOs.Responses.Patrimonio;
 
 namespace EG.Web.Extensions;
 
@@ -52,6 +54,16 @@ public static class ApiServiceExtensions
         RegisterCrud<ArticuloResponse>(services, "api/Articulo");
         RegisterCrud<FraccionResponse>(services, "api/Fraccion");
         RegisterCrud<ProveedorResponse>(services, "api/Proveedor");
+        
+        // Catálogos de Contabilidad
+        RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");
+        
+        // Catálogos de Patrimonio
+        RegisterCrud<GrupoBienResponse>(services, "api/patrimonio/grupos-bien");
+        RegisterCrud<TipoPatrimonioResponse>(services, "api/patrimonio/tipos-patrimonio");
+        RegisterCrud<TipoAdquisicionResponse>(services, "api/patrimonio/tipos-adquisicion");
+        RegisterCrud<MarcaResponse>(services, "api/patrimonio/marcas");
+        RegisterCrud<EG.Domain.DTOs.Responses.Nomina.PersonaResponse>(services, "api/patrimonio/personas");
         
         return services;
     }

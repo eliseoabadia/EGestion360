@@ -1,0 +1,100 @@
+@page "/configuracion/patrimonio/marcas"
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<MarcaResponse, MarcaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Marcas"
+                    Subtitle="Catálogo de marcas"
+                    Icon="@Icons.Material.Filled.BrandingWatermark"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="MarcaResponse"
+                  @ref="table"
+                  Title="Lista de Marcas"
+                  SearchPlaceholder="Buscar por descripción..."
+                  ShowExportButton="@CanExport"
+                  ServerDataFunc="LoadServerData"
+                  ExportFunc="ExportToExcel"
+                  SearchString="@SearchString"
+                  SearchStringChanged="(s) => SearchString = s"
+                  OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidMarca" T="MarcaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="MarcaResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="MarcaResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidMarca))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidMarca))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidMarca</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<MarcaResponse> table = null!;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Marca";
+
+    protected override Type CreateDialogType => typeof(MarcaDialog);
+    protected override Type EditDialogType => typeof(MarcaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<MarcaResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<MarcaResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidMarca,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "la marca";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

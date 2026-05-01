@@ -1,0 +1,100 @@
+@page "/configuracion/patrimonio/tipos-patrimonio"
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoPatrimonioResponse, TipoPatrimonioResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Patrimonio"
+                    Subtitle="Catálogo de tipos de patrimonio"
+                    Icon="@Icons.Material.Filled.Category"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="TipoPatrimonioResponse"
+                  @ref="table"
+                  Title="Lista de Tipos de Patrimonio"
+                  SearchPlaceholder="Buscar por descripción..."
+                  ShowExportButton="@CanExport"
+                  ServerDataFunc="LoadServerData"
+                  ExportFunc="ExportToExcel"
+                  SearchString="@SearchString"
+                  SearchStringChanged="(s) => SearchString = s"
+                  OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoPatrimonio" T="TipoPatrimonioResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPatrimonioResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoPatrimonioResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoPatrimonio))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoPatrimonio))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoPatrimonio</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<TipoPatrimonioResponse> table = null!;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Tipo_Patrimonio";
+
+    protected override Type CreateDialogType => typeof(TipoPatrimonioDialog);
+    protected override Type EditDialogType => typeof(TipoPatrimonioDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPatrimonioResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPatrimonioResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidTipoPatrimonio,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "el tipo de patrimonio";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

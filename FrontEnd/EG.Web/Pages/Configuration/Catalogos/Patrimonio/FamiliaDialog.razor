@@ -1,0 +1,108 @@
+@using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Services
+
+@inject IGenericCrudService<FamiliaResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="FamiliaResponse"
+    Title="@dialogTitle"
+    MaxWidth="MaxWidth.Small"
+    ActionText="@actionText"
+    ProcessingText="@processingText"
+    LoadingMessage="Cargando datos..."
+    OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="FamiliaResponse"
+        @ref="form"
+        ShowHeader="true"
+        HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave"
+            Label="Clave"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.Clave)" />
+
+        <MudTextField @bind-Value="item.Descripcion"
+            Label="Descripción"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            Required="true"
+            For="@(() => item.Descripcion)" />
+
+        <MudSwitch T="bool" Value="item.Activo ?? false" ValueChanged="@(async (bool value) => { item.Activo = value; await Task.CompletedTask; })" Label="Activo" Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<FamiliaResponse> form = null!;
+    private FamiliaResponse item = new() { Activo = true };
+
+    private string dialogTitle => Id.HasValue ? "Editar Familia" : "Nueva Familia";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Familia actualizada correctamente" : "Familia creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,136 @@
+@using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Services
+
+@inject IGenericCrudService<GrupoBienResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="GrupoBienResponse"
+    Title="@dialogTitle"
+    MaxWidth="MaxWidth.Medium"
+    ActionText="@actionText"
+    ProcessingText="@processingText"
+    LoadingMessage="Cargando datos..."
+    OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="GrupoBienResponse"
+        @ref="form"
+        ShowHeader="true"
+        HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave"
+            Label="Clave"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.Clave)" />
+
+        <MudTextField @bind-Value="item.ClaveAn"
+            Label="Clave AN"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.ClaveAn)" />
+
+        <MudTextField @bind-Value="item.Descripcion"
+            Label="Descripción"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            Required="true"
+            For="@(() => item.Descripcion)" />
+
+        <MudTextField @bind-Value="item.CabmAct"
+            Label="CABM ACT"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.CabmAct)" />
+
+        <MudTextField @bind-Value="item.ClaveCucop"
+            Label="Clave CUCOP"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.ClaveCucop)" />
+
+        <MudTextField @bind-Value="item.Medida"
+            Label="Medida"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.Medida)" />
+
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<GrupoBienResponse> form = null!;
+    private GrupoBienResponse item = new() { Activo = true };
+
+    private string dialogTitle => Id.HasValue ? "Editar Grupo de Bien" : "Nuevo Grupo de Bien";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Grupo de bien actualizado correctamente" : "Grupo de bien creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -123,6 +123,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[CONTA].[TipoDoctoPago]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[AspNetClaims]",
          "ObjectType": 0
       },

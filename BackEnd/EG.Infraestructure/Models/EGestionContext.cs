@@ -179,6 +179,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<TipoDetallePoliza> TipoDetallePolizas { get; set; }
 
+    public virtual DbSet<TipoDoctoPago> TipoDoctoPagos { get; set; }
+
     public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
 
     public virtual DbSet<TipoGarantium> TipoGarantia { get; set; }
@@ -2937,6 +2939,29 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoDetallePolizaUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_TipoDetallePoliza_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoDoctoPago>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoDoctoPago);
+
+            entity.ToTable("TipoDoctoPago", "CONTA");
+
+            entity.Property(e => e.PkidTipoDoctoPago).HasColumnName("PKIdTipoDoctoPago");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoDoctoPago_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoDoctoPago_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoDoctoPagoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoDoctoPago_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoDoctoPagoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoDoctoPago_UsuarioModificacion");
         });
 
         modelBuilder.Entity<TipoDocumento>(entity =>

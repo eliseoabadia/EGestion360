@@ -306,7 +306,45 @@ GO
 --      AND p.FK_IdMunicipio__SIS IN (SELECT PKIdMunicipio FROM SIS.Municipios);
 --    SET IDENTITY_INSERT SIS.Proveedor OFF;
 --END
---GO
+GO
+
+-- =============================================
+-- Tabla: CONTA.TipoDoctoPago
+-- Descripción: Catálogo de tipos de documento de pago
+-- (Cheque, Transferencia, Depósito, etc.)
+-- =============================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TipoDoctoPago' AND schema_id = SCHEMA_ID('CONTA'))
+BEGIN
+    CREATE TABLE CONTA.TipoDoctoPago (
+        PKIdTipoDoctoPago INT IDENTITY(1,1) NOT NULL,
+        Descripcion NVARCHAR(50) NOT NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_TipoDoctoPago_Activo DEFAULT (1),
+        FechaCreacion DATETIME2 CONSTRAINT DF_TipoDoctoPago_FechaCreacion DEFAULT SYSDATETIME(),
+        UsuarioCreacion INT NOT NULL,
+        FechaModificacion DATETIME2 NULL,
+        UsuarioModificacion INT NULL,
+        CONSTRAINT PK_TipoDoctoPago PRIMARY KEY (PKIdTipoDoctoPago),
+        CONSTRAINT FK_TipoDoctoPago_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+        CONSTRAINT FK_TipoDoctoPago_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+    );
+END
+GO
+
+-- Migración de datos desde BD_PRESUPUESTO
+SET IDENTITY_INSERT CONTA.TipoDoctoPago ON;
+INSERT INTO CONTA.TipoDoctoPago (PKIdTipoDoctoPago, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT 
+    PK_IdTipoDoctoPago, 
+    Descripcion, 
+    ISNULL(CT_LIVE, 1), 
+    ISNULL(CT_CreatedDate, GETDATE()), 
+    ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.CONTA.TipoDoctoPago
+WHERE NOT EXISTS (SELECT 1 FROM CONTA.TipoDoctoPago WHERE PKIdTipoDoctoPago = PK_IdTipoDoctoPago);
+SET IDENTITY_INSERT CONTA.TipoDoctoPago OFF;
+GO
+
+PRINT 'Tabla CONTA.TipoDoctoPago creada y migrada correctamente.';
 
 -- =============================================
 -- 10. ORCO.Articulo

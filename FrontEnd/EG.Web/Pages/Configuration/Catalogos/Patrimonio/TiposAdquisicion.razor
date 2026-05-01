@@ -1,0 +1,106 @@
+@page "/configuracion/patrimonio/tipos-adquisicion"
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoAdquisicionResponse, TipoAdquisicionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Adquisición"
+                    Subtitle="Catálogo de tipos de adquisición"
+                    Icon="@Icons.Material.Filled.ShoppingCart"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="TipoAdquisicionResponse"
+                  @ref="table"
+                  Title="Lista de Tipos de Adquisición"
+                  SearchPlaceholder="Buscar por clave o descripción..."
+                  ShowExportButton="@CanExport"
+                  ServerDataFunc="LoadServerData"
+                  ExportFunc="ExportToExcel"
+                  SearchString="@SearchString"
+                  SearchStringChanged="(s) => SearchString = s"
+                  OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoAdq" T="TipoAdquisicionResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoAdquisicionResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoAdquisicionResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripmovto" T="TipoAdquisicionResponse">Descripción Movto</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoAdquisicionResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoAdq))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoAdq))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoAdq</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <mudTd>@item.Descripcion</mudTd>
+                <mudTd>@item.Descripmovto</mudTd>
+                <mudTd>
+                    <mudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </mudChip>
+                </mudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<TipoAdquisicionResponse> table = null!;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Tipo_Adquisicion";
+
+    protected override Type CreateDialogType => typeof(TipoAdquisicionDialog);
+    protected override Type EditDialogType => typeof(TipoAdquisicionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoAdquisicionResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoAdquisicionResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidTipoAdq,
+            Clave = u.Clave,
+            Descripcion = u.Descripcion,
+            DescripciónMovto = u.Descripmovto,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "el tipo de adquisición";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

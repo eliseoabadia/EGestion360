@@ -1,0 +1,106 @@
+@page "/configuracion/contabilidad/formas-pago"
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<ContaTipoDoctoPagoResponse, ContaTipoDoctoPagoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Formas de Pago"
+                    Subtitle="Catálogo de formas de pago"
+                    Icon="@Icons.Material.Filled.CreditCard"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="ContaTipoDoctoPagoResponse"
+                      @ref="table"
+                      Title="Lista de Formas de Pago"
+                      SearchPlaceholder="Buscar por nombre o código..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoDoctoPago" T="ContaTipoDoctoPagoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Codigo" T="ContaTipoDoctoPagoResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="ContaTipoDoctoPagoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ContaTipoDoctoPagoResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="ContaTipoDoctoPagoResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoDoctoPago))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoDoctoPago))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoDoctoPago</MudTd>
+                <MudTd>@item.Codigo</MudTd>
+                <MudTd>@item.Nombre</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ContaTipoDoctoPagoResponse> table = null!;
+
+    protected override string ModuleName => "Contabilidad";
+    protected override string SubModuleName => "Formas_Pago";
+
+    protected override Type CreateDialogType => typeof(FormaPagoDialog);
+    protected override Type EditDialogType => typeof(FormaPagoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ContaTipoDoctoPagoResponse>);
+
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ContaTipoDoctoPagoResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidTipoDoctoPago,
+            Código = u.Codigo,
+            Nombre = u.Nombre,
+            Descripción = u.Descripcion,
+            Activo = u.Activo
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Nombre ?? "la forma de pago";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

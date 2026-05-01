@@ -247,6 +247,10 @@ public partial class Usuario
 
     public virtual ICollection<TipoDetallePoliza> TipoDetallePolizaUsuarioModificacionNavigations { get; set; } = new List<TipoDetallePoliza>();
 
+    public virtual ICollection<TipoDoctoPago> TipoDoctoPagoUsuarioCreacionNavigations { get; set; } = new List<TipoDoctoPago>();
+
+    public virtual ICollection<TipoDoctoPago> TipoDoctoPagoUsuarioModificacionNavigations { get; set; } = new List<TipoDoctoPago>();
+
     public virtual ICollection<TipoDocumento> TipoDocumentoUsuarioCreacionNavigations { get; set; } = new List<TipoDocumento>();
 
     public virtual ICollection<TipoDocumento> TipoDocumentoUsuarioModificacionNavigations { get; set; } = new List<TipoDocumento>();

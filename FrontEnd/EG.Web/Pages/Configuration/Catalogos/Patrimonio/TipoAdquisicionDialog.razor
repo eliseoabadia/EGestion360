@@ -1,0 +1,116 @@
+@using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Services
+
+@inject IGenericCrudService<TipoAdquisicionResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="TipoAdquisicionResponse"
+    Title="@dialogTitle"
+    MaxWidth="MaxWidth.Small"
+    ActionText="@actionText"
+    ProcessingText="@processingText"
+    LoadingMessage="Cargando datos..."
+    OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="TipoAdquisicionResponse"
+        @ref="form"
+        ShowHeader="true"
+        HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave"
+            Label="Clave"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            Required="true"
+            For="@(() => item.Clave)" />
+
+        <MudTextField @bind-Value="item.Descripcion"
+            Label="Descripción"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            For="@(() => item.Descripcion)" />
+
+        <MudTextField @bind-Value="item.Descripmovto"
+            Label="Descripción Movto"
+            Variant="Variant.Outlined"
+            FullWidth="true"
+            Class="mb-3"
+            Lines="3"
+            For="@(() => item.Descripmovto)" />
+
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<TipoAdquisicionResponse> form = null!;
+    private TipoAdquisicionResponse item = new() { Activo = true };
+
+    private string dialogTitle => Id.HasValue ? "Editar Tipo de Adquisición" : "Nuevo Tipo de Adquisición";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Tipo de adquisición actualizado correctamente" : "Tipo de adquisición creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

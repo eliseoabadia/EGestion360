@@ -428,7 +428,16 @@ VALUES
 
 
 
-(2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Patrimonio', 'CON002', 'Configuracion', 'view,view-menu', 0),
+(2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Patrimonio', 'CONPAT01', 'Configuracion', 'view,view-menu', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Familia', 'CONPAT02', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Grupo_Bien', 'CONPAT03', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bienes_Servicios', 'CONPAT04', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Patrimonio', 'CONPAT05', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Adquisicion', 'CONPAT06', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Marca', 'CONPAT07', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Personas', 'CONPAT08', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+
+
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Almacen', 'CON002', 'Configuracion', 'view,view-menu', 0),
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Tesoreria', 'CON002', 'Configuracion', 'view,view-menu', 0)
 
@@ -534,6 +543,13 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Proveedores', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Articulo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Fraccion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Patrimonio', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Familia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Grupo_Bien', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bienes_Servicios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Tipo_Patrimonio', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Tipo_Adquisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Marca', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Personas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Almacen', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Tesoreria', '10000', 'view,view-menu';
 -- Tabla AspNetUsers
@@ -699,11 +715,20 @@ USING (VALUES
     (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlagCheckered', 1, 'ESP', 9, 1, GETDATE()),
     (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaTruck', 1, 'ESP', 10, 1, GETDATE()),
     (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaBox', 1, 'ESP', 11, 1, GETDATE()),
-    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 12, 1, GETDATE())
+    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 12, 1, GETDATE()),
 
-    ---- Configuración -> Patrimonio
-    --(260, N'Patrimonio', 1, 100, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 170, 1000, GETDATE()),
-    --(261, N'Parámetros Patrimonio', 2, 260, N'Parámetros Patrimonio', N'/configuracion/patrimonio', N'FaBuilding', 1, 'ESP', 171, 1000, GETDATE()),
+    -- Configuración -> Patrimonio
+    (260, N'Patrimonio', 1, 1, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 3, 1, GETDATE()),
+    (261, N'Familia', 2, 260, N'Familia', N'/configuracion/Patrimonio/Familia', N'FaBuilding', 1, 'ESP', 1, 1, GETDATE()),
+    (262, N'Grupo Bien', 2, 260, N'Grupo Bien', N'/configuracion/Patrimonio/Grupo_Bien', N'FaBuilding', 1, 'ESP', 2, 1, GETDATE()),
+    (263, N'Bienes y Servicios', 2, 260, N'Bienes y Servicios', N'/configuracion/Patrimonio/Bienes_Servicios', N'FaBuilding', 1, 'ESP', 3, 1, GETDATE()),
+    (264, N'Tipo de Patrimonio', 2, 260, N'Tipo de Patrimonio', N'/configuracion/Patrimonio/Tipo_Patrimonio', N'FaBuilding', 1, 'ESP', 4, 1, GETDATE()),
+    (265, N'Tipo de Adquisición', 2, 260, N'Tipo de Adquisición', N'/configuracion/Patrimonio/Tipo_Adquisicion', N'FaBuilding', 1, 'ESP', 5, 1, GETDATE()),
+    (266, N'Marca', 2, 260, N'Marca', N'/configuracion/Patrimonio/Marca', N'FaBuilding', 1, 'ESP', 6, 1, GETDATE()),
+    (267, N'Personas', 2, 260, N'Personas', N'/configuracion/Patrimonio/Personas', N'FaBuilding', 1, 'ESP', 7, 1, GETDATE())
+
+
+
 
     ---- Configuración -> Almacén
     --(270, N'Almacén', 1, 100, N'Almacén', N'/', N'FaWarehouse', 1, 'ESP', 180, 1000, GETDATE()),
