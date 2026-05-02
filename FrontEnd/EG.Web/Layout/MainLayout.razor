@@ -14,30 +14,30 @@
 <MudSnackbarProvider />
 
 <div class="layout-root">
-    <MudAppBar Elevation="0" Class="modern-app-bar">
-        @if (!esPaginaLogin)
-        {
-            <MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
-                           Color="Color.Inherit"
-                           Edge="Edge.Start"
-                           OnClick="@((e) => DrawerToggle())"
-                           class="menu-toggle" />
-        }
+<MudAppBar Elevation="0" Class="modern-app-bar">
+@if (!esPaginaLogin)
+{
+<MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
+Color="Color.Inherit"
+Edge="Edge.Start"
+OnClick="@((e) => DrawerToggle())"
+class="menu-toggle" />
+}
 
-  <div class="app-branding">
-    <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
-    <MudText Typo="Typo.h5" Class="app-title">EGestion<span class="title-accent">360</span></MudText>
-  </div>
-  @if (!esPaginaLogin)
-  {
-  <MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
-  Color="Color.Inherit"
-  Edge="Edge.Start"
-  OnClick="@((e) => DrawerToggle())"
-  class="menu-toggle" />
-  }
-        
-        <MudSpacer />
+<div class="app-branding">
+<MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
+<MudText Typo="Typo.h5" Class="app-title">EGestion<span class="title-accent">360</span></MudText>
+</div>
+@if (!esPaginaLogin)
+{
+<MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
+Color="Color.Inherit"
+Edge="Edge.Start"
+OnClick="@((e) => DrawerToggle())"
+class="menu-toggle" />
+}
+
+<MudSpacer />
         
         @if (!esPaginaLogin)
         {
@@ -102,19 +102,28 @@
         }
     </MudAppBar>
 
-    <MudDrawer Open="_drawerOpen"
-               ClipMode="DrawerClipMode.Always"
-               Elevation="2"
-               Width="@(_drawerOpen ? "17%" : "60px")"
-               Class="custom-drawer">
-        <DynamicMenu IsCollapsed="!_drawerOpen" />
-        </MudDrawer>
+@if (!esPaginaLogin)
+{
+<MudDrawer Open="_drawerOpen"
+ClipMode="DrawerClipMode.Always"
+Elevation="2"
+Width="@(_drawerOpen ? "17%" : "60px")"
+Class="custom-drawer">
+<DynamicMenu IsCollapsed="!_drawerOpen" />
+</MudDrawer>
 
-        <div class="content-area">
-            <div class="content-wrapper">
-                @Body
-            </div>
-        </div>
+<div class="content-area @(_drawerOpen ? "drawer-open" : "")">
+<div class="content-wrapper">
+@Body
+</div>
+</div>
+}
+else
+{
+<div class="login-page-container">
+@Body
+</div>
+}
     </div>
 
     @if (!esPaginaLogin)
@@ -437,6 +446,11 @@ backdrop-filter: blur(10px);
 transition: all 0.3s ease;
 }
 
+/* Header height variable for easy reference */
+:root {
+--header-height: 40px;
+}
+
 .menu-toggle {
 color: var(--mud-palette-text-secondary) !important;
 transition: all 0.3s ease;
@@ -519,28 +533,38 @@ font-weight: 300;
     }
 /* Estructura del layout con footer fijo */
 .layout-root {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+display: flex;
+flex-direction: column;
+min-height: 100vh;
 }
 
 .main-layout {
-    display: flex;
-    flex: 1;
-    min-height: calc(100vh - 40px - 30px); /* altura appbar - altura footer */
+display: flex;
+flex: 1;
+min-height: calc(100vh - 40px - 30px); /* altura appbar - altura footer */
 }
 
 .content-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding-bottom: 10px;
+flex: 1;
+display: flex;
+flex-direction: column;
+overflow-y: auto;
+padding-bottom: 10px;
+padding-top: 8px; /* Espacio adicional debajo del header */
+margin-left: 60px; /* Ancho mínimo del drawer colapsado */
+margin-top: 40px; /* Header height para que no oculte el contenido */
+transition: margin-left 0.3s ease;
+}
+
+/* Cuando el drawer está abierto, agregar margen */
+.content-area.drawer-open {
+margin-left: 17%;
 }
 
 .content-wrapper {
-    flex: 1;
-    padding: 16px;
+flex: 1;
+padding: 16px;
+padding-top: 24px; /* Espacio adicional para que el header no oculte el contenido */
 }
 
 .version-footer {
@@ -557,8 +581,17 @@ font-weight: 300;
 }
 
 .version-footer span {
-    font-weight: 500;
-    margin-left: 8px;
-    color: var(--mud-palette-primary);
+font-weight: 500;
+margin-left: 8px;
+color: var(--mud-palette-primary);
+}
+
+/* Contenedor para página de login - centrado sin sidebar */
+.login-page-container {
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: calc(100vh - 40px); /* header height */
+width: 100%;
 }
 </style>
