@@ -1,11 +1,9 @@
 using EG.ApiCoreBS.Services;
 using EG.Application.Interfaces;
 using EG.Application.Interfaces.Account;
-using EG.Application.Interfaces.Almacen;
 using EG.Application.Interfaces.General;
 using EG.Application.Services;
 using EG.Application.Services.Account;
-using EG.Application.Services.Almacen;
 using EG.Application.Services.General;
 using EG.Business.Interfaces;
 using EG.Business.Services;
@@ -40,19 +38,16 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
             services.AddScoped<IUsuarioSucursalAppService, UsuarioSucursalAppService>();
 
-            // ===== SERVICIOS DE APLICACIÓN - CONTEO CÍCLICO =====
-            //services.AddScoped<IArticuloConteoAppService, ArticuloConteoAppService>();
-            //services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
-            //services.AddScoped<IPeriodoConteoAppService, PeriodoConteoAppService>();
-            //services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
-            //services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
-            //services.AddScoped<ITipoConteoAppService, TipoConteoAppService>();
-            services.AddScoped<IBienAppService, BienAppService>();
+// ===== SERVICIOS DE APLICACIÓN - CONTEO CÍCLICO =====
+//services.AddScoped<IArticuloConteoAppService, ArticuloConteoAppService>();
+//services.AddScoped<IConteoCiclicoService, ConteoCiclicoService>();
+//services.AddScoped<IPeriodoConteoAppService, PeriodoConteoAppService>();
+//services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
+//services.AddScoped<IRegistroConteoAppService, RegistroConteoAppService>();
+//services.AddScoped<ITipoConteoAppService, TipoConteoAppService>();
+//services.AddScoped<IBienAppService, BienAppService>();
 
-            // ===== SERVICIOS DE APLICACIÓN - ALMACÉN =====
-            services.AddScoped<ITipoBienAppService, TipoBienAppService>();
-            services.AddScoped<IFamiliaService, FamiliaService>();
-            services.AddScoped<IBienAppService, BienAppService>();
+
 
             // ===== SERVICIOS GENERALES =====
             services.AddHttpContextAccessor();
@@ -60,10 +55,10 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUsuarioAppService, UsuarioAppService>();
             services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
 
-            // ===== SERVICIOS DE NEGOCIO =====
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<INavigateService, NavigateService>();
+// ===== SERVICIOS DE NEGOCIO =====
+services.AddScoped<IAuthService, AuthService>();
+services.AddScoped<ITokenService, TokenService>();
+services.AddScoped<INavigateService, NavigateService>();
             services.AddScoped<IUserIpService, UserIpService>();
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IEmployeeService, EmployeeService>();

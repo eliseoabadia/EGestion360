@@ -81,6 +81,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<EstatusRequisicion> EstatusRequisicions { get; set; }
 
+    public virtual DbSet<EstatusSolicitud> EstatusSolicituds { get; set; }
+
     public virtual DbSet<Familium> Familia { get; set; }
 
     public virtual DbSet<Fn> Fns { get; set; }
@@ -110,6 +112,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Modalidad> Modalidads { get; set; }
 
     public virtual DbSet<Monedum> Moneda { get; set; }
+
+    public virtual DbSet<Motivo> MotivoEs { get; set; }
 
     public virtual DbSet<Municipio> Municipios { get; set; }
 
@@ -1218,6 +1222,30 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_EstatusRequisicion_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<EstatusSolicitud>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstatusSolicitud);
+
+            entity.ToTable("EstatusSolicitud", "ALMA");
+
+            entity.Property(e => e.PkidEstatusSolicitud).HasColumnName("PKIdEstatusSolicitud");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_EstatusSolicitud_Activo");
+            entity.Property(e => e.Color).HasMaxLength(8);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EstatusSolicitud_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.EstatusSolicitudUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstatusSolicitud_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.EstatusSolicitudUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_EstatusSolicitud_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Familium>(entity =>
         {
             entity.HasKey(e => e.PkidFamilia);
@@ -1701,6 +1729,29 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Simbolo)
                 .IsRequired()
                 .HasMaxLength(5);
+        });
+
+        modelBuilder.Entity<Motivo>(entity =>
+        {
+            entity.HasKey(e => e.PkidMotivoEs);
+
+            entity.ToTable("MotivoES", "ALMA");
+
+            entity.Property(e => e.PkidMotivoEs).HasColumnName("PKIdMotivoES");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_MotivoES_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_MotivoES_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.MotivoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MotivoES_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.MotivoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_MotivoES_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Municipio>(entity =>

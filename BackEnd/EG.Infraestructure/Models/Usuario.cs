@@ -119,6 +119,10 @@ public partial class Usuario
 
     public virtual ICollection<EstatusRequisicion> EstatusRequisicionUsuarioModificacionNavigations { get; set; } = new List<EstatusRequisicion>();
 
+    public virtual ICollection<EstatusSolicitud> EstatusSolicitudUsuarioCreacionNavigations { get; set; } = new List<EstatusSolicitud>();
+
+    public virtual ICollection<EstatusSolicitud> EstatusSolicitudUsuarioModificacionNavigations { get; set; } = new List<EstatusSolicitud>();
+
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
@@ -156,6 +160,10 @@ public partial class Usuario
     public virtual ICollection<Modalidad> ModalidadUsuarioCreacionNavigations { get; set; } = new List<Modalidad>();
 
     public virtual ICollection<Modalidad> ModalidadUsuarioModificacionNavigations { get; set; } = new List<Modalidad>();
+
+    public virtual ICollection<Motivo> MotivoUsuarioCreacionNavigations { get; set; } = new List<Motivo>();
+
+    public virtual ICollection<Motivo> MotivoUsuarioModificacionNavigations { get; set; } = new List<Motivo>();
 
     public virtual ICollection<OrigenLogMessage> OrigenLogMessageUsuarioCreacionNavigations { get; set; } = new List<OrigenLogMessage>();
 

@@ -13,7 +13,6 @@
 @inject AuthService AuthService
 @inject ISnackbar Snackbar
 @inject IJSRuntime _jsRuntime
-@inject HttpClient Http
 @inject IDialogService DialogService
 
 <style>
@@ -21,298 +20,33 @@
      * DISEÑO PROFESIONAL - MENÚ LATERAL
      * ======================================== */
     
-/* TEMA OSCURO (default) */
-.professional-nav-menu {
-background: var(--mud-palette-drawer-background) !important;
-box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
-padding: 12px 8px;
-min-height: calc(100vh - 120px);
-overflow-y: auto;
-border-right: 1px solid var(--mud-palette-divider);
-transition: all 0.3s ease;
-}
-    
-.professional-nav-menu .menu-item-level-0 {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0.04) 100%);
-border-left: 4px solid var(--mud-palette-primary);
-color: var(--mud-palette-drawer-text);
-}
-
-.professional-nav-menu .menu-item-level-0:hover {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.24) 0%, rgba(99, 102, 241, 0.12) 100%);
-border-left-color: var(--mud-palette-primary);
-}
-
-.professional-nav-menu .menu-item-level-0.active {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.32) 0%, rgba(99, 102, 241, 0.18) 100%);
-border-left-color: var(--mud-palette-primary);
-color: var(--mud-palette-drawer-text);
-}
-
-.professional-nav-menu .mud-nav-link,
-.professional-nav-menu .mud-nav-group-header {
-color: var(--mud-palette-drawer-text) !important;
-}
-
-.professional-nav-menu .mud-nav-link:hover,
-.professional-nav-menu .mud-nav-group-header:hover {
-color: var(--mud-palette-primary) !important;
-}
-
-.professional-nav-menu .mud-nav-link.active,
-.professional-nav-menu .mud-nav-group-header.active {
-color: var(--mud-palette-primary) !important;
-}
-    
-    /* Niveles 1, 2, 3+ - Tema Oscuro (default) */
-    .professional-nav-menu .menu-item-level-1 {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0.03) 100%);
-        border-left: 3px solid rgba(16, 185, 129, 0.5);
-        margin: 4px 8px 4px 14px;
-        padding: 9px 12px !important;
-        font-size: 0.91rem;
-        color: #e2e8f0;
-    }
-    
-    .professional-nav-menu .menu-item-level-1:hover {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.20) 0%, rgba(16, 185, 129, 0.08) 100%);
-        border-left-color: #10b981;
-        transform: translateX(3px);
-        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.2);
-    }
-    
-    .professional-nav-menu .menu-item-level-1.active {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.28) 0%, rgba(16, 185, 129, 0.14) 100%);
-        border-left-color: #10b981;
-        font-weight: 600;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-        color: #fff;
-    }
-    
-    .professional-nav-menu .menu-item-level-2 {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-        border-left: 3px solid rgba(245, 158, 11, 0.4);
-        margin: 4px 8px 4px 22px;
-        padding: 8px 11px !important;
-        font-size: 0.89rem;
-        color: #e2e8f0;
-    }
-    
-    .professional-nav-menu .menu-item-level-2:hover {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.06) 100%);
-        border-left-color: #f59e0b;
-        transform: translateX(3px);
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-    }
-    
-    .professional-nav-menu .menu-item-level-2.active {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.24) 0%, rgba(245, 158, 11, 0.10) 100%);
-        border-left-color: #f59e0b;
-        font-weight: 600;
-        box-shadow: 0 3px 10px rgba(245, 158, 11, 0.2);
-        color: #fff;
-    }
-    
-    .professional-nav-menu .menu-item-level-3,
-    .professional-nav-menu .menu-item-level-4,
-    .professional-nav-menu .menu-item-level-5,
-    .professional-nav-menu .menu-item-level-6 {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
-        border-left: 2px solid rgba(236, 72, 153, 0.35);
-        margin: 4px 8px 4px 30px;
-        padding: 7px 10px !important;
-        font-size: 0.87rem;
-        font-weight: 500;
-        color: #e2e8f0;
-    }
-    
-    .professional-nav-menu .menu-item-level-3:hover,
-    .professional-nav-menu .menu-item-level-4:hover,
-    .professional-nav-menu .menu-item-level-5:hover,
-    .professional-nav-menu .menu-item-level-6:hover {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.16) 0%, rgba(139, 92, 246, 0.08) 100%);
-        border-left-color: #ec4899;
-        transform: translateX(2px);
-        box-shadow: 0 2px 6px rgba(236, 72, 153, 0.15);
-    }
-    
-    .professional-nav-menu .menu-item-level-3.active,
-    .professional-nav-menu .menu-item-level-4.active,
-    .professional-nav-menu .menu-item-level-5.active,
-    .professional-nav-menu .menu-item-level-6.active {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.22) 0%, rgba(139, 92, 246, 0.12) 100%);
-        border-left-color: #ec4899;
-        font-weight: 600;
-        box-shadow: 0 3px 8px rgba(236, 72, 153, 0.18);
-        color: #fff;
-    }
-    
-    /* Tema Claro - Niveles 1, 2, 3+ */
-    .mud-theme-light .professional-nav-menu .menu-item-level-1 {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
-        border-left: 3px solid rgba(16, 185, 129, 0.6);
-        color: #1e293b;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-1:hover {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.06) 100%);
-        border-left-color: #10b981;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-1.active {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.1) 100%);
-        border-left-color: #059669;
-        color: #059669;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-2 {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-        border-left: 3px solid rgba(245, 158, 11, 0.5);
-        color: #1e293b;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-2:hover {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.06) 100%);
-        border-left-color: #f59e0b;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-2.active {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
-        border-left-color: #d97706;
-        color: #d97706;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-3,
-    .mud-theme-light .professional-nav-menu .menu-item-level-4,
-    .mud-theme-light .professional-nav-menu .menu-item-level-5,
-    .mud-theme-light .professional-nav-menu .menu-item-level-6 {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
-        border-left: 2px solid rgba(236, 72, 153, 0.4);
-        color: #1e293b;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-3:hover,
-    .mud-theme-light .professional-nav-menu .menu-item-level-4:hover,
-    .mud-theme-light .professional-nav-menu .menu-item-level-5:hover,
-    .mud-theme-light .professional-nav-menu .menu-item-level-6:hover {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.14) 0%, rgba(139, 92, 246, 0.08) 100%);
-        border-left-color: #ec4899;
-    }
-    
-    .mud-theme-light .professional-nav-menu .menu-item-level-3.active,
-    .mud-theme-light .professional-nav-menu .menu-item-level-4.active,
-    .mud-theme-light .professional-nav-menu .menu-item-level-5.active,
-    .mud-theme-light .professional-nav-menu .menu-item-level-6.active {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.18) 0%, rgba(139, 92, 246, 0.1) 100%);
-        border-left-color: #db2777;
-        color: #db2777;
+    .professional-nav-menu {
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+        padding: 12px 8px;
+        min-height: 100vh;
+        overflow-y: auto;
+        border-right: 1px solid rgba(148, 163, 184, 0.1);
     }
 
-/* TEMA MORENA - Se aplica cuando el tema es morena */
-.professional-nav-menu.morena {
-background: linear-gradient(180deg, #1A1209 0%, #2D1B0F 50%, #3D2A1C 100%) !important;
-}
-
-.professional-nav-menu.morena .menu-item-level-0 {
-background: linear-gradient(90deg, rgba(205, 133, 63, 0.2) 0%, rgba(205, 133, 63, 0.08) 100%);
-border-left: 4px solid rgba(205, 133, 63, 0.8);
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-0:hover {
-background: linear-gradient(90deg, rgba(205, 133, 63, 0.35) 0%, rgba(205, 133, 63, 0.15) 100%);
-border-left-color: #CD853F;
-}
-
-.professional-nav-menu.morena .menu-item-level-0.active {
-background: linear-gradient(90deg, rgba(205, 133, 63, 0.45) 0%, rgba(205, 133, 63, 0.25) 100%);
-border-left-color: #DEB887;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .mud-nav-link,
-.professional-nav-menu.morena .mud-nav-group-header {
-color: #F4E4C1 !important;
-}
-
-.professional-nav-menu.morena .mud-nav-link:hover,
-.professional-nav-menu.morena .mud-nav-group-header:hover {
-color: #DEB887 !important;
-}
-
-.professional-nav-menu.morena .mud-nav-link.active,
-.professional-nav-menu.morena .mud-nav-group-header.active {
-color: #DEB887 !important;
-}
-    
-    /* Tema Morena - Niveles 1, 2, 3+ */
-    .professional-nav-menu.morena .menu-item-level-1 {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-        border-left: 3px solid rgba(16, 185, 129, 0.6);
-        color: #F4E4C1;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-1:hover {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.28) 0%, rgba(16, 185, 129, 0.12) 100%);
-        border-left-color: #10b981;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-1.active {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%);
-        border-left-color: #059669;
-        color: #F4E4C1;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-2 {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
-        border-left: 3px solid rgba(245, 158, 11, 0.5);
-        color: #F4E4C1;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-2:hover {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.28) 0%, rgba(245, 158, 11, 0.12) 100%);
-        border-left-color: #f59e0b;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-2.active {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.38) 0%, rgba(245, 158, 11, 0.18) 100%);
-        border-left-color: #d97706;
-        color: #F4E4C1;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-3,
-    .professional-nav-menu.morena .menu-item-level-4,
-    .professional-nav-menu.morena .menu-item-level-5,
-    .professional-nav-menu.morena .menu-item-level-6 {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%);
-        border-left: 2px solid rgba(236, 72, 153, 0.45);
-        color: #F4E4C1;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-3:hover,
-    .professional-nav-menu.morena .menu-item-level-4:hover,
-    .professional-nav-menu.morena .menu-item-level-5:hover,
-    .professional-nav-menu.morena .menu-item-level-6:hover {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.28) 0%, rgba(139, 92, 246, 0.15) 100%);
-        border-left-color: #ec4899;
-    }
-    
-    .professional-nav-menu.morena .menu-item-level-3.active,
-    .professional-nav-menu.morena .menu-item-level-4.active,
-    .professional-nav-menu.morena .menu-item-level-5.active,
-    .professional-nav-menu.morena .menu-item-level-6.active {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.38) 0%, rgba(139, 92, 246, 0.18) 100%);
-        border-left-color: #db2777;
-        color: #F4E4C1;
+    /* Scrollbar personalizado */
+    .professional-nav-menu::-webkit-scrollbar {
+        width: 6px;
     }
 
-    /* Scrollbar - Tema Morena */
-    .professional-nav-menu.morena::-webkit-scrollbar-track {
-        background: rgba(45, 27, 15, 0.8);
+    .professional-nav-menu::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 3px;
     }
-    
-    .professional-nav-menu.morena::-webkit-scrollbar-thumb {
-        background: rgba(205, 133, 63, 0.6);
+
+    .professional-nav-menu::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.5);
+        border-radius: 3px;
+        transition: background 0.3s ease;
+    }
+
+    .professional-nav-menu::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.8);
     }
 
     /* Items del menú - Base */
@@ -356,12 +90,6 @@ color: #DEB887 !important;
         font-size: 0.93rem;
         margin: 6px 8px;
     }
-    
-    .mud-theme-light .menu-item-level-0 {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
-        border-left-color: rgba(99, 102, 241, 0.8);
-        color: #1e293b;
-    }
 
     .menu-item-level-0:hover {
         background: linear-gradient(90deg, rgba(99, 102, 241, 0.24) 0%, rgba(99, 102, 241, 0.12) 100%);
@@ -369,23 +97,12 @@ color: #DEB887 !important;
         transform: translateX(4px);
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
     }
-    
-    .mud-theme-light .menu-item-level-0:hover {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(99, 102, 241, 0.06) 100%);
-        border-left-color: #4f46e5;
-    }
 
     .menu-item-level-0.active {
         background: linear-gradient(90deg, rgba(99, 102, 241, 0.32) 0%, rgba(99, 102, 241, 0.18) 100%);
         border-left-color: #6366f1;
         font-weight: 700;
         box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
-    }
-    
-    .mud-theme-light .menu-item-level-0.active {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.1) 100%);
-        border-left-color: #4338ca;
-        color: #4338ca;
     }
 
     /* NIVEL 1 - Emerald */
@@ -483,34 +200,16 @@ color: #DEB887 !important;
         color: #e2e8f0 !important;
         transition: all 0.3s ease;
     }
-    
-    /* Tema Claro - Colores de texto */
-    .mud-theme-light .mud-nav-link,
-    .mud-theme-light .mud-nav-group-header {
-        color: #1e293b !important;
-    }
 
     .mud-nav-link:hover, .mud-nav-group-header:hover {
         color: #ffffff !important;
         text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    }
-    
-    .mud-theme-light .mud-nav-link:hover,
-    .mud-theme-light .mud-nav-group-header:hover {
-        color: #4f46e5 !important;
-        text-shadow: none;
     }
 
     .mud-nav-link.active, .mud-nav-group-header.active {
         color: #fff !important;
         font-weight: 650;
         text-shadow: 0 0 24px rgba(99, 102, 241, 0.5);
-    }
-    
-    .mud-theme-light .mud-nav-link.active,
-    .mud-theme-light .mud-nav-group-header.active {
-        color: #4338ca !important;
-        text-shadow: none;
     }
 
     /* Grupos expandidos */
@@ -540,91 +239,6 @@ color: #DEB887 !important;
         border: 1px solid rgba(99, 102, 241, 0.3);
         transition: all 0.3s ease;
     }
-
-    .add-global-button:hover {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.2) 100%);
-        border-color: rgba(99, 102, 241, 0.6);
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-        transform: translateY(-2px);
-    }
-    
-/* Búsqueda y Favoritos */
-.menu-search-favorites {
-  padding: 16px 12px;
-  margin-top: 8px;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-.search-section {
-  margin-bottom: 16px;
-}
-    
-    .search-input .mud-input-control {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-    }
-    
-    .favorites-section {
-        margin-top: 8px;
-    }
-    
-    .favorites-header {
-        display: flex;
-        align-items: center;
-        color: #94a3b8;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-    
-    .favorites-list {
-        padding: 0;
-        background: transparent;
-    }
-    
-    .favorite-item {
-        padding: 6px 8px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    
-    .favorite-item:hover {
-        background: rgba(99, 102, 241, 0.15);
-    }
-    
-    .favorite-icon {
-        color: #fbbf24;
-    }
-    
-/* Versión del sistema - Tema Oscuro (default) */
-.system-version {
-padding: 12px 16px;
-text-align: center;
-border-top: 1px solid var(--mud-palette-divider);
-background: var(--mud-palette-drawer-background);
-color: var(--mud-palette-text-secondary);
-font-size: 0.75rem;
-font-weight: 500;
-letter-spacing: 0.5px;
-margin-top: auto;
-transition: all 0.3s ease;
-}
-
-.system-version span {
-color: var(--mud-palette-primary);
-}
-
-.professional-nav-menu {
-  display: flex;
-  flex-direction: column;
-}
 
     .add-global-button:hover {
         background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.2) 100%);
@@ -682,47 +296,43 @@ color: var(--mud-palette-primary);
     .favorite-icon {
         color: #fbbf24;
     }
+
+    /* ========================================
+     * TEMA CLARO - Opcional
+     * ======================================== */
+    .mud-theme-light .professional-nav-menu {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%) !important;
+        border-right: 1px solid #e2e8f0;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .mud-theme-light .menu-item-level-0 {
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
+        border-left-color: rgba(99, 102, 241, 0.8);
+    }
+
+    .mud-theme-light .menu-item-level-0:hover {
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(99, 102, 241, 0.06) 100%);
+    }
+
+    .mud-theme-light .mud-nav-link,
+    .mud-theme-light .mud-nav-group-header {
+        color: #1e293b !important;
+    }
+
+    .mud-theme-light .mud-nav-link:hover,
+    .mud-theme-light .mud-nav-group-header:hover {
+        color: #4f46e5 !important;
+    }
+
+    .mud-theme-light .mud-nav-link.active,
+    .mud-theme-light .mud-nav-group-header.active {
+        color: #4338ca !important;
+    }
 </style>
 
     <AuthorizeView>
         <Authorized>
-            @if (!IsCollapsed)
-            {
-                <!-- Sección de Búsqueda y Favoritos - SOLO cuando NO está colapsado -->
-                <div class="menu-search-favorites">
-                    <div class="search-section">
-                        <MudTextField @bind-Value="_searchText"
-                                      Label="Buscar menú..."
-                                      Placeholder="Escribe para buscar..."
-                                      Variant="Variant.Filled"
-                                      FullWidth
-                                      Immediate="true"
-                                      @oninput="OnSearchChanged"
-                                      Icon="@Icons.Material.Filled.Search"
-                                      Class="search-input" />
-                    </div>
-                    
-                    @if (_favorites.Any())
-                    {
-                        <div class="favorites-section">
-                            <div class="favorites-header">
-                                <MudIcon Icon="@Icons.Material.Filled.Star" Class="mr-2" />
-                                <span>Accesos Rápidos</span>
-                            </div>
-                            <MudList T="string" Class="favorites-list">
-                                @foreach (var fav in _favorites.Take(5))
-                                {
-                                    <MudListItem OnClick="@(() => NavigateToFavorite(fav.Key))" Class="favorite-item">
-                                        <MudIcon Icon="@fav.Value" Class="mr-2 favorite-icon" />
-                                        @fav.Key
-                                    </MudListItem>
-                                }
-                            </MudList>
-                        </div>
-                    }
-                </div>
-            }
-            
             <MudNavMenu Class="professional-nav-menu">
                 @if (Items != null)
                 {
@@ -736,10 +346,39 @@ color: var(--mud-palette-primary);
                 }
             </MudNavMenu>
             
-            <!-- Versión del sistema - siempre visible -->
-            <div class="system-version">
-                Versión: <span>@_version</span>
-            </div>
+            @if (!IsCollapsed)
+            {
+                <!-- Sección de Búsqueda IA y Favoritos -->
+                <div class="menu-search-favorites">
+                    <div class="search-section">
+                        <MudTextField @bind-Value="_searchText"
+                                      Label="Buscar menú..."
+                                      Placeholder="Escribe para buscar..."
+                                      Variant="Variant.Filled"
+                                      FullWidth
+                                      Immediate="true"
+                                      @oninput="OnSearchChanged"
+                                      Icon="@Icons.Material.Filled.Search"
+                                      Class="search-input" />
+                    </div>
+                    
+                    <div class="favorites-section">
+                        <div class="favorites-header">
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Class="mr-2" />
+                            <span>Accesos Rápidos</span>
+                        </div>
+                        <MudList T="string" Class="favorites-list">
+                            @foreach (var fav in _favorites.Take(5))
+                            {
+                                <MudListItem OnClick="@(() => NavigateToFavorite(fav.Key))" Class="favorite-item">
+                                    <MudIcon Icon="@fav.Value" Class="mr-2 favorite-icon" />
+                                    @fav.Key
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </div>
+                </div>
+            }
         </Authorized>
     </AuthorizeView>
 
@@ -773,7 +412,6 @@ color: var(--mud-palette-primary);
     private MenuItem? _editingItem = null;
     private bool _isEditing = false;
     private MenuItem? _parentForNewItem = null;
-    private string _version = "1.0.0";
     
     // Búsqueda IA
     private string _searchText = string.Empty;
@@ -875,7 +513,6 @@ color: var(--mud-palette-primary);
         {
             _isInitialized = true;
             await LoadMenuAsync();
-            await LoadVersionAsync();
         }
     }
 
@@ -933,28 +570,6 @@ color: var(--mud-palette-primary);
             loading = false;
             StateHasChanged();
         }
-    }
-    
-    private async Task LoadVersionAsync()
-    {
-        try
-        {
-            var versionResponse = await Http.GetFromJsonAsync<VersionApiResult>("api/Navigate/version");
-            if (versionResponse != null && versionResponse.Success)
-            {
-                _version = versionResponse.Version;
-            }
-        }
-        catch
-        {
-            _version = "1.0.0";
-        }
-    }
-    
-    private class VersionApiResult
-    {
-        public string Version { get; set; } = string.Empty;
-        public bool Success { get; set; }
     }
 
     private void InitializeExpandedStates()

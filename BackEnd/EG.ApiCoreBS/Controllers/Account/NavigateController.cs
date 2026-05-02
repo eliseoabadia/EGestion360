@@ -1,6 +1,7 @@
 using EG.Application.Interfaces.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace EG.ApiCoreBS.Controllers.Account
 {
@@ -11,11 +12,13 @@ namespace EG.ApiCoreBS.Controllers.Account
     {
         private readonly INavigateAppService _navigateAppService;
         private readonly ILogger<NavigateController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public NavigateController(INavigateAppService navigateAppService, ILogger<NavigateController> logger)
+        public NavigateController(INavigateAppService navigateAppService, ILogger<NavigateController> logger, IConfiguration configuration)
         {
             _navigateAppService = navigateAppService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet("{id}")]
@@ -73,6 +76,13 @@ namespace EG.ApiCoreBS.Controllers.Account
         public IActionResult Ping()
         {
             return Ok(new { success = true, message = "pong" });
+        }
+        
+        [HttpGet("version")]
+        public IActionResult GetVersion()
+        {
+            var version = _configuration["ApplicationVersion"] ?? "1.0.0";
+            return Ok(new { success = true, version = version });
         }
     }
 }

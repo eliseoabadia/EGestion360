@@ -15,4 +15,8 @@
     <Folder Include="DTOs\Responses\ConteoCiclico\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
+  </ItemGroup>
+
 </Project>

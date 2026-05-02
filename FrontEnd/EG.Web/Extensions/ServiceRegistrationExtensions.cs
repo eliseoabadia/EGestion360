@@ -1,13 +1,13 @@
 using EG.Common.Helper;
 using EG.Web.Contracts;
 using EG.Web.Models.Adquisicion;
-using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;
 using EG.Web.Models.ConteoCiclico;
+using EG.Web.Models.Patrimonio;
 using EG.Web.Services;
 using Microsoft.JSInterop;
 using EG.Domain.DTOs.Responses.Contabilidad;
-using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.DTOs.Responses.Nomina;
 
 namespace EG.Web.Extensions;
 
@@ -39,10 +39,10 @@ public static class ApiServiceExtensions
         //RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
         //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
-        RegisterCrud<FamiliaResponse>(services, "api/Familia");
-        RegisterCrud<UnidadResponse>(services, "api/Unidad");
-        RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
-        RegisterCrud<BienResponse>(services, "api/Bien");
+RegisterCrud<FamiliaResponse>(services, "api/Familia");
+//RegisterCrud<UnidadResponse>(services, "api/Unidad");
+//RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
+//RegisterCrud<BienResponse>(services, "api/Bien");
 
         // Catálogos de Adquisiciones
         RegisterCrud<ModalidadResponse>(services, "api/Modalidad");
@@ -59,12 +59,12 @@ public static class ApiServiceExtensions
         RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");
         
         // Catálogos de Patrimonio
-        RegisterCrud<GrupoBienResponse>(services, "api/patrimonio/grupos-bien");
-        RegisterCrud<TipoPatrimonioResponse>(services, "api/patrimonio/tipos-patrimonio");
-        RegisterCrud<TipoAdquisicionResponse>(services, "api/patrimonio/tipos-adquisicion");
-        RegisterCrud<MarcaResponse>(services, "api/patrimonio/marcas");
-        RegisterCrud<EG.Domain.DTOs.Responses.Nomina.PersonaResponse>(services, "api/patrimonio/personas");
-        
+        RegisterCrud<GrupoBienResponse>(services, "api/GrupoBien");
+        RegisterCrud<TipoPatrimonioResponse>(services, "api/TipoPatrimonio");
+        RegisterCrud<TipoAdquisicionResponse>(services, "api/TipoAdquisicion");
+        RegisterCrud<MarcaResponse>(services, "api/Marca");
+        RegisterCrud<PersonaResponse>(services, "api/Persona");
+
         return services;
     }
 

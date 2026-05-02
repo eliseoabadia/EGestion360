@@ -51,6 +51,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[EstatusSolicitud]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[Familia]",
          "ObjectType": 0
       },
@@ -64,6 +68,10 @@
       },
       {
          "Name": "[ALMA].[Material]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[MotivoES]",
          "ObjectType": 0
       },
       {

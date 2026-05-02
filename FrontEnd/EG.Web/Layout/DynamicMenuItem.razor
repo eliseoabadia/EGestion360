@@ -5,33 +5,52 @@
 {
     <MudNavGroup Title="@Item.Nombre"
                  Icon="@GetIcon(Item.ImageUrl)"
-                 Expanded="@GetExpandedState(Item.PkidMenu)"
+                 Expanded="@(IsCollapsed ? false : GetExpandedState(Item.PkidMenu))"
                  ExpandedChanged="(v) => SetExpandedState(Item.PkidMenu, v)"
                  Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
-        @foreach (var child in Item.Children.OrderBy(m => m.Orden))
+        @if (!IsCollapsed)
         {
-            <DynamicMenuItem Item="child" Level="@(Level + 1)" 
-                             GetExpandedState="GetExpandedState"
-                             SetExpandedState="SetExpandedState"
-                             GetIcon="GetIcon"
-                             FindItemByRoute="FindItemByRoute"
-                             AllItems="AllItems" />
+            @foreach (var child in Item.Children.OrderBy(m => m.Orden))
+            {
+                <DynamicMenuItem Item="child" 
+                                 Level="@(Level + 1)" 
+                                 IsCollapsed="IsCollapsed"
+                                 GetExpandedState="GetExpandedState"
+                                 SetExpandedState="SetExpandedState"
+                                 GetIcon="GetIcon"
+                                 FindItemByRoute="FindItemByRoute"
+                                 AllItems="AllItems" />
+            }
         }
     </MudNavGroup>
 }
 else
 {
-    <MudNavLink Href="@(Item.Ruta ?? "")"
-                Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                Icon="@GetIcon(Item.ImageUrl)"
-                Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
-        @Item.Nombre
-    </MudNavLink>
+    @if (IsCollapsed)
+    {
+        <MudTooltip Text="@Item.Nombre" Placement="Placement.Right">
+            <MudNavLink Href="@(Item.Ruta ?? "")"
+                        Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                        Icon="@GetIcon(Item.ImageUrl)"
+                        Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+            </MudNavLink>
+        </MudTooltip>
+    }
+    else
+    {
+        <MudNavLink Href="@(Item.Ruta ?? "")"
+                    Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                    Icon="@GetIcon(Item.ImageUrl)"
+                    Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+            @Item.Nombre
+        </MudNavLink>
+    }
 }
 
 @code {
     [Parameter] public MenuItem Item { get; set; } = default!;
     [Parameter] public int Level { get; set; }
+    [Parameter] public bool IsCollapsed { get; set; } = false;
     [Parameter] public Func<long?, bool> GetExpandedState { get; set; } = default!;
     [Parameter] public Action<long?, bool> SetExpandedState { get; set; } = default!;
     [Parameter] public Func<string, string> GetIcon { get; set; } = default!;

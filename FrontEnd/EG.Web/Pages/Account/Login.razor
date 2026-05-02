@@ -12,146 +12,379 @@
 @inject IGenericCrudService<UsuarioSucursalResponse> _serviceUS
 @inject IJSRuntime _jsRuntime
 @inject INavigateService _navigateService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILoginService LoginService
+@inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
-    <MudPaper Class="pa-6 rounded-lg" Elevation="25">
-        <MudIcon Icon="@Icons.Material.Filled.Business"
-                 Color="Color.Primary"
-                 Size="Size.Large"
-                 Class="mx-auto d-block mb-2" />
-        <MudText Typo="Typo.h4" Color="Color.Primary" Class="text-center mb-6">CoWorkSpace</MudText>
-        <MudText Typo="Typo.h6" Class="text-center mb-6">Iniciar Sesión</MudText>
-        <MudTextField @bind-Value="login.Usuario" Label="Correo Electrónico" Variant="Variant.Outlined"
-                      FullWidth="true" Margin="Margin.Dense" Required="true"
-                      HelperText="Por favor, ingresa tu correo electrónico." />
+<div class="login-root">
+    <div class="login-two-columns">
+        <!-- COLUMNA IZQUIERDA: BRANDING Y VALOR -->
+        <div class="login-branding">
+            <div class="branding-content">
+                <div class="logo-area">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Class="brand-logo-icon" />
+                    <MudText Typo="Typo.h3" Class="brand-name">EGestion<span>360</span></MudText>
+                </div>
+                <MudText Typo="Typo.h5" Class="brand-tagline">Transforma la gestión de tu negocio</MudText>
+                
+                <div class="features-list">
+                    <div class="feature">
+                        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Medium" />
+                        <span>Panel de control en tiempo real</span>
+                    </div>
+                    <div class="feature">
+                        <MudIcon Icon="@Icons.Material.Filled.Insights" Size="Size.Medium" />
+                        <span>Análisis avanzado con IA</span>
+                    </div>
+                    <div class="feature">
+                        <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Medium" />
+                        <span>Seguridad de nivel empresarial</span>
+                    </div>
+                    <div class="feature">
+                        <MudIcon Icon="@Icons.Material.Filled.Devices" Size="Size.Medium" />
+                        <span>Acceso multi-dispositivo</span>
+                    </div>
+                </div>
 
-        <MudTextField @bind-Value="login.Password" Label="Contraseña" Variant="Variant.Outlined"
-                      FullWidth="true" Margin="Margin.Dense" InputType="@PasswordInput"
-                      Required="true" HelperText="Por favor, ingresa tu contraseña."
-                      Class="mt-4" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon"
-                      OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" />
+                <div class="testimonial">
+                    <MudIcon Icon="@Icons.Material.Filled.FormatQuote" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">"Gracias a EGestion360 aumentamos nuestra productividad en un 40%."</MudText>
+                    <MudText Typo="Typo.caption">— CFO, Empresa Líder</MudText>
+                </div>
+            </div>
+        </div>
 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-6 w-100"
-                   OnClick="HandleLogin" Disabled="isLoading">
-            @if (isLoading)
-            {
-                <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
-            }
-            else
-            {
-                <text>Iniciar Sesión</text>
-            }
-        </MudButton>
+        <!-- COLUMNA DERECHA: FORMULARIO DE LOGIN -->
+        <div class="login-form-container">
+            <MudPaper Elevation="0" Class="form-paper">
+                <div class="form-header">
+                    <MudText Typo="Typo.h4" Class="form-title">Bienvenido de vuelta</MudText>
+                    <MudText Typo="Typo.body2" Class="form-subtitle">Ingresa tus credenciales para continuar</MudText>
+                </div>
 
-        <MudText Class="text-center mt-4">
-            ¿No tienes cuenta? <MudLink Href="/register" Color="Color.Primary">Regístrate aquí</MudLink>
-        </MudText>
-        <MudText Class="text-center mt-4">
-            ¿Olvidaste tu contraseña? <MudLink Href="/resetPassword" Color="Color.Primary">Recuperala aquí</MudLink>
-        </MudText>
-    </MudPaper>
-</MudContainer>
+                <MudForm @ref="loginForm" Class="login-form">
+                    <MudTextField @bind-Value="login.Usuario"
+                                  Label="Usuario o correo electrónico"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  Margin="Margin.Dense"
+                                  Required="true"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Class="mb-4" />
 
+                    <MudTextField @bind-Value="login.Password"
+                                  Label="Contraseña"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  Margin="Margin.Dense"
+                                  InputType="@passwordInputType"
+                                  Required="true"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@passwordIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility"
+                                  Class="mb-2" />
+
+                    <div class="forgot-password">
+                        <MudLink Href="/resetPassword" Typo="Typo.body2" Color="Color.Primary">¿Olvidaste tu contraseña?</MudLink>
+                    </div>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               Class="login-button"
+                               OnClick="HandleLogin"
+                               Disabled="isLoading">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="mr-2" />
+                        }
+                        Acceder al sistema
+                    </MudButton>
+
+                    <div class="signup-prompt">
+                        <MudText Typo="Typo.body2">¿Aún no tienes cuenta? <MudLink Href="/register" Color="Color.Primary">Solicita acceso</MudLink></MudText>
+                    </div>
+                </MudForm>
+
+                <MudDivider Class="my-6" />
+                <div class="contact-support">
+                    <MudText Typo="Typo.body2" Align="Align.Center">
+                        <MudIcon Icon="@Icons.Material.Filled.SupportAgent" Size="Size.Small" /> ¿Problemas para acceder?
+                        <MudLink Href="/soporte" Color="Color.Primary">Contacta a soporte</MudLink>
+                    </MudText>
+                </div>
+            </MudPaper>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ==================== RESET Y ESTRUCTURA ==================== */
+    .login-root {
+        min-height: 100vh;
+        width: 100%;
+        background-color: var(--mud-palette-background);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mud-typography-default-font-family);
+    }
+
+    .login-two-columns {
+        display: flex;
+        width: 100%;
+        max-width: 1400px;
+        min-height: 700px;
+        background-color: var(--mud-palette-surface);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        margin: 20px;
+    }
+
+    /* ==================== COLUMNA IZQUIERDA (BRANDING) ==================== */
+    .login-branding {
+        flex: 1.2;
+        background: linear-gradient(135deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        padding: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: white;
+    }
+
+    .branding-content {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .brand-logo-icon {
+        font-size: 48px;
+        color: white;
+    }
+
+    .brand-name {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+        .brand-name span {
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+    .brand-tagline {
+        margin-bottom: 40px;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    .features-list {
+        margin: 32px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 1rem;
+    }
+
+        .feature .mud-icon-root {
+            color: white;
+            opacity: 0.9;
+        }
+
+    .testimonial {
+        margin-top: 40px;
+        padding: 20px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 20px;
+        backdrop-filter: blur(4px);
+    }
+
+        .testimonial .mud-icon-root {
+            color: white;
+            margin-bottom: 8px;
+        }
+
+    /* ==================== COLUMNA DERECHA (FORM) ==================== */
+    .login-form-container {
+        flex: 1;
+        background-color: var(--mud-palette-surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px;
+    }
+
+    .form-paper {
+        width: 100%;
+        max-width: 440px;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .form-header {
+        margin-bottom: 32px;
+    }
+
+    .form-title {
+        font-weight: 700;
+        color: var(--mud-palette-text-primary);
+    }
+
+    .form-subtitle {
+        color: var(--mud-palette-text-secondary);
+        margin-top: 8px;
+    }
+
+    .forgot-password {
+        text-align: right;
+        margin: 8px 0 24px 0;
+    }
+
+    .login-button {
+        padding: 12px 0;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: all 0.2s ease;
+    }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.02);
+        }
+
+    .signup-prompt {
+        text-align: center;
+        margin-top: 32px;
+    }
+
+    .contact-support {
+        text-align: center;
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @@media (max-width: 960px) {
+        .login-two-columns {
+            flex-direction: column;
+            border-radius: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .login-branding {
+            padding: 48px 24px;
+            text-align: center;
+        }
+
+        .branding-content {
+            margin: 0 auto;
+        }
+
+        .logo-area {
+            justify-content: center;
+        }
+
+        .feature {
+            justify-content: center;
+        }
+
+        .testimonial {
+            text-align: center;
+        }
+
+        .login-form-container {
+            padding: 48px 24px;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .login-branding {
+            padding: 32px 20px;
+        }
+
+        .features-list {
+            gap: 16px;
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+        }
+    }
+</style>
 
 @code {
     private LoginDTO login = new();
-    public string Password { get; set; } = string.Empty;
+    private MudForm? loginForm;
+
+    private bool isShow = false;
+    private bool isLoading = false;
+    private InputType passwordInputType = InputType.Password;
+    private string passwordIcon = Icons.Material.Filled.VisibilityOff;
 
     [Inject] private HttpClient HttpClient { get; set; } = null!;
-    [Inject] private ISnackbar Snackbar { get; set; } = null!;
-    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
-    [Inject] private ILoginService LoginService { get; set; } = null!;
-    [Inject] private IDialogService DialogService { get; set; } = null!;
 
-    private bool isShow;
-    private bool isLoading = false;
-    //private List<SucursalResponse> sucursalesUsuario = new();
-    
-    private InputType PasswordInput = InputType.Password;
-    private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
-
-    protected override void OnInitialized()
+    private void TogglePasswordVisibility()
     {
-        Password = login.Password;
-    }
-
-    private void ButtonTestclick()
-    {
-        if (isShow)
-        {
-            isShow = false;
-            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
-            PasswordInput = InputType.Password;
-        }
-        else
-        {
-            isShow = true;
-            PasswordInputIcon = Icons.Material.Filled.Visibility;
-            PasswordInput = InputType.Text;
-        }
+        isShow = !isShow;
+        passwordIcon = isShow ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+        passwordInputType = isShow ? InputType.Text : InputType.Password;
     }
 
     private async Task HandleLogin()
     {
         isLoading = true;
-        
         UserResult result = await LoginService.LoginAsync(login.Usuario, login.Password);
-        
+
         if (!result.PayrollId.Equals("0"))
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
-
             await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
-            // Obtener claims de BD y cargarlos en el AuthProvider
-            // var claims = await _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
-        
-            // IEnumerable<Claim> _claims = claims.ToClaims();
-
-            // ((AuthenticationProviderJWT)AuthenticationStateProvider).LoadPermissionsFromClaims(_claims);
-
-            var filters = new Dictionary<string, object>
-            {
-                { "PkIdUsuario", result.PkIdUsuario }  // Reemplaza 123 por el ID deseado
-            };
-
+            var filters = new Dictionary<string, object> { { "PkIdUsuario", result.PkIdUsuario } };
             var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending, filters);
 
             if (_sucursalesUsuario.TotalCount > 1)
             {
-                var parameters = new DialogParameters
-                {
-                    { "Sucursales", _sucursalesUsuario }
-                };
-                
-                var options = new DialogOptions 
-                { 
-                    CloseOnEscapeKey = false
-                };
-                
+                var parameters = new DialogParameters { { "Sucursales", _sucursalesUsuario } };
+                var options = new DialogOptions { CloseOnEscapeKey = false };
                 var dialog = await DialogService.ShowAsync<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options);
                 var dialogResult = await dialog.Result;
-                
+
                 if (dialogResult.Canceled)
                 {
                     isLoading = false;
                     return;
                 }
-                
+
                 var selectedSucursal = dialogResult.Data as UsuarioSucursalResponse;
                 if (selectedSucursal != null)
                 {
-                    Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Success);
+                    Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Info);
                     NavigationManager.NavigateTo("/", forceLoad: true);
                 }
             }
             else if (_sucursalesUsuario.Items.Count == 1)
             {
                 await SucursalStateService.SetSucursalAsync(_sucursalesUsuario.Items[0].IdSucursal, _sucursalesUsuario.Items[0].NombreSucursal);
-
                 Snackbar.Add("¡Bienvenido!", Severity.Success);
                 NavigationManager.NavigateTo("/", forceLoad: true);
             }
@@ -164,7 +397,7 @@
         {
             Snackbar.Add("Correo o contraseña incorrectos.", Severity.Error);
         }
-        
+
         isLoading = false;
     }
 }

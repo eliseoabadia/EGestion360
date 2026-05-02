@@ -519,6 +519,7 @@
       },
       "EG.Domain/1.0.0": {
         "dependencies": {
+          "EG.Common": "1.0.0",
           "Microsoft.Data.SqlClient": "7.0.1"
         },
         "runtime": {
