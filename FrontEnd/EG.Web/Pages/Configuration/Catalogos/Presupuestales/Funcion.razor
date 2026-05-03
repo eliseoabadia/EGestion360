@@ -1,0 +1,52 @@
+@page "/configuracion/presupuestales/clave-programa/finalidad"
+@using EG.Web.Models.Presupuestales
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<FnResponse, FnResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Finalidad"
+                    Subtitle="Gestión del catálogo de finalidad"
+                    Icon="@Icons.Material.Filled.List"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem" />
+
+        <GenericTable TItem="FnResponse"
+                      @ref="table"
+                      Items="_items"
+                      OnEntitySelected="OnEntitySelected"
+                      CanDelete="@CanDelete"
+                      CanUpdate="@CanUpdate"
+                      OnDelete="DeleteItem"
+                      OnEdit="EditItem"
+                      OnCreate="CreateItem" />
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<FnResponse> table = null!;
+
+    protected override string ModuleName => "ClavePrograma";
+    protected override string SubModuleName => "Finalidad";
+
+    protected override Type CreateDialogType => typeof(FuncionDialog);
+    protected override Type EditDialogType => typeof(FuncionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<FnResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<FnResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidFn,
+            Clave = u.Clave,
+            Descripcion = u.Descripcion ?? string.Empty,
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioCreacion = u.UsuarioCreacion
+        });
+    }
+}
+

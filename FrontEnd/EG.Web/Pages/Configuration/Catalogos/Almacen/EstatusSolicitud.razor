@@ -1,0 +1,65 @@
+@page "/configuracion/almacen/estatus_solicitud"
+@using EG.Web.Models.Almacen
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<EstatusSolicitudResponse, EstatusSolicitudResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Estatus de Solicitudes"
+                    Subtitle="Gestión del catálogo de estatus"
+                    Icon="@Icons.Material.Filled.Info"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                   
+                    />
+
+        <GenericTable TItem="EstatusSolicitudResponse"
+                      @ref="table"
+                     
+                     
+                      OnEntitySelected="OnEntitySelected"
+                      CanDelete="@CanDelete"
+                      CanUpdate="@CanUpdate"
+                      OnDelete="DeleteItem"
+                      OnEdit="EditItem"
+                      OnCreate="CreateItem"
+                      />
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<EstatusSolicitudResponse> table = null!;
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Estatus_Solicitud";
+
+    protected override Type CreateDialogType => typeof(EstatusSolicitudDialog);
+    protected override Type EditDialogType => typeof(EstatusSolicitudDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EstatusSolicitudResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EstatusSolicitudResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidEstatusSolicitud,
+            Descripcion = u.Descripcion ?? string.Empty,
+            Color = u.Color ?? string.Empty,
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioCreacion = u.UsuarioCreacion
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
+

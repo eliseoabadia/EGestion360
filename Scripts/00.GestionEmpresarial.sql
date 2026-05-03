@@ -446,13 +446,13 @@ VALUES
 
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Tesoreria', 'CONTES01', 'Configuracion', 'view,view-menu', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Cambio', 'CONTES02', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Inversion', 'CONTES03', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Moneda', 'CONTES04', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Pago', 'CONTES05', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_PagoSF', 'CONTES06', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_SolicitudCLC', 'CONTES07', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'CONTES01', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_DoctoCLC', 'CONTES08', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Cambio', 'CONTES02', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Inversion', 'CONTES03', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Moneda', 'CONTES04', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Pago', 'CONTES05', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_PagoSF', 'CONTES06', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_SolicitudCLC', 'CONTES07', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_DoctoCLC', 'CONTES08', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 
 
@@ -574,13 +574,13 @@ EXEC spConfiguracionDeRolYClaims 'Almacen', 'Estatus_Solicitud', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Unidades', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Conteo_Periodo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Tesoreria', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_Cambio', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_Inversion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_Moneda', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_PagoSF', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'CONTES01', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Cambio', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Inversion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Moneda', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_PagoSF', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,

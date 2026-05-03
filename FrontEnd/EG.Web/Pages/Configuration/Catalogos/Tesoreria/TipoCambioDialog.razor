@@ -1,0 +1,88 @@
+@page "/configuracion/tesoreria/tipo_cambio_dialog"
+@using EG.Web.Models.Tesoreria
+@using MudBlazor
+@inject IGenericCrudService<TipoCambioResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="TipoCambioResponse"
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Medium"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos..."
+                 OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="TipoCambioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Codigo"
+                      Label="Código"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Codigo)" />
+
+        <MudTextField @bind-Value="item.Descripcion"
+                      Label="Descripción"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Descripcion)" />
+
+        <MudNumericField @bind-Value="item.Valor"
+                         Label="Valor del Tipo de Cambio"
+                         Variant="Variant.Outlined"
+                         FullWidth="true"
+                         Class="mb-3"
+                         DecimalDigits="4"
+                         Required="true"
+                         For="@(() => item.Valor)" />
+
+        <MudSwitch T="bool" 
+                   @bind-Value="item.Activo" 
+                   Label="Activo" 
+                   Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<TipoCambioResponse> form = null!;
+    private TipoCambioResponse item = new() { Activo = true, Valor = 1.0m };
+
+    private string dialogTitle => Id.HasValue ? "Editar Tipo de Cambio" : "Nuevo Tipo de Cambio";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        var result = await Service.GetByIdAsync(Id.Value);
+        if (result != null && result.Success && result.Data != null)
+        {
+            item = result.Data;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        MudDialog.Close(item);
+    }
+}
+
+
+
+
+
+
+

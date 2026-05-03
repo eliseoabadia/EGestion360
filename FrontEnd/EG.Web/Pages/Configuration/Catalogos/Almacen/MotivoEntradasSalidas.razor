@@ -1,0 +1,60 @@
+@page "/configuracion/almacen/motivo_entradas_salidas"
+@using EG.Web.Models.Almacen
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<MotivoEsResponse, MotivoEsResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Motivo de Entradas y Salidas"
+                    Subtitle="Gestión del catálogo de motivos"
+                    Icon="@Icons.Material.Filled.List"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                   
+                    />
+
+        <GenericTable TItem="MotivoEsResponse"
+                      @ref="table"
+                     
+                     
+                      OnEntitySelected="OnEntitySelected"
+                      CanDelete="@CanDelete"
+                      CanUpdate="@CanUpdate"
+                      OnDelete="DeleteItem"
+                      OnEdit="EditItem"
+                      OnCreate="CreateItem"
+                      />
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<MotivoEsResponse> table = null!;
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Movimiento_Entrada_Salida";
+
+    protected override Type CreateDialogType => typeof(MotivoEsDialog);
+    protected override Type EditDialogType => typeof(MotivoEsDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<MotivoEsResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<MotivoEsResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidMotivoEs,
+            Descripcion = u.Descripcion ?? string.Empty,
+            AplicaEntrada = u.AplicaEntrada ? "Sí" : "No",
+            AplicaSalida = u.AplicaSalida ? "Sí" : "No",
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioCreacion = u.UsuarioCreacion
+        });
+    }
+}
+
+
+
+

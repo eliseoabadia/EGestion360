@@ -1,0 +1,34 @@
+@page "/configuracion/tesoreria/tipo_solicitud_clc"
+@using EG.Web.Models.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoSolicitudCLCResponse, TipoSolicitudCLCResponse>
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Solicitud CLC" Subtitle="Gestión del catálogo de solicitudes CLC" Icon="@Icons.Material.Filled.Description"
+            CanCreate="@CanCreate" OnCreate="CreateItem" />
+        <GenericTable TItem="TipoSolicitudCLCResponse" @ref="table"
+            OnEntitySelected="OnEntitySelected" CanDelete="@CanDelete" CanUpdate="@CanUpdate" OnDelete="DeleteItem"
+            OnEdit="EditItem" OnCreate="CreateItem" />
+    </MudContainer>
+</AccessVerification>
+@code {
+    private GenericTable<TipoSolicitudCLCResponse> table = null!;
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Tipo_Solicitud_CLC";
+    protected override Type CreateDialogType => typeof(TipoSolicitudCLCDialog);
+    protected override Type EditDialogType => typeof(TipoSolicitudCLCDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoSolicitudCLCResponse>);
+    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoSolicitudCLCResponse> items) =>
+        items.Select(u => new { ID = u.PkidTipoSolicitudClc, Codigo = u.Codigo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+}
+
+
+
+
+
+
+
+
+

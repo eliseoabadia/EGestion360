@@ -1,0 +1,80 @@
+@page "/configuracion/almacen/estatus_dialog"
+@using EG.Web.Models.Almacen
+@using MudBlazor
+@inject IGenericCrudService<EstatusSolicitudResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EstatusSolicitudResponse"
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Medium"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos..."
+                 OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="EstatusSolicitudResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Descripcion"
+                      Label="Descripción"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Descripcion)" />
+
+        <MudTextField @bind-Value="item.Color"
+                      Label="Color (código CSS)"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Placeholder="#FF5733 o rgb(255,87,51)"
+                      For="@(() => item.Color)" />
+
+        <MudSwitch T="bool" 
+                   @bind-Value="item.Activo" 
+                   Label="Activo" 
+                   Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<EstatusSolicitudResponse> form = null!;
+    private EstatusSolicitudResponse item = new() { Activo = true, Color = "#2196F3" };
+
+    private string dialogTitle => Id.HasValue ? "Editar Estatus" : "Nuevo Estatus";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        var result = await Service.GetByIdAsync(Id.Value);
+        if (result != null && result.Success && result.Data != null)
+        {
+            item = result.Data;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        MudDialog.Close(item);
+    }
+}
+
+
+
+
+
+
+
+

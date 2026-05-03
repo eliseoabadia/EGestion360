@@ -1,0 +1,62 @@
+@page "/configuracion/tesoreria/Tipo_Cambio"
+@using EG.Web.Models.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoCambioResponse, TipoCambioResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Cambio"
+                    Subtitle="Gestión del catálogo de tipos de cambio"
+                    Icon="@Icons.Material.Filled.CurrencyExchange"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                   
+                    />
+
+        <GenericTable TItem="TipoCambioResponse"
+                      @ref="table"
+                     
+                     
+                      OnEntitySelected="OnEntitySelected"
+                      CanDelete="@CanDelete"
+                      CanUpdate="@CanUpdate"
+                      OnDelete="DeleteItem"
+                      OnEdit="EditItem"
+                      OnCreate="CreateItem"
+                      />
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<TipoCambioResponse> table = null!;
+
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Tipo_Cambio";
+
+    protected override Type CreateDialogType => typeof(TipoCambioDialog);
+    protected override Type EditDialogType => typeof(TipoCambioDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoCambioResponse>);
+
+    protected override string GetDefaultSortLabel() => "Codigo";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoCambioResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidTipoCambio,
+            Codigo = u.Codigo ?? string.Empty,
+            Descripcion = u.Descripcion ?? string.Empty,
+            Valor = u.Valor,
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioCreacion = u.UsuarioCreacion
+        });
+    }
+}
+
+
+
+
+
+

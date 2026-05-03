@@ -25,4 +25,8 @@
 		<ProjectReference Include="..\EG.Logger\EG.Logger.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Controllers\Catalogos\Tesoreria\" />
+	</ItemGroup>
+
 </Project>

@@ -1,0 +1,81 @@
+@page "/configuracion/almacen/motivo_dialog"
+@using EG.Web.Models.Almacen
+@using MudBlazor
+@inject IGenericCrudService<MotivoEsResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="MotivoEsResponse"
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Medium"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos..."
+                 OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="MotivoEsResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Descripcion"
+                      Label="Descripción"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Descripcion)" />
+
+        <MudGrid Class="mb-3">
+            <MudItem xs="12" md="6">
+                <MudSwitch T="bool" 
+                           @bind-Value="item.AplicaEntrada" 
+                           Label="Aplica para Entrada" 
+                           Color="Color.Primary" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSwitch T="bool" 
+                           @bind-Value="item.AplicaSalida" 
+                           Label="Aplica para Salida" 
+                           Color="Color.Primary" />
+            </MudItem>
+        </MudGrid>
+
+        <MudSwitch T="bool" 
+                   @bind-Value="item.Activo" 
+                   Label="Activo" 
+                   Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<MotivoEsResponse> form = null!;
+    private MotivoEsResponse item = new() { Activo = true, AplicaEntrada = true, AplicaSalida = false };
+
+    private string dialogTitle => Id.HasValue ? "Editar Motivo" : "Nuevo Motivo";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        var result = await Service.GetByIdAsync(Id.Value);
+        if (result != null && result.Success && result.Data != null)
+        {
+            item = result.Data;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        MudDialog.Close(item);
+    }
+}
+
+

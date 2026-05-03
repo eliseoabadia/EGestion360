@@ -1,0 +1,66 @@
+@page "/configuracion/almacen/unidades"
+@using EG.Web.Models.Almacen
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<UnidadeResponse, UnidadeResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Unidades"
+                    Subtitle="Gestión del catálogo de unidades"
+                    Icon="@Icons.Material.Filled.Scale"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                   
+                    />
+
+        <GenericTable TItem="UnidadeResponse"
+                      @ref="table"
+                     
+                     
+                    
+                      OnEntitySelected="OnEntitySelected"
+                      CanDelete="@CanDelete"
+                      CanUpdate="@CanUpdate"
+                      OnDelete="DeleteItem"
+                      OnEdit="EditItem"
+                      OnCreate="CreateItem"
+                      />
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<UnidadeResponse> table = null!;
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Unidades";
+
+    protected override Type CreateDialogType => typeof(UnidadesDialog);
+    protected override Type EditDialogType => typeof(UnidadesDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<UnidadeResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<UnidadeResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidUnidades,
+            Descripcion = u.Descripcion ?? string.Empty,
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioCreacion = u.UsuarioCreacion
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

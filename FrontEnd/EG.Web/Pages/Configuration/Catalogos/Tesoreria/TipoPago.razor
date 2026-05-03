@@ -1,0 +1,38 @@
+@page "/configuracion/tesoreria/tipo_pago"
+@using EG.Web.Models.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoPagoResponse, TipoPagoResponse>
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Pago" Subtitle="Gestión del catálogo de tipos de pago" Icon="@Icons.Material.Filled.Payment"
+            CanCreate="@CanCreate" OnCreate="CreateItem" />
+        <GenericTable TItem="TipoPagoResponse" @ref="table"
+            OnEntitySelected="OnEntitySelected" CanDelete="@CanDelete" CanUpdate="@CanUpdate" OnDelete="DeleteItem"
+            OnEdit="EditItem" OnCreate="CreateItem" />
+    </MudContainer>
+</AccessVerification>
+@code {
+    private GenericTable<TipoPagoResponse> table = null!;
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Tipo_Pago";
+    protected override Type CreateDialogType => typeof(TipoPagoDialog);
+    protected override Type EditDialogType => typeof(TipoPagoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPagoResponse>);
+    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPagoResponse> items) =>
+        items.Select(u => new { ID = u.PkidTipoPago, Codigo = u.Codigo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

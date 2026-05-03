@@ -1,9 +1,12 @@
 using EG.Common.Helper;
 using EG.Web.Contracts;
 using EG.Web.Models.Adquisicion;
+using EG.Web.Models.Almacen;
 using EG.Web.Models.Configuration;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Models.Patrimonio;
+using EG.Web.Models.Presupuestales;
+using EG.Web.Models.Tesoreria;
 using EG.Web.Services;
 using Microsoft.JSInterop;
 using EG.Domain.DTOs.Responses.Contabilidad;
@@ -40,11 +43,24 @@ public static class ApiServiceExtensions
         //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
 RegisterCrud<FamiliaResponse>(services, "api/Familia");
-//RegisterCrud<UnidadResponse>(services, "api/Unidad");
-//RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
-//RegisterCrud<BienResponse>(services, "api/Bien");
+RegisterCrud<UnidadeResponse>(services, "api/Unidades");
+RegisterCrud<MotivoEsResponse>(services, "api/MotivoEs");
+RegisterCrud<EstatusSolicitudResponse>(services, "api/EstatusSol");
+// RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo"); // Comentar para evitar ambigüedad
 
-        // Catálogos de Adquisiciones
+// Catálogos de Tesorería
+RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
+RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
+RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
+RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
+RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
+RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
+
+// Catálogos de Presupuestales
+RegisterCrud<GfResponse>(services, "api/Gf");
+RegisterCrud<FnResponse>(services, "api/Fn");
+
+// Catálogos de Adquisiciones
         RegisterCrud<ModalidadResponse>(services, "api/Modalidad");
         RegisterCrud<TipoContratoResponse>(services, "api/TipoContrato");
         RegisterCrud<TipoDocumentoResponse>(services, "api/TipoDocumento");

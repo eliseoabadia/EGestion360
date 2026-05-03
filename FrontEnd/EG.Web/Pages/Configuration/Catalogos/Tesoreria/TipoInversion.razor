@@ -1,0 +1,45 @@
+@page "/configuracion/tesoreria/tipo_inversion"
+@using EG.Web.Models.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoInversionResponse, TipoInversionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Inversión"
+                    Subtitle="Gestión del catálogo de tipos de inversión"
+                    Icon="@Icons.Material.Filled.TrendingUp"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                   
+                    />
+        <GenericTable TItem="TipoInversionResponse" @ref="table"
+            OnEntitySelected="OnEntitySelected" CanDelete="@CanDelete" CanUpdate="@CanUpdate" OnDelete="DeleteItem"
+            OnEdit="EditItem" OnCreate="CreateItem" />
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<TipoInversionResponse> table = null!;
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Tipo_Inversion";
+    protected override Type CreateDialogType => typeof(TipoInversionDialog);
+    protected override Type EditDialogType => typeof(TipoInversionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoInversionResponse>);
+    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoInversionResponse> items) =>
+        items.Select(u => new { ID = u.PkidTipoInversion, Codigo = u.Codigo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+@page "/configuracion/tesoreria/tipo_moneda_dialog"
+@using EG.Web.Models.Tesoreria
+@using MudBlazor
+@inject IGenericCrudService<TipoMonedaResponse> Service
+<BaseCrudDialog TItem="TipoMonedaResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
+    ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="TipoMonedaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Codigo" Label="Código" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" />
+        <MudTextField @bind-Value="item.Simbolo" Label="Símbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+        <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" />
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private BaseEntityForm<TipoMonedaResponse> form = null!;
+    private TipoMonedaResponse item = new() { Activo = true };
+    private string dialogTitle => Id.HasValue ? "Editar Moneda" : "Nueva Moneda";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    protected override async Task OnInitializedAsync() { if (Id.HasValue) { var result = await Service.GetByIdAsync(Id.Value); if (result != null && result.Success && result.Data != null) item = result.Data; } }
+    private async Task GuardarCambiosAsync() => MudDialog.Close(item);
+}
+
+
+
+
+
+
+
+

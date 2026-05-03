@@ -1,57 +1,38 @@
+@page "/configuracion/presupuestales/finalidad_dialog"
+@using EG.Web.Models.Presupuestales
 @using MudBlazor
-@using EG.Web.Pages.Shared
-@using EG.Web.Contracts
-@using EG.Domain.DTOs.Responses.Presupuestales
-@using EG.Web.Services
-@inject IGenericCrudService<FuncionResponse> Service
+@inject IGenericCrudService<FnResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="FuncionResponse"
+<BaseCrudDialog TItem="FnResponse"
                  Title="@dialogTitle"
-                 MaxWidth="MaxWidth.Small"
+                 MaxWidth="MaxWidth.Medium"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
                  LoadingMessage="Cargando datos..."
                  OnConfirm="GuardarCambiosAsync">
 
-    <BaseEntityForm TEntity="FuncionResponse"
-                    @ref="form"
-                    ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+    <BaseEntityForm TEntity="FnResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave"
+                      Label="Clave"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Clave)" />
 
-        <MudGrid GutterSize="2">
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.Clave"
-                              Label="Clave"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="La clave es requerida" />
-            </MudItem>
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
-                              Label="Descripción"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="La descripción es requerida" />
-            </MudItem>
+        <MudTextField @bind-Value="item.Descripcion"
+                      Label="Descripción"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Class="mb-3"
+                      Required="true"
+                      For="@(() => item.Descripcion)" />
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
-                        <MudDivider Class="mb-3" />
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="item.Activo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
-                    </MudPaper>
-                </MudItem>
-            }
-        </MudGrid>
+        <MudSwitch T="bool" 
+                   @bind-Value="item.Activo" 
+                   Label="Activo" 
+                   Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 
@@ -60,10 +41,10 @@
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private BaseEntityForm<FuncionResponse> form = null!;
-    private FuncionResponse item = new() { Activo = true };
+    private BaseEntityForm<FnResponse> form = null!;
+    private FnResponse item = new() { Activo = true };
 
-    private string dialogTitle => Id.HasValue ? "Editar Función" : "Nueva Función";
+    private string dialogTitle => Id.HasValue ? "Editar Finalidad" : "Nueva Finalidad";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
@@ -77,49 +58,15 @@
 
     private async Task CargarDatos()
     {
-        try
+        var result = await Service.GetByIdAsync(Id.Value);
+        if (result != null && result.Success && result.Data != null)
         {
-            var response = await Service.GetByIdAsync(Id.Value);
-            if (response?.Success == true && response.Data != null)
-            {
-                item = response.Data;
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            item = result.Data;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        try
-        {
-            bool success;
-            if (Id.HasValue)
-            {
-                var response = await Service.UpdateAsync(item, Id.Value);
-                success = response?.Success == true;
-            }
-            else
-            {
-                var response = await Service.CreateAsync(item);
-                success = response?.Success == true;
-            }
-
-            if (success)
-            {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Función actualizada correctamente" : "Función creada correctamente", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-            else
-            {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
+        MudDialog.Close(item);
     }
 }
