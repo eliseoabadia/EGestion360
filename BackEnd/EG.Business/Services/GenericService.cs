@@ -2,6 +2,7 @@ using AutoMapper;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
@@ -17,6 +18,9 @@ namespace EG.Business.Services
     {
         protected readonly IRepository<TEntity> _repository = repository;
         protected readonly IMapper _mapper = mapper;
+
+        // Propiedad para habilitar/deshabilitar filtro de Activo
+        protected bool FilterByActivo { get; set; } = true;
 
         // Propiedades para configurar includes din�micos
         protected List<Expression<Func<TEntity, object>>> _includes = new();
@@ -106,6 +110,21 @@ namespace EG.Business.Services
         {
             var query = GetQueryWithIncludes();
             var entities = await Task.Run(() => query.ToList());
+            
+            // Filtrar por Activo si la entidad tiene la propiedad y FilterByActivo es true
+            if (FilterByActivo)
+            {
+                var activoProperty = typeof(TEntity).GetProperty("Activo");
+                if (activoProperty != null && activoProperty.PropertyType == typeof(bool))
+                {
+                    entities = entities.Where(e =>
+                    {
+                        var activoValue = (bool)activoProperty.GetValue(e);
+                        return activoValue;
+                    }).ToList();
+                }
+            }
+            
             return _mapper.Map<IEnumerable<TResponse>>(entities);
         }
 
@@ -137,14 +156,26 @@ namespace EG.Business.Services
                 equality = Expression.Equal(propertyAccess, constant);
             }
 
-            var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
+        var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
 
-            // Usar ToList() primero (menos eficiente pero funciona sin EF Core)
-            var entities = await Task.Run(() => query.ToList());
-            var entity = entities.FirstOrDefault(lambda.Compile());
+        // Usar ToList() primero (menos eficiente pero funciona sin EF Core)
+        var entities = await Task.Run(() => query.ToList());
+        var entity = entities.FirstOrDefault(lambda.Compile());
 
-            return entity != null ? _mapper.Map<TResponse>(entity) : null;
+        // Validar que la entidad esté activa si FilterByActivo es true
+        if (entity != null && FilterByActivo)
+        {
+            var activoProperty = typeof(TEntity).GetProperty("Activo");
+            if (activoProperty != null && activoProperty.PropertyType == typeof(bool))
+            {
+                var activoValue = (bool)activoProperty.GetValue(entity);
+                if (!activoValue)
+                    return null;
+            }
         }
+
+        return entity != null ? _mapper.Map<TResponse>(entity) : null;
+    }
 
         // Versi�n con par�metros personalizados - CORREGIDA
         public virtual async Task<TResponse?> GetByIdAsync(int id,

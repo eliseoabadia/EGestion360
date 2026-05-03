@@ -11,6 +11,7 @@ using EG.Web.Services;
 using Microsoft.JSInterop;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Domain.DTOs.Responses.Nomina;
+using EG.Web.Models.Configuration.Catalogo.ClavePrograma;
 
 namespace EG.Web.Extensions;
 

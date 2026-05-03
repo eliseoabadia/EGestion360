@@ -35,7 +35,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         public async Task<IActionResult> GetAllPaginado(int page = 1, int pageSize = 10, string? sortBy = null, string? filter = null)
         {
             var all = await _repository.GetAllAsync();
-            var result = new { Items = all.Skip((page - 1) * pageSize).Take(pageSize), TotalCount = all.Count(), Page = page, PageSize = pageSize };
+            // Filtrar solo los registros activos
+            var activos = all.Where(x => x.Activo).ToList();
+            var result = new { Items = activos.Skip((page - 1) * pageSize).Take(pageSize), TotalCount = activos.Count, Page = page, PageSize = pageSize };
             return Ok(result);
         }
 
@@ -43,7 +45,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         public async Task<IActionResult> GetById(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return NotFound();
+            if (entity == null || !entity.Activo) return NotFound();
             var response = _mapper.Map<FnResponse>(entity);
             return Ok(response);
         }
@@ -59,7 +61,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             entity.UsuarioCreacion = _userContextService.GetCurrentUserId();
 
             await _repository.AddAsync(entity);
-            // IRepository guarda automáticamente
+            // IRepository guarda automï¿½ticamente
 
             var response = _mapper.Map<FnResponse>(entity);
             return CreatedAtAction(nameof(GetById), new { id = entity.PkidFn }, response);
@@ -79,7 +81,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             entity.UsuarioModificacion = _userContextService.GetCurrentUserId();
 
             await _repository.UpdateAsync(entity);
-            // IRepository guarda automáticamente
+            // IRepository guarda automï¿½ticamente
 
             var response = _mapper.Map<FnResponse>(entity);
             return Ok(response);
@@ -93,7 +95,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             if (entity == null) return NotFound();
 
             await _repository.DeleteAsync(id);
-            // IRepository guarda automáticamente
+            // IRepository guarda automï¿½ticamente
 
             return NoContent();
         }

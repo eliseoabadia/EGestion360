@@ -1,4 +1,4 @@
-namespace EG.Web.Models.Presupuestales
+namespace EG.Web.Models.Configuration.Catalogo.ClavePrograma
 {
     public class GfResponse
     {

@@ -6,14 +6,15 @@ using EG.Web.Contracts.Configuration;
 using EG.Web.Extensions;
 using EG.Web.Services;
 using EG.Web.Services.Configuration;
-using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Contabilidad;
+using EG.Domain.DTOs.Responses.Presupuestales;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Services;
+using EG.Domain.DTOs.Responses.Presupuestales;
 
 internal class Program
 {
@@ -65,28 +66,28 @@ internal class Program
         builder.Services.AddScoped<ISucursalService, SucursalService>(); 
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
         
-        // Registrar servicios para los catálogos presupuestales
-        builder.Services.AddScoped<IGenericCrudService<UnidadResponsableResponse>>(sp =>
-            new GenericCrudService<UnidadResponsableResponse>(
-                sp.GetRequiredService<IConfiguration>(),
-                sp.GetRequiredService<HttpClient>(),
-                sp.GetRequiredService<IJSRuntime>(),
-                sp.GetRequiredService<ApplicationInstance>(),
-                "api/UnidadResponsable"));
-        builder.Services.AddScoped<IGenericCrudService<FuncionResponse>>(sp =>
-            new GenericCrudService<FuncionResponse>(
-                sp.GetRequiredService<IConfiguration>(),
-                sp.GetRequiredService<HttpClient>(),
-                sp.GetRequiredService<IJSRuntime>(),
-                sp.GetRequiredService<ApplicationInstance>(),
-                "api/Funcion"));
-        builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>>(sp =>
-            new GenericCrudService<SubFuncionResponse>(
-                sp.GetRequiredService<IConfiguration>(),
-                sp.GetRequiredService<HttpClient>(),
-                sp.GetRequiredService<IJSRuntime>(),
-                sp.GetRequiredService<ApplicationInstance>(),
-                "api/SubFuncion"));
+// Registrar servicios para los catálogos presupuestales
+builder.Services.AddScoped<IGenericCrudService<UnidadResponsableResponse>>(sp =>
+new GenericCrudService<UnidadResponsableResponse>(
+    sp.GetRequiredService<IConfiguration>(),
+    sp.GetRequiredService<HttpClient>(),
+    sp.GetRequiredService<IJSRuntime>(),
+    sp.GetRequiredService<ApplicationInstance>(),
+    "api/UnidadResponsable"));
+builder.Services.AddScoped<IGenericCrudService<GfResponse>>(sp =>
+new GenericCrudService<GfResponse>(
+    sp.GetRequiredService<IConfiguration>(),
+    sp.GetRequiredService<HttpClient>(),
+    sp.GetRequiredService<IJSRuntime>(),
+    sp.GetRequiredService<ApplicationInstance>(),
+    "api/Gf"));
+builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>>(sp =>
+new GenericCrudService<SubFuncionResponse>(
+    sp.GetRequiredService<IConfiguration>(),
+    sp.GetRequiredService<HttpClient>(),
+    sp.GetRequiredService<IJSRuntime>(),
+    sp.GetRequiredService<ApplicationInstance>(),
+    "api/SubFuncion"));
         builder.Services.AddScoped<IGenericCrudService<ActividadInstitucionalResponse>>(sp =>
             new GenericCrudService<ActividadInstitucionalResponse>(
                 sp.GetRequiredService<IConfiguration>(),

@@ -1,0 +1,151 @@
+@page "/configuracion/presupuestales/clave-programa/finalidad"
+@using EG.Web.Shared
+@using EG.Web.Models.Configuration.Catalogo.ClavePrograma
+@inherits BaseCrudPage<GfResponse, GfResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Gestión de Grupos Funcionales"
+                    Subtitle="Administra y mantén los Grupos Funcionales (GF)"
+                    Icon="@Icons.Material.Filled.Domain"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="GfResponse"
+                      @ref="table"
+                      Title="Lista de Grupos Funcionales"
+                      SearchPlaceholder="Buscar por clave o descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidGf" T="GfResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="GfResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="GfResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+
+            <Row Context="gf">
+                <MudTd>
+                    <MudTooltip Text="Editar grupo funcional">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(gf.PkidGf))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar grupo funcional">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(gf.PkidGf))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@gf.PkidGf</MudTd>
+                <MudTd>@gf.Clave</MudTd>
+                <MudTd>@gf.Descripcion</MudTd>
+                <MudTd>
+                    <MudBadge Color="@(gf.Activo == true ? Color.Success : Color.Error)"
+                              Variant="Variant.Filled"
+                              Size="Size.Small">
+                        @(gf.Activo == true ? "Activo" : "Inactivo")
+                    </MudBadge>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<GfResponse> table = null!;
+
+    protected override string ModuleName => "ClavePrograma";
+    protected override string SubModuleName => "Finalidad";
+
+    protected override Type CreateDialogType => typeof(GrupoFuncionalDialog);
+    protected override Type EditDialogType => typeof(GrupoFuncionalDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<GfResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripción";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<GfResponse> items)
+    {
+        return items.Select(d => new
+        {
+            ID = d.PkidGf,
+            Clave = d.Clave,
+            Descripción = d.Descripcion ?? "",
+            Estado = d.Activo ? "Activo" : "Inactivo"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.Clave.ToString() ?? "el grupo funcional";
+
+        }
+        catch
+        {
+            return "el grupo funcional";
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(id);
+        var clave = response?.Data?.Clave.ToString() ?? "el grupo funcional";
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = clave,
+            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
+            {
+                var deleteResponse = await Service.DeleteAsync(deleteId);
+                if (deleteResponse?.Success == true)
+                {
+                    Snackbar.Add(deleteResponse.Message ?? "Grupo funcional eliminado correctamente", Severity.Success);
+                    await table.ReloadData();
+                    return true;
+                }
+                else
+                {
+                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar el grupo funcional", Severity.Error);
+                    return false;
+                }
+            })
+        };
+
+        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
+            new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        await dialog.Result;
+    }
+}
