@@ -1,7 +1,9 @@
 using EG.ApiCoreBS.Services;
+using EG.ApiCoreBS.Services.Catalogos.ClavePrograma;
 using EG.Application.Interfaces;
 using EG.Application.Interfaces.Account;
 using EG.Application.Interfaces.General;
+using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.General;
@@ -55,19 +57,24 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUsuarioAppService, UsuarioAppService>();
             services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
 
-// ===== SERVICIOS DE NEGOCIO =====
-services.AddScoped<IAuthService, AuthService>();
-services.AddScoped<ITokenService, TokenService>();
-services.AddScoped<INavigateService, NavigateService>();
-            services.AddScoped<IUserIpService, UserIpService>();
-            services.AddScoped<IUserProfileService, UserProfileService>();
-            services.AddScoped<IEmployeeService, EmployeeService>();
+        // ===== SERVICIOS DE NEGOCIO =====
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<INavigateService, NavigateService>();
+        services.AddScoped<IUserIpService, UserIpService>();
+        services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
 
-            // ===== SERVICIOS GENÉRICOS =====
-            services.AddScoped(typeof(GenericService<,,>));
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        }
+        // ===== SERVICIOS CATÁLOGOS - CLAVE PROGRAMA =====
+        services.AddScoped<IGfService, GfService>();
+        services.AddScoped<IFnService, FnService>();
+        services.AddScoped<ISfService, SfService>();
+
+        // ===== SERVICIOS GENÉRICOS =====
+        services.AddScoped(typeof(GenericService<,,>));
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     }
+}
 }
 
 

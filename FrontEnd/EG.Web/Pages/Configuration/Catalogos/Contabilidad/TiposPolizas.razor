@@ -16,9 +16,9 @@
                     OnRefresh="() => table.ReloadData()" />
 
         <GenericTable TItem="TipoPolizaResponse"
-                  @ref="table"
-                  Title="Lista de Tipos de Pólizas"
-                  SearchPlaceholder="Buscar por clave o descripción..."
+                      @ref="table"
+                      Title="Lista de Tipos de Pólizas"
+                      SearchPlaceholder="Buscar por descripción..."
                   ShowExportButton="@CanExport"
                   ServerDataFunc="LoadServerData"
                   ExportFunc="ExportToExcel"
@@ -28,9 +28,9 @@
 
             <Header>
                 <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoPoliza" T="TipoPolizaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoPolizaResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPolizaResponse">Descripción</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="PkidTipoPoliza" T="TipoPolizaResponse">ID</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPolizaResponse">Descripción</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoPolizaResponse">Activo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoPolizaResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
@@ -52,7 +52,6 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidTipoPoliza</MudTd>
-                <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>
                     <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
@@ -74,16 +73,16 @@
     protected override Type EditDialogType => typeof(TipoPolizaDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPolizaResponse>);
 
-    protected override string GetDefaultSortLabel() => "Clave";
+    protected override string GetDefaultSortLabel() => "Descripcion";
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPolizaResponse> items)
     {
         return items.Select(u => new
         {
             ID = u.PkidTipoPoliza,
-            Clave = u.Clave,
             Descripcion = u.Descripcion,
-            Activo = u.Activo
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
         });
     }
 

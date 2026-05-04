@@ -1,12 +1,12 @@
 @using MudBlazor
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
-@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Services
-@inject IGenericCrudService<TipoPolizaResponse> Service
+@inject IGenericCrudService<FnResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="TipoPolizaResponse"
+<BaseCrudDialog TItem="FnResponse"
 Title="@dialogTitle"
 MaxWidth="MaxWidth.Small"
 ActionText="@actionText"
@@ -14,12 +14,19 @@ ProcessingText="@processingText"
 LoadingMessage="Cargando datos..."
 OnConfirm="GuardarCambiosAsync">
 
-<BaseEntityForm TEntity="TipoPolizaResponse"
+<BaseEntityForm TEntity="FnResponse"
 @ref="form"
 ShowHeader="true"
 HeaderTitle="@dialogTitle">
 
 <MudGrid GutterSize="2">
+<MudItem xs="12">
+<MudTextField @bind-Value="item.Clave"
+Label="Clave"
+Variant="Variant.Outlined"
+Required="true"
+RequiredError="La clave es requerida" />
+</MudItem>
 <MudItem xs="12">
 <MudTextField @bind-Value="item.Descripcion"
 Label="Descripción"
@@ -53,10 +60,10 @@ ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.C
 
 [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-private BaseEntityForm<TipoPolizaResponse> form = null!;
-private TipoPolizaResponse item = new() { Activo = true };
+private BaseEntityForm<FnResponse> form = null!;
+private FnResponse item = new() { Activo = true };
 
-private string dialogTitle => Id.HasValue ? "Editar Tipo de Póliza" : "Nuevo Tipo de Póliza";
+private string dialogTitle => Id.HasValue ? "Editar Función" : "Nueva Función";
 private string actionText => Id.HasValue ? "Actualizar" : "Crear";
 private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
@@ -102,7 +109,7 @@ private async Task GuardarCambiosAsync()
 
         if (success)
         {
-            Snackbar.Add(dialogTitle.Contains("Editar") ? "Tipo de póliza actualizado correctamente" : "Tipo de póliza creado correctamente", Severity.Success);
+            Snackbar.Add(dialogTitle.Contains("Editar") ? "Función actualizada correctamente" : "Función creada correctamente", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));
         }
         else

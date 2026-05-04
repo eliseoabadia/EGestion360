@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\Almacen\**" />
+    <Content Remove="Services\Almacen\**" />
+    <EmbeddedResource Remove="Services\Almacen\**" />
+    <None Remove="Services\Almacen\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazorise.Snackbar" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.7" />
@@ -30,7 +37,6 @@
     <Folder Include="Pages\Configuration\Catalogos\Almacen\" />
     <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
     <Folder Include="Pages\ConteoCiclico\" />
-    <Folder Include="Services\Almacen\" />
     <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 

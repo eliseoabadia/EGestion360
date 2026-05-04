@@ -74,20 +74,27 @@ new GenericCrudService<UnidadResponsableResponse>(
     sp.GetRequiredService<IJSRuntime>(),
     sp.GetRequiredService<ApplicationInstance>(),
     "api/UnidadResponsable"));
-builder.Services.AddScoped<IGenericCrudService<GfResponse>>(sp =>
-new GenericCrudService<GfResponse>(
-    sp.GetRequiredService<IConfiguration>(),
-    sp.GetRequiredService<HttpClient>(),
-    sp.GetRequiredService<IJSRuntime>(),
-    sp.GetRequiredService<ApplicationInstance>(),
-    "api/Gf"));
-builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>>(sp =>
-new GenericCrudService<SubFuncionResponse>(
-    sp.GetRequiredService<IConfiguration>(),
-    sp.GetRequiredService<HttpClient>(),
-    sp.GetRequiredService<IJSRuntime>(),
-    sp.GetRequiredService<ApplicationInstance>(),
-    "api/SubFuncion"));
+        builder.Services.AddScoped<IGenericCrudService<GfResponse>>(sp =>
+        new GenericCrudService<GfResponse>(
+            sp.GetRequiredService<IConfiguration>(),
+            sp.GetRequiredService<HttpClient>(),
+            sp.GetRequiredService<IJSRuntime>(),
+            sp.GetRequiredService<ApplicationInstance>(),
+            "api/Gf"));
+        builder.Services.AddScoped<IGenericCrudService<FnResponse>>(sp =>
+        new GenericCrudService<FnResponse>(
+            sp.GetRequiredService<IConfiguration>(),
+            sp.GetRequiredService<HttpClient>(),
+            sp.GetRequiredService<IJSRuntime>(),
+            sp.GetRequiredService<ApplicationInstance>(),
+            "api/Fn"));
+        builder.Services.AddScoped<IGenericCrudService<SubFuncionResponse>>(sp =>
+        new GenericCrudService<SubFuncionResponse>(
+            sp.GetRequiredService<IConfiguration>(),
+            sp.GetRequiredService<HttpClient>(),
+            sp.GetRequiredService<IJSRuntime>(),
+            sp.GetRequiredService<ApplicationInstance>(),
+            "api/Sf"));
         builder.Services.AddScoped<IGenericCrudService<ActividadInstitucionalResponse>>(sp =>
             new GenericCrudService<ActividadInstitucionalResponse>(
                 sp.GetRequiredService<IConfiguration>(),

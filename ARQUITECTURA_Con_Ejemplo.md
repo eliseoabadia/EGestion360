@@ -1,6 +1,7 @@
 SmartDoc: Generador de CRUD Completo para Arquitectura Blazor + MudBlazor + GenericService
 🎯 Objetivo
-Este documento guía a una IA para generar automáticamente todo el código necesario (frontend y backend) de un CRUD completo, siguiendo la arquitectura y patrones definidos por el usuario. La IA deberá pedir información faltante y producir código sin errores ni warnings.
+Este documento guía a una IA para generar automáticamente todo el código necesario (frontend y backend) de un CRUD completo, 
+siguiendo la arquitectura y patrones definidos por el usuario. La IA deberá pedir información faltante y producir código sin errores ni warnings.
 
 📐 Filosofía del Sistema
 Frontend: Blazor con MudBlazor.
@@ -13,15 +14,54 @@ Diálogo: BaseCrudDialog<TItem> + BaseEntityForm<TEntity> para formularios.
 
 Backend: ASP.NET Core Web API.
 
-Servicio genérico: GenericService<TEntity, TDto, TResponse> (EG.Business).
+Controller :
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class [Entity]Controller : ControllerBase
+{
+    private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof([Entity]Controller));
+    private readonly I[Entity]AppService _appService;
+    private readonly IUserContextService _userContext;
+    private readonly IMapper _mapper;
 
-Repositorio: IRepository<T> (EG.Domain.Interfaces).
+    public UsuarioController(
+        I[Entity]AppService appService,
+        IUserContextService userContext, //Para sacar el usuario logeado
+        IMapper mapper)
+    {
+        _appService = appService;
+        _userContext = userContext;
+        _mapper = mapper;
+    }
 
 Mapeo: AutoMapper (perfiles separados por módulo).
 
-Vistas con FK: Si una entidad tiene llaves foráneas, se usa una vista (ej. VwEmpresa) en el controlador para las consultas, mientras que el DTO se usa para escritura.
-
 Validaciones: Se configuran dentro del controlador usando métodos AddValidationRule y AddValidationRuleWithId.
+
+En el proyecto EG.Application
+namespace EG.Application.Services.General
+{
+    public class [controller]AppService : IUsuarioAppService
+    {
+        private readonly GenericService<[controller], [controller]Dto, [controller]Response> _service;
+        private readonly GenericService<Vw[controller]Empresa, [controller]Dto, [controller]Response> _serviceView;
+        private readonly IMapper _mapper;
+
+        public UsuarioAppService(
+            GenericService<[controller], [controller]Dto, [controller]Response> service,
+            GenericService<Vw[controller]Empresa, [controller]Dto, [controller]Response> serviceView,  //Si la entidad maneja Kf o foreing key , si no se especificó la vista, preguntar como se llama
+            IMapper mapper)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            _mapper = mapper;
+            ConfigureService();
+            ConfigureValidations();
+        }
+
+Se crea la carpeta indicando en lo solicitado por el usuario: en el siguiente ejemplo se configura así, en la carpeta Pages, en Model, en back en controller services y Dtos
+C:\Desarrollo\Desarrollo\FullStack\EGestion360\BackEnd\EG.Application\Services\Configuracion\Catalogo\ClavePrograma\
 
 🗂️ Estructura de Carpetas Esperada
 Frontend (Blazor)
