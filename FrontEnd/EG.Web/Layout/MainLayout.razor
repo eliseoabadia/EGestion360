@@ -515,6 +515,7 @@ catch { }
         border-right: 1px solid var(--mud-palette-divider);
         overflow: hidden;
         transition: width 0.3s ease;
+        align-self: stretch;
     }
 
     .sidebar-container.collapsed {
@@ -530,11 +531,13 @@ catch { }
         min-width: 0;
         overflow-y: auto;
         background: var(--mud-palette-background);
+        min-height: 0;
     }
 
     .content-wrapper {
         padding: 24px;
         padding-top: 16px;
+        min-height: 100%;
     }
 
     .version-footer {
