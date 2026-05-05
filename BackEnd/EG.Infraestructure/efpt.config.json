@@ -435,6 +435,14 @@
          "ObjectType": 3
       },
       {
+         "Name": "[CONTA].[Vw_Cuentas]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[CONTA].[Vw_MatrizConversionColumnas]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[VW_EmpresaDepartamanto]",
          "ObjectType": 3
       },

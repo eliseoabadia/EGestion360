@@ -82,6 +82,8 @@ RegisterCrud<FnResponse>(services, "api/Fn");
         RegisterCrud<MarcaResponse>(services, "api/Marca");
         RegisterCrud<PersonaResponse>(services, "api/Persona");
 
+        RegisterCrud<MatrizConversionResponse>(services, "api/MatrizConversion");
+
         return services;
     }
 

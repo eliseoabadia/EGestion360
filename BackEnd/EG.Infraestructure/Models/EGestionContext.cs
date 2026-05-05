@@ -215,11 +215,15 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwConteoDetalleEscaneo> VwConteoDetalleEscaneos { get; set; }
 
+    public virtual DbSet<VwCuenta> VwCuentas { get; set; }
+
     public virtual DbSet<VwEmpresaDepartamanto> VwEmpresaDepartamantos { get; set; }
 
     public virtual DbSet<VwEstadoEmpresa> VwEstadoEmpresas { get; set; }
 
     public virtual DbSet<VwExistencia> VwExistencias { get; set; }
+
+    public virtual DbSet<VwMatrizConversionColumna> VwMatrizConversionColumnas { get; set; }
 
     public virtual DbSet<VwMenu> VwMenus { get; set; }
 
@@ -3503,6 +3507,36 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
         });
 
+        modelBuilder.Entity<VwCuenta>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Cuentas", "CONTA");
+
+            entity.Property(e => e.ClaveNombre)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.ClaveOrd)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Hijo)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Padre)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.PkIdCuenta).ValueGeneratedOnAdd();
+            entity.Property(e => e.TipoCuenta)
+                .HasMaxLength(1)
+                .IsFixedLength();
+        });
+
         modelBuilder.Entity<VwEmpresaDepartamanto>(entity =>
         {
             entity
@@ -3579,6 +3613,51 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Unidades)
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwMatrizConversionColumna>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_MatrizConversionColumnas", "CONTA");
+
+            entity.Property(e => e.CuentaAprobado)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaComprometido)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaDevengado)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaEjercido)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaGasto)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaModificado)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaPagado)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaPorEjercer)
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.PartidaClave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.PartidaDescripcion)
+                .IsRequired()
+                .HasMaxLength(266);
+            entity.Property(e => e.PkidMatrizConversion).HasColumnName("PKIdMatrizConversion");
+            entity.Property(e => e.ProgramaClave)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.ProgramaDescripcion)
+                .IsRequired()
+                .HasMaxLength(255);
         });
 
         modelBuilder.Entity<VwMenu>(entity =>

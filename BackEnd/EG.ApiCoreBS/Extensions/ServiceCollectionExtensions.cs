@@ -1,9 +1,11 @@
 using EG.ApiCoreBS.Services;
 using EG.ApiCoreBS.Services.Catalogos.ClavePrograma;
+using EG.ApiCoreBS.Services.Contabilidad;
 using EG.Application.Interfaces;
 using EG.Application.Interfaces.Account;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
+using EG.Application.Interfaces.Contabilidad;
 using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.General;
@@ -65,7 +67,11 @@ namespace EG.ApiCoreBS.Extensions
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
 
-        // ===== SERVICIOS CATÁLOGOS - CLAVE PROGRAMA =====
+        // ===== SERVICIOS CATÁLOGOS - CONTABILIDAD =====
+services.AddScoped<ITipoPolizaService, TipoPolizaService>();
+services.AddScoped<IMatrizConversionService, MatrizConversionService>();
+
+// ===== SERVICIOS CATÁLOGOS - CLAVE PROGRAMA =====
         services.AddScoped<IGfService, GfService>();
         services.AddScoped<IFnService, FnService>();
         services.AddScoped<ISfService, SfService>();

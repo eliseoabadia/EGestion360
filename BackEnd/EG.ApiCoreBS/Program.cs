@@ -37,6 +37,19 @@ builder.WebHost.ConfigureKestrel(options =>
     //options.Limits.MaxRequestHeadersTotalSize = 1048576; // 1024KB (1MB)
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:7279", "http://localhost:5242") // tus frontends
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); // solo si usas cookies/JWT en header
+    });
+});
+
+
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
 
 //contexto de datos
@@ -112,23 +125,8 @@ builder.Services.AddAuthentication(x =>
 
 builder.Services.AddMemoryCache();
 
-// No duplicar AddControllers ni AddOpenApi
-
-//CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAllOrigins", policy =>
-    {
-        policy
-            .AllowAnyOrigin() // Si necesitas credenciales, usa .WithOrigins("https://tudominio.com") y .AllowCredentials()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-        // .AllowCredentials(); // Solo si usas orígenes explícitos
-    });
-});
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -142,9 +140,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Habilitar CORS antes de enrutar controladores para que las preflight requests reciban 
+// Habilitar CORS antes de enrutar controladores para que las preflight requests reciban
 // los encabezados Access-Control-Allow-*
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowFrontend");
 
 // Habilitar autenticación antes de autorización
 app.UseAuthentication();

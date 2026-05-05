@@ -1,74 +1,221 @@
-@using MudBlazor
-@using EG.Web.Pages.Shared
-@using EG.Web.Contracts
+@page "/configuracion/contabilidad/matriz-conversion-dialog"
 @using EG.Domain.DTOs.Responses.Contabilidad
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
 @using EG.Web.Services
-
 @inject IGenericCrudService<MatrizConversionResponse> Service
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 
 <BaseCrudDialog TItem="MatrizConversionResponse"
-             Title="@dialogTitle"
-             MaxWidth="MaxWidth.Small"
-             ActionText="@actionText"
-             ProcessingText="@processingText"
-             LoadingMessage="Cargando datos..."
-             OnConfirm="GuardarCambiosAsync">
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.ExtraLarge"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
 
-    <BaseEntityForm TEntity="MatrizConversionResponse"
-                    @ref="form"
-                    ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave"
-                      Label="Clave"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Numbers"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Clave)" />
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudContainer Class="py-4">
+            <MudGrid GutterSize="2">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Referencia Principal</MudText>
+                </MudItem>
 
-        <MudTextField @bind-Value="item.Descripcion"
-                      Label="Descripción"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Description"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Descripcion)" />
-    </BaseEntityForm>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int" @bind-Value="_item.FkidProgramaPres" Label="Programa" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var prog in _programas)
+                        {
+                            <MudSelectItem T="int" Value="prog.PkidPrograma">@prog.Clave</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int" @bind-Value="_item.FkidPartidaSis" Label="Partida SIS" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var part in _partidas)
+                        {
+                            <MudSelectItem T="int" Value="part.PkidPartida">@part.Descripcion</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" class="mt-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Cuentas Aprobación</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContableAprobado" Label="Aprobado" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasAprobado)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContablePorEjercer" Label="Por Ejercer" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasPorEjercer)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContableModificado" Label="Modificado" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasModificado)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" class="mt-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Cuentas Ejercicio</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContableComprometido" Label="Comprometido" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasComprometido)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContableDevengado" Label="Devengado" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasDevengado)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContableEjercido" Label="Ejercido" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasEjercido)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" class="mt-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Cuentas Finales</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContablePagado" Label="Pagado" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasPagado)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int" @bind-Value="_item.FkidCuentaContableGasto" Label="Gasto" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentasGasto)
+                        {
+                            <MudSelectItem T="int" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                @if (Id.HasValue)
+                {
+                    <MudItem xs="12" class="mt-4">
+                        <MudSwitch T="bool" @bind-Value="_item.Activo" Label="Registro Activo" Color="Color.Success" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudContainer>
+    }
 </BaseCrudDialog>
 
 @code {
     [Parameter] public int? Id { get; set; }
-
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private BaseEntityForm<MatrizConversionResponse> form = null!;
-    private MatrizConversionResponse item = new() { Activo = true };
-
+    private MatrizConversionResponse _item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Matriz de Conversión" : "Nueva Matriz de Conversión";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private bool _loading = true;
+
+    private List<ProgramaLookup> _programas = new();
+    private List<PartidaLookup> _partidas = new();
+    private List<CuentaLookup> _cuentasAprobado = new();
+    private List<CuentaLookup> _cuentasPorEjercer = new();
+    private List<CuentaLookup> _cuentasModificado = new();
+    private List<CuentaLookup> _cuentasComprometido = new();
+    private List<CuentaLookup> _cuentasDevengado = new();
+    private List<CuentaLookup> _cuentasEjercido = new();
+    private List<CuentaLookup> _cuentasPagado = new();
+    private List<CuentaLookup> _cuentasGasto = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarCatalogosAsync();
         if (Id.HasValue)
         {
-            await CargarDatos();
+            await CargarDatosAsync();
+        }
+        _loading = false;
+    }
+
+    private async Task CargarCatalogosAsync()
+    {
+        try
+        {
+            var responsePartidas = await Http.GetFromJsonAsync<List<PartidaLookup>>("api/MatrizConversion/GetPartida");
+            if (responsePartidas != null) _partidas = responsePartidas;
+
+            var responseAprobado = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContableAprobado");
+            if (responseAprobado != null) _cuentasAprobado = responseAprobado;
+
+            var responsePorEjercer = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContablePorEjercer");
+            if (responsePorEjercer != null) _cuentasPorEjercer = responsePorEjercer;
+
+            var responseModificado = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContableModificado");
+            if (responseModificado != null) _cuentasModificado = responseModificado;
+
+            var responseComprometido = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContableComprometido");
+            if (responseComprometido != null) _cuentasComprometido = responseComprometido;
+
+            var responseDevengado = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContableDevengado");
+            if (responseDevengado != null) _cuentasDevengado = responseDevengado;
+
+            var responseEjercido = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContableEjercido");
+            if (responseEjercido != null) _cuentasEjercido = responseEjercido;
+
+            var responsePagado = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContablePagado");
+            if (responsePagado != null) _cuentasPagado = responsePagado;
+
+            var responseGasto = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizConversion/GetCuentaContableGasto");
+            if (responseGasto != null) _cuentasGasto = responseGasto;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
         }
     }
 
-    private async Task CargarDatos()
+    private async Task CargarDatosAsync()
     {
         try
         {
             var response = await Service.GetByIdAsync(Id.Value);
             if (response?.Success == true && response.Data != null)
             {
-                item = response.Data;
+                _item = response.Data;
             }
         }
         catch (Exception ex)
@@ -84,18 +231,18 @@
             bool success;
             if (Id.HasValue)
             {
-                var response = await Service.UpdateAsync(item, Id.Value);
+                var response = await Service.UpdateAsync(_item, Id.Value);
                 success = response?.Success == true;
             }
             else
             {
-                var response = await Service.CreateAsync(item);
+                var response = await Service.CreateAsync(_item);
                 success = response?.Success == true;
             }
 
             if (success)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Matriz de conversión actualizada correctamente" : "Matriz de conversión creada correctamente", Severity.Success);
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Matriz actualizada correctamente" : "Matriz creada correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
@@ -108,5 +255,22 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
-}
 
+    class ProgramaLookup
+    {
+        public int PkidPrograma { get; set; }
+        public string Clave { get; set; } = string.Empty;
+    }
+
+    class PartidaLookup
+    {
+        public int PkidPartida { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+    }
+
+    class CuentaLookup
+    {
+        public int PkidCuenta { get; set; }
+        public string ClaveNombre { get; set; } = string.Empty;
+    }
+}

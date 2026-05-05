@@ -7,13 +7,13 @@
                  Icon="@GetIcon(Item.ImageUrl)"
                  Expanded="@(IsCollapsed ? false : GetExpandedState(Item.PkidMenu))"
                  ExpandedChanged="(v) => SetExpandedState(Item.PkidMenu, v)"
-                 Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+                 Class="@GetMenuClass()">
         @if (!IsCollapsed)
         {
             @foreach (var child in Item.Children.OrderBy(m => m.Orden))
             {
-                <DynamicMenuItem Item="child" 
-                                 Level="@(Level + 1)" 
+                <DynamicMenuItem Item="child"
+                                 Level="@(Level + 1)"
                                  IsCollapsed="IsCollapsed"
                                  GetExpandedState="GetExpandedState"
                                  SetExpandedState="SetExpandedState"
@@ -32,7 +32,7 @@ else
             <MudNavLink Href="@(Item.Ruta ?? "")"
                         Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
                         Icon="@GetIcon(Item.ImageUrl)"
-                        Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+                        Class="@GetMenuClass()">
             </MudNavLink>
         </MudTooltip>
     }
@@ -41,7 +41,7 @@ else
         <MudNavLink Href="@(Item.Ruta ?? "")"
                     Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
                     Icon="@GetIcon(Item.ImageUrl)"
-                    Class="@($"menu-item-level-{Math.Min(Level, 6)}")">
+                    Class="@GetMenuClass()">
             @Item.Nombre
         </MudNavLink>
     }
@@ -56,4 +56,12 @@ else
     [Parameter] public Func<string, string> GetIcon { get; set; } = default!;
     [Parameter] public Func<List<MenuItem>, string, MenuItem?> FindItemByRoute { get; set; } = default!;
     [Parameter] public List<MenuItem> AllItems { get; set; } = default!;
+
+    private string GetMenuClass()
+    {
+        // Niveles 0, 1, 2 mantienen su clase original
+        // Nivel 3+ se muestran como nivel 2 (misma indentación)
+        var effectiveLevel = Math.Min(Level, 2);
+        return $"menu-item-level-{effectiveLevel}";
+    }
 }

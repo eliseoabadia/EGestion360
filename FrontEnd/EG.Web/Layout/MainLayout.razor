@@ -591,7 +591,17 @@ color: var(--mud-palette-primary);
 display: flex;
 justify-content: center;
 align-items: center;
-min-height: calc(100vh - 40px); /* header height */
+min-height: calc(100vh - 40px);
 width: 100%;
+}
+
+/* Drawer sin padding para maximizar espacio */
+.custom-drawer {
+padding: 0 !important;
+margin: 0 !important;
+}
+
+.custom-drawer > div {
+padding: 0 !important;
 }
 </style>

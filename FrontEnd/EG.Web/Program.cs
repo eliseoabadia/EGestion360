@@ -174,13 +174,7 @@ new GenericCrudService<UnidadResponsableResponse>(
                 sp.GetRequiredService<IJSRuntime>(),
                 sp.GetRequiredService<ApplicationInstance>(),
                 "api/TipoDetallePoliza"));
-        builder.Services.AddScoped<IGenericCrudService<MatrizConversionResponse>>(sp =>
-            new GenericCrudService<MatrizConversionResponse>(
-                sp.GetRequiredService<IConfiguration>(),
-                sp.GetRequiredService<HttpClient>(),
-                sp.GetRequiredService<IJSRuntime>(),
-                sp.GetRequiredService<ApplicationInstance>(),
-                "api/MatrizConversion"));
+
         builder.Services.AddScoped<IGenericCrudService<MatrizIngresoResponse>>(sp =>
             new GenericCrudService<MatrizIngresoResponse>(
                 sp.GetRequiredService<IConfiguration>(),
