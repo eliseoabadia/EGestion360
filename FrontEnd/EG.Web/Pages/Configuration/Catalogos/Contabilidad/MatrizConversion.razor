@@ -13,71 +13,149 @@
             Icon="@Icons.Material.Filled.SwapHoriz"
             CanCreate="@CanCreate"
             OnCreate="CreateItem"
-            OnRefresh="() => table.ReloadData()" />
+            OnRefresh="ReloadData" />
 
-        <div style="overflow-x: auto; flex: 1;" class="custom-matriz-table">
-            <GenericTable TItem="MatrizConversionResponse"
-                @ref="table"
-                Title="Lista de Matriz de Conversión"
-                SearchPlaceholder="Buscar por programa o partida..."
-                ShowExportButton="@CanExport"
-                ServerDataFunc="LoadServerData"
-                ExportFunc="ExportToExcel"
-                SearchString="@SearchString"
-                SearchStringChanged="(s) => SearchString = s"
-                OnSearch="OnSearch">
-
-                <Header>
-                    <MudTh Class="col-acciones">Acciones</MudTh>
-                    <MudTh Class="col-id">ID</MudTh>
-                    <MudTh Class="col-programa">Programa</MudTh>
-                    <MudTh Class="col-partida">Partida</MudTh>
-                    <MudTh Class="col-cuenta">Aprobado</MudTh>
-                    <MudTh Class="col-cuenta">Por Ejercer</MudTh>
-                    <MudTh Class="col-cuenta">Modificado</MudTh>
-                    <MudTh Class="col-cuenta">Comprometido</MudTh>
-                    <MudTh Class="col-cuenta">Devengado</MudTh>
-                    <MudTh Class="col-cuenta">Ejercido</MudTh>
-                    <MudTh Class="col-cuenta">Pagado</MudTh>
-                    <MudTh Class="col-cuenta">Gasto</MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd Class="col-acciones">
-                        <MudTooltip Text="Editar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                Visible="@CanUpdate"
-                                Color="Color.Primary"
-                                Size="Size.Small"
-                                OnClick="@(() => EditItem(item.PkidMatrizConversion))" />
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg d-flex flex-column" Style="flex: 1; min-height: 0;">
+            <div class="toolbar d-flex align-center justify-space-between mb-3">
+                <MudText Typo="Typo.h6">Lista de Matriz de Conversión</MudText>
+                <div class="d-flex align-center gap-2">
+                    @if (CanExport)
+                    {
+                        <MudTooltip Text="Exportar a Excel">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.FileDownload"
+                                       OnClick="ExportToExcel"
+                                       Size="Size.Small"
+                                       Disabled="@Loading">
+                                @if (Loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Exportando...</span>
+                                }
+                                else
+                                {
+                                    <span>Exportar Excel</span>
+                                }
+                            </MudButton>
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                Visible="@CanDelete"
-                                Color="Color.Error"
-                                Size="Size.Small"
-                                OnClick="@(() => DeleteItem(item.PkidMatrizConversion))" />
-                        </MudTooltip>
-                    </MudTd>
-                    <MudTd Class="col-id">@item.PkidMatrizConversion</MudTd>
-                    <MudTd Class="col-programa">@item.ProgramaClave</MudTd>
-                    <MudTd Class="col-cuenta">@item.PartidaDescripcion</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaAprobadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaPorEjercerNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaModificadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaComprometidoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaDevengadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaEjercidoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaPagadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaGastoNombre</MudTd>
-                </Row>
-            </GenericTable>
-        </div>
+                    }
+                    <MudTextField @bind-Value="SearchString"
+                                  Placeholder="Buscar por programa o partida..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium"
+                                  Immediate="true"
+                                  OnKeyUp="HandleSearchKeyUp"
+                                  Style="min-width: 280px;" />
+                </div>
+            </div>
+
+            <div class="cards-container flex-grow-1" style="overflow-y: auto; min-height: 0;">
+                @if (Loading)
+                {
+                    <div class="d-flex justify-center align-center" style="height: 200px;">
+                        <MudProgressCircular Indeterminate="true" />
+                    </div>
+                }
+                else if (Elements == null || !Elements.Any())
+                {
+                    <MudText Class="text-center mt-4">No se encontraron registros</MudText>
+                }
+                else
+                {
+                    @foreach (var item in Elements)
+                    {
+                        <MudCard Class="matriz-card mb-2" Elevation="1">
+                            <MudCardHeader>
+                                <HeaderContent>
+                                    <div class="card-header-content d-flex align-center justify-space-between">
+                                        <div class="d-flex align-center gap-3 flex-wrap">
+                                            <MudChip T="string" Color="Color.Primary" Size="Size.Small">@item.PkidMatrizConversion</MudChip>
+                                            <MudText Typo="Typo.subtitle1" Class="font-weight-medium">@item.ProgramaClave</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Default">@item.PartidaDescripcion</MudText>
+                                        </div>
+                                        <div class="d-flex align-center">
+                                            <MudTooltip Text="Editar">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                    Visible="@CanUpdate"
+                                                    Color="Color.Primary"
+                                                    Size="Size.Small"
+                                                    OnClick="@(() => EditItem(item.PkidMatrizConversion))" />
+                                            </MudTooltip>
+                                            <MudTooltip Text="Eliminar">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                    Visible="@CanDelete"
+                                                    Color="Color.Error"
+                                                    Size="Size.Small"
+                                                    OnClick="@(() => DeleteItem(item.PkidMatrizConversion))" />
+                                            </MudTooltip>
+                                            <MudIconButton Icon="@(_expandedCards.Contains(item.PkidMatrizConversion) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                                Size="Size.Small"
+                                                OnClick="@(() => ToggleCard(item.PkidMatrizConversion))" />
+                                        </div>
+                                    </div>
+                                </HeaderContent>
+                            </MudCardHeader>
+                            @if (_expandedCards.Contains(item.PkidMatrizConversion))
+                            {
+                                <MudCardContent>
+                                    <MudTable T="CuentaMapping" Items="@GetCuentaMappings(item)" Dense="true" Hover="true" Striped="true">
+                                        <HeaderContent>
+                                            <MudTh Width="35%">Concepto</MudTh>
+                                            <MudTh>Cuenta Contable</MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="Concepto">
+                                                <MudIcon Icon="@GetConceptIcon(context.Concepto)" Size="Size.Small" Class="mr-2" />
+                                                @context.Concepto
+                                            </MudTd>
+                                            <MudTd DataLabel="Cuenta">@context.CuentaNombre</MudTd>
+                                        </RowTemplate>
+                                    </MudTable>
+                                </MudCardContent>
+                            }
+                        </MudCard>
+                    }
+                }
+            </div>
+
+            <div class="pagination-bar">
+                <MudText Typo="Typo.body2" Class="pagination-info">Total: @TotalCount registros</MudText>
+                <div class="pagination-controls">
+                    <MudIconButton Icon="@Icons.Material.Filled.FirstPage" 
+                                   Disabled="@(CurrentPage == 1)"
+                                   OnClick="@(() => GoToPage(1))"
+                                   Size="Size.Small" />
+                    <MudIconButton Icon="@Icons.Material.Filled.NavigateBefore" 
+                                   Disabled="@(CurrentPage == 1)"
+                                   OnClick="@(() => GoToPage(CurrentPage - 1))"
+                                   Size="Size.Small" />
+                    <MudText Typo="Typo.body2" Class="page-number">@CurrentPage / @GetTotalPages()</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.NavigateNext" 
+                                   Disabled="@((CurrentPage * PageSize) >= TotalCount)"
+                                   OnClick="@(() => GoToPage(CurrentPage + 1))"
+                                   Size="Size.Small" />
+                    <MudIconButton Icon="@Icons.Material.Filled.LastPage" 
+                                   Disabled="@((CurrentPage * PageSize) >= TotalCount)"
+                                   OnClick="@(() => GoToPage(GetTotalPages()))"
+                                   Size="Size.Small" />
+                </div>
+                <MudSelect T="int" Value="@PageSize" ValueChanged="OnPageSizeChanged" Dense="true" Class="page-size-select">
+                    @foreach (var size in _pageSizeOptions)
+                    {
+                        <MudSelectItem T="int" Value="@size">@size</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </MudPaper>
     </MudContainer>
 </AccessVerification>
 
 @code {
     private GenericTable<MatrizConversionResponse> table = null!;
+    private HashSet<int> _expandedCards = new();
+    private int[] _pageSizeOptions = new[] { 5, 10, 20, 50 };
 
     protected override string ModuleName => "Contabilidad";
     protected override string SubModuleName => "Matriz_Conversion";
@@ -87,6 +165,99 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<MatrizConversionResponse>);
 
     protected override string GetDefaultSortLabel() => "ProgramaClave";
+
+    protected override async Task VerifyAccess()
+    {
+        await base.VerifyAccess();
+        if (HasAccess)
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task OnSearch()
+    {
+        CurrentPage = 1;
+        await ReloadData();
+    }
+
+    private async Task HandleSearchKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            CurrentPage = 1;
+            await ReloadData();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        await LoadServerData(new TableState 
+        { 
+            Page = CurrentPage - 1, 
+            PageSize = PageSize,
+            SortDirection = MudBlazor.SortDirection.Ascending,
+            SortLabel = GetDefaultSortLabel()
+        }, CancellationToken.None);
+    }
+
+    private void ToggleCard(int id)
+    {
+        if (_expandedCards.Contains(id))
+            _expandedCards.Remove(id);
+        else
+            _expandedCards.Add(id);
+        StateHasChanged();
+    }
+
+    private List<CuentaMapping> GetCuentaMappings(MatrizConversionResponse item)
+    {
+        return new()
+        {
+            new() { Concepto = "Aprobado", CuentaNombre = item.CuentaAprobadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Por Ejercer", CuentaNombre = item.CuentaPorEjercerNombre ?? "Sin asignar" },
+            new() { Concepto = "Modificado", CuentaNombre = item.CuentaModificadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Comprometido", CuentaNombre = item.CuentaComprometidoNombre ?? "Sin asignar" },
+            new() { Concepto = "Devengado", CuentaNombre = item.CuentaDevengadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Ejercido", CuentaNombre = item.CuentaEjercidoNombre ?? "Sin asignar" },
+            new() { Concepto = "Pagado", CuentaNombre = item.CuentaPagadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Gasto", CuentaNombre = item.CuentaGastoNombre ?? "Sin asignar" }
+        };
+    }
+
+    private string GetConceptIcon(string concepto)
+    {
+        return concepto switch
+        {
+            "Aprobado" => Icons.Material.Filled.Approval,
+            "Por Ejercer" => Icons.Material.Filled.TrendingUp,
+            "Modificado" => Icons.Material.Filled.Edit,
+            "Comprometido" => Icons.Material.Filled.Handshake,
+            "Devengado" => Icons.Material.Filled.AccountBalance,
+            "Ejercido" => Icons.Material.Filled.CheckCircle,
+            "Pagado" => Icons.Material.Filled.Payment,
+            "Gasto" => Icons.Material.Filled.ReceiptLong,
+            _ => Icons.Material.Filled.Info
+        };
+    }
+
+    private void GoToPage(int page)
+    {
+        CurrentPage = page;
+        InvokeAsync(ReloadData);
+    }
+
+    private void OnPageSizeChanged(int size)
+    {
+        PageSize = size;
+        CurrentPage = 1;
+        InvokeAsync(ReloadData);
+    }
+
+    private int GetTotalPages()
+    {
+        return (int)Math.Ceiling(TotalCount / (double)PageSize);
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<MatrizConversionResponse> items)
     {
@@ -107,41 +278,74 @@
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
         });
     }
+
+    public class CuentaMapping
+    {
+        public string Concepto { get; set; } = string.Empty;
+        public string CuentaNombre { get; set; } = string.Empty;
+    }
 }
 
 <style>
-    .custom-matriz-table .col-acciones {
-        min-width: 120px;
-        max-width: 120px;
-        text-align: center;
+    .matriz-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid var(--mud-palette-primary);
     }
 
-    .custom-matriz-table .col-id {
-        min-width: 60px;
-        max-width: 60px;
-        text-align: center;
+    .matriz-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .custom-matriz-table .col-programa {
-        min-width: 120px;
-        max-width: 150px;
+    .card-header-content {
+        width: 100%;
     }
 
-    .custom-matriz-table .col-partida {
-        min-width: 150px;
-        max-width: 200px;
+    .toolbar {
+        padding: 8px 0;
     }
 
-    .custom-matriz-table .col-cuenta {
-        min-width: 400px;
-        max-width: 500px;
+    .gap-2 {
+        gap: 8px;
+    }
+
+    .gap-3 {
+        gap: 12px;
+    }
+
+    .gap-4 {
+        gap: 16px;
+    }
+
+    .flex-wrap {
+        flex-wrap: wrap;
+    }
+
+    .pagination-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0 4px;
+        border-top: 1px solid var(--mud-palette-divider);
+        margin-top: 8px;
+    }
+
+    .pagination-info {
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    /* Forzar scroll horizontal - aplicar a la tabla interna */
-    .custom-matriz-table .mud-table-container {
-        min-width: 2000px;
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-number {
+        padding: 0 8px;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .page-size-select {
+        min-width: 80px;
     }
 </style>

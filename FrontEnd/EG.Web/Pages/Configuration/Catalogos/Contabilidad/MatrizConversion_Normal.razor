@@ -1,0 +1,147 @@
+﻿@page "/configuracion/contabilidad/matriz-conversion"
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<MatrizConversionResponse, MatrizConversionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Matriz de Conversión"
+                    Subtitle="Relación entre programas, partidas y cuentas contables"
+                    Icon="@Icons.Material.Filled.SwapHoriz"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <div style="overflow-x: auto; flex: 1;" class="custom-matriz-table">
+            <GenericTable TItem="MatrizConversionResponse"
+                          @ref="table"
+                          Title="Lista de Matriz de Conversión"
+                          SearchPlaceholder="Buscar por programa o partida..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+
+                <Header>
+                    <MudTh Class="col-acciones">Acciones</MudTh>
+                    <MudTh Class="col-id">ID</MudTh>
+                    <MudTh Class="col-programa">Programa</MudTh>
+                    <MudTh Class="col-partida">Partida</MudTh>
+                    <MudTh Class="col-cuenta">Aprobado</MudTh>
+                    <MudTh Class="col-cuenta">Por Ejercer</MudTh>
+                    <MudTh Class="col-cuenta">Modificado</MudTh>
+                    <MudTh Class="col-cuenta">Comprometido</MudTh>
+                    <MudTh Class="col-cuenta">Devengado</MudTh>
+                    <MudTh Class="col-cuenta">Ejercido</MudTh>
+                    <MudTh Class="col-cuenta">Pagado</MudTh>
+                    <MudTh Class="col-cuenta">Gasto</MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd Class="col-acciones">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Visible="@CanUpdate"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditItem(item.PkidMatrizConversion))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Visible="@CanDelete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteItem(item.PkidMatrizConversion))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd Class="col-id">@item.PkidMatrizConversion</MudTd>
+                    <MudTd Class="col-programa">@item.ProgramaClave</MudTd>
+                    <MudTd Class="col-cuenta">@item.PartidaDescripcion</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaAprobadoNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaPorEjercerNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaModificadoNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaComprometidoNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaDevengadoNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaEjercidoNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaPagadoNombre</MudTd>
+                    <MudTd Class="col-cuenta">@item.CuentaGastoNombre</MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<MatrizConversionResponse> table = null!;
+
+    protected override string ModuleName => "Contabilidad";
+    protected override string SubModuleName => "Matriz_Conversion";
+
+    protected override Type CreateDialogType => typeof(MatrizConversionDialog);
+    protected override Type EditDialogType => typeof(MatrizConversionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<MatrizConversionResponse>);
+
+    protected override string GetDefaultSortLabel() => "ProgramaClave";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<MatrizConversionResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidMatrizConversion,
+            Programa = u.ProgramaClave,
+            Partida = u.PartidaDescripcion,
+            CuentaAprobado = u.CuentaAprobadoNombre,
+            CuentaPorEjercer = u.CuentaPorEjercerNombre,
+            CuentaModificado = u.CuentaModificadoNombre,
+            CuentaComprometido = u.CuentaComprometidoNombre,
+            CuentaDevengado = u.CuentaDevengadoNombre,
+            CuentaEjercido = u.CuentaEjercidoNombre,
+            CuentaPagado = u.CuentaPagadoNombre,
+            CuentaGasto = u.CuentaGastoNombre,
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+}
+
+<style>
+    .custom-matriz-table .col-acciones {
+        min-width: 120px;
+        max-width: 120px;
+        text-align: center;
+    }
+
+    .custom-matriz-table .col-id {
+        min-width: 60px;
+        max-width: 60px;
+        text-align: center;
+    }
+
+    .custom-matriz-table .col-programa {
+        min-width: 120px;
+        max-width: 150px;
+    }
+
+    .custom-matriz-table .col-partida {
+        min-width: 150px;
+        max-width: 200px;
+    }
+
+    .custom-matriz-table .col-cuenta {
+        min-width: 400px;
+        max-width: 500px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Forzar scroll horizontal - aplicar a la tabla interna */
+    .custom-matriz-table .mud-table-container {
+        min-width: 2000px;
+    }
+</style>
