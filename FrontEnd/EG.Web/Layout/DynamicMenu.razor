@@ -5,872 +5,68 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Routing
-@using MudBlazor
-
 @inject INavigateService NavigateService
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
-@inject ISnackbar Snackbar
 @inject IJSRuntime _jsRuntime
 @inject HttpClient Http
-@inject IDialogService DialogService
-
-<style>
-/* ========================================
-* DISEÑO PROFESIONAL - MENÚ LATERAL
-* ======================================== */
-
-/* TEMA OSCURO (default) */
-.professional-nav-menu {
-background: var(--mud-palette-drawer-background) !important;
-box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
-padding: 8px 4px !important;
-min-height: calc(100vh - 120px);
-overflow-y: auto;
-border-right: 1px solid var(--mud-palette-divider);
-transition: all 0.3s ease;
-width: 100%;
-}
-    
-.professional-nav-menu .menu-item-level-0 {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0.04) 100%);
-border-left: 4px solid var(--mud-palette-primary);
-color: var(--mud-palette-drawer-text);
-}
-
-.professional-nav-menu .menu-item-level-0:hover {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.24) 0%, rgba(99, 102, 241, 0.12) 100%);
-border-left-color: var(--mud-palette-primary);
-}
-
-.professional-nav-menu .menu-item-level-0.active {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.32) 0%, rgba(99, 102, 241, 0.18) 100%);
-border-left-color: var(--mud-palette-primary);
-color: var(--mud-palette-drawer-text);
-}
-
-.professional-nav-menu .mud-nav-link,
-.professional-nav-menu .mud-nav-group-header {
-color: var(--mud-palette-drawer-text) !important;
-}
-
-.professional-nav-menu .mud-nav-link:hover,
-.professional-nav-menu .mud-nav-group-header:hover {
-color: var(--mud-palette-primary) !important;
-}
-
-.professional-nav-menu .mud-nav-link.active,
-.professional-nav-menu .mud-nav-group-header.active {
-color: var(--mud-palette-primary) !important;
-}
-    
-/* Niveles 1, 2, 3+ - Tema Oscuro (default) - INDENTACIÓN REDUCIDA */
-.professional-nav-menu .menu-item-level-1 {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0.03) 100%);
-border-left: 3px solid rgba(16, 185, 129, 0.5);
-margin: 4px 8px 4px 12px;
-padding: 9px 12px !important;
-font-size: 0.91rem;
-color: #e2e8f0;
-}
-
-.professional-nav-menu .menu-item-level-1:hover {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.20) 0%, rgba(16, 185, 129, 0.08) 100%);
-border-left-color: #10b981;
-transform: translateX(2px);
-box-shadow: 0 3px 10px rgba(16, 185, 129, 0.2);
-}
-
-.professional-nav-menu .menu-item-level-1.active {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.28) 0%, rgba(16, 185, 129, 0.14) 100%);
-border-left-color: #10b981;
-font-weight: 600;
-box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-color: #fff;
-}
-
-/* Nivel 2 - menos indentación */
-.professional-nav-menu .menu-item-level-2 {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-border-left: 3px solid rgba(245, 158, 11, 0.4);
-margin: 4px 8px 4px 18px;
-padding: 8px 11px !important;
-font-size: 0.89rem;
-color: #e2e8f0;
-}
-
-.professional-nav-menu .menu-item-level-2:hover {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.06) 100%);
-border-left-color: #f59e0b;
-transform: translateX(2px);
-box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-}
-
-.professional-nav-menu .menu-item-level-2.active {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.24) 0%, rgba(245, 158, 11, 0.10) 100%);
-border-left-color: #f59e0b;
-font-weight: 600;
-box-shadow: 0 3px 10px rgba(245, 158, 11, 0.2);
-color: #fff;
-}
-
-/* Niveles 3+ se muestran como nivel 2 (misma indentación) */
-.professional-nav-menu .menu-item-level-3,
-.professional-nav-menu .menu-item-level-4,
-.professional-nav-menu .menu-item-level-5,
-.professional-nav-menu .menu-item-level-6 {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
-border-left: 2px solid rgba(236, 72, 153, 0.35);
-margin: 4px 8px 4px 18px;
-padding: 7px 11px !important;
-font-size: 0.87rem;
-font-weight: 500;
-color: #e2e8f0;
-}
-
-.professional-nav-menu .menu-item-level-3:hover,
-.professional-nav-menu .menu-item-level-4:hover,
-.professional-nav-menu .menu-item-level-5:hover,
-.professional-nav-menu .menu-item-level-6:hover {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.16) 0%, rgba(139, 92, 246, 0.08) 100%);
-border-left-color: #ec4899;
-transform: translateX(2px);
-box-shadow: 0 2px 6px rgba(236, 72, 153, 0.15);
-}
-
-.professional-nav-menu .menu-item-level-3.active,
-.professional-nav-menu .menu-item-level-4.active,
-.professional-nav-menu .menu-item-level-5.active,
-.professional-nav-menu .menu-item-level-6.active {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.22) 0%, rgba(139, 92, 246, 0.12) 100%);
-border-left-color: #ec4899;
-font-weight: 600;
-box-shadow: 0 3px 8px rgba(236, 72, 153, 0.18);
-color: #fff;
-}
-    
-/* Tema Claro - Niveles 1, 2, 3+ - INDENTACIÓN REDUCIDA */
-.mud-theme-light .professional-nav-menu .menu-item-level-1 {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
-border-left: 3px solid rgba(16, 185, 129, 0.6);
-margin: 4px 8px 4px 12px;
-padding: 9px 12px !important;
-color: #1e293b;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-1:hover {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.06) 100%);
-border-left-color: #10b981;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-1.active {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.1) 100%);
-border-left-color: #059669;
-color: #059669;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-2 {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-border-left: 3px solid rgba(245, 158, 11, 0.5);
-margin: 4px 8px 4px 18px;
-padding: 8px 11px !important;
-color: #1e293b;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-2:hover {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.06) 100%);
-border-left-color: #f59e0b;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-2.active {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
-border-left-color: #d97706;
-color: #d97706;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-3,
-.mud-theme-light .professional-nav-menu .menu-item-level-4,
-.mud-theme-light .professional-nav-menu .menu-item-level-5,
-.mud-theme-light .professional-nav-menu .menu-item-level-6 {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
-border-left: 2px solid rgba(236, 72, 153, 0.4);
-margin: 4px 8px 4px 18px;
-padding: 7px 11px !important;
-color: #1e293b;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-3:hover,
-.mud-theme-light .professional-nav-menu .menu-item-level-4:hover,
-.mud-theme-light .professional-nav-menu .menu-item-level-5:hover,
-.mud-theme-light .professional-nav-menu .menu-item-level-6:hover {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.14) 0%, rgba(139, 92, 246, 0.08) 100%);
-border-left-color: #ec4899;
-}
-
-.mud-theme-light .professional-nav-menu .menu-item-level-3.active,
-.mud-theme-light .professional-nav-menu .menu-item-level-4.active,
-.mud-theme-light .professional-nav-menu .menu-item-level-5.active,
-.mud-theme-light .professional-nav-menu .menu-item-level-6.active {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.18) 0%, rgba(139, 92, 246, 0.1) 100%);
-border-left-color: #db2777;
-color: #db2777;
-}
-
-/* TEMA MORENA - Se aplica cuando el tema es morena */
-.professional-nav-menu.morena {
-background: linear-gradient(180deg, #1A1209 0%, #2D1B0F 50%, #3D2A1C 100%) !important;
-}
-
-.professional-nav-menu.morena .menu-item-level-0 {
-background: linear-gradient(90deg, rgba(205, 133, 63, 0.2) 0%, rgba(205, 133, 63, 0.08) 100%);
-border-left: 4px solid rgba(205, 133, 63, 0.8);
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-0:hover {
-background: linear-gradient(90deg, rgba(205, 133, 63, 0.35) 0%, rgba(205, 133, 63, 0.15) 100%);
-border-left-color: #CD853F;
-}
-
-.professional-nav-menu.morena .menu-item-level-0.active {
-background: linear-gradient(90deg, rgba(205, 133, 63, 0.45) 0%, rgba(205, 133, 63, 0.25) 100%);
-border-left-color: #DEB887;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .mud-nav-link,
-.professional-nav-menu.morena .mud-nav-group-header {
-color: #F4E4C1 !important;
-}
-
-.professional-nav-menu.morena .mud-nav-link:hover,
-.professional-nav-menu.morena .mud-nav-group-header:hover {
-color: #DEB887 !important;
-}
-
-.professional-nav-menu.morena .mud-nav-link.active,
-.professional-nav-menu.morena .mud-nav-group-header.active {
-color: #DEB887 !important;
-}
-    
-/* Tema Morena - Niveles 1, 2, 3+ - INDENTACIÓN REDUCIDA */
-.professional-nav-menu.morena .menu-item-level-1 {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-border-left: 3px solid rgba(16, 185, 129, 0.6);
-margin: 4px 8px 4px 12px;
-padding: 9px 12px !important;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-1:hover {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.28) 0%, rgba(16, 185, 129, 0.12) 100%);
-border-left-color: #10b981;
-}
-
-.professional-nav-menu.morena .menu-item-level-1.active {
-background: linear-gradient(90deg, rgba(16, 185, 129, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%);
-border-left-color: #059669;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-2 {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
-border-left: 3px solid rgba(245, 158, 11, 0.5);
-margin: 4px 8px 4px 18px;
-padding: 8px 11px !important;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-2:hover {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.28) 0%, rgba(245, 158, 11, 0.12) 100%);
-border-left-color: #f59e0b;
-}
-
-.professional-nav-menu.morena .menu-item-level-2.active {
-background: linear-gradient(90deg, rgba(245, 158, 11, 0.38) 0%, rgba(245, 158, 11, 0.18) 100%);
-border-left-color: #d97706;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-3,
-.professional-nav-menu.morena .menu-item-level-4,
-.professional-nav-menu.morena .menu-item-level-5,
-.professional-nav-menu.morena .menu-item-level-6 {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%);
-border-left: 2px solid rgba(236, 72, 153, 0.45);
-margin: 4px 8px 4px 18px;
-padding: 7px 11px !important;
-color: #F4E4C1;
-}
-
-.professional-nav-menu.morena .menu-item-level-3:hover,
-.professional-nav-menu.morena .menu-item-level-4:hover,
-.professional-nav-menu.morena .menu-item-level-5:hover,
-.professional-nav-menu.morena .menu-item-level-6:hover {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.28) 0%, rgba(139, 92, 246, 0.15) 100%);
-border-left-color: #ec4899;
-}
-
-.professional-nav-menu.morena .menu-item-level-3.active,
-.professional-nav-menu.morena .menu-item-level-4.active,
-.professional-nav-menu.morena .menu-item-level-5.active,
-.professional-nav-menu.morena .menu-item-level-6.active {
-background: linear-gradient(90deg, rgba(236, 72, 153, 0.38) 0%, rgba(139, 92, 246, 0.18) 100%);
-border-left-color: #db2777;
-color: #F4E4C1;
-}
-
-/* Scrollbar - Tema Morena */
-.professional-nav-menu.morena::-webkit-scrollbar-track {
-background: rgba(45, 27, 15, 0.8);
-}
-
-.professional-nav-menu.morena::-webkit-scrollbar-thumb {
-background: rgba(205, 133, 63, 0.6);
-}
-
-/* FORZAR ANCHO COMPLETO EN ITEMS DEL MENÚ */
-.professional-nav-menu .mud-nav-link,
-.professional-nav-menu .mud-nav-group-header {
-width: 100% !important;
-justify-content: flex-start !important;
-}
-
-/* Reducir padding en MudNavGroup expandible */
-.professional-nav-menu .mud-expand-panel .mud-expand-panel-header {
-padding-right: 4px !important;
-}
-
-/* Quitar overflow para que el texto use todo el espacio */
-.professional-nav-menu .menu-item {
-white-space: normal !important;
-word-wrap: break-word;
-}
-
-    /* Items del menú - Base */
-    .menu-item {
-        margin: 4px 8px;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .menu-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 0;
-        height: 100%;
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
-        transition: width 0.4s ease;
-        z-index: 0;
-    }
-
-    .menu-item:hover::before {
-        width: 100%;
-    }
-
-    .menu-item > * {
-        position: relative;
-        z-index: 1;
-    }
-
-/* NIVEL 0 - Índigo premium - MENOS PADDING */
-.menu-item-level-0 {
-background: linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0.04) 100%);
-border-left: 4px solid rgba(99, 102, 241, 0.6);
-padding: 10px 8px !important;
-font-weight: 600;
-font-size: 0.93rem;
-margin: 4px 4px;
-}
-    
-    .mud-theme-light .menu-item-level-0 {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
-        border-left-color: rgba(99, 102, 241, 0.8);
-        color: #1e293b;
-    }
-
-    .menu-item-level-0:hover {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.24) 0%, rgba(99, 102, 241, 0.12) 100%);
-        border-left-color: #6366f1;
-        transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-    }
-    
-    .mud-theme-light .menu-item-level-0:hover {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(99, 102, 241, 0.06) 100%);
-        border-left-color: #4f46e5;
-    }
-
-    .menu-item-level-0.active {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.32) 0%, rgba(99, 102, 241, 0.18) 100%);
-        border-left-color: #6366f1;
-        font-weight: 700;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
-    }
-    
-    .mud-theme-light .menu-item-level-0.active {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.1) 100%);
-        border-left-color: #4338ca;
-        color: #4338ca;
-    }
-
-    /* NIVEL 1 - Emerald */
-    .menu-item-level-1 {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0.03) 100%);
-        border-left: 3px solid rgba(16, 185, 129, 0.5);
-        margin: 4px 8px 4px 14px;
-        padding: 9px 12px !important;
-        font-size: 0.91rem;
-    }
-
-    .menu-item-level-1:hover {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.20) 0%, rgba(16, 185, 129, 0.08) 100%);
-        border-left-color: #10b981;
-        transform: translateX(3px);
-        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.2);
-    }
-
-    .menu-item-level-1.active {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.28) 0%, rgba(16, 185, 129, 0.14) 100%);
-        border-left-color: #10b981;
-        font-weight: 600;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-    }
-
-    /* NIVEL 2 - Amber */
-    .menu-item-level-2 {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-        border-left: 3px solid rgba(245, 158, 11, 0.4);
-        margin: 4px 8px 4px 22px;
-        padding: 8px 11px !important;
-        font-size: 0.89rem;
-    }
-
-    .menu-item-level-2:hover {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.06) 100%);
-        border-left-color: #f59e0b;
-        transform: translateX(3px);
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-    }
-
-    .menu-item-level-2.active {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.24) 0%, rgba(245, 158, 11, 0.10) 100%);
-        border-left-color: #f59e0b;
-        font-weight: 600;
-        box-shadow: 0 3px 10px rgba(245, 158, 11, 0.2);
-    }
-
-    /* NIVEL 3+ - Rose/Purple gradient */
-    .menu-item-level-3, .menu-item-level-4, .menu-item-level-5, .menu-item-level-6 {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
-        border-left: 2px solid rgba(236, 72, 153, 0.35);
-        margin: 4px 8px 4px 30px;
-        padding: 7px 10px !important;
-        font-size: 0.87rem;
-        font-weight: 500;
-    }
-
-    .menu-item-level-3:hover, .menu-item-level-4:hover, .menu-item-level-5:hover, .menu-item-level-6:hover {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.16) 0%, rgba(139, 92, 246, 0.08) 100%);
-        border-left-color: #ec4899;
-        transform: translateX(2px);
-        box-shadow: 0 2px 6px rgba(236, 72, 153, 0.15);
-    }
-
-    .menu-item-level-3.active, .menu-item-level-4.active, .menu-item-level-5.active, .menu-item-level-6.active {
-        background: linear-gradient(90deg, rgba(236, 72, 153, 0.22) 0%, rgba(139, 92, 246, 0.12) 100%);
-        border-left-color: #ec4899;
-        font-weight: 600;
-        box-shadow: 0 3px 8px rgba(236, 72, 153, 0.18);
-    }
-
-/* Iconos - Mejorados */
-.mud-nav-link .mud-icon-size-medium,
-.mud-nav-group-header .mud-icon-size-medium {
-font-size: 20px !important;
-margin-right: 8px;
-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-opacity: 0.85;
-}
-
-.menu-item:hover .mud-icon-size-medium {
-opacity: 1;
-transform: scale(1.1);
-filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
-}
-
-.menu-item.active .mud-icon-size-medium {
-opacity: 1;
-filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6));
-}
-
-/* Reducir padding en MudNavGroup para mejor uso del espacio */
-.mud-nav-group .mud-nav-group-header {
-padding-right: 4px !important;
-}
-
-.mud-nav-group .mud-nav-group-header .mud-icon-size-medium {
-margin-right: 6px !important;
-}
-
-/* MudNavLink sin padding excesivo */
-.mud-nav-link {
-padding-right: 4px !important;
-}
-
-    /* Texto y colores */
-    .mud-nav-link, .mud-nav-group-header {
-        color: #e2e8f0 !important;
-        transition: all 0.3s ease;
-    }
-    
-    /* Tema Claro - Colores de texto */
-    .mud-theme-light .mud-nav-link,
-    .mud-theme-light .mud-nav-group-header {
-        color: #1e293b !important;
-    }
-
-    .mud-nav-link:hover, .mud-nav-group-header:hover {
-        color: #ffffff !important;
-        text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    }
-    
-    .mud-theme-light .mud-nav-link:hover,
-    .mud-theme-light .mud-nav-group-header:hover {
-        color: #4f46e5 !important;
-        text-shadow: none;
-    }
-
-    .mud-nav-link.active, .mud-nav-group-header.active {
-        color: #fff !important;
-        font-weight: 650;
-        text-shadow: 0 0 24px rgba(99, 102, 241, 0.5);
-    }
-    
-    .mud-theme-light .mud-nav-link.active,
-    .mud-theme-light .mud-nav-group-header.active {
-        color: #4338ca !important;
-        text-shadow: none;
-    }
-
-    /* Grupos expandidos */
-    .mud-nav-group-expanded .mud-nav-group-header {
-        font-weight: 600;
-        background: rgba(99, 102, 241, 0.15) !important;
-    }
-
-    /* Badge para sub-items */
-    .menu-badge {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        color: white;
-        border-radius: 12px;
-        padding: 2px 8px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        margin-left: auto;
-        box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-    }
-
-    /* Botón Agregar Menú Global */
-    .add-global-button {
-        padding: 12px 16px;
-        margin: 12px 8px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-        transition: all 0.3s ease;
-    }
-
-    .add-global-button:hover {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.2) 100%);
-        border-color: rgba(99, 102, 241, 0.6);
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-        transform: translateY(-2px);
-    }
-    
-/* Búsqueda y Favoritos */
-.menu-search-favorites {
-padding: 16px 12px;
-margin: 8px;
-border-radius: 12px;
-background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
-border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-.search-section {
-margin-bottom: 16px;
-}
-
-.favorites-section {
-margin-top: 8px;
-}
-
-.favorites-header {
-display: flex;
-align-items: center;
-color: #94a3b8;
-font-size: 0.75rem;
-font-weight: 600;
-text-transform: uppercase;
-letter-spacing: 0.5px;
-margin-bottom: 8px;
-}
-
-.favorites-list {
-padding: 0;
-background: transparent;
-}
-
-.favorite-item {
-padding: 6px 8px;
-border-radius: 6px;
-transition: all 0.2s ease;
-cursor: pointer;
-font-size: 0.85rem;
-}
-
-.favorite-item:hover {
-background: rgba(99, 102, 241, 0.15);
-}
-
-.favorite-icon {
-color: #fbbf24;
-}
-
-/* Versión del sistema - Tema Oscuro (default) */
-.system-version {
-padding: 12px 16px;
-text-align: center;
-border-top: 1px solid var(--mud-palette-divider);
-background: var(--mud-palette-drawer-background);
-color: var(--mud-palette-text-secondary);
-font-size: 0.75rem;
-font-weight: 500;
-letter-spacing: 0.5px;
-margin-top: auto;
-transition: all 0.3s ease;
-}
-
-.system-version span {
-color: var(--mud-palette-primary);
-}
-
-/* Menu container */
-.professional-nav-menu {
-min-height: calc(100vh - 120px);
-overflow-y: auto;
-}
-
-.search-section {
-  margin-bottom: 16px;
-}
-    
-    .search-input .mud-input-control {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-    }
-    
-    .favorites-section {
-        margin-top: 8px;
-    }
-    
-    .favorites-header {
-        display: flex;
-        align-items: center;
-        color: #94a3b8;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-    
-    .favorites-list {
-        padding: 0;
-        background: transparent;
-    }
-    
-    .favorite-item {
-        padding: 6px 8px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    
-    .favorite-item:hover {
-        background: rgba(99, 102, 241, 0.15);
-    }
-    
-    .favorite-icon {
-        color: #fbbf24;
-    }
-    
-/* Versión del sistema - Tema Oscuro (default) */
-.system-version {
-padding: 12px 16px;
-text-align: center;
-border-top: 1px solid var(--mud-palette-divider);
-background: var(--mud-palette-drawer-background);
-color: var(--mud-palette-text-secondary);
-font-size: 0.75rem;
-font-weight: 500;
-letter-spacing: 0.5px;
-margin-top: auto;
-transition: all 0.3s ease;
-}
-
-.system-version span {
-color: var(--mud-palette-primary);
-}
-
-.professional-nav-menu {
-  display: flex;
-  flex-direction: column;
-}
-
-    .add-global-button:hover {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.2) 100%);
-        border-color: rgba(99, 102, 241, 0.6);
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-        transform: translateY(-2px);
-    }
-    
-    /* Búsqueda IA y Favoritos */
-    .menu-search-favorites {
-        padding: 16px 12px;
-        margin: 8px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
-        border: 1px solid rgba(99, 102, 241, 0.2);
-    }
-    
-    .search-section {
-        margin-bottom: 16px;
-    }
-    
-    .search-input .mud-input-control {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-    }
-    
-    .favorites-header {
-        display: flex;
-        align-items: center;
-        color: #94a3b8;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-    
-    .favorites-list {
-        padding: 0;
-        background: transparent;
-    }
-    
-    .favorite-item {
-        padding: 6px 8px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    
-    .favorite-item:hover {
-        background: rgba(99, 102, 241, 0.15);
-    }
-    
-    .favorite-icon {
-        color: #fbbf24;
-    }
-</style>
-
-<br />
-<br />
-<br />
 
 <AuthorizeView>
-<Authorized>
-@if (!IsCollapsed)
-{
-<!-- Sección de Búsqueda y Favoritos - SOLO cuando NO está colapsado -->
-<div class="menu-search-favorites">
-<div class="search-section">
-<MudTextField @bind-Value="_searchText"
-Label="Buscar menú..."
-Placeholder="Escribe para buscar..."
-Variant="Variant.Filled"
-FullWidth
-Immediate="true"
-@oninput="OnSearchChanged"
-Icon="@Icons.Material.Filled.Search"
-Class="search-input" />
-</div>
+    <Authorized>
+        <div class="bootstrap-sidebar @(IsCollapsed ? "collapsed" : "expanded")">
+            @if (!IsCollapsed)
+            {
+                <div class="sidebar-search-section">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Buscar men&uacute;..."
+                               value="@_searchText" @oninput="OnSearchChanged" />
+                    </div>
+                </div>
 
-@if (_favorites.Any())
-{
-<div class="favorites-section">
-<div class="favorites-header">
-<MudIcon Icon="@Icons.Material.Filled.Star" Class="mr-2" />
-<span>Accesos Rápidos</span>
-</div>
-<MudList T="string" Class="favorites-list">
-@foreach (var fav in _favorites.Take(5))
-{
-<MudListItem OnClick="@(() => NavigateToFavorite(fav.Key))" Class="favorite-item">
-<MudIcon Icon="@fav.Value" Class="mr-2 favorite-icon" />
-@fav.Key
-</MudListItem>
-}
-</MudList>
-</div>
-}
-</div>
-}
+                @if (_favorites.Any())
+                {
+                    <div class="sidebar-favorites">
+                        <div class="favorites-header">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Accesos R&aacute;pidos</span>
+                        </div>
+                        <div class="favorites-list">
+                            @foreach (var fav in _favorites.Take(5))
+                            {
+                                <div class="favorite-item" @onclick="@(() => NavigateToFavorite(fav.Key))">
+                                    <i class="bi @fav.Value"></i>
+                                    <span>@fav.Key</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
 
-<MudNavMenu Class="professional-nav-menu">
-@if (Items != null)
-{
-@foreach (var item in Items.OrderBy(m => m.Orden))
-{
-<DynamicMenuItem Item="item" Level="0" IsCollapsed="IsCollapsed"
-GetExpandedState="GetExpandedState"
-SetExpandedState="SetExpandedState" GetIcon="GetIcon"
-FindItemByRoute="FindItemByRoute" AllItems="Items" />
-}
-}
-</MudNavMenu>
+            <nav class="sidebar-nav flex-column nav nav-pills">
+                @if (Items != null)
+                {
+                    @foreach (var item in Items.OrderBy(m => m.Orden))
+                    {
+                        <DynamicMenuItem Item="item" Level="0" IsCollapsed="IsCollapsed"
+                            GetExpandedState="GetExpandedState"
+                            SetExpandedState="SetExpandedState"
+                            GetIcon="GetIcon"
+                            FindItemByRoute="FindItemByRoute"
+                            AllItems="Items" />
+                    }
+                }
+            </nav>
 
-<!-- Versión del sistema - siempre visible -->
-<div class="system-version">
-Versión: <span>@_version</span>
-</div>
-</Authorized>
+            <div class="sidebar-version">
+                Versi&oacute;n: <span>@_version</span>
+            </div>
+        </div>
+    </Authorized>
 </AuthorizeView>
-
-<MudDialog @bind-IsVisible="_showMenuDialog" 
-            Title="@(_isEditing ? "Editar Menú" : "Nuevo Menú")"
-            MaxWidth="MaxWidth.Small">
-    <DialogContent>
-        <MudTextField @bind-Value="_editingItem!.Nombre" Label="Nombre" FullWidth Class="mb-3" Variant="Variant.Outlined" />
-        <MudTextField @bind-Value="_editingItem!.Ruta" Label="Ruta" FullWidth Class="mb-3" Variant="Variant.Outlined" />
-        <MudTextField @bind-Value="_editingItem!.ImageUrl" Label="Icono" FullWidth Class="mb-3" Variant="Variant.Outlined" />
-        <MudNumericField @bind-Value="_editingItem!.Orden" Label="Orden" FullWidth Class="mb-3" Variant="Variant.Outlined" />
-        <MudSwitch T="bool" @bind-Checked="_editingItem!.Activo" Label="Activo" />
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="@(() => _showMenuDialog = false)">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" OnClick="SaveMenuItem">Guardar</MudButton>
-    </DialogActions>
-</MudDialog>
 
 @code {
     private bool loading = false;
@@ -882,17 +78,11 @@ Versión: <span>@_version</span>
     [Parameter] public List<MenuItem> Items { get; set; } = new();
     [Parameter] public bool IsCollapsed { get; set; } = false;
 
-    private bool _showMenuDialog = false;
-    private MenuItem? _editingItem = null;
-    private bool _isEditing = false;
-    private MenuItem? _parentForNewItem = null;
     private string _version = "1.0.0";
     
-    // Búsqueda IA
     private string _searchText = string.Empty;
     private List<MenuItem> _filteredItems = new();
     
-    // Favoritos (Top 5)
     private Dictionary<string, string> _favorites = new();
 
     private Dictionary<long, bool> expandedStates = new();
@@ -1039,7 +229,7 @@ Versión: <span>@_version</span>
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Console.WriteLine($"Error al cargar men&uacute;: {ex.Message}");
         }
         finally
         {
@@ -1186,103 +376,18 @@ Versión: <span>@_version</span>
 
     private static readonly Dictionary<string, string> _iconMap = IconosDisponibles.Lista
         .GroupBy(x => x.Valor)
-        .ToDictionary(g => g.Key, g => g.First().MaterialIcon);
+        .ToDictionary(g => g.Key, g => g.First().BootstrapIcon);
 
     private string GetIcon(string imageUrl)
     {
-        if (string.IsNullOrEmpty(imageUrl)) return Icons.Material.Filled.Info;
-        return _iconMap.TryGetValue(imageUrl, out var icon) ? icon : Icons.Material.Filled.Info;
+        if (string.IsNullOrEmpty(imageUrl)) return "bi bi-info-circle";
+        return _iconMap.TryGetValue(imageUrl, out var icon) ? icon : "bi bi-info-circle";
     }
 
-    private void AddGlobalMenuItem()
+    private async Task OnSearchChanged(ChangeEventArgs e)
     {
-        _editingItem = new MenuItem { PkidMenu = 0, FkidMenuSis = null, Orden = (Items?.Count ?? 0) + 1, Activo = true };
-        _parentForNewItem = null;
-        _isEditing = false;
-        _showMenuDialog = true;
-    }
-
-    private void AddChildMenuItem(MenuItem parent)
-    {
-        _editingItem = new MenuItem { PkidMenu = 0, FkidMenuSis = parent.PkidMenu, Orden = (parent.Children?.Count ?? 0) + 1, Activo = true };
-        _parentForNewItem = parent;
-        _isEditing = false;
-        _showMenuDialog = true;
-    }
-
-    private void EditMenuItem(MenuItem item)
-    {
-        _editingItem = new MenuItem 
-        { 
-            PkidMenu = item.PkidMenu,
-            Nombre = item.Nombre,
-            Ruta = item.Ruta,
-            ImageUrl = item.ImageUrl,
-            FkidMenuSis = item.FkidMenuSis,
-            Orden = item.Orden ?? 1,
-            Activo = item.Activo,
-            LegacyName = item.LegacyName,
-            Lenguaje = item.Lenguaje,
-            Tipo = item.Tipo
-        };
-        _isEditing = true;
-        _showMenuDialog = true;
-    }
-
-    private async Task DeleteMenuItem(MenuItem item)
-    {
-        // Solo notificación - la funcionalidad real requiere implementar los métodos en el backend
-        Snackbar.Add($"Eliminar pendiente: {item.Nombre}", Severity.Info);
+        _searchText = e.Value?.ToString() ?? string.Empty;
         await Task.CompletedTask;
-    }
-
-    private async Task SaveMenuItem()
-    {
-        if (_editingItem == null) return;
-        
-        // Notificación de que la funcionalidad está pendiente
-        Snackbar.Add("Función de guardado pendiente de implementar - Los métodos del servicio no están disponibles", Severity.Info);
-        _showMenuDialog = false;
-        await Task.CompletedTask;
-    }
-
-    public void OnMenuChanged()
-    {
-        StateHasChanged();
-    }
-    
-    private async Task OnSearchChanged()
-    {
-        if (string.IsNullOrWhiteSpace(_searchText))
-        {
-            _filteredItems = new List<MenuItem>();
-        }
-        else
-        {
-            _filteredItems = SearchMenuItems(Items, _searchText.ToLower());
-        }
-        await Task.CompletedTask;
-    }
-    
-    private List<MenuItem> SearchMenuItems(List<MenuItem> items, string searchTerm)
-    {
-        var results = new List<MenuItem>();
-        
-        foreach (var item in items)
-        {
-            if (item.Nombre.ToLower().Contains(searchTerm) || 
-                (item.Ruta?.ToLower().Contains(searchTerm) ?? false))
-            {
-                results.Add(item);
-            }
-            
-            if (item.Children?.Any() == true)
-            {
-                results.AddRange(SearchMenuItems(item.Children, searchTerm));
-            }
-        }
-        
-        return results;
     }
     
     private void NavigateToFavorite(string itemName)
@@ -1307,13 +412,312 @@ Versión: <span>@_version</span>
         }
         return null;
     }
-    
-    private void AddToFavorites(MenuItem item)
-    {
-        if (!_favorites.ContainsKey(item.Nombre) && _favorites.Count < 5)
-        {
-            _favorites.Add(item.Nombre, item.ImageUrl);
-            StateHasChanged();
-        }
-    }
 }
+
+<style>
+    .bootstrap-sidebar {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--mud-palette-drawer-background);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-search-section {
+        padding: 12px;
+        border-bottom: 1px solid var(--mud-palette-divider);
+    }
+
+    .sidebar-search-section .input-group-text {
+        background: var(--mud-palette-surface);
+        border: 1px solid var(--mud-palette-divider);
+        color: var(--mud-palette-drawer-text);
+    }
+
+    .sidebar-search-section .form-control {
+        background: var(--mud-palette-surface);
+        border: 1px solid var(--mud-palette-divider);
+        color: var(--mud-palette-drawer-text);
+        font-size: 0.85rem;
+    }
+
+    .sidebar-search-section .form-control::placeholder {
+        color: var(--mud-palette-text-disabled);
+    }
+
+    .sidebar-search-section .form-control:focus {
+        border-color: var(--mud-palette-primary);
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-drawer-text);
+    }
+
+    .sidebar-favorites {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--mud-palette-divider);
+    }
+
+    .favorites-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .favorites-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .favorite-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.82rem;
+        color: var(--mud-palette-drawer-text);
+        transition: all 0.2s ease;
+    }
+
+    .favorite-item:hover {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--mud-palette-primary);
+    }
+
+    .favorite-item i {
+        font-size: 0.9rem;
+        color: #fbbf24;
+    }
+
+    .sidebar-nav {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+        gap: 2px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: var(--mud-palette-divider);
+        border-radius: 4px;
+    }
+
+    .sidebar-version {
+        padding: 12px 16px;
+        text-align: center;
+        border-top: 1px solid var(--mud-palette-divider);
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+    }
+
+    .sidebar-version span {
+        color: var(--mud-palette-primary);
+    }
+
+    /* Menu item styles */
+    .nav-pills .sidebar-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-radius: 8px;
+        color: var(--mud-palette-drawer-text);
+        font-size: 0.88rem;
+        font-weight: 500;
+        padding: 9px 12px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+    }
+
+    .nav-pills .sidebar-link:hover {
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--mud-palette-primary);
+        border-left-color: var(--mud-palette-primary);
+    }
+
+    .nav-pills .sidebar-link.active {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--mud-palette-primary);
+        border-left-color: var(--mud-palette-primary);
+        font-weight: 600;
+    }
+
+    .nav-pills .sidebar-link i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .nav-pills .sidebar-group-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        border-radius: 8px;
+        color: var(--mud-palette-drawer-text);
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+        background: none;
+        border: none;
+        border-left: 3px solid transparent;
+    }
+
+    .nav-pills .sidebar-group-header:hover {
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--mud-palette-primary);
+        border-left-color: var(--mud-palette-primary);
+    }
+
+    .nav-pills .sidebar-group-header.active {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--mud-palette-primary);
+        border-left-color: var(--mud-palette-primary);
+    }
+
+    .nav-pills .sidebar-group-header .group-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-pills .sidebar-group-header .group-left i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+    }
+
+    .nav-pills .sidebar-group-header .chevron {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .nav-pills .sidebar-group-header .chevron.expanded {
+        transform: rotate(90deg);
+    }
+
+    .sidebar-children {
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .sidebar-children.expanded {
+        max-height: 500px;
+    }
+
+    .sidebar-children.collapsed {
+        max-height: 0;
+    }
+
+    .sidebar-children .sidebar-link {
+        font-size: 0.84rem;
+        font-weight: 400;
+    }
+
+    .sidebar-children .sidebar-children .sidebar-link {
+        font-size: 0.8rem;
+    }
+
+    /* Collapsed state */
+    .bootstrap-sidebar.collapsed .sidebar-search-section,
+    .bootstrap-sidebar.collapsed .sidebar-favorites,
+    .bootstrap-sidebar.collapsed .sidebar-version {
+        display: none;
+    }
+
+    .bootstrap-sidebar.collapsed .sidebar-nav {
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-link,
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header {
+        justify-content: center;
+        padding: 10px;
+        border-left: none;
+        width: auto;
+    }
+
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-link span,
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header span,
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header .chevron {
+        display: none;
+    }
+
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-link i,
+    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header i {
+        margin-right: 0;
+        font-size: 1.3rem;
+    }
+
+    .bootstrap-sidebar.collapsed .sidebar-children {
+        display: none;
+    }
+
+    /* Dark theme overrides */
+    [data-mudblazor-theme="dark"] .bootstrap-sidebar {
+        background: #0F172A;
+    }
+
+    [data-mudblazor-theme="dark"] .sidebar-search-section .input-group-text,
+    [data-mudblazor-theme="dark"] .sidebar-search-section .form-control {
+        background: #1E293B;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+
+    /* Morena theme overrides */
+    .bootstrap-sidebar.morena {
+        background: linear-gradient(180deg, #1A1209 0%, #2D1B0F 50%, #3D2A1C 100%) !important;
+    }
+
+    .bootstrap-sidebar.morena .sidebar-search-section .input-group-text,
+    .bootstrap-sidebar.morena .sidebar-search-section .form-control {
+        background: #2D1B0F;
+        border-color: #5D3A1A;
+        color: #F4E4C1;
+    }
+
+    .bootstrap-sidebar.morena .nav-pills .sidebar-link,
+    .bootstrap-sidebar.morena .nav-pills .sidebar-group-header {
+        color: #F4E4C1;
+    }
+
+    .bootstrap-sidebar.morena .nav-pills .sidebar-link:hover,
+    .bootstrap-sidebar.morena .nav-pills .sidebar-group-header:hover {
+        background: rgba(205, 133, 63, 0.2);
+        color: #DEB887;
+        border-left-color: #CD853F;
+    }
+
+    .bootstrap-sidebar.morena .nav-pills .sidebar-link.active,
+    .bootstrap-sidebar.morena .nav-pills .sidebar-group-header.active {
+        background: rgba(205, 133, 63, 0.3);
+        color: #DEB887;
+        border-left-color: #DEB887;
+    }
+</style>

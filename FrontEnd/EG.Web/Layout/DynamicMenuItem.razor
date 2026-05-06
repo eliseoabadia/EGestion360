@@ -1,49 +1,67 @@
 @using EG.Web.Models.Configuration
-@using MudBlazor
+@using Microsoft.AspNetCore.Components.Routing
+
+@{
+    var linkCss = "sidebar-link " + GetLinkClass();
+    var groupHeaderCss = "sidebar-group-header " + GetGroupHeaderClass();
+    var childrenCss = "sidebar-children " + (GetExpandedState(Item.PkidMenu) ? "expanded" : "collapsed");
+    var chevronCss = "bi bi-chevron-right chevron " + (GetExpandedState(Item.PkidMenu) ? "expanded" : "");
+}
 
 @if (Item.Children?.Any() == true)
 {
-    <MudNavGroup Title="@Item.Nombre"
-                 Icon="@GetIcon(Item.ImageUrl)"
-                 Expanded="@(IsCollapsed ? false : GetExpandedState(Item.PkidMenu))"
-                 ExpandedChanged="(v) => SetExpandedState(Item.PkidMenu, v)"
-                 Class="@GetMenuClass()">
+    <div class="sidebar-group">
+        <button class="@groupHeaderCss" @onclick="@(() => ToggleExpand())">
+            <div class="group-left">
+                <i class="bi @GetIcon(Item.ImageUrl)"></i>
+                @if (!IsCollapsed)
+                {
+                    <span>@Item.Nombre</span>
+                }
+            </div>
+            @if (!IsCollapsed)
+            {
+                <i class="@chevronCss"></i>
+            }
+        </button>
         @if (!IsCollapsed)
         {
-            @foreach (var child in Item.Children.OrderBy(m => m.Orden))
-            {
-                <DynamicMenuItem Item="child"
-                                 Level="@(Level + 1)"
-                                 IsCollapsed="IsCollapsed"
-                                 GetExpandedState="GetExpandedState"
-                                 SetExpandedState="SetExpandedState"
-                                 GetIcon="GetIcon"
-                                 FindItemByRoute="FindItemByRoute"
-                                 AllItems="AllItems" />
-            }
+            <div class="@childrenCss">
+                @foreach (var child in Item.Children.OrderBy(m => m.Orden))
+                {
+                    <DynamicMenuItem Item="child"
+                                     Level="@(Level + 1)"
+                                     IsCollapsed="IsCollapsed"
+                                     GetExpandedState="GetExpandedState"
+                                     SetExpandedState="SetExpandedState"
+                                     GetIcon="GetIcon"
+                                     FindItemByRoute="FindItemByRoute"
+                                     AllItems="AllItems" />
+                }
+            </div>
         }
-    </MudNavGroup>
+    </div>
 }
 else
 {
     @if (IsCollapsed)
     {
-        <MudTooltip Text="@Item.Nombre" Placement="Placement.Right">
-            <MudNavLink Href="@(Item.Ruta ?? "")"
-                        Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                        Icon="@GetIcon(Item.ImageUrl)"
-                        Class="@GetMenuClass()">
-            </MudNavLink>
-        </MudTooltip>
+        <div class="sidebar-item-collapsed" title="@Item.Nombre">
+            <NavLink class="@linkCss"
+                     href="@(Item.Ruta ?? "")"
+                     Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+                <i class="bi @GetIcon(Item.ImageUrl)"></i>
+            </NavLink>
+        </div>
     }
     else
     {
-        <MudNavLink Href="@(Item.Ruta ?? "")"
-                    Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                    Icon="@GetIcon(Item.ImageUrl)"
-                    Class="@GetMenuClass()">
-            @Item.Nombre
-        </MudNavLink>
+        <NavLink class="@linkCss"
+                 href="@(Item.Ruta ?? "")"
+                 Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+            <i class="bi @GetIcon(Item.ImageUrl)"></i>
+            <span>@Item.Nombre</span>
+        </NavLink>
     }
 }
 
@@ -57,11 +75,94 @@ else
     [Parameter] public Func<List<MenuItem>, string, MenuItem?> FindItemByRoute { get; set; } = default!;
     [Parameter] public List<MenuItem> AllItems { get; set; } = default!;
 
-    private string GetMenuClass()
+    private void ToggleExpand()
     {
-        // Niveles 0, 1, 2 mantienen su clase original
-        // Nivel 3+ se muestran como nivel 2 (misma indentación)
+        SetExpandedState(Item.PkidMenu, !GetExpandedState(Item.PkidMenu));
+    }
+
+    private string GetLinkClass()
+    {
         var effectiveLevel = Math.Min(Level, 2);
-        return $"menu-item-level-{effectiveLevel}";
+        return $"level-{effectiveLevel}";
+    }
+
+    private string GetGroupHeaderClass()
+    {
+        var effectiveLevel = Math.Min(Level, 2);
+        return $"level-{effectiveLevel}";
     }
 }
+
+<style>
+    .sidebar-group {
+        width: 100%;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-radius: 8px;
+        color: var(--mud-palette-drawer-text);
+        font-size: 0.88rem;
+        font-weight: 500;
+        padding: 9px 12px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+    }
+
+    .sidebar-link:hover {
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--mud-palette-primary);
+        border-left-color: var(--mud-palette-primary);
+        text-decoration: none;
+    }
+
+    .sidebar-link.active {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--mud-palette-primary);
+        border-left-color: var(--mud-palette-primary);
+        font-weight: 600;
+    }
+
+    .sidebar-link i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .level-1 {
+        padding-left: calc(12px + 16px) !important;
+        font-size: 0.84rem !important;
+        font-weight: 400 !important;
+    }
+
+    .level-2 {
+        padding-left: calc(12px + 32px) !important;
+        font-size: 0.8rem !important;
+        font-weight: 400 !important;
+    }
+
+    .sidebar-item-collapsed {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .sidebar-item-collapsed .sidebar-link {
+        justify-content: center;
+        padding: 10px;
+        border-left: none;
+        width: auto;
+    }
+
+    .sidebar-item-collapsed .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-item-collapsed .sidebar-link i {
+        margin-right: 0;
+        font-size: 1.3rem;
+    }
+</style>
