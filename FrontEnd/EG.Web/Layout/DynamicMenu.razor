@@ -502,6 +502,7 @@
     .sidebar-nav {
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
         padding: 8px;
         gap: 2px;
     }
@@ -534,112 +535,7 @@
         color: var(--mud-palette-primary);
     }
 
-    /* Menu item styles */
-    .nav-pills .sidebar-link {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        border-radius: 8px;
-        color: var(--mud-palette-drawer-text);
-        font-size: 0.88rem;
-        font-weight: 500;
-        padding: 9px 12px;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        border-left: 3px solid transparent;
-    }
-
-    .nav-pills .sidebar-link:hover {
-        background: rgba(99, 102, 241, 0.12);
-        color: var(--mud-palette-primary);
-        border-left-color: var(--mud-palette-primary);
-    }
-
-    .nav-pills .sidebar-link.active {
-        background: rgba(99, 102, 241, 0.2);
-        color: var(--mud-palette-primary);
-        border-left-color: var(--mud-palette-primary);
-        font-weight: 600;
-    }
-
-    .nav-pills .sidebar-link i {
-        margin-right: 10px;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-    }
-
-    .nav-pills .sidebar-group-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        border-radius: 8px;
-        color: var(--mud-palette-drawer-text);
-        font-size: 0.88rem;
-        font-weight: 600;
-        padding: 9px 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border-left: 3px solid transparent;
-        background: none;
-        border: none;
-        border-left: 3px solid transparent;
-    }
-
-    .nav-pills .sidebar-group-header:hover {
-        background: rgba(99, 102, 241, 0.12);
-        color: var(--mud-palette-primary);
-        border-left-color: var(--mud-palette-primary);
-    }
-
-    .nav-pills .sidebar-group-header.active {
-        background: rgba(99, 102, 241, 0.2);
-        color: var(--mud-palette-primary);
-        border-left-color: var(--mud-palette-primary);
-    }
-
-    .nav-pills .sidebar-group-header .group-left {
-        display: flex;
-        align-items: center;
-    }
-
-    .nav-pills .sidebar-group-header .group-left i {
-        margin-right: 10px;
-        font-size: 1.1rem;
-    }
-
-    .nav-pills .sidebar-group-header .chevron {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-
-    .nav-pills .sidebar-group-header .chevron.expanded {
-        transform: rotate(90deg);
-    }
-
-    .sidebar-children {
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-
-    .sidebar-children.expanded {
-        max-height: 500px;
-    }
-
-    .sidebar-children.collapsed {
-        max-height: 0;
-    }
-
-    .sidebar-children .sidebar-link {
-        font-size: 0.84rem;
-        font-weight: 400;
-    }
-
-    .sidebar-children .sidebar-children .sidebar-link {
-        font-size: 0.8rem;
-    }
-
-    /* Collapsed state */
+    /* ===================== COLLAPSED STATE ===================== */
     .bootstrap-sidebar.collapsed .sidebar-search-section,
     .bootstrap-sidebar.collapsed .sidebar-favorites,
     .bootstrap-sidebar.collapsed .sidebar-version {
@@ -654,22 +550,18 @@
         gap: 4px;
     }
 
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-link,
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header {
+    .bootstrap-sidebar.collapsed .sidebar-group-header {
         justify-content: center;
         padding: 10px;
-        border-left: none;
-        width: auto;
+        border-radius: 8px;
     }
 
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-link span,
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header span,
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header .chevron {
+    .bootstrap-sidebar.collapsed .sidebar-group-header .group-left span,
+    .bootstrap-sidebar.collapsed .sidebar-group-header .chevron {
         display: none;
     }
 
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-link i,
-    .bootstrap-sidebar.collapsed .nav-pills .sidebar-group-header i {
+    .bootstrap-sidebar.collapsed .sidebar-group-header .group-left i {
         margin-right: 0;
         font-size: 1.3rem;
     }
@@ -678,19 +570,7 @@
         display: none;
     }
 
-    /* Dark theme overrides */
-    [data-mudblazor-theme="dark"] .bootstrap-sidebar {
-        background: #0F172A;
-    }
-
-    [data-mudblazor-theme="dark"] .sidebar-search-section .input-group-text,
-    [data-mudblazor-theme="dark"] .sidebar-search-section .form-control {
-        background: #1E293B;
-        border-color: #334155;
-        color: #F8FAFC;
-    }
-
-    /* Morena theme overrides */
+    /* ===================== THEME: MORENA ===================== */
     .bootstrap-sidebar.morena {
         background: linear-gradient(180deg, #1A1209 0%, #2D1B0F 50%, #3D2A1C 100%) !important;
     }
@@ -702,22 +582,99 @@
         color: #F4E4C1;
     }
 
-    .bootstrap-sidebar.morena .nav-pills .sidebar-link,
-    .bootstrap-sidebar.morena .nav-pills .sidebar-group-header {
+    .bootstrap-sidebar.morena .sidebar-search-section .form-control::placeholder {
+        color: #8B7355;
+    }
+
+    .bootstrap-sidebar.morena .favorites-header {
+        color: #8B7355;
+    }
+
+    .bootstrap-sidebar.morena .favorite-item {
         color: #F4E4C1;
     }
 
-    .bootstrap-sidebar.morena .nav-pills .sidebar-link:hover,
-    .bootstrap-sidebar.morena .nav-pills .sidebar-group-header:hover {
+    .bootstrap-sidebar.morena .favorite-item:hover {
         background: rgba(205, 133, 63, 0.2);
         color: #DEB887;
-        border-left-color: #CD853F;
     }
 
-    .bootstrap-sidebar.morena .nav-pills .sidebar-link.active,
-    .bootstrap-sidebar.morena .nav-pills .sidebar-group-header.active {
-        background: rgba(205, 133, 63, 0.3);
-        color: #DEB887;
-        border-left-color: #DEB887;
+    .bootstrap-sidebar.morena .sidebar-version {
+        border-top-color: #5D3A1A;
+        color: #8B7355;
+    }
+
+    /* Morena - Level 0: Amber-Brown gradient */
+    .bootstrap-sidebar.morena .sidebar-link.level-0,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-0 {
+        background: linear-gradient(135deg, rgba(205, 133, 63, 0.22) 0%, rgba(139, 92, 246, 0.08) 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-0::before,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-0::before {
+        background: linear-gradient(180deg, #CD853F 0%, #DEB887 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-0:hover,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-0:hover {
+        background: linear-gradient(135deg, rgba(205, 133, 63, 0.35) 0%, rgba(222, 184, 135, 0.15) 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-0.active,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-0.active {
+        background: linear-gradient(135deg, rgba(205, 133, 63, 0.45) 0%, rgba(222, 184, 135, 0.25) 100%);
+    }
+
+    /* Morena - Level 1: Olive-Green gradient */
+    .bootstrap-sidebar.morena .sidebar-link.level-1,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-1 {
+        background: linear-gradient(135deg, rgba(107, 142, 35, 0.18) 0%, rgba(85, 107, 47, 0.10) 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-1::before,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-1::before {
+        background: linear-gradient(180deg, #6B8E23 0%, #556B2F 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-1:hover,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-1:hover {
+        background: linear-gradient(135deg, rgba(107, 142, 35, 0.30) 0%, rgba(85, 107, 47, 0.18) 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-1.active,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-1.active {
+        background: linear-gradient(135deg, rgba(107, 142, 35, 0.40) 0%, rgba(85, 107, 47, 0.25) 100%);
+    }
+
+    /* Morena - Level 2: Terracotta gradient */
+    .bootstrap-sidebar.morena .sidebar-link.level-2,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-2 {
+        background: linear-gradient(135deg, rgba(210, 105, 30, 0.18) 0%, rgba(178, 34, 34, 0.10) 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-2::before,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-2::before {
+        background: linear-gradient(180deg, #D2691E 0%, #B22222 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-2:hover,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-2:hover {
+        background: linear-gradient(135deg, rgba(210, 105, 30, 0.30) 0%, rgba(178, 34, 34, 0.18) 100%);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-link.level-2.active,
+    .bootstrap-sidebar.morena .sidebar-group-header.level-2.active {
+        background: linear-gradient(135deg, rgba(210, 105, 30, 0.40) 0%, rgba(178, 34, 34, 0.25) 100%);
+    }
+
+    /* Morena - scrollbar */
+    .bootstrap-sidebar.morena .sidebar-nav::-webkit-scrollbar-thumb,
+    .bootstrap-sidebar.morena .sidebar-children::-webkit-scrollbar-thumb {
+        background: rgba(205, 133, 63, 0.4);
+    }
+
+    .bootstrap-sidebar.morena .sidebar-nav::-webkit-scrollbar-thumb:hover,
+    .bootstrap-sidebar.morena .sidebar-children::-webkit-scrollbar-thumb:hover {
+        background: rgba(205, 133, 63, 0.6);
     }
 </style>
