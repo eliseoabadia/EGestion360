@@ -219,5 +219,25 @@ public async Task<PagedResult<MatrizConversionResponse>> GetAllPaginadoAsync(Pag
             e.FkidPartidaSis == partidaSis &&
             e.Activo);
         }
+
+        public async Task<bool> ExisteRegistroUpdateAsync(int id, int anioSis, int programaPres, int partidaSis)
+        {
+            return await _service.GetQueryWithIncludes()
+            .AnyAsync(e => e.FkidAnioSis == anioSis &&
+            e.FkidProgramaPres == programaPres &&
+            e.FkidPartidaSis == partidaSis &&
+            e.PkidMatrizConversion != id &&
+            e.Activo);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetProgramasAsync(int? idAnio = null)
+        {
+            var query = _context.Set<Programa>().AsQueryable();
+            if (idAnio.HasValue)
+            {
+                query = query.Where(p => p.MatrizConversions.Any(mc => mc.FkidAnioSis == idAnio.Value && mc.Activo));
+            }
+            return await query.Select(p => new { p.PkidPrograma, p.Clave }).Distinct().ToListAsync();
+        }
     }
 }

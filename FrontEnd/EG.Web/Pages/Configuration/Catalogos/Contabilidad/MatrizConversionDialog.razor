@@ -175,6 +175,9 @@
     {
         try
         {
+            var responseProgramas = await Http.GetFromJsonAsync<List<ProgramaLookup>>("api/MatrizConversion/GetAllProgramas");
+            if (responseProgramas != null) _programas = responseProgramas;
+
             var responsePartidas = await Http.GetFromJsonAsync<List<PartidaLookup>>("api/MatrizConversion/GetPartida");
             if (responsePartidas != null) _partidas = responsePartidas;
 

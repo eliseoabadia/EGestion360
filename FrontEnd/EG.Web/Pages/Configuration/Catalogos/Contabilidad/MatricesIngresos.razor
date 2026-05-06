@@ -5,62 +5,64 @@
 @inherits BaseCrudPage<MatrizIngresoResponse, MatrizIngresoResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
-                    HasAccess="@HasAccess"
-                    NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    HasAccess="@HasAccess"
+    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%;">
         <PageHeader Title="Matriz de Ingresos"
-                    Subtitle="Catálogo de matriz de ingresos"
-                    Icon="@Icons.Material.Filled.SwapHoriz"
-                    CanCreate="@CanCreate"
-                    OnCreate="CreateItem"
-                    OnRefresh="() => table.ReloadData()" />
+            Subtitle="Catálogo de matriz de ingresos"
+            Icon="@Icons.Material.Filled.SwapHoriz"
+            CanCreate="@CanCreate"
+            OnCreate="CreateItem"
+            OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="MatrizIngresoResponse"
-                  @ref="table"
-                  Title="Lista de Matriz de Ingresos"
-                  SearchPlaceholder="Buscar por clave o descripción..."
-                  ShowExportButton="@CanExport"
-                  ServerDataFunc="LoadServerData"
-                  ExportFunc="ExportToExcel"
-                  SearchString="@SearchString"
-                  SearchStringChanged="(s) => SearchString = s"
-                  OnSearch="OnSearch">
+        <div style="overflow-x: auto; flex: 1;" class="custom-matriz-table">
+            <GenericTable TItem="MatrizIngresoResponse"
+                @ref="table"
+                Title="Lista de Matriz de Ingresos"
+                SearchPlaceholder="Buscar por clave o descripción..."
+                ShowExportButton="@CanExport"
+                ServerDataFunc="LoadServerData"
+                ExportFunc="ExportToExcel"
+                SearchString="@SearchString"
+                SearchStringChanged="(s) => SearchString = s"
+                OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidMatrizIngreso" T="MatrizIngresoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="MatrizIngresoResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="MatrizIngresoResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="MatrizIngresoResponse">Activo</MudTableSortLabel></MudTh>
-            </Header>
+                <Header>
+                    <MudTh Class="col-acciones">Acciones</MudTh>
+                    <MudTh Class="col-id">ID</MudTh>
+                    <MudTh Class="col-clave">Clave</MudTh>
+                    <MudTh Class="col-descripcion">Descripción</MudTh>
+                    <MudTh Class="col-estado">Estado</MudTh>
+                </Header>
 
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidMatrizIngreso))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidMatrizIngreso))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidMatrizIngreso</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
-            </Row>
-        </GenericTable>
+                <Row Context="item">
+                    <MudTd Class="col-acciones" @ondblclick="@(() => OpenDetail(item))">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                Visible="@CanUpdate"
+                                Color="Color.Primary"
+                                Size="Size.Small"
+                                OnClick="@(() => EditItem(item.PkidMatrizIngreso))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                Visible="@CanDelete"
+                                Color="Color.Error"
+                                Size="Size.Small"
+                                OnClick="@(() => DeleteItem(item.PkidMatrizIngreso))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd Class="col-id" @ondblclick="@(() => OpenDetail(item))">@item.PkidMatrizIngreso</MudTd>
+                    <MudTd Class="col-clave" @ondblclick="@(() => OpenDetail(item))">@item.Clave</MudTd>
+                    <MudTd Class="col-descripcion" @ondblclick="@(() => OpenDetail(item))">@item.Descripcion</MudTd>
+                    <MudTd Class="col-estado" @ondblclick="@(() => OpenDetail(item))">
+                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                            @(item.Activo ? "Sí" : "No")
+                        </MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
     </MudContainer>
 </AccessVerification>
 
@@ -76,6 +78,14 @@
 
     protected override string GetDefaultSortLabel() => "Clave";
 
+    private async Task OpenDetail(MatrizIngresoResponse item)
+    {
+        var parameters = new DialogParameters { ["Item"] = item };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<MatrizIngresoPersonalizado>("Detalle de Ingreso", parameters, options);
+        await dialog.Result;
+    }
+
     protected override IEnumerable<object> MapToExcelData(IEnumerable<MatrizIngresoResponse> items)
     {
         return items.Select(u => new
@@ -83,7 +93,8 @@
             ID = u.PkidMatrizIngreso,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
-            Activo = u.Activo
+            Activo = u.Activo ? "Sí" : "No",
+            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
         });
     }
 
@@ -101,3 +112,40 @@
         }
     }
 }
+
+<style>
+    .custom-matriz-table .col-acciones {
+        min-width: 120px;
+        max-width: 120px;
+        text-align: center;
+    }
+
+    .custom-matriz-table .col-id {
+        min-width: 60px;
+        max-width: 60px;
+        text-align: center;
+    }
+
+    .custom-matriz-table .col-clave {
+        min-width: 100px;
+        max-width: 150px;
+    }
+
+    .custom-matriz-table .col-descripcion {
+        min-width: 200px;
+        max-width: 400px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .custom-matriz-table .col-estado {
+        min-width: 80px;
+        max-width: 100px;
+        text-align: center;
+    }
+
+    .mud-table-row {
+        cursor: pointer;
+    }
+</style>

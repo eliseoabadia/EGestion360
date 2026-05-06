@@ -1,0 +1,108 @@
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using MudBlazor
+
+<MudPaper Elevation="2" Class="pa-4 rounded-lg detail-container">
+    <div class="detail-header d-flex align-center justify-space-between mb-4">
+        <div class="d-flex align-center gap-3">
+            <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Large" Color="Color.Primary" />
+            <div>
+                <MudText Typo="Typo.h6" Class="font-weight-bold">Detalle de Ingreso</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Default">@Item.Clave</MudText>
+            </div>
+        </div>
+        <div class="d-flex align-center gap-2">
+            <MudChip T="string" Color="Color.Primary" Size="Size.Small">ID: @Item.PkidMatrizIngreso</MudChip>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="OnClose" />
+        </div>
+    </div>
+
+    <MudDivider Class="mb-4" />
+
+    <div class="detail-section mb-4">
+        <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Información General</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <div class="info-box">
+                    <MudIcon Icon="@Icons.Material.Filled.Tag" Size="Size.Small" Color="Color.Primary" />
+                    <div class="ml-3">
+                        <MudText Typo="Typo.caption" Color="Color.Default">Clave</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.Clave</MudText>
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="8">
+                <div class="info-box">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" />
+                    <div class="ml-3">
+                        <MudText Typo="Typo.caption" Color="Color.Default">Descripción</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.Descripcion</MudText>
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+        <MudGrid Class="mt-3">
+            <MudItem xs="12" sm="6">
+                <div class="info-box">
+                    <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Info" />
+                    <div class="ml-3">
+                        <MudText Typo="Typo.caption" Color="Color.Default">Fecha de Creación</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@(Item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</MudText>
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <div class="info-box">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="@(Item.Activo ? Color.Success : Color.Error)" />
+                    <div class="ml-3">
+                        <MudText Typo="Typo.caption" Color="Color.Default">Estado</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@(Item.Activo ? "Activo" : "Inactivo")</MudText>
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </div>
+
+    <MudDivider Class="mt-4 mb-3" />
+
+    <div class="detail-footer d-flex justify-end">
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="OnClose" StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public MatrizIngresoResponse Item { get; set; } = null!;
+    [Parameter] public EventCallback OnClose { get; set; }
+}
+
+<style>
+    .detail-container {
+        max-width: 800px;
+    }
+
+    .detail-header {
+        padding-bottom: 8px;
+    }
+
+    .info-box {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: var(--mud-palette-background);
+        border-radius: 8px;
+        border-left: 3px solid var(--mud-palette-primary);
+    }
+
+    .gap-2 {
+        gap: 8px;
+    }
+
+    .gap-3 {
+        gap: 12px;
+    }
+
+    .ml-3 {
+        margin-left: 12px;
+    }
+</style>

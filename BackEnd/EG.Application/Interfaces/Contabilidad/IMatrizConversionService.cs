@@ -15,5 +15,7 @@ namespace EG.Application.Interfaces.Contabilidad
         Task<bool> CanAddAsync(MatrizConversionDto dto);
         Task<bool> CanUpdateAsync(int id, MatrizConversionDto dto);
         Task<bool> ExisteRegistroAsync(int anioSis, int programaPres, int partidaSis);
+        Task<bool> ExisteRegistroUpdateAsync(int id, int anioSis, int programaPres, int partidaSis);
+        Task<IEnumerable<dynamic>> GetProgramasAsync(int? idAnio = null);
     }
 }

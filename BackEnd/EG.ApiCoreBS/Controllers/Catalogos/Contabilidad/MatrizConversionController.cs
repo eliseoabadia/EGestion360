@@ -135,7 +135,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             var dto = _mapper.Map<MatrizConversionDto>(request);
             dto.PkidMatrizConversion = id;
 
-            var existe = await _service.ExisteRegistroAsync(dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis);
+            var existe = await _service.ExisteRegistroUpdateAsync(id, dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis);
             if (existe)
             {
                 return Conflict(new PagedResult<MatrizConversionResponse>
@@ -240,19 +240,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetPrograma")]
         public async Task<IActionResult> GetPrograma([FromQuery] int? idAnio = null)
         {
-            if (!idAnio.HasValue)
-                return BadRequest("Debe proporcionar el año presupuestal");
+            var programas = await _service.GetProgramasAsync(idAnio);
+            return Ok(programas);
+        }
 
-            var programas = await _context.Set<MatrizConversion>()
-                .Where(mc => mc.FkidAnioSis == idAnio.Value && mc.Activo)
-                .Select(mc => new
-                {
-                    mc.FkidProgramaPresNavigation.PkidPrograma,
-                    mc.FkidProgramaPresNavigation.Clave
-                })
-                .Distinct()
-                .ToListAsync();
-
+        [HttpGet("GetAllProgramas")]
+        public async Task<IActionResult> GetAllProgramas()
+        {
+            var programas = await _service.GetProgramasAsync(null);
             return Ok(programas);
         }
 
