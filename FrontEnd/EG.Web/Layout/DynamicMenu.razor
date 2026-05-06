@@ -23,10 +23,50 @@
                         </span>
                         <input type="text" class="form-control" placeholder="Buscar men&uacute;..."
                                value="@_searchText" @oninput="OnSearchChanged" />
+                        @if (!string.IsNullOrWhiteSpace(_searchText))
+                        {
+                            <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="ClearSearch">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        }
                     </div>
                 </div>
 
-                @if (_favorites.Any())
+                @if (!string.IsNullOrWhiteSpace(_searchText))
+                {
+                    <div class="sidebar-search-results">
+                        <div class="results-header">
+                            <i class="bi bi-funnel"></i>
+                            <span>@_searchResults.Count resultado(s)</span>
+                        </div>
+                        <div class="results-list">
+                            @if (_searchResults.Any())
+                            {
+                                @foreach (var result in _searchResults)
+                                {
+                                    <div class="search-result-item" @onclick="@(() => NavigateToSearchResult(result))">
+                                        <i class="bi @result.Icon"></i>
+                                        <div class="result-info">
+                                            <span class="result-name">@result.Name</span>
+                                            @if (!string.IsNullOrEmpty(result.Breadcrumb))
+                                            {
+                                                <span class="result-breadcrumb">@result.Breadcrumb</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="no-results">
+                                    <i class="bi bi-emoji-frown"></i>
+                                    <span>Sin resultados</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else if (_favorites.Any())
                 {
                     <div class="sidebar-favorites">
                         <div class="favorites-header">
@@ -46,20 +86,23 @@
                 }
             }
 
-            <nav class="sidebar-nav flex-column nav nav-pills">
-                @if (Items != null)
-                {
-                    @foreach (var item in Items.OrderBy(m => m.Orden))
+            @if (string.IsNullOrWhiteSpace(_searchText))
+            {
+                <nav class="sidebar-nav flex-column nav nav-pills">
+                    @if (Items != null)
                     {
-                        <DynamicMenuItem Item="item" Level="0" IsCollapsed="IsCollapsed"
-                            GetExpandedState="GetExpandedState"
-                            SetExpandedState="SetExpandedState"
-                            GetIcon="GetIcon"
-                            FindItemByRoute="FindItemByRoute"
-                            AllItems="Items" />
+                        @foreach (var item in Items.OrderBy(m => m.Orden))
+                        {
+                            <DynamicMenuItem Item="item" Level="0" IsCollapsed="IsCollapsed"
+                                GetExpandedState="GetExpandedState"
+                                SetExpandedState="SetExpandedState"
+                                GetIcon="GetIcon"
+                                FindItemByRoute="FindItemByRoute"
+                                AllItems="Items" />
+                        }
                     }
-                }
-            </nav>
+                </nav>
+            }
 
             <div class="sidebar-version">
                 Versi&oacute;n: <span>@_version</span>
@@ -82,6 +125,7 @@
     
     private string _searchText = string.Empty;
     private List<MenuItem> _filteredItems = new();
+    private List<SearchResultItem> _searchResults = new();
     
     private Dictionary<string, string> _favorites = new();
 
@@ -325,6 +369,14 @@
         return null;
     }
 
+    private class SearchResultItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Route { get; set; } = string.Empty;
+        public string Breadcrumb { get; set; } = string.Empty;
+    }
+
     private bool GetExpandedState(long? pkId) => 
         pkId.HasValue && expandedStates.TryGetValue(pkId.Value, out var state) ? state : false;
 
@@ -387,7 +439,66 @@
     private async Task OnSearchChanged(ChangeEventArgs e)
     {
         _searchText = e.Value?.ToString() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(_searchText))
+        {
+            _searchResults = FilterMenuItems(Items, _searchText);
+        }
+        else
+        {
+            _searchResults.Clear();
+        }
+        StateHasChanged();
         await Task.CompletedTask;
+    }
+    
+    private void ClearSearch()
+    {
+        _searchText = string.Empty;
+        _searchResults.Clear();
+        StateHasChanged();
+    }
+    
+    private List<SearchResultItem> FilterMenuItems(List<MenuItem> items, string searchText)
+    {
+        var results = new List<SearchResultItem>();
+        var lowerSearch = searchText.ToLowerInvariant();
+        SearchRecursive(items, lowerSearch, results, new List<string>());
+        return results;
+    }
+
+    private void SearchRecursive(List<MenuItem> items, string searchText, List<SearchResultItem> results, List<string> breadcrumb)
+    {
+        foreach (var item in items.OrderBy(m => m.Orden))
+        {
+            var currentBreadcrumb = string.Join(" > ", breadcrumb);
+            var matches = item.Nombre.ToLowerInvariant().Contains(searchText);
+            
+            if (item.Children?.Any() == true)
+            {
+                var newBreadcrumb = new List<string>(breadcrumb) { item.Nombre };
+                SearchRecursive(item.Children, searchText, results, newBreadcrumb);
+                // If a child matched, the parent is implicitly relevant but we only show leaf/results in the flat list
+            }
+
+            if (matches && !item.Children.Any())
+            {
+                results.Add(new SearchResultItem
+                {
+                    Name = item.Nombre,
+                    Icon = GetIcon(item.ImageUrl),
+                    Route = item.Ruta,
+                    Breadcrumb = currentBreadcrumb
+                });
+            }
+        }
+    }
+    
+    private void NavigateToSearchResult(SearchResultItem result)
+    {
+        if (!string.IsNullOrEmpty(result.Route))
+        {
+            NavigationManager.NavigateTo(result.Route);
+        }
     }
     
     private void NavigateToFavorite(string itemName)
@@ -427,6 +538,7 @@
 
     .sidebar-search-section {
         padding: 12px;
+        margin-top: 50px;
         border-bottom: 1px solid var(--mud-palette-divider);
     }
 
@@ -457,6 +569,86 @@
     .sidebar-favorites {
         padding: 8px 12px;
         border-bottom: 1px solid var(--mud-palette-divider);
+    }
+
+    .sidebar-search-results {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--mud-palette-divider);
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+
+    .results-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .results-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .search-result-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .search-result-item:hover {
+        background: rgba(99, 102, 241, 0.15);
+    }
+
+    .search-result-item i {
+        font-size: 0.9rem;
+        color: var(--mud-palette-primary);
+    }
+
+    .result-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .result-name {
+        font-size: 0.82rem;
+        color: var(--mud-palette-drawer-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .result-breadcrumb {
+        font-size: 0.68rem;
+        color: var(--mud-palette-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .no-results {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.8rem;
+        font-style: italic;
+    }
+
+    .no-results i {
+        font-size: 1.1rem;
     }
 
     .favorites-header {
@@ -597,6 +789,18 @@
     .bootstrap-sidebar.morena .favorite-item:hover {
         background: rgba(205, 133, 63, 0.2);
         color: #DEB887;
+    }
+
+    .bootstrap-sidebar.morena .search-result-item:hover {
+        background: rgba(205, 133, 63, 0.2);
+    }
+
+    .bootstrap-sidebar.morena .search-result-item i {
+        color: #CD853F;
+    }
+
+    .bootstrap-sidebar.morena .result-name {
+        color: #F4E4C1;
     }
 
     .bootstrap-sidebar.morena .sidebar-version {
