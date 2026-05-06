@@ -1,6 +1,6 @@
 ﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Nomina;
-using EG.Domain.DTOs.Responses.Nomina;
+using EG.Domain.DTOs.Responses.Patrimonio;
 
 namespace EG.Application.Interfaces.Configuracion.Catalogo.Patrimonio
 {

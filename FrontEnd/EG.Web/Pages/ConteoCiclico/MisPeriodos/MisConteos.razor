@@ -1,5 +1,5 @@
 @page "/ALMAConteo"
-@using EG.Web.Models.ConteoCiclico
+@using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @using EG.Web.Contracts
@@ -182,7 +182,7 @@
                                 @escaneo.CodigoBarras
                             </MudChip>
                         </MudTd>
-                        <MudTd>@escaneo.PersonaNombreCompleto</MudTd>
+                        <MudTd>@escaneo.PersonaNombre @escaneo.PersonaPaterno @escaneo.PersonaMaterno</MudTd>
                         <MudTd>@escaneo.PersonaClave</MudTd>
                         <MudTd>@escaneo.BienClave</MudTd>
                         <MudTd>
@@ -369,7 +369,7 @@
                 ID = e.PkidDetalleEscaneo,
                 Conteo_ID = e.FkidConteoAlma,
                 Código_Barras = e.CodigoBarras ?? "",
-                Persona = e.PersonaNombreCompleto,
+                Persona = e.PersonaNombre,
                 Clave_Persona = e.PersonaClave ?? "",
                 Clave_Bien = e.BienClave ?? "",
                 Descripción_Bien = e.BienDescripcion ?? "",

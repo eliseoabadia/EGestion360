@@ -1,7 +1,7 @@
 using EG.Common.Helper;
+using EG.Domain.DTOs.Responses.General;
 using EG.Web.Contracts;
 using EG.Web.Models;
-using EG.Web.Models.Configuration;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;

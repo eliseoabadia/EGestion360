@@ -1,32 +1,5 @@
 namespace EG.Web.Models.ConteoCiclico;
 
-public class ConteoDetalleResponse
-{
-    public int PkidDetalleConteo { get; set; }
-
-    public int FkidConteoAlma { get; set; }
-
-    public int FkidNumeroConteoAlma { get; set; }
-
-    public int FkidPersonaNom { get; set; }
-
-    public string? PersonaNombre { get; set; }
-
-    public decimal Cantidad { get; set; }
-
-    public DateTime Fecha { get; set; }
-
-    public bool Activo { get; set; }
-
-    public DateTime? FechaCreacion { get; set; }
-
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
-
-    public int? UsuarioModificacion { get; set; }
-}
-
 public class BienBusquedaResponse
 {
     public int PkidBien { get; set; }

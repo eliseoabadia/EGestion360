@@ -1,6 +1,6 @@
 using EG.Common.Helper;
+using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts.Configuration;
-using EG.Web.Models.Configuration;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using SortDirection = MudBlazor.SortDirection;

@@ -2,10 +2,10 @@ using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using AutoMapper;
 using EG.Domain.DTOs.Requests.Almacen;
-using EG.Domain.DTOs.Responses.Almacen;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EG.Domain.DTOs.Responses.ConteoCiclico;
 
 namespace EG.ApiCoreBS.Controllers.Almacen
 {

@@ -1,9 +1,9 @@
 using EG.Common.Helper;
 using EG.Web.Contracts.Configuration;
-using EG.Web.Models;
-using EG.Web.Models.Configuration;
+using EG.Domain.DTOs.Responses.General;
 using Microsoft.JSInterop;
 using SortDirection = MudBlazor.SortDirection;
+using EG.Web.Models;
 
 namespace EG.Web.Services.Configuration
 {

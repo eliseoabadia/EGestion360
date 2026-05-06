@@ -1,6 +1,7 @@
 using AutoMapper;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
+using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Almacen

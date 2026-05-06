@@ -1,5 +1,4 @@
 using Microsoft.JSInterop;
-using EG.Web.Models.Configuration;
 using System.Text.Json;
 
 namespace EG.Web.Services

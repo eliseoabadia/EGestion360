@@ -1,5 +1,5 @@
 ﻿using EG.Web.Models;
-using EG.Web.Models.Configuration;
+using EG.Domain.DTOs.Responses.General;
 using SortDirection = MudBlazor.SortDirection;
 
 namespace EG.Web.Contracts.Configuration

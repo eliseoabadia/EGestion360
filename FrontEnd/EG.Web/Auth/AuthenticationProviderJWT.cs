@@ -1,6 +1,5 @@
 using EG.Common.GenericModel;
 using EG.Web.Helpers;
-using EG.Web.Models.Configuration;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;

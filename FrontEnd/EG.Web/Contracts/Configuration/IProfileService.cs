@@ -1,4 +1,4 @@
-﻿using EG.Web.Models.Configuration;
+﻿using EG.Dommain.DTOs.Responses;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 

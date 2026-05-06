@@ -1,17 +1,30 @@
 using EG.Common.Helper;
+using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.DTOs.Responses.Almacen;
+using EG.Domain.DTOs.Responses.Contabilidad;
+using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.DTOs.Responses.General;
+using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Domain.DTOs.Responses.Tesoreria;
+using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts;
-using EG.Web.Models.Adquisicion;
-using EG.Web.Models.Almacen;
-using EG.Web.Models.Configuration;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Models.Patrimonio;
-using EG.Web.Models.Presupuestales;
-using EG.Web.Models.Tesoreria;
+
+
+//using EG.Web.Models.ConteoCiclico;
+
+//using EG.Web.Models.Adquisicion;
+//using EG.Web.Models.Almacen;
+//using EG.Web.Models.Configuration;
+//using EG.Web.Models.Configuration.Catalogo.ClavePrograma;
+//using EG.Web.Models.ConteoCiclico;
+//using EG.Web.Models.Patrimonio;
+//using EG.Web.Models.Presupuestales;
+//using EG.Web.Models.Tesoreria;
 using EG.Web.Services;
 using Microsoft.JSInterop;
-using EG.Domain.DTOs.Responses.Contabilidad;
-using EG.Domain.DTOs.Responses.Nomina;
-using EG.Web.Models.Configuration.Catalogo.ClavePrograma;
 
 namespace EG.Web.Extensions;
 
@@ -43,25 +56,25 @@ public static class ApiServiceExtensions
         //RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
         //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
-RegisterCrud<FamiliaResponse>(services, "api/Familia");
-RegisterCrud<UnidadeResponse>(services, "api/Unidades");
-RegisterCrud<MotivoEsResponse>(services, "api/MotivoEs");
-RegisterCrud<EstatusSolicitudResponse>(services, "api/EstatusSol");
-// RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo"); // Comentar para evitar ambigüedad
+        RegisterCrud<FamiliaResponse>(services, "api/Familia");
+        RegisterCrud<UnidadeResponse>(services, "api/Unidades");
+        RegisterCrud<MotivoEsResponse>(services, "api/MotivoEs");
+        RegisterCrud<EstatusSolicitudResponse>(services, "api/EstatusSol");
+        // RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo"); // Comentar para evitar ambigüedad
 
-// Catálogos de Tesorería
-RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
-RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
-RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
-RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
-RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
-RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
+        // Catálogos de Tesorería
+        RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
+        RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
+        RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
+        RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
+        RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
+        RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
 
-// Catálogos de Presupuestales
-RegisterCrud<GfResponse>(services, "api/Gf");
-RegisterCrud<FnResponse>(services, "api/Fn");
+        // Catálogos de Presupuestales
+        RegisterCrud<GfResponse>(services, "api/Gf");
+        RegisterCrud<FnResponse>(services, "api/Fn");
 
-// Catálogos de Adquisiciones
+        // Catálogos de Adquisiciones
         RegisterCrud<ModalidadResponse>(services, "api/Modalidad");
         RegisterCrud<TipoContratoResponse>(services, "api/TipoContrato");
         RegisterCrud<TipoDocumentoResponse>(services, "api/TipoDocumento");
@@ -83,6 +96,24 @@ RegisterCrud<FnResponse>(services, "api/Fn");
         RegisterCrud<PersonaResponse>(services, "api/Persona");
 
         RegisterCrud<MatrizConversionResponse>(services, "api/MatrizConversion");
+        RegisterCrud<UnidadResponsableResponse>(services, "api/UnidadResponsable");
+        RegisterCrud<GfResponse>(services, "api/Gf");
+        RegisterCrud<FnResponse>(services, "api/Fn");
+        RegisterCrud<SubFuncionResponse>(services, "api/SubFuncion");
+        RegisterCrud<ActividadInstitucionalResponse>(services, "api/ActividadInstitucional");
+        RegisterCrud<ProgramaPresupuestalResponse>(services, "api/ProgramaPresupuestal");
+        RegisterCrud<AniosResponse>(services, "api/Anios");
+        RegisterCrud<SectorResponse>(services, "api/Sector");
+        RegisterCrud<TipoRecursoResponse>(services, "api/TipoRecurso");
+        RegisterCrud<FuenteFinanciamientoResponse>(services, "api/FuenteFinanciamiento");
+        RegisterCrud<PgResponse>(services, "api/Pg");
+        RegisterCrud<RamoResponse>(services, "api/Ramo");
+        RegisterCrud<ProyectoResponse>(services, "api/Proyecto");
+        RegisterCrud<TipoPolizaResponse>(services, "api/TipoPoliza");
+        RegisterCrud<TipoDetallePolizaResponse>(services, "api/TipoDetallePoliza");
+        RegisterCrud<MatrizIngresoResponse>(services, "api/MatrizIngreso");
+        RegisterCrud<ConceptoResponse>(services, "api/Concepto");
+        RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");
 
         return services;
     }
