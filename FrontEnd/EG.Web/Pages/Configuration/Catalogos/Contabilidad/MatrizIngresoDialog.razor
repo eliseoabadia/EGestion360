@@ -9,104 +9,99 @@
 
 <BaseCrudDialog TItem="MatrizIngresoResponse"
                 Title="@dialogTitle"
-                MaxWidth="MaxWidth.ExtraLarge"
+                MaxWidth="MaxWidth.ExtraExtraLarge"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando datos..."
+                LoadingMessage="Cargando catálogos..."
                 OnConfirm="GuardarCambiosAsync">
 
     @if (_loading)
     {
-        <MudProgressCircular Indeterminate="true" />
+        <div class="d-flex justify-center align-center py-8">
+            <MudProgressCircular Indeterminate="true" />
+            <MudText Class="ml-3">Cargando catálogos...</MudText>
+        </div>
     }
     else
     {
-        <MudContainer Class="py-4">
-            <MudGrid GutterSize="2">
+        <MudContainer Class="py-2">
+            <MudGrid GutterSize="2" Spacing="2">
                 <MudItem xs="12">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Referencia Principal</MudText>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="section-title">Referencia Principal</MudText>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdPrograma" Label="Programa" Variant="Variant.Outlined" Required="true" Dense="true">
-                        @foreach (var prog in _programas)
-                        {
-                            <MudSelectItem T="int?" Value="prog.PkidPrograma">@prog.Clave - @prog.Descripcion</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedProgramaText" ValueChanged="OnProgramaChanged"
+                                     Label="Programa" Variant="Variant.Outlined"
+                                     SearchFunc="SearchProgramas" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdOrigen" Label="Origen de Recursos" Variant="Variant.Outlined" Required="true" Dense="true">
-                        @foreach (var ori in _origenes)
-                        {
-                            <MudSelectItem T="int?" Value="ori.PkidOrigen">@ori.Descripcion</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedOrigenText" ValueChanged="OnOrigenChanged"
+                                     Label="Origen de Recursos" Variant="Variant.Outlined"
+                                     SearchFunc="SearchOrigenes" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
-                <MudItem xs="12" class="mt-4">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Cuentas Contables</MudText>
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableAutorizado" Label="Cta. Presupuesto Autorizado" Variant="Variant.Outlined" Required="true" Dense="true">
-                        @foreach (var cue in _cuentas)
-                        {
-                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
-                        }
-                    </MudSelect>
+                <MudItem xs="12" class="mt-2">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="section-title">Cuentas Contables</MudText>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContablePorEjercer" Label="Cuenta Presupuesto por Ejecutar" Variant="Variant.Outlined" Dense="true">
-                        @foreach (var cue in _cuentas)
-                        {
-                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedAutorizadoText" ValueChanged="OnAutorizadoChanged"
+                                     Label="Cta. Presupuesto Autorizado" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuentas" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableModificado" Label="Cuenta Presupuesto Modificado" Variant="Variant.Outlined" Dense="true">
-                        @foreach (var cue in _cuentas)
-                        {
-                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedPorEjercerText" ValueChanged="OnPorEjercerChanged"
+                                     Label="Cuenta Presupuesto por Ejecutar" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuentas" Dense="true"
+                                     DebounceInterval="150"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableDevengado" Label="Cuenta Presupuesto Devengado" Variant="Variant.Outlined" Dense="true">
-                        @foreach (var cue in _cuentas)
-                        {
-                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedModificadoText" ValueChanged="OnModificadoChanged"
+                                     Label="Cuenta Presupuesto Modificado" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuentas" Dense="true"
+                                     DebounceInterval="150"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableRecaudado" Label="Cuenta Presupuesto Recaudado" Variant="Variant.Outlined" Dense="true">
-                        @foreach (var cue in _cuentas)
-                        {
-                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedDevengadoText" ValueChanged="OnDevengadoChanged"
+                                     Label="Cuenta Presupuesto Devengado" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuentas" Dense="true"
+                                     DebounceInterval="150"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableDeposito" Label="Cuenta de Depósito" Variant="Variant.Outlined" Dense="true">
-                        @foreach (var cue in _cuentas)
-                        {
-                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudAutocomplete T="string" Value="@_selectedRecaudadoText" ValueChanged="OnRecaudadoChanged"
+                                     Label="Cuenta Presupuesto Recaudado" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuentas" Dense="true"
+                                     DebounceInterval="150"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedDepositoText" ValueChanged="OnDepositoChanged"
+                                     Label="Cuenta de Depósito" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuentas" Dense="true"
+                                     DebounceInterval="150"
+                                     Virtualize="true" MaxItems="500" />
                 </MudItem>
 
                 @if (Id.HasValue)
                 {
-                    <MudItem xs="12" class="mt-4">
-                        <MudSwitch T="bool" @bind-Value="_item.Activo" Label="Registro Activo" Color="Color.Success" />
+                    <MudItem xs="12" class="mt-2">
+                        <MudSwitch T="bool" @bind-Value="_item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
                     </MudItem>
                 }
             </MudGrid>
@@ -124,9 +119,20 @@
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private bool _loading = true;
 
-    private List<ProgramaLookup> _programas = new();
-    private List<OrigenLookup> _origenes = new();
-    private List<CuentaLookup> _cuentas = new();
+    private string _selectedProgramaText = string.Empty;
+    private string _selectedOrigenText = string.Empty;
+    private string _selectedAutorizadoText = string.Empty;
+    private string _selectedPorEjercerText = string.Empty;
+    private string _selectedModificadoText = string.Empty;
+    private string _selectedDevengadoText = string.Empty;
+    private string _selectedRecaudadoText = string.Empty;
+    private string _selectedDepositoText = string.Empty;
+
+    private List<GenericLookup> _allProgramas = new();
+    private List<GenericLookup> _allOrigenes = new();
+    private List<GenericLookup> _allCuentas = new();
+
+    private const int MaxItemsPerCombo = 500;
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,14 +148,15 @@
     {
         try
         {
-            var responseProgramas = await Http.GetFromJsonAsync<List<ProgramaLookup>>("api/MatrizIngreso/GetPrograma");
-            if (responseProgramas != null) _programas = responseProgramas;
+            var progTask = Http.GetFromJsonAsync<List<GenericLookup>>("api/MatrizIngreso/GetPrograma");
+            var oriTask = Http.GetFromJsonAsync<List<GenericLookup>>("api/MatrizIngreso/GetOrigen");
+            var ctaTask = Http.GetFromJsonAsync<List<GenericLookup>>("api/MatrizIngreso/GetCuentaContable");
 
-            var responseOrigenes = await Http.GetFromJsonAsync<List<OrigenLookup>>("api/MatrizIngreso/GetOrigen");
-            if (responseOrigenes != null) _origenes = responseOrigenes;
+            await Task.WhenAll(progTask, oriTask, ctaTask);
 
-            var responseCuentas = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizIngreso/GetCuentaContable");
-            if (responseCuentas != null) _cuentas = responseCuentas;
+            _allProgramas = progTask.Result?.DistinctBy(x => x.ClaveNombre).ToList() ?? new();
+            _allOrigenes = oriTask.Result?.DistinctBy(x => x.ClaveNombre).ToList() ?? new();
+            _allCuentas = ctaTask.Result?.DistinctBy(x => x.ClaveNombre).ToList() ?? new();
         }
         catch (Exception ex)
         {
@@ -165,6 +172,30 @@
             if (response?.Success == true && response.Data != null)
             {
                 _item = response.Data;
+
+                var prog = _allProgramas.FirstOrDefault(p => p.PkidCuenta == _item.FkIdPrograma);
+                if (prog != null) _selectedProgramaText = prog.ClaveNombre;
+
+                var ori = _allOrigenes.FirstOrDefault(o => o.PkidCuenta == _item.FkIdOrigen);
+                if (ori != null) _selectedOrigenText = ori.ClaveNombre;
+
+                var ctaA = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableAutorizado);
+                if (ctaA != null) _selectedAutorizadoText = ctaA.ClaveNombre;
+
+                var ctaPE = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContablePorEjercer);
+                if (ctaPE != null) _selectedPorEjercerText = ctaPE.ClaveNombre;
+
+                var ctaM = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableModificado);
+                if (ctaM != null) _selectedModificadoText = ctaM.ClaveNombre;
+
+                var ctaD = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableDevengado);
+                if (ctaD != null) _selectedDevengadoText = ctaD.ClaveNombre;
+
+                var ctaR = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableRecaudado);
+                if (ctaR != null) _selectedRecaudadoText = ctaR.ClaveNombre;
+
+                var ctaDep = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableDeposito);
+                if (ctaDep != null) _selectedDepositoText = ctaDep.ClaveNombre;
             }
         }
         catch (Exception ex)
@@ -173,10 +204,64 @@
         }
     }
 
+    private void OnProgramaChanged(string value) { _selectedProgramaText = value; }
+    private void OnOrigenChanged(string value) { _selectedOrigenText = value; }
+    private void OnAutorizadoChanged(string value) { _selectedAutorizadoText = value; }
+    private void OnPorEjercerChanged(string value) { _selectedPorEjercerText = value; }
+    private void OnModificadoChanged(string value) { _selectedModificadoText = value; }
+    private void OnDevengadoChanged(string value) { _selectedDevengadoText = value; }
+    private void OnRecaudadoChanged(string value) { _selectedRecaudadoText = value; }
+    private void OnDepositoChanged(string value) { _selectedDepositoText = value; }
+
+    private Task<IEnumerable<string>> SearchProgramas(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value) ? _allProgramas
+            : _allProgramas.Where(p => p.ClaveNombre.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(p => p.ClaveNombre).Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchOrigenes(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value) ? _allOrigenes
+            : _allOrigenes.Where(o => o.ClaveNombre.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(o => o.ClaveNombre).Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchCuentas(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value) ? _allCuentas
+            : _allCuentas.Where(c => c.ClaveNombre.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(c => c.ClaveNombre).Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
     private async Task GuardarCambiosAsync()
     {
         try
         {
+            var prog = _allProgramas.FirstOrDefault(p => p.ClaveNombre == _selectedProgramaText);
+            if (prog != null) _item.FkIdPrograma = prog.PkidCuenta;
+
+            var ori = _allOrigenes.FirstOrDefault(o => o.ClaveNombre == _selectedOrigenText);
+            if (ori != null) _item.FkIdOrigen = ori.PkidCuenta;
+
+            var ctaA = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedAutorizadoText);
+            if (ctaA != null) _item.FkIdCuentaContableAutorizado = ctaA.PkidCuenta;
+
+            var ctaPE = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedPorEjercerText);
+            if (ctaPE != null) _item.FkIdCuentaContablePorEjercer = ctaPE.PkidCuenta;
+
+            var ctaM = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedModificadoText);
+            if (ctaM != null) _item.FkIdCuentaContableModificado = ctaM.PkidCuenta;
+
+            var ctaD = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedDevengadoText);
+            if (ctaD != null) _item.FkIdCuentaContableDevengado = ctaD.PkidCuenta;
+
+            var ctaR = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedRecaudadoText);
+            if (ctaR != null) _item.FkIdCuentaContableRecaudado = ctaR.PkidCuenta;
+
+            var ctaDep = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedDepositoText);
+            if (ctaDep != null) _item.FkIdCuentaContableDeposito = ctaDep.PkidCuenta;
+
             bool success;
             if (Id.HasValue)
             {
@@ -205,22 +290,23 @@
         }
     }
 
-    class ProgramaLookup
-    {
-        public int PkidPrograma { get; set; }
-        public string Clave { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-    }
-
-    class OrigenLookup
-    {
-        public int PkidOrigen { get; set; }
-        public string Descripcion { get; set; } = string.Empty;
-    }
-
-    class CuentaLookup
+    class GenericLookup
     {
         public int PkidCuenta { get; set; }
         public string ClaveNombre { get; set; } = string.Empty;
     }
 }
+
+<style>
+    .section-title {
+        font-weight: 600;
+        padding-bottom: 4px;
+        border-bottom: 2px solid var(--mud-palette-primary);
+        margin-bottom: 8px;
+    }
+
+    .mud-autocomplete .mud-input-control-input-container {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+</style>

@@ -240,27 +240,37 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetPrograma")]
         public async Task<IActionResult> GetPrograma([FromQuery] int? idAnio = null)
         {
-            var programas = await _service.GetProgramasAsync(idAnio);
+            var query = _context.Set<Programa>().AsQueryable();
+            if (idAnio.HasValue)
+            {
+                query = query.Where(p => p.MatrizConversions.Any(mc => mc.FkidAnioSis == idAnio.Value && mc.Activo));
+            }
+
+            var programas = await query
+                .Select(p => new { PkidCuenta = p.PkidPrograma, ClaveNombre = p.Clave })
+                .Distinct()
+                .ToListAsync();
+
             return Ok(programas);
         }
 
         [HttpGet("GetAllProgramas")]
         public async Task<IActionResult> GetAllProgramas()
         {
-            var programas = await _service.GetProgramasAsync(null);
+            var programas = await _context.Set<Programa>()
+                .Select(p => new { PkidCuenta = p.PkidPrograma, ClaveNombre = p.Clave })
+                .Distinct()
+                .ToListAsync();
+
             return Ok(programas);
         }
 
         [HttpGet("GetPartida")]
         public async Task<IActionResult> GetPartida()
         {
-            var partidas = await _context.Set<MatrizConversion>()
-                .Where(mc => mc.Activo)
-                .Select(mc => new
-                {
-                    mc.FkidPartidaSisNavigation.PkidPartida,
-                    mc.FkidPartidaSisNavigation.Descripcion
-                })
+            var partidas = await _context.Set<Partidum1>()
+                .Where(p => p.Activo)
+                .Select(p => new { PkidCuenta = p.PkidPartida, ClaveNombre = p.Descripcion })
                 .Distinct()
                 .ToListAsync();
 
@@ -270,9 +280,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContableAprobado")]
         public async Task<IActionResult> GetCuentaContableAprobado()
         {
-            var cuentas = await _context.Set<CuentaContable>()
+            var cuentas = await _context.VwCuentas
                 .Where(c => c.ClaveOrd.StartsWith("8 2 1") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -281,9 +292,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContablePorEjercer")]
         public async Task<IActionResult> GetCuentaContablePorEjercer()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("8 2 2") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 2"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -292,9 +304,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContableModificado")]
         public async Task<IActionResult> GetCuentaContableModificado()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("8 2 3") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 3"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -303,9 +316,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContableComprometido")]
         public async Task<IActionResult> GetCuentaContableComprometido()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("8 2 4") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 4"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -314,9 +328,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContableDevengado")]
         public async Task<IActionResult> GetCuentaContableDevengado()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("8 2 5") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 5"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -325,9 +340,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContableEjercido")]
         public async Task<IActionResult> GetCuentaContableEjercido()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("8 2 6") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 6"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -336,9 +352,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContablePagado")]
         public async Task<IActionResult> GetCuentaContablePagado()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("8 2 7") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 7"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
@@ -347,9 +364,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContableGasto")]
         public async Task<IActionResult> GetCuentaContableGasto()
         {
-            var cuentas = await _context.Set<CuentaContable>()
-                .Where(c => c.ClaveOrd.StartsWith("5") && c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+            var cuentas = await _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("5"))
+                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);

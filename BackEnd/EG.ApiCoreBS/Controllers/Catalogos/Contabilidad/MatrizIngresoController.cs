@@ -285,7 +285,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetPrograma()
         {
             var programas = await _context.Set<Programa>()
-                .Select(p => new { p.PkidPrograma, p.Clave, p.Descripcion })
+                .Select(p => new { PkidCuenta = p.PkidPrograma, ClaveNombre = p.Clave + " - " + p.Descripcion })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(programas);
@@ -295,7 +296,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetOrigen()
         {
             var origenes = await _context.Set<Origen>()
-                .Select(o => new { o.PkidOrigen, o.Descripcion })
+                .Select(o => new { PkidCuenta = o.PkidOrigen, ClaveNombre = o.Descripcion })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(origenes);
@@ -304,9 +306,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaContable")]
         public async Task<IActionResult> GetCuentaContable()
         {
-            var cuentas = await _context.Set<CuentaContable>()
+            var cuentas = await _context.VwCuentas
                 .Where(c => c.NivelCuenta == 7)
-                .Select(c => new { PkidCuenta = c.PkidCuentaContable, ClaveNombre = c.Cuenta + " - " + c.Descripcion })
+                .Select(c => new { PkidCuenta = c.PkIdCuenta, ClaveNombre = c.ClaveNombre })
+                .Distinct()
                 .ToListAsync();
 
             return Ok(cuentas);
