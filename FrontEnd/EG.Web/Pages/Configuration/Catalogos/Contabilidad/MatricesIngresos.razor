@@ -9,7 +9,7 @@
     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%;">
         <PageHeader Title="Matriz de Ingresos"
-            Subtitle="Catálogo de matriz de ingresos"
+            Subtitle="Relación entre programas, orígenes y cuentas contables"
             Icon="@Icons.Material.Filled.SwapHoriz"
             CanCreate="@CanCreate"
             OnCreate="CreateItem"
@@ -19,7 +19,7 @@
             <GenericTable TItem="MatrizIngresoResponse"
                 @ref="table"
                 Title="Lista de Matriz de Ingresos"
-                SearchPlaceholder="Buscar por clave o descripción..."
+                SearchPlaceholder="Buscar por programa u origen..."
                 ShowExportButton="@CanExport"
                 ServerDataFunc="LoadServerData"
                 ExportFunc="ExportToExcel"
@@ -29,10 +29,15 @@
 
                 <Header>
                     <MudTh Class="col-acciones">Acciones</MudTh>
-                    <MudTh Class="col-id">ID</MudTh>
-                    <MudTh Class="col-clave">Clave</MudTh>
-                    <MudTh Class="col-descripcion">Descripción</MudTh>
-                    <MudTh Class="col-estado">Estado</MudTh>
+                    <MudTh Class="col-id">pK</MudTh>
+                    <MudTh Class="col-programa">Programa</MudTh>
+                    <MudTh Class="col-origen">Origen de Recursos</MudTh>
+                    <MudTh Class="col-cuenta">Cta. Presupuesto Autorizado</MudTh>
+                    <MudTh Class="col-cuenta">Cuenta Presupuesto por Ejecutar</MudTh>
+                    <MudTh Class="col-cuenta">Cuenta Presupuesto Modificado</MudTh>
+                    <MudTh Class="col-cuenta">Cuenta Presupuesto Devengado</MudTh>
+                    <MudTh Class="col-cuenta">Cuenta Presupuesto Recaudado</MudTh>
+                    <MudTh Class="col-cuenta">Cuenta de Depósito</MudTh>
                 </Header>
 
                 <Row Context="item">
@@ -53,13 +58,14 @@
                         </MudTooltip>
                     </MudTd>
                     <MudTd Class="col-id" @ondblclick="@(() => OpenDetail(item))">@item.PkidMatrizIngreso</MudTd>
-                    <MudTd Class="col-clave" @ondblclick="@(() => OpenDetail(item))">@item.Clave</MudTd>
-                    <MudTd Class="col-descripcion" @ondblclick="@(() => OpenDetail(item))">@item.Descripcion</MudTd>
-                    <MudTd Class="col-estado" @ondblclick="@(() => OpenDetail(item))">
-                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                            @(item.Activo ? "Sí" : "No")
-                        </MudChip>
-                    </MudTd>
+                    <MudTd Class="col-programa" @ondblclick="@(() => OpenDetail(item))">@item.ProgramaClave</MudTd>
+                    <MudTd Class="col-origen" @ondblclick="@(() => OpenDetail(item))">@item.OrigenDescripcion</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaAutorizadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaPorEjecutarNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaModificadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaDevengadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaRecaudadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaDepositoNombre</MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -76,7 +82,7 @@
     protected override Type EditDialogType => typeof(MatrizIngresoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<MatrizIngresoResponse>);
 
-    protected override string GetDefaultSortLabel() => "Clave";
+    protected override string GetDefaultSortLabel() => "ProgramaClave";
 
     private async Task OpenDetail(MatrizIngresoResponse item)
     {
@@ -91,8 +97,14 @@
         return items.Select(u => new
         {
             ID = u.PkidMatrizIngreso,
-            Clave = u.Clave,
-            Descripcion = u.Descripcion,
+            Programa = u.ProgramaClave,
+            OrigenRecursos = u.OrigenDescripcion,
+            CtaAutorizado = u.CuentaAutorizadoNombre,
+            CtaPorEjecutar = u.CuentaPorEjecutarNombre,
+            CtaModificado = u.CuentaModificadoNombre,
+            CtaDevengado = u.CuentaDevengadoNombre,
+            CtaRecaudado = u.CuentaRecaudadoNombre,
+            CtaDeposito = u.CuentaDepositoNombre,
             Activo = u.Activo ? "Sí" : "No",
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
         });
@@ -101,7 +113,7 @@
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.Descripcion ?? "la matriz de ingreso";
+        return response?.Data?.ProgramaClave ?? "la matriz de ingreso";
     }
 
     protected override async Task ReloadData()
@@ -126,23 +138,26 @@
         text-align: center;
     }
 
-    .custom-matriz-table .col-clave {
-        min-width: 100px;
+    .custom-matriz-table .col-programa {
+        min-width: 120px;
         max-width: 150px;
     }
 
-    .custom-matriz-table .col-descripcion {
-        min-width: 200px;
-        max-width: 400px;
+    .custom-matriz-table .col-origen {
+        min-width: 150px;
+        max-width: 200px;
+    }
+
+    .custom-matriz-table .col-cuenta {
+        min-width: 150px;
+        max-width: 180px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .custom-matriz-table .col-estado {
-        min-width: 80px;
-        max-width: 100px;
-        text-align: center;
+    .custom-matriz-table .mud-table-container {
+        min-width: 2000px;
     }
 
     .mud-table-row {

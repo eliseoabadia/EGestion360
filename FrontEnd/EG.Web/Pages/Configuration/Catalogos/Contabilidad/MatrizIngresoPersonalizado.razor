@@ -7,7 +7,7 @@
             <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Large" Color="Color.Primary" />
             <div>
                 <MudText Typo="Typo.h6" Class="font-weight-bold">Detalle de Ingreso</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Default">@Item.Clave</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Default">@Item.ProgramaClave</MudText>
             </div>
         </div>
         <div class="d-flex align-center gap-2">
@@ -21,59 +21,114 @@
     <div class="detail-section mb-4">
         <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Información General</MudText>
         <MudGrid>
-            <MudItem xs="12" sm="4">
-                <div class="info-box">
-                    <MudIcon Icon="@Icons.Material.Filled.Tag" Size="Size.Small" Color="Color.Primary" />
-                    <div class="ml-3">
-                        <MudText Typo="Typo.caption" Color="Color.Default">Clave</MudText>
-                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.Clave</MudText>
-                    </div>
-                </div>
-            </MudItem>
-            <MudItem xs="12" sm="8">
-                <div class="info-box">
-                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" />
-                    <div class="ml-3">
-                        <MudText Typo="Typo.caption" Color="Color.Default">Descripción</MudText>
-                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.Descripcion</MudText>
-                    </div>
-                </div>
-            </MudItem>
-        </MudGrid>
-        <MudGrid Class="mt-3">
             <MudItem xs="12" sm="6">
                 <div class="info-box">
-                    <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Info" />
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Small" Color="Color.Primary" />
                     <div class="ml-3">
-                        <MudText Typo="Typo.caption" Color="Color.Default">Fecha de Creación</MudText>
-                        <MudText Typo="Typo.body1" Class="font-weight-medium">@(Item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Default">Programa</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.ProgramaClave</MudText>
                     </div>
                 </div>
             </MudItem>
             <MudItem xs="12" sm="6">
                 <div class="info-box">
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="@(Item.Activo ? Color.Success : Color.Error)" />
+                    <MudIcon Icon="@Icons.Material.Filled.Source" Size="Size.Small" Color="Color.Secondary" />
                     <div class="ml-3">
-                        <MudText Typo="Typo.caption" Color="Color.Default">Estado</MudText>
-                        <MudText Typo="Typo.body1" Class="font-weight-medium">@(Item.Activo ? "Activo" : "Inactivo")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Default">Origen de Recursos</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.OrigenDescripcion</MudText>
                     </div>
                 </div>
             </MudItem>
         </MudGrid>
     </div>
 
-    <MudDivider Class="mt-4 mb-3" />
+    <MudDivider Class="mb-4" />
 
-    <div class="detail-footer d-flex justify-end">
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="OnClose" StartIcon="@Icons.Material.Filled.Close">
-            Cerrar
-        </MudButton>
+    <div class="detail-section">
+        <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Cuentas Contables</MudText>
+        
+        @foreach (var cuenta in GetCuentaMappings())
+        {
+            <MudCard Class="cuenta-card mb-2" Elevation="1">
+                <MudCardHeader>
+                    <HeaderContent>
+                        <div class="cuenta-header d-flex align-center justify-space-between">
+                            <div class="d-flex align-center gap-3">
+                                <MudIcon Icon="@GetConceptIcon(cuenta.Concepto)" Size="Size.Medium" Color="Color.Primary" />
+                                <MudText Typo="Typo.body1" Class="font-weight-medium">@cuenta.Concepto</MudText>
+                            </div>
+                            <MudIconButton Icon="@(_expandedConcepts.Contains(cuenta.Concepto) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                Size="Size.Small"
+                                OnClick="@(() => ToggleConcept(cuenta.Concepto))" />
+                        </div>
+                    </HeaderContent>
+                </MudCardHeader>
+                @if (_expandedConcepts.Contains(cuenta.Concepto))
+                {
+                    <MudCardContent>
+                        <div class="cuenta-detail">
+                            <MudText Typo="Typo.caption" Color="Color.Default" Class="mb-1">Cuenta Contable Asignada</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-medium">@cuenta.CuentaNombre</MudText>
+                        </div>
+                    </MudCardContent>
+                }
+            </MudCard>
+        }
     </div>
 </MudPaper>
 
 @code {
     [Parameter] public MatrizIngresoResponse Item { get; set; } = null!;
     [Parameter] public EventCallback OnClose { get; set; }
+
+    private HashSet<string> _expandedConcepts = new();
+
+    protected override void OnInitialized()
+    {
+        _expandedConcepts.Add("Presupuesto Autorizado");
+    }
+
+    private void ToggleConcept(string concepto)
+    {
+        if (_expandedConcepts.Contains(concepto))
+            _expandedConcepts.Remove(concepto);
+        else
+            _expandedConcepts.Add(concepto);
+        StateHasChanged();
+    }
+
+    private List<CuentaMapping> GetCuentaMappings()
+    {
+        return new()
+        {
+            new() { Concepto = "Presupuesto Autorizado", CuentaNombre = Item.CuentaAutorizadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Presupuesto por Ejecutar", CuentaNombre = Item.CuentaPorEjecutarNombre ?? "Sin asignar" },
+            new() { Concepto = "Presupuesto Modificado", CuentaNombre = Item.CuentaModificadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Presupuesto Devengado", CuentaNombre = Item.CuentaDevengadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Presupuesto Recaudado", CuentaNombre = Item.CuentaRecaudadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Cuenta de Depósito", CuentaNombre = Item.CuentaDepositoNombre ?? "Sin asignar" }
+        };
+    }
+
+    private string GetConceptIcon(string concepto)
+    {
+        return concepto switch
+        {
+            "Presupuesto Autorizado" => Icons.Material.Filled.Approval,
+            "Presupuesto por Ejecutar" => Icons.Material.Filled.TrendingUp,
+            "Presupuesto Modificado" => Icons.Material.Filled.Edit,
+            "Presupuesto Devengado" => Icons.Material.Filled.AccountBalance,
+            "Presupuesto Recaudado" => Icons.Material.Filled.Payment,
+            "Cuenta de Depósito" => Icons.Material.Filled.AccountBalanceWallet,
+            _ => Icons.Material.Filled.Info
+        };
+    }
+
+    public class CuentaMapping
+    {
+        public string Concepto { get; set; } = string.Empty;
+        public string CuentaNombre { get; set; } = string.Empty;
+    }
 }
 
 <style>
@@ -92,6 +147,25 @@
         background: var(--mud-palette-background);
         border-radius: 8px;
         border-left: 3px solid var(--mud-palette-primary);
+    }
+
+    .cuenta-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid var(--mud-palette-primary);
+    }
+
+    .cuenta-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .cuenta-header {
+        width: 100%;
+    }
+
+    .cuenta-detail {
+        padding: 8px 12px;
+        background: var(--mud-palette-background);
+        border-radius: 6px;
     }
 
     .gap-2 {

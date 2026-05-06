@@ -1,74 +1,170 @@
-@using MudBlazor
-@using EG.Web.Pages.Shared
-@using EG.Web.Contracts
+@page "/configuracion/contabilidad/matriz-conversion-ingresos-dialog"
 @using EG.Domain.DTOs.Responses.Contabilidad
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
 @using EG.Web.Services
-
 @inject IGenericCrudService<MatrizIngresoResponse> Service
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 
 <BaseCrudDialog TItem="MatrizIngresoResponse"
-             Title="@dialogTitle"
-             MaxWidth="MaxWidth.Small"
-             ActionText="@actionText"
-             ProcessingText="@processingText"
-             LoadingMessage="Cargando datos..."
-             OnConfirm="GuardarCambiosAsync">
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.ExtraLarge"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
 
-    <BaseEntityForm TEntity="MatrizIngresoResponse"
-                    @ref="form"
-                    ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave"
-                      Label="Clave"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Numbers"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Clave)" />
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudContainer Class="py-4">
+            <MudGrid GutterSize="2">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Referencia Principal</MudText>
+                </MudItem>
 
-        <MudTextField @bind-Value="item.Descripcion"
-                      Label="Descripción"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Description"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Descripcion)" />
-    </BaseEntityForm>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdPrograma" Label="Programa" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var prog in _programas)
+                        {
+                            <MudSelectItem T="int?" Value="prog.PkidPrograma">@prog.Clave - @prog.Descripcion</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdOrigen" Label="Origen de Recursos" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var ori in _origenes)
+                        {
+                            <MudSelectItem T="int?" Value="ori.PkidOrigen">@ori.Descripcion</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" class="mt-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Cuentas Contables</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableAutorizado" Label="Cta. Presupuesto Autorizado" Variant="Variant.Outlined" Required="true" Dense="true">
+                        @foreach (var cue in _cuentas)
+                        {
+                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContablePorEjercer" Label="Cuenta Presupuesto por Ejecutar" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var cue in _cuentas)
+                        {
+                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableModificado" Label="Cuenta Presupuesto Modificado" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var cue in _cuentas)
+                        {
+                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableDevengado" Label="Cuenta Presupuesto Devengado" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var cue in _cuentas)
+                        {
+                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableRecaudado" Label="Cuenta Presupuesto Recaudado" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var cue in _cuentas)
+                        {
+                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="_item.FkIdCuentaContableDeposito" Label="Cuenta de Depósito" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var cue in _cuentas)
+                        {
+                            <MudSelectItem T="int?" Value="cue.PkidCuenta">@cue.ClaveNombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                @if (Id.HasValue)
+                {
+                    <MudItem xs="12" class="mt-4">
+                        <MudSwitch T="bool" @bind-Value="_item.Activo" Label="Registro Activo" Color="Color.Success" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudContainer>
+    }
 </BaseCrudDialog>
 
 @code {
     [Parameter] public int? Id { get; set; }
-
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private BaseEntityForm<MatrizIngresoResponse> form = null!;
-    private MatrizIngresoResponse item = new() { Activo = true };
-
+    private MatrizIngresoResponse _item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Matriz de Ingresos" : "Nueva Matriz de Ingresos";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private bool _loading = true;
+
+    private List<ProgramaLookup> _programas = new();
+    private List<OrigenLookup> _origenes = new();
+    private List<CuentaLookup> _cuentas = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarCatalogosAsync();
         if (Id.HasValue)
         {
-            await CargarDatos();
+            await CargarDatosAsync();
+        }
+        _loading = false;
+    }
+
+    private async Task CargarCatalogosAsync()
+    {
+        try
+        {
+            var responseProgramas = await Http.GetFromJsonAsync<List<ProgramaLookup>>("api/MatrizIngreso/GetPrograma");
+            if (responseProgramas != null) _programas = responseProgramas;
+
+            var responseOrigenes = await Http.GetFromJsonAsync<List<OrigenLookup>>("api/MatrizIngreso/GetOrigen");
+            if (responseOrigenes != null) _origenes = responseOrigenes;
+
+            var responseCuentas = await Http.GetFromJsonAsync<List<CuentaLookup>>("api/MatrizIngreso/GetCuentaContable");
+            if (responseCuentas != null) _cuentas = responseCuentas;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
         }
     }
 
-    private async Task CargarDatos()
+    private async Task CargarDatosAsync()
     {
         try
         {
             var response = await Service.GetByIdAsync(Id.Value);
             if (response?.Success == true && response.Data != null)
             {
-                item = response.Data;
+                _item = response.Data;
             }
         }
         catch (Exception ex)
@@ -84,12 +180,12 @@
             bool success;
             if (Id.HasValue)
             {
-                var response = await Service.UpdateAsync(item, Id.Value);
+                var response = await Service.UpdateAsync(_item, Id.Value);
                 success = response?.Success == true;
             }
             else
             {
-                var response = await Service.CreateAsync(item);
+                var response = await Service.CreateAsync(_item);
                 success = response?.Success == true;
             }
 
@@ -108,5 +204,23 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
-}
 
+    class ProgramaLookup
+    {
+        public int PkidPrograma { get; set; }
+        public string Clave { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+    }
+
+    class OrigenLookup
+    {
+        public int PkidOrigen { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+    }
+
+    class CuentaLookup
+    {
+        public int PkidCuenta { get; set; }
+        public string ClaveNombre { get; set; } = string.Empty;
+    }
+}
