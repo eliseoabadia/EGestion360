@@ -88,7 +88,7 @@
     {
         var parameters = new DialogParameters { ["Item"] = item };
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
-        var dialog = await DialogService.ShowAsync<MatrizIngresoPersonalizado>("Detalle de Ingreso", parameters, options);
+        var dialog = await DialogService.ShowAsync<MatrizIngresoPersonalizado>(string.Empty, parameters, options);
         await dialog.Result;
     }
 
