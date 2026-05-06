@@ -443,6 +443,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[CONTA].[Vw_MatrizIngresoColumnas]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[VW_EmpresaDepartamanto]",
          "ObjectType": 3
       },

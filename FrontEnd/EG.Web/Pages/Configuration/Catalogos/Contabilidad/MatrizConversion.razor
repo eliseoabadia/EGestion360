@@ -5,27 +5,27 @@
 @inherits BaseCrudPage<MatrizConversionResponse, MatrizConversionResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
-                    HasAccess="@HasAccess"
-                    NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    HasAccess="@HasAccess"
+    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%;">
         <PageHeader Title="Matriz de Conversión"
-                    Subtitle="Relación entre programas, partidas y cuentas contables"
-                    Icon="@Icons.Material.Filled.SwapHoriz"
-                    CanCreate="@CanCreate"
-                    OnCreate="CreateItem"
-                    OnRefresh="() => table.ReloadData()" />
+            Subtitle="Relación entre programas, partidas y cuentas contables"
+            Icon="@Icons.Material.Filled.SwapHoriz"
+            CanCreate="@CanCreate"
+            OnCreate="CreateItem"
+            OnRefresh="() => table.ReloadData()" />
 
         <div style="overflow-x: auto; flex: 1;" class="custom-matriz-table">
             <GenericTable TItem="MatrizConversionResponse"
-                          @ref="table"
-                          Title="Lista de Matriz de Conversión"
-                          SearchPlaceholder="Buscar por programa o partida..."
-                          ShowExportButton="@CanExport"
-                          ServerDataFunc="LoadServerData"
-                          ExportFunc="ExportToExcel"
-                          SearchString="@SearchString"
-                          SearchStringChanged="(s) => SearchString = s"
-                          OnSearch="OnSearch">
+                @ref="table"
+                Title="Lista de Matriz de Conversión"
+                SearchPlaceholder="Buscar por programa o partida..."
+                ShowExportButton="@CanExport"
+                ServerDataFunc="LoadServerData"
+                ExportFunc="ExportToExcel"
+                SearchString="@SearchString"
+                SearchStringChanged="(s) => SearchString = s"
+                OnSearch="OnSearch">
 
                 <Header>
                     <MudTh Class="col-acciones">Acciones</MudTh>
@@ -43,33 +43,33 @@
                 </Header>
 
                 <Row Context="item">
-                    <MudTd Class="col-acciones">
+                    <MudTd Class="col-acciones" @ondblclick="@(() => OpenDetail(item))">
                         <MudTooltip Text="Editar">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Visible="@CanUpdate"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidMatrizConversion))" />
+                                Visible="@CanUpdate"
+                                Color="Color.Primary"
+                                Size="Size.Small"
+                                OnClick="@(() => EditItem(item.PkidMatrizConversion))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Visible="@CanDelete"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteItem(item.PkidMatrizConversion))" />
+                                Visible="@CanDelete"
+                                Color="Color.Error"
+                                Size="Size.Small"
+                                OnClick="@(() => DeleteItem(item.PkidMatrizConversion))" />
                         </MudTooltip>
                     </MudTd>
-                    <MudTd Class="col-id">@item.PkidMatrizConversion</MudTd>
-                    <MudTd Class="col-programa">@item.ProgramaClave</MudTd>
-                    <MudTd Class="col-cuenta">@item.PartidaDescripcion</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaAprobadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaPorEjercerNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaModificadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaComprometidoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaDevengadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaEjercidoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaPagadoNombre</MudTd>
-                    <MudTd Class="col-cuenta">@item.CuentaGastoNombre</MudTd>
+                    <MudTd Class="col-id" @ondblclick="@(() => OpenDetail(item))">@item.PkidMatrizConversion</MudTd>
+                    <MudTd Class="col-programa" @ondblclick="@(() => OpenDetail(item))">@item.ProgramaClave</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.PartidaDescripcion</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaAprobadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaPorEjercerNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaModificadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaComprometidoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaDevengadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaEjercidoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaPagadoNombre</MudTd>
+                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaGastoNombre</MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -87,6 +87,14 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<MatrizConversionResponse>);
 
     protected override string GetDefaultSortLabel() => "ProgramaClave";
+
+    private async Task OpenDetail(MatrizConversionResponse item)
+    {
+        var parameters = new DialogParameters { ["Item"] = item };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<MatrizConversionPersonalizado>("Detalle de Conversión", parameters, options);
+        await dialog.Result;
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<MatrizConversionResponse> items)
     {
@@ -140,8 +148,11 @@
         text-overflow: ellipsis;
     }
 
-    /* Forzar scroll horizontal - aplicar a la tabla interna */
     .custom-matriz-table .mud-table-container {
         min-width: 2000px;
+    }
+
+    .mud-table-row {
+        cursor: pointer;
     }
 </style>

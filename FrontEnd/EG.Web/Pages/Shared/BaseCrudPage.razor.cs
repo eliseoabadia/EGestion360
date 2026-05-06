@@ -96,7 +96,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
         try
         {
-            CurrentPage = state.Page + 1;
+            var page = Math.Max(1, state.Page + 1);
+            CurrentPage = page;
             PageSize = state.PageSize;
             SortLabel = state.SortLabel ?? GetDefaultSortLabel();
             SortDirection = state.SortDirection;
@@ -165,7 +166,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         catch (TaskCanceledException) { }
     }
 
-    // ==================== MÉTODOS CRUD MEJORADOS ====================
+    // ==================== Mï¿½TODOS CRUD MEJORADOS ====================
 
     protected virtual async Task CreateItem()
     {
@@ -175,11 +176,11 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        Console.WriteLine("?? Abriendo diálogo de crear...");
+        Console.WriteLine("?? Abriendo diï¿½logo de crear...");
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}",
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-        Console.WriteLine("? Esperando resultado del diálogo...");
+        Console.WriteLine("? Esperando resultado del diï¿½logo...");
         var result = await dialog.Result;
         
         if (result == null)
@@ -188,7 +189,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
         
-        Console.WriteLine($"?? Resultado del diálogo: Canceled={result.Canceled}");
+        Console.WriteLine($"?? Resultado del diï¿½logo: Canceled={result.Canceled}");
         
         if (!result.Canceled)
         {
@@ -206,12 +207,12 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        Console.WriteLine($"?? Abriendo diálogo de editar para ID: {id}");
+        Console.WriteLine($"?? Abriendo diï¿½logo de editar para ID: {id}");
         var parameters = new DialogParameters { ["Id"] = id };
         var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-        Console.WriteLine("? Esperando resultado del diálogo...");
+        Console.WriteLine("? Esperando resultado del diï¿½logo...");
         var result = await dialog.Result;
         
         if (result == null)
@@ -220,7 +221,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
         
-        Console.WriteLine($"?? Resultado del diálogo: Canceled={result.Canceled}, Data={result.Data}");
+        Console.WriteLine($"?? Resultado del diï¿½logo: Canceled={result.Canceled}, Data={result.Data}");
 
         if (!result.Canceled)
         {
@@ -238,7 +239,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        // Obtener el nombre del item para mostrarlo en el diálogo
+        // Obtener el nombre del item para mostrarlo en el diï¿½logo
         var itemName = await GetItemNameForDelete(id);
 
         var parameters = new DialogParameters
@@ -263,13 +264,13 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         await dialog.Result;
     }
 
-    // Método para obtener el nombre del item (sobrescribir en cada página)
+    // Mï¿½todo para obtener el nombre del item (sobrescribir en cada pï¿½gina)
     protected virtual Task<string> GetItemNameForDelete(int id)
     {
         return Task.FromResult(string.Empty);
     }
 
-    // Método que ejecuta la eliminación real
+    // Mï¿½todo que ejecuta la eliminaciï¿½n real
     private async Task<bool> ExecuteDelete(int id)
     {
         try
@@ -301,14 +302,14 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // Método para recargar datos (sobrescribir en las páginas hijas)
+    // Mï¿½todo para recargar datos (sobrescribir en las pï¿½ginas hijas)
     protected virtual async Task ReloadData()
     {
-        // Este método será sobrescrito en las páginas hijas
+        // Este mï¿½todo serï¿½ sobrescrito en las pï¿½ginas hijas
         await Task.CompletedTask;
     }
 
-    // ==================== FIN MÉTODOS CRUD ====================
+    // ==================== FIN Mï¿½TODOS CRUD ====================
 
     protected virtual async Task ExportToExcel()
     {
@@ -342,7 +343,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"? Exportación exitosa: {response.Items.Count()} registros", Severity.Success);
+            Snackbar.Add($"? Exportaciï¿½n exitosa: {response.Items.Count()} registros", Severity.Success);
         }
         catch (Exception ex)
         {

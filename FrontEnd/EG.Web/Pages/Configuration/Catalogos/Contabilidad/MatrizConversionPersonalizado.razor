@@ -1,0 +1,190 @@
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using MudBlazor
+
+<MudPaper Elevation="2" Class="pa-4 rounded-lg detail-container">
+    <!-- Encabezado -->
+    <div class="detail-header d-flex align-center justify-space-between mb-4">
+        <div class="d-flex align-center gap-3">
+            <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Large" Color="Color.Primary" />
+            <div>
+                <MudText Typo="Typo.h6" Class="font-weight-bold">Detalle de Conversión</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Default">@Item.ProgramaClave</MudText>
+            </div>
+        </div>
+        <div class="d-flex align-center gap-2">
+            <MudChip T="string" Color="Color.Primary" Size="Size.Small">ID: @Item.PkidMatrizConversion</MudChip>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="OnClose" />
+        </div>
+    </div>
+
+    <MudDivider Class="mb-4" />
+
+    <!-- Información General -->
+    <div class="detail-section mb-4">
+        <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Información General</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <div class="info-box">
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Small" Color="Color.Primary" />
+                    <div class="ml-3">
+                        <MudText Typo="Typo.caption" Color="Color.Default">Programa</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.ProgramaClave</MudText>
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <div class="info-box">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" />
+                    <div class="ml-3">
+                        <MudText Typo="Typo.caption" Color="Color.Default">Partida</MudText>
+                        <MudText Typo="Typo.body1" Class="font-weight-medium">@Item.PartidaDescripcion</MudText>
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </div>
+
+    <MudDivider Class="mb-4" />
+
+    <!-- Cuentas Contables -->
+    <div class="detail-section">
+        <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Cuentas Contables</MudText>
+        
+        @foreach (var cuenta in GetCuentaMappings())
+        {
+            <MudCard Class="cuenta-card mb-2" Elevation="1">
+                <MudCardHeader>
+                    <HeaderContent>
+                        <div class="cuenta-header d-flex align-center justify-space-between">
+                            <div class="d-flex align-center gap-3">
+                                <MudIcon Icon="@GetConceptIcon(cuenta.Concepto)" Size="Size.Medium" Color="Color.Primary" />
+                                <MudText Typo="Typo.body1" Class="font-weight-medium">@cuenta.Concepto</MudText>
+                            </div>
+                            <MudIconButton Icon="@(_expandedConcepts.Contains(cuenta.Concepto) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                Size="Size.Small"
+                                OnClick="@(() => ToggleConcept(cuenta.Concepto))" />
+                        </div>
+                    </HeaderContent>
+                </MudCardHeader>
+                @if (_expandedConcepts.Contains(cuenta.Concepto))
+                {
+                    <MudCardContent>
+                        <div class="cuenta-detail">
+                            <MudText Typo="Typo.caption" Color="Color.Default" Class="mb-1">Cuenta Contable Asignada</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-medium">@cuenta.CuentaNombre</MudText>
+                        </div>
+                    </MudCardContent>
+                }
+            </MudCard>
+        }
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public MatrizConversionResponse Item { get; set; } = null!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private HashSet<string> _expandedConcepts = new();
+
+    protected override void OnInitialized()
+    {
+        // Expandir el primer concepto por defecto
+        _expandedConcepts.Add("Aprobado");
+    }
+
+    private void ToggleConcept(string concepto)
+    {
+        if (_expandedConcepts.Contains(concepto))
+            _expandedConcepts.Remove(concepto);
+        else
+            _expandedConcepts.Add(concepto);
+        StateHasChanged();
+    }
+
+    private List<CuentaMapping> GetCuentaMappings()
+    {
+        return new()
+        {
+            new() { Concepto = "Aprobado", CuentaNombre = Item.CuentaAprobadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Por Ejercer", CuentaNombre = Item.CuentaPorEjercerNombre ?? "Sin asignar" },
+            new() { Concepto = "Modificado", CuentaNombre = Item.CuentaModificadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Comprometido", CuentaNombre = Item.CuentaComprometidoNombre ?? "Sin asignar" },
+            new() { Concepto = "Devengado", CuentaNombre = Item.CuentaDevengadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Ejercido", CuentaNombre = Item.CuentaEjercidoNombre ?? "Sin asignar" },
+            new() { Concepto = "Pagado", CuentaNombre = Item.CuentaPagadoNombre ?? "Sin asignar" },
+            new() { Concepto = "Gasto", CuentaNombre = Item.CuentaGastoNombre ?? "Sin asignar" }
+        };
+    }
+
+    private string GetConceptIcon(string concepto)
+    {
+        return concepto switch
+        {
+            "Aprobado" => Icons.Material.Filled.Approval,
+            "Por Ejercer" => Icons.Material.Filled.TrendingUp,
+            "Modificado" => Icons.Material.Filled.Edit,
+            "Comprometido" => Icons.Material.Filled.Handshake,
+            "Devengado" => Icons.Material.Filled.AccountBalance,
+            "Ejercido" => Icons.Material.Filled.CheckCircle,
+            "Pagado" => Icons.Material.Filled.Payment,
+            "Gasto" => Icons.Material.Filled.ReceiptLong,
+            _ => Icons.Material.Filled.Info
+        };
+    }
+
+    public class CuentaMapping
+    {
+        public string Concepto { get; set; } = string.Empty;
+        public string CuentaNombre { get; set; } = string.Empty;
+    }
+}
+
+<style>
+    .detail-container {
+        max-width: 800px;
+    }
+
+    .detail-header {
+        padding-bottom: 8px;
+    }
+
+    .info-box {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: var(--mud-palette-background);
+        border-radius: 8px;
+        border-left: 3px solid var(--mud-palette-primary);
+    }
+
+    .cuenta-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid var(--mud-palette-primary);
+    }
+
+    .cuenta-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .cuenta-header {
+        width: 100%;
+    }
+
+    .cuenta-detail {
+        padding: 8px 12px;
+        background: var(--mud-palette-background);
+        border-radius: 6px;
+    }
+
+    .gap-2 {
+        gap: 8px;
+    }
+
+    .gap-3 {
+        gap: 12px;
+    }
+
+    .ml-3 {
+        margin-left: 12px;
+    }
+</style>
