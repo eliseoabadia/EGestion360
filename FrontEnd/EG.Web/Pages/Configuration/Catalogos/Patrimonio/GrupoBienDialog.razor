@@ -5,64 +5,90 @@
 @using EG.Web.Services
 
 @inject IGenericCrudService<GrupoBienResponse> Service
+@inject IGenericCrudService<FamiliaResponse> FamiliaService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="GrupoBienResponse"
-    Title="@dialogTitle"
-    MaxWidth="MaxWidth.Medium"
-    ActionText="@actionText"
-    ProcessingText="@processingText"
-    LoadingMessage="Cargando datos..."
-    OnConfirm="GuardarCambiosAsync">
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Medium"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos..."
+                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="GrupoBienResponse"
-        @ref="form"
-        ShowHeader="true"
-        HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave"
-            Label="Clave"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Clave)" />
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
 
-        <MudTextField @bind-Value="item.ClaveAn"
-            Label="Clave AN"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.ClaveAn)" />
-
-        <MudTextField @bind-Value="item.Descripcion"
-            Label="Descripción"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            Required="true"
-            For="@(() => item.Descripcion)" />
-
-        <MudTextField @bind-Value="item.CabmAct"
-            Label="CABM ACT"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.CabmAct)" />
-
-        <MudTextField @bind-Value="item.ClaveCucop"
-            Label="Clave CUCOP"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.ClaveCucop)" />
-
-        <MudTextField @bind-Value="item.Medida"
-            Label="Medida"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Medida)" />
-
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudSelect T="int" Label="Familia"
+                           @bind-Value="item.FkidFamiliaAlma"
+                           Required="true"
+                           RequiredError="La familia es requerida"
+                           Disabled="@(familiaList.Count == 0)">
+                    @foreach (var fam in familiaList)
+                    {
+                        <MudSelectItem Value="@fam.PkidFamilia">@fam.Clave - @fam.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.GrupoBienClave"
+                              Label="Clave"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.GrupoBienDescripcion"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              FullWidth="true"
+                              Required="true"
+                              RequiredError="La descripción es requerida" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.ClaveAn"
+                              Label="Clave AN"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.CabmAct"
+                              Label="CABM ACT"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.ClaveCucop"
+                              Label="Clave CUCOP"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Medida"
+                              Label="Medida"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
+                        <MudDivider Class="mb-3" />
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="item.Activo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 
@@ -73,6 +99,7 @@
 
     private BaseEntityForm<GrupoBienResponse> form = null!;
     private GrupoBienResponse item = new() { Activo = true };
+    private List<FamiliaResponse> familiaList = new();
 
     private string dialogTitle => Id.HasValue ? "Editar Grupo de Bien" : "Nuevo Grupo de Bien";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -80,9 +107,26 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarFamilias();
         if (Id.HasValue)
         {
             await CargarDatos();
+        }
+    }
+
+    private async Task CargarFamilias()
+    {
+        try
+        {
+            var response = await FamiliaService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                familiaList = response.Items.OfType<FamiliaResponse>().Where(f => f.Activo).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar familias: {ex.Message}", Severity.Error);
         }
     }
 
@@ -134,4 +178,3 @@
         }
     }
 }
-

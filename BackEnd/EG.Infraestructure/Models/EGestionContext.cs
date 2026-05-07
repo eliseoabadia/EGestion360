@@ -223,6 +223,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwExistencia> VwExistencias { get; set; }
 
+    public virtual DbSet<VwGrupoBien> VwGrupoBiens { get; set; }
+
     public virtual DbSet<VwMatrizConversionColumna> VwMatrizConversionColumnas { get; set; }
 
     public virtual DbSet<VwMatrizIngresoColumna> VwMatrizIngresoColumnas { get; set; }
@@ -234,6 +236,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwSubFuncion> VwSubFuncions { get; set; }
 
     public virtual DbSet<VwSucursalEmpresaEstado> VwSucursalEmpresaEstados { get; set; }
+
+    public virtual DbSet<VwTipoBien> VwTipoBiens { get; set; }
 
     public virtual DbSet<VwTipoBienConteo> VwTipoBienConteos { get; set; }
 
@@ -3619,6 +3623,35 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(50);
         });
 
+        modelBuilder.Entity<VwGrupoBien>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_GrupoBien", "ALMA");
+
+            entity.Property(e => e.CabmAct)
+                .HasMaxLength(50)
+                .HasColumnName("CABM_ACT");
+            entity.Property(e => e.ClaveAn)
+                .HasMaxLength(50)
+                .HasColumnName("ClaveAN");
+            entity.Property(e => e.ClaveCucop)
+                .HasMaxLength(50)
+                .HasColumnName("CLAVE_CUCOP");
+            entity.Property(e => e.FamiliaClave).HasMaxLength(50);
+            entity.Property(e => e.FamiliaDescripcion)
+                .IsRequired()
+                .HasMaxLength(80);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkidFamiliaAlma).HasColumnName("FKIdFamilia_ALMA");
+            entity.Property(e => e.GrupoBienDescripcion).HasMaxLength(800);
+            entity.Property(e => e.Medida)
+                .HasMaxLength(50)
+                .HasColumnName("MEDIDA");
+            entity.Property(e => e.PkidGrupoBien).HasColumnName("PKIdGrupoBien");
+        });
+
         modelBuilder.Entity<VwMatrizConversionColumna>(entity =>
         {
             entity
@@ -3828,6 +3861,65 @@ public partial class EGestionContext : DbContext
                 .HasColumnName("RFC");
             entity.Property(e => e.TelefonoPrincipal).HasMaxLength(20);
             entity.Property(e => e.TelefonoSecundario).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<VwTipoBien>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoBien", "ALMA");
+
+            entity.Property(e => e.CabmAct)
+                .HasMaxLength(50)
+                .HasColumnName("CABM_ACT");
+            entity.Property(e => e.Cabms)
+                .HasMaxLength(50)
+                .HasColumnName("CABMS");
+            entity.Property(e => e.CantidadEquivalente).HasColumnName("Cantidad_Equivalente");
+            entity.Property(e => e.ClaveAn)
+                .HasMaxLength(50)
+                .HasColumnName("ClaveAN");
+            entity.Property(e => e.ClaveCucop)
+                .HasMaxLength(50)
+                .HasColumnName("CLAVE_CUCOP");
+            entity.Property(e => e.CodigoClave).HasMaxLength(200);
+            entity.Property(e => e.CtaCoi)
+                .HasMaxLength(20)
+                .HasColumnName("Cta_Coi");
+            entity.Property(e => e.CucopPlus)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("CUCOP_PLUS");
+            entity.Property(e => e.CuentaDescripcion).HasMaxLength(160);
+            entity.Property(e => e.Cuota).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.DepreciacionAnual).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaMaxima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaMinima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FamiliaClave).HasMaxLength(50);
+            entity.Property(e => e.FamiliaDescripcion).HasMaxLength(80);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkidCuentaContableConta).HasColumnName("FKIdCuentaContable_CONTA");
+            entity.Property(e => e.FkidGrupoBienAlma).HasColumnName("FKIdGrupoBien_ALMA");
+            entity.Property(e => e.FkidLocalizacionAlma).HasColumnName("FKIdLocalizacion_ALMA");
+            entity.Property(e => e.FkidNivelAlma).HasColumnName("FKIdNivel_ALMA");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.FkidUnidadesEquivalente).HasColumnName("FKIdUnidades_Equivalente");
+            entity.Property(e => e.GrupoBienDescripcion).HasMaxLength(800);
+            entity.Property(e => e.GrupoBienMedida).HasMaxLength(50);
+            entity.Property(e => e.Identificador).HasMaxLength(50);
+            entity.Property(e => e.NivelDescripcion).HasMaxLength(20);
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkIdTratadoInt).HasColumnName("Pk_IdTratadoInt");
+            entity.Property(e => e.PkidTipoBien).HasColumnName("PKIdTipoBien");
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.TipoCuenta)
+                .HasMaxLength(1)
+                .IsFixedLength();
+            entity.Property(e => e.UnidadEquivalenteMedida).HasMaxLength(50);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
         });
 
         modelBuilder.Entity<VwTipoBienConteo>(entity =>

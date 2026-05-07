@@ -387,15 +387,15 @@ VALUES
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Funcion', 'CONCLP03', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'SubFunción', 'CONCLP04', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Actividad_Institucional', 'CONCLP05', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Eje', 'CONCLP06', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'SubEje', 'CONCLP07', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Eje', 'CONCLP06', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'SubEje', 'CONCLP07', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Programa_Presupuestal', 'CONCLP08', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Vertiente_Gasto', 'CONCLP09', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Resultado', 'CONCLP10', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Subresultado', 'CONCLP11', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Vertiente_Gasto', 'CONCLP09', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Resultado', 'CONCLP10', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Subresultado', 'CONCLP11', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Anios', 'CONCLP12', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Sector', 'CONCLP13', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'SubSector', 'CONCLP14', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'SubSector', 'CONCLP14', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'TipoRecurso', 'CONCLP15', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Fuente_Financiamiento', 'CONCLP16', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'PG', 'CONCLP17', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -527,15 +527,9 @@ EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Finalidad', '10000', 'view,vi
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Funcion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'SubFunción', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Actividad_Institucional', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Eje', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'SubEje', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Programa_Presupuestal', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Vertiente_Gasto', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Resultado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Subresultado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Anios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Sector', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'SubSector', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'TipoRecurso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Fuente_Financiamiento', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'PG', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -708,8 +702,8 @@ USING (VALUES
     (223, N'Función', 2, 220, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaCogs', 1, 'ESP', 4, 1, GETDATE()),
     (224, N'SubFunción', 2, 220, N'SubFunción', N'/configuracion/presupuestales/clave-programa/subfuncion', N'FaCog', 1, 'ESP', 5, 1, GETDATE()),
     (225, N'Actividad Institucional', 2, 220, N'Actividad Institucional', N'/configuracion/presupuestales/clave-programa/actividad-institucional', N'FaTasks', 1, 'ESP', 6, 1, GETDATE()),
-    (226, N'Eje', 2, 220, N'Eje', N'/configuracion/presupuestales/clave-programa/eje', N'FaArrowsAlt', 1, 'ESP', 7, 1, GETDATE()),
-    (227, N'SubEje', 2, 220, N'SubEje', N'/configuracion/presupuestales/clave-programa/subeje', N'FaArrowsAltH', 1, 'ESP', 8, 1, GETDATE()),
+    --(226, N'Eje', 2, 220, N'Eje', N'/configuracion/presupuestales/clave-programa/eje', N'FaArrowsAlt', 1, 'ESP', 7, 1, GETDATE()),
+    --(227, N'SubEje', 2, 220, N'SubEje', N'/configuracion/presupuestales/clave-programa/subeje', N'FaArrowsAltH', 1, 'ESP', 8, 1, GETDATE()),
     (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/presupuestales/clave-programa/programa-presupuestal', N'FaCalendarAlt', 1, 'ESP', 9, 1, GETDATE()),
     --(229, N'Vertiente Gasto', 2, 220, N'Vertiente Gasto', N'/configuracion/presupuestales/clave-programa/vertiente-gasto', N'FaChartPie', 1, 'ESP', 10, 1, GETDATE()),
     --(230, N'Resultado', 2, 220, N'Resultado', N'/configuracion/presupuestales/clave-programa/resultado', N'FaChartLine', 1, 'ESP', 11, 1, GETDATE()),
@@ -732,7 +726,7 @@ USING (VALUES
     (245, N'Partidas Presupuestales', 2, 240, N'Partidas Presupuestales', N'/configuracion/contabilidad/partidas-presupuestales', N'FaMoneyBill', 1, 'ESP', 6, 1, GETDATE()),
     (246, N'Cuentas Contables', 2, 240, N'Cuentas Contables', N'/configuracion/contabilidad/cuentas-contables', N'FaBook', 1, 'ESP', 7, 1, GETDATE()),
     (247, N'Formas Pago', 2, 240, N'Formas Pago', N'/configuracion/contabilidad/formas-pago', N'FaCreditCard', 1, 'ESP', 8, 1, GETDATE()),
-    (248, N'Sigevi Partidas', 2, 240, N'Sigevi Partidas', N'/configuracion/contabilidad/sigevi-partidas', N'FaCode', 1, 'ESP', 9, 1, GETDATE()),
+    --(248, N'Sigevi Partidas', 2, 240, N'Sigevi Partidas', N'/configuracion/contabilidad/sigevi-partidas', N'FaCode', 1, 'ESP', 9, 1, GETDATE()),
 
     -- Configuración -> Adquisiciones
     (250, N'Adquisiciones', 1, 1, N'Adquisiciones', N'/', N'FaShoppingCart', 1, 'ESP', 3, 1, GETDATE()),

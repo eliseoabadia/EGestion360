@@ -4,8 +4,8 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
     {
         public int PkidGrupoBien { get; set; }
         public int FkidFamiliaAlma { get; set; }
-        public string Descripcion { get; set; } = string.Empty;
-        public int? Clave { get; set; }
+        public string GrupoBienDescripcion { get; set; } = string.Empty;
+        public int? GrupoBienClave { get; set; }
         public string ClaveAn { get; set; } = string.Empty;
         public string CabmAct { get; set; } = string.Empty;
         public string ClaveCucop { get; set; } = string.Empty;
@@ -15,5 +15,7 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public string FamiliaDescripcion { get; set; } = string.Empty;
+        public string FamiliaClave { get; set; } = string.Empty;
     }
 }

@@ -44,7 +44,7 @@
                     @foreach (var item in tiposBien)
                     {
                         <MudSelectItem T="int?" Value="item.PkidTipoBien">
-                            @($"{item.Descripcion}")
+                            @($"{item.TipoBienDescripcion}")
                         </MudSelectItem>
                     }
                 </MudSelect>
@@ -149,7 +149,7 @@
     {
         try
         {
-            var response = await _tipoBienService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending);
+            var response = await _tipoBienService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "TipoBienDescripcion", SortDirection.Ascending);
             if (response?.Success == true && response.Items != null)
             {
                 tiposBien = response.Items.ToList();

@@ -16,22 +16,23 @@
                     OnRefresh="() => table.ReloadData()" />
 
         <GenericTable TItem="GrupoBienResponse"
-                  @ref="table"
-                  Title="Lista de Grupos de Bien"
-                  SearchPlaceholder="Buscar por descripción o clave..."
-                  ShowExportButton="@CanExport"
-                  ServerDataFunc="LoadServerData"
-                  ExportFunc="ExportToExcel"
-                  SearchString="@SearchString"
-                  SearchStringChanged="(s) => SearchString = s"
-                  OnSearch="OnSearch">
+                      @ref="table"
+                      Title="Lista de Grupos de Bien"
+                      SearchPlaceholder="Buscar por descripción, familia o clave..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
 
             <Header>
                 <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidGrupoBien" T="GrupoBienResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="GrupoBienResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="GrupoBienResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ClaveAn" T="GrupoBienResponse">Clave AN</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FamiliaClave" T="GrupoBienResponse">Clave Familia</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FamiliaDescripcion" T="GrupoBienResponse">Familia</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="GrupoBienClave" T="GrupoBienResponse">Clave Grupo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="GrupoBienResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ClaveCucop" T="GrupoBienResponse">CUCOP</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="GrupoBienResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
@@ -52,10 +53,11 @@
                                        OnClick="@(() => DeleteItem(item.PkidGrupoBien))" />
                     </MudTooltip>
                 </MudTd>
-                <MudTd>@item.PkidGrupoBien</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.ClaveAn</MudTd>
+                <MudTd>@item.FamiliaClave</MudTd>
+                <MudTd>@item.FamiliaDescripcion</MudTd>
+                <MudTd>@item.GrupoBienClave</MudTd>
+                <MudTd>@item.GrupoBienDescripcion</MudTd>
+                <MudTd>@item.ClaveCucop</MudTd>
                 <MudTd>
                     <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                         @(item.Activo ? "Sí" : "No")
@@ -76,24 +78,27 @@
     protected override Type EditDialogType => typeof(GrupoBienDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<GrupoBienResponse>);
 
-    protected override string GetDefaultSortLabel() => "Descripcion";
+    protected override string GetDefaultSortLabel() => "GrupoBienDescripcion";
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<GrupoBienResponse> items)
     {
         return items.Select(u => new
         {
             ID = u.PkidGrupoBien,
-            Clave = u.Clave,
-            Descripcion = u.Descripcion,
-            ClaveAn = u.ClaveAn,
-            Activo = u.Activo
+            ClaveFamilia = u.FamiliaClave,
+            Familia = u.FamiliaDescripcion ?? string.Empty,
+            ClaveGrupo = u.GrupoBienClave,
+            GrupoBien = u.GrupoBienDescripcion ?? string.Empty,
+            CUCOP = u.ClaveCucop ?? string.Empty,
+            Medida = u.Medida ?? string.Empty,
+            Activo = u.Activo ? "Sí" : "No"
         });
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.Descripcion ?? "el grupo de bien";
+        return response?.Data?.GrupoBienDescripcion ?? "el grupo de bien";
     }
 
     protected override async Task ReloadData()

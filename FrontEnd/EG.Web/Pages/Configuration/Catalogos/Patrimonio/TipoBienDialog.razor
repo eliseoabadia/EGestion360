@@ -1,0 +1,338 @@
+@using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Services
+
+@inject IGenericCrudService<TipoBienResponse> Service
+@inject IGenericCrudService<GrupoBienResponse> GrupoBienService
+@inject IGenericCrudService<NivelResponse> NivelService
+@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject IGenericCrudService<CuentaContableResponse> CuentaContableService
+@inject IGenericCrudService<UnidadeResponse> UnidadeService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="TipoBienResponse"
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Large"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos..."
+                 OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="TipoBienResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2 mt-2">Información General</MudText>
+        <MudDivider Class="mb-3" />
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Grupo de Bien"
+                           @bind-Value="item.FkidGrupoBienAlma"
+                           Required="true"
+                           RequiredError="El grupo es requerido"
+                           Disabled="@(grupoList.Count == 0)">
+                    @foreach (var g in grupoList)
+                    {
+                        <MudSelectItem Value="@g.PkidGrupoBien">@g.GrupoBienDescripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Nivel"
+                           @bind-Value="item.FkidNivelAlma"
+                           Disabled="@(nivelList.Count == 0)">
+                    @foreach (var n in nivelList)
+                    {
+                        <MudSelectItem Value="@n.PkidNivel">@n.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.CodigoClave"
+                              Label="Código Clave"
+                              Variant="Variant.Outlined"
+                              FullWidth="true"
+                              Required="true"
+                              RequiredError="El código es requerido" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Identificador"
+                              Label="Identificador"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.TipoBienDescripcion"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              FullWidth="true"
+                              Required="true"
+                              RequiredError="La descripción es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Partida Contable"
+                           @bind-Value="item.FkidPartidaConta"
+                           Disabled="@(partidaList.Count == 0)">
+                    @foreach (var p in partidaList)
+                    {
+                        <MudSelectItem Value="@p.PkidPartida">@p.Clave - @p.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Cuenta Contable"
+                           @bind-Value="item.FkidCuentaContableConta"
+                           Disabled="@(cuentaList.Count == 0)">
+                    @foreach (var c in cuentaList)
+                    {
+                        <MudSelectItem Value="@c.PkidCuentaContable">@c.Cuenta - @c.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2 mt-4">Unidades y Medidas</MudText>
+            <MudDivider Class="mb-3" />
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Unidad de Medida"
+                           @bind-Value="item.FkidUnidadesAlma"
+                           Disabled="@(unidadList.Count == 0)">
+                    @foreach (var u in unidadList)
+                    {
+                        <MudSelectItem Value="@u.PkidUnidades">@u.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Unidad Equivalente"
+                           @bind-Value="item.FkidUnidadesEquivalente"
+                           Disabled="@(unidadList.Count == 0)">
+                    @foreach (var u in unidadList)
+                    {
+                        <MudSelectItem Value="@u.PkidUnidades">@u.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.CantidadEquivalente"
+                              Label="Cantidad Equivalente"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Consecutivo"
+                              Label="Consecutivo"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2 mt-4">Financiero y Control</MudText>
+            <MudDivider Class="mb-3" />
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.DepreciacionAnual"
+                              Label="Depreciación Anual"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.TiempoVida"
+                              Label="Tiempo de Vida"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Cuota"
+                              Label="Cuota"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.ExistenciaMinima"
+                              Label="Existencia Mínima"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.ExistenciaMaxima"
+                              Label="Existencia Máxima"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Cabms"
+                              Label="CABMS"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.CucopPlus"
+                              Label="CUCOP Plus"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudCheckBox @bind-Value="item.ProveeduriaNac" Label="Proveeduría Nacional" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudCheckBox @bind-Value="item.CatalogoBasico" Label="Catálogo Básico" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" class="mt-4">
+                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
+                        <MudDivider Class="mb-3" />
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="item.Activo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<TipoBienResponse> form = null!;
+    private TipoBienResponse item = new() { Activo = true };
+    private List<GrupoBienResponse> grupoList = new();
+    private List<NivelResponse> nivelList = new();
+    private List<PartidaResponse> partidaList = new();
+    private List<CuentaContableResponse> cuentaList = new();
+    private List<UnidadeResponse> unidadList = new();
+
+    private string dialogTitle => Id.HasValue ? "Editar Tipo de Bien" : "Nuevo Tipo de Bien";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(
+            CargarGrupos(),
+            CargarNiveles(),
+            CargarPartidas(),
+            CargarCuentas(),
+            CargarUnidades()
+        );
+
+        if (Id.HasValue)
+        {
+            await CargarDatos();
+        }
+    }
+
+    private async Task CargarGrupos()
+    {
+        try
+        {
+            var response = await GrupoBienService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                grupoList = response.Items.OfType<GrupoBienResponse>().Where(g => g.Activo).ToList();
+        }
+        catch (Exception ex) { Snackbar.Add($"Error al cargar grupos: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task CargarNiveles()
+    {
+        try
+        {
+            var response = await NivelService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                nivelList = response.Items.OfType<NivelResponse>().Where(n => n.Activo).ToList();
+        }
+        catch (Exception ex) { Snackbar.Add($"Error al cargar niveles: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task CargarPartidas()
+    {
+        try
+        {
+            var response = await PartidaService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                partidaList = response.Items.OfType<PartidaResponse>().Where(p => p.Activo).ToList();
+        }
+        catch (Exception ex) { Snackbar.Add($"Error al cargar partidas: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task CargarCuentas()
+    {
+        try
+        {
+            var response = await CuentaContableService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                cuentaList = response.Items.OfType<CuentaContableResponse>().Where(c => c.Activo).ToList();
+        }
+        catch (Exception ex) { Snackbar.Add($"Error al cargar cuentas: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task CargarUnidades()
+    {
+        try
+        {
+            var response = await UnidadeService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+                unidadList = response.Items.OfType<UnidadeResponse>().Where(u => u.Activo).ToList();
+        }
+        catch (Exception ex) { Snackbar.Add($"Error al cargar unidades: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+                item = response.Data;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Tipo de bien actualizado correctamente" : "Tipo de bien creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

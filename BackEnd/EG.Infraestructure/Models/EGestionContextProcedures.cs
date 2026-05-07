@@ -102,6 +102,204 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_MantenimientoTipoBienResult>> SP_MantenimientoTipoBienAsync(int? action, int? pKIdTipoBien, int? fKIdGrupoBien_ALMA, int? fKIdNivel_ALMA, int? fKIdPartida_CONTA, int? fKIdCuentaContable_CONTA, int? fKIdUnidades_ALMA, int? fKIdLocalizacion_ALMA, int? fKIdUnidades_Equivalente, string codigoClave, string descripcion, decimal? depreciacionAnual, int? consecutivo, string cABMS, string identificador, decimal? existenciaMinima, decimal? existenciaMaxima, int? tiempoVida, int? pk_IdTratadoInt, decimal? cuota, bool? proveeduriaNac, bool? catalogoBasico, string cUCOP_PLUS, int? cantidad_Equivalente, int? idC, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdTipoBien",
+                    Value = pKIdTipoBien ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdGrupoBien_ALMA",
+                    Value = fKIdGrupoBien_ALMA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdNivel_ALMA",
+                    Value = fKIdNivel_ALMA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPartida_CONTA",
+                    Value = fKIdPartida_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdCuentaContable_CONTA",
+                    Value = fKIdCuentaContable_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdUnidades_ALMA",
+                    Value = fKIdUnidades_ALMA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdLocalizacion_ALMA",
+                    Value = fKIdLocalizacion_ALMA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdUnidades_Equivalente",
+                    Value = fKIdUnidades_Equivalente ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CodigoClave",
+                    Size = 400,
+                    Value = codigoClave ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = 2400,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "DepreciacionAnual",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = depreciacionAnual ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Consecutivo",
+                    Value = consecutivo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CABMS",
+                    Size = 100,
+                    Value = cABMS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Identificador",
+                    Size = 100,
+                    Value = identificador ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ExistenciaMinima",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = existenciaMinima ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ExistenciaMaxima",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = existenciaMaxima ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TiempoVida",
+                    Value = tiempoVida ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Pk_IdTratadoInt",
+                    Value = pk_IdTratadoInt ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Cuota",
+                    Precision = 8,
+                    Scale = 2,
+                    Value = cuota ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ProveeduriaNac",
+                    Value = proveeduriaNac ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CatalogoBasico",
+                    Value = catalogoBasico ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CUCOP_PLUS",
+                    Size = 25,
+                    Value = cUCOP_PLUS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Cantidad_Equivalente",
+                    Value = cantidad_Equivalente ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdC",
+                    Value = idC ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoTipoBienResult>("EXEC @returnValue = [ALMA].[SP_MantenimientoTipoBien] @Action = @Action, @PKIdTipoBien = @PKIdTipoBien, @FKIdGrupoBien_ALMA = @FKIdGrupoBien_ALMA, @FKIdNivel_ALMA = @FKIdNivel_ALMA, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @FKIdLocalizacion_ALMA = @FKIdLocalizacion_ALMA, @FKIdUnidades_Equivalente = @FKIdUnidades_Equivalente, @CodigoClave = @CodigoClave, @Descripcion = @Descripcion, @DepreciacionAnual = @DepreciacionAnual, @Consecutivo = @Consecutivo, @CABMS = @CABMS, @Identificador = @Identificador, @ExistenciaMinima = @ExistenciaMinima, @ExistenciaMaxima = @ExistenciaMaxima, @TiempoVida = @TiempoVida, @Pk_IdTratadoInt = @Pk_IdTratadoInt, @Cuota = @Cuota, @ProveeduriaNac = @ProveeduriaNac, @CatalogoBasico = @CatalogoBasico, @CUCOP_PLUS = @CUCOP_PLUS, @Cantidad_Equivalente = @Cantidad_Equivalente, @IdC = @IdC, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<int> sp_RegistrarEntidadAsync(string grupo, string subGrupo, string nombreMenu, string ruta, string menuPadreNombre, string icono, int? orden, string descripcion, string codigo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

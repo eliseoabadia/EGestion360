@@ -1,0 +1,112 @@
+@page "/configuracion/Patrimonio/Bienes_Servicios"
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoBienResponse, TipoBienResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Bien"
+                    Subtitle="Catálogo de tipos de bien"
+                    Icon="@Icons.Material.Filled.Category"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="TipoBienResponse"
+                      @ref="table"
+                      Title="Lista de Tipos de Bien"
+                      SearchPlaceholder="Buscar por descripción, grupo o clave..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="TipoBienResponse">Grupo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NivelDescripcion" T="TipoBienResponse">Nivel</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoClave" T="TipoBienResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="TipoBienResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CucopPlus" T="TipoBienResponse">CUCOP+</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoBienResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoBien))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoBien))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.GrupoBienDescripcion</MudTd>
+                <MudTd>@item.NivelDescripcion</MudTd>
+                <MudTd>@item.CodigoClave</MudTd>
+                <MudTd>@item.TipoBienDescripcion</MudTd>
+                <MudTd>@item.CucopPlus</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<TipoBienResponse> table = null!;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Bienes_Servicios";
+
+    protected override Type CreateDialogType => typeof(TipoBienDialog);
+    protected override Type EditDialogType => typeof(TipoBienDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoBienResponse>);
+
+    protected override string GetDefaultSortLabel() => "TipoBienDescripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoBienResponse> items)
+    {
+        return items.Select(u => new
+        {
+            ID = u.PkidTipoBien,
+            Grupo = u.GrupoBienDescripcion ?? string.Empty,
+            Nivel = u.NivelDescripcion ?? string.Empty,
+            Codigo = u.CodigoClave ?? string.Empty,
+            Descripcion = u.TipoBienDescripcion ?? string.Empty,
+            CUCOP = u.CucopPlus ?? string.Empty,
+            Depreciacion = u.DepreciacionAnual,
+            VidaUtil = u.TiempoVida,
+            Activo = u.Activo ? "Sí" : "No"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.TipoBienDescripcion ?? "el tipo de bien";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

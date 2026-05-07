@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -16,15 +17,18 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     public class GrupoBienController : ControllerBase
     {
         private readonly GenericService<GrupoBien, GrupoBienDto, GrupoBienResponse> _service;
+        private readonly GenericService<VwGrupoBien, GrupoBienDto, GrupoBienResponse> _serviceView;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public GrupoBienController(
             GenericService<GrupoBien, GrupoBienDto, GrupoBienResponse> service,
+            GenericService<VwGrupoBien, GrupoBienDto, GrupoBienResponse> serviceView,
             IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
+            _serviceView = serviceView;
             _mapper = mapper;
             _userContext = userContext;
             ConfigureService();
@@ -54,7 +58,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpGet]
         public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
+            var result = await _serviceView.GetAllAsync();
             return Ok(new PagedResult<GrupoBienResponse>
             {
                 Success = true,
@@ -68,7 +72,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
+            var result = await _serviceView.GetByIdAsync(id);
             if (result == null)
                 return NotFound(new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
 
@@ -94,16 +98,16 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 await _service.CanAddAsync(dto);
                 await _service.AddAsync(dto);
 
-                var created = _service.GetQueryWithIncludes()
-                    .FirstOrDefault(x => x.Descripcion == dto.Descripcion && x.Activo);
+                var createdView = await _serviceView.GetQueryWithIncludes()
+                    .FirstOrDefaultAsync(x => x.GrupoBienDescripcion == dto.Descripcion && x.Activo);
 
-                return CreatedAtAction(nameof(GetById), new { id = created?.PkidGrupoBien }, 
+                return CreatedAtAction(nameof(GetById), new { id = createdView?.PkidGrupoBien }, 
                     new PagedResult<GrupoBienResponse>
                     {
                         Success = true,
                         Message = "Grupo de bien creado correctamente",
                         Code = "SUCCESS",
-                        Items = created != null ? new List<GrupoBienResponse> { _mapper.Map<GrupoBienResponse>(created) } : new List<GrupoBienResponse>(),
+                        Items = createdView != null ? new List<GrupoBienResponse> { _mapper.Map<GrupoBienResponse>(createdView) } : new List<GrupoBienResponse>(),
                         TotalCount = 1
                     });
             }
@@ -118,25 +122,24 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             try
             {
-                var existing = await _service.GetByIdAsync(id);
-                if (existing == null)
+                var existingView = await _serviceView.GetByIdAsync(id);
+                if (existingView == null)
                     return NotFound(new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
 
                 var dto = _mapper.Map<GrupoBienDto>(response);
-                dto.UsuarioCreacion = existing.UsuarioCreacion;
-                dto.FechaCreacion = existing.FechaCreacion;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.UtcNow;
 
                 await _service.CanUpdateAsync(id, dto);
                 await _service.UpdateAsync(id, dto);
 
+                var updatedView = await _serviceView.GetByIdAsync(id);
                 return Ok(new PagedResult<GrupoBienResponse>
                 {
                     Success = true,
                     Message = "Grupo de bien actualizado correctamente",
                     Code = "SUCCESS",
-                    Items = new List<GrupoBienResponse> { _mapper.Map<GrupoBienResponse>(await _service.GetByIdAsync(id)) },
+                    Items = updatedView != null ? new List<GrupoBienResponse> { _mapper.Map<GrupoBienResponse>(updatedView) } : new List<GrupoBienResponse>(),
                     TotalCount = 1
                 });
             }
@@ -151,8 +154,8 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             try
             {
-                var existing = await _service.GetByIdAsync(id);
-                if (existing == null)
+                var existingView = await _serviceView.GetByIdAsync(id);
+                if (existingView == null)
                     return NotFound(new PagedResult<bool> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
 
                 await _service.DeleteAsync(id);
@@ -167,8 +170,42 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(result);
+            var query = _serviceView.GetQueryWithIncludes();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                query = query.Where(e =>
+                    e.GrupoBienDescripcion.Contains(request.Filtro) ||
+                    e.FamiliaDescripcion.Contains(request.Filtro) ||
+                    (e.GrupoBienClave.HasValue && e.GrupoBienClave.Value.ToString().Contains(request.Filtro)));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = request.SortDirection?.ToString().ToLower() == "asc";
+                query = request.SortLabel switch
+                {
+                    "PkidGrupoBien" => isAscending ? query.OrderBy(e => e.PkidGrupoBien) : query.OrderByDescending(e => e.PkidGrupoBien),
+                    "GrupoBienDescripcion" => isAscending ? query.OrderBy(e => e.GrupoBienDescripcion) : query.OrderByDescending(e => e.GrupoBienDescripcion),
+                    "FamiliaDescripcion" => isAscending ? query.OrderBy(e => e.FamiliaDescripcion) : query.OrderByDescending(e => e.FamiliaDescripcion),
+                    _ => query.OrderBy(e => e.GrupoBienDescripcion)
+                };
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return Ok(new PagedResult<GrupoBienResponse>
+            {
+                Items = _mapper.Map<List<GrupoBienResponse>>(items),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
         }
     }
 }

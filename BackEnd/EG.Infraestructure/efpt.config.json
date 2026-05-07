@@ -427,7 +427,15 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[Vw_GrupoBien]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[VW_PeriodoConteo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_TipoBien]",
          "ObjectType": 3
       },
       {
@@ -476,6 +484,10 @@
       },
       {
          "Name": "[ALMA].[SP_CargaInicialConteo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoTipoBien]",
          "ObjectType": 1
       },
       {

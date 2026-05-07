@@ -1,6 +1,6 @@
-namespace EG.Domain.DTOs.Responses.Patrimonio
+namespace EG.Domain.DTOs.Requests.Patrimonio
 {
-    public class TipoBienResponse
+    public class TipoBienDto
     {
         public int PkidTipoBien { get; set; }
         public int? FkidGrupoBienAlma { get; set; }
@@ -11,7 +11,7 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
         public int? FkidLocalizacionAlma { get; set; }
         public int? FkidUnidadesEquivalente { get; set; }
         public string CodigoClave { get; set; } = string.Empty;
-        public string TipoBienDescripcion { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
         public decimal? DepreciacionAnual { get; set; }
         public int? Consecutivo { get; set; }
         public string Cabms { get; set; } = string.Empty;
@@ -30,22 +30,5 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
-        public string GrupoBienDescripcion { get; set; } = string.Empty;
-        public int? GrupoBienClave { get; set; }
-        public string ClaveAn { get; set; } = string.Empty;
-        public string CabmAct { get; set; } = string.Empty;
-        public string ClaveCucop { get; set; } = string.Empty;
-        public string GrupoBienMedida { get; set; } = string.Empty;
-        public string FamiliaDescripcion { get; set; } = string.Empty;
-        public string FamiliaClave { get; set; } = string.Empty;
-        public int? Nivel { get; set; }
-        public string NivelDescripcion { get; set; } = string.Empty;
-        public string PartidaClave { get; set; } = string.Empty;
-        public string PartidaDescripcion { get; set; } = string.Empty;
-        public string CtaCoi { get; set; } = string.Empty;
-        public string CuentaDescripcion { get; set; } = string.Empty;
-        public string TipoCuenta { get; set; } = string.Empty;
-        public string UnidadMedida { get; set; } = string.Empty;
-        public string UnidadEquivalenteMedida { get; set; } = string.Empty;
     }
 }

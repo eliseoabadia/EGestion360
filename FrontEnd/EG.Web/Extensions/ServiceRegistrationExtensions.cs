@@ -89,6 +89,9 @@ public static class ApiServiceExtensions
         
         // Catálogos de Patrimonio
         RegisterCrud<GrupoBienResponse>(services, "api/GrupoBien");
+        RegisterCrud<NivelResponse>(services, "api/Nivel");
+        RegisterCrud<PartidaResponse>(services, "api/Partida");
+        RegisterCrud<TipoBienResponse>(services, "api/TipoBien");
         RegisterCrud<TipoPatrimonioResponse>(services, "api/TipoPatrimonio");
         RegisterCrud<TipoAdquisicionResponse>(services, "api/TipoAdquisicion");
         RegisterCrud<MarcaResponse>(services, "api/Marca");
