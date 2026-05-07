@@ -47,9 +47,9 @@
                         <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="ConteoResponse">Fecha Inicio</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="EstatusPeriodo" T="ConteoResponse">Estatus</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="EstadoConteo" T="ConteoResponse">Estado</MudTableSortLabel></MudTh>
-                        <MudTh>Cantidad Inventario</MudTh>
-                        <MudTh>Lecturas</MudTh>
-                        <MudTh>Personas</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="CantidadInventario" T="ConteoResponse">Cantidad Inventario</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="TotalLecturas" T="ConteoResponse">Lecturas</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="PersonasParticipantes" T="ConteoResponse">Personas</MudTableSortLabel></MudTh>
                     </Header>
 
                     <Row Context="conteo">
@@ -163,7 +163,7 @@
                               OnSearch="OnSearchEscaneos">
 
                     <Header>
-                        <MudTh>ID</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="PkidDetalleEscaneo" T="ConteoDetalleEscaneoResponse">ID</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="CodigoBarras" T="ConteoDetalleEscaneoResponse">Código de Barras</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="PersonaNombre" T="ConteoDetalleEscaneoResponse">Persona</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="PersonaClave" T="ConteoDetalleEscaneoResponse">Clave Persona</MudTableSortLabel></MudTh>
@@ -172,7 +172,7 @@
                         <MudTh><MudTableSortLabel SortLabel="BienSerie" T="ConteoDetalleEscaneoResponse">Serie</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="ConteoDetalleEscaneoResponse">Tipo de Bien</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="FechaEscaneo" T="ConteoDetalleEscaneoResponse">Fecha Escaneo</MudTableSortLabel></MudTh>
-                        <MudTh>Activo</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Activo" T="ConteoDetalleEscaneoResponse">Activo</MudTableSortLabel></MudTh>
                     </Header>
 
                     <Row Context="escaneo">

@@ -35,7 +35,27 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         [HttpGet]
         public async Task<IActionResult> GetAllPaginado(int page = 1, int pageSize = 10, string? sortBy = null, string? filter = null)
         {
-            var all = await _repository.GetAllAsync(); var result = new { Items = all.Skip((page - 1) * pageSize).Take(pageSize), TotalCount = all.Count(), Page = page, PageSize = pageSize };
+            var all = await _repository.GetAllAsync();
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                var isAscending = string.IsNullOrEmpty(sortBy) || sortBy.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                all = sortBy switch
+                {
+                    "PkidUnidades" => isAscending ? all.OrderBy(e => e.PkidUnidades) : all.OrderByDescending(e => e.PkidUnidades),
+                    "Descripcion" => isAscending ? all.OrderBy(e => e.Descripcion) : all.OrderByDescending(e => e.Descripcion),
+                    "Activo" => isAscending ? all.OrderBy(e => e.Activo) : all.OrderByDescending(e => e.Activo),
+                    "FechaCreacion" => isAscending ? all.OrderBy(e => e.FechaCreacion) : all.OrderByDescending(e => e.FechaCreacion),
+                    "UsuarioCreacion" => isAscending ? all.OrderBy(e => e.UsuarioCreacion) : all.OrderByDescending(e => e.UsuarioCreacion),
+                    _ => all.OrderBy(e => e.Descripcion)
+                };
+            }
+            else
+            {
+                all = all.OrderBy(e => e.Descripcion);
+            }
+
+            var result = new { Items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList(), TotalCount = all.Count(), Page = page, PageSize = pageSize };
             return Ok(result);
         }
 

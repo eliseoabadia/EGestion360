@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -161,8 +162,39 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<TipoPatrimonioResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(result);
+            var query = _service.GetQueryWithIncludes();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                query = query.Where(e => e.Descripcion.Contains(request.Filtro));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidTipoPatrimonio" => isAscending ? query.OrderBy(e => e.PkidTipoPatrimonio) : query.OrderByDescending(e => e.PkidTipoPatrimonio),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    _ => query.OrderBy(e => e.Descripcion)
+                };
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return Ok(new PagedResult<TipoPatrimonioResponse>
+            {
+                Items = _mapper.Map<List<TipoPatrimonioResponse>>(items),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
         }
     }
 }

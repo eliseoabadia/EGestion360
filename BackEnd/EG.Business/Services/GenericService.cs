@@ -336,7 +336,8 @@ namespace EG.Business.Services
                 return new PagedResult<TResponse>
                 {
                     Items = mapped,
-                    TotalCount = totalCount
+                    TotalCount = totalCount,
+                    Success = true
                 };
             }
             catch (Exception ex)
@@ -345,8 +346,8 @@ namespace EG.Business.Services
             }
             return new PagedResult<TResponse>
             {
-                Items = null,
-                TotalCount = 0
+                TotalCount = 0,
+                Success = false
             };
         }
 
@@ -429,7 +430,8 @@ namespace EG.Business.Services
             return new PagedResult<TResponse>
             {
                 Items = mapped,
-                TotalCount = totalCount
+                TotalCount = totalCount,
+                Success = true
             };
         }
 

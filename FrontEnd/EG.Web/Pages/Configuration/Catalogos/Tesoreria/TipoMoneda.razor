@@ -7,9 +7,39 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Moneda" Subtitle="Gestión del catálogo de monedas" Icon="@Icons.Material.Filled.AttachMoney"
             CanCreate="@CanCreate" OnCreate="CreateItem" />
-        <GenericTable TItem="TipoMonedaResponse" @ref="table"
-            OnEntitySelected="OnEntitySelected" CanDelete="@CanDelete" CanUpdate="@CanUpdate" OnDelete="DeleteItem"
-            OnEdit="EditItem" OnCreate="CreateItem" />
+        <GenericTable TItem="TipoMonedaResponse" @ref="table">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoMoneda" T="TipoMonedaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Codigo" T="TipoMonedaResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Simbolo" T="TipoMonedaResponse">Símbolo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoMonedaResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoMonedaResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoMoneda))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoMoneda))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoMoneda</MudTd>
+                <MudTd>@item.Codigo</MudTd>
+                <MudTd>@item.Simbolo</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.Activo</MudTd>
+            </Row>
+        </GenericTable>
     </MudContainer>
 </AccessVerification>
 @code {

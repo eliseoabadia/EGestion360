@@ -16,16 +16,46 @@
 
         <GenericTable TItem="UnidadeResponse"
                       @ref="table"
-                     
-                     
-                    
-                      OnEntitySelected="OnEntitySelected"
-                      CanDelete="@CanDelete"
-                      CanUpdate="@CanUpdate"
-                      OnDelete="DeleteItem"
-                      OnEdit="EditItem"
-                      OnCreate="CreateItem"
-                      />
+                      Title="Lista de Unidades"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidUnidades" T="UnidadeResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="UnidadeResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="UnidadeResponse">Activo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="UnidadeResponse">Fecha Creación</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="UnidadeResponse">Usuario Creación</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidUnidades))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidUnidades))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidUnidades</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.Activo</MudTd>
+                <MudTd>@(item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "")</MudTd>
+                <MudTd>@item.UsuarioCreacion</MudTd>
+            </Row>
+        </GenericTable>
     </MudContainer>
 </AccessVerification>
 

@@ -280,7 +280,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
 
             if (!string.IsNullOrEmpty(request.SortLabel))
             {
-                var isAscending = request.SortDirection?.ToString().ToLower() == "asc";
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
                 query = request.SortLabel switch
                 {
                     "PkidTipoBien" => isAscending ? query.OrderBy(e => e.PkidTipoBien) : query.OrderByDescending(e => e.PkidTipoBien),

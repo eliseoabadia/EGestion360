@@ -10,6 +10,7 @@ namespace EG.Business.Mapping.Patrimonio
         public TipoPatrimonioMappingProfile()
         {
             CreateMap<TipoPatrimonio, TipoPatrimonioDto>().ReverseMap();
+            CreateMap<TipoPatrimonio, TipoPatrimonioResponse>().ReverseMap();
             CreateMap<TipoPatrimonioResponse, TipoPatrimonioDto>()
                 .ForMember(dest => dest.PkidTipoPatrimonio, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));

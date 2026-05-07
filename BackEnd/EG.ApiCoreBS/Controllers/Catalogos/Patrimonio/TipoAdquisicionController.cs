@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -161,8 +162,42 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<TipoAdquisicionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(result);
+            var query = _service.GetQueryWithIncludes();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                var f = request.Filtro;
+                query = query.Where(e => e.Clave.Contains(f) || e.Descripcion.Contains(f));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidTipoAdq" => isAscending ? query.OrderBy(e => e.PkidTipoAdq) : query.OrderByDescending(e => e.PkidTipoAdq),
+                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "Descripmovto" => isAscending ? query.OrderBy(e => e.Descripmovto) : query.OrderByDescending(e => e.Descripmovto),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    _ => query.OrderBy(e => e.Descripcion)
+                };
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return Ok(new PagedResult<TipoAdquisicionResponse>
+            {
+                Items = _mapper.Map<List<TipoAdquisicionResponse>>(items),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
         }
     }
 }

@@ -15,16 +15,43 @@
                     />
 
         <GenericTable TItem="TipoCambioResponse"
-                      @ref="table"
-                     
-                     
-                      OnEntitySelected="OnEntitySelected"
-                      CanDelete="@CanDelete"
-                      CanUpdate="@CanUpdate"
-                      OnDelete="DeleteItem"
-                      OnEdit="EditItem"
-                      OnCreate="CreateItem"
-                      />
+                      @ref="table">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoCambio" T="TipoCambioResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Codigo" T="TipoCambioResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoCambioResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Valor" T="TipoCambioResponse">Valor</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoCambioResponse">Activo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="TipoCambioResponse">Fecha Creación</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="TipoCambioResponse">Usuario Creación</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoCambio))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoCambio))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoCambio</MudTd>
+                <MudTd>@item.Codigo</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.Valor</MudTd>
+                <MudTd>@item.Activo</MudTd>
+                <MudTd>@item.FechaCreacion</MudTd>
+                <MudTd>@item.UsuarioCreacion</MudTd>
+            </Row>
+        </GenericTable>
     </MudContainer>
 </AccessVerification>
 

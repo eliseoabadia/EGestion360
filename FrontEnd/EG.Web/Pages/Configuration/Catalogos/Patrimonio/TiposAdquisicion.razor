@@ -54,13 +54,13 @@
                 </MudTd>
                 <MudTd>@item.PkidTipoAdq</MudTd>
                 <MudTd>@item.Clave</MudTd>
-                <mudTd>@item.Descripcion</mudTd>
-                <mudTd>@item.Descripmovto</mudTd>
-                <mudTd>
-                    <mudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.Descripmovto</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                         @(item.Activo ? "Sí" : "No")
-                    </mudChip>
-                </mudTd>
+                    </MudChip>
+                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
