@@ -1,4 +1,4 @@
-@page "/configuracion/presupuestales/clave-programa/sub-funcion"
+@page "/configuracion/presupuestales/clave-programa/subfuncion"
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -29,8 +29,10 @@
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidSf" T="SubFuncionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="SubFuncionResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="SubFuncionResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="SubFuncionResponse">Clave Función</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FuncionDescripcion" T="SubFuncionResponse">Función</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SubFuncionClave" T="SubFuncionResponse">Clave SubFunción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SubFuncionDescripcion" T="SubFuncionResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="SubFuncionResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
@@ -52,8 +54,10 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidSf</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.FuncionClave</MudTd>
+                <MudTd>@item.FuncionDescripcion</MudTd>
+                <MudTd>@item.SubFuncionClave</MudTd>
+                <MudTd>@item.SubFuncionDescripcion</MudTd>
                 <MudTd>
                     <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                         @(item.Activo ? "Sí" : "No")
@@ -68,7 +72,7 @@
     private GenericTable<SubFuncionResponse> table = null!;
 
     protected override string ModuleName => "ClavePrograma";
-    protected override string SubModuleName => "SubFuncion";
+    protected override string SubModuleName => "SubFunción";
 
     protected override Type CreateDialogType => typeof(SubFuncionDialog);
     protected override Type EditDialogType => typeof(SubFuncionDialog);
@@ -81,17 +85,18 @@
         return items.Select(u => new
         {
             ID = u.PkidSf,
-            Clave = u.Clave,
-            Descripcion = u.Descripcion ?? string.Empty,
-            Activo = u.Activo ? "Sí" : "No",
-            FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+            ClaveFuncion = u.FuncionClave,
+            Funcion = u.FuncionDescripcion ?? string.Empty,
+            ClaveSubFuncion = u.SubFuncionClave,
+            SubFuncion = u.SubFuncionDescripcion ?? string.Empty,
+            Activo = u.Activo ? "Sí" : "No"
         });
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.Descripcion ?? "la subfunción";
+        return response?.Data?.SubFuncionDescripcion ?? "la subfunción";
     }
 
     protected override async Task ReloadData()

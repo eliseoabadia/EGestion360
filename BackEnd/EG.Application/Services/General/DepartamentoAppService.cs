@@ -4,6 +4,7 @@ using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 
 namespace EG.Application.Services.General
@@ -12,13 +13,16 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<Departamento, DepartamentoDto, DepartamentoResponse> _service;
         private readonly IMapper _mapper;
+        private readonly IRepository<Departamento> _repository;
 
         public DepartamentoAppService(
             GenericService<Departamento, DepartamentoDto, DepartamentoResponse> service,
-            IMapper mapper)
+            IMapper mapper,
+            IRepository<Departamento> repository)
         {
             _service = service;
             _mapper = mapper;
+            _repository = repository;
             ConfigureService();
         }
 
@@ -120,7 +124,11 @@ namespace EG.Application.Services.General
         {
             if (id <= 0) throw new ArgumentException("ID debe ser mayor a 0");
 
-            await _service.DeleteAsync(id);
+            var hasChildren = await _repository.HasActiveChildrenAsync<UsuarioDepartamento>("FkidDepartamentoSis", id);
+            if (hasChildren)
+                throw new InvalidOperationException("No se puede eliminar el departamento porque tiene usuarios asignados activos");
+
+            await _repository.SoftDeleteAsync(id);
         }
     }
 }

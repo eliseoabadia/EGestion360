@@ -447,6 +447,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_SubFuncion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[VW_EmpresaDepartamanto]",
          "ObjectType": 3
       },

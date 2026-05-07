@@ -1,5 +1,5 @@
 @page "/configuracion/patrimonio/familias"
-@using EG.Web.Models.Patrimonio
+@using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @inherits BaseCrudPage<FamiliaResponse, FamiliaResponse>
@@ -41,14 +41,14 @@
                                    Visible="@CanUpdate"
                                    Color="Color.Primary"
                                    Size="Size.Small"
-                                   OnClick="@(() => EditItem(item.PkidFamilia!.Value))" />
+                                    OnClick="@(() => EditItem(item.PkidFamilia))" />
                     </MudTooltip>
                     <MudTooltip Text="Eliminar">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    Visible="@CanDelete"
                                    Color="Color.Error"
                                    Size="Size.Small"
-                                   OnClick="@(() => DeleteItem(item.PkidFamilia!.Value))" />
+                                    OnClick="@(() => DeleteItem(item.PkidFamilia))" />
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidFamilia</MudTd>
@@ -80,10 +80,10 @@
     {
         return items.Select(u => new
         {
-            ID = (u.PkidFamilia ?? 0),
-            Clave = u.Clave ?? string.Empty,
-            Descripcion = u.Descripcion ?? string.Empty,
-            Activo = (u.Activo ?? false) ? "Sí" : "No"
+            ID = u.PkidFamilia,
+            Clave = u.Clave,
+            Descripcion = u.Descripcion,
+            Activo = u.Activo ? "Sí" : "No"
         });
     }
 

@@ -98,33 +98,44 @@ namespace EG.Business.Services
         // Obtener query con includes configurados
         public virtual IQueryable<TEntity> GetQueryWithIncludes(Expression<Func<TEntity, bool>>? whereCondition = null)
         {
-            if (whereCondition == null)
-                whereCondition = x => true;
+            IQueryable<TEntity> query = _includes.Any()
+                ? _repository.QueryWithIncludes(x => true, _includes.ToArray())
+                : _repository.QueryWithIncludes(x => true);
 
-            return _includes.Any()
-                ? _repository.QueryWithIncludes(whereCondition, _includes.ToArray())
-                : _repository.QueryWithIncludes(whereCondition);
+            if (FilterByActivo)
+            {
+                query = ApplyActivoFilter(query);
+            }
+
+            if (whereCondition != null)
+            {
+                var parametro = Expression.Parameter(typeof(TEntity), "e");
+                var body = Expression.Invoke(whereCondition, parametro);
+                var lambda = Expression.Lambda<Func<TEntity, bool>>(body, parametro);
+                query = query.Where(lambda);
+            }
+
+            return query;
+        }
+
+        private IQueryable<TEntity> ApplyActivoFilter(IQueryable<TEntity> query)
+        {
+            var activoProperty = typeof(TEntity).GetProperty("Activo");
+            if (activoProperty != null && activoProperty.PropertyType == typeof(bool))
+            {
+                var parametro = Expression.Parameter(typeof(TEntity), "e");
+                var propertyAccess = Expression.Property(parametro, activoProperty);
+                var condition = Expression.Equal(propertyAccess, Expression.Constant(true, typeof(bool)));
+                var lambda = Expression.Lambda<Func<TEntity, bool>>(condition, parametro);
+                query = query.Where(lambda);
+            }
+            return query;
         }
 
         public virtual async Task<IEnumerable<TResponse>> GetAllAsync()
         {
             var query = GetQueryWithIncludes();
             var entities = await Task.Run(() => query.ToList());
-            
-            // Filtrar por Activo si la entidad tiene la propiedad y FilterByActivo es true
-            if (FilterByActivo)
-            {
-                var activoProperty = typeof(TEntity).GetProperty("Activo");
-                if (activoProperty != null && activoProperty.PropertyType == typeof(bool))
-                {
-                    entities = entities.Where(e =>
-                    {
-                        var activoValue = (bool)activoProperty.GetValue(e);
-                        return activoValue;
-                    }).ToList();
-                }
-            }
-            
             return _mapper.Map<IEnumerable<TResponse>>(entities);
         }
 
@@ -158,21 +169,8 @@ namespace EG.Business.Services
 
         var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
 
-        // Usar ToList() primero (menos eficiente pero funciona sin EF Core)
         var entities = await Task.Run(() => query.ToList());
         var entity = entities.FirstOrDefault(lambda.Compile());
-
-        // Validar que la entidad esté activa si FilterByActivo es true
-        if (entity != null && FilterByActivo)
-        {
-            var activoProperty = typeof(TEntity).GetProperty("Activo");
-            if (activoProperty != null && activoProperty.PropertyType == typeof(bool))
-            {
-                var activoValue = (bool)activoProperty.GetValue(entity);
-                if (!activoValue)
-                    return null;
-            }
-        }
 
         return entity != null ? _mapper.Map<TResponse>(entity) : null;
     }
@@ -293,7 +291,7 @@ namespace EG.Business.Services
             if (entity == null)
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
 
-            await _repository.DeleteAsync(id);
+            await _repository.SoftDeleteAsync(id);
         }
 
         public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest _params)

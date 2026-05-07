@@ -2,6 +2,7 @@
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace EG.Infrastructure
 {
@@ -32,9 +33,66 @@ namespace EG.Infrastructure
             }
         }
 
+        public async Task SoftDeleteAsync(int id, string? activePropertyName = "Activo")
+        {
+            var entity = await GetByIdAsync(id);
+            if (entity == null) return;
+
+            var prop = typeof(T).GetProperty(activePropertyName ?? "Activo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (prop != null && prop.PropertyType == typeof(bool))
+            {
+                prop.SetValue(entity, false);
+                _dbSet.Update(entity);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> HasActiveChildrenAsync<TChild>(string childForeignKeyProperty, int parentId, string? childActiveProperty = "Activo") where TChild : class
+        {
+            var childSet = _context.Set<TChild>();
+            var prop = typeof(TChild).GetProperty(childActiveProperty ?? "Activo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+            IQueryable<TChild> query = childSet;
+
+            if (prop != null && prop.PropertyType == typeof(bool))
+            {
+                var param = Expression.Parameter(typeof(TChild), "e");
+                var propAccess = Expression.Property(param, prop);
+                var condition = Expression.Equal(propAccess, Expression.Constant(true, typeof(bool)));
+                var lambda = Expression.Lambda<Func<TChild, bool>>(condition, param);
+                query = query.Where(lambda);
+            }
+
+            var fkProp = typeof(TChild).GetProperty(childForeignKeyProperty, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (fkProp == null) return false;
+
+            var param2 = Expression.Parameter(typeof(TChild), "e");
+            var fkAccess = Expression.Property(param2, fkProp);
+            var fkCondition = Expression.Equal(fkAccess, Expression.Constant(parentId, fkProp.PropertyType));
+            var fkLambda = Expression.Lambda<Func<TChild, bool>>(fkCondition, param2);
+            query = query.Where(fkLambda);
+
+            return await query.AnyAsync();
+        }
+
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            var query = _dbSet.AsQueryable();
+            var activoProperty = typeof(T).GetProperty("Activo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (activoProperty != null && activoProperty.PropertyType == typeof(bool))
+            {
+                var param = Expression.Parameter(typeof(T), "e");
+                var propAccess = Expression.Property(param, activoProperty);
+                var condition = Expression.Equal(propAccess, Expression.Constant(true, typeof(bool)));
+                var lambda = Expression.Lambda<Func<T, bool>>(condition, param);
+                query = query.Where(lambda);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
@@ -45,8 +103,7 @@ namespace EG.Infrastructure
 
         public async Task<T> GetByIdAsync(short id)
         {
-            var entity = await _dbSet.FindAsync(id); //??
-                //throw new ArgumentNullException(nameof(id), "El objeto no puede ser nulo.");
+            var entity = await _dbSet.FindAsync(id);
             return entity;
         }
 
@@ -68,12 +125,12 @@ namespace EG.Infrastructure
 
             if (filter != null)
             {
-                query = query.Where(filter); // Apply filter separately
+                query = query.Where(filter);
             }
 
             foreach (var include in includes)
             {
-                query = query.Include(include); // Ensure direct property access
+                query = query.Include(include);
             }
 
             return await query.ToListAsync();
@@ -85,19 +142,16 @@ namespace EG.Infrastructure
             {
                 IQueryable<T> query = _dbSet.AsQueryable();
 
-                // Aplicar includes primero
                 foreach (var include in includes)
                 {
                     query = query.Include(include);
                 }
 
-                // Luego aplicar el filtro
                 if (filter != null)
                 {
                     query = query.Where(filter);
                 }
 
-                // Para diagnóstico: ver la consulta SQL generada
                 var sql = query.ToQueryString();
                 Console.WriteLine($"SQL generado: {sql}");
 
@@ -105,7 +159,6 @@ namespace EG.Infrastructure
             }
             catch (Exception ex)
             {
-                // Loggear el error adecuadamente
                 Console.WriteLine($"Error en GetAllWithIncludesAsync: {ex.Message}");
                 throw;
             }

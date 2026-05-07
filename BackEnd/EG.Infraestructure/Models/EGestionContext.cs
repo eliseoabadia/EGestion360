@@ -231,6 +231,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
 
+    public virtual DbSet<VwSubFuncion> VwSubFuncions { get; set; }
+
     public virtual DbSet<VwSucursalEmpresaEstado> VwSucursalEmpresaEstados { get; set; }
 
     public virtual DbSet<VwTipoBienConteo> VwTipoBienConteos { get; set; }
@@ -3761,6 +3763,22 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(194);
             entity.Property(e => e.TipoConteo).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<VwSubFuncion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_SubFuncion", "PRES");
+
+            entity.Property(e => e.FkidFnPres).HasColumnName("FKIdFN_PRES");
+            entity.Property(e => e.FuncionClaveNombre).HasMaxLength(63);
+            entity.Property(e => e.FuncionDescripcion).HasMaxLength(50);
+            entity.Property(e => e.PkidSf).HasColumnName("PKIdSF");
+            entity.Property(e => e.SubFuncionClaveNombre).HasMaxLength(63);
+            entity.Property(e => e.SubFuncionDescripcion)
+                .IsRequired()
+                .HasMaxLength(50);
         });
 
         modelBuilder.Entity<VwSucursalEmpresaEstado>(entity =>

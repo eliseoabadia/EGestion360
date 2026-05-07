@@ -16,7 +16,9 @@ namespace EG.Domain.Interfaces
 
         Task DeleteAsync(int id);
 
-        //Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
+        Task SoftDeleteAsync(int id, string? activePropertyName = "Activo");
+
+        Task<bool> HasActiveChildrenAsync<TChild>(string childForeignKeyProperty, int parentId, string? childActiveProperty = "Activo") where TChild : class;
 
         Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> GetAllWithIncludes2Async(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes);

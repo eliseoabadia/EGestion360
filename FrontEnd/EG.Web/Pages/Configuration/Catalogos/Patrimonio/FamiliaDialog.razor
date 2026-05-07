@@ -1,7 +1,7 @@
 @using MudBlazor
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
-@using EG.Web.Models.Patrimonio
+@using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Services
 
 @inject IGenericCrudService<FamiliaResponse> Service
@@ -34,7 +34,7 @@
             Required="true"
             For="@(() => item.Descripcion)" />
 
-        <MudSwitch T="bool" Value="item.Activo ?? false" ValueChanged="@(async (bool value) => { item.Activo = value; await Task.CompletedTask; })" Label="Activo" Color="Color.Primary" />
+        <MudSwitch T="bool" Value="item.Activo" ValueChanged="@(async (bool value) => { item.Activo = value; await Task.CompletedTask; })" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

@@ -2,26 +2,27 @@ using AutoMapper;
 using EG.ApiCoreBS.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Presupuestales;
-using EG.Domain.DTOs.Responses;
-using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.Patrimonio;
+using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
+using EG.Domain.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SubFuncionController : ControllerBase
+    public class FamiliaController : ControllerBase
     {
-        private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
+        private readonly GenericService<Familium, FamiliaDto, FamiliaResponse> _service;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public SubFuncionController(
-            GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
+        public FamiliaController(
+            GenericService<Familium, FamiliaDto, FamiliaResponse> service,
             IMapper mapper,
             IUserContextService userContext)
         {
@@ -34,36 +35,35 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 
         private void ConfigureService()
         {
-            _service.AddInclude(s => s.FkidFnPresNavigation);
         }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueSubFuncion", async (dto) =>
+            _service.AddValidationRule("UniqueClave", async (dto) =>
             {
-                var itemDto = dto as SubFuncionDto;
-                if (itemDto == null) return true;
+                var fDto = dto as FamiliaDto;
+                if (fDto == null) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave == itemDto.Clave && s.Activo);
+                    .Any(f => f.Clave == fDto.Clave && f.Activo);
             });
 
-            _service.AddValidationRuleWithId("UniqueSubFuncionUpdate", async (dto, id) =>
+            _service.AddValidationRuleWithId("UniqueClaveUpdate", async (dto, id) =>
             {
-                var itemDto = dto as SubFuncionDto;
-                if (itemDto == null || !id.HasValue) return true;
+                var fDto = dto as FamiliaDto;
+                if (fDto == null || !id.HasValue) return true;
                 return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave == itemDto.Clave && s.PkidSf != id.Value && s.Activo);
+                    .Any(f => f.Clave == fDto.Clave && f.PkidFamilia != id.Value && f.Activo);
             });
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<FamiliaResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<FamiliaResponse>
             {
                 Success = true,
-                Message = "SubFunciones obtenidas correctamente",
+                Message = "Familias obtenidas correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -71,61 +71,61 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<FamiliaResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidSf");
+            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidFamilia");
             if (result == null)
-                return NotFound(new PagedResult<SubFuncionResponse>
+                return NotFound(new PagedResult<FamiliaResponse>
                 {
                     Success = false,
-                    Message = "SubFunción no encontrada",
+                    Message = "Familia no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
 
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<FamiliaResponse>
             {
                 Success = true,
-                Message = "SubFunción encontrada",
+                Message = "Familia encontrada",
                 Code = "SUCCESS",
                 Data = result,
-                Items = new List<SubFuncionResponse> { result },
+                Items = new List<FamiliaResponse> { result },
                 TotalCount = 1
             });
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Create([FromBody] SubFuncionResponse response)
+        public async Task<ActionResult<PagedResult<FamiliaResponse>>> Create([FromBody] FamiliaResponse response)
         {
             try
             {
-                var dto = _mapper.Map<SubFuncionDto>(response);
+                var dto = _mapper.Map<FamiliaDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
                 if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<SubFuncionResponse>
+                    return Conflict(new PagedResult<FamiliaResponse>
                     {
                         Success = false,
-                        Message = "Ya existe una SubFunción activa con esa clave",
+                        Message = "Ya existe una Familia activa con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidSf },
-                    new PagedResult<SubFuncionResponse>
+                return CreatedAtAction(nameof(GetById), new { id = dto.PkidFamilia },
+                    new PagedResult<FamiliaResponse>
                     {
                         Success = true,
-                        Message = "SubFunción creada correctamente",
+                        Message = "Familia creada correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<SubFuncionResponse>
+                return BadRequest(new PagedResult<FamiliaResponse>
                 {
                     Success = false,
                     Message = $"Error al crear: {ex.Message}",
@@ -136,46 +136,46 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Update(int id, [FromBody] SubFuncionResponse response)
+        public async Task<ActionResult<PagedResult<FamiliaResponse>>> Update(int id, [FromBody] FamiliaResponse response)
         {
             try
             {
-                var dto = _mapper.Map<SubFuncionDto>(response);
-                dto.PkidSf = id;
+                var dto = _mapper.Map<FamiliaDto>(response);
+                dto.PkidFamilia = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
 
                 if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<SubFuncionResponse>
+                    return Conflict(new PagedResult<FamiliaResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otra SubFunción activa con esa clave",
+                        Message = "Ya existe otra Familia activa con esa clave",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     });
 
                 await _service.UpdateAsync(id, dto);
-                return Ok(new PagedResult<SubFuncionResponse>
+                return Ok(new PagedResult<FamiliaResponse>
                 {
                     Success = true,
-                    Message = "SubFunción actualizada correctamente",
+                    Message = "Familia actualizada correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new PagedResult<SubFuncionResponse>
+                return NotFound(new PagedResult<FamiliaResponse>
                 {
                     Success = false,
-                    Message = $"SubFunción con ID {id} no encontrada",
+                    Message = $"Familia con ID {id} no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new PagedResult<SubFuncionResponse>
+                return BadRequest(new PagedResult<FamiliaResponse>
                 {
                     Success = false,
                     Message = $"Error al actualizar: {ex.Message}",
@@ -194,7 +194,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "SubFunción eliminada correctamente",
+                    Message = "Familia eliminada correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     TotalCount = 1
@@ -205,7 +205,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"SubFunción con ID {id} no encontrada",
+                    Message = $"Familia con ID {id} no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -223,13 +223,13 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<FamiliaResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<FamiliaResponse>
             {
                 Success = true,
-                Message = "SubFunciones obtenidas correctamente",
+                Message = "Familias obtenidas correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -237,7 +237,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<FamiliaResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {
@@ -249,10 +249,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             };
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
-            return Ok(new PagedResult<SubFuncionResponse>
+            return Ok(new PagedResult<FamiliaResponse>
             {
                 Success = true,
-                Message = "SubFunciones filtradas correctamente",
+                Message = "Familias filtradas correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

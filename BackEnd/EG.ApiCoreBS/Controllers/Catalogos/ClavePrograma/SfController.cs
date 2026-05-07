@@ -12,10 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.ClavePrograma
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/[controller]")]
-    public class SfController : ControllerBase
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+[Route("api/SubFuncion")]
+public class SfController : ControllerBase
     {
         private readonly ISfService _sfService;
         private readonly IMapper _mapper;

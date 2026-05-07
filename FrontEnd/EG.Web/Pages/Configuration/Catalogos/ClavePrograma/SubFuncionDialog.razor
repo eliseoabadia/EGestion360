@@ -4,122 +4,153 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Services
 @inject IGenericCrudService<SubFuncionResponse> Service
+@inject IGenericCrudService<FnResponse> FnService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="SubFuncionResponse"
-Title="@dialogTitle"
-MaxWidth="MaxWidth.Small"
-ActionText="@actionText"
-ProcessingText="@processingText"
-LoadingMessage="Cargando datos..."
-OnConfirm="GuardarCambiosAsync">
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Small"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando datos..."
+                 OnConfirm="GuardarCambiosAsync">
 
-<BaseEntityForm TEntity="SubFuncionResponse"
-@ref="form"
-ShowHeader="true"
-HeaderTitle="@dialogTitle">
+    <BaseEntityForm TEntity="SubFuncionResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
 
-<MudGrid GutterSize="2">
-<MudItem xs="12">
-<MudTextField @bind-Value="item.Clave"
-Label="Clave"
-Variant="Variant.Outlined"
-Required="true"
-RequiredError="La clave es requerida" />
-</MudItem>
-<MudItem xs="12">
-<MudTextField @bind-Value="item.Descripcion"
-Label="Descripción"
-Variant="Variant.Outlined"
-Required="true"
-RequiredError="La descripción es requerida" />
-</MudItem>
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudSelect T="int" Label="Función"
+                           @bind-Value="item.FkidFnPres"
+                           Required="true"
+                           RequiredError="La función es requerida"
+                           Disabled="@(fnList.Count == 0)">
+                    @foreach (var fn in fnList)
+                    {
+                        <MudSelectItem Value="@fn.PkidFn">@fn.Clave - @fn.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.SubFuncionClave"
+                              Label="Clave"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La clave es requerida" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.SubFuncionDescripcion"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La descripción es requerida" />
+            </MudItem>
 
-@if (Id.HasValue)
-{
-<MudItem xs="12">
-<MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-<MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
-<MudDivider Class="mb-3" />
-<div class="d-flex align-center">
-<MudSwitch @bind-Value="item.Activo"
-Color="Color.Primary"
-ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-<MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-</MudSwitch>
-</div>
-</MudPaper>
-</MudItem>
-}
-</MudGrid>
-</BaseEntityForm>
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
+                        <MudDivider Class="mb-3" />
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="item.Activo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
 </BaseCrudDialog>
 
 @code {
-[Parameter] public int? Id { get; set; }
+    [Parameter] public int? Id { get; set; }
 
-[CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-private BaseEntityForm<SubFuncionResponse> form = null!;
-private SubFuncionResponse item = new() { Activo = true };
+    private BaseEntityForm<SubFuncionResponse> form = null!;
+    private SubFuncionResponse item = new() { Activo = true };
+    private List<FnResponse> fnList = new();
 
-private string dialogTitle => Id.HasValue ? "Editar Subfunción" : "Nueva Subfunción";
-private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string dialogTitle => Id.HasValue ? "Editar Subfunción" : "Nueva Subfunción";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
-protected override async Task OnInitializedAsync()
-{
-    if (Id.HasValue)
+    protected override async Task OnInitializedAsync()
     {
-        await CargarDatos();
-    }
-}
-
-private async Task CargarDatos()
-{
-    try
-    {
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
-        {
-            item = response.Data;
-        }
-    }
-    catch (Exception ex)
-    {
-        Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
-    }
-}
-
-private async Task GuardarCambiosAsync()
-{
-    try
-    {
-        bool success;
+        await CargarFunciones();
         if (Id.HasValue)
         {
-            var response = await Service.UpdateAsync(item, Id.Value);
-            success = response?.Success == true;
+            await CargarDatos();
         }
-        else
-        {
-            var response = await Service.CreateAsync(item);
-            success = response?.Success == true;
-        }
+    }
 
-        if (success)
-        {
-            Snackbar.Add(dialogTitle.Contains("Editar") ? "Subfunción actualizada correctamente" : "Subfunción creada correctamente", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        else
-        {
-            Snackbar.Add("Error al guardar los cambios", Severity.Error);
-        }
-    }
-    catch (Exception ex)
+    private async Task CargarFunciones()
     {
-        Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        try
+        {
+            var response = await FnService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                fnList = response.Items.OfType<FnResponse>().Where(f => f.Activo).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar funciones: {ex.Message}", Severity.Error);
+        }
     }
-}
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(dialogTitle.Contains("Editar") ? "Subfunción actualizada correctamente" : "Subfunción creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
 }

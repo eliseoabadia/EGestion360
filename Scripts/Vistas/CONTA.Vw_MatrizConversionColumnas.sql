@@ -85,6 +85,7 @@ WHERE mc.Activo = 1
 --and p.Clave= '02030101'
 --and mc.PKIdMatrizConversion = 6874;
 
+select * from CONTA.Vw_Cuentas ctaA where ctaA.ClaveOrd LIKE '8 2 1%' AND ctaA.NivelCuenta = 7
 
 -- =============================================
 -- Vista: CONTA.Vw_MatrizIngresoColumnas

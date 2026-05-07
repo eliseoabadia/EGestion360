@@ -1,11 +1,11 @@
-namespace EG.Web.Models.Patrimonio
+namespace EG.Domain.DTOs.Responses.Patrimonio
 {
     public class FamiliaResponse
     {
-        public int? PkidFamilia { get; set; }
-        public string Clave { get; set; } = string.Empty;
+        public int PkidFamilia { get; set; }
         public string Descripcion { get; set; } = string.Empty;
-        public bool? Activo { get; set; }
+        public string Clave { get; set; } = string.Empty;
+        public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }

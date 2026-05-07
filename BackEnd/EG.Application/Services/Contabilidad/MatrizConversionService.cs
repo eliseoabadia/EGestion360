@@ -131,10 +131,8 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
 public async Task<PagedResult<MatrizConversionResponse>> GetAllPaginadoAsync(PagedRequest request, Dictionary<string, object>? additionalFilters = null)
 {
-    // Usar la vista directamente desde el DbContext
     var query = _context.VwMatrizConversionColumnas.AsQueryable();
 
-    // Filtros adicionales (año presupuestal)
     if (additionalFilters != null)
     {
         if (additionalFilters.ContainsKey("FkidAnioSis") && additionalFilters["FkidAnioSis"] != null)

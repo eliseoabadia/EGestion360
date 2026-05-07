@@ -12,13 +12,16 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     public class SfService : ISfService
     {
         private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
+        private readonly GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> _serviceView;
         private readonly IMapper _mapper;
 
         public SfService(
             GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
+            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView,
             IMapper mapper)
         {
             _service = service;
+            _serviceView = serviceView;
             _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
@@ -51,12 +54,12 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task<IEnumerable<SubFuncionResponse>> GetAllAsync()
         {
-            return await _service.GetAllAsync();
+            return await _serviceView.GetAllAsync();
         }
 
         public async Task<SubFuncionResponse?> GetByIdAsync(int id)
         {
-            return await _service.GetByIdAsync(id);
+            return await _serviceView.GetByIdAsync(id);
         }
 
         public async Task<SubFuncionResponse> AddAsync(SubFuncionDto dto, int usuarioId)
@@ -77,16 +80,16 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task DeleteAsync(int id)
         {
-            var existing = await GetByIdAsync(id);
-            if (existing == null) throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
+            var existingView = await _serviceView.GetByIdAsync(id);
+            if (existingView == null) throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
 
             var dto = new SubFuncionDto
             {
-                PkidSf = existing.PkidSf,
-                Clave = existing.Clave,
-                Descripcion = existing.Descripcion,
+                PkidSf = existingView.PkidSf,
+                Clave = existingView.SubFuncionClave,
+                Descripcion = existingView.SubFuncionDescripcion,
                 Activo = false,
-                FkidFnPres = existing.FkidFnPres
+                FkidFnPres = existingView.FkidFnPres
             };
 
             await _service.UpdateAsync(id, dto);
@@ -94,13 +97,15 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task<PagedResult<SubFuncionResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            var query = _service.GetQueryWithIncludes();
+            var query = _serviceView.GetQueryWithIncludes();
 
             if (!string.IsNullOrWhiteSpace(request.Filtro))
             {
                 query = query.Where(e =>
-                    e.Clave.ToString().Contains(request.Filtro) ||
-                    e.Descripcion.Contains(request.Filtro));
+                    e.SubFuncionClave.ToString().Contains(request.Filtro) ||
+                    e.SubFuncionDescripcion.Contains(request.Filtro) ||
+                    e.FuncionClave.ToString().Contains(request.Filtro) ||
+                    e.FuncionDescripcion.Contains(request.Filtro));
             }
 
             if (!string.IsNullOrEmpty(request.SortLabel))
@@ -109,9 +114,9 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
                 query = request.SortLabel switch
                 {
                     "PkidSf" => isAscending ? query.OrderBy(e => e.PkidSf) : query.OrderByDescending(e => e.PkidSf),
-                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
-                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
-                    _ => query.OrderBy(e => e.Clave)
+                    "Clave" => isAscending ? query.OrderBy(e => e.SubFuncionClave) : query.OrderByDescending(e => e.SubFuncionClave),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.SubFuncionDescripcion) : query.OrderByDescending(e => e.SubFuncionDescripcion),
+                    _ => query.OrderBy(e => e.SubFuncionClave)
                 };
             }
 

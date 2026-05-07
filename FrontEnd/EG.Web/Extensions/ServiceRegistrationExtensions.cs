@@ -10,7 +10,6 @@ using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts;
 using EG.Web.Models.ConteoCiclico;
-using EG.Web.Models.Patrimonio;
 
 
 //using EG.Web.Models.ConteoCiclico;
@@ -62,13 +61,13 @@ public static class ApiServiceExtensions
         RegisterCrud<EstatusSolicitudResponse>(services, "api/EstatusSol");
         // RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo"); // Comentar para evitar ambigüedad
 
-        // Catálogos de Tesorería
-        RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
-        RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
-        RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
-        RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
-        RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
-        RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
+        // Catálogos de Tesorería (pendientes - requieren entidades en BD)
+        // RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
+        // RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
+        // RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
+        // RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
+        // RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
+        // RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
 
         // Catálogos de Presupuestales
         RegisterCrud<GfResponse>(services, "api/Gf");
@@ -97,8 +96,6 @@ public static class ApiServiceExtensions
 
         RegisterCrud<MatrizConversionResponse>(services, "api/MatrizConversion");
         RegisterCrud<UnidadResponsableResponse>(services, "api/UnidadResponsable");
-        RegisterCrud<GfResponse>(services, "api/Gf");
-        RegisterCrud<FnResponse>(services, "api/Fn");
         RegisterCrud<SubFuncionResponse>(services, "api/SubFuncion");
         RegisterCrud<ActividadInstitucionalResponse>(services, "api/ActividadInstitucional");
         RegisterCrud<ProgramaPresupuestalResponse>(services, "api/ProgramaPresupuestal");
