@@ -16,7 +16,7 @@ SELECT
     tb.FKIdLocalizacion_ALMA,
     tb.FKIdUnidades_Equivalente,
     tb.CodigoClave,
-    tb.Descripcion AS TipoBienDescripcion,
+    CONCAT(tb.Descripcion, ' ', tb.CodigoClave) AS TipoBienDescripcion,
     tb.DepreciacionAnual,
     tb.Consecutivo,
     tb.CABMS,

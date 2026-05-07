@@ -28,12 +28,22 @@
 
             <Header>
                 <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="TipoBienResponse">Grupo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NivelDescripcion" T="TipoBienResponse">Nivel</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CodigoClave" T="TipoBienResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoBien" T="TipoBienResponse">Id</MudTableSortLabel></MudTh>
+                <MudTh Style="min-width: 180px;"><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="TipoBienResponse">Clave CUCOP</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoClave" T="TipoBienResponse">Código o Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="TipoBienResponse">Partida</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="TipoBienResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CucopPlus" T="TipoBienResponse">CUCOP+</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoBienResponse">Activo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="DepreciacionAnual" T="TipoBienResponse">Depreciación Anual</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Consecutivo" T="TipoBienResponse">Consecutivo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Identificador" T="TipoBienResponse">Identificador de Almacén</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ExistenciaMinima" T="TipoBienResponse">Existencia Mínima</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ExistenciaMaxima" T="TipoBienResponse">Existencia Máxima</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TiempoVida" T="TipoBienResponse">Tiempo de Vida (Días)</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="TipoBienResponse">Unidades</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CatalogoBasico" T="TipoBienResponse">Catálogo Básico</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CucopPlus" T="TipoBienResponse">Cucop Plus</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CantidadEquivalente" T="TipoBienResponse">Cantidad Equivalente</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UnidadEquivalenteMedida" T="TipoBienResponse">Unidades Equivalente</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -53,16 +63,26 @@
                                        OnClick="@(() => DeleteItem(item.PkidTipoBien))" />
                     </MudTooltip>
                 </MudTd>
+                <MudTd>@item.PkidTipoBien</MudTd>
                 <MudTd>@item.GrupoBienDescripcion</MudTd>
-                <MudTd>@item.NivelDescripcion</MudTd>
                 <MudTd>@item.CodigoClave</MudTd>
+                <MudTd>@item.PartidaDescripcion</MudTd>
                 <MudTd>@item.TipoBienDescripcion</MudTd>
-                <MudTd>@item.CucopPlus</MudTd>
+                <MudTd>@item.DepreciacionAnual</MudTd>
+                <MudTd>@item.Consecutivo</MudTd>
+                <MudTd>@item.Identificador</MudTd>
+                <MudTd>@item.ExistenciaMinima</MudTd>
+                <MudTd>@item.ExistenciaMaxima</MudTd>
+                <MudTd>@item.TiempoVida</MudTd>
+                <MudTd>@item.UnidadMedida</MudTd>
                 <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
+                    <MudChip T="string" Color="@(item.CatalogoBasico == true ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.CatalogoBasico == true ? "Sí" : "No")
                     </MudChip>
                 </MudTd>
+                <MudTd>@item.CucopPlus</MudTd>
+                <MudTd>@item.CantidadEquivalente</MudTd>
+                <MudTd>@item.UnidadEquivalenteMedida</MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -84,22 +104,29 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidTipoBien,
-            Grupo = u.GrupoBienDescripcion ?? string.Empty,
-            Nivel = u.NivelDescripcion ?? string.Empty,
-            Codigo = u.CodigoClave ?? string.Empty,
+            Id = u.PkidTipoBien,
+            ClaveCUCOP = u.GrupoBienDescripcion ?? string.Empty,
+            CodigoClave = u.CodigoClave ?? string.Empty,
+            Partida = u.PartidaDescripcion ?? string.Empty,
             Descripcion = u.TipoBienDescripcion ?? string.Empty,
-            CUCOP = u.CucopPlus ?? string.Empty,
-            Depreciacion = u.DepreciacionAnual,
-            VidaUtil = u.TiempoVida,
-            Activo = u.Activo ? "Sí" : "No"
+            DepreciacionAnual = u.DepreciacionAnual,
+            Consecutivo = u.Consecutivo,
+            Identificador = u.Identificador ?? string.Empty,
+            ExistenciaMinima = u.ExistenciaMinima,
+            ExistenciaMaxima = u.ExistenciaMaxima,
+            TiempoVida = u.TiempoVida,
+            Unidades = u.UnidadMedida ?? string.Empty,
+            CatalogoBasico = u.CatalogoBasico == true ? "Sí" : "No",
+            CucopPlus = u.CucopPlus ?? string.Empty,
+            CantidadEquivalente = u.CantidadEquivalente,
+            UnidadesEquivalente = u.UnidadEquivalenteMedida ?? string.Empty
         });
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.TipoBienDescripcion ?? "el tipo de bien";
+        return response?.Data?.TipoBienDescripcion ?? response?.Items?.FirstOrDefault()?.TipoBienDescripcion ?? "el tipo de bien";
     }
 
     protected override async Task ReloadData()

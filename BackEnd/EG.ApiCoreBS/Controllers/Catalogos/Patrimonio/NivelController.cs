@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -227,6 +228,17 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
+        }
+
+        [HttpGet("GetLookup")]
+        public async Task<ActionResult<List<LookupItem>>> GetLookup()
+        {
+            var items = await _service.GetQueryWithIncludes()
+                .Where(n => n.Activo)
+                .OrderBy(n => n.Descripcion)
+                .Select(n => new LookupItem { Id = n.PkidNivel, Text = n.Descripcion ?? "" })
+                .ToListAsync();
+            return Ok(items);
         }
     }
 }

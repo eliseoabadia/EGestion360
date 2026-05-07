@@ -2,301 +2,295 @@
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.Patrimonio
-@using EG.Domain.DTOs.Responses.Almacen
-@using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Web.Services
+@using System.Net.Http.Json
+@using EG.Common.GenericModel
 
 @inject IGenericCrudService<TipoBienResponse> Service
-@inject IGenericCrudService<GrupoBienResponse> GrupoBienService
-@inject IGenericCrudService<NivelResponse> NivelService
-@inject IGenericCrudService<PartidaResponse> PartidaService
-@inject IGenericCrudService<CuentaContableResponse> CuentaContableService
-@inject IGenericCrudService<UnidadeResponse> UnidadeService
+@inject HttpClient Http
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="TipoBienResponse"
                  Title="@dialogTitle"
-                 MaxWidth="MaxWidth.Large"
+                 MaxWidth="MaxWidth.ExtraExtraLarge"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
+                 LoadingMessage="Cargando catálogos..."
                  OnConfirm="GuardarCambiosAsync">
 
-    <BaseEntityForm TEntity="TipoBienResponse"
-                    @ref="form"
-                    ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+    @if (_loading)
+    {
+        <div class="d-flex justify-center align-center py-8">
+            <MudProgressCircular Indeterminate="true" />
+            <MudText Class="ml-3">Cargando catálogos...</MudText>
+        </div>
+    }
+    else
+    {
+        <MudContainer Class="py-2">
+            <MudGrid GutterSize="2" Spacing="2">
 
-        <MudText Typo="Typo.subtitle2" Class="mb-2 mt-2">Información General</MudText>
-        <MudDivider Class="mb-3" />
-        <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <MudSelect T="int?" Label="Grupo de Bien"
-                           @bind-Value="item.FkidGrupoBienAlma"
-                           Required="true"
-                           RequiredError="El grupo es requerido"
-                           Disabled="@(grupoList.Count == 0)">
-                    @foreach (var g in grupoList)
-                    {
-                        <MudSelectItem Value="@g.PkidGrupoBien">@g.GrupoBienDescripcion</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudSelect T="int?" Label="Nivel"
-                           @bind-Value="item.FkidNivelAlma"
-                           Disabled="@(nivelList.Count == 0)">
-                    @foreach (var n in nivelList)
-                    {
-                        <MudSelectItem Value="@n.PkidNivel">@n.Descripcion</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.CodigoClave"
-                              Label="Código Clave"
-                              Variant="Variant.Outlined"
-                              FullWidth="true"
-                              Required="true"
-                              RequiredError="El código es requerido" />
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Identificador"
-                              Label="Identificador"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.TipoBienDescripcion"
-                              Label="Descripción"
-                              Variant="Variant.Outlined"
-                              FullWidth="true"
-                              Required="true"
-                              RequiredError="La descripción es requerida" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <MudSelect T="int?" Label="Partida Contable"
-                           @bind-Value="item.FkidPartidaConta"
-                           Disabled="@(partidaList.Count == 0)">
-                    @foreach (var p in partidaList)
-                    {
-                        <MudSelectItem Value="@p.PkidPartida">@p.Clave - @p.Descripcion</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudSelect T="int?" Label="Cuenta Contable"
-                           @bind-Value="item.FkidCuentaContableConta"
-                           Disabled="@(cuentaList.Count == 0)">
-                    @foreach (var c in cuentaList)
-                    {
-                        <MudSelectItem Value="@c.PkidCuentaContable">@c.Cuenta - @c.Descripcion</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            <MudText Typo="Typo.subtitle2" Class="mb-2 mt-4">Unidades y Medidas</MudText>
-            <MudDivider Class="mb-3" />
-            <MudItem xs="12" md="6">
-                <MudSelect T="int?" Label="Unidad de Medida"
-                           @bind-Value="item.FkidUnidadesAlma"
-                           Disabled="@(unidadList.Count == 0)">
-                    @foreach (var u in unidadList)
-                    {
-                        <MudSelectItem Value="@u.PkidUnidades">@u.Descripcion</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudSelect T="int?" Label="Unidad Equivalente"
-                           @bind-Value="item.FkidUnidadesEquivalente"
-                           Disabled="@(unidadList.Count == 0)">
-                    @foreach (var u in unidadList)
-                    {
-                        <MudSelectItem Value="@u.PkidUnidades">@u.Descripcion</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.CantidadEquivalente"
-                              Label="Cantidad Equivalente"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Consecutivo"
-                              Label="Consecutivo"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-
-            <MudText Typo="Typo.subtitle2" Class="mb-2 mt-4">Financiero y Control</MudText>
-            <MudDivider Class="mb-3" />
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.DepreciacionAnual"
-                              Label="Depreciación Anual"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.TiempoVida"
-                              Label="Tiempo de Vida"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Cuota"
-                              Label="Cuota"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.ExistenciaMinima"
-                              Label="Existencia Mínima"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.ExistenciaMaxima"
-                              Label="Existencia Máxima"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Cabms"
-                              Label="CABMS"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.CucopPlus"
-                              Label="CUCOP Plus"
-                              Variant="Variant.Outlined"
-                              FullWidth="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudCheckBox @bind-Value="item.ProveeduriaNac" Label="Proveeduría Nacional" />
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudCheckBox @bind-Value="item.CatalogoBasico" Label="Catálogo Básico" />
-            </MudItem>
-
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12" class="mt-4">
-                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
-                        <MudDivider Class="mb-3" />
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="item.Activo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
-                    </MudPaper>
+                <MudItem xs="12" class="mt-2">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Información General</MudText>
                 </MudItem>
-            }
-        </MudGrid>
-    </BaseEntityForm>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedGrupoText" ValueChanged="OnGrupoChanged"
+                                     Label="Clave CUCOP (SICOP)" Variant="Variant.Outlined"
+                                     SearchFunc="SearchGrupo" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedNivelText" ValueChanged="OnNivelChanged"
+                                     Label="Nivel" Variant="Variant.Outlined"
+                                     SearchFunc="SearchNivel" Dense="true"
+                                     DebounceInterval="150" Required="false"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="item.CodigoClave"
+                                  Label="Código o Clave"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  Required="true"
+                                  RequiredError="El código es requerido" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="item.Identificador"
+                                  Label="Identificador de Almacén"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="item.TipoBienDescripcion"
+                                  Label="Descripción"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  Required="true"
+                                  RequiredError="La descripción es requerida" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedPartidaText" ValueChanged="OnPartidaChanged"
+                                     Label="Partida" Variant="Variant.Outlined"
+                                     SearchFunc="SearchPartida" Dense="true"
+                                     DebounceInterval="150" Required="false"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedCuentaText" ValueChanged="OnCuentaChanged"
+                                     Label="Cuenta Contable" Variant="Variant.Outlined"
+                                     SearchFunc="SearchCuenta" Dense="true"
+                                     DebounceInterval="150" Required="false"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" class="mt-2">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Unidades y Medidas</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedUnidadText" ValueChanged="OnUnidadChanged"
+                                     Label="Unidades" Variant="Variant.Outlined"
+                                     SearchFunc="SearchUnidad" Dense="true"
+                                     DebounceInterval="150" Required="false"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedUnidadEqText" ValueChanged="OnUnidadEqChanged"
+                                     Label="Unidades Equivalente" Variant="Variant.Outlined"
+                                     SearchFunc="SearchUnidadEq" Dense="true"
+                                     DebounceInterval="150" Required="false"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="item.CantidadEquivalente"
+                                  Label="Cantidad Equivalente"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="item.Consecutivo"
+                                  Label="Consecutivo"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" class="mt-2">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Financiero y Control</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.DepreciacionAnual"
+                                  Label="Depreciación Anual"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.TiempoVida"
+                                  Label="Tiempo de Vida (Días)"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.Cuota"
+                                  Label="Cuota"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.ExistenciaMinima"
+                                  Label="Existencia Mínima"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.ExistenciaMaxima"
+                                  Label="Existencia Máxima"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.Cabms"
+                                  Label="CABMS"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.CucopPlus"
+                                  Label="Cucop Plus"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudCheckBox @bind-Value="item.ProveeduriaNac" Label="Proveeduría Nacional" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudCheckBox @bind-Value="item.CatalogoBasico" Label="Catálogo Básico" />
+                </MudItem>
+
+                @if (Id.HasValue)
+                {
+                    <MudItem xs="12" class="mt-2">
+                        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
+                    </MudItem>
+                }
+
+            </MudGrid>
+        </MudContainer>
+    }
 </BaseCrudDialog>
 
 @code {
     [Parameter] public int? Id { get; set; }
-
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private BaseEntityForm<TipoBienResponse> form = null!;
     private TipoBienResponse item = new() { Activo = true };
-    private List<GrupoBienResponse> grupoList = new();
-    private List<NivelResponse> nivelList = new();
-    private List<PartidaResponse> partidaList = new();
-    private List<CuentaContableResponse> cuentaList = new();
-    private List<UnidadeResponse> unidadList = new();
-
     private string dialogTitle => Id.HasValue ? "Editar Tipo de Bien" : "Nuevo Tipo de Bien";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private bool _loading = true;
+
+    private string _selectedGrupoText = string.Empty;
+    private string _selectedNivelText = string.Empty;
+    private string _selectedPartidaText = string.Empty;
+    private string _selectedCuentaText = string.Empty;
+    private string _selectedUnidadText = string.Empty;
+    private string _selectedUnidadEqText = string.Empty;
+
+    private List<LookupItem> _allGrupos = new();
+    private List<LookupItem> _allNiveles = new();
+    private List<LookupItem> _allPartidas = new();
+    private List<LookupItem> _allCuentas = new();
+    private List<LookupItem> _allUnidades = new();
+
+    private const int MaxItemsPerCombo = 500;
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(
-            CargarGrupos(),
-            CargarNiveles(),
-            CargarPartidas(),
-            CargarCuentas(),
-            CargarUnidades()
-        );
-
+        await CargarCatalogosAsync();
         if (Id.HasValue)
         {
-            await CargarDatos();
+            await CargarDatosAsync();
         }
+        _loading = false;
     }
 
-    private async Task CargarGrupos()
+    private async Task CargarCatalogosAsync()
     {
         try
         {
-            var response = await GrupoBienService.GetAllAsync();
-            if (response?.Success == true && response.Items != null)
-                grupoList = response.Items.OfType<GrupoBienResponse>().Where(g => g.Activo).ToList();
+            var tasks = new[]
+            {
+                LoadCatalogAsync("api/GrupoBien/GetLookup", x => _allGrupos = x),
+                LoadCatalogAsync("api/Nivel/GetLookup", x => _allNiveles = x),
+                LoadCatalogAsync("api/Partida/GetLookup", x => _allPartidas = x),
+                LoadCatalogAsync("api/CuentaContable/GetLookup", x => _allCuentas = x),
+                LoadCatalogAsync("api/Unidades/GetLookup", x => _allUnidades = x),
+            };
+            await Task.WhenAll(tasks);
         }
-        catch (Exception ex) { Snackbar.Add($"Error al cargar grupos: {ex.Message}", Severity.Error); }
-    }
-
-    private async Task CargarNiveles()
-    {
-        try
+        catch (Exception ex)
         {
-            var response = await NivelService.GetAllAsync();
-            if (response?.Success == true && response.Items != null)
-                nivelList = response.Items.OfType<NivelResponse>().Where(n => n.Activo).ToList();
+            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
         }
-        catch (Exception ex) { Snackbar.Add($"Error al cargar niveles: {ex.Message}", Severity.Error); }
     }
 
-    private async Task CargarPartidas()
+    private async Task LoadCatalogAsync(string url, Action<List<LookupItem>> assign)
     {
-        try
-        {
-            var response = await PartidaService.GetAllAsync();
-            if (response?.Success == true && response.Items != null)
-                partidaList = response.Items.OfType<PartidaResponse>().Where(p => p.Activo).ToList();
-        }
-        catch (Exception ex) { Snackbar.Add($"Error al cargar partidas: {ex.Message}", Severity.Error); }
+        var result = await Http.GetFromJsonAsync<List<LookupItem>>(url);
+        if (result != null)
+            assign(result.Where(x => !string.IsNullOrEmpty(x.Text)).ToList());
     }
 
-    private async Task CargarCuentas()
-    {
-        try
-        {
-            var response = await CuentaContableService.GetAllAsync();
-            if (response?.Success == true && response.Items != null)
-                cuentaList = response.Items.OfType<CuentaContableResponse>().Where(c => c.Activo).ToList();
-        }
-        catch (Exception ex) { Snackbar.Add($"Error al cargar cuentas: {ex.Message}", Severity.Error); }
-    }
-
-    private async Task CargarUnidades()
-    {
-        try
-        {
-            var response = await UnidadeService.GetAllAsync();
-            if (response?.Success == true && response.Items != null)
-                unidadList = response.Items.OfType<UnidadeResponse>().Where(u => u.Activo).ToList();
-        }
-        catch (Exception ex) { Snackbar.Add($"Error al cargar unidades: {ex.Message}", Severity.Error); }
-    }
-
-    private async Task CargarDatos()
+    private async Task CargarDatosAsync()
     {
         try
         {
             var response = await Service.GetByIdAsync(Id.Value);
-            if (response?.Success == true && response.Data != null)
-                item = response.Data;
+            if (response?.Success == true)
+            {
+                var d = response.Data ?? response.Items?.FirstOrDefault();
+                if (d != null)
+                {
+                    item = d;
+
+                    var g = _allGrupos.FirstOrDefault(x => x.Id == d.FkidGrupoBienAlma);
+                    if (g != null) _selectedGrupoText = g.Text ?? "";
+
+                    var n = _allNiveles.FirstOrDefault(x => x.Id == d.FkidNivelAlma);
+                    if (n != null) _selectedNivelText = n.Text ?? "";
+
+                    var p = _allPartidas.FirstOrDefault(x => x.Id == d.FkidPartidaConta);
+                    if (p != null) _selectedPartidaText = p.Text ?? "";
+
+                    var c = _allCuentas.FirstOrDefault(x => x.Id == d.FkidCuentaContableConta);
+                    if (c != null) _selectedCuentaText = c.Text ?? "";
+
+                    var u = _allUnidades.FirstOrDefault(x => x.Id == d.FkidUnidadesAlma);
+                    if (u != null) _selectedUnidadText = u.Text ?? "";
+
+                    var ue = _allUnidades.FirstOrDefault(x => x.Id == d.FkidUnidadesEquivalente);
+                    if (ue != null) _selectedUnidadEqText = ue.Text ?? "";
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -304,10 +298,85 @@
         }
     }
 
+    // Search functions
+    private Task<IEnumerable<string>> SearchGrupo(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allGrupos
+            : _allGrupos.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchNivel(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allNiveles
+            : _allNiveles.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchPartida(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allPartidas
+            : _allPartidas.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchCuenta(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allCuentas
+            : _allCuentas.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchUnidad(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allUnidades
+            : _allUnidades.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchUnidadEq(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allUnidades
+            : _allUnidades.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
+    }
+
+    // OnChanged handlers
+    private void OnGrupoChanged(string value) { _selectedGrupoText = value; }
+    private void OnNivelChanged(string value) { _selectedNivelText = value; }
+    private void OnPartidaChanged(string value) { _selectedPartidaText = value; }
+    private void OnCuentaChanged(string value) { _selectedCuentaText = value; }
+    private void OnUnidadChanged(string value) { _selectedUnidadText = value; }
+    private void OnUnidadEqChanged(string value) { _selectedUnidadEqText = value; }
+
     private async Task GuardarCambiosAsync()
     {
         try
         {
+            var g = _allGrupos.FirstOrDefault(x => x.Text == _selectedGrupoText);
+            if (g != null) item.FkidGrupoBienAlma = g.Id; else item.FkidGrupoBienAlma = null;
+
+            var n = _allNiveles.FirstOrDefault(x => x.Text == _selectedNivelText);
+            if (n != null) item.FkidNivelAlma = n.Id; else item.FkidNivelAlma = null;
+
+            var p = _allPartidas.FirstOrDefault(x => x.Text == _selectedPartidaText);
+            if (p != null) item.FkidPartidaConta = p.Id; else item.FkidPartidaConta = null;
+
+            var c = _allCuentas.FirstOrDefault(x => x.Text == _selectedCuentaText);
+            if (c != null) item.FkidCuentaContableConta = c.Id; else item.FkidCuentaContableConta = null;
+
+            var u = _allUnidades.FirstOrDefault(x => x.Text == _selectedUnidadText);
+            if (u != null) item.FkidUnidadesAlma = u.Id; else item.FkidUnidadesAlma = null;
+
+            var ue = _allUnidades.FirstOrDefault(x => x.Text == _selectedUnidadEqText);
+            if (ue != null) item.FkidUnidadesEquivalente = ue.Id; else item.FkidUnidadesEquivalente = null;
+
             bool success;
             if (Id.HasValue)
             {

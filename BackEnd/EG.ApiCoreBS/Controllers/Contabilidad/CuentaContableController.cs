@@ -8,6 +8,7 @@ using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Contabilidad
 {
@@ -266,6 +267,17 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
+        }
+
+        [HttpGet("GetLookup")]
+        public async Task<ActionResult<List<LookupItem>>> GetLookup()
+        {
+            var items = await _service.GetQueryWithIncludes()
+                .Where(c => c.Activo)
+                .OrderBy(c => c.Cuenta)
+                .Select(c => new LookupItem { Id = c.PkidCuentaContable, Text = (c.Cuenta ?? "") + " - " + (c.Descripcion ?? "") })
+                .ToListAsync();
+            return Ok(items);
         }
     }
 }

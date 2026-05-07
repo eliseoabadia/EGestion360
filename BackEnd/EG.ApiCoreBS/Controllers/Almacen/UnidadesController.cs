@@ -1,6 +1,7 @@
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using AutoMapper;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Infraestructure.Models;
@@ -95,6 +96,16 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             // IRepository ya guarda cambios
 
             return NoContent();
+        }
+
+        [HttpGet("GetLookup")]
+        public async Task<ActionResult<List<LookupItem>>> GetLookup()
+        {
+            var all = await _repository.GetAllAsync();
+            var items = all.Where(u => u.Activo).OrderBy(u => u.Descripcion)
+                .Select(u => new LookupItem { Id = u.PkidUnidades, Text = u.Descripcion ?? "" })
+                .ToList();
+            return Ok(items);
         }
     }
 }

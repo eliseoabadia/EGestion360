@@ -18,17 +18,20 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     {
         private readonly GenericService<GrupoBien, GrupoBienDto, GrupoBienResponse> _service;
         private readonly GenericService<VwGrupoBien, GrupoBienDto, GrupoBienResponse> _serviceView;
+        private readonly EGestionContext _context;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public GrupoBienController(
             GenericService<GrupoBien, GrupoBienDto, GrupoBienResponse> service,
             GenericService<VwGrupoBien, GrupoBienDto, GrupoBienResponse> serviceView,
+            EGestionContext context,
             IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
+            _context = context;
             _mapper = mapper;
             _userContext = userContext;
             ConfigureService();
@@ -81,6 +84,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 Success = true,
                 Message = "Grupo de bien obtenido correctamente",
                 Code = "SUCCESS",
+                Data = result,
                 Items = new List<GrupoBienResponse> { result },
                 TotalCount = 1
             });
@@ -206,6 +210,49 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 Message = "OK",
                 Code = "SUCCESS"
             });
+        }
+
+        [HttpGet("GetGrupoBien")]
+        public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetGrupoBien()
+        {
+            var items = await _context.GrupoBiens
+                .Where(g => (g.Clave ?? 0) > 2000 && g.Activo)
+                .OrderBy(g => g.ClaveCucop)
+                .Select(g => new GrupoBienResponse
+                {
+                    PkidGrupoBien = g.PkidGrupoBien,
+                    GrupoBienDescripcion = g.Descripcion,
+                    GrupoBienClave = g.Clave,
+                    ClaveAn = g.ClaveAn,
+                    CabmAct = g.CabmAct,
+                    ClaveCucop = g.ClaveCucop,
+                    Activo = g.Activo
+                })
+                .ToListAsync();
+
+            return Ok(new PagedResult<GrupoBienResponse>
+            {
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS",
+                Items = items,
+                TotalCount = items.Count
+            });
+        }
+
+        [HttpGet("GetLookup")]
+        public async Task<ActionResult<List<LookupItem>>> GetLookup()
+        {
+            var items = await _context.GrupoBiens
+                .Where(g => (g.Clave ?? 0) > 2000 && g.Activo)
+                .OrderBy(g => g.ClaveAn)
+                .Select(g => new LookupItem
+                {
+                    Id = g.PkidGrupoBien,
+                    Text = (g.ClaveAn ?? "") + " / " + (g.CabmAct ?? "") + " / " + (g.Descripcion ?? "")
+                })
+                .ToListAsync();
+            return Ok(items);
         }
     }
 }

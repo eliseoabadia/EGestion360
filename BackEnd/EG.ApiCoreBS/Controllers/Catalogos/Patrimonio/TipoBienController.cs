@@ -93,6 +93,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 Success = true,
                 Message = "Tipo de bien obtenido correctamente",
                 Code = "SUCCESS",
+                Data = result,
                 Items = new List<TipoBienResponse> { result },
                 TotalCount = 1
             });
@@ -285,6 +286,19 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                     "PkidTipoBien" => isAscending ? query.OrderBy(e => e.PkidTipoBien) : query.OrderByDescending(e => e.PkidTipoBien),
                     "TipoBienDescripcion" => isAscending ? query.OrderBy(e => e.TipoBienDescripcion) : query.OrderByDescending(e => e.TipoBienDescripcion),
                     "GrupoBienDescripcion" => isAscending ? query.OrderBy(e => e.GrupoBienDescripcion) : query.OrderByDescending(e => e.GrupoBienDescripcion),
+                    "CodigoClave" => isAscending ? query.OrderBy(e => e.CodigoClave) : query.OrderByDescending(e => e.CodigoClave),
+                    "PartidaDescripcion" => isAscending ? query.OrderBy(e => e.PartidaDescripcion) : query.OrderByDescending(e => e.PartidaDescripcion),
+                    "DepreciacionAnual" => isAscending ? query.OrderBy(e => e.DepreciacionAnual) : query.OrderByDescending(e => e.DepreciacionAnual),
+                    "Consecutivo" => isAscending ? query.OrderBy(e => e.Consecutivo) : query.OrderByDescending(e => e.Consecutivo),
+                    "Identificador" => isAscending ? query.OrderBy(e => e.Identificador) : query.OrderByDescending(e => e.Identificador),
+                    "ExistenciaMinima" => isAscending ? query.OrderBy(e => e.ExistenciaMinima) : query.OrderByDescending(e => e.ExistenciaMinima),
+                    "ExistenciaMaxima" => isAscending ? query.OrderBy(e => e.ExistenciaMaxima) : query.OrderByDescending(e => e.ExistenciaMaxima),
+                    "TiempoVida" => isAscending ? query.OrderBy(e => e.TiempoVida) : query.OrderByDescending(e => e.TiempoVida),
+                    "UnidadMedida" => isAscending ? query.OrderBy(e => e.UnidadMedida) : query.OrderByDescending(e => e.UnidadMedida),
+                    "UnidadEquivalenteMedida" => isAscending ? query.OrderBy(e => e.UnidadEquivalenteMedida) : query.OrderByDescending(e => e.UnidadEquivalenteMedida),
+                    "CatalogoBasico" => isAscending ? query.OrderBy(e => e.CatalogoBasico) : query.OrderByDescending(e => e.CatalogoBasico),
+                    "CucopPlus" => isAscending ? query.OrderBy(e => e.CucopPlus) : query.OrderByDescending(e => e.CucopPlus),
+                    "CantidadEquivalente" => isAscending ? query.OrderBy(e => e.CantidadEquivalente) : query.OrderByDescending(e => e.CantidadEquivalente),
                     _ => query.OrderBy(e => e.TipoBienDescripcion)
                 };
             }
