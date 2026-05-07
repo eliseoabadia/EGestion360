@@ -1,5 +1,6 @@
 ﻿@using EG.Web.Models.Configuration
 @using MudBlazor
+@inject NavigationManager NavigationManager
 
 <div class="nav-item-with-children"
      @onmouseenter="() => OpenOverlay()"
@@ -33,16 +34,26 @@
                     }
                     else
                     {
-                        <a href="@child.Ruta"
-                           class="overlay-nav-link"
-                           target="@(child.AbrirEnNuevaVentana ? "_blank" : "_self")">
-                            <MudIcon Icon="@GetIcon(child.ImageUrl)" Size="Size.Small" />
-                            <span class="overlay-nav-text">@child.Nombre</span>
-                            @if (child.AbrirEnNuevaVentana)
-                            {
+                        @if (child.AbrirEnNuevaVentana)
+                        {
+                            <a href="@child.Ruta"
+                               class="overlay-nav-link"
+                               target="_blank">
+                                <MudIcon Icon="@GetIcon(child.ImageUrl)" Size="Size.Small" />
+                                <span class="overlay-nav-text">@child.Nombre</span>
                                 <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-2" />
-                            }
-                        </a>
+                            </a>
+                        }
+                        else
+                        {
+                            <NavLink class="overlay-nav-link"
+                                     href="@child.Ruta"
+                                     Match="@(child.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                                     @onclick="() => NavigateTo(child.Ruta)">
+                                <MudIcon Icon="@GetIcon(child.ImageUrl)" Size="Size.Small" />
+                                <span class="overlay-nav-text">@child.Nombre</span>
+                            </NavLink>
+                        }
                     }
                 }
             </div>
@@ -50,16 +61,30 @@
     }
     else
     {
-        <a href="@Item.Ruta"
-           class="nav-link"
-           target="@(Item.AbrirEnNuevaVentana ? "_blank" : "_self")">
-            <MudIcon Icon="@GetIcon(Item.ImageUrl)" Size="Size.Small" />
-            <span class="nav-link-text">@Item.Nombre</span>
-            @if (Item.AbrirEnNuevaVentana)
-            {
+        @if (Item.AbrirEnNuevaVentana)
+        {
+            <a href="@Item.Ruta"
+               class="nav-link"
+               target="_blank">
+                <MudIcon Icon="@GetIcon(Item.ImageUrl)" Size="Size.Small" />
+                <span class="nav-link-text">@Item.Nombre</span>
                 <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-2" />
-            }
-        </a>
+            </a>
+        }
+        else
+        {
+            <NavLink class="nav-link"
+                     href="@Item.Ruta"
+                     Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                     @onclick="() => NavigateTo(Item.Ruta)">
+                <MudIcon Icon="@GetIcon(Item.ImageUrl)" Size="Size.Small" />
+                <span class="nav-link-text">@Item.Nombre</span>
+                @if (Item.AbrirEnNuevaVentana)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-2" />
+                }
+            </NavLink>
+        }
     }
 </div>
 
@@ -98,6 +123,14 @@
             CloseOverlay();
         else
             OpenOverlay();
+    }
+
+    private void NavigateTo(string? url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            NavigationManager.NavigateTo(url);
+        }
     }
 
     public void Dispose()
