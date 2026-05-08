@@ -63,15 +63,17 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<TipoPatrimonioResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null)
+            var entity = await _service.GetQueryWithIncludes().FirstOrDefaultAsync(e => e.PkidTipoPatrimonio == id);
+            if (entity == null)
                 return NotFound(new PagedResult<TipoPatrimonioResponse> { Success = false, Message = "Tipo de patrimonio no encontrado", Code = "NOT_FOUND" });
 
+            var result = _mapper.Map<TipoPatrimonioResponse>(entity);
             return Ok(new PagedResult<TipoPatrimonioResponse>
             {
                 Success = true,
                 Message = "Tipo de patrimonio obtenido correctamente",
                 Code = "SUCCESS",
+                Data = result,
                 Items = new List<TipoPatrimonioResponse> { result },
                 TotalCount = 1
             });

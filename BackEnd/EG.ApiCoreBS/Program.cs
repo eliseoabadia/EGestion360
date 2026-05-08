@@ -75,6 +75,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 builder.Services.AddSwaggerGen(c =>
 {

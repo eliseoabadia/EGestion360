@@ -33,7 +33,6 @@
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
     <Folder Include="Pages\Configuration\Catalogos\Adquisicion\" />
-    <Folder Include="Pages\Configuration\Catalogos\Almacen\" />
     <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
     <Folder Include="Pages\ConteoCiclico\" />
     <Folder Include="Services\ConteoCiclico\" />

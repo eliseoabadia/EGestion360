@@ -10,6 +10,7 @@ namespace EG.Business.Mapping.Patrimonio
         public MarcaMappingProfile()
         {
             CreateMap<Marca, MarcaDto>().ReverseMap();
+            CreateMap<Marca, MarcaResponse>().ReverseMap();
             CreateMap<MarcaResponse, MarcaDto>()
                 .ForMember(dest => dest.PkidMarca, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));

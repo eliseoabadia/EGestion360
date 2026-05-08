@@ -1,4 +1,4 @@
-@page "/conteociclico/periodo"
+@page "/configuracion/almacen/Perido_Conteo"
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -93,8 +93,8 @@
 @code {
     private GenericTable<PeriodoConteoResponse> table = null!;
 
-    protected override string ModuleName => "conteociclico";
-    protected override string SubModuleName => "periodo";
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Conteo_Periodo";
 
     protected override Type CreateDialogType => typeof(PeriodoConteoDialog);
     protected override Type EditDialogType => typeof(PeriodoConteoDialog);

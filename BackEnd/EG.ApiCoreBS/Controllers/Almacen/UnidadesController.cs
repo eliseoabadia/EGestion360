@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Almacen;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Almacen
 {
@@ -32,14 +33,58 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             _userContextService = userContextService;
         }
 
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<UnidadeResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        {
+            var query = _repository.QueryWithIncludes(x => true);
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                query = query.Where(e => e.Descripcion.Contains(request.Filtro));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidUnidades" => isAscending ? query.OrderBy(e => e.PkidUnidades) : query.OrderByDescending(e => e.PkidUnidades),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    "FechaCreacion" => isAscending ? query.OrderBy(e => e.FechaCreacion) : query.OrderByDescending(e => e.FechaCreacion),
+                    "UsuarioCreacion" => isAscending ? query.OrderBy(e => e.UsuarioCreacion) : query.OrderByDescending(e => e.UsuarioCreacion),
+                    _ => query.OrderBy(e => e.Descripcion)
+                };
+            }
+            else
+            {
+                query = query.OrderBy(e => e.Descripcion);
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return Ok(new PagedResult<UnidadeResponse>
+            {
+                Items = _mapper.Map<List<UnidadeResponse>>(items),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
+        }
+
         [HttpGet]
-        public async Task<IActionResult> GetAllPaginado(int page = 1, int pageSize = 10, string? sortBy = null, string? filter = null)
+        public async Task<IActionResult> GetAllPaginado(int page = 1, int pageSize = 10, string? sortBy = null, string? sortDirection = null, string? filter = null)
         {
             var all = await _repository.GetAllAsync();
 
             if (!string.IsNullOrEmpty(sortBy))
             {
-                var isAscending = string.IsNullOrEmpty(sortBy) || sortBy.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                var isAscending = string.IsNullOrEmpty(sortDirection) || sortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
                 all = sortBy switch
                 {
                     "PkidUnidades" => isAscending ? all.OrderBy(e => e.PkidUnidades) : all.OrderByDescending(e => e.PkidUnidades),

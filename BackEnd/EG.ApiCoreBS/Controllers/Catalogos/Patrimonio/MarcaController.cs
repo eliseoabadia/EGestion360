@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -62,15 +63,17 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<MarcaResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null)
+            var entity = await _service.GetQueryWithIncludes().FirstOrDefaultAsync(e => e.PkidMarca == id);
+            if (entity == null)
                 return NotFound(new PagedResult<MarcaResponse> { Success = false, Message = "Marca no encontrada", Code = "NOT_FOUND" });
 
+            var result = _mapper.Map<MarcaResponse>(entity);
             return Ok(new PagedResult<MarcaResponse>
             {
                 Success = true,
                 Message = "Marca obtenida correctamente",
                 Code = "SUCCESS",
+                Data = result,
                 Items = new List<MarcaResponse> { result },
                 TotalCount = 1
             });
@@ -161,8 +164,39 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<MarcaResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(result);
+            var query = _service.GetQueryWithIncludes();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                query = query.Where(e => e.Descripcion.Contains(request.Filtro));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidMarca" => isAscending ? query.OrderBy(e => e.PkidMarca) : query.OrderByDescending(e => e.PkidMarca),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    _ => query.OrderBy(e => e.Descripcion)
+                };
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return Ok(new PagedResult<MarcaResponse>
+            {
+                Items = _mapper.Map<List<MarcaResponse>>(items),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
         }
     }
 }

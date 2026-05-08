@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Patrimonio
 {
@@ -68,15 +69,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Patrimonio
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<PersonaResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null)
+            var entity = await _service.GetQueryWithIncludes().FirstOrDefaultAsync(e => e.PkidPersona == id);
+            if (entity == null)
                 return NotFound(new PagedResult<PersonaResponse> { Success = false, Message = "Persona no encontrada", Code = "NOT_FOUND" });
 
+            var result = _mapper.Map<PersonaResponse>(entity);
             return Ok(new PagedResult<PersonaResponse>
             {
                 Success = true,
                 Message = "Persona obtenida correctamente",
                 Code = "SUCCESS",
+                Data = result,
                 Items = new List<PersonaResponse> { result },
                 TotalCount = 1
             });
@@ -167,8 +170,44 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Patrimonio
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<PersonaResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(result);
+            var query = _service.GetQueryWithIncludes();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                var f = request.Filtro;
+                query = query.Where(e => e.Nombre.Contains(f) || e.Rfc.Contains(f) || e.Curp.Contains(f));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidPersona" => isAscending ? query.OrderBy(e => e.PkidPersona) : query.OrderByDescending(e => e.PkidPersona),
+                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                    "Nombre" => isAscending ? query.OrderBy(e => e.Nombre) : query.OrderByDescending(e => e.Nombre),
+                    "Paterno" => isAscending ? query.OrderBy(e => e.Paterno) : query.OrderByDescending(e => e.Paterno),
+                    "Materno" => isAscending ? query.OrderBy(e => e.Materno) : query.OrderByDescending(e => e.Materno),
+                    "Rfc" => isAscending ? query.OrderBy(e => e.Rfc) : query.OrderByDescending(e => e.Rfc),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    _ => query.OrderBy(e => e.Nombre)
+                };
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return Ok(new PagedResult<PersonaResponse>
+            {
+                Items = _mapper.Map<List<PersonaResponse>>(items),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
         }
     }
 }

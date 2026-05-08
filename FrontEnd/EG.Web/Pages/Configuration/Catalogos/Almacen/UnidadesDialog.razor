@@ -1,6 +1,8 @@
-@page "/configuracion/almacen/unidades_dialog"
-@using EG.Domain.DTOs.Responses.Almacen
 @using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Almacen
+
 @inject IGenericCrudService<UnidadeResponse> Service
 @inject ISnackbar Snackbar
 
@@ -21,9 +23,9 @@
                       Required="true"
                       For="@(() => item.Descripcion)" />
 
-        <MudSwitch T="bool" 
-                   @bind-Value="item.Activo" 
-                   Label="Activo" 
+        <MudSwitch T="bool"
+                   @bind-Value="item.Activo"
+                   Label="Activo"
                    Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -50,24 +52,49 @@
 
     private async Task CargarDatos()
     {
-        var result = await Service.GetByIdAsync(Id.Value);
-        if (result != null && result.Success && result.Data != null)
+        try
         {
-            item = result.Data;
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        MudDialog.Close(item);
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(Id.HasValue ? "Unidad actualizada correctamente" : "Unidad creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
     }
 }
-
-
-
-
-
-
-
-
-
