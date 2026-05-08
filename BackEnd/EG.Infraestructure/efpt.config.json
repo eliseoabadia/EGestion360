@@ -483,7 +483,15 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_Fraccion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_SubFuncion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Vw_Area]",
          "ObjectType": 3
       },
       {

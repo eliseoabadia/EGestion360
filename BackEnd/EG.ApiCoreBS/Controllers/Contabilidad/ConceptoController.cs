@@ -40,40 +40,62 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         [HttpGet]
         public async Task<ActionResult<PagedResult<ConceptoResponse>>> GetAll()
         {
-            var items = await _context.VwConceptos.ToListAsync();
-            return Ok(new PagedResult<ConceptoResponse>
+            try
             {
-                Items = _mapper.Map<List<ConceptoResponse>>(items),
-                TotalCount = items.Count,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            });
+                var items = await _context.VwConceptos.ToListAsync();
+                return Ok(new PagedResult<ConceptoResponse>
+                {
+                    Items = _mapper.Map<List<ConceptoResponse>>(items),
+                    TotalCount = items.Count,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAll de Concepto");
+                return Ok(new PagedResult<ConceptoResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<ConceptoResponse>>> GetById(int id)
         {
-            var entity = await _context.VwConceptos.FirstOrDefaultAsync(e => e.PkidConcepto == id);
-            if (entity == null)
-                return NotFound(new PagedResult<ConceptoResponse>
-                {
-                    Success = false,
-                    Message = "Concepto no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-
-            var response = _mapper.Map<ConceptoResponse>(entity);
-            return Ok(new PagedResult<ConceptoResponse>
+            try
             {
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS",
-                Data = response,
-                Items = new List<ConceptoResponse> { response },
-                TotalCount = 1
-            });
+                var entity = await _context.VwConceptos.FirstOrDefaultAsync(e => e.PkidConcepto == id);
+                if (entity == null)
+                    return NotFound(new PagedResult<ConceptoResponse>
+                    {
+                        Success = false,
+                        Message = "Concepto no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                var response = _mapper.Map<ConceptoResponse>(entity);
+                return Ok(new PagedResult<ConceptoResponse>
+                {
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS",
+                    Data = response,
+                    Items = new List<ConceptoResponse> { response },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetById de Concepto para ID {Id}", id);
+                return Ok(new PagedResult<ConceptoResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost]
@@ -220,47 +242,58 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<ConceptoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var query = _context.VwConceptos.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            try
             {
-                var f = request.Filtro;
-                query = query.Where(e => e.Descripcion.Contains(f) || e.Clave.Contains(f) || e.CapituloDescripcion.Contains(f));
-            }
+                var query = _context.VwConceptos.AsQueryable();
 
-            if (!string.IsNullOrEmpty(request.SortLabel))
-            {
-                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
-                query = request.SortLabel switch
+                if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
-                    "PkidConcepto" => isAscending ? query.OrderBy(e => e.PkidConcepto) : query.OrderByDescending(e => e.PkidConcepto),
-                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
-                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
-                    "CapituloDescripcion" => isAscending ? query.OrderBy(e => e.CapituloDescripcion) : query.OrderByDescending(e => e.CapituloDescripcion),
-                    "CapituloClave" => isAscending ? query.OrderBy(e => e.CapituloClave) : query.OrderByDescending(e => e.CapituloClave),
-                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
-                    _ => query.OrderBy(e => e.Descripcion)
-                };
-            }
-            else
-            {
-                query = query.OrderBy(e => e.Descripcion);
-            }
+                    var f = request.Filtro;
+                    query = query.Where(e => e.Descripcion.Contains(f) || e.Clave.Contains(f) || e.CapituloDescripcion.Contains(f));
+                }
 
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
+                if (!string.IsNullOrEmpty(request.SortLabel))
+                {
+                    var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                    query = request.SortLabel switch
+                    {
+                        "PkidConcepto" => isAscending ? query.OrderBy(e => e.PkidConcepto) : query.OrderByDescending(e => e.PkidConcepto),
+                        "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                        "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                        "CapituloDescripcion" => isAscending ? query.OrderBy(e => e.CapituloDescripcion) : query.OrderByDescending(e => e.CapituloDescripcion),
+                        "CapituloClave" => isAscending ? query.OrderBy(e => e.CapituloClave) : query.OrderByDescending(e => e.CapituloClave),
+                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        _ => query.OrderBy(e => e.Descripcion)
+                    };
+                }
+                else
+                {
+                    query = query.OrderBy(e => e.Descripcion);
+                }
 
-            return Ok(new PagedResult<ConceptoResponse>
+                var totalItems = await query.CountAsync();
+                var items = await query
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                return Ok(new PagedResult<ConceptoResponse>
+                {
+                    Items = _mapper.Map<List<ConceptoResponse>>(items),
+                    TotalCount = totalItems,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
             {
-                Items = _mapper.Map<List<ConceptoResponse>>(items),
-                TotalCount = totalItems,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            });
+                _logger.LogError(ex, "Error en GetAllPaginado de Concepto");
+                return Ok(new PagedResult<ConceptoResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost("buscar")]

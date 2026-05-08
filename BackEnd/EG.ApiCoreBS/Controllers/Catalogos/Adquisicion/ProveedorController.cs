@@ -40,40 +40,62 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         [HttpGet]
         public async Task<ActionResult<PagedResult<ProveedorResponse>>> GetAll()
         {
-            var items = await _context.VwProveedors.ToListAsync();
-            return Ok(new PagedResult<ProveedorResponse>
+            try
             {
-                Items = _mapper.Map<List<ProveedorResponse>>(items),
-                TotalCount = items.Count,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            });
+                var items = await _context.VwProveedors.ToListAsync();
+                return Ok(new PagedResult<ProveedorResponse>
+                {
+                    Items = _mapper.Map<List<ProveedorResponse>>(items),
+                    TotalCount = items.Count,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAll de Proveedor");
+                return Ok(new PagedResult<ProveedorResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<ProveedorResponse>>> GetById(int id)
         {
-            var entity = await _context.VwProveedors.FirstOrDefaultAsync(e => e.PkidProveedor == id);
-            if (entity == null)
-                return NotFound(new PagedResult<ProveedorResponse>
-                {
-                    Success = false,
-                    Message = "Proveedor no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-
-            var response = _mapper.Map<ProveedorResponse>(entity);
-            return Ok(new PagedResult<ProveedorResponse>
+            try
             {
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS",
-                Data = response,
-                Items = new List<ProveedorResponse> { response },
-                TotalCount = 1
-            });
+                var entity = await _context.VwProveedors.FirstOrDefaultAsync(e => e.PkidProveedor == id);
+                if (entity == null)
+                    return NotFound(new PagedResult<ProveedorResponse>
+                    {
+                        Success = false,
+                        Message = "Proveedor no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                var response = _mapper.Map<ProveedorResponse>(entity);
+                return Ok(new PagedResult<ProveedorResponse>
+                {
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS",
+                    Data = response,
+                    Items = new List<ProveedorResponse> { response },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetById de Proveedor para ID {Id}", id);
+                return Ok(new PagedResult<ProveedorResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost]
@@ -221,50 +243,61 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<ProveedorResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var query = _context.VwProveedors.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            try
             {
-                var f = request.Filtro;
-                query = query.Where(e => e.Nombre.Contains(f) || e.Rfc.Contains(f) || e.Clave.Contains(f));
-            }
+                var query = _context.VwProveedors.AsQueryable();
 
-            if (!string.IsNullOrEmpty(request.SortLabel))
-            {
-                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
-                query = request.SortLabel switch
+                if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
-                    "PkidProveedor" => isAscending ? query.OrderBy(e => e.PkidProveedor) : query.OrderByDescending(e => e.PkidProveedor),
-                    "Nombre" => isAscending ? query.OrderBy(e => e.Nombre) : query.OrderByDescending(e => e.Nombre),
-                    "Rfc" => isAscending ? query.OrderBy(e => e.Rfc) : query.OrderByDescending(e => e.Rfc),
-                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
-                    "TipoProveedorNombre" => isAscending ? query.OrderBy(e => e.TipoProveedorDesc) : query.OrderByDescending(e => e.TipoProveedorDesc),
-                    "EstatusProveedorNombre" => isAscending ? query.OrderBy(e => e.EstatusProveedorDesc) : query.OrderByDescending(e => e.EstatusProveedorDesc),
-                    "MunicipioNombre" => isAscending ? query.OrderBy(e => e.MunicipioNombre) : query.OrderByDescending(e => e.MunicipioNombre),
-                    "EstadoNombre" => isAscending ? query.OrderBy(e => e.EstadoNombre) : query.OrderByDescending(e => e.EstadoNombre),
-                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
-                    _ => query.OrderBy(e => e.Nombre)
-                };
-            }
-            else
-            {
-                query = query.OrderBy(e => e.Nombre);
-            }
+                    var f = request.Filtro;
+                    query = query.Where(e => e.Nombre.Contains(f) || e.Rfc.Contains(f) || e.Clave.Contains(f));
+                }
 
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
+                if (!string.IsNullOrEmpty(request.SortLabel))
+                {
+                    var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                    query = request.SortLabel switch
+                    {
+                        "PkidProveedor" => isAscending ? query.OrderBy(e => e.PkidProveedor) : query.OrderByDescending(e => e.PkidProveedor),
+                        "Nombre" => isAscending ? query.OrderBy(e => e.Nombre) : query.OrderByDescending(e => e.Nombre),
+                        "Rfc" => isAscending ? query.OrderBy(e => e.Rfc) : query.OrderByDescending(e => e.Rfc),
+                        "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                        "TipoProveedorNombre" => isAscending ? query.OrderBy(e => e.TipoProveedorDesc) : query.OrderByDescending(e => e.TipoProveedorDesc),
+                        "EstatusProveedorNombre" => isAscending ? query.OrderBy(e => e.EstatusProveedorDesc) : query.OrderByDescending(e => e.EstatusProveedorDesc),
+                        "MunicipioNombre" => isAscending ? query.OrderBy(e => e.MunicipioNombre) : query.OrderByDescending(e => e.MunicipioNombre),
+                        "EstadoNombre" => isAscending ? query.OrderBy(e => e.EstadoNombre) : query.OrderByDescending(e => e.EstadoNombre),
+                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        _ => query.OrderBy(e => e.Nombre)
+                    };
+                }
+                else
+                {
+                    query = query.OrderBy(e => e.Nombre);
+                }
 
-            return Ok(new PagedResult<ProveedorResponse>
+                var totalItems = await query.CountAsync();
+                var items = await query
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                return Ok(new PagedResult<ProveedorResponse>
+                {
+                    Items = _mapper.Map<List<ProveedorResponse>>(items),
+                    TotalCount = totalItems,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
             {
-                Items = _mapper.Map<List<ProveedorResponse>>(items),
-                TotalCount = totalItems,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            });
+                _logger.LogError(ex, "Error en GetAllPaginado de Proveedor");
+                return Ok(new PagedResult<ProveedorResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost("buscar")]

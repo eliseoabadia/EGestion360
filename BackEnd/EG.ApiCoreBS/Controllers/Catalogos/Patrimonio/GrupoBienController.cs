@@ -1,9 +1,10 @@
 using AutoMapper;
 using EG.ApiCoreBS.Services;
-using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Patrimonio;
+using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,78 +17,79 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     [Authorize]
     public class GrupoBienController : ControllerBase
     {
-        private readonly GenericService<GrupoBien, GrupoBienDto, GrupoBienResponse> _service;
-        private readonly GenericService<VwGrupoBien, GrupoBienDto, GrupoBienResponse> _serviceView;
+        private readonly ILogger<GrupoBienController> _logger;
+        private readonly IRepository<GrupoBien> _repository;
         private readonly EGestionContext _context;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public GrupoBienController(
-            GenericService<GrupoBien, GrupoBienDto, GrupoBienResponse> service,
-            GenericService<VwGrupoBien, GrupoBienDto, GrupoBienResponse> serviceView,
+            ILogger<GrupoBienController> logger,
+            IRepository<GrupoBien> repository,
             EGestionContext context,
             IMapper mapper,
             IUserContextService userContext)
         {
-            _service = service;
-            _serviceView = serviceView;
+            _logger = logger;
+            _repository = repository;
             _context = context;
             _mapper = mapper;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(e => e.FkidFamiliaAlmaNavigation);
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueDescripcion", async (dto) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Descripcion.ToLower() == dto.Descripcion.ToLower() && x.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueDescripcionUpdate", async (dto, id) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Descripcion.ToLower() == dto.Descripcion.ToLower() && x.PkidGrupoBien != id.Value && x.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetAll()
         {
-            var result = await _serviceView.GetAllAsync();
-            return Ok(new PagedResult<GrupoBienResponse>
+            try
             {
-                Success = true,
-                Message = "Grupos de bien obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+                var items = await _context.VwGrupoBiens.ToListAsync();
+                return Ok(new PagedResult<GrupoBienResponse>
+                {
+                    Items = _mapper.Map<List<GrupoBienResponse>>(items),
+                    TotalCount = items.Count,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAll de GrupoBien");
+                return Ok(new PagedResult<GrupoBienResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetById(int id)
         {
-            var result = await _serviceView.GetByIdAsync(id);
-            if (result == null)
-                return NotFound(new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
-
-            return Ok(new PagedResult<GrupoBienResponse>
+            try
             {
-                Success = true,
-                Message = "Grupo de bien obtenido correctamente",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<GrupoBienResponse> { result },
-                TotalCount = 1
-            });
+                var entity = await _context.VwGrupoBiens.FirstOrDefaultAsync(e => e.PkidGrupoBien == id);
+                if (entity == null)
+                    return NotFound(new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
+
+                var response = _mapper.Map<GrupoBienResponse>(entity);
+                return Ok(new PagedResult<GrupoBienResponse>
+                {
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS",
+                    Data = response,
+                    Items = new List<GrupoBienResponse> { response },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetById de GrupoBien para ID {Id}", id);
+                return Ok(new PagedResult<GrupoBienResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost]
@@ -99,19 +101,27 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
 
-                await _service.CanAddAsync(dto);
-                await _service.AddAsync(dto);
+                var exists = await _repository.GetAllWithIncludesAsync(e => e.Descripcion.ToLower() == dto.Descripcion.ToLower() && e.Activo);
+                if (exists.Any())
+                {
+                    return Conflict(new PagedResult<GrupoBienResponse>
+                    {
+                        Success = false,
+                        Message = "Ya existe un grupo de bien con esa descripción",
+                        Code = "DUPLICATE",
+                        TotalCount = 0
+                    });
+                }
 
-                var createdView = await _serviceView.GetQueryWithIncludes()
-                    .FirstOrDefaultAsync(x => x.GrupoBienDescripcion == dto.Descripcion && x.Activo);
+                var entity = _mapper.Map<GrupoBien>(dto);
+                await _repository.AddAsync(entity);
 
-                return CreatedAtAction(nameof(GetById), new { id = createdView?.PkidGrupoBien }, 
+                return CreatedAtAction(nameof(GetById), new { id = entity.PkidGrupoBien },
                     new PagedResult<GrupoBienResponse>
                     {
                         Success = true,
                         Message = "Grupo de bien creado correctamente",
                         Code = "SUCCESS",
-                        Items = createdView != null ? new List<GrupoBienResponse> { _mapper.Map<GrupoBienResponse>(createdView) } : new List<GrupoBienResponse>(),
                         TotalCount = 1
                     });
             }
@@ -126,24 +136,37 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             try
             {
-                var existingView = await _serviceView.GetByIdAsync(id);
-                if (existingView == null)
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
                     return NotFound(new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
 
                 var dto = _mapper.Map<GrupoBienDto>(response);
+                dto.PkidGrupoBien = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.UtcNow;
 
-                await _service.CanUpdateAsync(id, dto);
-                await _service.UpdateAsync(id, dto);
+                var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Descripcion.ToLower() == dto.Descripcion.ToLower() && e.PkidGrupoBien != id && e.Activo);
+                if (duplicate.Any())
+                {
+                    return Conflict(new PagedResult<GrupoBienResponse>
+                    {
+                        Success = false,
+                        Message = "Ya existe otro grupo de bien con esa descripción",
+                        Code = "DUPLICATE",
+                        TotalCount = 0
+                    });
+                }
 
-                var updatedView = await _serviceView.GetByIdAsync(id);
+                _mapper.Map(dto, entity);
+                entity.FechaModificacion = dto.FechaModificacion;
+                entity.UsuarioModificacion = dto.UsuarioModificacion;
+                await _repository.UpdateAsync(entity);
+
                 return Ok(new PagedResult<GrupoBienResponse>
                 {
                     Success = true,
                     Message = "Grupo de bien actualizado correctamente",
                     Code = "SUCCESS",
-                    Items = updatedView != null ? new List<GrupoBienResponse> { _mapper.Map<GrupoBienResponse>(updatedView) } : new List<GrupoBienResponse>(),
                     TotalCount = 1
                 });
             }
@@ -158,11 +181,11 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             try
             {
-                var existingView = await _serviceView.GetByIdAsync(id);
-                if (existingView == null)
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
                     return NotFound(new PagedResult<bool> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" });
 
-                await _service.DeleteAsync(id);
+                await _repository.DeleteAsync(id);
                 return Ok(new PagedResult<bool> { Success = true, Message = "Grupo de bien eliminado correctamente", Code = "SUCCESS", Items = new List<bool> { true }, TotalCount = 1 });
             }
             catch (Exception ex)
@@ -174,42 +197,59 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<GrupoBienResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var query = _serviceView.GetQueryWithIncludes();
-
-            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            try
             {
-                query = query.Where(e =>
-                    e.GrupoBienDescripcion.Contains(request.Filtro) ||
-                    e.FamiliaDescripcion.Contains(request.Filtro) ||
-                    (e.GrupoBienClave.HasValue && e.GrupoBienClave.Value.ToString().Contains(request.Filtro)));
-            }
+                var query = _context.VwGrupoBiens.AsQueryable();
 
-            if (!string.IsNullOrEmpty(request.SortLabel))
-            {
-                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
-                query = request.SortLabel switch
+                if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
-                    "PkidGrupoBien" => isAscending ? query.OrderBy(e => e.PkidGrupoBien) : query.OrderByDescending(e => e.PkidGrupoBien),
-                    "GrupoBienDescripcion" => isAscending ? query.OrderBy(e => e.GrupoBienDescripcion) : query.OrderByDescending(e => e.GrupoBienDescripcion),
-                    "FamiliaDescripcion" => isAscending ? query.OrderBy(e => e.FamiliaDescripcion) : query.OrderByDescending(e => e.FamiliaDescripcion),
-                    _ => query.OrderBy(e => e.GrupoBienDescripcion)
-                };
+                    var f = request.Filtro;
+                    query = query.Where(e =>
+                        e.Descripcion.Contains(f) ||
+                        e.FamiliaDescripcion.Contains(f) ||
+                        e.FamiliaClave.Contains(f));
+                }
+
+                if (!string.IsNullOrEmpty(request.SortLabel))
+                {
+                    var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                    query = request.SortLabel switch
+                    {
+                        "PkidGrupoBien" => isAscending ? query.OrderBy(e => e.PkidGrupoBien) : query.OrderByDescending(e => e.PkidGrupoBien),
+                        "GrupoBienDescripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                        "FamiliaDescripcion" => isAscending ? query.OrderBy(e => e.FamiliaDescripcion) : query.OrderByDescending(e => e.FamiliaDescripcion),
+                        "FamiliaClave" => isAscending ? query.OrderBy(e => e.FamiliaClave) : query.OrderByDescending(e => e.FamiliaClave),
+                        _ => query.OrderBy(e => e.Descripcion)
+                    };
+                }
+                else
+                {
+                    query = query.OrderBy(e => e.Descripcion);
+                }
+
+                var totalItems = await query.CountAsync();
+                var items = await query
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                return Ok(new PagedResult<GrupoBienResponse>
+                {
+                    Items = _mapper.Map<List<GrupoBienResponse>>(items),
+                    TotalCount = totalItems,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
             }
-
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
-
-            return Ok(new PagedResult<GrupoBienResponse>
+            catch (Exception ex)
             {
-                Items = _mapper.Map<List<GrupoBienResponse>>(items),
-                TotalCount = totalItems,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            });
+                _logger.LogError(ex, "Error en GetAllPaginado de GrupoBien");
+                return Ok(new PagedResult<GrupoBienResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("GetGrupoBien")]

@@ -1,13 +1,14 @@
 using AutoMapper;
-using EG.Business.Services;
+using EG.ApiCoreBS.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
-using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses;
+using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EG.ApiCoreBS.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
 {
@@ -16,79 +17,85 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
     [Authorize]
     public class FraccionController : ControllerBase
     {
-        private readonly GenericService<Fraccion, FraccionDto, FraccionResponse> _service;
+        private readonly ILogger<FraccionController> _logger;
+        private readonly IRepository<Fraccion> _repository;
+        private readonly EGestionContext _context;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public FraccionController(
-            GenericService<Fraccion, FraccionDto, FraccionResponse> service,
+            ILogger<FraccionController> logger,
+            IRepository<Fraccion> repository,
+            EGestionContext context,
             IMapper mapper,
             IUserContextService userContext)
         {
-            _service = service;
+            _logger = logger;
+            _repository = repository;
+            _context = context;
             _mapper = mapper;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(f => f.FkidArticuloOrcoNavigation);
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueClave", async (dto) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Clave.ToLower() == dto.Clave.ToLower() && x.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueClaveUpdate", async (dto, id) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Clave.ToLower() == dto.Clave.ToLower() && x.PkidFraccion != id.Value && x.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<FraccionResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<FraccionResponse>
+            try
             {
-                Success = true,
-                Message = "Fracciones obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+                var items = await _context.VwFraccions.ToListAsync();
+                return Ok(new PagedResult<FraccionResponse>
+                {
+                    Items = _mapper.Map<List<FraccionResponse>>(items),
+                    TotalCount = items.Count,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAll de Fraccion");
+                return Ok(new PagedResult<FraccionResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<FraccionResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidFraccion");
-
-            if (result == null)
-                return NotFound(new PagedResult<FraccionResponse>
-                {
-                    Success = false,
-                    Message = "Fracción no encontrada",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-
-            return Ok(new PagedResult<FraccionResponse>
+            try
             {
-                Success = true,
-                Message = "Fracción encontrada",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<FraccionResponse> { result },
-                TotalCount = 1
-            });
+                var entity = await _context.VwFraccions.FirstOrDefaultAsync(e => e.PkidFraccion == id);
+                if (entity == null)
+                    return NotFound(new PagedResult<FraccionResponse>
+                    {
+                        Success = false,
+                        Message = "Fracción no encontrada",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                var response = _mapper.Map<FraccionResponse>(entity);
+                return Ok(new PagedResult<FraccionResponse>
+                {
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS",
+                    Data = response,
+                    Items = new List<FraccionResponse> { response },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetById de Fraccion para ID {Id}", id);
+                return Ok(new PagedResult<FraccionResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost]
@@ -98,10 +105,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             {
                 var dto = _mapper.Map<FraccionDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
+                dto.FechaCreacion = DateTime.UtcNow;
                 dto.Activo = true;
 
-                if (!await _service.CanAddAsync(dto))
+                var exists = await _repository.GetAllWithIncludesAsync(e => e.Clave.ToLower() == dto.Clave.ToLower() && e.Activo);
+                if (exists.Any())
                 {
                     return Conflict(new PagedResult<FraccionResponse>
                     {
@@ -112,9 +120,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     });
                 }
 
-                await _service.AddAsync(dto);
+                var entity = _mapper.Map<Fraccion>(dto);
+                await _repository.AddAsync(entity);
 
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidFraccion },
+                return CreatedAtAction(nameof(GetById), new { id = entity.PkidFraccion },
                     new PagedResult<FraccionResponse>
                     {
                         Success = true,
@@ -140,12 +149,23 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         {
             try
             {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<FraccionResponse>
+                    {
+                        Success = false,
+                        Message = $"Fracción con ID {id} no encontrada",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
                 var dto = _mapper.Map<FraccionDto>(response);
                 dto.PkidFraccion = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
+                dto.FechaModificacion = DateTime.UtcNow;
 
-                if (!await _service.CanUpdateAsync(id, dto))
+                var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Clave.ToLower() == dto.Clave.ToLower() && e.PkidFraccion != id && e.Activo);
+                if (duplicate.Any())
                 {
                     return Conflict(new PagedResult<FraccionResponse>
                     {
@@ -156,7 +176,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     });
                 }
 
-                await _service.UpdateAsync(id, dto);
+                _mapper.Map(dto, entity);
+                entity.FechaModificacion = dto.FechaModificacion;
+                entity.UsuarioModificacion = dto.UsuarioModificacion;
+                await _repository.UpdateAsync(entity);
 
                 return Ok(new PagedResult<FraccionResponse>
                 {
@@ -164,16 +187,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     Message = "Fracción actualizada correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<FraccionResponse>
-                {
-                    Success = false,
-                    Message = $"Fracción con ID {id} no encontrada",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -193,7 +206,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"Fracción con ID {id} no encontrada",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                await _repository.DeleteAsync(id);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -202,16 +225,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     Data = true,
                     Items = new List<bool> { true },
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Fracción con ID {id} no encontrada",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -229,15 +242,57 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<FraccionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<FraccionResponse>
+            try
             {
-                Success = true,
-                Message = "Fracciones obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+                var query = _context.VwFraccions.AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(request.Filtro))
+                {
+                    var f = request.Filtro;
+                    query = query.Where(e => e.Clave.Contains(f) || e.Descripcion.Contains(f) || e.ArticuloDescripcion.Contains(f));
+                }
+
+                if (!string.IsNullOrEmpty(request.SortLabel))
+                {
+                    var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                    query = request.SortLabel switch
+                    {
+                        "PkidFraccion" => isAscending ? query.OrderBy(e => e.PkidFraccion) : query.OrderByDescending(e => e.PkidFraccion),
+                        "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                        "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                        "NombreArticulo" or "ArticuloDescripcion" => isAscending ? query.OrderBy(e => e.ArticuloDescripcion) : query.OrderByDescending(e => e.ArticuloDescripcion),
+                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        _ => query.OrderBy(e => e.Clave)
+                    };
+                }
+                else
+                {
+                    query = query.OrderBy(e => e.Clave);
+                }
+
+                var totalItems = await query.CountAsync();
+                var items = await query
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                return Ok(new PagedResult<FraccionResponse>
+                {
+                    Items = _mapper.Map<List<FraccionResponse>>(items),
+                    TotalCount = totalItems,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAllPaginado de Fraccion");
+                return Ok(new PagedResult<FraccionResponse>
+                {
+                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+                });
+            }
         }
 
         [HttpPost("buscar")]
@@ -252,16 +307,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<FraccionResponse>
-            {
-                Success = true,
-                Message = "Fracciones filtradas correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+            return await GetAllPaginado(pagedRequest);
         }
     }
 }

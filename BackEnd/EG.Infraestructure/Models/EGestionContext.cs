@@ -221,6 +221,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
 
+    public virtual DbSet<VwArea> VwAreas { get; set; }
+
     public virtual DbSet<VwBien> VwBiens { get; set; }
 
     public virtual DbSet<VwConcepto> VwConceptos { get; set; }
@@ -238,6 +240,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwEstadoEmpresa> VwEstadoEmpresas { get; set; }
 
     public virtual DbSet<VwExistencia> VwExistencias { get; set; }
+
+    public virtual DbSet<VwFraccion> VwFraccions { get; set; }
 
     public virtual DbSet<VwGrupoBien> VwGrupoBiens { get; set; }
 
@@ -3544,6 +3548,27 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_UsuarioSucursal_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<VwArea>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Area", "SIS");
+
+            entity.Property(e => e.AreaPadreClave).HasMaxLength(15);
+            entity.Property(e => e.AreaPadreNombre).HasMaxLength(200);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(15);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.PkidArea).HasColumnName("PKIdArea");
+            entity.Property(e => e.UltimoInv).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<VwBien>(entity =>
         {
             entity
@@ -3842,6 +3867,27 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(50);
         });
 
+        modelBuilder.Entity<VwFraccion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Fraccion", "ORCO");
+
+            entity.Property(e => e.ArticuloClave).HasMaxLength(20);
+            entity.Property(e => e.ArticuloClaveNombre)
+                .IsRequired()
+                .HasMaxLength(273);
+            entity.Property(e => e.ArticuloDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.FkidArticuloOrco).HasColumnName("FKIdArticulo_ORCO");
+            entity.Property(e => e.PkidFraccion).HasColumnName("PKIdFraccion");
+        });
+
         modelBuilder.Entity<VwGrupoBien>(entity =>
         {
             entity
@@ -3851,20 +3897,22 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.CabmAct)
                 .HasMaxLength(50)
                 .HasColumnName("CABM_ACT");
+            entity.Property(e => e.CatalogoCambs)
+                .IsRequired()
+                .HasMaxLength(906)
+                .HasColumnName("CatalogoCAMBS");
             entity.Property(e => e.ClaveAn)
                 .HasMaxLength(50)
                 .HasColumnName("ClaveAN");
             entity.Property(e => e.ClaveCucop)
                 .HasMaxLength(50)
                 .HasColumnName("CLAVE_CUCOP");
+            entity.Property(e => e.Descripcion).HasMaxLength(800);
             entity.Property(e => e.FamiliaClave).HasMaxLength(50);
-            entity.Property(e => e.FamiliaDescripcion)
-                .IsRequired()
-                .HasMaxLength(80);
+            entity.Property(e => e.FamiliaDescripcion).HasMaxLength(80);
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.FkidFamiliaAlma).HasColumnName("FKIdFamilia_ALMA");
-            entity.Property(e => e.GrupoBienDescripcion).HasMaxLength(800);
             entity.Property(e => e.Medida)
                 .HasMaxLength(50)
                 .HasColumnName("MEDIDA");

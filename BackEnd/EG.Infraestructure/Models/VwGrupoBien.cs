@@ -11,9 +11,9 @@ public partial class VwGrupoBien
 
     public int FkidFamiliaAlma { get; set; }
 
-    public string GrupoBienDescripcion { get; set; }
+    public string Descripcion { get; set; }
 
-    public int? GrupoBienClave { get; set; }
+    public int? Clave { get; set; }
 
     public string ClaveAn { get; set; }
 
@@ -36,4 +36,6 @@ public partial class VwGrupoBien
     public string FamiliaDescripcion { get; set; }
 
     public string FamiliaClave { get; set; }
+
+    public string CatalogoCambs { get; set; }
 }

@@ -1,10 +1,10 @@
 using AutoMapper;
 using EG.ApiCoreBS.Services;
-using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,87 +17,91 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     [Authorize]
     public class UnidadResponsableController : ControllerBase
     {
-        private readonly GenericService<Area, UnidadResponsableDto, UnidadResponsableResponse> _service;
+        private readonly ILogger<UnidadResponsableController> _logger;
+        private readonly IRepository<Area> _repository;
+        private readonly EGestionContext _context;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public UnidadResponsableController(
-            GenericService<Area, UnidadResponsableDto, UnidadResponsableResponse> service,
+            ILogger<UnidadResponsableController> logger,
+            IRepository<Area> repository,
+            EGestionContext context,
             IMapper mapper,
             IUserContextService userContext)
         {
-            _service = service;
+            _logger = logger;
+            _repository = repository;
+            _context = context;
             _mapper = mapper;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            // Incluir la relación con el área padre para obtener datos completos
-            _service.AddInclude(a => a.FkidAreaSisNavigation);
-            _service.AddInclude(a => a.InverseFkidAreaSisNavigation);
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueUnidadResponsable", async (dto) =>
-            {
-                var itemDto = dto as UnidadResponsableDto;
-                if (itemDto == null) return true;
-
-                return !_service.GetQueryWithIncludes()
-                    .Any(d => d.Clave.ToLower() == itemDto.Clave.ToLower() && d.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueUnidadResponsableUpdate", async (dto, id) =>
-            {
-                var itemDto = dto as UnidadResponsableDto;
-                if (itemDto == null || !id.HasValue) return true;
-
-                return !_service.GetQueryWithIncludes()
-                    .Any(d => d.Clave.ToLower() == itemDto.Clave.ToLower() && d.PkidArea != id.Value && d.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<UnidadResponsableResponse>
+            try
             {
-                Success = true,
-                Message = "Unidades Responsables obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+                var items = await _context.VwAreas.ToListAsync();
+                return Ok(new PagedResult<UnidadResponsableResponse>
+                {
+                    Items = _mapper.Map<List<UnidadResponsableResponse>>(items),
+                    TotalCount = items.Count,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener todas las Unidades Responsables desde VwAreas");
+                return Ok(new PagedResult<UnidadResponsableResponse>
+                {
+                    Success = false,
+                    Message = $"Error interno: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidArea");
+            try
+            {
+                var entity = await _context.VwAreas.FirstOrDefaultAsync(e => e.PkidArea == id);
+                if (entity == null)
+                    return NotFound(new PagedResult<UnidadResponsableResponse>
+                    {
+                        Success = false,
+                        Message = "Unidad Responsable no encontrada",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
 
-            if (result == null)
-                return NotFound(new PagedResult<UnidadResponsableResponse>
+                var response = _mapper.Map<UnidadResponsableResponse>(entity);
+                return Ok(new PagedResult<UnidadResponsableResponse>
+                {
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS",
+                    Data = response,
+                    Items = new List<UnidadResponsableResponse> { response },
+                    TotalCount = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetById de UnidadResponsable para ID {Id}", id);
+                return Ok(new PagedResult<UnidadResponsableResponse>
                 {
                     Success = false,
-                    Message = "Unidad Responsable no encontrada",
-                    Code = "NOT_FOUND",
+                    Message = $"Error interno: {ex.Message}",
+                    Code = "ERROR",
                     TotalCount = 0
                 });
-
-            return Ok(new PagedResult<UnidadResponsableResponse>
-            {
-                Success = true,
-                Message = "Unidad Responsable encontrada",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<UnidadResponsableResponse> { result },
-                TotalCount = 1
-            });
+            }
         }
 
         [HttpPost]
@@ -106,12 +110,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             try
             {
                 var dto = _mapper.Map<UnidadResponsableDto>(response);
-
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
+                dto.FechaCreacion = DateTime.UtcNow;
                 dto.Activo = true;
 
-                if (!await _service.CanAddAsync(dto))
+                var exists = await _repository.GetAllWithIncludesAsync(e => e.Clave.ToLower() == dto.Clave.ToLower() && e.Activo);
+                if (exists.Any())
                 {
                     return Conflict(new PagedResult<UnidadResponsableResponse>
                     {
@@ -122,9 +126,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                     });
                 }
 
-                await _service.AddAsync(dto);
+                var entity = _mapper.Map<Area>(dto);
+                await _repository.AddAsync(entity);
 
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidUnidadResponsable },
+                return CreatedAtAction(nameof(GetById), new { id = entity.PkidArea },
                     new PagedResult<UnidadResponsableResponse>
                     {
                         Success = true,
@@ -150,12 +155,23 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<UnidadResponsableResponse>
+                    {
+                        Success = false,
+                        Message = $"Unidad Responsable con ID {id} no encontrada",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
                 var dto = _mapper.Map<UnidadResponsableDto>(response);
                 dto.PkidUnidadResponsable = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
+                dto.FechaModificacion = DateTime.UtcNow;
 
-                if (!await _service.CanUpdateAsync(id, dto))
+                var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Clave.ToLower() == dto.Clave.ToLower() && e.PkidArea != id && e.Activo);
+                if (duplicate.Any())
                 {
                     return Conflict(new PagedResult<UnidadResponsableResponse>
                     {
@@ -166,7 +182,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                     });
                 }
 
-                await _service.UpdateAsync(id, dto);
+                _mapper.Map(dto, entity);
+                entity.FechaModificacion = dto.FechaModificacion;
+                entity.UsuarioModificacion = dto.UsuarioModificacion;
+                await _repository.UpdateAsync(entity);
 
                 return Ok(new PagedResult<UnidadResponsableResponse>
                 {
@@ -174,16 +193,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                     Message = "Unidad Responsable actualizada correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<UnidadResponsableResponse>
-                {
-                    Success = false,
-                    Message = $"Unidad Responsable con ID {id} no encontrada",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -203,7 +212,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"Unidad Responsable con ID {id} no encontrada",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                await _repository.DeleteAsync(id);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -212,16 +231,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                     Data = true,
                     Items = new List<bool> { true },
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Unidad Responsable con ID {id} no encontrada",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -239,15 +248,60 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<UnidadResponsableResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<UnidadResponsableResponse>
+            try
             {
-                Success = true,
-                Message = "Unidades Responsables obtenidas correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+                var query = _context.VwAreas.AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(request.Filtro))
+                {
+                    var f = request.Filtro;
+                    query = query.Where(e => e.Clave.Contains(f) || e.Nombre.Contains(f) || e.AreaPadreNombre.Contains(f));
+                }
+
+                if (!string.IsNullOrEmpty(request.SortLabel))
+                {
+                    var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                    query = request.SortLabel switch
+                    {
+                        "PkidUnidadResponsable" or "PkidArea" => isAscending ? query.OrderBy(e => e.PkidArea) : query.OrderByDescending(e => e.PkidArea),
+                        "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                        "Descripcion" => isAscending ? query.OrderBy(e => e.Nombre) : query.OrderByDescending(e => e.Nombre),
+                        "AreaPadreNombre" => isAscending ? query.OrderBy(e => e.AreaPadreNombre) : query.OrderByDescending(e => e.AreaPadreNombre),
+                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        _ => query.OrderBy(e => e.Clave)
+                    };
+                }
+                else
+                {
+                    query = query.OrderBy(e => e.Clave);
+                }
+
+                var totalItems = await query.CountAsync();
+                var items = await query
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                return Ok(new PagedResult<UnidadResponsableResponse>
+                {
+                    Items = _mapper.Map<List<UnidadResponsableResponse>>(items),
+                    TotalCount = totalItems,
+                    Success = true,
+                    Message = "OK",
+                    Code = "SUCCESS"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAllPaginado de UnidadResponsable");
+                return Ok(new PagedResult<UnidadResponsableResponse>
+                {
+                    Success = false,
+                    Message = $"Error interno: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                });
+            }
         }
 
         [HttpPost("buscar")]
@@ -262,16 +316,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<UnidadResponsableResponse>
-            {
-                Success = true,
-                Message = "Unidades Responsables filtradas correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+            return await GetAllPaginado(pagedRequest);
         }
     }
 }

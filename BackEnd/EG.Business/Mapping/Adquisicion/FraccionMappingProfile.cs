@@ -12,6 +12,8 @@ namespace EG.Business.Mapping.Adquisicion
             CreateMap<Fraccion, FraccionDto>().ReverseMap();
             CreateMap<Fraccion, FraccionResponse>()
                 .ForMember(dest => dest.NombreArticulo, opt => opt.MapFrom(src => src.FkidArticuloOrcoNavigation != null ? src.FkidArticuloOrcoNavigation.Descripcion : string.Empty));
+            CreateMap<VwFraccion, FraccionResponse>()
+                .ForMember(dest => dest.NombreArticulo, opt => opt.MapFrom(src => src.ArticuloDescripcion));
             CreateMap<FraccionResponse, FraccionDto>()
                 .ForMember(dest => dest.PkidFraccion, opt => opt.Ignore())
                 .ForMember(dest => dest.FkidArticuloOrco, opt => opt.Ignore())
