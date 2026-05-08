@@ -57,18 +57,28 @@
 
 @code {
     [Parameter] public int? Id { get; set; }
+    [Parameter] public int? PadreId { get; set; }
+    [Parameter] public string? NombrePadre { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private BaseEntityForm<UnidadResponsableResponse> form = null!;
     private UnidadResponsableResponse item = new() { Activo = true };
 
-    private string dialogTitle => Id.HasValue ? "Editar Unidad Responsable" : "Nueva Unidad Responsable";
+    private string dialogTitle => Id.HasValue
+        ? "Editar Unidad Responsable"
+        : !string.IsNullOrEmpty(NombrePadre)
+            ? $"Nueva Unidad Responsable (hijo de: {NombrePadre})"
+            : "Nueva Unidad Responsable";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
     protected override async Task OnInitializedAsync()
     {
+        if (!Id.HasValue && PadreId.HasValue)
+        {
+            item.FkidAreaSis = PadreId;
+        }
         if (Id.HasValue)
         {
             await CargarDatos();

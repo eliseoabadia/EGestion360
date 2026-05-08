@@ -43,10 +43,20 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             try
             {
                 var items = await _context.VwAreas.ToListAsync();
+                var mapped = _mapper.Map<List<UnidadResponsableResponse>>(items);
+                var dict = mapped.ToDictionary(m => m.PkidUnidadResponsable);
+                foreach (var item in mapped)
+                {
+                    if (item.FkidAreaSis.HasValue && dict.ContainsKey(item.FkidAreaSis.Value))
+                    {
+                        dict[item.FkidAreaSis.Value].Children.Add(item);
+                    }
+                }
+                var roots = mapped.Where(m => !m.FkidAreaSis.HasValue).ToList();
                 return Ok(new PagedResult<UnidadResponsableResponse>
                 {
-                    Items = _mapper.Map<List<UnidadResponsableResponse>>(items),
-                    TotalCount = items.Count,
+                    Items = roots,
+                    TotalCount = mapped.Count,
                     Success = true,
                     Message = "OK",
                     Code = "SUCCESS"
@@ -221,6 +231,18 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     });
+
+                var hasChildren = await _repository.GetAllWithIncludesAsync(e => e.FkidAreaSis == id && e.Activo);
+                if (hasChildren.Any())
+                {
+                    return BadRequest(new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = "No se puede eliminar un área que tiene hijos activos",
+                        Code = "HAS_CHILDREN",
+                        TotalCount = 0
+                    });
+                }
 
                 await _repository.DeleteAsync(id);
                 return Ok(new PagedResult<bool>

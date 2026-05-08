@@ -2,6 +2,7 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
+@using MudBlazor
 @inherits BaseCrudPage<UnidadResponsableResponse, UnidadResponsableResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
@@ -31,11 +32,19 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidUnidadResponsable" T="UnidadResponsableResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="UnidadResponsableResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="UnidadResponsableResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="AreaPadreNombre" T="UnidadResponsableResponse">Área Padre</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="UnidadResponsableResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
                 <MudTd>
+                    <MudTooltip Text="Agregar hijo">
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="@(() => CrearHijoArea(item.PkidUnidadResponsable, item.Descripcion))" />
+                    </MudTooltip>
                     <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Visible="@CanUpdate"
@@ -54,6 +63,7 @@
                 <MudTd>@item.PkidUnidadResponsable</MudTd>
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@(item.AreaPadreNombre ?? "-")</MudTd>
                 <MudTd>
                     <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                         @(item.Activo ? "Sí" : "No")
@@ -83,6 +93,7 @@
             ID = u.PkidUnidadResponsable,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
+            AreaPadre = u.AreaPadreNombre ?? "-",
             Activo = u.Activo
         });
     }
@@ -98,6 +109,45 @@
         if (table != null)
         {
             await table.ReloadData();
+        }
+    }
+
+    private async Task CrearHijoArea(int padreId, string nombrePadre)
+    {
+        try
+        {
+            if (!CanCreate)
+            {
+                Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+                return;
+            }
+
+            var parameters = new DialogParameters
+            {
+                ["PadreId"] = padreId,
+                ["NombrePadre"] = nombrePadre
+            };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                Position = DialogPosition.Center
+            };
+
+            var dialog = await DialogService.ShowAsync<UnidadResponsableDialog>(
+                "Crear Unidad Responsable", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                await ReloadData();
+                Snackbar.Add("Unidad Responsable creada exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al crear: {ex.Message}", Severity.Error);
         }
     }
 }
