@@ -3,22 +3,24 @@
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.Tesoreria
 
-@inject IGenericCrudService<TipoInversionResponse> Service
+@inject IGenericCrudService<TipoDoctoClcResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="TipoInversionResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
+<BaseCrudDialog TItem="TipoDoctoClcResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="TipoInversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
+    <BaseEntityForm TEntity="TipoDoctoClcResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Clave)" />
+        <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Nombre)" />
+        <MudTextField @bind-Value="item.TipoRecurso" Label="Tipo Recurso" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.TipoRecurso)" />
         <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 @code {
     [Parameter] public int? Id { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
-    private BaseEntityForm<TipoInversionResponse> form = null!;
-    private TipoInversionResponse item = new() { Activo = true };
-    private string dialogTitle => Id.HasValue ? "Editar Tipo de Inversión" : "Nuevo Tipo de Inversión";
+    private BaseEntityForm<TipoDoctoClcResponse> form = null!;
+    private TipoDoctoClcResponse item = new() { Activo = true };
+    private string dialogTitle => Id.HasValue ? "Editar Documento CLC" : "Nuevo Documento CLC";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
@@ -60,7 +62,7 @@
 
             if (success)
             {
-                Snackbar.Add(Id.HasValue ? "Tipo de inversión actualizado correctamente" : "Tipo de inversión creado correctamente", Severity.Success);
+                Snackbar.Add(Id.HasValue ? "Documento CLC actualizado correctamente" : "Documento CLC creado correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

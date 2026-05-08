@@ -387,6 +387,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[TipoDoctoCLC]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[TipoPoliza]",
          "ObjectType": 0
       },
@@ -404,6 +408,30 @@
       },
       {
          "Name": "[SIS].[UsuarioSucursal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoCambio]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoInversion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoMoneda]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoPago]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoPagoSF]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoSolicitudCLC]",
          "ObjectType": 0
       },
       {
@@ -480,6 +508,10 @@
       },
       {
          "Name": "[SIS].[Vw_UsuarioSucursal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoCambio]",
          "ObjectType": 3
       },
       {

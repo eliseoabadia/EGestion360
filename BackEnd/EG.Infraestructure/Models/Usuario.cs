@@ -247,6 +247,10 @@ public partial class Usuario
 
     public virtual ICollection<SystemParamValue> SystemParamValueUsuarioModificacionNavigations { get; set; } = new List<SystemParamValue>();
 
+    public virtual ICollection<TipoCambio> TipoCambioUsuarioCreacionNavigations { get; set; } = new List<TipoCambio>();
+
+    public virtual ICollection<TipoCambio> TipoCambioUsuarioModificacionNavigations { get; set; } = new List<TipoCambio>();
+
     public virtual ICollection<TipoContrato> TipoContratoUsuarioCreacionNavigations { get; set; } = new List<TipoContrato>();
 
     public virtual ICollection<TipoContrato> TipoContratoUsuarioModificacionNavigations { get; set; } = new List<TipoContrato>();
@@ -254,6 +258,10 @@ public partial class Usuario
     public virtual ICollection<TipoDetallePoliza> TipoDetallePolizaUsuarioCreacionNavigations { get; set; } = new List<TipoDetallePoliza>();
 
     public virtual ICollection<TipoDetallePoliza> TipoDetallePolizaUsuarioModificacionNavigations { get; set; } = new List<TipoDetallePoliza>();
+
+    public virtual ICollection<TipoDoctoClc> TipoDoctoClcUsuarioCreacionNavigations { get; set; } = new List<TipoDoctoClc>();
+
+    public virtual ICollection<TipoDoctoClc> TipoDoctoClcUsuarioModificacionNavigations { get; set; } = new List<TipoDoctoClc>();
 
     public virtual ICollection<TipoDoctoPago> TipoDoctoPagoUsuarioCreacionNavigations { get; set; } = new List<TipoDoctoPago>();
 
@@ -271,6 +279,22 @@ public partial class Usuario
 
     public virtual ICollection<TipoGasto> TipoGastoUsuarioModificacionNavigations { get; set; } = new List<TipoGasto>();
 
+    public virtual ICollection<TipoInversion> TipoInversionUsuarioCreacionNavigations { get; set; } = new List<TipoInversion>();
+
+    public virtual ICollection<TipoInversion> TipoInversionUsuarioModificacionNavigations { get; set; } = new List<TipoInversion>();
+
+    public virtual ICollection<TipoMonedum> TipoMonedumUsuarioCreacionNavigations { get; set; } = new List<TipoMonedum>();
+
+    public virtual ICollection<TipoMonedum> TipoMonedumUsuarioModificacionNavigations { get; set; } = new List<TipoMonedum>();
+
+    public virtual ICollection<TipoPagoSf> TipoPagoSfUsuarioCreacionNavigations { get; set; } = new List<TipoPagoSf>();
+
+    public virtual ICollection<TipoPagoSf> TipoPagoSfUsuarioModificacionNavigations { get; set; } = new List<TipoPagoSf>();
+
+    public virtual ICollection<TipoPago> TipoPagoUsuarioCreacionNavigations { get; set; } = new List<TipoPago>();
+
+    public virtual ICollection<TipoPago> TipoPagoUsuarioModificacionNavigations { get; set; } = new List<TipoPago>();
+
     public virtual ICollection<TipoPoliza> TipoPolizaUsuarioCreacionNavigations { get; set; } = new List<TipoPoliza>();
 
     public virtual ICollection<TipoPoliza> TipoPolizaUsuarioModificacionNavigations { get; set; } = new List<TipoPoliza>();
@@ -278,6 +302,10 @@ public partial class Usuario
     public virtual ICollection<TipoRecurso> TipoRecursoUsuarioCreacionNavigations { get; set; } = new List<TipoRecurso>();
 
     public virtual ICollection<TipoRecurso> TipoRecursoUsuarioModificacionNavigations { get; set; } = new List<TipoRecurso>();
+
+    public virtual ICollection<TipoSolicitudClc> TipoSolicitudClcUsuarioCreacionNavigations { get; set; } = new List<TipoSolicitudClc>();
+
+    public virtual ICollection<TipoSolicitudClc> TipoSolicitudClcUsuarioModificacionNavigations { get; set; } = new List<TipoSolicitudClc>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

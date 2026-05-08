@@ -19,7 +19,7 @@ Repositorio: IRepository<T> (EG.Domain.Interfaces).
 
 Mapeo: AutoMapper (perfiles separados por módulo).
 
-Vistas con FK: Si una entidad tiene llaves foráneas, se usa una vista (ej. VwEmpresa) en el controlador para las consultas, mientras que el DTO se usa para escritura.
+Vistas con FK: Si una entidad tiene llaves foráneas, se usa una vista (ej. Vw[TEntity]) en el controlador para las consultas, mientras que el DTO se usa para escritura.
 
 Validaciones: Se configuran dentro del controlador usando métodos AddValidationRule y AddValidationRuleWithId.
 
@@ -38,10 +38,113 @@ EG.ApiCore/
       └── [Modulo]/
           └── [Entidad]Controller.cs
 
+        Controller :
+        namespace EG.ApiCore.Controllers.[Modulo]
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class [Entidad]Controller : ControllerBase
+    {
+        private readonly GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> _service;
+        private readonly GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> _serviceView; //sólo si aplica si tiene vista
+        private readonly IMapper _mapper;
+        private readonly IUserContextService _userContext;
+
+        public [Entidad]Controller(
+            GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> service,
+            GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> serviceView,
+            IMapper mapper,
+            IUserContextService userContext)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            _mapper = mapper;
+            _userContext = userContext;
+            ConfigureService();
+            ConfigureValidations();
+        }
+
+        private void ConfigureService()
+        {
+            // Agregar includes para propiedades de navegación
+            // _service.AddInclude(e => e.FkPropiedadNavigation);
+            // Configurar búsqueda en relaciones
+            // _service.AddRelationFilter("PropiedadNavegacion", new List<string> { "CampoBusqueda" });
+        }
+
+        private void ConfigureValidations()
+        {
+            // Reglas de validación (ej: nombre único)
+            // _service.AddValidationRule("UniqueName", async (dto) => { ... });
+            // _service.AddValidationRuleWithId("UniqueNameUpdate", async (dto, id) => { ... });
+        }
+
+        // Métodos CRUD: GetAll, GetById, Add, Update, Delete, GetAllPaginado, Buscar
+        // (copiar exactamente la implementación de DepartamentoController)
+    }
+}
+EG.Application/
+  └── Interfaces/
+  └── Services/
+
+EG.Application
+namespace EG.Application...[ruta indicada por el usuario]
+{
+    public class [controller]AppService : IUsuarioAppService
+    {
+        private readonly GenericService<[controller], [controller]Dto, [controller]Response> _service;
+        private readonly GenericService<Vw[controller]Empresa, [controller]Dto, [controller]Response> _serviceView;
+        private readonly IMapper _mapper;
+
+        public UsuarioAppService(
+            GenericService<[controller], [controller]Dto, [controller]Response> service,
+            GenericService<Vw[controller]Empresa, [controller]Dto, [controller]Response> serviceView,  //Si la entidad maneja Kf o foreing key , si no se especificó la vista, preguntar como se llama
+            IMapper mapper)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            _mapper = mapper;
+            ConfigureService();
+            ConfigureValidations();
+        }
+        ...
+    }
+}
+
 EG.Business/
   └── Mapping/
       └── [Modulo]/
           └── [Entidad]MappingProfile.cs
+
+        Crear Mapping Profile y hacer la revisión del mapping
+        EG.Business.Mapping.[Modulo].[Entidad]MappingProfile.cs
+
+        csharp
+        using AutoMapper;
+        using EG.Domain.DTOs.Requests.[Modulo];
+        using EG.Domain.DTOs.Responses.[Modulo];
+        using EG.Infraestructure.Models;
+
+        namespace EG.Business.Mapping.[Modulo]
+        {
+            public class [Entidad]MappingProfile : Profile
+            {
+                public [Entidad]MappingProfile()
+                {
+                    // Entity ↔ DTO
+                    CreateMap<[Entidad], [Entidad]Dto>().ReverseMap();
+                    
+                    // Vista → Response
+                    CreateMap<Vw[Entidad], [Entidad]Response>();
+                    
+                    // Response → DTO (ignorando propiedades extra)
+                    CreateMap<[Entidad]Response, [Entidad]Dto>()
+                        .ForMember(dest => dest.[PropiedadId], opt => opt.Ignore()) // ignorar PK si no está en DTO
+                        .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+                }
+            }
+        }
 
 EG.Domain/
   └── DTOs/
@@ -52,7 +155,7 @@ EG.Domain/
           └── [Modulo]/
               └── [Entidad]Response.cs
 
-EG.Infraestructure/
+EG.Infraestructure/De solo lectura, este proyecto no debe ser modificado
   └── Models/
       ├── [Entidad].cs          (entidad EF)
       └── Vw[Entidad].cs        (vista con FK)

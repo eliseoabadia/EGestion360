@@ -1,0 +1,70 @@
+@page "/configuracion/tesoreria/Tipo_Documento_CLC"
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<TipoDoctoClcResponse, TipoDoctoClcResponse>
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipos de Documento CLC" Subtitle="Gestión del catálogo de documentos CLC" Icon="@Icons.Material.Filled.Description"
+            CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="TipoDoctoClcResponse"
+                      @ref="table"
+                      Title="Lista de Documentos CLC"
+                      SearchPlaceholder="Buscar por clave o nombre..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidTipoDoctoClc" T="TipoDoctoClcResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoDoctoClcResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="TipoDoctoClcResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoRecurso" T="TipoDoctoClcResponse">Tipo Recurso</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoDoctoClcResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidTipoDoctoClc))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidTipoDoctoClc))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidTipoDoctoClc</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Nombre</MudTd>
+                <MudTd>@item.TipoRecurso</MudTd>
+                <MudTd>@item.Activo</MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+@code {
+    private GenericTable<TipoDoctoClcResponse> table = null!;
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Tipo_DoctoCLC";
+    protected override Type CreateDialogType => typeof(TipoDoctoClcDialog);
+    protected override Type EditDialogType => typeof(TipoDoctoClcDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<TipoDoctoClcResponse>);
+    protected override string GetDefaultSortLabel() => "Clave";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDoctoClcResponse> items) =>
+        items.Select(u => new { ID = u.PkidTipoDoctoClc, Clave = u.Clave, Nombre = u.Nombre, TipoRecurso = u.TipoRecurso, Activo = u.Activo ? "Sí" : "No" });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+            await table.ReloadData();
+    }
+}

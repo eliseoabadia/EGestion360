@@ -1,4 +1,4 @@
-@page "/configuracion/tesoreria/tipo_inversion"
+@page "/configuracion/tesoreria/Tipo_Inversion"
 @using EG.Domain.DTOs.Responses.Tesoreria
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -11,13 +11,20 @@
                     Icon="@Icons.Material.Filled.TrendingUp"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
-                   
-                    />
-        <GenericTable TItem="TipoInversionResponse" @ref="table">
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="TipoInversionResponse"
+                      @ref="table"
+                      Title="Lista de Tipos de Inversión"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoInversion" T="TipoInversionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Codigo" T="TipoInversionResponse">Código</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoInversionResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoInversionResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
@@ -39,7 +46,6 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidTipoInversion</MudTd>
-                <MudTd>@item.Codigo</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.Activo</MudTd>
             </Row>
@@ -54,20 +60,13 @@
     protected override Type CreateDialogType => typeof(TipoInversionDialog);
     protected override Type EditDialogType => typeof(TipoInversionDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoInversionResponse>);
-    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override string GetDefaultSortLabel() => "Descripcion";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoInversionResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoInversion, Codigo = u.Codigo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+        items.Select(u => new { ID = u.PkidTipoInversion, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+            await table.ReloadData();
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

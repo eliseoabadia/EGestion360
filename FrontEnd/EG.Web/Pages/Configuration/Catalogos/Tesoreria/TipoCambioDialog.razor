@@ -1,6 +1,8 @@
-@page "/configuracion/tesoreria/tipo_cambio_dialog"
-@using EG.Domain.DTOs.Responses.Tesoreria
 @using MudBlazor
+@using EG.Web.Pages.Shared
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.Tesoreria
+
 @inject IGenericCrudService<TipoCambioResponse> Service
 @inject ISnackbar Snackbar
 
@@ -13,34 +15,26 @@
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="TipoCambioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Codigo"
-                      Label="Código"
-                      Variant="Variant.Outlined"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Codigo)" />
 
-        <MudTextField @bind-Value="item.Descripcion"
-                      Label="Descripción"
-                      Variant="Variant.Outlined"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Descripcion)" />
+        <MudNumericField @bind-Value="item.Cantidad"
+                          Label="Cantidad (Tipo de Cambio)"
+                          Variant="Variant.Outlined"
+                          FullWidth="true"
+                          Class="mb-3"
+                          DecimalDigits="4"
+                          Required="true"
+                          For="@(() => item.Cantidad)" />
 
-        <MudNumericField @bind-Value="item.Valor"
-                         Label="Valor del Tipo de Cambio"
-                         Variant="Variant.Outlined"
-                         FullWidth="true"
-                         Class="mb-3"
-                         DecimalDigits="4"
-                         Required="true"
-                         For="@(() => item.Valor)" />
+        <MudDatePicker @bind-Date="selectedDate"
+                        Label="Fecha"
+                        Variant="Variant.Outlined"
+                        FullWidth="true"
+                        Class="mb-3"
+                        Required="true" />
 
-        <MudSwitch T="bool" 
-                   @bind-Value="item.Activo" 
-                   Label="Activo" 
+        <MudSwitch T="bool"
+                   @bind-Value="item.Activo"
+                   Label="Activo"
                    Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -51,7 +45,8 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private BaseEntityForm<TipoCambioResponse> form = null!;
-    private TipoCambioResponse item = new() { Activo = true, Valor = 1.0m };
+    private TipoCambioResponse item = new() { Activo = true, Cantidad = 1.0m };
+    private DateTime? selectedDate = DateTime.Today;
 
     private string dialogTitle => Id.HasValue ? "Editar Tipo de Cambio" : "Nuevo Tipo de Cambio";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -67,22 +62,53 @@
 
     private async Task CargarDatos()
     {
-        var result = await Service.GetByIdAsync(Id.Value);
-        if (result != null && result.Success && result.Data != null)
+        try
         {
-            item = result.Data;
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                selectedDate = item.Fecha;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        MudDialog.Close(item);
+        try
+        {
+            if (selectedDate.HasValue)
+                item.Fecha = selectedDate.Value;
+
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(Id.HasValue ? "Tipo de cambio actualizado correctamente" : "Tipo de cambio creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
     }
 }
-
-
-
-
-
-
-

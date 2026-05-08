@@ -1,4 +1,4 @@
-@page "/configuracion/tesoreria/tipo_solicitud_clc"
+@page "/configuracion/tesoreria/Tipo_Solicitud_CLC"
 @using EG.Domain.DTOs.Responses.Tesoreria
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -6,12 +6,20 @@
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Solicitud CLC" Subtitle="Gestión del catálogo de solicitudes CLC" Icon="@Icons.Material.Filled.Description"
-            CanCreate="@CanCreate" OnCreate="CreateItem" />
-        <GenericTable TItem="TipoSolicitudCLCResponse" @ref="table">
+            CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="TipoSolicitudCLCResponse"
+                      @ref="table"
+                      Title="Lista de Solicitudes CLC"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoSolicitudClc" T="TipoSolicitudCLCResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Codigo" T="TipoSolicitudCLCResponse">Código</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoSolicitudCLCResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoSolicitudCLCResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
@@ -33,7 +41,6 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidTipoSolicitudClc</MudTd>
-                <MudTd>@item.Codigo</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.Activo</MudTd>
             </Row>
@@ -43,20 +50,17 @@
 @code {
     private GenericTable<TipoSolicitudCLCResponse> table = null!;
     protected override string ModuleName => "Tesoreria";
-    protected override string SubModuleName => "Tipo_Solicitud_CLC";
+    protected override string SubModuleName => "Tipo_SolicitudCLC";
     protected override Type CreateDialogType => typeof(TipoSolicitudCLCDialog);
     protected override Type EditDialogType => typeof(TipoSolicitudCLCDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoSolicitudCLCResponse>);
-    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override string GetDefaultSortLabel() => "Descripcion";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoSolicitudCLCResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoSolicitudClc, Codigo = u.Codigo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+        items.Select(u => new { ID = u.PkidTipoSolicitudClc, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+            await table.ReloadData();
+    }
 }
-
-
-
-
-
-
-
-
-

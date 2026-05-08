@@ -61,13 +61,14 @@ public static class ApiServiceExtensions
         RegisterCrud<EstatusSolicitudResponse>(services, "api/EstatusSol");
         // RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo"); // Comentar para evitar ambigüedad
 
-        // Catálogos de Tesorería (pendientes - requieren entidades en BD)
-        // RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
-        // RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
-        // RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
-        // RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
-        // RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
-        // RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
+        // Catálogos de Tesorería
+        RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
+        RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
+        RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
+        RegisterCrud<TipoPagoResponse>(services, "api/TipoPago");
+        RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
+        RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
+        RegisterCrud<TipoDoctoClcResponse>(services, "api/TipoDoctoClc");
 
         // Catálogos de Presupuestales
         RegisterCrud<GfResponse>(services, "api/Gf");

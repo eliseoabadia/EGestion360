@@ -26,6 +26,8 @@ CREATE SCHEMA ORCO;
 GO
 CREATE SCHEMA PRES;
 GO
+CREATE SCHEMA TES; --//tesoreria
+GO
 -- =============================================
 -- TIPO DE DATO PERSONALIZADO
 -- =============================================

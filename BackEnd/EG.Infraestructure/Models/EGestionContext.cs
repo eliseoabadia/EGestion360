@@ -175,6 +175,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<TipoBien> TipoBiens { get; set; }
 
+    public virtual DbSet<TipoCambio> TipoCambios { get; set; }
+
     public virtual DbSet<TipoConteo> TipoConteos { get; set; }
 
     public virtual DbSet<TipoContrato> TipoContratos { get; set; }
@@ -182,6 +184,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<TipoCuentum> TipoCuenta { get; set; }
 
     public virtual DbSet<TipoDetallePoliza> TipoDetallePolizas { get; set; }
+
+    public virtual DbSet<TipoDoctoClc> TipoDoctoClcs { get; set; }
 
     public virtual DbSet<TipoDoctoPago> TipoDoctoPagos { get; set; }
 
@@ -191,6 +195,14 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<TipoGasto> TipoGastos { get; set; }
 
+    public virtual DbSet<TipoInversion> TipoInversions { get; set; }
+
+    public virtual DbSet<TipoMonedum> TipoMoneda { get; set; }
+
+    public virtual DbSet<TipoPago> TipoPagos { get; set; }
+
+    public virtual DbSet<TipoPagoSf> TipoPagoSfs { get; set; }
+
     public virtual DbSet<TipoPatrimonio> TipoPatrimonios { get; set; }
 
     public virtual DbSet<TipoPoliza> TipoPolizas { get; set; }
@@ -198,6 +210,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<TipoProveedor> TipoProveedors { get; set; }
 
     public virtual DbSet<TipoRecurso> TipoRecursos { get; set; }
+
+    public virtual DbSet<TipoSolicitudClc> TipoSolicitudClcs { get; set; }
 
     public virtual DbSet<Unidade> Unidades { get; set; }
 
@@ -240,6 +254,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwTipoBien> VwTipoBiens { get; set; }
 
     public virtual DbSet<VwTipoBienConteo> VwTipoBienConteos { get; set; }
+
+    public virtual DbSet<VwTipoCambio> VwTipoCambios { get; set; }
 
     public virtual DbSet<VwUsuarioEmpresa> VwUsuarioEmpresas { get; set; }
 
@@ -2925,6 +2941,34 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_TipoBien_UnidadesEquivalente");
         });
 
+        modelBuilder.Entity<TipoCambio>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoCambio);
+
+            entity.ToTable("TipoCambio", "TES");
+
+            entity.Property(e => e.PkidTipoCambio).HasColumnName("PKIdTipoCambio");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoCambio_Activo");
+            entity.Property(e => e.Cantidad).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoCambio_FechaCreacion");
+            entity.Property(e => e.FkidTipoMonedaTes).HasColumnName("FKIdTipoMoneda_TES");
+
+            entity.HasOne(d => d.FkidTipoMonedaTesNavigation).WithMany(p => p.TipoCambios)
+                .HasForeignKey(d => d.FkidTipoMonedaTes)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoCambio_TipoMoneda");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoCambioUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoCambio_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoCambioUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoCambio_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<TipoConteo>(entity =>
         {
             entity.HasKey(e => e.PkidTipoConteo);
@@ -3002,6 +3046,35 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoDetallePolizaUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_TipoDetallePoliza_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoDoctoClc>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoDoctoClc);
+
+            entity.ToTable("TipoDoctoCLC", "SIS");
+
+            entity.Property(e => e.PkidTipoDoctoClc).HasColumnName("PKIdTipoDoctoCLC");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoDoctoCLC_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoDoctoCLC_FechaCreacion");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.TipoRecurso)
+                .HasMaxLength(1)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoDoctoClcUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoDoctoCLC_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoDoctoClcUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoDoctoCLC_UsuarioModificacion");
         });
 
         modelBuilder.Entity<TipoDoctoPago>(entity =>
@@ -3094,6 +3167,111 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_TipoGasto_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<TipoInversion>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoInversion);
+
+            entity.ToTable("TipoInversion", "TES");
+
+            entity.Property(e => e.PkidTipoInversion).HasColumnName("PKIdTipoInversion");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoInversion_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoInversion_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoInversionUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoInversion_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoInversionUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoInversion_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoMonedum>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoMoneda);
+
+            entity.ToTable("TipoMoneda", "TES");
+
+            entity.Property(e => e.PkidTipoMoneda).HasColumnName("PKIdTipoMoneda");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoMoneda_Activo");
+            entity.Property(e => e.CodigoIso4217)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .IsFixedLength()
+                .HasColumnName("CodigoISO4217");
+            entity.Property(e => e.Decimales).HasDefaultValue(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoMoneda_FechaCreacion");
+            entity.Property(e => e.FkidPaisSis).HasColumnName("FKIdPais_SIS");
+            entity.Property(e => e.Simbolo).HasMaxLength(5);
+
+            entity.HasOne(d => d.FkidPaisSisNavigation).WithMany(p => p.TipoMoneda)
+                .HasForeignKey(d => d.FkidPaisSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoMoneda_Pais");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoMonedumUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoMoneda_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoMonedumUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoMoneda_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoPago>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoPago);
+
+            entity.ToTable("TipoPago", "TES");
+
+            entity.Property(e => e.PkidTipoPago).HasColumnName("PKIdTipoPago");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoPago_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoPago_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoPagoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoPago_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoPagoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoPago_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoPagoSf>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoPagoSf);
+
+            entity.ToTable("TipoPagoSF", "TES");
+
+            entity.Property(e => e.PkidTipoPagoSf).HasColumnName("PKIdTipoPagoSF");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoPagoSF_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoPagoSF_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoPagoSfUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoPagoSF_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoPagoSfUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoPagoSF_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<TipoPatrimonio>(entity =>
         {
             entity.HasKey(e => e.PkidTipoPatrimonio);
@@ -3175,6 +3353,29 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoRecursoUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_TipoRecurso_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<TipoSolicitudClc>(entity =>
+        {
+            entity.HasKey(e => e.PkidTipoSolicitudClc);
+
+            entity.ToTable("TipoSolicitudCLC", "TES");
+
+            entity.Property(e => e.PkidTipoSolicitudClc).HasColumnName("PKIdTipoSolicitudCLC");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_TipoSolicitudCLC_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_TipoSolicitudCLC_FechaCreacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.TipoSolicitudClcUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TipoSolicitudCLC_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.TipoSolicitudClcUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_TipoSolicitudCLC_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Unidade>(entity =>
@@ -3914,7 +4115,9 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
             entity.Property(e => e.PkIdTratadoInt).HasColumnName("Pk_IdTratadoInt");
             entity.Property(e => e.PkidTipoBien).HasColumnName("PKIdTipoBien");
-            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.TipoBienDescripcion)
+                .IsRequired()
+                .HasMaxLength(1401);
             entity.Property(e => e.TipoCuenta)
                 .HasMaxLength(1)
                 .IsFixedLength();
@@ -3967,6 +4170,23 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.UnidadMedida)
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwTipoCambio>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoCambio", "TES");
+
+            entity.Property(e => e.Cantidad).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
+            entity.Property(e => e.FkidTipoMonedaTes).HasColumnName("FKIdTipoMoneda_TES");
+            entity.Property(e => e.MonedaCodigo)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.MonedaDescripcion).HasMaxLength(50);
+            entity.Property(e => e.PkidTipoCambio).HasColumnName("PKIdTipoCambio");
         });
 
         modelBuilder.Entity<VwUsuarioEmpresa>(entity =>

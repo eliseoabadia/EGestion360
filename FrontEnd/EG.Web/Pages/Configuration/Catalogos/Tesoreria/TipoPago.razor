@@ -1,4 +1,4 @@
-@page "/configuracion/tesoreria/tipo_pago"
+@page "/configuracion/tesoreria/Tipo_Pago"
 @using EG.Domain.DTOs.Responses.Tesoreria
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -6,12 +6,20 @@
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Pago" Subtitle="Gestión del catálogo de tipos de pago" Icon="@Icons.Material.Filled.Payment"
-            CanCreate="@CanCreate" OnCreate="CreateItem" />
-        <GenericTable TItem="TipoPagoResponse" @ref="table">
+            CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="TipoPagoResponse"
+                      @ref="table"
+                      Title="Lista de Tipos de Pago"
+                      SearchPlaceholder="Buscar por descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoPago" T="TipoPagoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Codigo" T="TipoPagoResponse">Código</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPagoResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoPagoResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
@@ -33,7 +41,6 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidTipoPago</MudTd>
-                <MudTd>@item.Codigo</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.Activo</MudTd>
             </Row>
@@ -47,20 +54,13 @@
     protected override Type CreateDialogType => typeof(TipoPagoDialog);
     protected override Type EditDialogType => typeof(TipoPagoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPagoResponse>);
-    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override string GetDefaultSortLabel() => "Descripcion";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPagoResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoPago, Codigo = u.Codigo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+        items.Select(u => new { ID = u.PkidTipoPago, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+            await table.ReloadData();
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -4,7 +4,6 @@ namespace EG.Domain.DTOs.Responses.Tesoreria
     {
         public int PkidTipoPagoSf { get; set; }
         public string Descripcion { get; set; } = string.Empty;
-        public string Codigo { get; set; } = string.Empty;
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }

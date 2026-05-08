@@ -30,4 +30,6 @@ public partial class Paise
     public virtual Monedum FkidMonedaPrincipalSisNavigation { get; set; }
 
     public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
+
+    public virtual ICollection<TipoMonedum> TipoMoneda { get; set; } = new List<TipoMonedum>();
 }

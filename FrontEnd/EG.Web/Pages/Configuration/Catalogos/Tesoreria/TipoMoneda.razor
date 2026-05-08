@@ -1,4 +1,4 @@
-@page "/configuracion/tesoreria/tipo_moneda"
+@page "/configuracion/tesoreria/Tipo_Moneda"
 @using EG.Domain.DTOs.Responses.Tesoreria
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -6,14 +6,24 @@
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Moneda" Subtitle="Gestión del catálogo de monedas" Icon="@Icons.Material.Filled.AttachMoney"
-            CanCreate="@CanCreate" OnCreate="CreateItem" />
-        <GenericTable TItem="TipoMonedaResponse" @ref="table">
+            CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="TipoMonedaResponse"
+                      @ref="table"
+                      Title="Lista de Monedas"
+                      SearchPlaceholder="Buscar por código ISO o descripción..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoMoneda" T="TipoMonedaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Codigo" T="TipoMonedaResponse">Código</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoIso4217" T="TipoMonedaResponse">Código ISO</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Simbolo" T="TipoMonedaResponse">Símbolo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoMonedaResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Decimales" T="TipoMonedaResponse">Decimales</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoMonedaResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
@@ -34,9 +44,10 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidTipoMoneda</MudTd>
-                <MudTd>@item.Codigo</MudTd>
+                <MudTd>@item.CodigoIso4217</MudTd>
                 <MudTd>@item.Simbolo</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.Decimales</MudTd>
                 <MudTd>@item.Activo</MudTd>
             </Row>
         </GenericTable>
@@ -49,20 +60,13 @@
     protected override Type CreateDialogType => typeof(TipoMonedaDialog);
     protected override Type EditDialogType => typeof(TipoMonedaDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoMonedaResponse>);
-    protected override string GetDefaultSortLabel() => "Codigo";
+    protected override string GetDefaultSortLabel() => "CodigoIso4217";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoMonedaResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoMoneda, Codigo = u.Codigo, Simbolo = u.Simbolo, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+        items.Select(u => new { ID = u.PkidTipoMoneda, CodigoISO = u.CodigoIso4217, Simbolo = u.Simbolo, Descripcion = u.Descripcion, Decimales = u.Decimales, Activo = u.Activo ? "Sí" : "No" });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+            await table.ReloadData();
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
