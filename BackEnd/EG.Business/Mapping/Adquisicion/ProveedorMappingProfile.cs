@@ -19,6 +19,11 @@ namespace EG.Business.Mapping.Adquisicion
                 .ForMember(dest => dest.MunicipioNombre, opt => opt.MapFrom(src => src.FkidMunicipioSisNavigation != null ? src.FkidMunicipioSisNavigation.Nombre : string.Empty))
                 .ForMember(dest => dest.EstadoNombre, opt => opt.MapFrom(src => src.FkidEstadoSisNavigation != null ? src.FkidEstadoSisNavigation.Nombre : string.Empty))
                 .ForMember(dest => dest.PaisNombre, opt => opt.MapFrom(src => src.FkidPaisSisNavigation != null ? src.FkidPaisSisNavigation.Nombre : string.Empty));
+            CreateMap<VwProveedor, ProveedorResponse>()
+                .ForMember(dest => dest.TipoProveedorNombre, opt => opt.MapFrom(src => src.TipoProveedorDesc))
+                .ForMember(dest => dest.EstatusProveedorNombre, opt => opt.MapFrom(src => src.EstatusProveedorDesc))
+                .ForMember(dest => dest.CuentaContableNombre, opt => opt.MapFrom(src => src.CuentaContableClave))
+                .ForMember(dest => dest.ResponsableNombre, opt => opt.Ignore());
             CreateMap<ProveedorResponse, ProveedorDto>()
                 .ForMember(dest => dest.PkidProveedor, opt => opt.Ignore())
                 .ForMember(dest => dest.FkIdTipoProveedorSis, opt => opt.Ignore())

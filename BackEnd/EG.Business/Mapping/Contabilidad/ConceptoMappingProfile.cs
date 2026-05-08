@@ -11,6 +11,7 @@ namespace EG.Business.Mapping.Contabilidad
         {
             CreateMap<Concepto, ConceptoDto>().ReverseMap();
             CreateMap<Concepto, ConceptoResponse>();
+            CreateMap<VwConcepto, ConceptoResponse>();
             CreateMap<ConceptoResponse, ConceptoDto>()
                 .ForMember(dest => dest.PkidConcepto, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));

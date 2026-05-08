@@ -671,108 +671,93 @@ SET Tipo = CASE WHEN Ruta = '/' THEN 1 ELSE 2 END
 */
 -- Insertar menús
 --select * from SIS.Menu
-
 SET IDENTITY_INSERT SIS.Menu ON
 
 MERGE INTO SIS.Menu AS TARGET
 USING (VALUES
     -- Módulos principales (Tipo = 1: agrupador, Tipo = 2: hoja)
-    (1, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaRegSun', 1, 'ESP', 1, 1, GETDATE()),
-    (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaMoneyBillWave', 1, 'ESP', 2, 1, GETDATE()),
-    (3, N'Contabilidad', 1, NULL, N'Contabilidad', N'/', N'FaBook', 1, 'ESP', 3, 1, GETDATE()),
-    (4, N'Adquisiciones', 1, NULL, N'Adquisiciones', N'/', N'FaShoppingCart', 1, 'ESP', 4, 1, GETDATE()),
-    (5, N'Patrimonio', 1, NULL, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 5, 1, GETDATE()),
-    (6, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaWarehouse', 1, 'ESP', 6, 1, GETDATE()),
-    (7, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaFileInvoice', 1, 'ESP', 7, 1, GETDATE()),
-    (8, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaQuestionCircle', 1, 'ESP', 8, 1, GETDATE()),
+    (1, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaCog', 1, 'ESP', 1, 1, GETDATE()),
+    (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaChartBar', 1, 'ESP', 2, 1, GETDATE()),
+    (3, N'Contabilidad', 1, NULL, N'Contabilidad', N'/', N'FaTable', 1, 'ESP', 3, 1, GETDATE()),
+    (4, N'Adquisiciones', 1, NULL, N'Adquisiciones', N'/', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (5, N'Patrimonio', 1, NULL, N'Patrimonio', N'/', N'FaFolder', 1, 'ESP', 5, 1, GETDATE()),
+    (6, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaFolderOpen', 1, 'ESP', 6, 1, GETDATE()),
+    (7, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaChartLine', 1, 'ESP', 7, 1, GETDATE()),
+    (8, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaInfo', 1, 'ESP', 8, 1, GETDATE()),
 
     -- Configuración -> Sistema
-    (50, N'Sistema', 1, 1, N'Sistema', N'/', N'FaServer', 1, 'ESP', 1, 1, GETDATE()),
+    (50, N'Sistema', 1, 1, N'Sistema', N'/', N'FaCog', 1, 'ESP', 1, 1, GETDATE()),
     (51, N'Usuario', 2, 50, N'Usuario', N'/configuracion/sistema/usuarios', N'FaUser', 1, 'ESP', 2, 1, GETDATE()),
-    (52, N'Menú', 2, 50, N'Menú', N'/configuracion/sistema/menu', N'FaBars', 1, 'ESP', 3, 1, GETDATE()),
+    (52, N'Menú', 2, 50, N'Menú', N'/configuracion/sistema/menu', N'RiMenuLine', 1, 'ESP', 3, 1, GETDATE()),
     (53, N'General', 2, 50, N'General', N'/configuracion/sistema/general', N'FaCog', 1, 'ESP', 4, 1, GETDATE()),
-    (54, N'Empresa', 2, 50, N'Empresa', N'/configuracion/sistema/empresa', N'FaBuilding', 1, 'ESP', 5, 1, GETDATE()),
+    (54, N'Empresa', 2, 50, N'Empresa', N'/configuracion/sistema/empresa', N'FaHome', 1, 'ESP', 5, 1, GETDATE()),
     (55, N'Departamento', 2, 50, N'Departamento', N'/configuracion/sistema/departamento', N'FaUsers', 1, 'ESP', 6, 1, GETDATE()),
 
-    
-
     -- Configuración -> Catálogos presupuestales
-    (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'FaListAlt', 1, 'ESP', 1, 1, GETDATE()),
+    (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'RiListCheck2', 1, 'ESP', 1, 1, GETDATE()),
     (220, N'Clave del Programa', 1, 100, N'ClavePrograma', N'/', N'FaKey', 1, 'ESP', 1, 1, GETDATE()),
-    (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaUserTie', 1, 'ESP', 2, 1, GETDATE()),
-    (222, N'Finalidad', 2, 220, N'Finalidad', N'/configuracion/presupuestales/clave-programa/finalidad', N'FaBullseye', 1, 'ESP', 3, 1, GETDATE()),
-    (223, N'Función', 2, 220, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaCogs', 1, 'ESP', 4, 1, GETDATE()),
+    (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaRegUser', 1, 'ESP', 2, 1, GETDATE()),
+    (222, N'Finalidad', 2, 220, N'Finalidad', N'/configuracion/presupuestales/clave-programa/finalidad', N'FaStar', 1, 'ESP', 3, 1, GETDATE()),
+    (223, N'Función', 2, 220, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaGears', 1, 'ESP', 4, 1, GETDATE()),
     (224, N'SubFunción', 2, 220, N'SubFunción', N'/configuracion/presupuestales/clave-programa/subfuncion', N'FaCog', 1, 'ESP', 5, 1, GETDATE()),
-    (225, N'Actividad Institucional', 2, 220, N'Actividad Institucional', N'/configuracion/presupuestales/clave-programa/actividad-institucional', N'FaTasks', 1, 'ESP', 6, 1, GETDATE()),
-    --(226, N'Eje', 2, 220, N'Eje', N'/configuracion/presupuestales/clave-programa/eje', N'FaArrowsAlt', 1, 'ESP', 7, 1, GETDATE()),
-    --(227, N'SubEje', 2, 220, N'SubEje', N'/configuracion/presupuestales/clave-programa/subeje', N'FaArrowsAltH', 1, 'ESP', 8, 1, GETDATE()),
-    (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/presupuestales/clave-programa/programa-presupuestal', N'FaCalendarAlt', 1, 'ESP', 9, 1, GETDATE()),
-    --(229, N'Vertiente Gasto', 2, 220, N'Vertiente Gasto', N'/configuracion/presupuestales/clave-programa/vertiente-gasto', N'FaChartPie', 1, 'ESP', 10, 1, GETDATE()),
-    --(230, N'Resultado', 2, 220, N'Resultado', N'/configuracion/presupuestales/clave-programa/resultado', N'FaChartLine', 1, 'ESP', 11, 1, GETDATE()),
-    --(231, N'Subresultado', 2, 220, N'Subresultado', N'/configuracion/presupuestales/clave-programa/subresultado', N'FaChartLine', 1, 'ESP', 12, 1, GETDATE()),
+    (225, N'Actividad Institucional', 2, 220, N'Actividad Institucional', N'/configuracion/presupuestales/clave-programa/actividad-institucional', N'RiListCheck2', 1, 'ESP', 6, 1, GETDATE()),
+    (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/presupuestales/clave-programa/programa-presupuestal', N'FaCalendar', 1, 'ESP', 9, 1, GETDATE()),
     (232, N'Años', 2, 220, N'Años', N'/configuracion/presupuestales/clave-programa/anios', N'FaCalendar', 1, 'ESP', 13, 1, GETDATE()),
-    (233, N'Sector', 2, 220, N'Sector', N'/configuracion/presupuestales/clave-programa/sector', N'FaIndustry', 1, 'ESP', 14, 1, GETDATE()),
-    --(234, N'SubSector', 2, 220, N'SubSector', N'/configuracion/presupuestales/clave-programa/subsector', N'FaIndustry', 1, 'ESP', 15, 1, GETDATE()),
-    (235, N'Tipo Recurso', 2, 220, N'Tipo Recurso', N'/configuracion/presupuestales/clave-programa/tipo-recurso', N'FaDollarSign', 1, 'ESP', 16, 1, GETDATE()),
-    (236, N'Fuente Financiamiento', 2, 220, N'Fuente Financiamiento', N'/configuracion/presupuestales/clave-programa/fuente-financiamiento', N'FaMoneyBillWave', 1, 'ESP', 17, 1, GETDATE()),
-    (237, N'PG', 2, 220, N'PG', N'/configuracion/presupuestales/clave-programa/pg', N'FaFileAlt', 1, 'ESP', 18, 1, GETDATE()),
-    (238, N'Ramo', 2, 220, N'Ramo', N'/configuracion/presupuestales/clave-programa/ramo', N'FaTree', 1, 'ESP', 19, 1, GETDATE()),
-    (239, N'Proyecto', 2, 220, N'Proyecto', N'/configuracion/presupuestales/clave-programa/proyecto', N'FaProjectDiagram', 1, 'ESP', 20, 1, GETDATE()),
+    (233, N'Sector', 2, 220, N'Sector', N'/configuracion/presupuestales/clave-programa/sector', N'FaFolder', 1, 'ESP', 14, 1, GETDATE()),
+    (235, N'Tipo Recurso', 2, 220, N'Tipo Recurso', N'/configuracion/presupuestales/clave-programa/tipo-recurso', N'FaTag', 1, 'ESP', 16, 1, GETDATE()),
+    (236, N'Fuente Financiamiento', 2, 220, N'Fuente Financiamiento', N'/configuracion/presupuestales/clave-programa/fuente-financiamiento', N'FaChartBar', 1, 'ESP', 17, 1, GETDATE()),
+    (237, N'PG', 2, 220, N'PG', N'/configuracion/presupuestales/clave-programa/pg', N'FaDocument', 1, 'ESP', 18, 1, GETDATE()),
+    (238, N'Ramo', 2, 220, N'Ramo', N'/configuracion/presupuestales/clave-programa/ramo', N'FaFolderOpen', 1, 'ESP', 19, 1, GETDATE()),
+    (239, N'Proyecto', 2, 220, N'Proyecto', N'/configuracion/presupuestales/clave-programa/proyecto', N'FaFolder', 1, 'ESP', 20, 1, GETDATE()),
 
     -- Configuración -> Contabilidad
-    (240, N'Contabilidad', 1, 100, N'Contabilidad', N'/', N'FaCalculator', 1, 'ESP', 2, 1, GETDATE()),
-    (241, N'Tipo Pólizas', 2, 240, N'Tipo Pólizas', N'/configuracion/contabilidad/tipo-polizas', N'FaFileInvoice', 1, 'ESP', 2, 1, GETDATE()),
-    (242, N'Tipo Detalles Pólizas', 2, 240, N'Tipo Detalles Pólizas', N'/configuracion/contabilidad/tipo-detalles-polizas', N'FaList', 1, 'ESP', 3, 1, GETDATE()),
-    (243, N'Matriz Conversión', 2, 240, N'Matriz Conversión', N'/configuracion/contabilidad/matriz-conversion', N'FaExchangeAlt', 1, 'ESP', 4, 1, GETDATE()),
-    (244, N'Matriz Conversión Ingresos', 2, 240, N'Matriz Conversión Ingresos', N'/configuracion/contabilidad/matriz-conversion-ingresos', N'FaExchangeAlt', 1, 'ESP', 5, 1, GETDATE()),
-    (245, N'Partidas Presupuestales', 2, 240, N'Partidas Presupuestales', N'/configuracion/contabilidad/partidas-presupuestales', N'FaMoneyBill', 1, 'ESP', 6, 1, GETDATE()),
-    (246, N'Cuentas Contables', 2, 240, N'Cuentas Contables', N'/configuracion/contabilidad/cuentas-contables', N'FaBook', 1, 'ESP', 7, 1, GETDATE()),
-    (247, N'Formas Pago', 2, 240, N'Formas Pago', N'/configuracion/contabilidad/formas-pago', N'FaCreditCard', 1, 'ESP', 8, 1, GETDATE()),
-    --(248, N'Sigevi Partidas', 2, 240, N'Sigevi Partidas', N'/configuracion/contabilidad/sigevi-partidas', N'FaCode', 1, 'ESP', 9, 1, GETDATE()),
+    (240, N'Contabilidad', 1, 100, N'Contabilidad', N'/', N'FaTable', 1, 'ESP', 2, 1, GETDATE()),
+    (241, N'Tipo Pólizas', 2, 240, N'Tipo Pólizas', N'/configuracion/contabilidad/tipo-polizas', N'FaDocument', 1, 'ESP', 2, 1, GETDATE()),
+    (242, N'Tipo Detalles Pólizas', 2, 240, N'Tipo Detalles Pólizas', N'/configuracion/contabilidad/tipo-detalles-polizas', N'RiListCheck2', 1, 'ESP', 3, 1, GETDATE()),
+    (243, N'Matriz Conversión', 2, 240, N'Matriz Conversión', N'/configuracion/contabilidad/matriz-conversion', N'FaGears', 1, 'ESP', 4, 1, GETDATE()),
+    (244, N'Matriz Conversión Ingresos', 2, 240, N'Matriz Conversión Ingresos', N'/configuracion/contabilidad/matriz-conversion-ingresos', N'FaGears', 1, 'ESP', 5, 1, GETDATE()),
+    (245, N'Partidas Presupuestales', 2, 240, N'Partidas Presupuestales', N'/configuracion/contabilidad/partidas-presupuestales', N'FaTag', 1, 'ESP', 6, 1, GETDATE()),
+    (246, N'Cuentas Contables', 2, 240, N'Cuentas Contables', N'/configuracion/contabilidad/cuentas-contables', N'FaFile', 1, 'ESP', 7, 1, GETDATE()),
+    (247, N'Formas Pago', 2, 240, N'Formas Pago', N'/configuracion/contabilidad/formas-pago', N'FaTag', 1, 'ESP', 8, 1, GETDATE()),
 
     -- Configuración -> Adquisiciones
-    (250, N'Adquisiciones', 1, 1, N'Adquisiciones', N'/', N'FaShoppingCart', 1, 'ESP', 3, 1, GETDATE()),
-    (251, N'Modalidad', 2, 250, N'Modalidad', N'/configuracion/adquisiciones/modalidad', N'FaTags', 1, 'ESP', 4, 1, GETDATE()),
-    (252, N'Tipo de Contrato', 2, 250, N'Tipo de Contrato', N'/configuracion/adquisiciones/tipo-contrato', N'FaFileSignature', 1, 'ESP', 5, 1, GETDATE()),
-    (253, N'Tipo de Documentos', 2, 250, N'Tipo de Documentos', N'/configuracion/adquisiciones/tipo-documento', N'FaFileAlt', 1, 'ESP', 6, 1, GETDATE()),
-    (254, N'Tipo de Garantía', 2, 250, N'Tipo de Garantía', N'/configuracion/adquisiciones/tipo-garantia', N'FaShieldAlt', 1, 'ESP', 7, 1, GETDATE()),
-    (255, N'Procedimientos de Contratación', 2, 250, N'Procedimientos de Contratación', N'/configuracion/adquisiciones/procedimientos-contratacion', N'FaGavel', 1, 'ESP', 8, 1, GETDATE()),
-    (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlagCheckered', 1, 'ESP', 9, 1, GETDATE()),
-    (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaTruck', 1, 'ESP', 10, 1, GETDATE()),
-    (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaBox', 1, 'ESP', 11, 1, GETDATE()),
-    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaPercent', 1, 'ESP', 12, 1, GETDATE()),
+    (250, N'Adquisiciones', 1, 1, N'Adquisiciones', N'/', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (251, N'Modalidad', 2, 250, N'Modalidad', N'/configuracion/adquisiciones/modalidad', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (252, N'Tipo de Contrato', 2, 250, N'Tipo de Contrato', N'/configuracion/adquisiciones/tipo-contrato', N'FaDocument', 1, 'ESP', 5, 1, GETDATE()),
+    (253, N'Tipo de Documentos', 2, 250, N'Tipo de Documentos', N'/configuracion/adquisiciones/tipo-documento', N'FaFile', 1, 'ESP', 6, 1, GETDATE()),
+    (254, N'Tipo de Garantía', 2, 250, N'Tipo de Garantía', N'/configuracion/adquisiciones/tipo-garantia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
+    (255, N'Procedimientos de Contratación', 2, 250, N'Procedimientos de Contratación', N'/configuracion/adquisiciones/procedimientos-contratacion', N'FaGears', 1, 'ESP', 8, 1, GETDATE()),
+    (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlag', 1, 'ESP', 9, 1, GETDATE()),
+    (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaUsers', 1, 'ESP', 10, 1, GETDATE()),
+    (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaTag', 1, 'ESP', 11, 1, GETDATE()),
+    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaTag', 1, 'ESP', 12, 1, GETDATE()),
 
     -- Configuración -> Patrimonio
-    (260, N'Patrimonio', 1, 1, N'Patrimonio', N'/', N'FaBuilding', 1, 'ESP', 3, 1, GETDATE()),
-    (261, N'Familia', 2, 260, N'Familia', N'/configuracion/Patrimonio/Familia', N'FaBuilding', 1, 'ESP', 1, 1, GETDATE()),
-    (262, N'Grupo Bien', 2, 260, N'Grupo Bien', N'/configuracion/Patrimonio/Grupo_Bien', N'FaBuilding', 1, 'ESP', 2, 1, GETDATE()),
-    (263, N'Bienes y Servicios', 2, 260, N'Bienes y Servicios', N'/configuracion/Patrimonio/Bienes_Servicios', N'FaBuilding', 1, 'ESP', 3, 1, GETDATE()),
-    (264, N'Tipo de Patrimonio', 2, 260, N'Tipo de Patrimonio', N'/configuracion/Patrimonio/Tipo_Patrimonio', N'FaBuilding', 1, 'ESP', 4, 1, GETDATE()),
-    (265, N'Tipo de Adquisición', 2, 260, N'Tipo de Adquisición', N'/configuracion/Patrimonio/Tipo_Adquisicion', N'FaBuilding', 1, 'ESP', 5, 1, GETDATE()),
-    (266, N'Marca', 2, 260, N'Marca', N'/configuracion/Patrimonio/Marca', N'FaBuilding', 1, 'ESP', 6, 1, GETDATE()),
-    (267, N'Personas', 2, 260, N'Personas', N'/configuracion/Patrimonio/Personas', N'FaBuilding', 1, 'ESP', 7, 1, GETDATE()),
+    (260, N'Patrimonio', 1, 1, N'Patrimonio', N'/', N'FaFolder', 1, 'ESP', 3, 1, GETDATE()),
+    (261, N'Familia', 2, 260, N'Familia', N'/configuracion/Patrimonio/Familia', N'FaUsers', 1, 'ESP', 1, 1, GETDATE()),
+    (262, N'Grupo Bien', 2, 260, N'Grupo Bien', N'/configuracion/Patrimonio/Grupo_Bien', N'FaFolderOpen', 1, 'ESP', 2, 1, GETDATE()),
+    (263, N'Bienes y Servicios', 2, 260, N'Bienes y Servicios', N'/configuracion/Patrimonio/Bienes_Servicios', N'FaFolderOpen', 1, 'ESP', 3, 1, GETDATE()),
+    (264, N'Tipo de Patrimonio', 2, 260, N'Tipo de Patrimonio', N'/configuracion/Patrimonio/Tipo_Patrimonio', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (265, N'Tipo de Adquisición', 2, 260, N'Tipo de Adquisición', N'/configuracion/Patrimonio/Tipo_Adquisicion', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
+    (266, N'Marca', 2, 260, N'Marca', N'/configuracion/Patrimonio/Marca', N'FaTag', 1, 'ESP', 6, 1, GETDATE()),
+    (267, N'Personas', 2, 260, N'Personas', N'/configuracion/Patrimonio/Personas', N'FaUsers', 1, 'ESP', 7, 1, GETDATE()),
 
+    -- Configuración -> Almacén
+    (270, N'Almacén', 1, 1, N'Almacén', N'/', N'FaFolderOpen', 1, 'ESP', 4, 1, GETDATE()),
+    (271, N'Motivo de Entradas Salidas', 2, 270, N'Motivo de Entradas Salidas', N'/configuracion/almacen/Motivo_Entradas_Salidas', N'FaGears', 1, 'ESP', 1, 1, GETDATE()),
+    (272, N'Estatus Solicitud', 2, 270, N'Estatus Solicitud', N'/configuracion/almacen/Estatus_Solicitud', N'FaFlag', 1, 'ESP', 2, 1, GETDATE()),
+    (273, N'Unidades', 2, 270, N'Unidades', N'/configuracion/almacen/Unidades', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (274, N'Perido de Conteo', 2, 270, N'Perido de Conteo', N'/configuracion/almacen/Perido_Conteo', N'FaCalendar', 1, 'ESP', 4, 1, GETDATE()),
 
-
-
-    ---- Configuración -> Almacén
-    (270, N'Almacén', 1, 1, N'Almacén', N'/', N'FaWarehouse', 1, 'ESP', 4, 1, GETDATE()),
-    (271, N'Motivo de Entradas Salidas', 2, 270, N'Motivo de Entradas Salidas', N'/configuracion/almacen/Motivo_Entradas_Salidas', N'FaWarehouse', 1, 'ESP', 1, 1, GETDATE()),
-    (272, N'Estatus Solicitud', 2, 270, N'Estatus Solicitud', N'/configuracion/almacen/Estatus_Solicitud', N'FaWarehouse', 1, 'ESP', 2, 1, GETDATE()),
-    (273, N'Unidades', 2, 270, N'Unidades', N'/configuracion/almacen/Unidades', N'FaWarehouse', 1, 'ESP', 3, 1, GETDATE()),
-    (274, N'Perido de Conteo', 2, 270, N'Perido de Conteo', N'/configuracion/almacen/Perido_Conteo', N'FaWarehouse', 1, 'ESP', 4, 1, GETDATE()),
-
-    ---- Configuración -> Tesorería
-    (280, N'Tesoreria', 1, 1, N'Tesoreria', N'/', N'FaMoneyBill', 1, 'ESP', 5, 1, GETDATE()),
-    (281, N'Tipo de Cambio', 2, 280, N'Tipo de Cambio', N'/configuracion/tesoreria/Tipo_Cambio', N'FaWarehouse', 1, 'ESP', 1, 1, GETDATE()),
-    (282, N'Tipo Inversion', 2, 280, N'Tipo Inversion', N'/configuracion/tesoreria/Tipo_Inversion', N'FaWarehouse', 1, 'ESP', 2, 1, GETDATE()), 
-    (283, N'Tipo Moneda', 2, 280, N'Tipo Moneda', N'/configuracion/tesoreria/Tipo_Moneda', N'FaWarehouse', 1, 'ESP', 3, 1, GETDATE()), 
-    (284, N'Tipo de Pago', 2, 280, N'Tipo de Pago', N'/configuracion/tesoreria/Tipo_Pago', N'FaWarehouse', 1, 'ESP', 4, 1, GETDATE()), 
-    (285, N'Tipo de Pago SF', 2, 280, N'Tipo de Pago SF', N'/configuracion/tesoreria/Tipo_PagoSF', N'FaWarehouse', 1, 'ESP', 5, 1, GETDATE()), 
-    (286, N'Tipo Solicitud CLC', 2, 280, N'Tipo Solicitud CLC', N'/configuracion/tesoreria/Tipo_Solicitud_CLC', N'FaWarehouse', 1, 'ESP', 6, 1, GETDATE()), 
-    (287, N'Tipo Documento CLC', 2, 280, N'Tipo Documento CLC', N'/configuracion/tesoreria/Tipo_Documento_CLC', N'FaWarehouse', 1, 'ESP', 7, 1, GETDATE())
-
-        
+    -- Configuración -> Tesorería
+    (280, N'Tesoreria', 1, 1, N'Tesoreria', N'/', N'FaChartBar', 1, 'ESP', 5, 1, GETDATE()),
+    (281, N'Tipo de Cambio', 2, 280, N'Tipo de Cambio', N'/configuracion/tesoreria/Tipo_Cambio', N'FaGears', 1, 'ESP', 1, 1, GETDATE()),
+    (282, N'Tipo Inversion', 2, 280, N'Tipo Inversion', N'/configuracion/tesoreria/Tipo_Inversion', N'FaChartLine', 1, 'ESP', 2, 1, GETDATE()),
+    (283, N'Tipo Moneda', 2, 280, N'Tipo Moneda', N'/configuracion/tesoreria/Tipo_Moneda', N'FaStar', 1, 'ESP', 3, 1, GETDATE()),
+    (284, N'Tipo de Pago', 2, 280, N'Tipo de Pago', N'/configuracion/tesoreria/Tipo_Pago', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (285, N'Tipo de Pago SF', 2, 280, N'Tipo de Pago SF', N'/configuracion/tesoreria/Tipo_PagoSF', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
+    (286, N'Tipo Solicitud CLC', 2, 280, N'Tipo Solicitud CLC', N'/configuracion/tesoreria/Tipo_Solicitud_CLC', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
+    (287, N'Tipo Documento CLC', 2, 280, N'Tipo Documento CLC', N'/configuracion/tesoreria/Tipo_Documento_CLC', N'FaDocument', 1, 'ESP', 7, 1, GETDATE())
 
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)
@@ -792,7 +777,6 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED BY TARGET THEN
     INSERT (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
     VALUES (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime);
-
 
 SET IDENTITY_INSERT Sis.Menu OFF;
 

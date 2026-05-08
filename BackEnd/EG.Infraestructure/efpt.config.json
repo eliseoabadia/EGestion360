@@ -487,6 +487,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[SIS].[Vw_Concepto]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[VW_EmpresaDepartamanto]",
          "ObjectType": 3
       },
@@ -496,6 +500,10 @@
       },
       {
          "Name": "[SIS].[vw_Menu]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Vw_Proveedor]",
          "ObjectType": 3
       },
       {

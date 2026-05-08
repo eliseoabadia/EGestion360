@@ -1,13 +1,14 @@
 using AutoMapper;
-using EG.Business.Services;
+using EG.ApiCoreBS.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
-using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses;
+using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EG.ApiCoreBS.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
 {
@@ -16,71 +17,45 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
     [Authorize]
     public class ProveedorController : ControllerBase
     {
-        private readonly GenericService<Proveedor, ProveedorDto, ProveedorResponse> _service;
+        private readonly ILogger<ProveedorController> _logger;
+        private readonly IRepository<Proveedor> _repository;
+        private readonly EGestionContext _context;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public ProveedorController(
-            GenericService<Proveedor, ProveedorDto, ProveedorResponse> service,
+            ILogger<ProveedorController> logger,
+            IRepository<Proveedor> repository,
+            EGestionContext context,
             IMapper mapper,
             IUserContextService userContext)
         {
-            _service = service;
+            _logger = logger;
+            _repository = repository;
+            _context = context;
             _mapper = mapper;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(p => p.FkIdTipoProveedorSisNavigation);
-            _service.AddInclude(p => p.FkidEstatusProveedorSisNavigation);
-            _service.AddInclude(p => p.FkidCuentaContableSisNavigation);
-            _service.AddInclude(p => p.FkidMunicipioSisNavigation);
-            _service.AddInclude(p => p.FkidEstadoSisNavigation);
-            _service.AddInclude(p => p.FkidPaisSisNavigation);
-            _service.AddRelationFilter("FkIdTipoProveedorSisNavigation", new List<string> { "Descripcion" });
-            _service.AddRelationFilter("FkidEstatusProveedorSisNavigation", new List<string> { "Descripcion" });
-            _service.AddRelationFilter("FkidEstadoSisNavigation", new List<string> { "Nombre" });
-            _service.AddRelationFilter("FkidPaisSisNavigation", new List<string> { "Descripcion" });
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueRfc", async (dto) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Rfc.ToLower() == dto.Rfc.ToLower() && x.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueRfcUpdate", async (dto, id) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Rfc.ToLower() == dto.Rfc.ToLower() && x.PkidProveedor != id.Value && x.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<ProveedorResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
+            var items = await _context.VwProveedors.ToListAsync();
             return Ok(new PagedResult<ProveedorResponse>
             {
+                Items = _mapper.Map<List<ProveedorResponse>>(items),
+                TotalCount = items.Count,
                 Success = true,
-                Message = "Proveedores obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
+                Message = "OK",
+                Code = "SUCCESS"
             });
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<ProveedorResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidProveedor");
-
-            if (result == null)
+            var entity = await _context.VwProveedors.FirstOrDefaultAsync(e => e.PkidProveedor == id);
+            if (entity == null)
                 return NotFound(new PagedResult<ProveedorResponse>
                 {
                     Success = false,
@@ -89,13 +64,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     TotalCount = 0
                 });
 
+            var response = _mapper.Map<ProveedorResponse>(entity);
             return Ok(new PagedResult<ProveedorResponse>
             {
                 Success = true,
-                Message = "Proveedor encontrado",
+                Message = "OK",
                 Code = "SUCCESS",
-                Data = result,
-                Items = new List<ProveedorResponse> { result },
+                Data = response,
+                Items = new List<ProveedorResponse> { response },
                 TotalCount = 1
             });
         }
@@ -107,11 +83,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             {
                 var dto = _mapper.Map<ProveedorDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-                dto.FechaAlta = DateTime.Now;
+                dto.FechaCreacion = DateTime.UtcNow;
+                dto.FechaAlta = DateTime.UtcNow;
                 dto.Activo = true;
 
-                if (!await _service.CanAddAsync(dto))
+                var exists = await _repository.GetAllWithIncludesAsync(e => e.Rfc.ToLower() == dto.Rfc.ToLower() && e.Activo);
+                if (exists.Any())
                 {
                     return Conflict(new PagedResult<ProveedorResponse>
                     {
@@ -122,9 +99,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     });
                 }
 
-                await _service.AddAsync(dto);
+                var entity = _mapper.Map<Proveedor>(dto);
+                await _repository.AddAsync(entity);
 
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidProveedor },
+                return CreatedAtAction(nameof(GetById), new { id = entity.PkidProveedor },
                     new PagedResult<ProveedorResponse>
                     {
                         Success = true,
@@ -150,12 +128,23 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         {
             try
             {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<ProveedorResponse>
+                    {
+                        Success = false,
+                        Message = $"Proveedor con ID {id} no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
                 var dto = _mapper.Map<ProveedorDto>(response);
                 dto.PkidProveedor = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
+                dto.FechaModificacion = DateTime.UtcNow;
 
-                if (!await _service.CanUpdateAsync(id, dto))
+                var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Rfc.ToLower() == dto.Rfc.ToLower() && e.PkidProveedor != id && e.Activo);
+                if (duplicate.Any())
                 {
                     return Conflict(new PagedResult<ProveedorResponse>
                     {
@@ -166,7 +155,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     });
                 }
 
-                await _service.UpdateAsync(id, dto);
+                _mapper.Map(dto, entity);
+                entity.FechaModificacion = dto.FechaModificacion;
+                entity.UsuarioModificacion = dto.UsuarioModificacion;
+                await _repository.UpdateAsync(entity);
 
                 return Ok(new PagedResult<ProveedorResponse>
                 {
@@ -174,16 +166,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     Message = "Proveedor actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<ProveedorResponse>
-                {
-                    Success = false,
-                    Message = $"Proveedor con ID {id} no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -203,7 +185,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"Proveedor con ID {id} no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                await _repository.DeleteAsync(id);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -212,16 +204,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     Data = true,
                     Items = new List<bool> { true },
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Proveedor con ID {id} no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -239,14 +221,49 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<ProveedorResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
+            var query = _context.VwProveedors.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                var f = request.Filtro;
+                query = query.Where(e => e.Nombre.Contains(f) || e.Rfc.Contains(f) || e.Clave.Contains(f));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidProveedor" => isAscending ? query.OrderBy(e => e.PkidProveedor) : query.OrderByDescending(e => e.PkidProveedor),
+                    "Nombre" => isAscending ? query.OrderBy(e => e.Nombre) : query.OrderByDescending(e => e.Nombre),
+                    "Rfc" => isAscending ? query.OrderBy(e => e.Rfc) : query.OrderByDescending(e => e.Rfc),
+                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                    "TipoProveedorNombre" => isAscending ? query.OrderBy(e => e.TipoProveedorDesc) : query.OrderByDescending(e => e.TipoProveedorDesc),
+                    "EstatusProveedorNombre" => isAscending ? query.OrderBy(e => e.EstatusProveedorDesc) : query.OrderByDescending(e => e.EstatusProveedorDesc),
+                    "MunicipioNombre" => isAscending ? query.OrderBy(e => e.MunicipioNombre) : query.OrderByDescending(e => e.MunicipioNombre),
+                    "EstadoNombre" => isAscending ? query.OrderBy(e => e.EstadoNombre) : query.OrderByDescending(e => e.EstadoNombre),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    _ => query.OrderBy(e => e.Nombre)
+                };
+            }
+            else
+            {
+                query = query.OrderBy(e => e.Nombre);
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
             return Ok(new PagedResult<ProveedorResponse>
             {
+                Items = _mapper.Map<List<ProveedorResponse>>(items),
+                TotalCount = totalItems,
                 Success = true,
-                Message = "Proveedores obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
+                Message = "OK",
+                Code = "SUCCESS"
             });
         }
 
@@ -262,16 +279,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<ProveedorResponse>
-            {
-                Success = true,
-                Message = "Proveedores filtrados correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+            return await GetAllPaginado(pagedRequest);
         }
     }
 }

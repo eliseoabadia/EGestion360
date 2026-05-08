@@ -223,6 +223,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwBien> VwBiens { get; set; }
 
+    public virtual DbSet<VwConcepto> VwConceptos { get; set; }
+
     public virtual DbSet<VwConteo> VwConteos { get; set; }
 
     public virtual DbSet<VwConteoDetalle> VwConteoDetalles { get; set; }
@@ -246,6 +248,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwMenu> VwMenus { get; set; }
 
     public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
+
+    public virtual DbSet<VwProveedor> VwProveedors { get; set; }
 
     public virtual DbSet<VwSubFuncion> VwSubFuncions { get; set; }
 
@@ -3606,6 +3610,20 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ValorRescate).HasColumnType("decimal(20, 4)");
         });
 
+        modelBuilder.Entity<VwConcepto>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Concepto", "SIS");
+
+            entity.Property(e => e.CapituloClave).HasMaxLength(30);
+            entity.Property(e => e.CapituloDescripcion).HasMaxLength(120);
+            entity.Property(e => e.Clave).HasMaxLength(30);
+            entity.Property(e => e.Descripcion).HasMaxLength(120);
+            entity.Property(e => e.FkidCapituloSis).HasColumnName("FKIdCapitulo_SIS");
+            entity.Property(e => e.PkidConcepto).HasColumnName("PKIdConcepto");
+        });
+
         modelBuilder.Entity<VwConteo>(entity =>
         {
             entity
@@ -3997,6 +4015,46 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(194);
             entity.Property(e => e.TipoConteo).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<VwProveedor>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Proveedor", "SIS");
+
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.CuentaContableClave).HasMaxLength(20);
+            entity.Property(e => e.EstadoNombre)
+                .HasMaxLength(64)
+                .IsUnicode(false);
+            entity.Property(e => e.EstatusProveedorDesc).HasMaxLength(150);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FkIdTipoProveedorSis).HasColumnName("FkIdTipoProveedor_SIS");
+            entity.Property(e => e.FkidCuentaContableSis).HasColumnName("FKIdCuentaContable_SIS");
+            entity.Property(e => e.FkidEstadoSis).HasColumnName("FKIdEstado_SIS");
+            entity.Property(e => e.FkidEstatusProveedorSis).HasColumnName("FKIdEstatusProveedor_SIS");
+            entity.Property(e => e.FkidMunicipioSis).HasColumnName("FKIdMunicipio_SIS");
+            entity.Property(e => e.FkidPaisSis).HasColumnName("FKIdPais_SIS");
+            entity.Property(e => e.MunicipioNombre)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.PaisNombre)
+                .HasMaxLength(64)
+                .IsUnicode(false);
+            entity.Property(e => e.PkidProveedor).HasColumnName("PKIdProveedor");
+            entity.Property(e => e.Rfc)
+                .HasMaxLength(50)
+                .HasColumnName("RFC");
+            entity.Property(e => e.TipoProveedorDesc)
+                .HasMaxLength(80)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<VwSubFuncion>(entity =>

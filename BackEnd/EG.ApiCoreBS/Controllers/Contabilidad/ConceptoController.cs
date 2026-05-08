@@ -1,13 +1,14 @@
 using AutoMapper;
 using EG.ApiCoreBS.Services;
-using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Contabilidad
 {
@@ -16,65 +17,45 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Authorize]
     public class ConceptoController : ControllerBase
     {
-        private readonly GenericService<Concepto, ConceptoDto, ConceptoResponse> _service;
+        private readonly ILogger<ConceptoController> _logger;
+        private readonly IRepository<Concepto> _repository;
+        private readonly EGestionContext _context;
         private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public ConceptoController(
-            GenericService<Concepto, ConceptoDto, ConceptoResponse> service,
+            ILogger<ConceptoController> logger,
+            IRepository<Concepto> repository,
+            EGestionContext context,
             IMapper mapper,
             IUserContextService userContext)
         {
-            _service = service;
+            _logger = logger;
+            _repository = repository;
+            _context = context;
             _mapper = mapper;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(c => c.FkidCapituloContaNavigation);
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueConcepto", async (dto) =>
-            {
-                var itemDto = dto as ConceptoDto;
-                if (itemDto == null) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(c => c.Descripcion.ToLower() == itemDto.Descripcion.ToLower() && c.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueConceptoUpdate", async (dto, id) =>
-            {
-                var itemDto = dto as ConceptoDto;
-                if (itemDto == null || !id.HasValue) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(c => c.Descripcion.ToLower() == itemDto.Descripcion.ToLower() && c.PkidConcepto != id.Value && c.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<ConceptoResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
+            var items = await _context.VwConceptos.ToListAsync();
             return Ok(new PagedResult<ConceptoResponse>
             {
+                Items = _mapper.Map<List<ConceptoResponse>>(items),
+                TotalCount = items.Count,
                 Success = true,
-                Message = "Conceptos obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
+                Message = "OK",
+                Code = "SUCCESS"
             });
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<ConceptoResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null)
+            var entity = await _context.VwConceptos.FirstOrDefaultAsync(e => e.PkidConcepto == id);
+            if (entity == null)
                 return NotFound(new PagedResult<ConceptoResponse>
                 {
                     Success = false,
@@ -83,13 +64,14 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     TotalCount = 0
                 });
 
+            var response = _mapper.Map<ConceptoResponse>(entity);
             return Ok(new PagedResult<ConceptoResponse>
             {
                 Success = true,
-                Message = "Concepto encontrado",
+                Message = "OK",
                 Code = "SUCCESS",
-                Data = result,
-                Items = new List<ConceptoResponse> { result },
+                Data = response,
+                Items = new List<ConceptoResponse> { response },
                 TotalCount = 1
             });
         }
@@ -101,10 +83,11 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             {
                 var dto = _mapper.Map<ConceptoDto>(response);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
+                dto.FechaCreacion = DateTime.UtcNow;
                 dto.Activo = true;
 
-                if (!await _service.CanAddAsync(dto))
+                var exists = await _repository.GetAllWithIncludesAsync(e => e.Descripcion.ToLower() == dto.Descripcion.ToLower() && e.Activo);
+                if (exists.Any())
                 {
                     return Conflict(new PagedResult<ConceptoResponse>
                     {
@@ -115,9 +98,10 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     });
                 }
 
-                await _service.AddAsync(dto);
+                var entity = _mapper.Map<Concepto>(dto);
+                await _repository.AddAsync(entity);
 
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidConcepto },
+                return CreatedAtAction(nameof(GetById), new { id = entity.PkidConcepto },
                     new PagedResult<ConceptoResponse>
                     {
                         Success = true,
@@ -143,12 +127,23 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         {
             try
             {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<ConceptoResponse>
+                    {
+                        Success = false,
+                        Message = $"Concepto con ID {id} no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
                 var dto = _mapper.Map<ConceptoDto>(response);
                 dto.PkidConcepto = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
+                dto.FechaModificacion = DateTime.UtcNow;
 
-                if (!await _service.CanUpdateAsync(id, dto))
+                var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Descripcion.ToLower() == dto.Descripcion.ToLower() && e.PkidConcepto != id && e.Activo);
+                if (duplicate.Any())
                 {
                     return Conflict(new PagedResult<ConceptoResponse>
                     {
@@ -159,7 +154,10 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     });
                 }
 
-                await _service.UpdateAsync(id, dto);
+                _mapper.Map(dto, entity);
+                entity.FechaModificacion = dto.FechaModificacion;
+                entity.UsuarioModificacion = dto.UsuarioModificacion;
+                await _repository.UpdateAsync(entity);
 
                 return Ok(new PagedResult<ConceptoResponse>
                 {
@@ -167,16 +165,6 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     Message = "Concepto actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<ConceptoResponse>
-                {
-                    Success = false,
-                    Message = $"Concepto con ID {id} no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -196,7 +184,17 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"Concepto con ID {id} no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    });
+
+                await _repository.DeleteAsync(id);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -205,16 +203,6 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     Data = true,
                     Items = new List<bool> { true },
                     TotalCount = 1
-                });
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Concepto con ID {id} no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
                 });
             }
             catch (Exception ex)
@@ -232,14 +220,46 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<ConceptoResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
+            var query = _context.VwConceptos.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                var f = request.Filtro;
+                query = query.Where(e => e.Descripcion.Contains(f) || e.Clave.Contains(f) || e.CapituloDescripcion.Contains(f));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+                query = request.SortLabel switch
+                {
+                    "PkidConcepto" => isAscending ? query.OrderBy(e => e.PkidConcepto) : query.OrderByDescending(e => e.PkidConcepto),
+                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "CapituloDescripcion" => isAscending ? query.OrderBy(e => e.CapituloDescripcion) : query.OrderByDescending(e => e.CapituloDescripcion),
+                    "CapituloClave" => isAscending ? query.OrderBy(e => e.CapituloClave) : query.OrderByDescending(e => e.CapituloClave),
+                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                    _ => query.OrderBy(e => e.Descripcion)
+                };
+            }
+            else
+            {
+                query = query.OrderBy(e => e.Descripcion);
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
             return Ok(new PagedResult<ConceptoResponse>
             {
+                Items = _mapper.Map<List<ConceptoResponse>>(items),
+                TotalCount = totalItems,
                 Success = true,
-                Message = "Conceptos obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
+                Message = "OK",
+                Code = "SUCCESS"
             });
         }
 
@@ -255,16 +275,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<ConceptoResponse>
-            {
-                Success = true,
-                Message = "Conceptos filtrados correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+            return await GetAllPaginado(pagedRequest);
         }
     }
 }
