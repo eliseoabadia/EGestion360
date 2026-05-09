@@ -58,10 +58,13 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         IsInitialized = true;
         try
         {
+            Console.WriteLine($"🔷 VerifyAccess: Module={ModuleName}, SubModule={SubModuleName}");
             CanView = AuthProvider.HasPermission(ModuleName, SubModuleName, "view");
+            Console.WriteLine($"🔷 VerifyAccess: CanView={CanView}");
 
             if (!CanView)
             {
+                Console.WriteLine("⚠️ VerifyAccess: Sin permiso de vista, redirigiendo...");
                 HasAccess = false;
                 StateHasChanged();
                 await Task.Delay(2000);
@@ -74,10 +77,12 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             CanDelete = AuthProvider.HasPermission(ModuleName, SubModuleName, "delete");
             CanExport = AuthProvider.HasPermission(ModuleName, SubModuleName, "CanExportToExcel");
 
+            Console.WriteLine($"🔷 VerifyAccess: Create={CanCreate}, Update={CanUpdate}, Delete={CanDelete}, Export={CanExport}");
             HasAccess = true;
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ VerifyAccess: {ex.Message}");
             Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
             await Task.Delay(1000);
             NavigationManager.NavigateTo("/", forceLoad: true);
@@ -102,22 +107,26 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             SortLabel = state.SortLabel ?? GetDefaultSortLabel();
             SortDirection = state.SortDirection;
 
+            Console.WriteLine($"🔷 LoadServerData: Page={CurrentPage}, PageSize={PageSize}, Sort={SortLabel}, Dir={SortDirection}");
+
             var response = await Service.GetAllPaginadoAsync(
                 CurrentPage,
                 PageSize,
                 SearchString,
                 SortLabel,
-                SortDirection
-                ,null
+                SortDirection,
+                null
             );
 
             if (response?.Success == true && response.Items != null)
             {
                 Elements = response.Items.ToList();
                 TotalCount = response.TotalCount;
+                Console.WriteLine($"✅ LoadServerData: {Elements.Count} items de {TotalCount} totales");
             }
             else
             {
+                Console.WriteLine($"⚠️ LoadServerData: falló (Success={response?.Success}, Items null={response?.Items == null}, Msg={response?.Message})");
                 Elements.Clear();
                 TotalCount = 0;
                 if (!string.IsNullOrEmpty(response?.Message))
@@ -134,7 +143,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Console.WriteLine($"❌ LoadServerData: {ex.Message}");
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
             return new TableData<TResponse>
             {
                 Items = new List<TResponse>(),

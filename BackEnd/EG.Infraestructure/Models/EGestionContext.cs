@@ -4745,11 +4745,23 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.AspNetUserId)
                 .IsRequired()
                 .HasMaxLength(450);
+            entity.Property(e => e.Banco)
+                .HasMaxLength(100)
+                .HasColumnName("BANCO");
+            entity.Property(e => e.Calle).HasMaxLength(40);
+            entity.Property(e => e.Clabe)
+                .HasMaxLength(50)
+                .HasColumnName("CLABE");
+            entity.Property(e => e.ClavePersona).HasMaxLength(15);
             entity.Property(e => e.CoberturaSucursales)
                 .IsRequired()
                 .HasMaxLength(17)
                 .IsUnicode(false);
+            entity.Property(e => e.CodigoPostalPersona).HasMaxLength(6);
             entity.Property(e => e.CodigoPostalUsuario).HasMaxLength(9);
+            entity.Property(e => e.Colonia).HasMaxLength(40);
+            entity.Property(e => e.CompensacionGarantizada).HasColumnName("COMPENSACION_GARANTIZADA");
+            entity.Property(e => e.Curp).HasMaxLength(18);
             entity.Property(e => e.DepartamentosComoJefe).HasMaxLength(4000);
             entity.Property(e => e.Direccion1)
                 .IsRequired()
@@ -4758,7 +4770,13 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Email)
                 .IsRequired()
                 .HasMaxLength(60);
+            entity.Property(e => e.EmailPersona).HasMaxLength(250);
+            entity.Property(e => e.Estado).HasMaxLength(30);
+            entity.Property(e => e.EstadoCivil).HasMaxLength(20);
+            entity.Property(e => e.FechaFinPersona).HasColumnType("datetime");
             entity.Property(e => e.FechaIngresoFormat).HasMaxLength(4000);
+            entity.Property(e => e.FechaInicioPersona).HasColumnType("datetime");
+            entity.Property(e => e.FechaNacimientoFormat).HasMaxLength(4000);
             entity.Property(e => e.Gafete)
                 .IsRequired()
                 .HasMaxLength(11);
@@ -4772,15 +4790,32 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ListaSucursales).HasMaxLength(4000);
             entity.Property(e => e.MonedaBaseEmpresa).HasMaxLength(50);
             entity.Property(e => e.MonedaPreferida).HasMaxLength(50);
+            entity.Property(e => e.Municipio).HasMaxLength(20);
+            entity.Property(e => e.NoCartilla).HasMaxLength(16);
+            entity.Property(e => e.NoCredencialElector).HasMaxLength(32);
+            entity.Property(e => e.NoLicencia).HasMaxLength(16);
+            entity.Property(e => e.NoPasaporte).HasMaxLength(16);
             entity.Property(e => e.Nombre)
                 .IsRequired()
                 .HasMaxLength(64);
             entity.Property(e => e.NombreCompleto)
                 .IsRequired()
                 .HasMaxLength(194);
+            entity.Property(e => e.NombreCompletoPersona)
+                .IsRequired()
+                .HasMaxLength(152);
             entity.Property(e => e.NombreEmpresa)
                 .IsRequired()
                 .HasMaxLength(128);
+            entity.Property(e => e.NumExterior)
+                .HasMaxLength(10)
+                .HasColumnName("Num_exterior");
+            entity.Property(e => e.NumInterior)
+                .HasMaxLength(10)
+                .HasColumnName("Num_interior");
+            entity.Property(e => e.NumeroCuenta)
+                .HasMaxLength(25)
+                .HasColumnName("NUMERO_CUENTA");
             entity.Property(e => e.NumeroEmpleado)
                 .IsRequired()
                 .HasMaxLength(20);
@@ -4791,8 +4826,20 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(20)
                 .HasColumnName("PayrollID");
+            entity.Property(e => e.PersonaMaterno).HasMaxLength(50);
+            entity.Property(e => e.PersonaNombre).HasMaxLength(50);
+            entity.Property(e => e.PersonaPaterno).HasMaxLength(50);
             entity.Property(e => e.PkidEmpresa).HasColumnName("PKIdEmpresa");
+            entity.Property(e => e.Puesto)
+                .HasMaxLength(100)
+                .HasColumnName("PUESTO");
             entity.Property(e => e.RazonSocialEmpresa).HasMaxLength(255);
+            entity.Property(e => e.RegImss)
+                .HasMaxLength(12)
+                .HasColumnName("REG_IMSS");
+            entity.Property(e => e.Rfc)
+                .HasMaxLength(15)
+                .HasColumnName("RFC");
             entity.Property(e => e.RfcEmpresa)
                 .IsRequired()
                 .HasMaxLength(13);
@@ -4804,12 +4851,19 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(9)
                 .IsUnicode(false);
+            entity.Property(e => e.SexoPersona).HasMaxLength(10);
             entity.Property(e => e.SimboloMoneda).HasMaxLength(5);
             entity.Property(e => e.SimboloMonedaBase).HasMaxLength(5);
             entity.Property(e => e.SucursalMatrizAsignada).HasMaxLength(128);
+            entity.Property(e => e.SueldoBase).HasColumnName("SUELDO_BASE");
+            entity.Property(e => e.TelefonoMovil).HasMaxLength(15);
+            entity.Property(e => e.TelefonoParticular).HasMaxLength(15);
             entity.Property(e => e.TelefonoUsuario)
                 .IsRequired()
                 .HasMaxLength(16);
+            entity.Property(e => e.TipoContratacion)
+                .HasMaxLength(50)
+                .HasColumnName("TIPO_CONTRATACION");
             entity.Property(e => e.UsuarioFechaCreacionFormat).HasMaxLength(4000);
         });
 
@@ -4866,10 +4920,12 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.AspNetUserId)
                 .IsRequired()
                 .HasMaxLength(450);
+            entity.Property(e => e.ClavePersona).HasMaxLength(15);
             entity.Property(e => e.CodigoPostalUsuario).HasMaxLength(9);
             entity.Property(e => e.CodigoSucursal)
                 .IsRequired()
                 .HasMaxLength(20);
+            entity.Property(e => e.Curp).HasMaxLength(18);
             entity.Property(e => e.Direccion1)
                 .IsRequired()
                 .HasMaxLength(128);
@@ -4880,6 +4936,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Email)
                 .IsRequired()
                 .HasMaxLength(60);
+            entity.Property(e => e.EmailPersona).HasMaxLength(250);
             entity.Property(e => e.FechaIngresoFormat).HasMaxLength(4000);
             entity.Property(e => e.Gafete)
                 .IsRequired()
@@ -4898,6 +4955,9 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.NombreCompleto)
                 .IsRequired()
                 .HasMaxLength(194);
+            entity.Property(e => e.NombreCompletoPersona)
+                .IsRequired()
+                .HasMaxLength(152);
             entity.Property(e => e.NombreEmpresa)
                 .IsRequired()
                 .HasMaxLength(128);
@@ -4910,7 +4970,13 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PayrollId)
                 .IsRequired()
                 .HasMaxLength(20);
+            entity.Property(e => e.PersonaMaterno).HasMaxLength(50);
+            entity.Property(e => e.PersonaNombre).HasMaxLength(50);
+            entity.Property(e => e.PersonaPaterno).HasMaxLength(50);
             entity.Property(e => e.RazonSocialEmpresa).HasMaxLength(255);
+            entity.Property(e => e.Rfc)
+                .HasMaxLength(15)
+                .HasColumnName("RFC");
             entity.Property(e => e.RfcEmpresa)
                 .IsRequired()
                 .HasMaxLength(13);
@@ -4920,6 +4986,8 @@ public partial class EGestionContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.SimboloMoneda).HasMaxLength(5);
             entity.Property(e => e.SimboloMonedaBase).HasMaxLength(5);
+            entity.Property(e => e.TelefonoMovil).HasMaxLength(15);
+            entity.Property(e => e.TelefonoParticular).HasMaxLength(15);
             entity.Property(e => e.TelefonoUsuario)
                 .IsRequired()
                 .HasMaxLength(16);

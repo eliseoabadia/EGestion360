@@ -27,6 +27,13 @@
             <MudText Class="ml-3">Cargando catálogos...</MudText>
         </div>
     }
+    else if (!string.IsNullOrEmpty(CargarCatalogosError) && _allAnios.Count == 0)
+    {
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <MudText>@CargarCatalogosError</MudText>
+            <MudText Typo="Typo.body2">No se pudieron cargar los catálogos necesarios. Verifique la conexión con el servidor.</MudText>
+        </MudAlert>
+    }
     else
     {
         <BaseEntityForm TEntity="PaaaResponse"
@@ -156,8 +163,13 @@
         _loading = false;
     }
 
+    private string CargarCatalogosError { get; set; } = string.Empty;
+
     private async Task CargarCatalogosAsync()
     {
+        CargarCatalogosError = string.Empty;
+        var errores = new List<string>();
+
         try
         {
             var aniosTask = anioService.GetAllAsync();
@@ -171,25 +183,54 @@
 
             if (aniosTask.Result?.Success == true && aniosTask.Result.Items != null)
                 _allAnios = aniosTask.Result.Items.Select(x => new LookupItem { Id = x.PkidAnio, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
+            else
+                errores.Add($"Años: {aniosTask.Result?.Message ?? "sin respuesta"}");
 
             if (personasTask.Result?.Success == true && personasTask.Result.Items != null)
                 _allPersonas = personasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidPersona, Texto = $"{x.Nombre} {x.Paterno} {x.Materno}" }).ToList();
+            else
+                errores.Add($"Personas: {personasTask.Result?.Message ?? "sin respuesta"}");
 
-            if (proyectosTask.Result?.Success == true && proyectosTask.Result.Items != null)
-                _allProyectos = proyectosTask.Result.Items.Select(x => new LookupItem { Id = x.PkidProyecto, Texto = x.Descripcion }).ToList();
+            var proyResult = proyectosTask.Result;
+            Console.WriteLine($"🔍 Proyectos: Success={proyResult?.Success}, ItemsCount={proyResult?.Items?.Count}, Data={proyResult?.Data != null}");
+            if (proyResult?.Success == true && proyResult.Items != null)
+            {
+                _allProyectos = proyResult.Items.Select(x => new LookupItem { Id = x.PkidProyecto, Texto = x.Descripcion }).ToList();
+                Console.WriteLine($"✅ _allProyectos cargados: {_allProyectos.Count} items");
+            }
+            else
+                errores.Add($"Proyectos: {proyResult?.Message ?? "sin respuesta"}");
 
             if (fuentesTask.Result?.Success == true && fuentesTask.Result.Items != null)
                 _allFuentes = fuentesTask.Result.Items.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
+            else
+                errores.Add($"Fuentes: {fuentesTask.Result?.Message ?? "sin respuesta"}");
 
             if (programasTask.Result?.Success == true && programasTask.Result.Items != null)
                 _allProgramas = programasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidPp, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
+            else
+                errores.Add($"Programas: {programasTask.Result?.Message ?? "sin respuesta"}");
 
             if (areasTask.Result?.Success == true && areasTask.Result.Items != null)
                 _allAreas = areasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidArea, Texto = x.UsuarioAreaDescripcion }).ToList();
+            else
+                errores.Add($"Áreas: {areasTask.Result?.Message ?? "sin respuesta"}");
+
+            if (errores.Count > 0)
+            {
+                CargarCatalogosError = $"Algunos catálogos no se cargaron: {string.Join("; ", errores)}";
+                Snackbar.Add(CargarCatalogosError, Severity.Warning);
+            }
+
+            if (_allAnios.Count == 0)
+                Snackbar.Add("El catálogo 'Años' está vacío. Debe registrar años primero.", Severity.Warning);
+            if (_allProyectos.Count == 0)
+                Snackbar.Add("El catálogo 'Proyectos' está vacío. Debe registrar proyectos primero.", Severity.Warning);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
+            CargarCatalogosError = $"Error al cargar catálogos: {ex.Message}";
+            Snackbar.Add(CargarCatalogosError, Severity.Error);
         }
     }
 

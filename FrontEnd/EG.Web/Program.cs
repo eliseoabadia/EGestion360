@@ -57,6 +57,7 @@ internal class Program
         builder.Services.AddScoped<INavigateService, NavigateService>();
 
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+        builder.Services.AddScoped<IEmpresaService, EmpresaService>();
         builder.Services.AddScoped<IProfileService>(sp => sp.GetRequiredService<ProfileService>());
         builder.Services.AddScoped<ProfileService>();
 

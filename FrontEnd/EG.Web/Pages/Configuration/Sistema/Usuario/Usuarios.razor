@@ -7,13 +7,21 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
+    @if (!string.IsNullOrEmpty(_pageError))
+    {
+        <MudAlert Severity="Severity.Error" Class="my-4" Variant="Variant.Filled">
+            <MudText>Error al cargar la página</MudText>
+            <MudText Typo="Typo.body2">@_pageError</MudText>
+        </MudAlert>
+    }
+
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Gestión de Usuarios"
                     Subtitle="Administra y mantén el registro de usuarios del sistema"
                     Icon="@Icons.Material.Filled.PeopleAlt"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
-                    OnRefresh="() => table.ReloadData()" />
+                    OnRefresh="() => table?.ReloadData()" />
 
         <GenericTable TItem="UsuarioResponse"
                       @ref="table"
@@ -33,7 +41,7 @@
                 <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="TelefonoUsuario" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PayrollId" T="UsuarioResponse">Usuario</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PersonaNombre" T="UsuarioResponse">Nombre Persona</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreCompletoPersona" T="UsuarioResponse">Nombre Persona</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="NumeroSocial" T="UsuarioResponse">NSS</MudTableSortLabel></MudTh>
             </Header>
@@ -69,7 +77,7 @@
                 <MudTd>@usuario.Email</MudTd>
                 <MudTd>@usuario.TelefonoUsuario</MudTd>
                 <MudTd>@usuario.PayrollId</MudTd>
-                <MudTd>@usuario.PersonaNombre</MudTd>
+                <MudTd>@usuario.NombreCompletoPersona</MudTd>
                 <MudTd>@usuario.NombreEmpresa</MudTd>
                 <MudTd>@usuario.NumeroSocial</MudTd>
             </Row>
@@ -79,6 +87,7 @@
 
 @code {
     private GenericTable<UsuarioResponse> table = null!;
+    private string _pageError = string.Empty;
 
     protected override string ModuleName => "Sistema";
     protected override string SubModuleName => "Usuario";
@@ -222,6 +231,38 @@
         {
             Loading = false;
             StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Console.WriteLine("🔷 Usuarios: OnInitializedAsync iniciado");
+            await base.OnInitializedAsync();
+            Console.WriteLine("🔷 Usuarios: OnInitializedAsync completado");
+        }
+        catch (Exception ex)
+        {
+            _pageError = $"Error de inicialización: {ex.Message}";
+            Console.WriteLine($"❌ Usuarios: OnInitializedAsync error: {ex}");
+            Snackbar.Add(_pageError, Severity.Error);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            Console.WriteLine($"🔷 Usuarios: OnAfterRenderAsync firstRender={firstRender}");
+            await base.OnAfterRenderAsync(firstRender);
+            Console.WriteLine("🔷 Usuarios: OnAfterRenderAsync completado");
+        }
+        catch (Exception ex)
+        {
+            _pageError = $"Error de renderizado: {ex.Message}";
+            Console.WriteLine($"❌ Usuarios: OnAfterRenderAsync error: {ex}");
+            Snackbar.Add(_pageError, Severity.Error);
         }
     }
 

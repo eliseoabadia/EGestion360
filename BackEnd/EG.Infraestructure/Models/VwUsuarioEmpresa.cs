@@ -69,6 +69,82 @@ public partial class VwUsuarioEmpresa
 
     public int UsuarioCreadorId { get; set; }
 
+    public DateTime? UsuarioFechaModificacion { get; set; }
+
+    public int? UsuarioModificadorId { get; set; }
+
+    public int? IdPersona { get; set; }
+
+    public string ClavePersona { get; set; }
+
+    public string PersonaNombre { get; set; }
+
+    public string PersonaPaterno { get; set; }
+
+    public string PersonaMaterno { get; set; }
+
+    public string NombreCompletoPersona { get; set; }
+
+    public string Rfc { get; set; }
+
+    public string Curp { get; set; }
+
+    public string EmailPersona { get; set; }
+
+    public string TelefonoParticular { get; set; }
+
+    public string TelefonoMovil { get; set; }
+
+    public DateTime? FechaInicioPersona { get; set; }
+
+    public DateTime? FechaFinPersona { get; set; }
+
+    public string FechaNacimientoFormat { get; set; }
+
+    public string SexoPersona { get; set; }
+
+    public string EstadoCivil { get; set; }
+
+    public string Municipio { get; set; }
+
+    public string RegImss { get; set; }
+
+    public string NoCartilla { get; set; }
+
+    public string NoLicencia { get; set; }
+
+    public string NoPasaporte { get; set; }
+
+    public string NoCredencialElector { get; set; }
+
+    public string Calle { get; set; }
+
+    public string NumExterior { get; set; }
+
+    public string NumInterior { get; set; }
+
+    public string Colonia { get; set; }
+
+    public string CodigoPostalPersona { get; set; }
+
+    public string Estado { get; set; }
+
+    public string TipoContratacion { get; set; }
+
+    public string Puesto { get; set; }
+
+    public double? SueldoBase { get; set; }
+
+    public double? CompensacionGarantizada { get; set; }
+
+    public string Banco { get; set; }
+
+    public string NumeroCuenta { get; set; }
+
+    public string Clabe { get; set; }
+
+    public bool? PersonaActivo { get; set; }
+
     public int PkidEmpresa { get; set; }
 
     public string NombreEmpresa { get; set; }
@@ -112,12 +188,4 @@ public partial class VwUsuarioEmpresa
     public string NumeroEmpleado { get; set; }
 
     public string InicialesNombre { get; set; }
-
-    public DateTime? FechaCreacion { get; set; }
-
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? UsuarioModifyId { get; set; }
-
-    public int? UsuarioFechaModificacion { get; set; }
 }

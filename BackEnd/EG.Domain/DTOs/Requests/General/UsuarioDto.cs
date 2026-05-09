@@ -51,6 +51,8 @@ public class UsuarioDto
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public int? FkidPersonaNom { get; set; }
 }
 
 

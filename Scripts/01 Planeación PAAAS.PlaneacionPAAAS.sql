@@ -28,7 +28,8 @@ DROP TABLE IF EXISTS ORCO.PAAASDetalle;
 DROP TABLE IF EXISTS ORCO.PAAASPartida;
 DROP TABLE IF EXISTS ORCO.PAAAS;
 GO
-
+select * from nom.PersonaArea
+select * from SIS.vw_Area
 -- =============================================
 -- TABLA 1: ORCO.PAAAS (Programa Anual de Adquisiciones)
 -- UN REGISTRO POR ÁREA Y AÑO

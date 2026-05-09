@@ -1,10 +1,11 @@
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Dommain.DTOs.Responses
-@using EG.Web.Contracts.Configuration
 @using MudBlazor
+
 @inject IEmpresaService empresaService
-@inject IUsuarioService usuarioService
+@inject IGenericCrudService<EmpresaResponse> empresaService
+@inject IGenericCrudService<UsuarioResponse> usuarioService
 @inject IGenericCrudService<PersonaResponse> personaService
 @inject ISnackbar Snackbar
 
@@ -52,10 +53,12 @@
 
             <!-- Persona -->
             <MudItem xs="12" md="6">
-                <MudAutocomplete T="string" Value="@_selectedPersonaText" ValueChanged="OnPersonaChanged"
+                <MudAutocomplete T="LookupItem"
+                                 Value="@_selectedPersona" ValueChanged="OnPersonaChanged"
                                  Label="Nombre Persona" Variant="Variant.Outlined"
-                                 SearchFunc="SearchPersonas" Dense="true"
-                                 DebounceInterval="150" Clearable="true"
+                                 SearchFunc="SearchPersonasFull"
+                                 ToStringFunc="p => p?.Texto ?? string.Empty"
+                                 Dense="true" DebounceInterval="150" Clearable="true"
                                  Virtualize="true" MaxItems="500" />
             </MudItem>
 
@@ -229,7 +232,7 @@
     {
         try
         {
-            var response = await empresaService.GetAllEmpresasAsync();
+            var response = await empresaService.GetAllAsync();
             if (response?.Success == true && response.Items != null)
             {
                 listadoEmpresas = response.Items.ToList();
@@ -252,7 +255,8 @@
     {
         try
         {
-            var response = await personaService.GetAllAsync();
+            Console.WriteLine("🔷 CargarPersonas: iniciando carga...");
+            var response = await personaService.GetAllPaginadoAsync();
             if (response?.Success == true && response.Items != null)
             {
                 _allPersonas = response.Items.Select(x => new LookupItem
@@ -260,11 +264,19 @@
                     Id = x.PkidPersona,
                     Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
                 }).ToList();
+                Console.WriteLine($"✅ CargarPersonas: {_allPersonas.Count} personas cargadas");
+            }
+            else
+            {
+                var msg = response?.Message ?? "sin respuesta del servidor";
+                Console.WriteLine($"⚠️ CargarPersonas: falló - {msg}");
+                Snackbar.Add($"No se pudieron cargar las personas: {msg}", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando personas: {ex.Message}");
+            Console.WriteLine($"❌ CargarPersonas: error - {ex.Message}");
+            Snackbar.Add($"Error al cargar personas: {ex.Message}", Severity.Error);
         }
     }
 
@@ -272,13 +284,13 @@
     {
         try
         {
-            var response = await usuarioService.GetUsuarioByIdAsync(Id!.Value);
+            var response = await usuarioService.GetByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 usuario = response.Data;
-                if (usuario.FkIdPersonaNom.HasValue)
+                if (usuario.IdPersona.HasValue)
                 {
-                    var persona = _allPersonas.FirstOrDefault(p => p.Id == usuario.FkIdPersonaNom.Value);
+                    var persona = _allPersonas.FirstOrDefault(p => p.Id == usuario.IdPersona.Value);
                     if (persona != null) _selectedPersonaText = persona.Texto;
                 }
                 Console.WriteLine($"? Usuario cargado: {usuario.NombreCompleto}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
@@ -348,15 +360,62 @@
         return iniciales.Length > 3 ? iniciales.Substring(0, 3) : iniciales;
     }
 
-    private Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
+    // private Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
+    // {
+    //     var items = string.IsNullOrWhiteSpace(value)
+    //         ? _allPersonas
+    //         : _allPersonas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+    //     return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
+    // }
+    // private List<LookupItem> _personasCache = new(); // Resultados de la última búsqueda
+
+    // private async Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
+    // {
+    //     if (string.IsNullOrWhiteSpace(value))
+    //         return Array.Empty<string>();
+
+    //     try
+    //     {
+    //         // Llama al servicio paginado (solo primera página, o la que quieras)
+    //         var response = await personaService.GetAllPaginadoAsync(1, int.MaxValue, value, "FechaEscaneo", SortDirection.Descending);
+    //         if (response?.Success == true && response.Items != null)
+    //         {
+    //             _personasCache = response.Items.Select(x => new LookupItem
+    //             {
+    //                 Id = x.PkidPersona,
+    //                 Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
+    //             }).ToList();
+
+    //             return _personasCache.Select(p => p.Texto);
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Error en búsqueda: {ex.Message}");
+    //     }
+    //     return Array.Empty<string>();
+    // }
+
+    private LookupItem _selectedPersona;
+
+    private async Task<IEnumerable<LookupItem>> SearchPersonasFull(string value, CancellationToken ct)
     {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allPersonas
-            : _allPersonas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
+        if (string.IsNullOrWhiteSpace(value))
+            return Enumerable.Empty<LookupItem>();
+
+        var response = await personaService.GetAllPaginadoAsync(1, int.MaxValue, value, "FechaEscaneo", SortDirection.Descending);
+        return response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidPersona,
+            Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
+        }) ?? Enumerable.Empty<LookupItem>();
     }
 
-    private void OnPersonaChanged(string value) { _selectedPersonaText = value; }
+    private void OnPersonaChanged(LookupItem item)
+    {
+        _selectedPersona = item;
+        // Si necesitas el ID, usa item?.Id
+    }
 
     private async Task GuardarCambiosAsync(bool _)
     {
@@ -373,7 +432,7 @@
         }
 
         var persona = _allPersonas.FirstOrDefault(p => p.Texto == _selectedPersonaText);
-        usuario.FkIdPersonaNom = persona?.Id;
+        usuario.IdPersona = persona?.Id;
 
         try
         {
@@ -384,12 +443,12 @@
             if (Id.HasValue)
             {
                 Console.WriteLine($"?? Actualizando usuario ID: {usuario.PkIdUsuario}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
-                response = await usuarioService.UpdateUsuarioAsync(usuario.PkIdUsuario, usuario);
+                response = await usuarioService.UpdateAsync(usuario, usuario.PkIdUsuario);
             }
             else
             {
                 Console.WriteLine($"? Creando nuevo usuario: {usuario.NombreCompleto} (Activo)");
-                response = await usuarioService.CreateUsuarioAsync(usuario);
+                response = await usuarioService.CreateAsync(usuario);
             }
 
             if (response?.Success == true)

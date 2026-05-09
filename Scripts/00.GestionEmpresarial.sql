@@ -211,6 +211,7 @@ CREATE TABLE SIS.Departamento (
 CREATE TABLE SIS.Usuario (
     PkIdUsuario INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
+    FKIdPersona_NOM INT NULL,
     AspNetUserId NVARCHAR(450) NOT NULL,
     Nombre NVARCHAR(64) NOT NULL,
     ApellidoPaterno NVARCHAR(64) NOT NULL,
@@ -238,12 +239,17 @@ CREATE TABLE SIS.Usuario (
     CONSTRAINT FK_Usuario_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
     CONSTRAINT FK_Usuario_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
     CONSTRAINT FK_Usuario_Moneda FOREIGN KEY (FKIdMonedaPreferida_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
+    CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona),
     CONSTRAINT UQ_Usuario_Email UNIQUE (Email),
     CONSTRAINT UQ_Usuario_PayrollID UNIQUE (PayrollID),
     CONSTRAINT UQ_Usuario_Gafete UNIQUE (Gafete),
     CONSTRAINT UQ_Usuario_AspNetUserId UNIQUE (AspNetUserId)
 );
 
+--update sis.usuario  set FKIdPersona_NOM = 9997 where pkIdUsuario = 1 
+
+--ALTER TABLE SIS.Usuario ADD FKIdPersona_NOM INT NULL;
+--ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona);
 -- =============================================
 -- RELACIONES USUARIO-SUCURSAL-DEPARTAMENTO
 -- =============================================
@@ -459,12 +465,8 @@ VALUES
 
 
 
-(2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto', 'PRE001', 'Presupuesto', 'view,view-menu', 0),
-(2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'submodulo_egreso', 'PREEGRE01', 'Presupuesto', 'view,view-menu', 0),
-(2, 'Presupuesto', 'submodulo_egreso', NULL, 'app://{0}/{1}', GETDATE(), 'planeacion', 'PREEGRE01', 'submodulo_egreso', 'view,view-menu', 0),
-(2, 'Presupuesto', 'planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'catalgo_planeacion', 'PREPLAN01', 'planeacion', 'view,view-menu', 0),
-(2, 'Presupuesto', 'catalgo_planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'indicadores', 'PREPLAN01', 'catalgo_planeacion', 'view,view-menu,delete,new,update', 0),
 
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Programa_Anual_Adquisiciones', 'ADQPAA01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
 
 (1, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Configuración', 'view,view-menu', 0),
 
@@ -577,6 +579,7 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Pago', '10000', 'view,view-m
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_PagoSF', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Programa_Anual_Adquisiciones', '10000', 'view,view-menu,delete,new,update';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -757,7 +760,10 @@ USING (VALUES
     (284, N'Tipo de Pago', 2, 280, N'Tipo de Pago', N'/configuracion/tesoreria/Tipo_Pago', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
     (285, N'Tipo de Pago SF', 2, 280, N'Tipo de Pago SF', N'/configuracion/tesoreria/Tipo_PagoSF', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
     (286, N'Tipo Solicitud CLC', 2, 280, N'Tipo Solicitud CLC', N'/configuracion/tesoreria/Tipo_Solicitud_CLC', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
-    (287, N'Tipo Documento CLC', 2, 280, N'Tipo Documento CLC', N'/configuracion/tesoreria/Tipo_Documento_CLC', N'FaDocument', 1, 'ESP', 7, 1, GETDATE())
+    (287, N'Tipo Documento CLC', 2, 280, N'Tipo Documento CLC', N'/configuracion/tesoreria/Tipo_Documento_CLC', N'FaDocument', 1, 'ESP', 7, 1, GETDATE()),
+
+
+    (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaTag', 1, 'ESP', 4, 1, GETDATE())
 
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)

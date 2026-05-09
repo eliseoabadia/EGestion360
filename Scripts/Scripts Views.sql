@@ -256,7 +256,6 @@ SELECT
     u.ApellidoMaterno,
     u.Iniciales,
     u.PayrollID,
-    --u.NombreLogin,
     u.CodigoPostal AS CodigoPostalUsuario,
     u.Telefono AS TelefonoUsuario,
     u.Direccion1,
@@ -279,6 +278,46 @@ SELECT
     u.FechaCreacion AS UsuarioFechaCreacion,
     FORMAT(u.FechaCreacion, 'dd/MM/yyyy HH:mm') AS UsuarioFechaCreacionFormat,
     u.UsuarioCreacion AS UsuarioCreadorId,
+    u.FechaModificacion AS UsuarioFechaModificacion,
+    u.UsuarioModificacion AS UsuarioModificadorId,
+    
+    -- Datos de Persona (NOM)
+    p.PKIdPersona AS IdPersona,
+    p.Clave AS ClavePersona,
+    p.Nombre AS PersonaNombre,
+    p.Paterno AS PersonaPaterno,
+    p.Materno AS PersonaMaterno,
+    CONCAT(p.Nombre, ' ', p.Paterno, ' ', ISNULL(p.Materno, '')) AS NombreCompletoPersona,
+    p.RFC,
+    p.Curp,
+    p.CORREO_ELECTRONICO AS EmailPersona,
+    p.Telefono_particular AS TelefonoParticular,
+    p.Telefono_movil AS TelefonoMovil,
+    p.Fecha_de_Inicio AS FechaInicioPersona,
+    p.Fecha_Fin AS FechaFinPersona,
+    FORMAT(p.FechaNacimiento, 'dd/MM/yyyy') AS FechaNacimientoFormat,
+    p.Sexo AS SexoPersona,
+    p.ESTADO_CIVIL AS EstadoCivil,
+    p.Municipio,
+    p.REG_IMSS,
+    p.NoCartilla,
+    p.NoLicencia,
+    p.NoPasaporte,
+    p.NoCredencialElector,
+    p.Calle,
+    p.Num_exterior,
+    p.Num_interior,
+    p.Colonia,
+    p.CP AS CodigoPostalPersona,
+    p.Estado,
+    p.TIPO_CONTRATACION,
+    p.PUESTO,
+    p.SUELDO_BASE,
+    p.COMPENSACION_GARANTIZADA,
+    p.BANCO,
+    p.NUMERO_CUENTA,
+    p.CLABE,
+    p.Activo AS PersonaActivo,
     
     -- Datos de Empresa
     e.PKIdEmpresa,
@@ -353,9 +392,7 @@ SELECT
     -- Para ordenamiento y filtros
     u.PayrollID AS NumeroEmpleado,
     UPPER(LEFT(u.Nombre, 1) + LEFT(u.ApellidoPaterno, 1)) AS InicialesNombre
-     --,m.Activo
-       ,u.FechaCreacion,u.UsuarioCreacion
-       ,u.FechaModificacion AS UsuarioModifyId,u.UsuarioModificacion AS UsuarioFechaModificacion
+
 FROM SIS.Usuario u
 
 -- Relación con Empresa
@@ -368,10 +405,14 @@ LEFT JOIN SIS.Moneda mb ON e.FKIdMonedaBase_SIS = mb.PKIdMoneda
 LEFT JOIN SIS.Idioma i ON u.FKIdIdiomaPreferido_SIS = i.PKIdIdioma
 LEFT JOIN SIS.Moneda m ON u.FKIdMonedaPreferida_SIS = m.PKIdMoneda
 
+-- Datos de Persona
+LEFT JOIN NOM.Persona p ON u.FKIdPersona_NOM = p.PKIdPersona AND p.Activo = 1
+
 -- Sucursales consolidadas
 LEFT JOIN SucursalesConsolidadas sc ON u.PkIdUsuario = sc.IdUsuario
 
 WHERE u.Activo = 1;
+
 GO
 
 
@@ -511,6 +552,18 @@ SELECT
     END AS EsJefeEnSucursal
     --,m.Activo
        ,u.FechaCreacion,u.UsuarioCreacion,u.FechaModificacion,u.UsuarioModificacion
+       -- Datos de Persona (NOM)
+    ,p.PKIdPersona AS IdPersona
+    ,p.Clave AS ClavePersona
+    ,p.Nombre AS PersonaNombre
+    ,p.Paterno AS PersonaPaterno
+    ,p.Materno AS PersonaMaterno
+    ,CONCAT(p.Nombre, ' ', p.Paterno, ' ', ISNULL(p.Materno, '')) AS NombreCompletoPersona
+    ,p.RFC
+    ,p.Curp
+    ,p.CORREO_ELECTRONICO AS EmailPersona
+    ,p.Telefono_particular AS TelefonoParticular
+    ,p.Telefono_movil AS TelefonoMovil
 FROM SIS.Usuario u
 INNER JOIN SIS.Empresa e ON u.FKIdEmpresa_SIS = e.PKIdEmpresa
 LEFT JOIN SIS.Idioma i ON u.FKIdIdiomaPreferido_SIS = i.PKIdIdioma
@@ -518,6 +571,8 @@ LEFT JOIN SIS.Moneda m ON u.FKIdMonedaPreferida_SIS = m.PKIdMoneda
 LEFT JOIN SIS.Moneda mb ON e.FKIdMonedaBase_SIS = mb.PKIdMoneda
 INNER JOIN SIS.UsuarioSucursal us ON u.PkIdUsuario = us.FKIdUsuario_SIS
 INNER JOIN SIS.Sucursal s ON us.FKIdSucursal_SIS = s.PKIdSucursal
+-- Datos de Persona
+LEFT JOIN NOM.Persona p ON u.FKIdPersona_NOM = p.PKIdPersona AND p.Activo = 1
 WHERE us.Activo = 1 
   AND (us.FechaFinAsignacion IS NULL OR us.FechaFinAsignacion >= GETDATE())
   AND u.Activo = 1;
