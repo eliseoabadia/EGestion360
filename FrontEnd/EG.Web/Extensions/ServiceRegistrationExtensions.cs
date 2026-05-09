@@ -41,6 +41,7 @@ public static class ApiServiceExtensions
         RegisterCrud<EmpresaResponse>(services, "api/Empresa");
         RegisterCrud<MenuItemsResponse>(services, "api/Menu");
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
+        RegisterCrud<UsuarioAreaResponse>(services, "api/UsuarioArea");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
 
         RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
@@ -84,6 +85,7 @@ public static class ApiServiceExtensions
         RegisterCrud<ArticuloResponse>(services, "api/Articulo");
         RegisterCrud<FraccionResponse>(services, "api/Fraccion");
         RegisterCrud<ProveedorResponse>(services, "api/Proveedor");
+        RegisterCrud<PaaaResponse>(services, "api/Paaa");
         
         // Catálogos de Contabilidad
         RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");

@@ -1,0 +1,117 @@
+@page "/Adquisiciones/Programa_Anual"
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<PaaaResponse, PaaaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Programa Anual de Adquisiciones"
+                    Subtitle="Administra los programas anuales de adquisiciones"
+                    Icon="@Icons.Material.Filled.CalendarMonth"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="PaaaResponse"
+                      @ref="table"
+                      Title="Lista de Programas Anuales"
+                      SearchPlaceholder="Buscar por descripción, área o responsable..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidPaaas" T="PaaaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PaaaResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="PaaaResponse">Área</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ResponsableCompleto" T="PaaaResponse">Responsable</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Fecha" T="PaaaResponse">Fecha</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="PaaaResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidPaaas))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidPaaas))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidPaaas</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.AreaNombre</MudTd>
+                <MudTd>@item.ResponsableCompleto</MudTd>
+                <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Sí" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<PaaaResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "Programa_Anual_Adquisiciones";
+
+    protected override Type CreateDialogType => typeof(PaaaDialog);
+    protected override Type EditDialogType => typeof(PaaaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<PaaaResponse>);
+
+    protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<PaaaResponse> items)
+    {
+        return items.Select(e => new
+        {
+            ID = e.PkidPaaas,
+            Descripción = e.Descripcion,
+            Área = e.AreaNombre,
+            Responsable = e.ResponsableCompleto,
+            Fecha = e.Fecha.ToString("dd/MM/yyyy"),
+            Proyecto = e.ProyectoDescripcion,
+            Programa = e.ProgramaDescripcion,
+            FuenteFinanciamiento = e.FuenteFinanciamientoDescripcion,
+            Activo = e.Activo ? "Activo" : "Inactivo"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.Descripcion ?? "el programa anual";
+        }
+        catch { return "el programa anual"; }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+            StateHasChanged();
+        }
+    }
+}

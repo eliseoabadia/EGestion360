@@ -35,6 +35,8 @@ public partial class FuenteFinanciamiento
 
     public int? FkidAnioSis { get; set; }
 
+    public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

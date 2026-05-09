@@ -29,6 +29,8 @@ public partial class Programa
 
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();
 
+    public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

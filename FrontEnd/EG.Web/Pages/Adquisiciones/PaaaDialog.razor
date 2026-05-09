@@ -1,0 +1,354 @@
+@using MudBlazor
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.General
+@inject IGenericCrudService<PaaaResponse> Service
+@inject IGenericCrudService<AniosResponse> anioService
+@inject IGenericCrudService<PersonaResponse> personaService
+@inject IGenericCrudService<ProyectoResponse> proyectoService
+@inject IGenericCrudService<FuenteFinanciamientoResponse> fuenteService
+@inject IGenericCrudService<ProgramaPresupuestalResponse> programaService
+@inject IGenericCrudService<UsuarioAreaResponse> areaService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PaaaResponse"
+                 Title="@dialogTitle"
+                 MaxWidth="MaxWidth.Medium"
+                 ActionText="@actionText"
+                 ProcessingText="@processingText"
+                 LoadingMessage="Cargando catálogos..."
+                 OnConfirm="GuardarCambiosAsync">
+
+    @if (_loading)
+    {
+        <div class="d-flex justify-center align-center py-8">
+            <MudProgressCircular Indeterminate="true" />
+            <MudText Class="ml-3">Cargando catálogos...</MudText>
+        </div>
+    }
+    else
+    {
+        <BaseEntityForm TEntity="PaaaResponse"
+                        @ref="form"
+                        ShowHeader="true"
+                        HeaderTitle="@dialogTitle">
+
+            <MudGrid GutterSize="2">
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="item.Descripcion"
+                                  Label="Descripción"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="La descripción es requerida" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedAnioText" ValueChanged="OnAnioChanged"
+                                     Label="Año" Variant="Variant.Outlined"
+                                     SearchFunc="SearchAnios" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedAreaText" ValueChanged="OnAreaChanged"
+                                     Label="Área" Variant="Variant.Outlined"
+                                     SearchFunc="SearchAreas" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     RequiredError="El área es requerida"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedPersonaText" ValueChanged="OnPersonaChanged"
+                                     Label="Responsable" Variant="Variant.Outlined"
+                                     SearchFunc="SearchPersonas" Dense="true"
+                                     DebounceInterval="150" Required="true"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudDatePicker @bind-Value="_fecha"
+                                   Label="Fecha"
+                                   Variant="Variant.Outlined"
+                                   Required="true"
+                                   RequiredError="La fecha es requerida" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedProyectoText" ValueChanged="OnProyectoChanged"
+                                     Label="Proyecto" Variant="Variant.Outlined"
+                                     SearchFunc="SearchProyectos" Dense="true"
+                                     DebounceInterval="150" Clearable="true"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string" Value="@_selectedProgramaText" ValueChanged="OnProgramaChanged"
+                                     Label="Programa" Variant="Variant.Outlined"
+                                     SearchFunc="SearchProgramas" Dense="true"
+                                     DebounceInterval="150" Clearable="true"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudAutocomplete T="string" Value="@_selectedFuenteText" ValueChanged="OnFuenteChanged"
+                                     Label="Fuente de Financiamiento" Variant="Variant.Outlined"
+                                     SearchFunc="SearchFuentes" Dense="true"
+                                     DebounceInterval="150" Clearable="true"
+                                     Virtualize="true" MaxItems="500" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="item.Observaciones"
+                                  Label="Observaciones"
+                                  Variant="Variant.Outlined"
+                                  Lines="3" />
+                </MudItem>
+
+                @if (Id.HasValue)
+                {
+                    <MudItem xs="12">
+                        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </BaseEntityForm>
+    }
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<PaaaResponse> form = null!;
+    private PaaaResponse item = new() { Activo = true, Fecha = DateTime.Today };
+    private DateTime? _fecha;
+    private bool _loading = true;
+
+    private List<LookupItem> _allAnios = new();
+    private List<LookupItem> _allPersonas = new();
+    private List<LookupItem> _allProyectos = new();
+    private List<LookupItem> _allProgramas = new();
+    private List<LookupItem> _allFuentes = new();
+    private List<LookupItem> _allAreas = new();
+
+    private string _selectedAnioText = string.Empty;
+    private string _selectedPersonaText = string.Empty;
+    private string _selectedProyectoText = string.Empty;
+    private string _selectedProgramaText = string.Empty;
+    private string _selectedFuenteText = string.Empty;
+    private string _selectedAreaText = string.Empty;
+
+    private string dialogTitle => Id.HasValue ? "Editar Programa Anual" : "Nuevo Programa Anual";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCatalogosAsync();
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        _loading = false;
+    }
+
+    private async Task CargarCatalogosAsync()
+    {
+        try
+        {
+            var aniosTask = anioService.GetAllAsync();
+            var personasTask = personaService.GetAllAsync();
+            var proyectosTask = proyectoService.GetAllAsync();
+            var fuentesTask = fuenteService.GetAllAsync();
+            var programasTask = programaService.GetAllAsync();
+            var areasTask = areaService.GetAllAsync();
+
+            await Task.WhenAll(aniosTask, personasTask, proyectosTask, fuentesTask, programasTask, areasTask);
+
+            if (aniosTask.Result?.Success == true && aniosTask.Result.Items != null)
+                _allAnios = aniosTask.Result.Items.Select(x => new LookupItem { Id = x.PkidAnio, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
+
+            if (personasTask.Result?.Success == true && personasTask.Result.Items != null)
+                _allPersonas = personasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidPersona, Texto = $"{x.Nombre} {x.Paterno} {x.Materno}" }).ToList();
+
+            if (proyectosTask.Result?.Success == true && proyectosTask.Result.Items != null)
+                _allProyectos = proyectosTask.Result.Items.Select(x => new LookupItem { Id = x.PkidProyecto, Texto = x.Descripcion }).ToList();
+
+            if (fuentesTask.Result?.Success == true && fuentesTask.Result.Items != null)
+                _allFuentes = fuentesTask.Result.Items.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
+
+            if (programasTask.Result?.Success == true && programasTask.Result.Items != null)
+                _allProgramas = programasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidPp, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
+
+            if (areasTask.Result?.Success == true && areasTask.Result.Items != null)
+                _allAreas = areasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidArea, Texto = x.UsuarioAreaDescripcion }).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fecha = item.Fecha;
+
+                var anio = _allAnios.FirstOrDefault(a => a.Id == item.FkidAnioSis);
+                if (anio != null) _selectedAnioText = anio.Texto;
+
+                var per = _allPersonas.FirstOrDefault(p => p.Id == item.FkidPersonaNom);
+                if (per != null) _selectedPersonaText = per.Texto;
+
+                var proy = _allProyectos.FirstOrDefault(p => p.Id == item.FkidProyectoOrco);
+                if (proy != null) _selectedProyectoText = proy.Texto;
+
+                var prog = _allProgramas.FirstOrDefault(p => p.Id == item.FkidProgramaPres);
+                if (prog != null) _selectedProgramaText = prog.Texto;
+
+                var fte = _allFuentes.FirstOrDefault(f => f.Id == item.FkidFuenteFinanciamientoPres);
+                if (fte != null) _selectedFuenteText = fte.Texto;
+
+                var area = _allAreas.FirstOrDefault(a => a.Id == item.FkidAreaSis);
+                if (area != null) _selectedAreaText = area.Texto;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Task<IEnumerable<string>> SearchAnios(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allAnios
+            : _allAnios.Where(a => a.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(a => a.Texto).Take(500).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allPersonas
+            : _allPersonas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchProyectos(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allProyectos
+            : _allProyectos.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchProgramas(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allProgramas
+            : _allProgramas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchFuentes(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allFuentes
+            : _allFuentes.Where(f => f.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(f => f.Texto).Take(500).AsEnumerable());
+    }
+
+    private Task<IEnumerable<string>> SearchAreas(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allAreas
+            : _allAreas.Where(a => a.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(a => a.Texto).Take(500).AsEnumerable());
+    }
+
+    private void OnAnioChanged(string value) { _selectedAnioText = value; }
+    private void OnPersonaChanged(string value) { _selectedPersonaText = value; }
+    private void OnProyectoChanged(string value) { _selectedProyectoText = value; }
+    private void OnProgramaChanged(string value) { _selectedProgramaText = value; }
+    private void OnFuenteChanged(string value) { _selectedFuenteText = value; }
+    private void OnAreaChanged(string value) { _selectedAreaText = value; }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            return;
+        }
+
+        var anio = _allAnios.FirstOrDefault(a => a.Texto == _selectedAnioText);
+        if (anio == null) { Snackbar.Add("Debe seleccionar un año válido", Severity.Warning); return; }
+        item.FkidAnioSis = anio.Id;
+
+        var persona = _allPersonas.FirstOrDefault(p => p.Texto == _selectedPersonaText);
+        if (persona == null) { Snackbar.Add("Debe seleccionar un responsable válido", Severity.Warning); return; }
+        item.FkidPersonaNom = persona.Id;
+
+        var proy = _allProyectos.FirstOrDefault(p => p.Texto == _selectedProyectoText);
+        item.FkidProyectoOrco = proy?.Id;
+
+        var prog = _allProgramas.FirstOrDefault(p => p.Texto == _selectedProgramaText);
+        item.FkidProgramaPres = prog?.Id;
+
+        var fte = _allFuentes.FirstOrDefault(f => f.Texto == _selectedFuenteText);
+        item.FkidFuenteFinanciamientoPres = fte?.Id;
+
+        var area = _allAreas.FirstOrDefault(a => a.Texto == _selectedAreaText);
+        if (area == null) { Snackbar.Add("Debe seleccionar un área válida", Severity.Warning); return; }
+        item.FkidAreaSis = area.Id;
+
+        if (_fecha.HasValue)
+            item.Fecha = _fecha.Value;
+
+        try
+        {
+            bool success;
+            if (Id.HasValue)
+            {
+                var response = await Service.UpdateAsync(item, Id.Value);
+                success = response?.Success == true;
+            }
+            else
+            {
+                item.PkidPaaas = 0;
+                var response = await Service.CreateAsync(item);
+                success = response?.Success == true;
+            }
+
+            if (success)
+            {
+                Snackbar.Add(Id.HasValue ? "Programa anual actualizado correctamente" : "Programa anual creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    class LookupItem
+    {
+        public int Id { get; set; }
+        public string Texto { get; set; } = string.Empty;
+    }
+}

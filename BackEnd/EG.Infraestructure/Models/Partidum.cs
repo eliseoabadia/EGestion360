@@ -31,6 +31,8 @@ public partial class Partidum
 
     public virtual Concepto FkidConceptoSisNavigation { get; set; }
 
+    public virtual ICollection<Paaaspartidum> Paaaspartida { get; set; } = new List<Paaaspartidum>();
+
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();

@@ -33,6 +33,8 @@ public partial class Empresa
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<CotizacionDetalle> CotizacionDetalles { get; set; } = new List<CotizacionDetalle>();
+
     public virtual ICollection<CuentaContable> CuentaContables { get; set; } = new List<CuentaContable>();
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
@@ -41,13 +43,25 @@ public partial class Empresa
 
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
 
+    public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
+
+    public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
+
     public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
 
     public virtual Monedum FkidMonedaBaseSisNavigation { get; set; }
 
+    public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
+
+    public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
+
+    public virtual ICollection<Paaaspartidum> Paaaspartida { get; set; } = new List<Paaaspartidum>();
+
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
 
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 

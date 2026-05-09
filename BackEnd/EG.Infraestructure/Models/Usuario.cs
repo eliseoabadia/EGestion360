@@ -57,6 +57,8 @@ public partial class Usuario
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidPersonaNom { get; set; }
+
     public virtual ICollection<ActividadInstitucional> ActividadInstitucionalUsuarioCreacionNavigations { get; set; } = new List<ActividadInstitucional>();
 
     public virtual ICollection<ActividadInstitucional> ActividadInstitucionalUsuarioModificacionNavigations { get; set; } = new List<ActividadInstitucional>();
@@ -128,6 +130,8 @@ public partial class Usuario
     public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
 
     public virtual Monedum FkidMonedaPreferidaSisNavigation { get; set; }
+
+    public virtual Persona FkidPersonaNomNavigation { get; set; }
 
     public virtual ICollection<Fn> FnUsuarioCreacionNavigations { get; set; } = new List<Fn>();
 

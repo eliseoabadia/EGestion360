@@ -352,7 +352,7 @@
                 <div class="menu-search-favorites">
                     <div class="search-section">
                         <MudTextField @bind-Value="_searchText"
-                                      Label="Buscar menú..."
+                                      Label="Buscar ..."
                                       Placeholder="Escribe para buscar..."
                                       Variant="Variant.Filled"
                                       FullWidth

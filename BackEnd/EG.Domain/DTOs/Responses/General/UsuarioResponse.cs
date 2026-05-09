@@ -118,6 +118,10 @@ public partial class UsuarioResponse
     public DateTime? UsuarioModifyId { get; set; }
 
     public int? UsuarioFechaModificacion { get; set; }
+
+    public int? FkIdPersonaNom { get; set; }
+
+    public string PersonaNombre { get; set; } = string.Empty;
 }
 public class FotografiaUsuarioResponse
 {

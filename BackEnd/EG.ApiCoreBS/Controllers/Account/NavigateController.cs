@@ -73,6 +73,7 @@ namespace EG.ApiCoreBS.Controllers.Account
         }
 
         [HttpPost("ping")]
+        [AllowAnonymous]
         public IActionResult Ping()
         {
             return Ok(new { success = true, message = "pong" });

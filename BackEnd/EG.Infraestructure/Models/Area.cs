@@ -49,6 +49,8 @@ public partial class Area
 
     public virtual ICollection<Area> InverseFkidAreaSisNavigation { get; set; } = new List<Area>();
 
+    public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
+
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();

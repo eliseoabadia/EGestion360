@@ -84,4 +84,6 @@ public partial class Proveedor
     public virtual Municipio FkidMunicipioSisNavigation { get; set; }
 
     public virtual Paise FkidPaisSisNavigation { get; set; }
+
+    public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
 }

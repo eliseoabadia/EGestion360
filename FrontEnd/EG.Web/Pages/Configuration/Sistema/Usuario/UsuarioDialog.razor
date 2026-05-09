@@ -1,9 +1,11 @@
 @using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Dommain.DTOs.Responses
 @using EG.Web.Contracts.Configuration
 @using MudBlazor
 @inject IEmpresaService empresaService
 @inject IUsuarioService usuarioService
+@inject IGenericCrudService<PersonaResponse> personaService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="UsuarioResponse"
@@ -48,6 +50,15 @@
                 </MudSelect>
             </MudItem>
 
+            <!-- Persona -->
+            <MudItem xs="12" md="6">
+                <MudAutocomplete T="string" Value="@_selectedPersonaText" ValueChanged="OnPersonaChanged"
+                                 Label="Nombre Persona" Variant="Variant.Outlined"
+                                 SearchFunc="SearchPersonas" Dense="true"
+                                 DebounceInterval="150" Clearable="true"
+                                 Virtualize="true" MaxItems="500" />
+            </MudItem>
+
             <!-- Contacto - Fila 2 -->
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.Email"
@@ -62,34 +73,34 @@
 
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.TelefonoUsuario"
-                              Label="Teléfono"
+                              Label="Telï¿½fono"
                               Variant="Variant.Outlined"
                               Placeholder="(99) 9999-9999" />
-                @* Sin Mask para permitir edición libre *@
+                @* Sin Mask para permitir ediciï¿½n libre *@
             </MudItem>
 
-            <!-- Dirección - Fila 3 -->
+            <!-- Direcciï¿½n - Fila 3 -->
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.Direccion1"
-                              Label="Dirección 1"
+                              Label="Direcciï¿½n 1"
                               Required="true"
                               Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="usuario.Direccion2"
-                              Label="Dirección 2"
+                              Label="Direcciï¿½n 2"
                               Variant="Variant.Outlined" />
             </MudItem>
 
             <!-- Fila 4: 4 columnas -->
             <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.CodigoPostalUsuario"
-                              Label="Código Postal"
+                              Label="Cï¿½digo Postal"
                               Required="true"
                               Variant="Variant.Outlined"
                               Placeholder="12345" />
-                @* Sin Mask para permitir edición libre *@
+                @* Sin Mask para permitir ediciï¿½n libre *@
             </MudItem>
 
             <MudItem xs="12" md="3">
@@ -100,7 +111,7 @@
 
             <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.NumeroSocial"
-                              Label="Número Social"
+                              Label="Nï¿½mero Social"
                               Variant="Variant.Outlined" />
             </MudItem>
 
@@ -110,7 +121,7 @@
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <!-- Fila 5: Estado y Género en la misma línea -->
+            <!-- Fila 5: Estado y Gï¿½nero en la misma lï¿½nea -->
             <MudItem xs="12" md="6">
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px; height: 100%;">
                     <MudText Class="mb-2" Typo="Typo.subtitle2">Estado del Usuario</MudText>
@@ -118,14 +129,14 @@
 
                     @if (Id.HasValue && usuario.UsuarioActivo == true)
                     {
-                        <!-- Caso 1: Edición - Usuario ACTIVO (puede dar de baja) -->
+                        <!-- Caso 1: Ediciï¿½n - Usuario ACTIVO (puede dar de baja) -->
                         <div class="d-flex align-center">
                             <MudSwitch @bind-Value="usuario.UsuarioActivo"
                                        Color="Color.Error"
                                        ThumbIcon="@Icons.Material.Filled.PowerOff">
                                 <MudText>Dar de baja</MudText>
                             </MudSwitch>
-                            <MudTooltip Text="Los usuarios inactivos no podrán acceder al sistema">
+                            <MudTooltip Text="Los usuarios inactivos no podrï¿½n acceder al sistema">
                                 <MudIcon Icon="@Icons.Material.Filled.Info"
                                          Size="Size.Small"
                                          Class="ml-2"
@@ -135,7 +146,7 @@
                     }
                     else if (Id.HasValue && usuario.UsuarioActivo == false)
                     {
-                        <!-- Caso 2: Edición - Usuario INACTIVO (solo lectura) -->
+                        <!-- Caso 2: Ediciï¿½n - Usuario INACTIVO (solo lectura) -->
                         <div class="d-flex align-center">
                             <MudBadge Color="Color.Error"
                                       Variant="Variant.Filled"
@@ -166,10 +177,10 @@
                 </MudPaper>
             </MudItem>
 
-            <!-- Género -->
+            <!-- Gï¿½nero -->
             <MudItem xs="12" md="6">
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px; height: 100%;">
-                    <MudText Class="mb-2" Typo="Typo.subtitle2">Género</MudText>
+                    <MudText Class="mb-2" Typo="Typo.subtitle2">Gï¿½nero</MudText>
                     <MudDivider Class="mb-3" />
                     <div class="d-flex align-center" style="min-height: 36px;">
                         <MudRadioGroup @bind-Value="usuario.Sexo" Dense="true" Class="d-flex">
@@ -191,6 +202,14 @@
     private BaseEntityForm<UsuarioResponse> form = null!;
     private UsuarioResponse usuario = new() { UsuarioActivo = true };
     private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
+    private List<LookupItem> _allPersonas = new();
+    private string _selectedPersonaText = string.Empty;
+
+    class LookupItem
+    {
+        public int Id { get; set; }
+        public string Texto { get; set; } = string.Empty;
+    }
 
     private string dialogTitle => Id.HasValue ? "Editar Usuario" : "Nuevo Usuario";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -198,7 +217,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarSucursales();
+        await Task.WhenAll(CargarSucursales(), CargarPersonas());
 
         if (Id.HasValue)
         {
@@ -229,6 +248,26 @@
         }
     }
 
+    private async Task CargarPersonas()
+    {
+        try
+        {
+            var response = await personaService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                _allPersonas = response.Items.Select(x => new LookupItem
+                {
+                    Id = x.PkidPersona,
+                    Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
+                }).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando personas: {ex.Message}");
+        }
+    }
+
     private async Task CargarUsuario()
     {
         try
@@ -237,6 +276,11 @@
             if (response?.Success == true && response.Data != null)
             {
                 usuario = response.Data;
+                if (usuario.FkIdPersonaNom.HasValue)
+                {
+                    var persona = _allPersonas.FirstOrDefault(p => p.Id == usuario.FkIdPersonaNom.Value);
+                    if (persona != null) _selectedPersonaText = persona.Texto;
+                }
                 Console.WriteLine($"? Usuario cargado: {usuario.NombreCompleto}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
             }
             else
@@ -281,13 +325,13 @@
 
         if (!email.Contains("@") || !email.Contains("."))
         {
-            yield return "El email no tiene un formato válido";
+            yield return "El email no tiene un formato vï¿½lido";
             yield break;
         }
 
         if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
-            yield return "El formato del email no es válido";
+            yield return "El formato del email no es vï¿½lido";
         }
     }
 
@@ -304,6 +348,16 @@
         return iniciales.Length > 3 ? iniciales.Substring(0, 3) : iniciales;
     }
 
+    private Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
+    {
+        var items = string.IsNullOrWhiteSpace(value)
+            ? _allPersonas
+            : _allPersonas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
+    }
+
+    private void OnPersonaChanged(string value) { _selectedPersonaText = value; }
+
     private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
@@ -318,11 +372,12 @@
             return;
         }
 
+        var persona = _allPersonas.FirstOrDefault(p => p.Texto == _selectedPersonaText);
+        usuario.FkIdPersonaNom = persona?.Id;
+
         try
         {
             usuario.Iniciales = GenerarIniciales();
-
-            Console.WriteLine($"?? Estado final del usuario: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
 
             ApiResponse<UsuarioResponse> response;
 
@@ -347,7 +402,7 @@
             }
             else
             {
-                var errorMessage = response?.Message ?? "Error en la operación";
+                var errorMessage = response?.Message ?? "Error en la operaciï¿½n";
                 Console.WriteLine($"? {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Error);
             }

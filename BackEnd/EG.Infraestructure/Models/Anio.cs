@@ -21,9 +21,13 @@ public partial class Anio
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
+
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();
+
+    public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 

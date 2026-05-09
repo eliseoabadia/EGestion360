@@ -171,6 +171,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[CotizacionDetalle]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[DetalleRequisicion]",
          "ObjectType": 0
       },
@@ -179,11 +183,31 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[EstudioMercado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[EstudioMercadoDetalle]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[Fraccion]",
          "ObjectType": 0
       },
       {
          "Name": "[ORCO].[Modalidad]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[PAAAS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[PAAASDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[PAAASPartida]",
          "ObjectType": 0
       },
       {
@@ -200,6 +224,10 @@
       },
       {
          "Name": "[ORCO].[RequisicionPartida]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[SolicitudCotizacion]",
          "ObjectType": 0
       },
       {
@@ -487,6 +515,22 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_PAAAS]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_PAAASDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_PAAASPartida]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[VW_ReporteBienesProgramaAnual]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_SubFuncion]",
          "ObjectType": 3
       },
@@ -520,6 +564,10 @@
       },
       {
          "Name": "[SIS].[VW_UsuarioEmpresa]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[VW_UsuarioPersonaArea]",
          "ObjectType": 3
       },
       {

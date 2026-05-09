@@ -23,6 +23,8 @@ public partial class Unidade
 
     public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
 
+    public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
+
     public virtual ICollection<TipoBien> TipoBienFkidUnidadesAlmaNavigations { get; set; } = new List<TipoBien>();
 
     public virtual ICollection<TipoBien> TipoBienFkidUnidadesEquivalenteNavigations { get; set; } = new List<TipoBien>();

@@ -1,7 +1,108 @@
 ﻿@page "/"
+@using EG.Domain.DTOs.Responses.General
+@inject AuthService AuthService
+@inject SucursalStateService SucursalStateService
+@inject DashboardService DashboardService
+@inject NavigationManager NavigationManager
 
-<PageTitle>Home</PageTitle>
+<MudContainer Class="px-4 py-4" MaxWidth="MaxWidth.Large">
+    <MudPaper Elevation="0" Class="pa-6 mb-6 rounded-lg" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, #1565C0 100%);">
+        <MudText Typo="Typo.h4" Style="color: white; font-weight: 500;">Bienvenido, @userName</MudText>
+        <MudText Typo="Typo.body1" Style="color: rgba(255,255,255,0.8);" Class="mt-2">
+            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Style="color: rgba(255,255,255,0.8); vertical-align: middle;" />
+            Sucursal: @sucursalNombre
+        </MudText>
+    </MudPaper>
 
-<h1>Hello, world!</h1>
+    <MudText Typo="Typo.h5" Class="mb-4 mud-primary-text" Style="font-weight: 500;">Módulos</MudText>
+    <MudGrid Spacing="3" Class="mb-6">
+        @foreach (var modulo in Modulos)
+        {
+            <MudItem xs="6" sm="4" md="3" lg="2">
+                <MudCard Elevation="1" Class="kpi-card" Style="cursor: pointer;" OnClick="@(() => NavigationManager.NavigateTo(modulo.Ruta))">
+                    <MudCardContent Class="text-center pa-4">
+                        <MudIcon Icon="@modulo.Icono" Size="Size.Large" Style="@("color: " + modulo.Color + ";")" />
+                        <MudText Typo="Typo.body2" Class="mt-2" Style="font-weight: 500;">@modulo.Nombre</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 
-Welcome to your new app.
+    @if (loading)
+    {
+        <div class="d-flex justify-center my-8">
+            <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+            <MudText Class="ml-4" Style="align-self: center;">Cargando resumen del sistema...</MudText>
+        </div>
+    }
+    else if (resumen != null)
+    {
+        <MudText Typo="Typo.h5" Class="mb-4 mud-primary-text" Style="font-weight: 500;">Resumen del Sistema</MudText>
+        <MudGrid Spacing="3">
+            @foreach (var conteo in resumen.Conteos)
+            {
+                var color = ObtenerColorWidget(conteo.Etiqueta);
+                <MudItem xs="6" sm="4" md="3">
+                    <MudCard Elevation="1" Class="kpi-card" Style="@("border-top: 4px solid " + color + ";")">
+                        <MudCardContent Class="pa-4">
+                            <MudText Typo="Typo.h4" Style="@("color: " + color + "; font-weight: 600;")" Align="Align.Center">@conteo.Conteo</MudText>
+                            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-1">@conteo.Etiqueta</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private string? userName;
+    private string? sucursalNombre;
+    private DashboardResumenResponse? resumen;
+    private bool loading = true;
+
+    private static readonly List<ModuleInfo> Modulos = new()
+    {
+        new() { Nombre = "Presupuestales", Icono = Icons.Material.Filled.AccountBalance, Ruta = "/configuracion/presupuestales/clave-programa/anios", Color = "#1976D2" },
+        new() { Nombre = "Tesorería", Icono = Icons.Material.Filled.AccountBalanceWallet, Ruta = "/configuracion/tesoreria/Tipo_Cambio", Color = "#388E3C" },
+        new() { Nombre = "Adquisición", Icono = Icons.Material.Filled.ShoppingCart, Ruta = "/configuracion/adquisiciones/articulo", Color = "#F57C00" },
+        new() { Nombre = "Patrimonio", Icono = Icons.Material.Filled.Inventory2, Ruta = "/configuracion/Patrimonio/Grupo_Bien", Color = "#7B1FA2" },
+        new() { Nombre = "Contabilidad", Icono = Icons.Material.Filled.Calculate, Ruta = "/configuracion/contabilidad/cuentas-contables", Color = "#C62828" },
+        new() { Nombre = "Almacén", Icono = Icons.Material.Filled.Warehouse, Ruta = "/configuracion/almacen/unidades", Color = "#00838F" },
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        sucursalNombre = SucursalStateService.SucursalNombre ?? "Sin sucursal seleccionada";
+        userName = await AuthService.GetNameAsync() ?? "Usuario";
+
+        resumen = await DashboardService.GetResumenAsync();
+        loading = false;
+    }
+
+    private static string ObtenerColorWidget(string etiqueta)
+    {
+        return etiqueta switch
+        {
+            "Proveedores" => "#4CAF50",
+            "Unidades Responsables" => "#2196F3",
+            "Fracciones" => "#FF9800",
+            "Grupos de Bien" => "#9C27B0",
+            "Conceptos" => "#F44336",
+            "Artículos" => "#00BCD4",
+            "Tipos de Cambio" => "#607D8B",
+            "Usuarios" => "#FF5722",
+            _ => "#1976D2"
+        };
+    }
+
+    private class ModuleInfo
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Icono { get; set; } = string.Empty;
+        public string Ruta { get; set; } = string.Empty;
+        public string Color { get; set; } = "#1976D2";
+    }
+}

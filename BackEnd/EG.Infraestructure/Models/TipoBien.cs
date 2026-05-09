@@ -71,6 +71,8 @@ public partial class TipoBien
 
     public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
 
+    public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
+
     public virtual CuentaContable FkidCuentaContableContaNavigation { get; set; }
 
     public virtual GrupoBien FkidGrupoBienAlmaNavigation { get; set; }
@@ -82,4 +84,6 @@ public partial class TipoBien
     public virtual Unidade FkidUnidadesAlmaNavigation { get; set; }
 
     public virtual Unidade FkidUnidadesEquivalenteNavigation { get; set; }
+
+    public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
 }
