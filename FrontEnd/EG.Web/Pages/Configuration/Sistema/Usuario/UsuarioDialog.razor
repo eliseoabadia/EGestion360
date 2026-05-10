@@ -1,9 +1,9 @@
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Dommain.DTOs.Responses
+@using EG.Common.GenericModel
 @using MudBlazor
 
-@inject IEmpresaService empresaService
 @inject IGenericCrudService<EmpresaResponse> empresaService
 @inject IGenericCrudService<UsuarioResponse> usuarioService
 @inject IGenericCrudService<PersonaResponse> personaService
@@ -53,13 +53,11 @@
 
             <!-- Persona -->
             <MudItem xs="12" md="6">
-                <MudAutocomplete T="LookupItem"
-                                 Value="@_selectedPersona" ValueChanged="OnPersonaChanged"
-                                 Label="Nombre Persona" Variant="Variant.Outlined"
-                                 SearchFunc="SearchPersonasFull"
-                                 ToStringFunc="p => p?.Texto ?? string.Empty"
-                                 Dense="true" DebounceInterval="150" Clearable="true"
-                                 Virtualize="true" MaxItems="500" />
+                <PagedAutocomplete Value="@_selectedPersona"
+                                   ValueChanged="OnPersonaChanged"
+                                   Label="Nombre Persona"
+                                   Clearable="true"
+                                   LoadPage="LoadPersonasPageAsync" />
             </MudItem>
 
             <!-- Contacto - Fila 2 -->
@@ -205,14 +203,6 @@
     private BaseEntityForm<UsuarioResponse> form = null!;
     private UsuarioResponse usuario = new() { UsuarioActivo = true };
     private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
-    private List<LookupItem> _allPersonas = new();
-    private string _selectedPersonaText = string.Empty;
-
-    class LookupItem
-    {
-        public int Id { get; set; }
-        public string Texto { get; set; } = string.Empty;
-    }
 
     private string dialogTitle => Id.HasValue ? "Editar Usuario" : "Nuevo Usuario";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -220,7 +210,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(CargarSucursales(), CargarPersonas());
+        await Task.WhenAll(CargarSucursales());
 
         if (Id.HasValue)
         {
@@ -236,47 +226,18 @@
             if (response?.Success == true && response.Items != null)
             {
                 listadoEmpresas = response.Items.ToList();
-                Console.WriteLine($"? Cargadas {listadoEmpresas.Count} sucursales");
+                Console.WriteLine($"Cargadas {listadoEmpresas.Count} sucursales");
             }
             else
             {
-                Console.WriteLine("?? No se pudieron cargar las sucursales");
+                Console.WriteLine("No se pudieron cargar las sucursales");
                 Snackbar.Add(response?.Message ?? "Error al cargar sucursales", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? Error cargando sucursales: {ex.Message}");
+            Console.WriteLine($"Error cargando sucursales: {ex.Message}");
             Snackbar.Add($"Error al cargar sucursales: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task CargarPersonas()
-    {
-        try
-        {
-            Console.WriteLine("🔷 CargarPersonas: iniciando carga...");
-            var response = await personaService.GetAllPaginadoAsync();
-            if (response?.Success == true && response.Items != null)
-            {
-                _allPersonas = response.Items.Select(x => new LookupItem
-                {
-                    Id = x.PkidPersona,
-                    Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
-                }).ToList();
-                Console.WriteLine($"✅ CargarPersonas: {_allPersonas.Count} personas cargadas");
-            }
-            else
-            {
-                var msg = response?.Message ?? "sin respuesta del servidor";
-                Console.WriteLine($"⚠️ CargarPersonas: falló - {msg}");
-                Snackbar.Add($"No se pudieron cargar las personas: {msg}", Severity.Warning);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ CargarPersonas: error - {ex.Message}");
-            Snackbar.Add($"Error al cargar personas: {ex.Message}", Severity.Error);
         }
     }
 
@@ -290,20 +251,25 @@
                 usuario = response.Data;
                 if (usuario.IdPersona.HasValue)
                 {
-                    var persona = _allPersonas.FirstOrDefault(p => p.Id == usuario.IdPersona.Value);
-                    if (persona != null) _selectedPersonaText = persona.Texto;
+                    _selectedPersona = new LookupItem
+                    {
+                        Id = usuario.IdPersona.Value,
+                        Text = !string.IsNullOrWhiteSpace(usuario.NombreCompletoPersona)
+                            ? usuario.NombreCompletoPersona.Trim()
+                            : $"{usuario.PersonaNombre} {usuario.PersonaPaterno} {usuario.PersonaMaterno}".Trim()
+                    };
                 }
-                Console.WriteLine($"? Usuario cargado: {usuario.NombreCompleto}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
+                Console.WriteLine($"Usuario cargado: {usuario.NombreCompleto}");
             }
             else
             {
-                Console.WriteLine("?? No se pudo cargar el usuario");
+                Console.WriteLine("No se pudo cargar el usuario");
                 Snackbar.Add(response?.Message ?? "Error al cargar usuario", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? Error cargando usuario: {ex.Message}");
+            Console.WriteLine($"Error cargando usuario: {ex.Message}");
             Snackbar.Add($"Error al cargar usuario: {ex.Message}", Severity.Error);
         }
     }
@@ -315,12 +281,9 @@
             yield return "El nombre completo es requerido";
             yield break;
         }
-
         nombre = nombre.Trim();
-
         if (nombre.Length < 3)
             yield return "El nombre debe tener al menos 3 caracteres";
-
         if (nombre.Length > 100)
             yield return "El nombre no puede exceder los 100 caracteres";
     }
@@ -332,15 +295,12 @@
             yield return "El email es requerido";
             yield break;
         }
-
         email = email.Trim().ToLowerInvariant();
-
         if (!email.Contains("@") || !email.Contains("."))
         {
             yield return "El email no tiene un formato v�lido";
             yield break;
         }
-
         if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
             yield return "El formato del email no es v�lido";
@@ -351,70 +311,33 @@
     {
         if (string.IsNullOrWhiteSpace(usuario.NombreCompleto))
             return string.Empty;
-
         var palabras = usuario.NombreCompleto.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (palabras.Length == 0)
             return string.Empty;
-
         var iniciales = string.Concat(palabras.Select(p => char.ToUpper(p[0])));
         return iniciales.Length > 3 ? iniciales.Substring(0, 3) : iniciales;
     }
 
-    // private Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
-    // {
-    //     var items = string.IsNullOrWhiteSpace(value)
-    //         ? _allPersonas
-    //         : _allPersonas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-    //     return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
-    // }
-    // private List<LookupItem> _personasCache = new(); // Resultados de la última búsqueda
+    private LookupItem? _selectedPersona;
 
-    // private async Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
-    // {
-    //     if (string.IsNullOrWhiteSpace(value))
-    //         return Array.Empty<string>();
-
-    //     try
-    //     {
-    //         // Llama al servicio paginado (solo primera página, o la que quieras)
-    //         var response = await personaService.GetAllPaginadoAsync(1, int.MaxValue, value, "FechaEscaneo", SortDirection.Descending);
-    //         if (response?.Success == true && response.Items != null)
-    //         {
-    //             _personasCache = response.Items.Select(x => new LookupItem
-    //             {
-    //                 Id = x.PkidPersona,
-    //                 Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
-    //             }).ToList();
-
-    //             return _personasCache.Select(p => p.Texto);
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error en búsqueda: {ex.Message}");
-    //     }
-    //     return Array.Empty<string>();
-    // }
-
-    private LookupItem _selectedPersona;
-
-    private async Task<IEnumerable<LookupItem>> SearchPersonasFull(string value, CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return Enumerable.Empty<LookupItem>();
-
-        var response = await personaService.GetAllPaginadoAsync(1, int.MaxValue, value, "FechaEscaneo", SortDirection.Descending);
-        return response?.Items?.Select(x => new LookupItem
-        {
-            Id = x.PkidPersona,
-            Texto = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim()
-        }) ?? Enumerable.Empty<LookupItem>();
-    }
-
-    private void OnPersonaChanged(LookupItem item)
+    private void OnPersonaChanged(LookupItem? item)
     {
         _selectedPersona = item;
-        // Si necesitas el ID, usa item?.Id
+        usuario.IdPersona = item?.Id;
+    }
+
+    private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await personaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return new ComboLookupResult
+        {
+            Items = response?.Items?.Select(persona => new LookupItem
+            {
+                Id = persona.PkidPersona,
+                Text = $"{persona.Nombre} {persona.Paterno} {persona.Materno}".Trim()
+            }) ?? Enumerable.Empty<LookupItem>(),
+            TotalCount = response?.TotalCount ?? 0
+        };
     }
 
     private async Task GuardarCambiosAsync(bool _)
@@ -431,8 +354,7 @@
             return;
         }
 
-        var persona = _allPersonas.FirstOrDefault(p => p.Texto == _selectedPersonaText);
-        usuario.IdPersona = persona?.Id;
+        usuario.IdPersona = _selectedPersona?.Id;
 
         try
         {
@@ -442,36 +364,28 @@
 
             if (Id.HasValue)
             {
-                Console.WriteLine($"?? Actualizando usuario ID: {usuario.PkIdUsuario}, Estado: {(usuario.UsuarioActivo == true ? "Activo" : "Inactivo")}");
                 response = await usuarioService.UpdateAsync(usuario, usuario.PkIdUsuario);
             }
             else
             {
-                Console.WriteLine($"? Creando nuevo usuario: {usuario.NombreCompleto} (Activo)");
                 response = await usuarioService.CreateAsync(usuario);
             }
 
             if (response?.Success == true)
             {
-                var message = response.Message ??
-                    $"? Usuario {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
-
+                var message = response.Message ?? $"Usuario {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                var errorMessage = response?.Message ?? "Error en la operaci�n";
-                Console.WriteLine($"? {errorMessage}");
-                Snackbar.Add(errorMessage, Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error en la operaci�n", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? Error: {ex.Message}");
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
         }
     }
-
 
 }

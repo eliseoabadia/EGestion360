@@ -175,7 +175,13 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Patrimonio
             if (!string.IsNullOrWhiteSpace(request.Filtro))
             {
                 var f = request.Filtro;
-                query = query.Where(e => e.Nombre.Contains(f) || e.Rfc.Contains(f) || e.Curp.Contains(f));
+                query = query.Where(e =>
+                    e.Clave.Contains(f) ||
+                    e.Nombre.Contains(f) ||
+                    e.Paterno.Contains(f) ||
+                    e.Materno.Contains(f) ||
+                    e.Rfc.Contains(f) ||
+                    e.Curp.Contains(f));
             }
 
             if (!string.IsNullOrEmpty(request.SortLabel))

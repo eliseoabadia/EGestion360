@@ -1,4 +1,5 @@
 using AutoMapper;
+using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -292,6 +293,20 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(programas);
         }
 
+        [HttpGet("GetProgramaLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetProgramaLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.Set<Programa>()
+                .OrderBy(p => p.Clave)
+                .Select(p => new LookupItem
+                {
+                    Id = p.PkidPrograma,
+                    Text = (p.Clave ?? "") + " - " + (p.Descripcion ?? "")
+                });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
         [HttpGet("GetOrigen")]
         public async Task<IActionResult> GetOrigen()
         {
@@ -301,6 +316,20 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(origenes);
+        }
+
+        [HttpGet("GetOrigenLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetOrigenLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.Set<Origen>()
+                .OrderBy(o => o.Descripcion)
+                .Select(o => new LookupItem
+                {
+                    Id = o.PkidOrigen,
+                    Text = o.Descripcion ?? ""
+                });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContable")]
@@ -313,6 +342,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(cuentas);
+        }
+
+        [HttpGet("GetCuentaContableLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.NivelCuenta == 7)
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem
+                {
+                    Id = c.PkIdCuenta,
+                    Text = c.ClaveNombre ?? ""
+                });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
     }
 }

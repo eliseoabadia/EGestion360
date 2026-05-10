@@ -1,4 +1,5 @@
 using EG.ApiCoreBS.Services;
+using EG.ApiCoreBS.Helpers;
 using EG.Domain.Interfaces;
 using AutoMapper;
 using EG.Common.GenericModel;
@@ -171,6 +172,16 @@ namespace EG.ApiCoreBS.Controllers.Almacen
                 .Select(u => new LookupItem { Id = u.PkidUnidades, Text = u.Descripcion ?? "" })
                 .ToList();
             return Ok(items);
+        }
+
+        [HttpGet("GetLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _repository.QueryWithIncludes(u => u.Activo)
+                .OrderBy(u => u.Descripcion)
+                .Select(u => new LookupItem { Id = u.PkidUnidades, Text = u.Descripcion ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
     }
 }

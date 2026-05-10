@@ -1,4 +1,5 @@
 using AutoMapper;
+using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -240,6 +241,17 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 .Select(p => new LookupItem { Id = p.PkidPartida, Text = (p.Clave ?? "") + " - " + (p.Descripcion ?? "") })
                 .ToListAsync();
             return Ok(items);
+        }
+
+        [HttpGet("GetLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _service.GetQueryWithIncludes()
+                .Where(p => p.Activo)
+                .OrderBy(p => p.Clave)
+                .Select(p => new LookupItem { Id = p.PkidPartida, Text = (p.Clave ?? "") + " - " + (p.Descripcion ?? "") });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
     }
 }

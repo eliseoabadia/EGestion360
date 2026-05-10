@@ -1,4 +1,5 @@
 using AutoMapper;
+using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
@@ -265,6 +266,20 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(programas);
         }
 
+        [HttpGet("GetAllProgramasLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetAllProgramasLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.Set<Programa>()
+                .OrderBy(p => p.Clave)
+                .Select(p => new LookupItem
+                {
+                    Id = p.PkidPrograma,
+                    Text = p.Clave ?? ""
+                });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
         [HttpGet("GetPartida")]
         public async Task<IActionResult> GetPartida()
         {
@@ -275,6 +290,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(partidas);
+        }
+
+        [HttpGet("GetPartidaLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetPartidaLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.Set<Partidum1>()
+                .Where(p => p.Activo)
+                .OrderBy(p => p.Descripcion)
+                .Select(p => new LookupItem
+                {
+                    Id = p.PkidPartida,
+                    Text = p.Descripcion ?? ""
+                });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableAprobado")]
@@ -289,6 +319,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(cuentas);
         }
 
+        [HttpGet("GetCuentaContableAprobadoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableAprobadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 1") && c.NivelCuenta == 7)
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
         [HttpGet("GetCuentaContablePorEjercer")]
         public async Task<IActionResult> GetCuentaContablePorEjercer()
         {
@@ -299,6 +340,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(cuentas);
+        }
+
+        [HttpGet("GetCuentaContablePorEjercerLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContablePorEjercerLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 2"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableModificado")]
@@ -313,6 +365,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(cuentas);
         }
 
+        [HttpGet("GetCuentaContableModificadoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableModificadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 3"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
         [HttpGet("GetCuentaContableComprometido")]
         public async Task<IActionResult> GetCuentaContableComprometido()
         {
@@ -323,6 +386,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(cuentas);
+        }
+
+        [HttpGet("GetCuentaContableComprometidoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableComprometidoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 4"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableDevengado")]
@@ -337,6 +411,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(cuentas);
         }
 
+        [HttpGet("GetCuentaContableDevengadoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableDevengadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 5"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
         [HttpGet("GetCuentaContableEjercido")]
         public async Task<IActionResult> GetCuentaContableEjercido()
         {
@@ -347,6 +432,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(cuentas);
+        }
+
+        [HttpGet("GetCuentaContableEjercidoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableEjercidoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 6"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContablePagado")]
@@ -361,6 +457,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(cuentas);
         }
 
+        [HttpGet("GetCuentaContablePagadoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContablePagadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("8 2 7"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
         [HttpGet("GetCuentaContableGasto")]
         public async Task<IActionResult> GetCuentaContableGasto()
         {
@@ -371,6 +478,17 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 .ToListAsync();
 
             return Ok(cuentas);
+        }
+
+        [HttpGet("GetCuentaContableGastoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableGastoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas
+                .Where(c => c.ClaveOrd.StartsWith("5"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
     }
 }

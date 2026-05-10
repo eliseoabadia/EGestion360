@@ -1,0 +1,281 @@
+@using EG.Common.GenericModel
+@using EG.Web.Models
+@using Microsoft.JSInterop
+@using MudBlazor
+@implements IAsyncDisposable
+
+@inject IJSRuntime JSRuntime
+
+<MudAutocomplete T="LookupItem"
+                 @ref="_autocomplete"
+                 Value="@Value"
+                 ValueChanged="HandleValueChanged"
+                 Label="@Label"
+                 Variant="@Variant"
+                 SearchFunc="SearchAsync"
+                 ToStringFunc="item => item?.Text ?? string.Empty"
+                 OnClearButtonClick="HandleClearAsync"
+                 OpenOnFocus="@OpenOnFocus"
+                 ResetValueOnEmptyText="true"
+                 Strict="false"
+                 ShowProgressIndicator="@_loading"
+                 ProgressIndicatorColor="@ProgressIndicatorColor"
+                 Dense="@Dense"
+                 DebounceInterval="@DebounceInterval"
+                 Clearable="@Clearable"
+                 Required="@Required"
+                 RequiredError="@RequiredError"
+                 Disabled="@Disabled"
+                 ReadOnly="@ReadOnly"
+                 Virtualize="@Virtualize"
+                 MaxItems="@((int?)null)">
+    <AfterItemsTemplate>
+        @if (_hasMore)
+        {
+            <div @ref="_sentinel" class="px-3 py-2 d-flex justify-center">
+                <MudButton Variant="Variant.Text"
+                           Color="@LoadMoreButtonColor"
+                           Size="Size.Small"
+                           Disabled="@_loading"
+                           OnClick="LoadNextPageFromButton">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    }
+                    @LoadMoreText
+                </MudButton>
+            </div>
+        }
+    </AfterItemsTemplate>
+    <NoItemsTemplate>
+        <MudText Class="px-4 py-2" Typo="Typo.body2">@NoItemsText</MudText>
+    </NoItemsTemplate>
+</MudAutocomplete>
+
+@code {
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public LookupItem? Value { get; set; }
+    [Parameter] public EventCallback<LookupItem?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<int?> SelectedIdChanged { get; set; }
+    [Parameter] public Func<int, int, string, CancellationToken, Task<ComboLookupResult>>? LoadPage { get; set; }
+    [Parameter] public Func<CancellationToken, Task<IEnumerable<LookupItem>>>? LoadItems { get; set; }
+    [Parameter] public IEnumerable<LookupItem>? Items { get; set; }
+    [Parameter] public int PageSize { get; set; } = 25;
+    [Parameter] public int DebounceInterval { get; set; } = 150;
+    [Parameter] public bool Dense { get; set; } = true;
+    [Parameter] public bool Clearable { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string? RequiredError { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool Virtualize { get; set; } = true;
+    [Parameter] public bool OpenOnFocus { get; set; } = true;
+    [Parameter] public Variant Variant { get; set; } = Variant.Outlined;
+    [Parameter] public Color ProgressIndicatorColor { get; set; } = Color.Primary;
+    [Parameter] public Color LoadMoreButtonColor { get; set; } = Color.Primary;
+    [Parameter] public string LoadMoreText { get; set; } = "Cargar más";
+    [Parameter] public string NoItemsText { get; set; } = "No se encontraron registros";
+
+    private MudAutocomplete<LookupItem>? _autocomplete;
+    private ElementReference _sentinel;
+    private DotNetObjectReference<PagedAutocomplete>? _dotNetObjectReference;
+    private readonly List<LookupItem> _cache = new();
+    private List<LookupItem>? _localItems;
+    private string _currentFilter = string.Empty;
+    private int _currentPage;
+    private int _totalCount;
+    private bool _hasMore = true;
+    private bool _loading;
+    private bool _observerPending;
+
+    private async Task<IEnumerable<LookupItem>> SearchAsync(string? value, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+            return Enumerable.Empty<LookupItem>();
+
+        var filter = value?.Trim() ?? string.Empty;
+        if (!string.Equals(filter, _currentFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            ResetPages(filter);
+        }
+
+        if (_cache.Count == 0)
+            await LoadNextPageAsync(ct);
+
+        _observerPending = _hasMore;
+        return _cache;
+    }
+
+    private async Task LoadNextPageFromButton()
+    {
+        var scrollTop = await GetScrollTopAsync();
+        await LoadNextPageAsync(CancellationToken.None);
+        await RefreshAsync();
+        await RestoreScrollTopAsync(scrollTop);
+    }
+
+    [JSInvokable]
+    public async Task LoadNextPageFromScroll()
+    {
+        if (!_hasMore || _loading)
+            return;
+
+        var scrollTop = await GetScrollTopAsync();
+        await LoadNextPageAsync(CancellationToken.None);
+        await InvokeAsync(async () =>
+        {
+            await RefreshAsync();
+            await RestoreScrollTopAsync(scrollTop);
+        });
+    }
+
+    private async Task LoadNextPageAsync(CancellationToken ct)
+    {
+        if (_loading || !_hasMore || ct.IsCancellationRequested)
+            return;
+
+        try
+        {
+            _loading = true;
+            var nextPage = _currentPage + 1;
+            ComboLookupResult result;
+
+            if (LoadPage != null)
+            {
+                result = await LoadPage(nextPage, PageSize, _currentFilter, ct);
+            }
+            else
+            {
+                var allItems = await GetLocalItemsAsync(ct);
+                var filtered = string.IsNullOrWhiteSpace(_currentFilter)
+                    ? allItems
+                    : allItems.Where(item => item.Text.Contains(_currentFilter, StringComparison.OrdinalIgnoreCase));
+
+                var filteredList = filtered.ToList();
+                result = new ComboLookupResult
+                {
+                    Items = filteredList.Skip((nextPage - 1) * PageSize).Take(PageSize),
+                    TotalCount = filteredList.Count
+                };
+            }
+
+            if (ct.IsCancellationRequested)
+                return;
+
+            foreach (var item in result.Items.Where(item => !string.IsNullOrWhiteSpace(item.Text)))
+            {
+                if (_cache.All(existing => existing.Id != item.Id))
+                    _cache.Add(item);
+            }
+
+            _currentPage = nextPage;
+            _totalCount = result.TotalCount;
+            _hasMore = _cache.Count < _totalCount;
+            _observerPending = _hasMore;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task<List<LookupItem>> GetLocalItemsAsync(CancellationToken ct)
+    {
+        if (_localItems != null)
+            return _localItems;
+
+        if (Items != null)
+            _localItems = Items.ToList();
+        else if (LoadItems != null)
+            _localItems = (await LoadItems(ct)).ToList();
+        else
+            _localItems = new List<LookupItem>();
+
+        return _localItems;
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (_autocomplete != null)
+        {
+            await _autocomplete.OpenMenuAsync();
+        }
+        else
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task<double> GetScrollTopAsync()
+    {
+        try
+        {
+            return await JSRuntime.InvokeAsync<double>("egestionComboScroll.getScrollTop", _sentinel);
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private async Task RestoreScrollTopAsync(double scrollTop)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("egestionComboScroll.setScrollTop", _sentinel, scrollTop);
+        }
+        catch
+        {
+            // The menu can be gone if the user closes it while data is loading.
+        }
+    }
+
+    private void ResetPages(string filter)
+    {
+        _currentFilter = filter;
+        _currentPage = 0;
+        _totalCount = 0;
+        _hasMore = true;
+        _cache.Clear();
+        _observerPending = false;
+    }
+
+    private async Task HandleValueChanged(LookupItem? item)
+    {
+        Value = item;
+        await ValueChanged.InvokeAsync(item);
+        await SelectedIdChanged.InvokeAsync(item?.Id);
+    }
+
+    private async Task HandleClearAsync(MouseEventArgs _)
+    {
+        await HandleValueChanged(null);
+        ResetPages(string.Empty);
+        await LoadNextPageAsync(CancellationToken.None);
+        await RefreshAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_observerPending && _hasMore && !_loading)
+        {
+            _dotNetObjectReference ??= DotNetObjectReference.Create(this);
+            _observerPending = false;
+            await JSRuntime.InvokeVoidAsync("egestionComboScroll.observe", _sentinel, _dotNetObjectReference);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("egestionComboScroll.dispose", _sentinel);
+        }
+        catch
+        {
+            // JS interop may be unavailable during page teardown.
+        }
+
+        _dotNetObjectReference?.Dispose();
+    }
+}

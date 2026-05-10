@@ -35,19 +35,18 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedGrupoText" ValueChanged="OnGrupoChanged"
-                                     Label="Clave CUCOP (SICOP)" Variant="Variant.Outlined"
-                                     SearchFunc="SearchGrupo" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedGrupo"
+                                       ValueChanged="value => _selectedGrupo = value"
+                                       Label="Clave CUCOP (SICOP)"
+                                       Required="true"
+                                       LoadPage="LoadGruposPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedNivelText" ValueChanged="OnNivelChanged"
-                                     Label="Nivel" Variant="Variant.Outlined"
-                                     SearchFunc="SearchNivel" Dense="true"
-                                     DebounceInterval="150" Required="false"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedNivel"
+                                       ValueChanged="value => _selectedNivel = value"
+                                       Label="Nivel"
+                                       LoadPage="LoadNivelesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
@@ -76,19 +75,17 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedPartidaText" ValueChanged="OnPartidaChanged"
-                                     Label="Partida" Variant="Variant.Outlined"
-                                     SearchFunc="SearchPartida" Dense="true"
-                                     DebounceInterval="150" Required="false"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedPartida"
+                                       ValueChanged="value => _selectedPartida = value"
+                                       Label="Partida"
+                                       LoadPage="LoadPartidasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedCuentaText" ValueChanged="OnCuentaChanged"
-                                     Label="Cuenta Contable" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuenta" Dense="true"
-                                     DebounceInterval="150" Required="false"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedCuenta"
+                                       ValueChanged="value => _selectedCuenta = value"
+                                       Label="Cuenta Contable"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" class="mt-2">
@@ -96,19 +93,17 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedUnidadText" ValueChanged="OnUnidadChanged"
-                                     Label="Unidades" Variant="Variant.Outlined"
-                                     SearchFunc="SearchUnidad" Dense="true"
-                                     DebounceInterval="150" Required="false"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedUnidad"
+                                       ValueChanged="value => _selectedUnidad = value"
+                                       Label="Unidades"
+                                       LoadPage="LoadUnidadesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedUnidadEqText" ValueChanged="OnUnidadEqChanged"
-                                     Label="Unidades Equivalente" Variant="Variant.Outlined"
-                                     SearchFunc="SearchUnidadEq" Dense="true"
-                                     DebounceInterval="150" Required="false"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedUnidadEq"
+                                       ValueChanged="value => _selectedUnidadEq = value"
+                                       Label="Unidades Equivalente"
+                                       LoadPage="LoadUnidadesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
@@ -208,24 +203,15 @@
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private bool _loading = true;
 
-    private string _selectedGrupoText = string.Empty;
-    private string _selectedNivelText = string.Empty;
-    private string _selectedPartidaText = string.Empty;
-    private string _selectedCuentaText = string.Empty;
-    private string _selectedUnidadText = string.Empty;
-    private string _selectedUnidadEqText = string.Empty;
-
-    private List<LookupItem> _allGrupos = new();
-    private List<LookupItem> _allNiveles = new();
-    private List<LookupItem> _allPartidas = new();
-    private List<LookupItem> _allCuentas = new();
-    private List<LookupItem> _allUnidades = new();
-
-    private const int MaxItemsPerCombo = 500;
+    private LookupItem? _selectedGrupo;
+    private LookupItem? _selectedNivel;
+    private LookupItem? _selectedPartida;
+    private LookupItem? _selectedCuenta;
+    private LookupItem? _selectedUnidad;
+    private LookupItem? _selectedUnidadEq;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarCatalogosAsync();
         if (Id.HasValue)
         {
             await CargarDatosAsync();
@@ -233,31 +219,25 @@
         _loading = false;
     }
 
-    private async Task CargarCatalogosAsync()
-    {
-        try
-        {
-            var tasks = new[]
-            {
-                LoadCatalogAsync("api/GrupoBien/GetLookup", x => _allGrupos = x),
-                LoadCatalogAsync("api/Nivel/GetLookup", x => _allNiveles = x),
-                LoadCatalogAsync("api/Partida/GetLookup", x => _allPartidas = x),
-                LoadCatalogAsync("api/CuentaContable/GetLookup", x => _allCuentas = x),
-                LoadCatalogAsync("api/Unidades/GetLookup", x => _allUnidades = x),
-            };
-            await Task.WhenAll(tasks);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
-        }
-    }
+    private Task<ComboLookupResult> LoadGruposPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/GrupoBien/GetLookupPaginado", page, pageSize, filter, ct);
 
-    private async Task LoadCatalogAsync(string url, Action<List<LookupItem>> assign)
+    private Task<ComboLookupResult> LoadNivelesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Nivel/GetLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Partida/GetLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadCuentasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/CuentaContable/GetLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadUnidadesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Unidades/GetLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
     {
-        var result = await Http.GetFromJsonAsync<List<LookupItem>>(url);
-        if (result != null)
-            assign(result.Where(x => !string.IsNullOrEmpty(x.Text)).ToList());
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
     }
 
     private async Task CargarDatosAsync()
@@ -272,23 +252,23 @@
                 {
                     item = d;
 
-                    var g = _allGrupos.FirstOrDefault(x => x.Id == d.FkidGrupoBienAlma);
-                    if (g != null) _selectedGrupoText = g.Text ?? "";
+                    if (d.FkidGrupoBienAlma.HasValue)
+                        _selectedGrupo = new LookupItem { Id = d.FkidGrupoBienAlma.Value, Text = $"{d.GrupoBienClave} - {d.GrupoBienDescripcion}" };
 
-                    var n = _allNiveles.FirstOrDefault(x => x.Id == d.FkidNivelAlma);
-                    if (n != null) _selectedNivelText = n.Text ?? "";
+                    if (d.FkidNivelAlma.HasValue)
+                        _selectedNivel = new LookupItem { Id = d.FkidNivelAlma.Value, Text = d.NivelDescripcion };
 
-                    var p = _allPartidas.FirstOrDefault(x => x.Id == d.FkidPartidaConta);
-                    if (p != null) _selectedPartidaText = p.Text ?? "";
+                    if (d.FkidPartidaConta.HasValue)
+                        _selectedPartida = new LookupItem { Id = d.FkidPartidaConta.Value, Text = $"{d.PartidaClave} - {d.PartidaDescripcion}" };
 
-                    var c = _allCuentas.FirstOrDefault(x => x.Id == d.FkidCuentaContableConta);
-                    if (c != null) _selectedCuentaText = c.Text ?? "";
+                    if (d.FkidCuentaContableConta.HasValue)
+                        _selectedCuenta = new LookupItem { Id = d.FkidCuentaContableConta.Value, Text = $"{d.CtaCoi} - {d.CuentaDescripcion}" };
 
-                    var u = _allUnidades.FirstOrDefault(x => x.Id == d.FkidUnidadesAlma);
-                    if (u != null) _selectedUnidadText = u.Text ?? "";
+                    if (d.FkidUnidadesAlma.HasValue)
+                        _selectedUnidad = new LookupItem { Id = d.FkidUnidadesAlma.Value, Text = d.UnidadMedida };
 
-                    var ue = _allUnidades.FirstOrDefault(x => x.Id == d.FkidUnidadesEquivalente);
-                    if (ue != null) _selectedUnidadEqText = ue.Text ?? "";
+                    if (d.FkidUnidadesEquivalente.HasValue)
+                        _selectedUnidadEq = new LookupItem { Id = d.FkidUnidadesEquivalente.Value, Text = d.UnidadEquivalenteMedida };
                 }
             }
         }
@@ -298,84 +278,16 @@
         }
     }
 
-    // Search functions
-    private Task<IEnumerable<string>> SearchGrupo(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allGrupos
-            : _allGrupos.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchNivel(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allNiveles
-            : _allNiveles.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchPartida(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allPartidas
-            : _allPartidas.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchCuenta(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allCuentas
-            : _allCuentas.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchUnidad(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allUnidades
-            : _allUnidades.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchUnidadEq(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allUnidades
-            : _allUnidades.Where(x => x.Text != null && x.Text.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(x => x.Text ?? "").Distinct().Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    // OnChanged handlers
-    private void OnGrupoChanged(string value) { _selectedGrupoText = value; }
-    private void OnNivelChanged(string value) { _selectedNivelText = value; }
-    private void OnPartidaChanged(string value) { _selectedPartidaText = value; }
-    private void OnCuentaChanged(string value) { _selectedCuentaText = value; }
-    private void OnUnidadChanged(string value) { _selectedUnidadText = value; }
-    private void OnUnidadEqChanged(string value) { _selectedUnidadEqText = value; }
-
     private async Task GuardarCambiosAsync()
     {
         try
         {
-            var g = _allGrupos.FirstOrDefault(x => x.Text == _selectedGrupoText);
-            if (g != null) item.FkidGrupoBienAlma = g.Id; else item.FkidGrupoBienAlma = null;
-
-            var n = _allNiveles.FirstOrDefault(x => x.Text == _selectedNivelText);
-            if (n != null) item.FkidNivelAlma = n.Id; else item.FkidNivelAlma = null;
-
-            var p = _allPartidas.FirstOrDefault(x => x.Text == _selectedPartidaText);
-            if (p != null) item.FkidPartidaConta = p.Id; else item.FkidPartidaConta = null;
-
-            var c = _allCuentas.FirstOrDefault(x => x.Text == _selectedCuentaText);
-            if (c != null) item.FkidCuentaContableConta = c.Id; else item.FkidCuentaContableConta = null;
-
-            var u = _allUnidades.FirstOrDefault(x => x.Text == _selectedUnidadText);
-            if (u != null) item.FkidUnidadesAlma = u.Id; else item.FkidUnidadesAlma = null;
-
-            var ue = _allUnidades.FirstOrDefault(x => x.Text == _selectedUnidadEqText);
-            if (ue != null) item.FkidUnidadesEquivalente = ue.Id; else item.FkidUnidadesEquivalente = null;
+            item.FkidGrupoBienAlma = _selectedGrupo?.Id;
+            item.FkidNivelAlma = _selectedNivel?.Id;
+            item.FkidPartidaConta = _selectedPartida?.Id;
+            item.FkidCuentaContableConta = _selectedCuenta?.Id;
+            item.FkidUnidadesAlma = _selectedUnidad?.Id;
+            item.FkidUnidadesEquivalente = _selectedUnidadEq?.Id;
 
             bool success;
             if (Id.HasValue)

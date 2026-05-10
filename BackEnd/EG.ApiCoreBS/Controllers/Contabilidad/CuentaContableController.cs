@@ -1,4 +1,5 @@
 using AutoMapper;
+using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -278,6 +279,17 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 .Select(c => new LookupItem { Id = c.PkidCuentaContable, Text = (c.Cuenta ?? "") + " - " + (c.Descripcion ?? "") })
                 .ToListAsync();
             return Ok(items);
+        }
+
+        [HttpGet("GetLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _service.GetQueryWithIncludes()
+                .Where(c => c.Activo)
+                .OrderBy(c => c.Cuenta)
+                .Select(c => new LookupItem { Id = c.PkidCuentaContable, Text = (c.Cuenta ?? "") + " - " + (c.Descripcion ?? "") });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
     }
 }

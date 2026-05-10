@@ -3,6 +3,7 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Domain.DTOs.Responses.General
+@using EG.Common.GenericModel
 @inject IGenericCrudService<PaaaResponse> Service
 @inject IGenericCrudService<AniosResponse> anioService
 @inject IGenericCrudService<PersonaResponse> personaService
@@ -27,13 +28,6 @@
             <MudText Class="ml-3">Cargando catálogos...</MudText>
         </div>
     }
-    else if (!string.IsNullOrEmpty(CargarCatalogosError) && _allAnios.Count == 0)
-    {
-        <MudAlert Severity="Severity.Error" Class="my-4">
-            <MudText>@CargarCatalogosError</MudText>
-            <MudText Typo="Typo.body2">No se pudieron cargar los catálogos necesarios. Verifique la conexión con el servidor.</MudText>
-        </MudAlert>
-    }
     else
     {
         <BaseEntityForm TEntity="PaaaResponse"
@@ -51,28 +45,28 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedAnioText" ValueChanged="OnAnioChanged"
-                                     Label="Año" Variant="Variant.Outlined"
-                                     SearchFunc="SearchAnios" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedAnio"
+                                       ValueChanged="value => _selectedAnio = value"
+                                       Label="Año"
+                                       Required="true"
+                                       LoadPage="LoadAniosPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedAreaText" ValueChanged="OnAreaChanged"
-                                     Label="Área" Variant="Variant.Outlined"
-                                     SearchFunc="SearchAreas" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     RequiredError="El área es requerida"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedArea"
+                                       ValueChanged="value => _selectedArea = value"
+                                       Label="Área"
+                                       Required="true"
+                                       RequiredError="El área es requerida"
+                                       LoadPage="LoadAreasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedPersonaText" ValueChanged="OnPersonaChanged"
-                                     Label="Responsable" Variant="Variant.Outlined"
-                                     SearchFunc="SearchPersonas" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedPersona"
+                                       ValueChanged="value => _selectedPersona = value"
+                                       Label="Responsable"
+                                       Required="true"
+                                       LoadPage="LoadPersonasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
@@ -84,27 +78,27 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedProyectoText" ValueChanged="OnProyectoChanged"
-                                     Label="Proyecto" Variant="Variant.Outlined"
-                                     SearchFunc="SearchProyectos" Dense="true"
-                                     DebounceInterval="150" Clearable="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedProyecto"
+                                       ValueChanged="value => _selectedProyecto = value"
+                                       Label="Proyecto"
+                                       Clearable="true"
+                                       LoadPage="LoadProyectosPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedProgramaText" ValueChanged="OnProgramaChanged"
-                                     Label="Programa" Variant="Variant.Outlined"
-                                     SearchFunc="SearchProgramas" Dense="true"
-                                     DebounceInterval="150" Clearable="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedPrograma"
+                                       ValueChanged="value => _selectedPrograma = value"
+                                       Label="Programa"
+                                       Clearable="true"
+                                       LoadPage="LoadProgramasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudAutocomplete T="string" Value="@_selectedFuenteText" ValueChanged="OnFuenteChanged"
-                                     Label="Fuente de Financiamiento" Variant="Variant.Outlined"
-                                     SearchFunc="SearchFuentes" Dense="true"
-                                     DebounceInterval="150" Clearable="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedFuente"
+                                       ValueChanged="value => _selectedFuente = value"
+                                       Label="Fuente de Financiamiento"
+                                       Clearable="true"
+                                       LoadPage="LoadFuentesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12">
@@ -135,19 +129,12 @@
     private DateTime? _fecha;
     private bool _loading = true;
 
-    private List<LookupItem> _allAnios = new();
-    private List<LookupItem> _allPersonas = new();
-    private List<LookupItem> _allProyectos = new();
-    private List<LookupItem> _allProgramas = new();
-    private List<LookupItem> _allFuentes = new();
-    private List<LookupItem> _allAreas = new();
-
-    private string _selectedAnioText = string.Empty;
-    private string _selectedPersonaText = string.Empty;
-    private string _selectedProyectoText = string.Empty;
-    private string _selectedProgramaText = string.Empty;
-    private string _selectedFuenteText = string.Empty;
-    private string _selectedAreaText = string.Empty;
+    private LookupItem? _selectedAnio;
+    private LookupItem? _selectedPersona;
+    private LookupItem? _selectedProyecto;
+    private LookupItem? _selectedPrograma;
+    private LookupItem? _selectedFuente;
+    private LookupItem? _selectedArea;
 
     private string dialogTitle => Id.HasValue ? "Editar Programa Anual" : "Nuevo Programa Anual";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -155,7 +142,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarCatalogosAsync();
         if (Id.HasValue)
         {
             await CargarDatosAsync();
@@ -163,75 +149,46 @@
         _loading = false;
     }
 
-    private string CargarCatalogosError { get; set; } = string.Empty;
-
-    private async Task CargarCatalogosAsync()
+    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        CargarCatalogosError = string.Empty;
-        var errores = new List<string>();
+        var response = await anioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
 
-        try
-        {
-            var aniosTask = anioService.GetAllAsync();
-            var personasTask = personaService.GetAllAsync();
-            var proyectosTask = proyectoService.GetAllAsync();
-            var fuentesTask = fuenteService.GetAllAsync();
-            var programasTask = programaService.GetAllAsync();
-            var areasTask = areaService.GetAllAsync();
+    private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await personaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPersona, Text = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim() }), response?.TotalCount);
+    }
 
-            await Task.WhenAll(aniosTask, personasTask, proyectosTask, fuentesTask, programasTask, areasTask);
+    private async Task<ComboLookupResult> LoadProyectosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await proyectoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidProyecto, Text = x.Descripcion }), response?.TotalCount);
+    }
 
-            if (aniosTask.Result?.Success == true && aniosTask.Result.Items != null)
-                _allAnios = aniosTask.Result.Items.Select(x => new LookupItem { Id = x.PkidAnio, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
-            else
-                errores.Add($"Años: {aniosTask.Result?.Message ?? "sin respuesta"}");
+    private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await programaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPp, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
 
-            if (personasTask.Result?.Success == true && personasTask.Result.Items != null)
-                _allPersonas = personasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidPersona, Texto = $"{x.Nombre} {x.Paterno} {x.Materno}" }).ToList();
-            else
-                errores.Add($"Personas: {personasTask.Result?.Message ?? "sin respuesta"}");
+    private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await fuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
 
-            var proyResult = proyectosTask.Result;
-            Console.WriteLine($"🔍 Proyectos: Success={proyResult?.Success}, ItemsCount={proyResult?.Items?.Count}, Data={proyResult?.Data != null}");
-            if (proyResult?.Success == true && proyResult.Items != null)
-            {
-                _allProyectos = proyResult.Items.Select(x => new LookupItem { Id = x.PkidProyecto, Texto = x.Descripcion }).ToList();
-                Console.WriteLine($"✅ _allProyectos cargados: {_allProyectos.Count} items");
-            }
-            else
-                errores.Add($"Proyectos: {proyResult?.Message ?? "sin respuesta"}");
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await areaService.GetAllPaginadoAsync(page, pageSize, filter, "UsuarioAreaDescripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion }), response?.TotalCount);
+    }
 
-            if (fuentesTask.Result?.Success == true && fuentesTask.Result.Items != null)
-                _allFuentes = fuentesTask.Result.Items.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
-            else
-                errores.Add($"Fuentes: {fuentesTask.Result?.Message ?? "sin respuesta"}");
-
-            if (programasTask.Result?.Success == true && programasTask.Result.Items != null)
-                _allProgramas = programasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidPp, Texto = $"{x.Clave} - {x.Descripcion}" }).ToList();
-            else
-                errores.Add($"Programas: {programasTask.Result?.Message ?? "sin respuesta"}");
-
-            if (areasTask.Result?.Success == true && areasTask.Result.Items != null)
-                _allAreas = areasTask.Result.Items.Select(x => new LookupItem { Id = x.PkidArea, Texto = x.UsuarioAreaDescripcion }).ToList();
-            else
-                errores.Add($"Áreas: {areasTask.Result?.Message ?? "sin respuesta"}");
-
-            if (errores.Count > 0)
-            {
-                CargarCatalogosError = $"Algunos catálogos no se cargaron: {string.Join("; ", errores)}";
-                Snackbar.Add(CargarCatalogosError, Severity.Warning);
-            }
-
-            if (_allAnios.Count == 0)
-                Snackbar.Add("El catálogo 'Años' está vacío. Debe registrar años primero.", Severity.Warning);
-            if (_allProyectos.Count == 0)
-                Snackbar.Add("El catálogo 'Proyectos' está vacío. Debe registrar proyectos primero.", Severity.Warning);
-        }
-        catch (Exception ex)
-        {
-            CargarCatalogosError = $"Error al cargar catálogos: {ex.Message}";
-            Snackbar.Add(CargarCatalogosError, Severity.Error);
-        }
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
     }
 
     private async Task CargarDatosAsync()
@@ -244,23 +201,18 @@
                 item = response.Data;
                 _fecha = item.Fecha;
 
-                var anio = _allAnios.FirstOrDefault(a => a.Id == item.FkidAnioSis);
-                if (anio != null) _selectedAnioText = anio.Texto;
+                _selectedAnio = new LookupItem { Id = item.FkidAnioSis, Text = $"{item.AnioClave} - {item.AnioDescripcion}" };
+                _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = item.ResponsableCompleto };
+                _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = item.AreaNombre };
 
-                var per = _allPersonas.FirstOrDefault(p => p.Id == item.FkidPersonaNom);
-                if (per != null) _selectedPersonaText = per.Texto;
+                if (item.FkidProyectoOrco.HasValue)
+                    _selectedProyecto = new LookupItem { Id = item.FkidProyectoOrco.Value, Text = item.ProyectoDescripcion ?? string.Empty };
 
-                var proy = _allProyectos.FirstOrDefault(p => p.Id == item.FkidProyectoOrco);
-                if (proy != null) _selectedProyectoText = proy.Texto;
+                if (item.FkidProgramaPres.HasValue)
+                    _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres.Value, Text = $"{item.ProgramaClave} - {item.ProgramaDescripcion}" };
 
-                var prog = _allProgramas.FirstOrDefault(p => p.Id == item.FkidProgramaPres);
-                if (prog != null) _selectedProgramaText = prog.Texto;
-
-                var fte = _allFuentes.FirstOrDefault(f => f.Id == item.FkidFuenteFinanciamientoPres);
-                if (fte != null) _selectedFuenteText = fte.Texto;
-
-                var area = _allAreas.FirstOrDefault(a => a.Id == item.FkidAreaSis);
-                if (area != null) _selectedAreaText = area.Texto;
+                if (item.FkidFuenteFinanciamientoPres.HasValue)
+                    _selectedFuente = new LookupItem { Id = item.FkidFuenteFinanciamientoPres.Value, Text = $"{item.FuenteFinanciamientoClave} - {item.FuenteFinanciamientoDescripcion}" };
             }
         }
         catch (Exception ex)
@@ -268,61 +220,6 @@
             Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
         }
     }
-
-    private Task<IEnumerable<string>> SearchAnios(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allAnios
-            : _allAnios.Where(a => a.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(a => a.Texto).Take(500).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchPersonas(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allPersonas
-            : _allPersonas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchProyectos(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allProyectos
-            : _allProyectos.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchProgramas(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allProgramas
-            : _allProgramas.Where(p => p.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(p => p.Texto).Take(500).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchFuentes(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allFuentes
-            : _allFuentes.Where(f => f.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(f => f.Texto).Take(500).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchAreas(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value)
-            ? _allAreas
-            : _allAreas.Where(a => a.Texto.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(a => a.Texto).Take(500).AsEnumerable());
-    }
-
-    private void OnAnioChanged(string value) { _selectedAnioText = value; }
-    private void OnPersonaChanged(string value) { _selectedPersonaText = value; }
-    private void OnProyectoChanged(string value) { _selectedProyectoText = value; }
-    private void OnProgramaChanged(string value) { _selectedProgramaText = value; }
-    private void OnFuenteChanged(string value) { _selectedFuenteText = value; }
-    private void OnAreaChanged(string value) { _selectedAreaText = value; }
 
     private async Task GuardarCambiosAsync()
     {
@@ -332,26 +229,20 @@
             return;
         }
 
-        var anio = _allAnios.FirstOrDefault(a => a.Texto == _selectedAnioText);
-        if (anio == null) { Snackbar.Add("Debe seleccionar un año válido", Severity.Warning); return; }
-        item.FkidAnioSis = anio.Id;
+        if (_selectedAnio == null) { Snackbar.Add("Debe seleccionar un año válido", Severity.Warning); return; }
+        item.FkidAnioSis = _selectedAnio.Id;
 
-        var persona = _allPersonas.FirstOrDefault(p => p.Texto == _selectedPersonaText);
-        if (persona == null) { Snackbar.Add("Debe seleccionar un responsable válido", Severity.Warning); return; }
-        item.FkidPersonaNom = persona.Id;
+        if (_selectedPersona == null) { Snackbar.Add("Debe seleccionar un responsable válido", Severity.Warning); return; }
+        item.FkidPersonaNom = _selectedPersona.Id;
 
-        var proy = _allProyectos.FirstOrDefault(p => p.Texto == _selectedProyectoText);
-        item.FkidProyectoOrco = proy?.Id;
+        item.FkidProyectoOrco = _selectedProyecto?.Id;
 
-        var prog = _allProgramas.FirstOrDefault(p => p.Texto == _selectedProgramaText);
-        item.FkidProgramaPres = prog?.Id;
+        item.FkidProgramaPres = _selectedPrograma?.Id;
 
-        var fte = _allFuentes.FirstOrDefault(f => f.Texto == _selectedFuenteText);
-        item.FkidFuenteFinanciamientoPres = fte?.Id;
+        item.FkidFuenteFinanciamientoPres = _selectedFuente?.Id;
 
-        var area = _allAreas.FirstOrDefault(a => a.Texto == _selectedAreaText);
-        if (area == null) { Snackbar.Add("Debe seleccionar un área válida", Severity.Warning); return; }
-        item.FkidAreaSis = area.Id;
+        if (_selectedArea == null) { Snackbar.Add("Debe seleccionar un área válida", Severity.Warning); return; }
+        item.FkidAreaSis = _selectedArea.Id;
 
         if (_fecha.HasValue)
             item.Fecha = _fecha.Value;
@@ -385,11 +276,5 @@
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
-    }
-
-    class LookupItem
-    {
-        public int Id { get; set; }
-        public string Texto { get; set; } = string.Empty;
     }
 }

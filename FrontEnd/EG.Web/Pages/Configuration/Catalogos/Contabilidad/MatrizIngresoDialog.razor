@@ -1,8 +1,8 @@
-@page "/configuracion/contabilidad/matriz-conversion-ingresos-dialog"
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using Microsoft.AspNetCore.Components
 @using MudBlazor
 @using EG.Web.Services
+@using EG.Common.GenericModel
 @inject IGenericCrudService<MatrizIngresoResponse> Service
 @inject ISnackbar Snackbar
 @inject HttpClient Http
@@ -19,7 +19,7 @@
     {
         <div class="d-flex justify-center align-center py-8">
             <MudProgressCircular Indeterminate="true" />
-            <MudText Class="ml-3">Cargando catálogos...</MudText>
+            <MudText Class="ml-3">Cargando datos...</MudText>
         </div>
     }
     else
@@ -31,19 +31,19 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedProgramaText" ValueChanged="OnProgramaChanged"
-                                     Label="Programa" Variant="Variant.Outlined"
-                                     SearchFunc="SearchProgramas" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedPrograma"
+                                       ValueChanged="value => _selectedPrograma = value"
+                                       Label="Programa"
+                                       Required="true"
+                                       LoadPage="LoadProgramasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedOrigenText" ValueChanged="OnOrigenChanged"
-                                     Label="Origen de Recursos" Variant="Variant.Outlined"
-                                     SearchFunc="SearchOrigenes" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedOrigen"
+                                       ValueChanged="value => _selectedOrigen = value"
+                                       Label="Origen de Recursos"
+                                       Required="true"
+                                       LoadPage="LoadOrigenesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" class="mt-2">
@@ -51,51 +51,46 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedAutorizadoText" ValueChanged="OnAutorizadoChanged"
-                                     Label="Cta. Presupuesto Autorizado" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuentas" Dense="true"
-                                     DebounceInterval="150" Required="true"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedAutorizado"
+                                       ValueChanged="value => _selectedAutorizado = value"
+                                       Label="Cta. Presupuesto Autorizado"
+                                       Required="true"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedPorEjercerText" ValueChanged="OnPorEjercerChanged"
-                                     Label="Cuenta Presupuesto por Ejecutar" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuentas" Dense="true"
-                                     DebounceInterval="150"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedPorEjercer"
+                                       ValueChanged="value => _selectedPorEjercer = value"
+                                       Label="Cuenta Presupuesto por Ejecutar"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedModificadoText" ValueChanged="OnModificadoChanged"
-                                     Label="Cuenta Presupuesto Modificado" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuentas" Dense="true"
-                                     DebounceInterval="150"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedModificado"
+                                       ValueChanged="value => _selectedModificado = value"
+                                       Label="Cuenta Presupuesto Modificado"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedDevengadoText" ValueChanged="OnDevengadoChanged"
-                                     Label="Cuenta Presupuesto Devengado" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuentas" Dense="true"
-                                     DebounceInterval="150"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedDevengado"
+                                       ValueChanged="value => _selectedDevengado = value"
+                                       Label="Cuenta Presupuesto Devengado"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedRecaudadoText" ValueChanged="OnRecaudadoChanged"
-                                     Label="Cuenta Presupuesto Recaudado" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuentas" Dense="true"
-                                     DebounceInterval="150"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedRecaudado"
+                                       ValueChanged="value => _selectedRecaudado = value"
+                                       Label="Cuenta Presupuesto Recaudado"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudAutocomplete T="string" Value="@_selectedDepositoText" ValueChanged="OnDepositoChanged"
-                                     Label="Cuenta de Depósito" Variant="Variant.Outlined"
-                                     SearchFunc="SearchCuentas" Dense="true"
-                                     DebounceInterval="150"
-                                     Virtualize="true" MaxItems="500" />
+                    <PagedAutocomplete Value="@_selectedDeposito"
+                                       ValueChanged="value => _selectedDeposito = value"
+                                       Label="Cuenta de Depósito"
+                                       LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
                 @if (Id.HasValue)
@@ -119,83 +114,56 @@
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private bool _loading = true;
 
-    private string _selectedProgramaText = string.Empty;
-    private string _selectedOrigenText = string.Empty;
-    private string _selectedAutorizadoText = string.Empty;
-    private string _selectedPorEjercerText = string.Empty;
-    private string _selectedModificadoText = string.Empty;
-    private string _selectedDevengadoText = string.Empty;
-    private string _selectedRecaudadoText = string.Empty;
-    private string _selectedDepositoText = string.Empty;
-
-    private List<GenericLookup> _allProgramas = new();
-    private List<GenericLookup> _allOrigenes = new();
-    private List<GenericLookup> _allCuentas = new();
-
-    private const int MaxItemsPerCombo = 500;
+    private LookupItem? _selectedPrograma;
+    private LookupItem? _selectedOrigen;
+    private LookupItem? _selectedAutorizado;
+    private LookupItem? _selectedPorEjercer;
+    private LookupItem? _selectedModificado;
+    private LookupItem? _selectedDevengado;
+    private LookupItem? _selectedRecaudado;
+    private LookupItem? _selectedDeposito;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarCatalogosAsync();
         if (Id.HasValue)
         {
             await CargarDatosAsync();
         }
+
         _loading = false;
     }
 
-    private async Task CargarCatalogosAsync()
+    private Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/MatrizIngreso/GetProgramaLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadOrigenesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/MatrizIngreso/GetOrigenLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadCuentasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/MatrizIngreso/GetCuentaContableLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
     {
-        try
-        {
-            var progTask = Http.GetFromJsonAsync<List<GenericLookup>>("api/MatrizIngreso/GetPrograma");
-            var oriTask = Http.GetFromJsonAsync<List<GenericLookup>>("api/MatrizIngreso/GetOrigen");
-            var ctaTask = Http.GetFromJsonAsync<List<GenericLookup>>("api/MatrizIngreso/GetCuentaContable");
-
-            await Task.WhenAll(progTask, oriTask, ctaTask);
-
-            _allProgramas = progTask.Result?.DistinctBy(x => x.ClaveNombre).ToList() ?? new();
-            _allOrigenes = oriTask.Result?.DistinctBy(x => x.ClaveNombre).ToList() ?? new();
-            _allCuentas = ctaTask.Result?.DistinctBy(x => x.ClaveNombre).ToList() ?? new();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al cargar catálogos: {ex.Message}", Severity.Error);
-        }
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
     }
 
     private async Task CargarDatosAsync()
     {
         try
         {
-            var response = await Service.GetByIdAsync(Id.Value);
+            var response = await Service.GetByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 _item = response.Data;
-
-                var prog = _allProgramas.FirstOrDefault(p => p.PkidCuenta == _item.FkIdPrograma);
-                if (prog != null) _selectedProgramaText = prog.ClaveNombre;
-
-                var ori = _allOrigenes.FirstOrDefault(o => o.PkidCuenta == _item.FkIdOrigen);
-                if (ori != null) _selectedOrigenText = ori.ClaveNombre;
-
-                var ctaA = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableAutorizado);
-                if (ctaA != null) _selectedAutorizadoText = ctaA.ClaveNombre;
-
-                var ctaPE = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContablePorEjercer);
-                if (ctaPE != null) _selectedPorEjercerText = ctaPE.ClaveNombre;
-
-                var ctaM = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableModificado);
-                if (ctaM != null) _selectedModificadoText = ctaM.ClaveNombre;
-
-                var ctaD = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableDevengado);
-                if (ctaD != null) _selectedDevengadoText = ctaD.ClaveNombre;
-
-                var ctaR = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableRecaudado);
-                if (ctaR != null) _selectedRecaudadoText = ctaR.ClaveNombre;
-
-                var ctaDep = _allCuentas.FirstOrDefault(c => c.PkidCuenta == _item.FkIdCuentaContableDeposito);
-                if (ctaDep != null) _selectedDepositoText = ctaDep.ClaveNombre;
+                _selectedPrograma = CreateLookup(_item.FkIdPrograma, $"{_item.ProgramaClave} - {_item.ProgramaDescripcion}");
+                _selectedOrigen = CreateLookup(_item.FkIdOrigen, _item.OrigenDescripcion);
+                _selectedAutorizado = CreateLookup(_item.FkIdCuentaContableAutorizado, _item.CuentaAutorizadoNombre);
+                _selectedPorEjercer = CreateLookup(_item.FkIdCuentaContablePorEjercer, _item.CuentaPorEjecutarNombre);
+                _selectedModificado = CreateLookup(_item.FkIdCuentaContableModificado, _item.CuentaModificadoNombre);
+                _selectedDevengado = CreateLookup(_item.FkIdCuentaContableDevengado, _item.CuentaDevengadoNombre);
+                _selectedRecaudado = CreateLookup(_item.FkIdCuentaContableRecaudado, _item.CuentaRecaudadoNombre);
+                _selectedDeposito = CreateLookup(_item.FkIdCuentaContableDeposito, _item.CuentaDepositoNombre);
             }
         }
         catch (Exception ex)
@@ -204,63 +172,18 @@
         }
     }
 
-    private void OnProgramaChanged(string value) { _selectedProgramaText = value; }
-    private void OnOrigenChanged(string value) { _selectedOrigenText = value; }
-    private void OnAutorizadoChanged(string value) { _selectedAutorizadoText = value; }
-    private void OnPorEjercerChanged(string value) { _selectedPorEjercerText = value; }
-    private void OnModificadoChanged(string value) { _selectedModificadoText = value; }
-    private void OnDevengadoChanged(string value) { _selectedDevengadoText = value; }
-    private void OnRecaudadoChanged(string value) { _selectedRecaudadoText = value; }
-    private void OnDepositoChanged(string value) { _selectedDepositoText = value; }
-
-    private Task<IEnumerable<string>> SearchProgramas(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value) ? _allProgramas
-            : _allProgramas.Where(p => p.ClaveNombre.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(p => p.ClaveNombre).Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchOrigenes(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value) ? _allOrigenes
-            : _allOrigenes.Where(o => o.ClaveNombre.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(o => o.ClaveNombre).Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
-    private Task<IEnumerable<string>> SearchCuentas(string value, CancellationToken ct)
-    {
-        var items = string.IsNullOrWhiteSpace(value) ? _allCuentas
-            : _allCuentas.Where(c => c.ClaveNombre.Contains(value, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(items.Select(c => c.ClaveNombre).Take(MaxItemsPerCombo).AsEnumerable());
-    }
-
     private async Task GuardarCambiosAsync()
     {
         try
         {
-            var prog = _allProgramas.FirstOrDefault(p => p.ClaveNombre == _selectedProgramaText);
-            if (prog != null) _item.FkIdPrograma = prog.PkidCuenta;
-
-            var ori = _allOrigenes.FirstOrDefault(o => o.ClaveNombre == _selectedOrigenText);
-            if (ori != null) _item.FkIdOrigen = ori.PkidCuenta;
-
-            var ctaA = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedAutorizadoText);
-            if (ctaA != null) _item.FkIdCuentaContableAutorizado = ctaA.PkidCuenta;
-
-            var ctaPE = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedPorEjercerText);
-            if (ctaPE != null) _item.FkIdCuentaContablePorEjercer = ctaPE.PkidCuenta;
-
-            var ctaM = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedModificadoText);
-            if (ctaM != null) _item.FkIdCuentaContableModificado = ctaM.PkidCuenta;
-
-            var ctaD = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedDevengadoText);
-            if (ctaD != null) _item.FkIdCuentaContableDevengado = ctaD.PkidCuenta;
-
-            var ctaR = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedRecaudadoText);
-            if (ctaR != null) _item.FkIdCuentaContableRecaudado = ctaR.PkidCuenta;
-
-            var ctaDep = _allCuentas.FirstOrDefault(c => c.ClaveNombre == _selectedDepositoText);
-            if (ctaDep != null) _item.FkIdCuentaContableDeposito = ctaDep.PkidCuenta;
+            _item.FkIdPrograma = _selectedPrograma?.Id;
+            _item.FkIdOrigen = _selectedOrigen?.Id;
+            _item.FkIdCuentaContableAutorizado = _selectedAutorizado?.Id;
+            _item.FkIdCuentaContablePorEjercer = _selectedPorEjercer?.Id;
+            _item.FkIdCuentaContableModificado = _selectedModificado?.Id;
+            _item.FkIdCuentaContableDevengado = _selectedDevengado?.Id;
+            _item.FkIdCuentaContableRecaudado = _selectedRecaudado?.Id;
+            _item.FkIdCuentaContableDeposito = _selectedDeposito?.Id;
 
             bool success;
             if (Id.HasValue)
@@ -290,11 +213,20 @@
         }
     }
 
-    class GenericLookup
+    private static LookupItem? CreateLookup(int? id, string? text)
     {
-        public int PkidCuenta { get; set; }
-        public string ClaveNombre { get; set; } = string.Empty;
+        if (!id.HasValue)
+        {
+            return null;
+        }
+
+        return new LookupItem
+        {
+            Id = id.Value,
+            Text = text?.Trim() ?? string.Empty
+        };
     }
+
 }
 
 <style>
@@ -303,10 +235,5 @@
         padding-bottom: 4px;
         border-bottom: 2px solid var(--mud-palette-primary);
         margin-bottom: 8px;
-    }
-
-    .mud-autocomplete .mud-input-control-input-container {
-        max-height: 60vh;
-        overflow-y: auto;
     }
 </style>

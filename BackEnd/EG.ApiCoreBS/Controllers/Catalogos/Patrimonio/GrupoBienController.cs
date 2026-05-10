@@ -1,4 +1,5 @@
 using AutoMapper;
+using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Patrimonio;
@@ -293,6 +294,21 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 })
                 .ToListAsync();
             return Ok(items);
+        }
+
+        [HttpGet("GetLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.GrupoBiens
+                .Where(g => (g.Clave ?? 0) > 2000 && g.Activo)
+                .OrderBy(g => g.ClaveAn)
+                .Select(g => new LookupItem
+                {
+                    Id = g.PkidGrupoBien,
+                    Text = (g.ClaveAn ?? "") + " / " + (g.CabmAct ?? "") + " / " + (g.Descripcion ?? "")
+                });
+
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
     }
 }
