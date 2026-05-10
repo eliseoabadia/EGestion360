@@ -1,9 +1,7 @@
 @using MudBlazor
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
-@using EG.Web.Contracts.Configuration
 @using EG.Domain.DTOs.Responses.General
-@inject IEmpresaService empresaService
 @inject IGenericCrudService<DepartamentoResponse> _service
 @inject ISnackbar Snackbar
 
@@ -72,7 +70,6 @@
 
     private BaseEntityForm<DepartamentoResponse> form = null!;
     private DepartamentoResponse departamento = new() { DepartamentoActivo = true };
-    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
 
     private string dialogTitle => Id.HasValue ? "Editar Departamento" : "Nuevo Departamento";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -80,27 +77,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarEmpresas();
-
         if (Id.HasValue)
         {
             await CargarDepartamento();
-        }
-    }
-
-    private async Task CargarEmpresas()
-    {
-        try
-        {
-            var response = await empresaService.GetAllEmpresasAsync();
-            if (response?.Success == true && response.Items != null)
-            {
-                empresas = response.Items.ToList();
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
         }
     }
 

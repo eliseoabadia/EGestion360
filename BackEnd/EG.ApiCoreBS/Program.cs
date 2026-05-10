@@ -68,7 +68,8 @@ builder.Services.AddDbContextGRP(configuration);
 builder.Services.AddApplicationServices(typeof(Program).Assembly);
 
 //// ===== SERVICIOS GENÉRICOS =====
-builder.Services.AddScoped(typeof(GenericService<,,>));
+builder.Services.AddScoped(typeof(GenericService<,,>)); // 3 parámetros: TEntity, TDto, TResponse
+builder.Services.AddScoped(typeof(GenericService<,>));  // 2 parámetros: TEntity, TDto
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 

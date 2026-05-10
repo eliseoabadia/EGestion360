@@ -1,6 +1,5 @@
 @page "/configuracion/sistema/general"
 @using EG.Web.Auth
-@using EG.Web.Contracts.Configuration
 @using EG.Web.Helpers
 @using EG.Domain.DTOs.Responses.General
 @using EG.Dommain.DTOs.Responses
@@ -8,9 +7,9 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 
-@inject IEmpresaService empresaService
+@inject IGenericCrudService<EmpresaResponse> empresaService
 @inject NavigationManager NavigationManager
-@inject IUsuarioService usuarioService
+@inject IGenericCrudService<UsuarioResponse> usuarioService
 @inject ProfileService profileService
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
@@ -372,7 +371,7 @@
     {
         try
         {
-            var responseEmpresas = await empresaService.GetAllEmpresasAsync();
+            var responseEmpresas = await empresaService.GetAllAsync();
 
             if (responseEmpresas != null && responseEmpresas.Success && responseEmpresas.Items != null && responseEmpresas.Items.Any())
             {
@@ -399,7 +398,7 @@
         try
         {
             // Cargar perfil de usuario
-            var responseUserById = await usuarioService.GetUsuarioByIdAsync(_userId);
+            var responseUserById = await usuarioService.GetByIdAsync(_userId);
 
             if (responseUserById == null || !responseUserById.Success || responseUserById.Data == null)
             {
@@ -452,7 +451,7 @@
                 return;
             }
 
-            var response = await usuarioService.UpdateUsuarioAsync(userProfile.PkIdUsuario, userProfile);
+            var response = await usuarioService.UpdateAsync(userProfile, userProfile.PkIdUsuario);
 
             if (response == null || !response.Success)
             {

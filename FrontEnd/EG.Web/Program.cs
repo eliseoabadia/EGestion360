@@ -5,16 +5,11 @@ using EG.Web.Contracts;
 using EG.Web.Contracts.Configuration;
 using EG.Web.Extensions;
 using EG.Web.Services;
-using EG.Web.Services.Configuration;
-using EG.Domain.DTOs.Responses.Contabilidad;
-using EG.Domain.DTOs.Responses.Presupuestales;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Services;
-using EG.Domain.DTOs.Responses.Presupuestales;
 
 internal class Program
 {
@@ -55,10 +50,6 @@ internal class Program
         // Registrar servicios por interfaz
         builder.Services.AddScoped<ILoginService, LoginService>();
         builder.Services.AddScoped<INavigateService, NavigateService>();
-
-        builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-        builder.Services.AddScoped<IEmpresaService, EmpresaService>();
-        builder.Services.AddScoped<IProfileService>(sp => sp.GetRequiredService<ProfileService>());
         builder.Services.AddScoped<ProfileService>();
 
         builder.Services.AddScoped<IRequestService, RequestService>();
@@ -68,10 +59,6 @@ internal class Program
         builder.Services.AddScoped<SucursalStateService>();
         builder.Services.AddScoped<DashboardService>();
 
-        // Registrar servicios por interfaz (a�adir donde est�n los otros builder.Services.AddScoped...)
-        //builder.Services.AddScoped<ProfileService>();
-        //builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
-        // Program.cs
         builder.Services.AddApiServices();
 
         // Authentication provider y dependencias

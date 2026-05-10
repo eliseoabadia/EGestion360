@@ -68,33 +68,7 @@
                     }
                 </MudSelect>
             </MudItem>
-            @* <MudItem xs="12" md="4">
-                <MudSelect Label="Moneda Base"
-                           @bind-Value="empresa.FkidMonedaBaseSis"
-                           T="int"
-                           Variant="Variant.Outlined"
-                           Required="true"
-                           RequiredError="Debe seleccionar una moneda"
-                           Disabled="@(Id.HasValue && monedas.Count == 1)">
-                    <MudSelectItem T="int" Value="0">Seleccione una moneda</MudSelectItem>
-                    @foreach (var moneda in monedas)
-                    {
-                        <MudSelectItem T="int" Value="@moneda.PkidMoneda">@moneda.Nombre</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem> *@
-            @* <MudItem xs="12" md="4">
-                <MudSelect Label="Idioma Preferido"
-                           @bind-Value="empresa.FkidIdiomaPreferidoSis"
-                           T="int?"
-                           Variant="Variant.Outlined">
-                    <MudSelectItem T="int?" Value="null">Seleccione un idioma</MudSelectItem>
-                    @foreach (var idioma in idiomas)
-                    {
-                        <MudSelectItem T="int?" Value="@idioma.PkidIdioma">@idioma.Nombre</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem> *@
+
 
             <!-- Fila 4: Fecha de Apertura y Oficina Principal -->
             <MudItem xs="12" md="6">
@@ -195,46 +169,6 @@
             Snackbar.Add($"Error al cargar estados: {ex.Message}", Severity.Error);
         }
     }
-
-    // private async Task CargarMonedas()
-    // {
-    //     try
-    //     {
-    //         var response = await monedaService.GetAllAsync();
-    //         if (response?.Success == true && response.Items != null)
-    //         {
-    //             monedas = response.Items.ToList();
-    //         }
-    //         else
-    //         {
-    //             Snackbar.Add(response?.Message ?? "Error al cargar monedas", Severity.Warning);
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Snackbar.Add($"Error al cargar monedas: {ex.Message}", Severity.Error);
-    //     }
-    // }
-
-    // private async Task CargarIdiomas()
-    // {
-    //     try
-    //     {
-    //         var response = await idiomaService.GetAllAsync();
-    //         if (response?.Success == true && response.Items != null)
-    //         {
-    //             idiomas = response.Items.ToList();
-    //         }
-    //         else
-    //         {
-    //             Snackbar.Add(response?.Message ?? "Error al cargar idiomas", Severity.Warning);
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Snackbar.Add($"Error al cargar idiomas: {ex.Message}", Severity.Error);
-    //     }
-    // }
 
     private async Task CargarEmpresa()
     {

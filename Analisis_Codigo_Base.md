@@ -1,430 +1,843 @@
-SmartDoc: Generador de CRUD Completo para Arquitectura Blazor + MudBlazor + GenericService
-🎯 Objetivo
-Este documento guía a una IA para generar automáticamente todo el código necesario (frontend y backend) de un CRUD completo, siguiendo la arquitectura y patrones definidos por el usuario. La IA deberá pedir información faltante y producir código sin errores ni warnings.
+# Analisis Codigo Base
 
-📐 Filosofía del Sistema
-Frontend: Blazor con MudBlazor.
+## Regla principal para paginas nuevas
 
-Tabla genérica: GenericTable<T> con paginación, búsqueda y ordenamiento.
+Para cualquier pagina CRUD nueva, tomar primero como base el flujo completo de `Usuario`:
 
-Página base: BaseCrudPage<TResponse, TItem> (hereda la lógica de CRUD).
+- Front principal: `FrontEnd/EG.Web/Pages/Configuration/Sistema/Usuario/Usuarios.razor`
+- Dialog: `FrontEnd/EG.Web/Pages/Configuration/Sistema/Usuario/UsuarioDialog.razor`
+- Controller: `BackEnd/EG.ApiCoreBS/Controllers/General/UsuarioController.cs`
+- AppService: `BackEnd/EG.Application/Services/General/UsuarioAppService.cs`
+- Interface: `BackEnd/EG.Application/Interfaces/General/IUsuarioAppService.cs`
+- Mapper: `BackEnd/EG.Business/Mapping/General/UsuarioMappingProfile.cs`
+- DTO: `BackEnd/EG.Domain/DTOs/Requests/General/UsuarioDto.cs`
+- Response: `BackEnd/EG.Domain/DTOs/Responses/General/UsuarioResponse.cs`
 
-Diálogo: BaseCrudDialog<TItem> + BaseEntityForm<TEntity> para formularios.
+El placeholder oficial de esta guia es `[Entitie]`. Ejemplo: `Usuario` se convierte en `[Entitie]`, `UsuarioResponse` en `[Entitie]Response`, `UsuarioDialog` en `[Entitie]Dialog`.
 
-Backend: ASP.NET Core Web API.
+## Arquitectura obligatoria
 
-Servicio genérico: GenericService<TEntity, TDto, TResponse> (EG.Business).
+El modelo que viaja al front siempre es `[Entitie]Response`.
 
-Repositorio: IRepository<T> (EG.Domain.Interfaces).
+- Si existe vista, `[Entitie]Response` debe representar la vista, por ejemplo `Vw[Entitie]`.
+- Si no existe vista, `[Entitie]Response` debe representar la entidad.
+- El front no debe duplicar modelos en `EG.Web`; debe usar los modelos compartidos desde `EG.Domain`.
+- Para crear o actualizar, el controller recibe `[Entitie]Response`, lo mapea a `[Entitie]Dto` y manda el DTO al AppService.
+- `EG.Infraestructure/Models` es referencia de solo lectura: no modificar modelos EF generados.
 
-Mapeo: AutoMapper (perfiles separados por módulo).
+Capas:
 
-Vistas con FK: Si una entidad tiene llaves foráneas, se usa una vista (ej. Vw[TEntity]) en el controlador para las consultas, mientras que el DTO se usa para escritura.
+- `EG.Web`: paginas Razor, dialogos, tabla generica y combos.
+- `EG.ApiCoreBS`: controllers HTTP.
+- `EG.Application`: interfaces y AppServices con reglas de aplicacion.
+- `EG.Business`: `GenericService` y perfiles de AutoMapper.
+- `EG.Domain`: DTOs de request y responses compartidos.
+- `EG.Infraestructure`: entidades EF, vistas y resultados de SP.
 
-Validaciones: Se configuran dentro del controlador usando métodos AddValidationRule y AddValidationRuleWithId.
+## Front principal: [Entitie]s.razor
 
-🗂️ Estructura de Carpetas Esperada
-Frontend (Blazor)
-text
-Pages/
-  └── [Modulo]/
-      └── [SubModulo]/
-          ├── [Entidad]s.razor        (página principal)
-          └── [Entidad]Dialog.razor    (diálogo de creación/edición)
-Backend
-text
-EG.ApiCore/
-  └── Controllers/
-      └── [Modulo]/
-          └── [Entidad]Controller.cs
+La pagina principal debe heredar de `BaseCrudPage<TResponse, TItem>` usando el mismo tipo para ambos genericos:
 
-        Controller :
-        namespace EG.ApiCore.Controllers.[Modulo]
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class [Entidad]Controller : ControllerBase
-    {
-        private readonly GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> _service;
-        private readonly GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> _serviceView; //sólo si aplica si tiene vista
-        private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext;
+```razor
+@inherits BaseCrudPage<UsuarioResponse, UsuarioResponse>
+@inherits BaseCrudPage<[Entitie]Response, [Entitie]Response>
+```
 
-        public [Entidad]Controller(
-            GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> service,
-            GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> serviceView,
-            IMapper mapper,
-            IUserContextService userContext)
-        {
-            _service = service;
-            _serviceView = serviceView;
-            _mapper = mapper;
-            _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
+Estructura esperada:
 
-        private void ConfigureService()
-        {
-            // Agregar includes para propiedades de navegación
-            // _service.AddInclude(e => e.FkPropiedadNavigation);
-            // Configurar búsqueda en relaciones
-            // _service.AddRelationFilter("PropiedadNavegacion", new List<string> { "CampoBusqueda" });
-        }
-
-        private void ConfigureValidations()
-        {
-            // Reglas de validación (ej: nombre único)
-            // _service.AddValidationRule("UniqueName", async (dto) => { ... });
-            // _service.AddValidationRuleWithId("UniqueNameUpdate", async (dto, id) => { ... });
-        }
-
-        // Métodos CRUD: GetAll, GetById, Add, Update, Delete, GetAllPaginado, Buscar
-        // (copiar exactamente la implementación de DepartamentoController)
-    }
-}
-EG.Application/
-  └── Interfaces/
-  └── Services/
-
-EG.Application
-namespace EG.Application...[ruta indicada por el usuario]
-{
-    public class [controller]AppService : IUsuarioAppService
-    {
-        private readonly GenericService<[controller], [controller]Dto, [controller]Response> _service;
-        private readonly GenericService<Vw[controller]Empresa, [controller]Dto, [controller]Response> _serviceView;
-        private readonly IMapper _mapper;
-
-        public UsuarioAppService(
-            GenericService<[controller], [controller]Dto, [controller]Response> service,
-            GenericService<Vw[controller]Empresa, [controller]Dto, [controller]Response> serviceView,  //Si la entidad maneja Kf o foreing key , si no se especificó la vista, preguntar como se llama
-            IMapper mapper)
-        {
-            _service = service;
-            _serviceView = serviceView;
-            _mapper = mapper;
-            ConfigureService();
-            ConfigureValidations();
-        }
-        ...
-    }
-}
-
-EG.Business/
-  └── Mapping/
-      └── [Modulo]/
-          └── [Entidad]MappingProfile.cs
-
-        Crear Mapping Profile y hacer la revisión del mapping
-        EG.Business.Mapping.[Modulo].[Entidad]MappingProfile.cs
-
-        csharp
-        using AutoMapper;
-        using EG.Domain.DTOs.Requests.[Modulo];
-        using EG.Domain.DTOs.Responses.[Modulo];
-        using EG.Infraestructure.Models;
-
-        namespace EG.Business.Mapping.[Modulo]
-        {
-            public class [Entidad]MappingProfile : Profile
-            {
-                public [Entidad]MappingProfile()
-                {
-                    // Entity ↔ DTO
-                    CreateMap<[Entidad], [Entidad]Dto>().ReverseMap();
-                    
-                    // Vista → Response
-                    CreateMap<Vw[Entidad], [Entidad]Response>();
-                    
-                    // Response → DTO (ignorando propiedades extra)
-                    CreateMap<[Entidad]Response, [Entidad]Dto>()
-                        .ForMember(dest => dest.[PropiedadId], opt => opt.Ignore()) // ignorar PK si no está en DTO
-                        .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-                }
-            }
-        }
-
-EG.Domain/
-  └── DTOs/
-      ├── Requests/
-      │   └── [Modulo]/
-      │       └── [Entidad]Dto.cs
-      └── Responses/
-          └── [Modulo]/
-              └── [Entidad]Response.cs
-
-EG.Infraestructure/De solo lectura, este proyecto no debe ser modificado
-  └── Models/
-      ├── [Entidad].cs          (entidad EF)
-      └── Vw[Entidad].cs        (vista con FK)
-Registro de Servicios (Frontend)
-EG.Web/Extensions/ApiServiceExtensions.cs → agregar RegisterCrud<[Entidad]Response>(services, "api/[Entidad]");
-
-📥 Datos Requeridos por la IA
-Antes de generar código, la IA debe preguntar lo siguiente:
-
-Nombre de la entidad (ej. Empresa, Departamento).
-
-Módulo y submódulo (para la ruta y permisos). Ej: módulo configuracion, submódulo empresas.
-
-Definición de la clase Entidad (el modelo EF Core, sin navegaciones virtuales, pero con propiedades de navegación si se usan en includes).
-
-Definición de la vista VwEntidad (si existe; si no, se usará la entidad directamente, pero se recomienda una vista cuando hay FKs).
-
-Nombre de la propiedad principal para ordenar (ej. Nombre, EmpresaNombre).
-
-Reglas de validación específicas (unicidad, formato, rangos, etc.).
-
-¿Tiene FK con otras tablas? Listar las tablas relacionadas y si se deben cargar en combos (ej. Estado, Moneda).
-
-Campos de auditoría: ¿Tiene UsuarioCreacion, FechaCreacion, UsuarioModificacion, FechaModificacion?
-
-¿Requiere lógica adicional (ej. guardar relación muchos-a-muchos)?
-
-🧩 Pasos de Generación (Orden Estricto)
-La IA debe ejecutar estos pasos en orden, produciendo el código completo al final.
-
-1. Crear DTOs
-Request DTO ([Entidad]Dto.cs)
-Copiar la entidad base, eliminar propiedades virtuales.
-
-Cambiar namespace a EG.Domain.DTOs.Requests.[Modulo].
-
-La clase se llamará [Entidad]Dto.
-
-Si la entidad tiene Activo, el DTO también lo tiene (se usará para escritura).
-
-Incluir solo los campos que se puedan escribir (no incluir campos solo lectura de la vista).
-
-Response DTO ([Entidad]Response.cs)
-Copiar la vista Vw[Entidad], eliminar propiedades virtuales.
-
-Cambiar namespace a EG.Domain.DTOs.Responses.[Modulo].
-
-La clase se llamará [Entidad]Response.
-
-Incluir todos los campos que se mostrarán en la tabla y en el diálogo.
-
-2. Crear Mapping Profile
-Ubicación: EG.Business.Mapping.[Modulo].[Entidad]MappingProfile.cs
-
-csharp
-using AutoMapper;
-using EG.Domain.DTOs.Requests.[Modulo];
-using EG.Domain.DTOs.Responses.[Modulo];
-using EG.Infraestructure.Models;
-
-namespace EG.Business.Mapping.[Modulo]
-{
-    public class [Entidad]MappingProfile : Profile
-    {
-        public [Entidad]MappingProfile()
-        {
-            // Entity ↔ DTO
-            CreateMap<[Entidad], [Entidad]Dto>().ReverseMap();
-            
-            // Vista → Response
-            CreateMap<Vw[Entidad], [Entidad]Response>();
-            
-            // Response → DTO (ignorando propiedades extra)
-            CreateMap<[Entidad]Response, [Entidad]Dto>()
-                .ForMember(dest => dest.[PropiedadId], opt => opt.Ignore()) // ignorar PK si no está en DTO
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-        }
-    }
-}
-3. Crear Controlador
-Ubicación: EG.ApiCore.Controllers.[Modulo].[Entidad]Controller.cs
-
-Usar como machote el siguiente código (adaptar según la entidad). Incluir:
-
-Inyección de GenericService<Entidad, EntidadDto, EntidadResponse> y GenericService<VwEntidad, EntidadDto, EntidadResponse>.
-
-Configuración de ConfigureService() para añadir Include de navegaciones y AddRelationFilter para búsquedas en propiedades relacionadas.
-
-Configuración de validaciones en ConfigureValidations().
-
-Métodos: GetAll, GetById, Create, Update, Delete, GetAllPaginado, Buscar.
-
-Machote base (tomado de DepartamentoController):
-
-csharp
-using AutoMapper;
-using EG.ApiCore.Services;
-using EG.Business.Services;
-using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.[Modulo];
-using EG.Domain.DTOs.Responses.[Modulo];
-using EG.Infraestructure.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
-namespace EG.ApiCore.Controllers.[Modulo]
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class [Entidad]Controller : ControllerBase
-    {
-        private readonly GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> _service;
-        private readonly GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> _serviceView;
-        private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext;
-
-        public [Entidad]Controller(
-            GenericService<[Entidad], [Entidad]Dto, [Entidad]Response> service,
-            GenericService<Vw[Entidad], [Entidad]Dto, [Entidad]Response> serviceView,
-            IMapper mapper,
-            IUserContextService userContext)
-        {
-            _service = service;
-            _serviceView = serviceView;
-            _mapper = mapper;
-            _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            // Agregar includes para propiedades de navegación
-            // _service.AddInclude(e => e.FkPropiedadNavigation);
-            // Configurar búsqueda en relaciones
-            // _service.AddRelationFilter("PropiedadNavegacion", new List<string> { "CampoBusqueda" });
-        }
-
-        private void ConfigureValidations()
-        {
-            // Reglas de validación (ej: nombre único)
-            // _service.AddValidationRule("UniqueName", async (dto) => { ... });
-            // _service.AddValidationRuleWithId("UniqueNameUpdate", async (dto, id) => { ... });
-        }
-
-        // Métodos CRUD: GetAll, GetById, Add, Update, Delete, GetAllPaginado, Buscar
-        // (copiar exactamente la implementación de DepartamentoController)
-    }
-}
-Nota: Los métodos CRUD deben ser idénticos en estructura a los del DepartamentoController, solo cambiar el tipo de entidad y los mensajes.
-
-4. Registrar Servicio en Frontend
-En EG.Web/Extensions/ApiServiceExtensions.cs, dentro del método AddApiServices, agregar:
-
-csharp
-RegisterCrud<[Entidad]Response>(services, "api/[Entidad]");
-5. Generar Vistas Razor
-a) Página principal [Entidad]s.razor
-Ubicación: Pages/[Modulo]/[SubModulo]/[Entidad]s.razor.
-
-Hereda de BaseCrudPage<[Entidad]Response, [Entidad]Response>.
-
-Define ModuleName y SubModuleName (usados para permisos).
-
-Usa GenericTable<T> con columnas definidas según las propiedades de [Entidad]Response.
-
-Implementa MapToExcelData para exportación.
-
-Implementa GetItemNameForDelete.
-
-Machote (basado en Empresas.razor):
-
-razor
-@page "/[modulo]/[submodulo]"
-@using EG.Web.Models.[Modulo]
+```razor
+@page "/[modulo]/[submodulo]/[entities]"
+@using EG.Domain.DTOs.Responses.General
+@using EG.Dommain.DTOs.Responses
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
-@inherits BaseCrudPage<[Entidad]Response, [Entidad]Response>
+@inherits BaseCrudPage<[Entitie]Response, [Entitie]Response>
 
-<AccessVerification ...>
-    <MudContainer ...>
-        <PageHeader ... />
-        <GenericTable TItem="[Entidad]Response" ...>
-            <Header>...</Header>
-            <Row Context="item">...</Row>
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Gestion de [Entitie]"
+                    Subtitle="Administra y manten el registro"
+                    Icon="@Icons.Material.Filled.List"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table?.ReloadData()" />
+
+        <GenericTable TItem="[Entitie]Response"
+                      @ref="table"
+                      Title="Lista de [Entitie]"
+                      SearchPlaceholder="Buscar..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="PkId[Entitie]" T="[Entitie]Response">ID</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="[CampoPrincipal]" T="[Entitie]Response">[Campo principal]</MudTableSortLabel>
+                </MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkId[Entitie]))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkId[Entitie]))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkId[Entitie]</MudTd>
+                <MudTd>@item.[CampoPrincipal]</MudTd>
+            </Row>
         </GenericTable>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<[Entidad]Response> table = null!;
-    protected override string ModuleName => "[modulo]";
-    protected override string SubModuleName => "[submodulo]";
-    protected override Type CreateDialogType => typeof([Entidad]Dialog);
-    protected override Type EditDialogType => typeof([Entidad]Dialog);
-    protected override Type DeleteDialogType => typeof(DeleteDialog<[Entidad]Response>);
-    protected override string GetDefaultSortLabel() => "[PropiedadOrden]";
-    protected override IEnumerable<object> MapToExcelData(IEnumerable<[Entidad]Response> items) { ... }
-    protected override async Task<string> GetItemNameForDelete(int id) { ... }
-    protected override async Task ReloadData() { ... }
+    private GenericTable<[Entitie]Response> table = null!;
+
+    protected override string ModuleName => "[Modulo]";
+    protected override string SubModuleName => "[SubModulo]";
+
+    protected override Type CreateDialogType => typeof([Entitie]Dialog);
+    protected override Type EditDialogType => typeof([Entitie]Dialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<[Entitie]Response>);
+
+    protected override string GetDefaultSortLabel() => "[CampoPrincipal]";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<[Entitie]Response> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkId[Entitie],
+            Nombre = item.[CampoPrincipal]
+        });
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+            StateHasChanged();
+        }
+    }
 }
-b) Diálogo [Entidad]Dialog.razor
-Usa BaseCrudDialog<TItem> y BaseEntityForm<TEntity>.
+```
 
-Carga combos para cada FK (usando IGenericCrudService<TRelacion>).
+Notas obligatorias:
 
-Implementa validaciones de campos (longitud, formato, etc.).
+- La tabla siempre debe ser `GenericTable<TItem>`.
+- `ServerDataFunc="LoadServerData"` debe quedarse para que la tabla use paginacion real desde backend.
+- Los `SortLabel` deben coincidir con propiedades reales de `[Entitie]Response`.
+- `CreateDialogType` y `EditDialogType` apuntan a `[Entitie]Dialog`.
+- Las acciones extra, como `Asignar Sucursal` en `Usuario`, solo se agregan si la entidad lo requiere.
 
-Maneja fechas (convertir DateOnly? a DateTime?).
+## Dialog: [Entitie]Dialog.razor
 
-Envía los datos al servicio IGenericCrudService<[Entidad]Response>.
+El dialog debe basarse en `UsuarioDialog`, generalizando `UsuarioResponse` a `[Entitie]Response`:
 
-Machote (basado en EmpresaDialog.razor).
+```razor
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Dommain.DTOs.Responses
+@using EG.Common.GenericModel
+@using MudBlazor
 
-6. Compilación y Verificación
-La IA debe verificar que:
+@* Combo Empresa *@
+@inject IGenericCrudService<EmpresaResponse> empresaService
+@inject IGenericCrudService<[Entitie]Response> _service
+@* Combo Persona *@
+@inject IGenericCrudService<PersonaResponse> personaService
+@inject ISnackbar Snackbar
 
-Todos los using sean correctos.
+<BaseCrudDialog TItem="[Entitie]Response"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
 
-No haya propiedades virtuales en DTOs/Responses.
+    <BaseEntityForm TEntity="[Entitie]Response"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+        <MudGrid GutterSize="2">
+            <!-- Campos del formulario -->
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
 
-Los nombres de propiedades coincidan entre entidad, DTO, response y vista.
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-Los métodos del controlador usen el idPropertyName correcto en GetByIdAsync.
+    private BaseEntityForm<[Entitie]Response> form = null!;
+    private [Entitie]Response item = new();
 
-Las validaciones estén bien implementadas.
+    private string dialogTitle => Id.HasValue ? "Editar [Entitie]" : "Nuevo [Entitie]";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
-📝 Formato de Salida
-La IA debe entregar el resultado en un solo bloque de Markdown con cada archivo claramente delimitado y con su ruta relativa.
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(CargarCombosAsync());
 
-Ejemplo:
+        if (Id.HasValue)
+            await CargarItemAsync();
+    }
 
-markdown
-## 1. DTOs
+    private async Task CargarCombosAsync()
+    {
+        // Cargar aqui solo combos pequenos.
+        // Los catalogos grandes deben usar PagedAutocomplete con LoadPage.
+        await Task.CompletedTask;
+    }
 
-### `EG.Domain.DTOs.Requests.General.EmpresaDto.cs`
+    private async Task CargarItemAsync()
+    {
+        var response = await _service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+            item = response.Data;
+        else
+            Snackbar.Add(response?.Message ?? "Error al cargar", Severity.Warning);
+    }
+
+    private async Task GuardarCambiosAsync(bool _)
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Por favor, completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        ApiResponse<[Entitie]Response> response = Id.HasValue
+            ? await _service.UpdateAsync(item, item.PkId[Entitie])
+            : await _service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Operacion realizada correctamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add(response?.Message ?? "Error en la operacion", Severity.Error);
+        }
+    }
+}
+```
+
+## Combos optimizados
+
+Los combos se dividen en dos tipos.
+
+Para catalogos pequenos o casi estaticos, cargar una sola vez:
+
 ```csharp
-// código
-EG.Domain.DTOs.Responses.General.EmpresaResponse.cs
-csharp
-// código
-2. Mapping Profile
-... etc.
+private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
 
-text
+private async Task CargarEmpresasAsync()
+{
+    var response = await empresaService.GetAllAsync();
+    if (response?.Success == true && response.Items != null)
+        listadoEmpresas = response.Items.ToList();
+}
+```
 
-Además, debe incluir una sección de **instrucciones finales** para el usuario (cómo compilar, qué ajustar manualmente).
+Para catalogos grandes, relaciones con muchas filas o busquedas frecuentes, usar `PagedAutocomplete`. Este es el patron super optimizado y debe preferirse para entidades como `Persona`, `Proyecto`, `Programa`, `Partida`, etc.
 
----
+```razor
+<PagedAutocomplete Value="@_selectedPersona"
+                   ValueChanged="OnPersonaChanged"
+                   Label="Persona"
+                   Clearable="true"
+                   Required="true"
+                   RequiredError="Debe seleccionar una persona"
+                   LoadPage="LoadPersonasPageAsync" />
+```
 
-## ❓ Preguntas que la IA debe hacer al usuario (si falta info)
+```csharp
+private LookupItem? _selectedPersona;
 
-- ¿Cuál es el nombre exacto de la entidad y la vista?
-- ¿Qué propiedades tiene la entidad? (proporcionar el código de la clase)
-- ¿Qué propiedades tiene la vista? (si no existe, se usará la entidad directamente)
-- ¿Cuál es el módulo y submódulo para la ruta? (ej. `configuracion/empresas`)
-- ¿Cuál es la propiedad por la que se ordena por defecto?
-- ¿Qué validaciones de negocio se requieren? (unicidad, rangos, etc.)
-- ¿Qué relaciones FK se necesitan cargar en combos? (listar entidades relacionadas)
-- ¿La entidad tiene campos de auditoría? (UsuarioCreacion, FechaCreacion, etc.)
-- ¿Hay lógica adicional al guardar (ej. guardar en tablas puente)?
+private void OnPersonaChanged(LookupItem? lookup)
+{
+    _selectedPersona = lookup;
+    item.IdPersona = lookup?.Id;
+}
 
----
+private async Task<ComboLookupResult> LoadPersonasPageAsync(
+    int page,
+    int pageSize,
+    string filter,
+    CancellationToken ct)
+{
+    var response = await personaService.GetAllPaginadoAsync(
+        page,
+        pageSize,
+        filter,
+        "Nombre",
+        SortDirection.Ascending);
 
-## 🧪 Ejemplo de Uso
+    return new ComboLookupResult
+    {
+        Items = response?.Items?.Select(persona => new LookupItem
+        {
+            Id = persona.PkidPersona,
+            Text = $"{persona.Nombre} {persona.Paterno} {persona.Materno}".Trim()
+        }) ?? Enumerable.Empty<LookupItem>(),
+        TotalCount = response?.TotalCount ?? 0
+    };
+}
+```
 
-Si el usuario responde con los datos de `Empresa` (como se hizo anteriormente), la IA aplicará este SmartDoc y generará el código completo sin necesidad de más intervención.
+Al editar, reconstruir el valor seleccionado desde el response:
 
----
+```csharp
+if (item.IdPersona.HasValue)
+{
+    _selectedPersona = new LookupItem
+    {
+        Id = item.IdPersona.Value,
+        Text = item.NombreCompletoPersona
+    };
+}
+```
 
-**Fin del SmartDoc**
+Reglas para combos:
+
+- No cargar catalogos grandes con `GetAllAsync`.
+- Usar `Task.WhenAll(...)` para combos independientes.
+- Guardar solo el ID FK en el response antes de crear o actualizar.
+- Para edicion, preseleccionar el `LookupItem` usando campos que ya vienen en `[Entitie]Response`.
+- El backend debe soportar `GetAllPaginado` para que el combo busque por servidor.
+
+## Registro del servicio CRUD en front
+
+En `FrontEnd/EG.Web/Extensions/ServiceRegistrationExtensions.cs`, clase `ApiServiceExtensions`, agregar el registro:
+
+```csharp
+public static class ApiServiceExtensions
+{
+    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    {
+        RegisterCrud<[Entitie]Response>(services, "api/[Entitie]");
+        return services;
+    }
+}
+```
+
+Este registro permite inyectar:
+
+```razor
+@inject IGenericCrudService<[Entitie]Response> _service
+```
+
+## Controller backend
+
+Usar como base `UsuarioController`.
+
+Ruta esperada:
+
+```text
+BackEnd/EG.ApiCoreBS/Controllers/[Modulo]/[Entitie]Controller.cs
+```
+
+Estructura:
+
+```csharp
+using AutoMapper;
+using EG.ApiCoreBS.Services;
+using EG.Application.Interfaces.General;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.General;
+using EG.Dommain.DTOs.Responses;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EG.ApiCoreBS.Controllers.General
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class [Entitie]Controller : ControllerBase
+    {
+        private readonly I[Entitie]AppService _appService;
+        private readonly IUserContextService _userContext;
+        private readonly IMapper _mapper;
+
+        public [Entitie]Controller(
+            I[Entitie]AppService appService,
+            IUserContextService userContext,
+            IMapper mapper)
+        {
+            _appService = appService;
+            _userContext = userContext;
+            _mapper = mapper;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PagedResult<[Entitie]Response>>> GetById(int id)
+        {
+            var item = await _appService.GetByIdAsync(id);
+
+            if (item == null)
+            {
+                return NotFound(new PagedResult<[Entitie]Response>
+                {
+                    Success = false,
+                    Message = "[Entitie] no encontrado",
+                    Code = "NOT_FOUND",
+                    TotalCount = 0
+                });
+            }
+
+            return Ok(new PagedResult<[Entitie]Response>
+            {
+                Success = true,
+                Message = "[Entitie] encontrado",
+                Code = "SUCCESS",
+                Data = item,
+                Items = new List<[Entitie]Response> { item },
+                TotalCount = 1
+            });
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<[Entitie]Response>>> GetAllPaginado([FromBody] PagedRequest pageRequest)
+        {
+            var result = await _appService.GetAllPaginadoAsync(pageRequest);
+
+            return Ok(new PagedResult<[Entitie]Response>
+            {
+                Success = true,
+                Message = "[Entitie] obtenidos correctamente",
+                Code = "SUCCESS",
+                Items = result.Items,
+                TotalCount = result.TotalCount
+            });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PagedResult<[Entitie]Response>>> Create([FromBody] [Entitie]Response request)
+        {
+            var dto = _mapper.Map<[Entitie]Dto>(request);
+            var userCreacion = _userContext.GetCurrentUserId();
+
+            dto.UsuarioCreacion = userCreacion;
+            dto.FechaCreacion = DateTime.Now;
+
+            var result = await _appService.CreateAsync(dto, userCreacion);
+
+            return CreatedAtAction(nameof(GetById), new { id = result.PkId[Entitie] },
+                new PagedResult<[Entitie]Response>
+                {
+                    Success = true,
+                    Message = "[Entitie] creado correctamente",
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<[Entitie]Response> { result },
+                    TotalCount = 1
+                });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PagedResult<[Entitie]Response>>> Update(int id, [FromBody] [Entitie]Response request)
+        {
+            var dto = _mapper.Map<[Entitie]Dto>(request);
+            var userModificacion = _userContext.GetCurrentUserId();
+
+            dto.PkId[Entitie] = id;
+            dto.UsuarioModificacion = userModificacion;
+            dto.FechaModificacion = DateTime.Now;
+
+            var result = await _appService.UpdateAsync(id, dto, userModificacion);
+
+            return Ok(new PagedResult<[Entitie]Response>
+            {
+                Success = true,
+                Message = "[Entitie] actualizado correctamente",
+                Code = "SUCCESS",
+                Data = result,
+                Items = new List<[Entitie]Response> { result },
+                TotalCount = 1
+            });
+        }
+    }
+}
+```
+
+Metodos obligatorios del controller:
+
+- `GetAll`
+- `GetById`
+- `GetAllPaginado`
+- `Create`
+- `Update`
+- `Delete`
+- Endpoints extra solo si la entidad lo necesita, por ejemplo `GetByEmpresaId`.
+
+Reglas del controller:
+
+- `GetAllPaginado` debe existir exactamente como endpoint `HttpPost("GetAllPaginado")`.
+- `Create` y `Update` reciben `[Entitie]Response`, no `[Entitie]Dto`.
+- El controller mapea `Response -> Dto`.
+- El usuario actual siempre sale de `_userContext.GetCurrentUserId()`.
+- Fechas y usuarios de auditoria se asignan antes de llamar al AppService.
+
+## EG.Application
+
+Crear la interfaz:
+
+```text
+BackEnd/EG.Application/Interfaces/General/I[Entitie]AppService.cs
+```
+
+```csharp
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.General;
+using EG.Dommain.DTOs.Responses;
+
+namespace EG.Application.Interfaces.General
+{
+    public interface I[Entitie]AppService
+    {
+        Task<PagedResult<[Entitie]Response>> GetAllAsync();
+        Task<[Entitie]Response> GetByIdAsync(int id);
+        Task<PagedResult<[Entitie]Response>> GetAllPaginadoAsync(PagedRequest pageRequest);
+        Task<[Entitie]Response> CreateAsync([Entitie]Dto dto, int usuarioActual);
+        Task<[Entitie]Response> UpdateAsync(int id, [Entitie]Dto dto, int usuarioActual);
+        Task<bool> DeleteAsync(int id, int usuarioActual);
+    }
+}
+```
+
+Crear el AppService:
+
+```text
+BackEnd/EG.Application/Services/General/[Entitie]AppService.cs
+```
+
+```csharp
+using AutoMapper;
+using EG.Application.Interfaces.General;
+using EG.Business.Services;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.General;
+using EG.Dommain.DTOs.Responses;
+using EG.Domain.Interfaces;
+using EG.Infraestructure.Models;
+
+namespace EG.Application.Services.General
+{
+    public class [Entitie]AppService : I[Entitie]AppService
+    {
+        private readonly GenericService<[Entitie], [Entitie]Dto, [Entitie]Response> _service;
+        private readonly GenericService<Vw[Entitie], [Entitie]Dto, [Entitie]Response> _serviceView;
+        private readonly IRepositorySP<sp[Entitie]Result> _repositorySP;
+        private readonly IMapper _mapper;
+
+        public [Entitie]AppService(
+            GenericService<[Entitie], [Entitie]Dto, [Entitie]Response> service,
+            GenericService<Vw[Entitie], [Entitie]Dto, [Entitie]Response> serviceView,
+            IRepositorySP<sp[Entitie]Result> repositorySP,
+            IMapper mapper)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            _repositorySP = repositorySP;
+            _mapper = mapper;
+            ConfigureService();
+            ConfigureValidations();
+        }
+    }
+}
+```
+
+Si no existe vista, eliminar `_serviceView` y leer desde `_service`.
+
+Si no existe stored procedure, eliminar `_repositorySP`.
+
+Reglas del AppService:
+
+- Lecturas (`GetAll`, `GetById`, `GetAllPaginado`) usan `_serviceView` cuando existe vista.
+- Escrituras (`Create`, `Update`, `Delete`) usan `_service` contra la entidad real.
+- `GetByIdAsync` debe indicar el nombre real de la PK cuando sea necesario:
+
+```csharp
+var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkId[Entitie]");
+```
+
+- Antes de paginar se puede limpiar y reconstruir configuracion si el servicio acumula filtros:
+
+```csharp
+_serviceView.ClearConfiguration();
+ConfigureService();
+var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
+```
+
+- `ConfigureService()` debe concentrar includes y filtros de busqueda:
+
+```csharp
+private void ConfigureService()
+{
+    _service.AddInclude(x => x.FkidEmpresaNavigation);
+
+    _service.AddRelationFilter("Empresa", new List<string> { "Nombre", "Rfc" });
+
+    _serviceView.AddRelationFilter("[Entitie]", new List<string>
+    {
+        "[CampoPrincipal]",
+        "[OtroCampoBusqueda]"
+    });
+}
+```
+
+- `ConfigureValidations()` debe concentrar unicidad, obligatorios y reglas de negocio:
+
+```csharp
+private void ConfigureValidations()
+{
+    _service.AddValidationRule("UniqueName", async dto =>
+    {
+        var itemDto = dto as [Entitie]Dto;
+        if (itemDto == null)
+            return false;
+
+        return !await _service.GetQueryWithIncludes()
+            .AnyAsync(x => x.[CampoPrincipal] == itemDto.[CampoPrincipal] && x.Activo);
+    });
+
+    _service.AddValidationRuleWithId("UniqueNameUpdate", async (dto, id) =>
+    {
+        var itemDto = dto as [Entitie]Dto;
+        if (itemDto == null || !id.HasValue)
+            return false;
+
+        return !await _service.GetQueryWithIncludes()
+            .AnyAsync(x => x.[CampoPrincipal] == itemDto.[CampoPrincipal]
+                        && x.PkId[Entitie] != id.Value
+                        && x.Activo);
+    });
+}
+```
+
+## Registro de AppService en backend
+
+En `BackEnd/EG.ApiCoreBS/Extensions/ServiceCollectionExtensions.cs` agregar:
+
+```csharp
+services.AddScoped<I[Entitie]AppService, [Entitie]AppService>();
+```
+
+Si hay SP:
+
+```csharp
+services.AddScoped<IRepositorySP<sp[Entitie]Result>, RepositorySP<sp[Entitie]Result>>();
+```
+
+`GenericService<,,>` ya se registra de forma generica, pero confirmar que exista:
+
+```csharp
+services.AddScoped(typeof(GenericService<,,>));
+```
+
+## EG.Business mapping
+
+Crear o actualizar:
+
+```text
+BackEnd/EG.Business/Mapping/[Modulo]/[Entitie]MappingProfile.cs
+```
+
+Patron:
+
+```csharp
+using AutoMapper;
+using EG.Domain.DTOs.Requests.General;
+using EG.Dommain.DTOs.Responses;
+using EG.Infraestructure.Models;
+
+namespace EG.Business.Mapping.General
+{
+    public class [Entitie]MappingProfile : Profile
+    {
+        public [Entitie]MappingProfile()
+        {
+            CreateMap<[Entitie], [Entitie]Response>();
+
+            CreateMap<Vw[Entitie], [Entitie]Response>();
+
+            CreateMap<[Entitie]Response, [Entitie]Dto>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            CreateMap<[Entitie]Dto, [Entitie]>()
+                .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
+                .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        }
+    }
+}
+```
+
+Reglas de mapping:
+
+- Si `[Entitie]Response` viene de una vista, mapear `Vw[Entitie] -> [Entitie]Response`.
+- Si no hay vista, mapear `[Entitie] -> [Entitie]Response`.
+- Mapear `[Entitie]Response -> [Entitie]Dto` porque el controller recibe Response desde el front.
+- Resolver diferencias de nombres de FK, por ejemplo `IdEmpresa` en response hacia `FkidEmpresaSis` en DTO.
+- Ignorar navegaciones y campos de auditoria en `Dto -> Entidad` si se asignan desde controller/AppService.
+
+## EG.Domain DTO y Response
+
+DTO de escritura:
+
+```text
+BackEnd/EG.Domain/DTOs/Requests/[Modulo]/[Entitie]Dto.cs
+```
+
+```csharp
+namespace EG.Domain.DTOs.Requests.General;
+
+public class [Entitie]Dto
+{
+    public int PkId[Entitie] { get; set; }
+
+    // Campos copiados desde EG.Infraestructure/Models/[Entitie].cs
+    // Solo propiedades simples, sin virtual, sin navegaciones.
+
+    public bool Activo { get; set; }
+    public DateTime? FechaCreacion { get; set; }
+    public int UsuarioCreacion { get; set; }
+    public DateTime? FechaModificacion { get; set; }
+    public int? UsuarioModificacion { get; set; }
+}
+```
+
+Response que viaja al front:
+
+```text
+BackEnd/EG.Domain/DTOs/Responses/[Modulo]/[Entitie]Response.cs
+```
+
+```csharp
+namespace EG.Dommain.DTOs.Responses;
+
+public partial class [Entitie]Response
+{
+    public int PkId[Entitie] { get; set; }
+
+    // Si existe vista, copiar campos de Vw[Entitie].
+    // Si no existe vista, copiar campos de [Entitie].
+    // Incluir campos que se muestran en tabla, dialogo y combos.
+
+    public DateTime? FechaCreacion { get; set; }
+    public int UsuarioCreacion { get; set; }
+    public DateTime? FechaModificacion { get; set; }
+    public int? UsuarioModificacion { get; set; }
+}
+```
+
+Reglas:
+
+- El DTO debe copiar la entidad EF real, solo propiedades simples.
+- El DTO debe incluir campos de control/auditoria si la tabla los tiene.
+- El Response debe copiar la vista si existe.
+- El Response debe tener todo lo que necesita el front: tabla, dialogo, exportacion, texto de combos y valores seleccionados.
+- No incluir propiedades `virtual` ni navegaciones.
+- Respetar namespaces existentes del modulo. El proyecto tiene namespaces legacy como `EG.Dommain.DTOs.Responses`; usarlos solo donde el modulo ya los usa.
+
+## Flujo completo de guardado
+
+1. El usuario captura en `[Entitie]Dialog`.
+2. El dialog llama a `IGenericCrudService<[Entitie]Response>.CreateAsync(item)` o `UpdateAsync(item, id)`.
+3. El front llega a `api/[Entitie]`.
+4. El controller recibe `[Entitie]Response`.
+5. El controller mapea:
+
+```csharp
+var dto = _mapper.Map<[Entitie]Dto>(request);
+```
+
+6. El controller asigna auditoria:
+
+```csharp
+var userCreacion = _userContext.GetCurrentUserId();
+dto.UsuarioCreacion = userCreacion;
+dto.FechaCreacion = DateTime.Now;
+```
+
+7. El controller manda al AppService:
+
+```csharp
+var result = await _appService.CreateAsync(dto, userCreacion);
+```
+
+8. El AppService valida y guarda con `_service`.
+9. El AppService devuelve `[Entitie]Response`, preferentemente leido desde `_serviceView`.
+10. El controller regresa `PagedResult<[Entitie]Response>`.
+
+## Checklist para generar una pagina nueva
+
+1. Identificar entidad EF: `[Entitie]`.
+2. Confirmar si existe vista `Vw[Entitie]`.
+3. Confirmar PK real, por ejemplo `PkId[Entitie]`.
+4. Crear `[Entitie]Dto` en `EG.Domain/DTOs/Requests`.
+5. Crear `[Entitie]Response` en `EG.Domain/DTOs/Responses`.
+6. Crear mapper `[Entitie]MappingProfile`.
+7. Crear `I[Entitie]AppService`.
+8. Crear `[Entitie]AppService`.
+9. Registrar AppService en backend.
+10. Crear `[Entitie]Controller`.
+11. Registrar `RegisterCrud<[Entitie]Response>(services, "api/[Entitie]")` en front.
+12. Crear `[Entitie]s.razor` con `BaseCrudPage<[Entitie]Response, [Entitie]Response>`.
+13. Crear `[Entitie]Dialog.razor` con `BaseCrudDialog TItem="[Entitie]Response"`.
+14. Usar `GenericTable` para la tabla.
+15. Usar `PagedAutocomplete` para combos grandes.
+16. Verificar build.
+
+## Preguntas minimas si falta informacion
+
+- Nombre exacto de la entidad EF.
+- Nombre exacto de la vista, si aplica.
+- Modulo, submodulo y ruta de la pagina.
+- PK real y campo de orden default.
+- Campos que deben mostrarse en tabla.
+- Campos que deben ir en dialogo.
+- FKs que requieren combos.
+- Cuales combos son pequenos y cuales deben usar `PagedAutocomplete`.
+- Validaciones de negocio.
+- Si hay soft delete con `Activo`.
+- Si hay stored procedure relacionado.
+
+## Verificacion final obligatoria
+
+Antes de entregar una pagina nueva:
+
+- Ejecutar build del backend y front cuando aplique.
+- Confirmar que los `using` correspondan al namespace real.
+- Confirmar que `GetAllPaginado` existe en el controller.
+- Confirmar que `RegisterCrud<[Entitie]Response>(services, "api/[Entitie]")` existe en front.
+- Confirmar que los `SortLabel` existen en `[Entitie]Response`.
+- Confirmar que los combos grandes no usan `GetAllAsync`.
+- Confirmar que `Create` y `Update` reciben `[Entitie]Response`.
+- Confirmar que el mapper cubre `Response -> Dto` y vista/entidad -> Response.
+- Confirmar que auditoria se asigna con `_userContext.GetCurrentUserId()`.
