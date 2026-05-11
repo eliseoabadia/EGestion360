@@ -1,0 +1,164 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Models
+@using MudBlazor
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PaaasdetalleResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <MudContainer Class="py-4">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@PartidaNombre</MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedTipoBien"
+                                   ValueChanged="value => _selectedTipoBien = value"
+                                   Label="Tipo de Bien"
+                                   Required="true"
+                                   RequiredError="Debe seleccionar un tipo de bien"
+                                   LoadPage="LoadTiposBienPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="_cantidad"
+                                 Label="Cantidad"
+                                 Variant="Variant.Outlined"
+                                 Min="0.01m"
+                                 Format="N2"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_lugarEntrega"
+                              Label="Lugar de entrega"
+                              Variant="Variant.Outlined"
+                              MaxLength="200" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_observaciones"
+                              Label="Observacion"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int PartidaId { get; set; }
+    [Parameter] public string PartidaNombre { get; set; } = string.Empty;
+    [Parameter] public PaaasdetalleResponse? Item { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private LookupItem? _selectedTipoBien;
+    private decimal _cantidad = 1m;
+    private string _observaciones = string.Empty;
+    private string _lugarEntrega = string.Empty;
+
+    private bool IsEdit => Item?.PkidPaaasdetalle > 0;
+    private string dialogTitle => IsEdit ? "Editar Tipo de Bien" : "Agregar Tipo de Bien";
+    private string actionText => IsEdit ? "Actualizar" : "Guardar";
+    private string processingText => IsEdit ? "Actualizando..." : "Guardando...";
+
+    protected override void OnInitialized()
+    {
+        if (Item == null)
+            return;
+
+        _selectedTipoBien = new LookupItem
+        {
+            Id = Item.FkidTipoBienAlma,
+            Text = Item.TipoBienDescripcion
+        };
+        _cantidad = Item.Cantidad <= 0 ? 1m : Item.Cantidad;
+        _observaciones = Item.Observaciones ?? string.Empty;
+        _lugarEntrega = Item.LugarEntrega ?? string.Empty;
+    }
+
+    private async Task<ComboLookupResult> LoadTiposBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var request = new
+        {
+            page,
+            pageSize,
+            filtro = filter ?? string.Empty,
+            sortLabel = "CodigoClave",
+            sortDirection = "Ascending",
+            searchString = filter ?? string.Empty,
+            additionalFilters = new Dictionary<string, object>()
+        };
+
+        var response = await Http.PostAsJsonAsync($"api/Paaa/partida/{PartidaId}/tipos-bien", request, ct);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<LookupItem>>(cancellationToken: ct);
+        var items = result?.Items ?? new List<LookupItem>();
+
+        return new ComboLookupResult
+        {
+            Items = items,
+            TotalCount = result?.TotalCount ?? items.Count
+        };
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (_selectedTipoBien == null)
+        {
+            Snackbar.Add("Debe seleccionar un tipo de bien", Severity.Warning);
+            return;
+        }
+
+        if (_cantidad <= 0)
+        {
+            Snackbar.Add("La cantidad debe ser mayor a cero", Severity.Warning);
+            return;
+        }
+
+        var dto = new
+        {
+            PkidPaaasdetalle = Item?.PkidPaaasdetalle ?? 0,
+            FkidEmpresaSis = EmpresaId,
+            FkidPaaaspartidaOrco = PartidaId,
+            FkidTipoBienAlma = _selectedTipoBien.Id,
+            Cantidad = _cantidad,
+            Observaciones = _observaciones ?? string.Empty,
+            LugarEntrega = _lugarEntrega ?? string.Empty,
+            Activo = true
+        };
+
+        try
+        {
+            var response = IsEdit
+                ? await Http.PutAsJsonAsync($"api/Paaa/detalle/{Item!.PkidPaaasdetalle}", dto)
+                : await Http.PostAsJsonAsync("api/Paaa/detalle", dto);
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PaaasdetalleResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(IsEdit ? "Tipo de bien actualizado correctamente" : "Tipo de bien agregado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al guardar el tipo de bien", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

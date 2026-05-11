@@ -1,20 +1,15 @@
-using System;
-
-namespace EG.Domain.DTOs.Responses.Adquisicion
+namespace EG.Domain.DTOs.Requests.Adquisicion
 {
-    public class PaaasdetalleResponse
+    public class PaaasdetalleDto
     {
         public int PkidPaaasdetalle { get; set; }
         public int FkidEmpresaSis { get; set; }
         public int FkidPaaaspartidaOrco { get; set; }
         public int FkidTipoBienAlma { get; set; }
         public int? FkidUnidadesAlma { get; set; }
-        public string TipoBienCodigoClave { get; set; } = string.Empty;
-        public string TipoBienDescripcion { get; set; } = string.Empty;
         public decimal Cantidad { get; set; }
-        public string Unidad { get; set; } = string.Empty;
         public string Observaciones { get; set; } = string.Empty;
         public string LugarEntrega { get; set; } = string.Empty;
-        public bool Activo { get; set; }
+        public bool Activo { get; set; } = true;
     }
 }

@@ -1,0 +1,117 @@
+@using MudBlazor
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Models
+@using EG.Web.Contracts
+@using EG.Common.GenericModel
+@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+
+<BaseCrudDialog TItem="PaaaspartidumResponse"
+                Title="Nueva Partida"
+                MaxWidth="MaxWidth.Small"
+                ActionText="Guardar"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <MudContainer Class="py-4">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">
+                    Datos de la Partida
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedPartida"
+                                   ValueChanged="value => _selectedPartida = value"
+                                   Label="Partida"
+                                   Required="true"
+                                   RequiredError="Debe seleccionar una partida"
+                                   LoadPage="LoadPartidasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_observaciones"
+                              Label="Observacion"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              Placeholder="Observacion de la partida..." />
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int PaaaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private LookupItem? _selectedPartida;
+    private string _observaciones = string.Empty;
+
+    private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        var items = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidPartida,
+            Text = $"{x.Clave} - {x.Descripcion}"
+        }) ?? new List<LookupItem>();
+
+        return new ComboLookupResult
+        {
+            Items = items,
+            TotalCount = response?.TotalCount ?? items.Count()
+        };
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (_selectedPartida == null)
+        {
+            Snackbar.Add("Debe seleccionar una partida", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var dto = new
+            {
+                FkidEmpresaSis = EmpresaId,
+                FkidPaaasOrco = PaaaId,
+                FkidPartidaConta = _selectedPartida.Id,
+                Observaciones = _observaciones ?? string.Empty,
+                Activo = true
+            };
+
+            var response = await Http.PostAsJsonAsync("api/Paaa/partida", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<PaaaspartidumResponse>>();
+                if (result?.Success == true)
+                {
+                    Snackbar.Add("Partida creada correctamente", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    Snackbar.Add(result?.Message ?? "Error al crear la partida", Severity.Error);
+                }
+            }
+            else
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error al guardar: {errorBody}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}
