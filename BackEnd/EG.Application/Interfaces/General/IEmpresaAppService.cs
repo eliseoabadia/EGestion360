@@ -1,5 +1,6 @@
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
+using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
 
 namespace EG.Application.Interfaces.General
@@ -12,5 +13,6 @@ namespace EG.Application.Interfaces.General
         Task<EmpresaResponse> CreateAsync(EmpresaDto dto, int usuarioActual);
         Task<EmpresaResponse> UpdateAsync(int id, EmpresaDto dto, int usuarioActual);
         Task<bool> DeleteAsync(int id, int usuarioActual);
+        Task<PagedResult<EmpresaResponse>> BuscarAsync(BusquedaRequest request);
     }
 }

@@ -1,8 +1,6 @@
 using AutoMapper;
-using EG.ApiCoreBS.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -15,46 +13,15 @@ namespace EG.ApiCore.Controllers.Contabilidad
     [Authorize]
     public class ContaTipoDoctoPagoController : ControllerBase
     {
-        private readonly GenericService<TipoDoctoPago, ContaTipoDoctoPagoDto, ContaTipoDoctoPagoResponse> _service;
+        private readonly IContaTipoDoctoPagoService _service;
         private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext;
 
         public ContaTipoDoctoPagoController(
-            GenericService<TipoDoctoPago, ContaTipoDoctoPagoDto, ContaTipoDoctoPagoResponse> service,
-            IMapper mapper,
-            IUserContextService userContext)
+            IContaTipoDoctoPagoService service,
+            IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
-            _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            // Agregar includes para propiedades de navegación si existen
-            // _service.AddInclude(e => e.NavegacionEjemplo);
-            
-            // Configurar búsqueda en relaciones si aplica
-            // _service.AddRelationFilter("NavegacionEjemplo", new List<string> { "CampoBusqueda" });
-        }
-
-        private void ConfigureValidations()
-        {
-            // Validación: Descripción única
-            _service.AddValidationRule("UniqueDescripcion", async (dto) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Descripcion.ToLower() == dto.Descripcion.ToLower() && x.Activo);
-            });
-
-            // Validación: Descripción única en actualización
-            _service.AddValidationRuleWithId("UniqueDescripcionUpdate", async (dto, id) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Descripcion.ToLower() == dto.Descripcion.ToLower() && x.PkidTipoDoctoPago != id.Value && x.Activo);
-            });
         }
 
         [HttpGet]
@@ -100,17 +67,7 @@ namespace EG.ApiCore.Controllers.Contabilidad
         {
             try
             {
-                var dto = _mapper.Map<ContaTipoDoctoPagoDto>(response);
-                
-                // Asignar usuario de creación (convertir int a string)
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId().ToString();
-                dto.FechaCreacion = DateTime.UtcNow;
-
-                await _service.CanAddAsync(dto);
-                await _service.AddAsync(dto);
-
-                var created = _service.GetQueryWithIncludes()
-                    .FirstOrDefault(x => x.Descripcion == dto.Descripcion && x.Activo);
+                var created = await _service.CreateAsync(response, GetCurrentUserId());
 
                 return CreatedAtAction(nameof(GetById), new { id = created?.PkidTipoDoctoPago }, 
                     new PagedResult<ContaTipoDoctoPagoResponse>
@@ -118,7 +75,7 @@ namespace EG.ApiCore.Controllers.Contabilidad
                         Success = true,
                         Message = "Forma de pago creada correctamente",
                         Code = "SUCCESS",
-                        Items = created != null ? new List<ContaTipoDoctoPagoResponse> { _mapper.Map<ContaTipoDoctoPagoResponse>(created) } : new List<ContaTipoDoctoPagoResponse>(),
+                        Items = created != null ? new List<ContaTipoDoctoPagoResponse> { created } : new List<ContaTipoDoctoPagoResponse>(),
                         TotalCount = 1
                     });
             }
@@ -138,8 +95,8 @@ namespace EG.ApiCore.Controllers.Contabilidad
         {
             try
             {
-                var existing = await _service.GetByIdAsync(id);
-                if (existing == null)
+                var updated = await _service.UpdateAsync(id, response, GetCurrentUserId());
+                if (updated == null)
                 {
                     return NotFound(new PagedResult<ContaTipoDoctoPagoResponse>
                     {
@@ -149,27 +106,12 @@ namespace EG.ApiCore.Controllers.Contabilidad
                     });
                 }
 
-                var dto = _mapper.Map<ContaTipoDoctoPagoDto>(response);
-                
-                // Mantener campos de creación originales
-                dto.UsuarioCreacion = existing.UsuarioCreacion;
-                dto.FechaCreacion = existing.FechaCreacion;
-                
-                // Asignar usuario de modificación (convertir int a string)
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId().ToString();
-                dto.FechaModificacion = DateTime.UtcNow;
-
-                await _service.CanUpdateAsync(id, dto);
-                await _service.UpdateAsync(id, dto);
-
-                var updated = await _service.GetByIdAsync(id);
-
                 return Ok(new PagedResult<ContaTipoDoctoPagoResponse>
                 {
                     Success = true,
                     Message = "Forma de pago actualizada correctamente",
                     Code = "SUCCESS",
-                    Items = updated != null ? new List<ContaTipoDoctoPagoResponse> { updated } : new List<ContaTipoDoctoPagoResponse>(),
+                    Items = new List<ContaTipoDoctoPagoResponse> { updated },
                     TotalCount = 1
                 });
             }
@@ -189,19 +131,7 @@ namespace EG.ApiCore.Controllers.Contabilidad
         {
             try
             {
-                var existing = await _service.GetByIdAsync(id);
-                if (existing == null)
-                {
-                    return NotFound(new PagedResult<bool>
-                    {
-                        Success = false,
-                        Message = "Forma de pago no encontrada",
-                        Code = "NOT_FOUND"
-                    });
-                }
-
                 await _service.DeleteAsync(id);
-
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
@@ -209,6 +139,15 @@ namespace EG.ApiCore.Controllers.Contabilidad
                     Code = "SUCCESS",
                     Items = new List<bool> { true },
                     TotalCount = 1
+                });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = "Forma de pago no encontrada",
+                    Code = "NOT_FOUND"
                 });
             }
             catch (Exception ex)
@@ -227,6 +166,12 @@ namespace EG.ApiCore.Controllers.Contabilidad
         {
             var result = await _service.GetAllPaginadoAsync(request);
             return Ok(result);
+        }
+
+        private int GetCurrentUserId()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

@@ -1,32 +1,27 @@
-﻿using AutoMapper;
 using EG.ApiCoreBS.Services;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
+namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class ProgramaController : ControllerBase
     {
-        private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(ProgramaController));
         private readonly IProgramaAppServices _appService;
         private readonly IUserContextService _userContext;
-        private readonly IMapper _mapper;
 
         public ProgramaController(
             IProgramaAppServices appService,
-            IUserContextService userContext,
-            IMapper mapper)
+            IUserContextService userContext)
         {
             _appService = appService;
             _userContext = userContext;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -35,7 +30,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             try
             {
                 var result = await _appService.GetAllAsync();
-                // Convertir el IEnumerable a PagedResult estándar
                 var lista = result.ToList();
                 return Ok(new PagedResult<ProgramaResponse>
                 {
@@ -48,7 +42,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error en GetAll: {ex.Message}", ex);
                 return StatusCode(500, new PagedResult<ProgramaResponse>
                 {
                     Success = false,
@@ -91,7 +84,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error en GetById: {ex.Message}", ex);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
@@ -113,7 +105,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error en GetAllPaginado: {ex.Message}", ex);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
@@ -123,13 +114,8 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
         {
             try
             {
-                var dto = _mapper.Map<ProgramaDto>(request);
                 int usuarioActual = _userContext.GetCurrentUserId();
-                dto.UsuarioCreacion = usuarioActual;
-                dto.FechaCreacion = DateTime.Now;
-                dto.Activo = true;
-
-                var result = await _appService.CreateAsync(dto, usuarioActual);
+                var result = await _appService.CreateAsync(request, usuarioActual);
 
                 return CreatedAtAction(nameof(GetById), new { id = result.PkidPrograma },
                     new PagedResult<ProgramaResponse>
@@ -144,7 +130,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (ArgumentNullException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return BadRequest(new PagedResult<ProgramaResponse>
                 {
                     Success = false,
@@ -155,7 +140,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return BadRequest(new PagedResult<ProgramaResponse>
                 {
                     Success = false,
@@ -166,7 +150,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return Conflict(new PagedResult<ProgramaResponse>
                 {
                     Success = false,
@@ -177,7 +160,6 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error en Create: {ex.Message}", ex);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
@@ -187,13 +169,8 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
         {
             try
             {
-                var dto = _mapper.Map<ProgramaDto>(request);
-                dto.PkidPrograma = id;
                 int usuarioActual = _userContext.GetCurrentUserId();
-                dto.UsuarioModificacion = usuarioActual;
-                dto.FechaModificacion = DateTime.Now;
-
-                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
+                var result = await _appService.UpdateAsync(id, request, usuarioActual);
 
                 return Ok(new PagedResult<ProgramaResponse>
                 {
@@ -207,22 +184,18 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (ArgumentNullException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return BadRequest(new { success = false, message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return BadRequest(new { success = false, message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return Conflict(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
@@ -238,17 +211,14 @@ namespace EG.ApiCoreBS.Controllers.Configuracion.Catalogo.Presupuestales
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return BadRequest(new { success = false, message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return NotFound(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message, ex);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }

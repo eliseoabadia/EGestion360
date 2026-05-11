@@ -7,9 +7,6 @@ using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 
-
-
-
 namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 {
     public class ProgramaAppServices : IProgramaAppServices
@@ -24,48 +21,15 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             _service = service;
             _mapper = mapper;
             ConfigureService();
-            // Si se requieren validaciones adicionales, llamar a ConfigureValidations()
         }
 
         private void ConfigureService()
         {
-            // Includes de navegación (si se necesitan para filtros o proyecciones)
             _service.AddInclude(p => p.UsuarioCreacionNavigation);
             _service.AddInclude(p => p.UsuarioModificacionNavigation);
 
-            // Filtros de relación (para búsquedas en propiedades de navegación)
             _service.AddRelationFilter("UsuarioCreacionNavigation", new List<string> { "Nombre", "Email" });
             _service.AddRelationFilter("UsuarioModificacionNavigation", new List<string> { "Nombre", "Email" });
-        }
-
-        // Ejemplo de validaciones personalizadas (opcional)
-        private void ConfigureValidations()
-        {
-            // Validar que Clave sea única
-            _service.AddValidationRule("UniqueClave", async (dto) =>
-            {
-                var programaDto = dto as ProgramaDto;
-                if (programaDto == null || string.IsNullOrWhiteSpace(programaDto.Clave))
-                    return false;
-
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(p => p.Clave.ToLower() == programaDto.Clave.ToLower() && p.Activo);
-                return !exists;
-            });
-
-            // Validar actualización: Clave única excluyendo el mismo registro
-            _service.AddValidationRuleWithId("UniqueClaveUpdate", async (dto, id) =>
-            {
-                var programaDto = dto as ProgramaDto;
-                if (programaDto == null || !id.HasValue || string.IsNullOrWhiteSpace(programaDto.Clave))
-                    return true;
-
-                var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(p => p.Clave.ToLower() == programaDto.Clave.ToLower() &&
-                                   p.PkidPrograma != id.Value &&
-                                   p.Activo);
-                return !exists;
-            });
         }
 
         public async Task<IEnumerable<ProgramaResponse>> GetAllAsync()
@@ -76,63 +40,58 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         public async Task<ProgramaResponse> GetByIdAsync(int id)
         {
-            var programa = await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
-            return programa;
+            return await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
         }
 
-    public async Task<PagedResult<ProgramaResponse>> GetAllPaginadoAsync(PagedRequest pageRequest, Func<ProgramaResponse, bool> predicate = null)
-    {
-        try
+        public async Task<PagedResult<ProgramaResponse>> GetAllPaginadoAsync(PagedRequest pageRequest, Func<ProgramaResponse, bool>? predicate = null)
         {
-            // Limpiar configuraciones previas y volver a aplicar (si es necesario)
-            _service.ClearConfiguration();
-            ConfigureService();
-
-            var result = await _service.GetAllPaginadoAsync(pageRequest);
-            var items = result.Items.AsEnumerable();
-            
-            // Aplicar filtro si se proporciona
-            if (predicate != null)
+            try
             {
-                items = items.Where(predicate);
+                _service.ClearConfiguration();
+                ConfigureService();
+
+                var result = await _service.GetAllPaginadoAsync(pageRequest);
+                var items = result.Items.AsEnumerable();
+
+                if (predicate != null)
+                {
+                    items = items.Where(predicate);
+                }
+
+                return new PagedResult<ProgramaResponse>
+                {
+                    Success = true,
+                    Message = "Programas obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = items.ToList(),
+                    TotalCount = result.TotalCount
+                };
             }
-
-            return new PagedResult<ProgramaResponse>
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Programas obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = items.ToList(),
-                TotalCount = result.TotalCount
-            };
+                return new PagedResult<ProgramaResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    Items = new List<ProgramaResponse>(),
+                    TotalCount = 0
+                };
+            }
         }
-        catch (Exception ex)
-        {
-            // Log error (usar tu sistema de logging)
-            return new PagedResult<ProgramaResponse>
-            {
-                Success = false,
-                Message = ex.Message,
-                Code = "ERROR",
-                Items = new List<ProgramaResponse>(),
-                TotalCount = 0
-            };
-        }
-    }
 
-        public async Task<ProgramaResponse> CreateAsync(ProgramaDto dto, int usuarioCreacion)
+        public async Task<ProgramaResponse> CreateAsync(ProgramaResponse response, int usuarioCreacion)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto), "Los datos del programa son requeridos");
+            if (response == null)
+                throw new ArgumentNullException(nameof(response), "Los datos del programa son requeridos");
 
-            // Asignar valores de auditoría
+            var dto = _mapper.Map<ProgramaDto>(response);
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
             dto.FechaModificacion = null;
             dto.UsuarioModificacion = null;
 
-            // Validar reglas de negocio (si las hay)
             if (!await _service.CanAddAsync(dto))
                 throw new InvalidOperationException("No se puede crear el programa. Verifique la clave única u otras reglas.");
 
@@ -140,20 +99,19 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             return await _service.GetByIdAsync(dto.PkidPrograma, idPropertyName: "PkidPrograma");
         }
 
-        public async Task<ProgramaResponse> UpdateAsync(int id, ProgramaDto dto, int usuarioModificacion)
+        public async Task<ProgramaResponse> UpdateAsync(int id, ProgramaResponse response, int usuarioModificacion)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto), "Los datos del programa son requeridos");
+            if (response == null)
+                throw new ArgumentNullException(nameof(response), "Los datos del programa son requeridos");
 
             if (id <= 0)
                 throw new ArgumentException("ID de programa inválido", nameof(id));
 
-            // Asignar valores de auditoría
+            var dto = _mapper.Map<ProgramaDto>(response);
             dto.PkidPrograma = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
 
-            // Validar reglas de negocio (actualización)
             if (!await _service.CanUpdateAsync(id, dto))
                 throw new InvalidOperationException("No se puede actualizar el programa. Verifique la clave única u otras reglas.");
 
@@ -170,7 +128,6 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (programa == null)
                 return false;
 
-            // Soft delete (borrado lógico)
             var dto = _mapper.Map<ProgramaDto>(programa);
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
@@ -180,17 +137,17 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             return true;
         }
 
-    public async Task<bool> ExistsAsync(int id)
-    {
-        try
+        public async Task<bool> ExistsAsync(int id)
         {
-            var programa = await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
-            return programa != null;
+            try
+            {
+                var programa = await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
+                return programa != null;
+            }
+            catch
+            {
+                return false;
+            }
         }
-        catch
-        {
-            return false;
-        }
-    }
     }
 }

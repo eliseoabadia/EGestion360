@@ -1,8 +1,6 @@
 using AutoMapper;
-using EG.ApiCoreBS.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
@@ -16,28 +14,15 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Authorize]
     public class TipoDetallePolizaController : ControllerBase
     {
-        private readonly GenericService<TipoDetallePoliza, TipoDetallePolizaDto, TipoDetallePolizaResponse> _service;
+        private readonly ITipoDetallePolizaService _service;
         private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext;
 
         public TipoDetallePolizaController(
-            GenericService<TipoDetallePoliza, TipoDetallePolizaDto, TipoDetallePolizaResponse> service,
-            IMapper mapper,
-            IUserContextService userContext)
+            ITipoDetallePolizaService service,
+            IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
-            _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService() { }
-
-        private void ConfigureValidations()
-        {
-            // TipoDetallePoliza no tiene Descripcion en la entidad
-            // Solo validar que no exista duplicado por PK
         }
 
         [HttpGet]
@@ -47,7 +32,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipos de detalle de póliza obtenidos correctamente",
+                Message = "Tipos de detalle de pÃ³liza obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -62,7 +47,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return NotFound(new PagedResult<TipoDetallePolizaResponse>
                 {
                     Success = false,
-                    Message = "Tipo de detalle de póliza no encontrado",
+                    Message = "Tipo de detalle de pÃ³liza no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -70,7 +55,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipo de detalle de póliza encontrado",
+                Message = "Tipo de detalle de pÃ³liza encontrado",
                 Code = "SUCCESS",
                 Data = result,
                 Items = new List<TipoDetallePolizaResponse> { result },
@@ -83,32 +68,25 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         {
             try
             {
-                var dto = _mapper.Map<TipoDetallePolizaDto>(response);
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-                dto.Activo = true;
-
-                if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<TipoDetallePolizaResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe un tipo de detalle de póliza con esa descripción",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.AddAsync(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidTipoDetallePoliza },
+                var created = await _service.CreateAsync(response, GetCurrentUserId());
+                return CreatedAtAction(nameof(GetById), new { id = created?.PkidTipoDetallePoliza },
                     new PagedResult<TipoDetallePolizaResponse>
                     {
                         Success = true,
-                        Message = "Tipo de detalle de póliza creado correctamente",
+                        Message = "Tipo de detalle de pÃ³liza creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<TipoDetallePolizaResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
+                    TotalCount = 0
+                });
             }
             catch (Exception ex)
             {
@@ -127,30 +105,32 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         {
             try
             {
-                var dto = _mapper.Map<TipoDetallePolizaDto>(response);
-                dto.PkidTipoDetallePoliza = id;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
-
-                if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<TipoDetallePolizaResponse>
+                var updated = await _service.UpdateAsync(id, response, GetCurrentUserId());
+                if (updated == null)
+                    return NotFound(new PagedResult<TipoDetallePolizaResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro tipo de detalle de póliza con esa descripción",
-                        Code = "DUPLICATE",
+                        Message = $"Tipo de detalle de pÃ³liza con ID {id} no encontrado",
+                        Code = "NOT_FOUND",
                         TotalCount = 0
                     });
-                }
-
-                await _service.UpdateAsync(id, dto);
 
                 return Ok(new PagedResult<TipoDetallePolizaResponse>
                 {
                     Success = true,
-                    Message = "Tipo de detalle de póliza actualizado correctamente",
+                    Message = "Tipo de detalle de pÃ³liza actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<TipoDetallePolizaResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
+                    TotalCount = 0
                 });
             }
             catch (KeyNotFoundException)
@@ -158,7 +138,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return NotFound(new PagedResult<TipoDetallePolizaResponse>
                 {
                     Success = false,
-                    Message = $"Tipo de detalle de póliza con ID {id} no encontrado",
+                    Message = $"Tipo de detalle de pÃ³liza con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -184,7 +164,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Tipo de detalle de póliza eliminado correctamente",
+                    Message = "Tipo de detalle de pÃ³liza eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -196,7 +176,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Tipo de detalle de póliza con ID {id} no encontrado",
+                    Message = $"Tipo de detalle de pÃ³liza con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -220,7 +200,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipos de detalle de póliza obtenidos correctamente",
+                Message = "Tipos de detalle de pÃ³liza obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -244,11 +224,17 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipos de detalle de póliza filtrados correctamente",
+                Message = "Tipos de detalle de pÃ³liza filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
+        }
+
+        private int GetCurrentUserId()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

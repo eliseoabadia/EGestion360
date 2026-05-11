@@ -1,11 +1,9 @@
-using AutoMapper;
 using EG.ApiCoreBS.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Presupuestales;
-using EG.Infraestructure.Models;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,47 +14,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     [Authorize]
     public class SectorController : ControllerBase
     {
-        private readonly GenericService<Sector, SectorDto, SectorResponse> _service;
-        private readonly IMapper _mapper;
+        private readonly ISectorAppServices _appService;
         private readonly IUserContextService _userContext;
 
         public SectorController(
-            GenericService<Sector, SectorDto, SectorResponse> service,
-            IMapper mapper,
+            ISectorAppServices appService,
             IUserContextService userContext)
         {
-            _service = service;
-            _mapper = mapper;
+            _appService = appService;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService() { }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueSector", async (dto) =>
-            {
-                var itemDto = dto as SectorDto;
-                if (itemDto == null) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave.ToLower() == itemDto.Clave.ToLower() && s.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueSectorUpdate", async (dto, id) =>
-            {
-                var itemDto = dto as SectorDto;
-                if (itemDto == null || !id.HasValue) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(s => s.Clave.ToLower() == itemDto.Clave.ToLower() && s.PkidSector != id.Value && s.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<SectorResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
+            var result = await _appService.GetAllAsync();
             return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,
@@ -70,7 +42,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<SectorResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidSector");
+            var result = await _appService.GetByIdAsync(id);
             if (result == null)
                 return NotFound(new PagedResult<SectorResponse>
                 {
@@ -96,22 +68,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                var dto = _mapper.Map<SectorDto>(response);
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-                dto.Activo = true;
+                int usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(response, usuarioActual);
 
-                if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<SectorResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe un Sector activo con esa clave",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-
-                await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidSector },
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidSector },
                     new PagedResult<SectorResponse>
                     {
                         Success = true,
@@ -119,6 +79,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<SectorResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
+                    TotalCount = 0
+                });
             }
             catch (Exception ex)
             {
@@ -137,21 +107,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                var dto = _mapper.Map<SectorDto>(response);
-                dto.PkidSector = id;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
+                int usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id, response, usuarioActual);
 
-                if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<SectorResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe otro Sector activo con esa clave",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-
-                await _service.UpdateAsync(id, dto);
                 return Ok(new PagedResult<SectorResponse>
                 {
                     Success = true,
@@ -167,6 +125,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                     Success = false,
                     Message = $"Sector con ID {id} no encontrado",
                     Code = "NOT_FOUND",
+                    TotalCount = 0
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<SectorResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
                     TotalCount = 0
                 });
             }
@@ -187,14 +155,15 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                await _service.DeleteAsync(id);
+                int usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.DeleteAsync(id, usuarioActual);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
                     Message = "Sector eliminado correctamente",
                     Code = "SUCCESS",
-                    Data = true,
-                    Items = new List<bool> { true },
+                    Data = result,
+                    Items = new List<bool> { result },
                     TotalCount = 1
                 });
             }
@@ -223,7 +192,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<SectorResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
+            var result = await _appService.GetAllPaginadoAsync(request);
             return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,
@@ -246,7 +215,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
+            var result = await _appService.GetAllPaginadoAsync(pagedRequest);
             return Ok(new PagedResult<SectorResponse>
             {
                 Success = true,

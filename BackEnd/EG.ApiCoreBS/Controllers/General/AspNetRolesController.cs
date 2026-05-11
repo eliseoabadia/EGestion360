@@ -1,6 +1,7 @@
-﻿using EG.Application.Interfaces.General;
+using EG.Application.Interfaces.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.ApiCoreBS.Services;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EG.Common.GenericModel;

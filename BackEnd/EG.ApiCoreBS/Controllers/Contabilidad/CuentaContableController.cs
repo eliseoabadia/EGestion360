@@ -1,15 +1,11 @@
 using AutoMapper;
-using EG.ApiCoreBS.Helpers;
-using EG.ApiCoreBS.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Contabilidad
 {
@@ -18,45 +14,15 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Authorize]
     public class CuentaContableController : ControllerBase
     {
-        private readonly GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> _service;
+        private readonly ICuentaContableService _service;
         private readonly IMapper _mapper;
-        private readonly IUserContextService _userContext;
 
         public CuentaContableController(
-            GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> service,
-            IMapper mapper,
-            IUserContextService userContext)
+            ICuentaContableService service,
+            IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
-            _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(c => c.FkidEmpresaSisNavigation);
-            _service.AddInclude(c => c.FkidTipoCuentaContaNavigation);
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueCuentaContable", async (dto) =>
-            {
-                var itemDto = dto as CuentaContableDto;
-                if (itemDto == null) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(c => c.Cuenta.ToLower() == itemDto.Cuenta.ToLower() && c.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueCuentaContableUpdate", async (dto, id) =>
-            {
-                var itemDto = dto as CuentaContableDto;
-                if (itemDto == null || !id.HasValue) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(c => c.Cuenta.ToLower() == itemDto.Cuenta.ToLower() && c.PkidCuentaContable != id.Value && c.Activo);
-            });
         }
 
         [HttpGet]
@@ -102,25 +68,8 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         {
             try
             {
-                var dto = _mapper.Map<CuentaContableDto>(response);
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-                dto.Activo = true;
-
-                if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<CuentaContableResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe una cuenta contable con esa cuenta",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.AddAsync(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidCuentaContable },
+                var created = await _service.CreateAsync(response, GetCurrentUserId());
+                return CreatedAtAction(nameof(GetById), new { id = created?.PkidCuentaContable },
                     new PagedResult<CuentaContableResponse>
                     {
                         Success = true,
@@ -128,6 +77,16 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<CuentaContableResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
+                    TotalCount = 0
+                });
             }
             catch (Exception ex)
             {
@@ -146,23 +105,15 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         {
             try
             {
-                var dto = _mapper.Map<CuentaContableDto>(response);
-                dto.PkidCuentaContable = id;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
-
-                if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<CuentaContableResponse>
+                var updated = await _service.UpdateAsync(id, response, GetCurrentUserId());
+                if (updated == null)
+                    return NotFound(new PagedResult<CuentaContableResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otra cuenta contable con esa cuenta",
-                        Code = "DUPLICATE",
+                        Message = $"Cuenta contable con ID {id} no encontrada",
+                        Code = "NOT_FOUND",
                         TotalCount = 0
                     });
-                }
-
-                await _service.UpdateAsync(id, dto);
 
                 return Ok(new PagedResult<CuentaContableResponse>
                 {
@@ -170,6 +121,16 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     Message = "Cuenta contable actualizada correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<CuentaContableResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
+                    TotalCount = 0
                 });
             }
             catch (KeyNotFoundException)
@@ -273,23 +234,20 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         [HttpGet("GetLookup")]
         public async Task<ActionResult<List<LookupItem>>> GetLookup()
         {
-            var items = await _service.GetQueryWithIncludes()
-                .Where(c => c.Activo)
-                .OrderBy(c => c.Cuenta)
-                .Select(c => new LookupItem { Id = c.PkidCuentaContable, Text = (c.Cuenta ?? "") + " - " + (c.Descripcion ?? "") })
-                .ToListAsync();
+            var items = await _service.GetLookupAsync();
             return Ok(items);
         }
 
         [HttpGet("GetLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _service.GetQueryWithIncludes()
-                .Where(c => c.Activo)
-                .OrderBy(c => c.Cuenta)
-                .Select(c => new LookupItem { Id = c.PkidCuentaContable, Text = (c.Cuenta ?? "") + " - " + (c.Descripcion ?? "") });
+            return Ok(await _service.GetLookupPaginadoAsync(page, pageSize, filter));
+        }
 
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        private int GetCurrentUserId()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

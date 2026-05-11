@@ -1,4 +1,5 @@
-﻿using EG.ApiCoreBS.Services;
+using EG.ApiCoreBS.Services;
+using EG.Domain.Interfaces;
 using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.General;

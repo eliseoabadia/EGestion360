@@ -1,6 +1,7 @@
 using AutoMapper;
 using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
+using EG.Domain.Interfaces;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -60,7 +61,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<MatrizConversionResponse>
                 {
                     Success = false,
-                    Message = $"No se encontró el registro con ID {id}",
+                    Message = $"No se encontrÃ³ el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -85,7 +86,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return BadRequest(new PagedResult<MatrizConversionResponse>
                 {
                     Success = false,
-                    Message = "Datos inválidos",
+                    Message = "Datos invÃ¡lidos",
                     Code = "INVALID_MODEL",
                     TotalCount = 0
                 });
@@ -99,7 +100,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return Conflict(new PagedResult<MatrizConversionResponse>
                 {
                     Success = false,
-                    Message = "El Programa y Partida ya se encuentran dados de alta para el año presupuestal seleccionado",
+                    Message = "El Programa y Partida ya se encuentran dados de alta para el aÃ±o presupuestal seleccionado",
                     Code = "DUPLICATE",
                     TotalCount = 0
                 });
@@ -127,7 +128,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return BadRequest(new PagedResult<MatrizConversionResponse>
                 {
                     Success = false,
-                    Message = "Datos inválidos",
+                    Message = "Datos invÃ¡lidos",
                     Code = "INVALID_MODEL",
                     TotalCount = 0
                 });
@@ -142,7 +143,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return Conflict(new PagedResult<MatrizConversionResponse>
                 {
                     Success = false,
-                    Message = "El Programa y Partida ya se encuentran dados de alta para el año presupuestal seleccionado",
+                    Message = "El Programa y Partida ya se encuentran dados de alta para el aÃ±o presupuestal seleccionado",
                     Code = "DUPLICATE",
                     TotalCount = 0
                 });
@@ -182,7 +183,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<MatrizConversionResponse>
                 {
                     Success = false,
-                    Message = $"No se encontró el registro con ID {id}",
+                    Message = $"No se encontrÃ³ el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -231,7 +232,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(new PagedResult<MatrizConversionResponse>
             {
                 Success = true,
-                Message = "Búsqueda realizada correctamente",
+                Message = "BÃºsqueda realizada correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

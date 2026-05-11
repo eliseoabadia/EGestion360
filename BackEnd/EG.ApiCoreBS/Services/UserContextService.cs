@@ -1,18 +1,11 @@
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace EG.ApiCoreBS.Services
 {
-    public interface IUserContextService
-    {
-        int GetCurrentUserId();
-        int? TryGetCurrentUserId();
-        int GetCurrentEmpresaId();
-        int? TryGetCurrentEmpresaId();
-        ClaimsPrincipal? GetUserPrincipal();
-    }
     public class UserContextService : IUserContextService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

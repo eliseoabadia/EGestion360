@@ -3,6 +3,7 @@ using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
+using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -288,6 +289,44 @@ namespace EG.Application.Services.General
             {
                 // Log4NetLogger.Error($"Error en UpdateAsync: {ex.Message}", ex);
                 throw;
+            }
+        }
+
+        public async Task<PagedResult<EmpresaResponse>> BuscarAsync(BusquedaRequest request)
+        {
+            try
+            {
+                _service.ClearConfiguration();
+                ConfigureService();
+
+                var pagedRequest = new PagedRequest
+                {
+                    Page = request.Page,
+                    PageSize = request.PageSize,
+                    Filtro = request.TerminoBusqueda,
+                    SortLabel = request.SortLabel,
+                    SortDirection = request.SortDirection
+                };
+
+                var result = await _service.GetAllPaginadoAsync(pagedRequest);
+                return new PagedResult<EmpresaResponse>
+                {
+                    Success = true,
+                    Message = "Empresas filtradas correctamente",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<EmpresaResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
             }
         }
 

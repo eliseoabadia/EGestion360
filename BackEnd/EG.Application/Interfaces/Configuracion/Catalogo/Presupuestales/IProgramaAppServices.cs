@@ -9,8 +9,8 @@ namespace EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales
         Task<IEnumerable<ProgramaResponse>> GetAllAsync();
         Task<ProgramaResponse> GetByIdAsync(int id);
         Task<PagedResult<ProgramaResponse>> GetAllPaginadoAsync(PagedRequest pageRequest, Func<ProgramaResponse, bool>? predicate = null);
-        Task<ProgramaResponse> CreateAsync(ProgramaDto dto, int usuarioCreacion);
-        Task<ProgramaResponse> UpdateAsync(int id, ProgramaDto dto, int usuarioModificacion);
+        Task<ProgramaResponse> CreateAsync(ProgramaResponse response, int usuarioCreacion);
+        Task<ProgramaResponse> UpdateAsync(int id, ProgramaResponse response, int usuarioModificacion);
         Task<bool> DeleteAsync(int id, int usuarioActual);
         Task<bool> ExistsAsync(int id);
     }

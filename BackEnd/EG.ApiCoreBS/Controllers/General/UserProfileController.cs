@@ -1,4 +1,4 @@
-﻿using EG.Business.Interfaces;
+﻿using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
@@ -13,76 +13,67 @@ namespace EG.ApiCoreBS.Controllers.General
     [Authorize]
     public class UserProfileController : ControllerBase
     {
-        private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(UserProfileController));
-        private readonly IUserProfileService _service;
-        private readonly IEmployeeService _serviceEmp;
-        private readonly IAuthService _currentUser;
+        private readonly IUserProfileAppService _appService;
 
-        public UserProfileController(IUserProfileService service, IAuthService currentUser, IEmployeeService serviceEmp)
+        public UserProfileController(IUserProfileAppService appService)
         {
-            _service = service;
-            _currentUser = currentUser;
-            _serviceEmp = serviceEmp;
+            _appService = appService;
         }
 
         [HttpGet("GetProfileImage/{id}")]
         public async Task<ActionResult<PerfilUsuarioResponse>> GetProfileImage(int id)
         {
-            var _profile = await _service.GetUsuarioByIdAsync(id);
-            return _profile == null ? NotFound() : Ok(_profile);
+            var result = await _appService.GetProfileImageAsync(id);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [HttpPost("CreateProfile")]
         public async Task<IActionResult> CreateProfile([FromBody] UsuarioDto user)
         {
-            var _profile = await _serviceEmp.AddEmployeeAsync(user);
-            return Ok(_profile);
+            var result = await _appService.CreateProfileAsync(user);
+            return Ok(result);
         }
 
         [HttpPost("SetProfile/{id}")]
         public async Task<IActionResult> SetProfile(int id, [FromBody] UsuarioDto user)
         {
-            var _profile = await _serviceEmp.UpdateEmployeeAsync(id, user);
-            return Ok(_profile);
+            var result = await _appService.SetProfileAsync(id, user);
+            return Ok(result);
         }
 
         [HttpPost("DeleteProfile/{id}")]
         public async Task<IActionResult> DeleteProfile(int id)
         {
-            var _profile = await _serviceEmp.DeleteEmployeeAsync(id);
-            return Ok(_profile);
+            var result = await _appService.DeleteProfileAsync(id);
+            return Ok(result);
         }
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuarioResponse>> GetProfileUser(int id)
         {
-            return Ok(await _serviceEmp.GetEmployeeByIdAsync(id));
+            return Ok(await _appService.GetProfileUserAsync(id));
         }
 
         [HttpGet("")]
         public async Task<ActionResult<IList<UsuarioResponse>>> GetAllUser()
         {
-            return Ok(await _serviceEmp.GetAllUsersAsync());
+            return Ok(await _appService.GetAllUsersAsync());
         }
 
         [HttpPost("GetAllUserPaginado")]
         public async Task<ActionResult<IList<UsuarioResponse>>> GetAllUserPaginado([FromBody] PagedRequest _params)
         {
-            return Ok(await _serviceEmp.GetAllUsuariosPaginadoAsync(_params));
+            return Ok(await _appService.GetAllUsersPaginadoAsync(_params));
         }
 
         [HttpPost]
-        [RequestSizeLimit(2 * 1024 * 1024)] // 2MB
+        [RequestSizeLimit(2 * 1024 * 1024)]
         public async Task<IActionResult> UploadImage(PerfilUsuarioResponse fotografia)
         {
             if (fotografia == null)
                 return BadRequest("No se recibió archivo.");
-            await _service.UpdateUserUsuarioAsync(fotografia.FkidUsuarioSis, fotografia);
-
+            await _appService.UploadImageAsync(fotografia);
             return Ok(new { Message = "Imagen guardada correctamente" });
         }
-
     }
-
 }

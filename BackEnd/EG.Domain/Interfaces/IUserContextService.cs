@@ -1,0 +1,13 @@
+using System.Security.Claims;
+
+namespace EG.Domain.Interfaces
+{
+    public interface IUserContextService
+    {
+        int GetCurrentUserId();
+        int? TryGetCurrentUserId();
+        int GetCurrentEmpresaId();
+        int? TryGetCurrentEmpresaId();
+        ClaimsPrincipal? GetUserPrincipal();
+    }
+}

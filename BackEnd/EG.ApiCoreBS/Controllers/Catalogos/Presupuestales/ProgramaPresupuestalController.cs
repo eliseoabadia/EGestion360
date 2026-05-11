@@ -1,11 +1,9 @@
-using AutoMapper;
 using EG.ApiCoreBS.Services;
-using EG.Business.Services;
+using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Presupuestales;
-using EG.Infraestructure.Models;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,47 +14,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     [Authorize]
     public class ProgramaPresupuestalController : ControllerBase
     {
-        private readonly GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> _service;
-        private readonly IMapper _mapper;
+        private readonly IProgramaPresupuestalAppServices _appService;
         private readonly IUserContextService _userContext;
 
         public ProgramaPresupuestalController(
-            GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> service,
-            IMapper mapper,
+            IProgramaPresupuestalAppServices appService,
             IUserContextService userContext)
         {
-            _service = service;
-            _mapper = mapper;
+            _appService = appService;
             _userContext = userContext;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService() { }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueProgramaPresupuestal", async (dto) =>
-            {
-                var itemDto = dto as ProgramaPresupuestalDto;
-                if (itemDto == null) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(p => p.Clave.ToLower() == itemDto.Clave.ToLower() && p.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueProgramaPresupuestalUpdate", async (dto, id) =>
-            {
-                var itemDto = dto as ProgramaPresupuestalDto;
-                if (itemDto == null || !id.HasValue) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(p => p.Clave.ToLower() == itemDto.Clave.ToLower() && p.PkidPp != id.Value && p.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<ProgramaPresupuestalResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
+            var result = await _appService.GetAllAsync();
             return Ok(new PagedResult<ProgramaPresupuestalResponse>
             {
                 Success = true,
@@ -70,7 +42,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<ProgramaPresupuestalResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidPp");
+            var result = await _appService.GetByIdAsync(id);
             if (result == null)
                 return NotFound(new PagedResult<ProgramaPresupuestalResponse>
                 {
@@ -96,22 +68,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                var dto = _mapper.Map<ProgramaPresupuestalDto>(response);
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-                dto.Activo = true;
+                int usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(response, usuarioActual);
 
-                if (!await _service.CanAddAsync(dto))
-                    return Conflict(new PagedResult<ProgramaPresupuestalResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe un Programa Presupuestal activo con esa clave",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-
-                await _service.AddAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidPp },
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidPp },
                     new PagedResult<ProgramaPresupuestalResponse>
                     {
                         Success = true,
@@ -119,6 +79,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<ProgramaPresupuestalResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
+                    TotalCount = 0
+                });
             }
             catch (Exception ex)
             {
@@ -137,21 +107,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                var dto = _mapper.Map<ProgramaPresupuestalDto>(response);
-                dto.PkidPp = id;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
+                int usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id, response, usuarioActual);
 
-                if (!await _service.CanUpdateAsync(id, dto))
-                    return Conflict(new PagedResult<ProgramaPresupuestalResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe otro Programa Presupuestal activo con esa clave",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-
-                await _service.UpdateAsync(id, dto);
                 return Ok(new PagedResult<ProgramaPresupuestalResponse>
                 {
                     Success = true,
@@ -167,6 +125,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                     Success = false,
                     Message = $"Programa Presupuestal con ID {id} no encontrado",
                     Code = "NOT_FOUND",
+                    TotalCount = 0
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<ProgramaPresupuestalResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "DUPLICATE",
                     TotalCount = 0
                 });
             }
@@ -187,14 +155,15 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         {
             try
             {
-                await _service.DeleteAsync(id);
+                int usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.DeleteAsync(id, usuarioActual);
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
                     Message = "Programa Presupuestal eliminado correctamente",
                     Code = "SUCCESS",
-                    Data = true,
-                    Items = new List<bool> { true },
+                    Data = result,
+                    Items = new List<bool> { result },
                     TotalCount = 1
                 });
             }
@@ -223,7 +192,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<ProgramaPresupuestalResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
+            var result = await _appService.GetAllPaginadoAsync(request);
             return Ok(new PagedResult<ProgramaPresupuestalResponse>
             {
                 Success = true,
@@ -246,7 +215,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
+            var result = await _appService.GetAllPaginadoAsync(pagedRequest);
             return Ok(new PagedResult<ProgramaPresupuestalResponse>
             {
                 Success = true,

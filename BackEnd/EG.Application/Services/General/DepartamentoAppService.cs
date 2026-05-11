@@ -3,6 +3,7 @@ using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
+using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
@@ -12,15 +13,18 @@ namespace EG.Application.Services.General
     public class DepartamentoAppService : IDepartamentoAppService
     {
         private readonly GenericService<Departamento, DepartamentoDto, DepartamentoResponse> _service;
+        private readonly GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> _serviceView;
         private readonly IMapper _mapper;
         private readonly IRepository<Departamento> _repository;
 
         public DepartamentoAppService(
             GenericService<Departamento, DepartamentoDto, DepartamentoResponse> service,
+            GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> serviceView,
             IMapper mapper,
             IRepository<Departamento> repository)
         {
             _service = service;
+            _serviceView = serviceView;
             _mapper = mapper;
             _repository = repository;
             ConfigureService();
@@ -36,10 +40,12 @@ namespace EG.Application.Services.General
 
         public async Task<PagedResult<DepartamentoResponse>> GetAllAsync()
         {
-            var result = await _service.GetAllAsync();
+            var result = await _serviceView.GetAllAsync();
             return new PagedResult<DepartamentoResponse>
             {
                 Success = true,
+                Message = "Departamentos obtenidos correctamente",
+                Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
             };
@@ -50,7 +56,7 @@ namespace EG.Application.Services.General
             if (id <= 0)
                 throw new ArgumentException("ID debe ser mayor a 0");
 
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidDepartamento");
+            var result = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidDepartamento");
 
             if (result == null)
                 throw new KeyNotFoundException($"Departamento {id} no encontrado");
@@ -60,10 +66,12 @@ namespace EG.Application.Services.General
 
         public async Task<PagedResult<DepartamentoResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
+            var result = await _serviceView.GetAllPaginadoAsync(request);
             return new PagedResult<DepartamentoResponse>
             {
                 Success = true,
+                Message = "Departamentos obtenidos correctamente",
+                Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
             };
@@ -118,6 +126,29 @@ namespace EG.Application.Services.General
 
             await _service.UpdateAsync(id, dto);
             return await GetByIdAsync(id);
+        }
+
+        public async Task<PagedResult<DepartamentoResponse>> BuscarAsync(BusquedaRequest request)
+        {
+            var pagedRequest = new PagedRequest
+            {
+                Page = request.Page,
+                PageSize = request.PageSize,
+                Filtro = request.TerminoBusqueda,
+                SortLabel = request.SortLabel,
+                SortDirection = request.SortDirection
+            };
+
+            var result = await _serviceView.GetAllPaginadoAsync(pagedRequest);
+
+            return new PagedResult<DepartamentoResponse>
+            {
+                Success = true,
+                Message = "Departamentos filtrados correctamente",
+                Code = "SUCCESS",
+                Items = result.Items,
+                TotalCount = result.TotalCount
+            };
         }
 
         public async Task DeleteAsync(int id)

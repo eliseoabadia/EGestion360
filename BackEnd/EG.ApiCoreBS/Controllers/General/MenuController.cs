@@ -1,5 +1,6 @@
 using AutoMapper;
 using EG.ApiCoreBS.Services;
+using EG.Domain.Interfaces;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
@@ -38,16 +39,16 @@ namespace EG.ApiCoreBS.Controllers.General
 
         private void ConfigureService()
         {
-            // Incluir la relación con el menú padre para obtener datos completos
+            // Incluir la relaciÃ³n con el menÃº padre para obtener datos completos
             _service.AddInclude(m => m.FkidMenuSisNavigation);
 
-            // Configurar propiedades para búsqueda
+            // Configurar propiedades para bÃºsqueda
             _service.AddRelationFilter("MenuPadre", new List<string> { "Nombre" });
         }
 
         private void ConfigureValidations()
         {
-            // REGLA 1: Validar nombre único por nivel (mismo padre)
+            // REGLA 1: Validar nombre Ãºnico por nivel (mismo padre)
             _service.AddValidationRule("UniqueMenuName", async (dto) =>
             {
                 var menuDto = dto as MenuItemsDto;
@@ -61,7 +62,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return !exists;
             });
 
-            // REGLA 2: Validar nombre único por nivel para ACTUALIZACIÓN
+            // REGLA 2: Validar nombre Ãºnico por nivel para ACTUALIZACIÃ“N
             _service.AddValidationRuleWithId("UniqueMenuNameUpdate", async (dto, id) =>
             {
                 var menuDto = dto as MenuItemsDto;
@@ -76,7 +77,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return !exists;
             });
 
-            // REGLA 3: Validar que el nombre no esté vacío
+            // REGLA 3: Validar que el nombre no estÃ© vacÃ­o
             _service.AddValidationRule("ValidNameLength", async (dto) =>
             {
                 var menuDto = dto as MenuItemsDto;
@@ -112,14 +113,14 @@ namespace EG.ApiCoreBS.Controllers.General
         {
             var result = await _serviceView.GetAllAsync();
 
-            // Construir estructura jerárquica
+            // Construir estructura jerÃ¡rquica
             var menuList = result.ToList();
             var menuDict = menuList.ToDictionary(m => m.PkidMenu);
 
-            // Identificar raíces (sin padre)
+            // Identificar raÃ­ces (sin padre)
             var rootMenus = menuList.Where(m => !m.FkidMenuSis.HasValue).ToList();
 
-            // Construir árbol
+            // Construir Ã¡rbol
             foreach (var menu in menuList)
             {
                 if (menu.FkidMenuSis.HasValue && menuDict.ContainsKey(menu.FkidMenuSis.Value))
@@ -134,7 +135,7 @@ namespace EG.ApiCoreBS.Controllers.General
             return Ok(new PagedResult<MenuItemsResponse>
             {
                 Success = true,
-                Message = "Menús obtenidos correctamente",
+                Message = "MenÃºs obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = rootMenus,
                 TotalCount = rootMenus.Count
@@ -150,7 +151,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return NotFound(new PagedResult<MenuItemsResponse>
                 {
                     Success = false,
-                    Message = "Menú no encontrado",
+                    Message = "MenÃº no encontrado",
                     Code = "NOTFOUND_MENU",
                     TotalCount = 0
                 });
@@ -166,7 +167,7 @@ namespace EG.ApiCoreBS.Controllers.General
             return Ok(new PagedResult<MenuItemsResponse>
             {
                 Success = true,
-                Message = "Menú encontrado",
+                Message = "MenÃº encontrado",
                 Code = "SUCCESS",
                 Data = result,
                 Items = new List<MenuItemsResponse> { result },
@@ -183,7 +184,7 @@ namespace EG.ApiCoreBS.Controllers.General
         //    return Ok(new PagedResult<MenuComboResponse>
         //    {
         //        Success = true,
-        //        Message = "Menús padre obtenidos correctamente",
+        //        Message = "MenÃºs padre obtenidos correctamente",
         //        Code = "SUCCESS",
         //        Items = result,
         //        TotalCount = result.Count
@@ -208,12 +209,12 @@ namespace EG.ApiCoreBS.Controllers.General
         //[HttpGet("arbol")]
         //public async Task<ActionResult<PagedResult<MenuItemsResponse>>> GetArbolCompleto()
         //{
-        //    // Obtener todos los menús activos
+        //    // Obtener todos los menÃºs activos
         //    var todos = await _serviceView.GetAllAsync(m => m.Activo);
         //    var menuList = todos.ToList();
         //    var menuDict = menuList.ToDictionary(m => m.PkidMenu);
 
-        //    // Construir árbol
+        //    // Construir Ã¡rbol
         //    foreach (var menu in menuList)
         //    {
         //        if (menu.FkidMenuSis.HasValue && menuDict.ContainsKey(menu.FkidMenuSis.Value))
@@ -225,7 +226,7 @@ namespace EG.ApiCoreBS.Controllers.General
         //        }
         //    }
 
-        //    // Obtener raíces
+        //    // Obtener raÃ­ces
         //    var raices = menuList.Where(m => !m.FkidMenuSis.HasValue).ToList();
 
         //    // Ordenar por orden
@@ -240,7 +241,7 @@ namespace EG.ApiCoreBS.Controllers.General
         //    return Ok(new PagedResult<MenuItemsResponse>
         //    {
         //        Success = true,
-        //        Message = "Árbol de menús obtenido correctamente",
+        //        Message = "Ãrbol de menÃºs obtenido correctamente",
         //        Code = "SUCCESS",
         //        Items = raices.OrderBy(r => r.Orden).ToList(),
         //        TotalCount = raices.Count
@@ -279,7 +280,7 @@ namespace EG.ApiCoreBS.Controllers.General
                     new PagedResult<MenuItemsResponse>
                     {
                         Success = true,
-                        Message = "Menú creado correctamente",
+                        Message = "MenÃº creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
@@ -289,7 +290,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return BadRequest(new PagedResult<MenuItemsResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear menú: {ex.Message}",
+                    Message = $"Error al crear menÃº: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -315,7 +316,7 @@ namespace EG.ApiCoreBS.Controllers.General
                     return Conflict(new PagedResult<MenuItemsResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro menú activo con ese nombre en el mismo nivel",
+                        Message = "Ya existe otro menÃº activo con ese nombre en el mismo nivel",
                         Code = "DUPLICATE_MENU",
                         TotalCount = 0
                     });
@@ -326,7 +327,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return Ok(new PagedResult<MenuItemsResponse>
                 {
                     Success = true,
-                    Message = "Menú actualizado correctamente",
+                    Message = "MenÃº actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
@@ -336,7 +337,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return NotFound(new PagedResult<MenuItemsResponse>
                 {
                     Success = false,
-                    Message = $"Menú con ID {id} no encontrado",
+                    Message = $"MenÃº con ID {id} no encontrado",
                     Code = "NOTFOUND_MENU",
                     TotalCount = 0
                 });
@@ -367,7 +368,7 @@ namespace EG.ApiCoreBS.Controllers.General
                     return BadRequest(new PagedResult<MenuItemsResponse>
                     {
                         Success = false,
-                        Message = "No se puede eliminar un menú que tiene hijos activos",
+                        Message = "No se puede eliminar un menÃº que tiene hijos activos",
                         Code = "MENU_HAS_CHILDREN",
                         TotalCount = 0
                     });
@@ -378,7 +379,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return Ok(new PagedResult<MenuItemsResponse>
                 {
                     Success = true,
-                    Message = "Menú eliminado correctamente",
+                    Message = "MenÃº eliminado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 0
                 });
@@ -388,7 +389,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return NotFound(new PagedResult<MenuItemsResponse>
                 {
                     Success = false,
-                    Message = $"Menú con ID {id} no encontrado",
+                    Message = $"MenÃº con ID {id} no encontrado",
                     Code = "NOTFOUND_MENU",
                     TotalCount = 0
                 });
@@ -413,7 +414,7 @@ namespace EG.ApiCoreBS.Controllers.General
 
             var result = await _serviceView.GetAllPaginadoAsync(_params);
 
-            // Construir estructura jerárquica para la respuesta paginada
+            // Construir estructura jerÃ¡rquica para la respuesta paginada
             if (result.Items?.Any() == true)
             {
                 var menuList = result.Items.ToList();
@@ -425,7 +426,7 @@ namespace EG.ApiCoreBS.Controllers.General
                     menu.Children = new List<MenuItemsResponse>();
                 }
 
-                // Construir árbol
+                // Construir Ã¡rbol
                 foreach (var menu in menuList)
                 {
                     if (menu.FkidMenuSis.HasValue && menuDict.ContainsKey(menu.FkidMenuSis.Value))
@@ -435,14 +436,14 @@ namespace EG.ApiCoreBS.Controllers.General
                     }
                 }
 
-                // Solo devolver raíces en el resultado paginado
+                // Solo devolver raÃ­ces en el resultado paginado
                 result.Items = menuList.Where(m => !m.FkidMenuSis.HasValue).ToList();
             }
 
             return Ok(new PagedResult<MenuItemsResponse>
             {
                 Success = true,
-                Message = "Menús obtenidos correctamente",
+                Message = "MenÃºs obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -457,7 +458,7 @@ namespace EG.ApiCoreBS.Controllers.General
 
             var result = await _serviceView.GetAllPaginadoAsync(_params);
 
-            // Construir estructura jerárquica para la respuesta paginada
+            // Construir estructura jerÃ¡rquica para la respuesta paginada
             //if (result.Items?.Any() == true)
             //{
             //    var menuList = result.Items.ToList();
@@ -469,7 +470,7 @@ namespace EG.ApiCoreBS.Controllers.General
             //        menu.Children = new List<MenuItemsResponse>();
             //    }
 
-            //    // Construir árbol
+            //    // Construir Ã¡rbol
             //    foreach (var menu in menuList)
             //    {
             //        if (menu.FkidMenuSis.HasValue && menuDict.ContainsKey(menu.FkidMenuSis.Value))
@@ -479,14 +480,14 @@ namespace EG.ApiCoreBS.Controllers.General
             //        }
             //    }
 
-            //    // Solo devolver raíces en el resultado paginado
+            //    // Solo devolver raÃ­ces en el resultado paginado
             //    result.Items = menuList.Where(m => !m.FkidMenuSis.HasValue).ToList();
             //}
 
             return Ok(new PagedResult<MenuItemsResponse>
             {
                 Success = true,
-                Message = "Menús obtenidos correctamente",
+                Message = "MenÃºs obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -513,7 +514,7 @@ namespace EG.ApiCoreBS.Controllers.General
             return Ok(new PagedResult<MenuItemsResponse>
             {
                 Success = true,
-                Message = "Menús filtrados correctamente",
+                Message = "MenÃºs filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -531,7 +532,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return Ok(new PagedResult<MenuItemsResponse>
                 {
                     Success = false,
-                    Message = "Ya existe un menú activo con ese nombre en el mismo nivel o no cumple las validaciones",
+                    Message = "Ya existe un menÃº activo con ese nombre en el mismo nivel o no cumple las validaciones",
                     Code = "DUPLICATE_OR_INVALID_MENU",
                     TotalCount = 0
                 });
@@ -540,7 +541,7 @@ namespace EG.ApiCoreBS.Controllers.General
             return Ok(new PagedResult<MenuItemsResponse>
             {
                 Success = true,
-                Message = "El menú es válido",
+                Message = "El menÃº es vÃ¡lido",
                 Code = "SUCCESS",
                 TotalCount = 0
             });
@@ -564,7 +565,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return Ok(new PagedResult<MenuItemsResponse>
                 {
                     Success = true,
-                    Message = "Menús reordenados correctamente",
+                    Message = "MenÃºs reordenados correctamente",
                     Code = "SUCCESS",
                     TotalCount = menus.Count
                 });

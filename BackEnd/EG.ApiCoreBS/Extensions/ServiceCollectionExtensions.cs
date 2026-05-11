@@ -51,6 +51,16 @@ namespace EG.ApiCoreBS.Extensions
     
     // Application services - Presupuestales
     services.AddScoped<IProgramaAppServices, ProgramaAppServices>();
+    services.AddScoped<IActividadInstitucionalAppServices, ActividadInstitucionalAppServices>();
+    services.AddScoped<IAniosAppServices, AniosAppServices>();
+    services.AddScoped<IFuenteFinanciamientoAppServices, FuenteFinanciamientoAppServices>();
+    services.AddScoped<IPgAppServices, PgAppServices>();
+    services.AddScoped<IProgramaPresupuestalAppServices, ProgramaPresupuestalAppServices>();
+    services.AddScoped<IProyectoAppServices, ProyectoAppServices>();
+    services.AddScoped<IRamoAppServices, RamoAppServices>();
+    services.AddScoped<ISectorAppServices, SectorAppServices>();
+    services.AddScoped<ITipoRecursoAppServices, TipoRecursoAppServices>();
+    services.AddScoped<IUnidadResponsableAppServices, UnidadResponsableAppServices>();
 
             // Application services - Conteo ciclico
             services.AddScoped<IConteoAppService, ConteoAppService>();

@@ -1,13 +1,10 @@
-using AutoMapper;
-using EG.Business.Services;
+using EG.Application.Interfaces.Adquisicion;
 using EG.Common.GenericModel;
-using EG.Domain.DTOs.Requests.Adquisicion;
-using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses;
-using EG.Infraestructure.Models;
+using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EG.ApiCoreBS.Services;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
 {
@@ -16,222 +13,79 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
     [Authorize]
     public class EstatusRequisicionController : ControllerBase
     {
-        private readonly GenericService<EstatusRequisicion, EstatusRequisicionDto, EstatusRequisicionResponse> _service;
-        private readonly IMapper _mapper;
+        private readonly IEstatusRequisicionAppService _appService;
         private readonly IUserContextService _userContext;
 
         public EstatusRequisicionController(
-            GenericService<EstatusRequisicion, EstatusRequisicionDto, EstatusRequisicionResponse> service,
-            IMapper mapper,
+            IEstatusRequisicionAppService appService,
             IUserContextService userContext)
         {
-            _service = service;
-            _mapper = mapper;
+            _appService = appService;
             _userContext = userContext;
-            ConfigureValidations();
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueDescripcion", async (dto) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Descripcion.ToLower() == dto.Descripcion.ToLower() && x.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueDescripcionUpdate", async (dto, id) =>
-            {
-                return !_service.GetQueryWithIncludes()
-                    .Any(x => x.Descripcion.ToLower() == dto.Descripcion.ToLower() && x.PkidEstatusRequisicion != id.Value && x.Activo);
-            });
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<EstatusRequisicionResponse>>> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(new PagedResult<EstatusRequisicionResponse>
-            {
-                Success = true,
-                Message = "Estatus de Requisición obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.ToList(),
-                TotalCount = result.Count()
-            });
+            var result = await _appService.GetAllAsync();
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<EstatusRequisicionResponse>>> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id, idPropertyName: "PkidEstatusRequisicion");
-
-            if (result == null)
-                return NotFound(new PagedResult<EstatusRequisicionResponse>
-                {
-                    Success = false,
-                    Message = "Estatus de Requisición no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-
-            return Ok(new PagedResult<EstatusRequisicionResponse>
-            {
-                Success = true,
-                Message = "Estatus de Requisición encontrado",
-                Code = "SUCCESS",
-                Data = result,
-                Items = new List<EstatusRequisicionResponse> { result },
-                TotalCount = 1
-            });
+            var result = await _appService.GetByIdAsync(id);
+            if (!result.Success)
+                return NotFound(result);
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<ActionResult<PagedResult<EstatusRequisicionResponse>>> Create([FromBody] EstatusRequisicionResponse response)
         {
-            try
+            var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
+            if (!result.Success)
             {
-                var dto = _mapper.Map<EstatusRequisicionDto>(response);
-                dto.UsuarioCreacion = _userContext.GetCurrentUserId();
-                dto.FechaCreacion = DateTime.Now;
-                dto.Activo = true;
-
-                if (!await _service.CanAddAsync(dto))
-                {
-                    return Conflict(new PagedResult<EstatusRequisicionResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe un estatus de requisición activo con esa descripción",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.AddAsync(dto);
-
-                return CreatedAtAction(nameof(GetById), new { id = dto.PkidEstatusRequisicion },
-                    new PagedResult<EstatusRequisicionResponse>
-                    {
-                        Success = true,
-                        Message = "Estatus de Requisición creado correctamente",
-                        Code = "SUCCESS",
-                        TotalCount = 1
-                    });
+                if (result.Code == "DUPLICATE")
+                    return Conflict(result);
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<EstatusRequisicionResponse>
-                {
-                    Success = false,
-                    Message = $"Error al crear estatus de requisición: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
+            return CreatedAtAction(nameof(GetById), new { id = 0 }, result);
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<PagedResult<EstatusRequisicionResponse>>> Update(int id, [FromBody] EstatusRequisicionResponse response)
         {
-            try
+            var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
+            if (!result.Success)
             {
-                var dto = _mapper.Map<EstatusRequisicionDto>(response);
-                dto.PkidEstatusRequisicion = id;
-                dto.UsuarioModificacion = _userContext.GetCurrentUserId();
-                dto.FechaModificacion = DateTime.Now;
-
-                if (!await _service.CanUpdateAsync(id, dto))
-                {
-                    return Conflict(new PagedResult<EstatusRequisicionResponse>
-                    {
-                        Success = false,
-                        Message = "Ya existe otro estatus de requisición activo con esa descripción",
-                        Code = "DUPLICATE",
-                        TotalCount = 0
-                    });
-                }
-
-                await _service.UpdateAsync(id, dto);
-
-                return Ok(new PagedResult<EstatusRequisicionResponse>
-                {
-                    Success = true,
-                    Message = "Estatus de Requisición actualizado correctamente",
-                    Code = "SUCCESS",
-                    TotalCount = 1
-                });
+                if (result.Code == "DUPLICATE")
+                    return Conflict(result);
+                if (result.Code == "NOT_FOUND")
+                    return NotFound(result);
+                return BadRequest(result);
             }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<EstatusRequisicionResponse>
-                {
-                    Success = false,
-                    Message = $"Estatus de Requisición con ID {id} no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<EstatusRequisicionResponse>
-                {
-                    Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
-            try
+            var result = await _appService.DeleteAsync(id);
+            if (!result.Success)
             {
-                await _service.DeleteAsync(id);
-                return Ok(new PagedResult<bool>
-                {
-                    Success = true,
-                    Message = "Estatus de Requisición eliminado correctamente",
-                    Code = "SUCCESS",
-                    Data = true,
-                    Items = new List<bool> { true },
-                    TotalCount = 1
-                });
+                if (result.Code == "NOT_FOUND")
+                    return NotFound(result);
+                return BadRequest(result);
             }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Estatus de Requisición con ID {id} no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                });
-            }
+            return Ok(result);
         }
 
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<EstatusRequisicionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var result = await _service.GetAllPaginadoAsync(request);
-            return Ok(new PagedResult<EstatusRequisicionResponse>
-            {
-                Success = true,
-                Message = "Estatus de Requisición obtenidos correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+            var result = await _appService.GetAllPaginadoAsync(request);
+            return Ok(result);
         }
 
         [HttpPost("buscar")]
@@ -246,16 +100,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                 SortDirection = request.SortDirection
             };
 
-            var result = await _service.GetAllPaginadoAsync(pagedRequest);
-
-            return Ok(new PagedResult<EstatusRequisicionResponse>
-            {
-                Success = true,
-                Message = "Estatus de Requisición filtrados correctamente",
-                Code = "SUCCESS",
-                Items = result.Items,
-                TotalCount = result.TotalCount
-            });
+            var result = await _appService.GetAllPaginadoAsync(pagedRequest);
+            return Ok(result);
         }
     }
 }

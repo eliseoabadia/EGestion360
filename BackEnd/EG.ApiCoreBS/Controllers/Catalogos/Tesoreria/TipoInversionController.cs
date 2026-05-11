@@ -1,13 +1,9 @@
-using EG.ApiCoreBS.Services;
+using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Tesoreria;
 using EG.Domain.DTOs.Responses.Tesoreria;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
-using EG.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
 {
@@ -16,73 +12,26 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
     [Route("api/[controller]")]
     public class TipoInversionController : ControllerBase
     {
-        private readonly ILogger<TipoInversionController> _logger;
-        private readonly IRepository<TipoInversion> _repository;
-        private readonly IMapper _mapper;
-        private readonly IUserContextService _userContextService;
+        private readonly ITipoInversionService _service;
 
-        public TipoInversionController(
-            ILogger<TipoInversionController> logger,
-            IRepository<TipoInversion> repository,
-            IMapper mapper,
-            IUserContextService userContextService)
+        public TipoInversionController(ITipoInversionService service)
         {
-            _logger = logger;
-            _repository = repository;
-            _mapper = mapper;
-            _userContextService = userContextService;
+            _service = service;
         }
 
         [HttpPost("GetAllPaginado")]
         public async Task<ActionResult<PagedResult<TipoInversionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
-            var query = _repository.QueryWithIncludes(x => true);
-
-            if (!string.IsNullOrWhiteSpace(request.Filtro))
-            {
-                var f = request.Filtro;
-                query = query.Where(e => e.Descripcion.Contains(f));
-            }
-
-            if (!string.IsNullOrEmpty(request.SortLabel))
-            {
-                var isAscending = string.IsNullOrEmpty(request.SortDirection) || request.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
-                query = request.SortLabel switch
-                {
-                    "PkidTipoInversion" => isAscending ? query.OrderBy(e => e.PkidTipoInversion) : query.OrderByDescending(e => e.PkidTipoInversion),
-                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
-                    "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
-                    _ => query.OrderBy(e => e.Descripcion)
-                };
-            }
-            else
-            {
-                query = query.OrderBy(e => e.Descripcion);
-            }
-
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
-
-            return Ok(new PagedResult<TipoInversionResponse>
-            {
-                Items = _mapper.Map<List<TipoInversionResponse>>(items),
-                TotalCount = totalItems,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            });
+            var result = await _service.GetAllPaginadoAsync(request);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return NotFound();
-            var response = _mapper.Map<TipoInversionResponse>(entity);
-            return Ok(response);
+            var result = await _service.GetByIdAsync(id);
+            if (result == null) return NotFound();
+            return Ok(result);
         }
 
         [HttpPost]
@@ -90,12 +39,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
         public async Task<IActionResult> Create([FromBody] TipoInversionDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var entity = _mapper.Map<TipoInversion>(dto);
-            entity.FechaCreacion = DateTime.UtcNow;
-            entity.UsuarioCreacion = _userContextService.GetCurrentUserId();
-            await _repository.AddAsync(entity);
-            var response = _mapper.Map<TipoInversionResponse>(entity);
-            return CreatedAtAction(nameof(GetById), new { id = entity.PkidTipoInversion }, response);
+            var response = await _service.CreateAsync(dto, GetCurrentUserId());
+            return CreatedAtAction(nameof(GetById), new { id = response.PkidTipoInversion }, response);
         }
 
         [HttpPut("{id}")]
@@ -103,13 +48,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
         public async Task<IActionResult> Update(int id, [FromBody] TipoInversionDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return NotFound();
-            _mapper.Map(dto, entity);
-            entity.FechaModificacion = DateTime.UtcNow;
-            entity.UsuarioModificacion = _userContextService.GetCurrentUserId();
-            await _repository.UpdateAsync(entity);
-            var response = _mapper.Map<TipoInversionResponse>(entity);
+            var response = await _service.UpdateAsync(id, dto, GetCurrentUserId());
+            if (response == null) return NotFound();
             return Ok(response);
         }
 
@@ -117,10 +57,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
         [Authorize(Policy = "Tesoreria_Tipo_Inversion_delete")]
         public async Task<IActionResult> Delete(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return NotFound();
-            await _repository.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _service.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        private int GetCurrentUserId()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }
