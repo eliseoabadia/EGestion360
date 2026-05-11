@@ -8,6 +8,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
+using EG.Web.Services;
 using EG.Web.Contracts;
 using EG.Web.Models.ConteoCiclico;
 
@@ -41,6 +42,7 @@ public static class ApiServiceExtensions
         RegisterCrud<EmpresaResponse>(services, "api/Empresa");
         RegisterCrud<MenuItemsResponse>(services, "api/Menu");
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
+        RegisterCrud<VwUsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<UsuarioAreaResponse>(services, "api/UsuarioArea");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
 
@@ -117,6 +119,9 @@ public static class ApiServiceExtensions
         RegisterCrud<MatrizIngresoResponse>(services, "api/MatrizIngreso");
         RegisterCrud<ConceptoResponse>(services, "api/Concepto");
         RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");
+        RegisterCrud<ProgramaResponse>(services, "api/Programa");
+
+        
 
         return services;
     }

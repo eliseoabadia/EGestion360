@@ -111,4 +111,28 @@ public partial class UsuarioSucursalResponse
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public int? IdPersona { get; set; }
+
+    public string ClavePersona { get; set; }
+
+    public string PersonaNombre { get; set; }
+
+    public string PersonaPaterno { get; set; }
+
+    public string PersonaMaterno { get; set; }
+
+    public string NombreCompletoPersona { get; set; }
+
+    public string Rfc { get; set; }
+
+    public string Curp { get; set; }
+
+    public string EmailPersona { get; set; }
+
+    public string TelefonoParticular { get; set; }
+
+    public string TelefonoMovil { get; set; }
+
+    public int IdEmpresaPersona { get; set; }
 }

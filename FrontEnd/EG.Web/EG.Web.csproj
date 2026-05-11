@@ -35,7 +35,6 @@
     <Folder Include="Pages\Configuration\Catalogos\Adquisicion\" />
     <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
     <Folder Include="Pages\ConteoCiclico\" />
-    <Folder Include="Pages\Adquisiciones\" />
     <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 

@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; }
         public int PkIdUsuario { get; set; }
+        public int? FKIdPersonaNOM { get; set; }
         public string PayrollId { get; set; }
         public string NombreUsuario { get; set; }
         public string Email { get; set; }

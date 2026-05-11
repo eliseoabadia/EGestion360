@@ -2,6 +2,11 @@
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
+@using EG.Web.Services
+@using MudBlazor
+@inject IJSRuntime JS
+@inject IDialogService DialogService
+@inject SucursalStateService SucursalStateService
 @inherits BaseCrudPage<PaaaResponse, PaaaResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
@@ -70,6 +75,7 @@
 
 @code {
     private GenericTable<PaaaResponse> table = null!;
+    private int _empresaId;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Programa_Anual_Adquisiciones";
@@ -79,6 +85,38 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<PaaaResponse>);
 
     protected override string GetDefaultSortLabel() => "Descripcion";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadEmpresaId();
+    }
+
+    private async Task LoadEmpresaId()
+    {
+        try
+        {
+            // Intentar obtener de SucursalStateService primero
+            await SucursalStateService.InitializeAsync();
+            if (SucursalStateService.EmpresaId.HasValue)
+            {
+                _empresaId = SucursalStateService.EmpresaId.Value;
+            }
+            else
+            {
+                // Fallback a localStorage
+                var empresaIdStr = await JS.InvokeAsync<string>("localStorage.getItem", "empresa_seleccionada");
+                if (!string.IsNullOrEmpty(empresaIdStr) && int.TryParse(empresaIdStr, out int empresaId))
+                {
+                    _empresaId = empresaId;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading empresaId: {ex.Message}");
+        }
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<PaaaResponse> items)
     {
@@ -104,6 +142,55 @@
             return response?.Data?.Descripcion ?? "el programa anual";
         }
         catch { return "el programa anual"; }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = _empresaId
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = _empresaId
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await ReloadData();
+        }
     }
 
     protected override async Task ReloadData()

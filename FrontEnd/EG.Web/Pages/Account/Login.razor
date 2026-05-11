@@ -384,7 +384,7 @@
             }
             else if (_sucursalesUsuario.Items.Count == 1)
             {
-                await SucursalStateService.SetSucursalAsync(_sucursalesUsuario.Items[0].IdSucursal, _sucursalesUsuario.Items[0].NombreSucursal);
+                await SucursalStateService.SetSucursalAsync(_sucursalesUsuario.Items[0].IdSucursal, _sucursalesUsuario.Items[0].NombreSucursal, _sucursalesUsuario.Items[0].IdEmpresaPersona);
                 Snackbar.Add("¡Bienvenido!", Severity.Success);
                 NavigationManager.NavigateTo("/", forceLoad: true);
             }

@@ -138,4 +138,6 @@ public partial class VwUsuarioSucursal
     public string TelefonoParticular { get; set; }
 
     public string TelefonoMovil { get; set; }
+
+    public int IdEmpresaPersona { get; set; }
 }

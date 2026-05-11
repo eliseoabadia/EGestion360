@@ -2,127 +2,136 @@
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Domain.DTOs.Responses.Patrimonio
-@using EG.Domain.DTOs.Responses.General
 @using EG.Common.GenericModel
+@inject SucursalStateService SucursalStateService
+
 @inject IGenericCrudService<PaaaResponse> Service
 @inject IGenericCrudService<AniosResponse> anioService
 @inject IGenericCrudService<PersonaResponse> personaService
 @inject IGenericCrudService<ProyectoResponse> proyectoService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> fuenteService
-@inject IGenericCrudService<ProgramaPresupuestalResponse> programaService
-@inject IGenericCrudService<UsuarioAreaResponse> areaService
+@inject IGenericCrudService<ProgramaResponse> programaService
+@inject IGenericCrudService<UnidadResponsableResponse> areaService
+
+
 @inject ISnackbar Snackbar
+@inject HttpClient HttpClient
 
 <BaseCrudDialog TItem="PaaaResponse"
-                 Title="@dialogTitle"
-                 MaxWidth="MaxWidth.Medium"
-                 ActionText="@actionText"
-                 ProcessingText="@processingText"
-                 LoadingMessage="Cargando catálogos..."
-                 OnConfirm="GuardarCambiosAsync">
+Title="@dialogTitle"
+MaxWidth="MaxWidth.Medium"
+ActionText="@actionText"
+ProcessingText="@processingText"
+LoadingMessage="Cargando catálogos..."
+OnConfirm="GuardarCambiosAsync">
 
-    @if (_loading)
-    {
-        <div class="d-flex justify-center align-center py-8">
-            <MudProgressCircular Indeterminate="true" />
-            <MudText Class="ml-3">Cargando catálogos...</MudText>
-        </div>
-    }
-    else
-    {
-        <BaseEntityForm TEntity="PaaaResponse"
-                        @ref="form"
-                        ShowHeader="true"
-                        HeaderTitle="@dialogTitle">
+@if (_loading)
+{
+<div class="d-flex justify-center align-center py-8">
+<MudProgressCircular Indeterminate="true" />
+<MudText Class="ml-3">Cargando catálogos...</MudText>
+</div>
+}
+else
+{
+<BaseEntityForm TEntity="PaaaResponse"
+@ref="form"
+ShowHeader="true"
+HeaderTitle="@dialogTitle">
 
-            <MudGrid GutterSize="2">
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="item.Descripcion"
-                                  Label="Descripción"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  RequiredError="La descripción es requerida" />
-                </MudItem>
+<MudGrid GutterSize="2">
+<MudItem xs="12">
+<MudTextField @bind-Value="item.Descripcion"
+Label="Descripción"
+Variant="Variant.Outlined"
+Required="true"
+RequiredError="La descripción es requerida" />
+</MudItem>
 
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedAnio"
-                                       ValueChanged="value => _selectedAnio = value"
-                                       Label="Año"
-                                       Required="true"
-                                       LoadPage="LoadAniosPageAsync" />
-                </MudItem>
+<MudItem xs="12" md="6">
+<PagedAutocomplete Value="@_selectedAnio"
+ValueChanged="value => _selectedAnio = value"
+Label="Año"
+Required="true"
+LoadPage="LoadAniosPageAsync" />
+</MudItem>
 
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedArea"
-                                       ValueChanged="value => _selectedArea = value"
-                                       Label="Área"
-                                       Required="true"
-                                       RequiredError="El área es requerida"
-                                       LoadPage="LoadAreasPageAsync" />
-                </MudItem>
+<MudItem xs="12" md="6">
+<PagedAutocomplete Value="@_selectedArea"
+ValueChanged="value => _selectedArea = value"
+Label="Área"
+Required="true"
+RequiredError="El área es requerida"
+LoadPage="LoadAreasPageAsync" />
+</MudItem>
 
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedPersona"
-                                       ValueChanged="value => _selectedPersona = value"
-                                       Label="Responsable"
-                                       Required="true"
-                                       LoadPage="LoadPersonasPageAsync" />
-                </MudItem>
+<MudItem xs="12" md="6">
+<PagedAutocomplete Value="@_selectedPersona"
+ValueChanged="value => _selectedPersona = value"
+Label="Responsable"
+Required="true"
+LoadPage="LoadPersonasPageAsync" />
+</MudItem>
 
-                <MudItem xs="12" md="6">
-                    <MudDatePicker @bind-Value="_fecha"
-                                   Label="Fecha"
-                                   Variant="Variant.Outlined"
-                                   Required="true"
-                                   RequiredError="La fecha es requerida" />
-                </MudItem>
+<MudItem xs="12" md="6">
+<MudDatePicker @bind-Value="_fecha"
+Label="Fecha"
+Variant="Variant.Outlined"
+Required="true"
+RequiredError="La fecha es requerida" />
+</MudItem>
 
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedProyecto"
-                                       ValueChanged="value => _selectedProyecto = value"
-                                       Label="Proyecto"
-                                       Clearable="true"
-                                       LoadPage="LoadProyectosPageAsync" />
-                </MudItem>
+<MudItem xs="12" md="6">
+<PagedAutocomplete Value="@_selectedProyecto"
+ValueChanged="value => _selectedProyecto = value"
+Label="Proyecto"
+Clearable="true"
+LoadPage="LoadProyectosPageAsync" />
+</MudItem>
 
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedPrograma"
-                                       ValueChanged="value => _selectedPrograma = value"
-                                       Label="Programa"
-                                       Clearable="true"
-                                       LoadPage="LoadProgramasPageAsync" />
-                </MudItem>
+<MudItem xs="12" md="6">
+<PagedAutocomplete Value="@_selectedPrograma"
+ValueChanged="value => _selectedPrograma = value"
+Label="Programa"
+Clearable="true"
+LoadPage="LoadProgramasPageAsync" />
+</MudItem>
 
-                <MudItem xs="12">
-                    <PagedAutocomplete Value="@_selectedFuente"
-                                       ValueChanged="value => _selectedFuente = value"
-                                       Label="Fuente de Financiamiento"
-                                       Clearable="true"
-                                       LoadPage="LoadFuentesPageAsync" />
-                </MudItem>
+<MudItem xs="12">
+<PagedAutocomplete Value="@_selectedFuente"
+ValueChanged="value => _selectedFuente = value"
+Label="Fuente de Financiamiento"
+Clearable="true"
+LoadPage="LoadFuentesPageAsync" />
+</MudItem>
 
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="item.Observaciones"
-                                  Label="Observaciones"
-                                  Variant="Variant.Outlined"
-                                  Lines="3" />
-                </MudItem>
+<MudItem xs="12">
+<MudTextField @bind-Value="item.Observaciones"
+Label="Observaciones"
+Variant="Variant.Outlined"
+Lines="3" />
+</MudItem>
 
-                @if (Id.HasValue)
-                {
-                    <MudItem xs="12">
-                        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
-                    </MudItem>
-                }
-            </MudGrid>
-        </BaseEntityForm>
-    }
+@if (Id.HasValue)
+{
+<MudItem xs="12">
+<MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
+</MudItem>
+}
+</MudGrid>
+</BaseEntityForm>
+}
 </BaseCrudDialog>
 
 @code {
     [Parameter] public int? Id { get; set; }
+    [Parameter] public int FkidPersonaNom { get; set; }
+    [Parameter] public int AnioId { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private int _fkIdEmpresa;
 
     private BaseEntityForm<PaaaResponse> form = null!;
     private PaaaResponse item = new() { Activo = true, Fecha = DateTime.Today };
@@ -145,6 +154,22 @@
         if (Id.HasValue)
         {
             await CargarDatosAsync();
+        }
+        else
+        {
+            if (AnioId > 0)
+            {
+                var anio = await anioService.GetByIdAsync(AnioId);
+                if (anio?.Success == true && anio.Data != null)
+                {
+                    _selectedAnio = new LookupItem { Id = anio.Data.PkidAnio, Text = $"{anio.Data.Clave} - {anio.Data.Descripcion}" };
+                }
+            }
+            
+            if (FkidPersonaNom > 0)
+            {
+                item.FkidPersonaNom = FkidPersonaNom;
+            }
         }
         _loading = false;
     }
@@ -169,8 +194,9 @@
 
     private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
+        
         var response = await programaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPp, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -181,8 +207,9 @@
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await areaService.GetAllPaginadoAsync(page, pageSize, filter, "UsuarioAreaDescripcion", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion }), response?.TotalCount);
+        
+        var response = await areaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUnidadResponsable, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
@@ -235,13 +262,19 @@
         if (_selectedPersona == null) { Snackbar.Add("Debe seleccionar un responsable válido", Severity.Warning); return; }
         item.FkidPersonaNom = _selectedPersona.Id;
 
+        // Asignar FkidEmpresaSis desde el parámetro
+        if (EmpresaId > 0)
+        {
+            item.FkidEmpresaSis = SucursalStateService.EmpresaId.Value;
+        }
+
         item.FkidProyectoOrco = _selectedProyecto?.Id;
 
         item.FkidProgramaPres = _selectedPrograma?.Id;
 
         item.FkidFuenteFinanciamientoPres = _selectedFuente?.Id;
 
-        if (_selectedArea == null) { Snackbar.Add("Debe seleccionar un área válida", Severity.Warning); return; }
+        if (_selectedArea == null) { Snackbar.Add("Debe seleccionar un área válido", Severity.Warning); return; }
         item.FkidAreaSis = _selectedArea.Id;
 
         if (_fecha.HasValue)
@@ -257,20 +290,19 @@
             }
             else
             {
-                item.PkidPaaas = 0;
                 var response = await Service.CreateAsync(item);
                 success = response?.Success == true;
             }
 
-            if (success)
-            {
-                Snackbar.Add(Id.HasValue ? "Programa anual actualizado correctamente" : "Programa anual creado correctamente", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-            else
-            {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
-            }
+if (success)
+{
+    Snackbar.Add(Id.HasValue ? "Programa actualizado correctamente" : "Programa creado correctamente", Severity.Success);
+    MudDialog.Close(DialogResult.Ok(true));
+}
+else
+{
+    Snackbar.Add("Error al guardar el programa", Severity.Error);
+}
         }
         catch (Exception ex)
         {

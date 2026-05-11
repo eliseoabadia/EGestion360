@@ -7,10 +7,12 @@ using EG.Application.Interfaces.ConteoCiclico;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Application.Interfaces.General;
+using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.ConteoCiclico;
 using EG.Application.Services.General;
+using EG.Application.Services.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Interfaces;
 using EG.Business.Services;
 using EG.Common.Util;
@@ -37,15 +39,18 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAuthAppService, AuthAppService>();
             services.AddScoped<INavigateAppService, NavigateAppService>();
 
-            // Application services - General
-            services.AddScoped<IEmpresaAppService, EmpresaAppService>();
-            services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
-            services.AddScoped<IEstadoAppService, EstadoAppService>();
-            services.AddScoped<IPaisAppService, PaisAppService>();
-            services.AddScoped<ISucursalAppService, SucursalAppService>();
-            services.AddScoped<IUsuarioAppService, UsuarioAppService>();
-            services.AddScoped<IUsuarioSucursalAppService, UsuarioSucursalAppService>();
-            services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
+    // Application services - General
+    services.AddScoped<IEmpresaAppService, EmpresaAppService>();
+    services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
+    services.AddScoped<IEstadoAppService, EstadoAppService>();
+    services.AddScoped<IPaisAppService, PaisAppService>();
+    services.AddScoped<ISucursalAppService, SucursalAppService>();
+    services.AddScoped<IUsuarioAppService, UsuarioAppService>();
+    services.AddScoped<IUsuarioSucursalAppService, UsuarioSucursalAppService>();
+    services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
+    
+    // Application services - Presupuestales
+    services.AddScoped<IProgramaAppServices, ProgramaAppServices>();
 
             // Application services - Conteo ciclico
             services.AddScoped<IConteoAppService, ConteoAppService>();

@@ -9,6 +9,7 @@ namespace EG.Infraestructure.Models
     public partial class LoginInformationEmployeeResult
     {
         public int PkIdUsuario { get; set; }
+        public int? FKIdPersonaNOM { get; set; }
         [StringLength(20)]
         public string PayrollID { get; set; }
         [StringLength(11)]

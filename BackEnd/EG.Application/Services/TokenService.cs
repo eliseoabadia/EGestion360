@@ -54,13 +54,13 @@ namespace EG.Application.Services
             return claims;
         }
 
-        public LoginResponseDto GenTokenkey(
-            int pkIdUsuario,
-            string userId,
-            string userName,
-            string email,
-            IList<spGetClaimsByUserResult> _claims,
-            JwtSettings jwtSettings)
+    public LoginResponseDto GenTokenkey(
+        int pkIdUsuario,
+        string userId,
+        string userName,
+        string email,
+        IList<spGetClaimsByUserResult> _claims,
+        JwtSettings jwtSettings)
         {
             try
             {
@@ -83,15 +83,15 @@ namespace EG.Application.Services
                         SecurityAlgorithms.HmacSha256)
                 );
 
-                resultUser.RefreshTokenExpiryTime = new DateTimeOffset(expireTime).DateTime;
-                resultUser.AccessToken = new JwtSecurityTokenHandler().WriteToken(JWToken);
-                resultUser.RefreshToken = GenerateRefreshToken();
+    resultUser.RefreshTokenExpiryTime = new DateTimeOffset(expireTime).DateTime;
+    resultUser.AccessToken = new JwtSecurityTokenHandler().WriteToken(JWToken);
+    resultUser.RefreshToken = GenerateRefreshToken();
 
-                resultUser.NombreUsuario = userName;
-                resultUser.Id = Guid.NewGuid();
-                resultUser.PayrollId = userId;
-                resultUser.PkIdUsuario = pkIdUsuario;
-                resultUser.IsAuthenticated = true;
+    resultUser.NombreUsuario = userName;
+    resultUser.Id = Guid.NewGuid();
+    resultUser.PayrollId = userId;
+    resultUser.PkIdUsuario = pkIdUsuario;
+    resultUser.IsAuthenticated = true;
 
                 return resultUser;
             }

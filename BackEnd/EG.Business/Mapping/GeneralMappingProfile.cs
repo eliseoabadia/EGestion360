@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using EG.Domain.DTOs.Requests.General;
+using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
 
@@ -14,9 +16,8 @@ namespace EG.Business.Mapping
             CreateMap<Empresa, EmpresaResponse>().ReverseMap();
             CreateMap<Usuario, UsuarioResponse>().ReverseMap();
 
-            //CreateMap<TipoConteo, TipoConteoDto>().ReverseMap();
-            //CreateMap<TipoConteo, TipoConteoResponse>(); 
-            //CreateMap<TipoConteoResponse, TipoConteoDto>();
+            CreateMap<Programa, ProgramaDto>().ReverseMap();
+            CreateMap<Programa, ProgramaResponse>();
 
             //CreateMap<TipoBien, TipoBienDto>().ReverseMap();
             CreateMap<TipoBien, TipoBienResponse>().ReverseMap();

@@ -29,8 +29,11 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string? ProyectoDescripcion { get; set; }
         public string? ProgramaClave { get; set; }
         public string? ProgramaDescripcion { get; set; }
-        public string? FuenteFinanciamientoDescripcion { get; set; }
-        public string? FuenteFinanciamientoClave { get; set; }
-        public string ClaveNombre { get; set; } = string.Empty;
+public string? FuenteFinanciamientoDescripcion { get; set; }
+    public string? FuenteFinanciamientoClave { get; set; }
+    public string ClaveNombre { get; set; } = string.Empty;
+    
+    // Navegación a partidas
+    public List<PaaaspartidumResponse> Partidas { get; set; } = new();
     }
 }

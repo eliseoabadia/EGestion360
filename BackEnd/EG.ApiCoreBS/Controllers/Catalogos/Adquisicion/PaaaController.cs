@@ -35,15 +35,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             ConfigureValidations();
         }
 
-        private void ConfigureService()
-        {
-            _service.AddInclude(e => e.FkidAnioSisNavigation);
-            _service.AddInclude(e => e.FkidAreaSisNavigation);
-            _service.AddInclude(e => e.FkidPersonaNomNavigation);
-            _service.AddInclude(e => e.FkidProyectoOrcoNavigation);
-            _service.AddInclude(e => e.FkidProgramaPresNavigation);
-            _service.AddInclude(e => e.FkidFuenteFinanciamientoPresNavigation);
-        }
+private void ConfigureService()
+    {
+        _service.AddInclude(e => e.FkidAnioSisNavigation);
+        _service.AddInclude(e => e.FkidAreaSisNavigation);
+        _service.AddInclude(e => e.FkidPersonaNomNavigation);
+        _service.AddInclude(e => e.FkidProyectoOrcoNavigation);
+        _service.AddInclude(e => e.FkidProgramaPresNavigation);
+        _service.AddInclude(e => e.FkidFuenteFinanciamientoPresNavigation);
+        _service.AddInclude(e => e.Paaaspartida);
+    }
 
         private void ConfigureValidations()
         {
@@ -120,7 +121,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             try
             {
                 var dto = _mapper.Map<PaaaDto>(response);
-                dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
+                //dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
@@ -300,13 +301,71 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                     Code = "SUCCESS"
                 });
             }
-            catch (Exception ex)
+catch (Exception ex)
+        {
+            return Ok(new PagedResult<PaaaResponse>
             {
-                return Ok(new PagedResult<PaaaResponse>
-                {
-                    Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
-                });
-            }
+                Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+            });
         }
     }
+
+    [HttpGet("{id}/partidas")]
+    public async Task<ActionResult<PagedResult<PaaaspartidumResponse>>> GetPartidasByPaaa(int id)
+    {
+        try
+        {
+            var query = _service.GetQueryWithIncludes();
+            var paaa = await query.FirstOrDefaultAsync(x => x.PkidPaaas == id);
+            
+            if (paaa == null)
+                return NotFound(new PagedResult<PaaaspartidumResponse>
+                {
+                    Success = false, Message = "PAAA no encontrado", Code = "NOT_FOUND", TotalCount = 0
+                });
+
+            var partidas = paaa.Paaaspartida?.ToList() ?? new List<Paaaspartidum>();
+            var response = _mapper.Map<List<PaaaspartidumResponse>>(partidas);
+
+            return Ok(new PagedResult<PaaaspartidumResponse>
+            {
+                Items = response,
+                TotalCount = response.Count,
+                Success = true,
+                Message = "Partidas obtenidas correctamente",
+                Code = "SUCCESS"
+            });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new PagedResult<PaaaspartidumResponse>
+            {
+                Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+            });
+        }
+    }
+
+    [HttpGet("partida/{partidaId}/detalles")]
+    public async Task<ActionResult<PagedResult<PaaasdetalleResponse>>> GetDetallesByPartida(int partidaId)
+    {
+        try
+        {
+            return Ok(new PagedResult<PaaasdetalleResponse>
+            {
+                Items = new List<PaaasdetalleResponse>(),
+                TotalCount = 0,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new PagedResult<PaaasdetalleResponse>
+            {
+                Success = false, Message = $"Error interno: {ex.Message}", Code = "ERROR", TotalCount = 0
+            });
+        }
+    }
+}
 }

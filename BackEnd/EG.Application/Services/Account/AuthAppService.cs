@@ -65,14 +65,14 @@ namespace EG.Application.Services.Account
                 // 🔧 PASO 2: Obtener claims del usuario (BUSINESS)
                 var claims = await _authService.ObtenerClaimsUsuarioAsync(usuarioSP.PkIdUsuario);
 
-                // 🔧 PASO 3: Generar token JWT (APPLICATION - ITokenService)
-                var loginResponse = _tokenService.GenTokenkey(
-                    usuarioSP.PkIdUsuario,
-                    usuarioSP.PayrollID,
-                    usuarioSP.NombreUsuario,
-                    usuarioSP.Email,
-                    claims,
-                    _jwtSettings.Value);
+// 🔧 PASO 3: Generar token JWT (APPLICATION - ITokenService)
+var loginResponse = _tokenService.GenTokenkey(
+    usuarioSP.PkIdUsuario,
+    usuarioSP.PayrollID,
+    usuarioSP.NombreUsuario,
+    usuarioSP.Email,
+    claims,
+    _jwtSettings.Value);
 
                 Console.WriteLine(
                     //LogLevelGRP.Info,
