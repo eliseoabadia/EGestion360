@@ -9,6 +9,7 @@ using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
 {
@@ -264,6 +265,11 @@ private void ConfigureService()
             try
             {
                 var query = _serviceView.GetQueryWithIncludes();
+
+                if (TryGetIntFilter(request, "FkidAnioSis", out var anioId))
+                {
+                    query = query.Where(e => e.FkidAnioSis == anioId);
+                }
 
                 if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
@@ -721,6 +727,24 @@ catch (Exception ex)
             .FirstOrDefaultAsync(x => x.PkidPaaasdetalle == detalleId && x.Activo);
 
         return view == null ? null : _mapper.Map<PaaasdetalleResponse>(view);
+    }
+
+    private static bool TryGetIntFilter(PagedRequest request, string key, out int value)
+    {
+        value = 0;
+        if (request.AdditionalFilters == null || !request.AdditionalFilters.TryGetValue(key, out var raw) || raw == null)
+            return false;
+
+        if (raw is JsonElement json)
+        {
+            if (json.ValueKind == JsonValueKind.Number && json.TryGetInt32(out value))
+                return true;
+
+            if (json.ValueKind == JsonValueKind.String && int.TryParse(json.GetString(), out value))
+                return true;
+        }
+
+        return int.TryParse(raw.ToString(), out value);
     }
 
     [HttpDelete("partida/{partidaId}")]

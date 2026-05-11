@@ -43,7 +43,11 @@ public List<VwUsuarioSucursalResponse> Sucursales { get; set; } = new();
     private async Task SeleccionarSucursal(VwUsuarioSucursalResponse sucursal)
     {
         var empresaId = (int?)sucursal.PkidEmpresa ?? (int?)sucursal.IdEmpresa ?? 0;
-        await SucursalStateService.SetSucursalAsync(sucursal.IdSucursal ?? 0, sucursal.NombreSucursal ?? string.Empty, empresaId);
+        await SucursalStateService.SetSucursalAsync(
+            sucursal.IdSucursal ?? 0,
+            sucursal.NombreSucursal ?? string.Empty,
+            empresaId,
+            sucursal.NombreEmpresa);
         MudDialog.Close(DialogResult.Ok(sucursal));
     }
 }

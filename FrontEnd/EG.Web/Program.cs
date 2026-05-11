@@ -57,6 +57,7 @@ internal class Program
         // En Program.cs o Startup.cs
         builder.Services.AddScoped<MenuStateService>();
         builder.Services.AddScoped<SucursalStateService>();
+        builder.Services.AddScoped<AnioPresupuestalStateService>();
         builder.Services.AddScoped<DashboardService>();
 
         builder.Services.AddApiServices();

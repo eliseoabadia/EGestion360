@@ -23,7 +23,6 @@ using EG.Web.Models.ConteoCiclico;
 //using EG.Web.Models.Patrimonio;
 //using EG.Web.Models.Presupuestales;
 //using EG.Web.Models.Tesoreria;
-using EG.Web.Services;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Extensions;

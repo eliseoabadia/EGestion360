@@ -1,6 +1,9 @@
 @inherits LayoutComponentBase
+@using EG.Domain.DTOs.Responses.Presupuestales
 @inject NavigationManager NavigationManager
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<AniosResponse> AnioService
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
@@ -35,6 +38,35 @@
         {
             <!-- Información del usuario y sucursal -->
             <div class="user-section">
+                @if (!string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre))
+                {
+                    <MudChip T="string"
+                             Color="Color.Info"
+                             Variant="Variant.Outlined"
+                             Size="Size.Small"
+                             Icon="@Icons.Material.Filled.Business"
+                             class="user-chip">
+                        @SucursalStateService.EmpresaNombre
+                    </MudChip>
+                }
+
+                <MudSelect T="int?"
+                           Value="@_selectedAnioId"
+                           ValueChanged="OnAnioSeleccionado"
+                           Label="Año"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Dense="true"
+                           Disabled="@_aniosLoading"
+                           Class="anio-header-select"
+                           Adornment="Adornment.Start"
+                           AdornmentIcon="@Icons.Material.Filled.CalendarMonth">
+                    @foreach (var anio in _anios)
+                    {
+                        <MudSelectItem T="int?" Value="@anio.PkidAnio">@anio.Clave</MudSelectItem>
+                    }
+                </MudSelect>
+
                 <MudChip T="string" 
                          Color="Color.Secondary" 
                          Variant="Variant.Outlined"
@@ -141,6 +173,9 @@
     private string _selectedTheme = "default";
     private MudTheme _theme = new MudTheme();
     private string nombreUsuario = "Usuario";
+    private List<AniosResponse> _anios = new();
+    private int? _selectedAnioId;
+    private bool _aniosLoading;
     private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
 
 protected override async Task OnInitializedAsync()
@@ -149,6 +184,11 @@ base.OnInitialized();
 OnThemeOptionChanged();
 await CargarUsuarioAsync();
 await SucursalStateService.InitializeAsync();
+if (!esPaginaLogin)
+{
+await AnioStateService.InitializeAsync();
+await LoadAniosAsync();
+}
 await LoadVersionAsync();
 SucursalStateService.OnSucursalChanged += OnSucursalChanged;
 }
@@ -164,6 +204,48 @@ await ApplyMenuThemeClass();
     private void OnSucursalChanged(int sucursalId, string sucursalNombre)
     {
         StateHasChanged();
+    }
+
+    private async Task LoadAniosAsync()
+    {
+        try
+        {
+            _aniosLoading = true;
+            var response = await AnioService.GetAllPaginadoAsync(1, 100, string.Empty, "Clave", SortDirection.Descending);
+            _anios = response?.Items?.Where(x => x.Activo).OrderByDescending(x => x.Clave).ToList() ?? new List<AniosResponse>();
+
+            if (!_anios.Any())
+                return;
+
+            var selected = _anios.FirstOrDefault(x => x.PkidAnio == AnioStateService.AnioId)
+                ?? _anios.FirstOrDefault(x => x.Clave == DateTime.Today.Year)
+                ?? _anios.First();
+
+            _selectedAnioId = selected.PkidAnio;
+            if (AnioStateService.AnioId != selected.PkidAnio)
+                await AnioStateService.SetAnioAsync(selected.PkidAnio, selected.Clave, selected.Descripcion);
+        }
+        catch
+        {
+            _anios = new List<AniosResponse>();
+        }
+        finally
+        {
+            _aniosLoading = false;
+        }
+    }
+
+    private async Task OnAnioSeleccionado(int? anioId)
+    {
+        _selectedAnioId = anioId;
+        var selected = _anios.FirstOrDefault(x => x.PkidAnio == anioId);
+        if (selected == null)
+        {
+            await AnioStateService.ClearAnioAsync();
+            return;
+        }
+
+        await AnioStateService.SetAnioAsync(selected.PkidAnio, selected.Clave, selected.Descripcion);
     }
 
     private async Task CargarUsuarioAsync()
@@ -478,6 +560,15 @@ catch { }
         display: flex;
         align-items: center;
         gap: 12px;
+    }
+
+    .anio-header-select {
+        width: 130px;
+        flex-shrink: 0;
+    }
+
+    .anio-header-select .mud-input-control {
+        margin-top: 0;
     }
 
     .user-chip {

@@ -4,9 +4,9 @@
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Common.GenericModel
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
 @inject IGenericCrudService<PaaaResponse> Service
-@inject IGenericCrudService<AniosResponse> anioService
 @inject IGenericCrudService<PersonaResponse> personaService
 @inject IGenericCrudService<ProyectoResponse> proyectoService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> fuenteService
@@ -46,14 +46,6 @@ Label="Descripción"
 Variant="Variant.Outlined"
 Required="true"
 RequiredError="La descripción es requerida" />
-</MudItem>
-
-<MudItem xs="12" md="6">
-<PagedAutocomplete Value="@_selectedAnio"
-ValueChanged="value => _selectedAnio = value"
-Label="Año"
-Required="true"
-LoadPage="LoadAniosPageAsync" />
 </MudItem>
 
 <MudItem xs="12" md="6">
@@ -131,14 +123,11 @@ Lines="3" />
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private int _fkIdEmpresa;
-
     private BaseEntityForm<PaaaResponse> form = null!;
     private PaaaResponse item = new() { Activo = true, Fecha = DateTime.Today };
     private DateTime? _fecha;
     private bool _loading = true;
 
-    private LookupItem? _selectedAnio;
     private LookupItem? _selectedPersona;
     private LookupItem? _selectedProyecto;
     private LookupItem? _selectedPrograma;
@@ -151,33 +140,22 @@ Lines="3" />
 
     protected override async Task OnInitializedAsync()
     {
+        await AnioStateService.InitializeAsync();
+        if (AnioId <= 0 && AnioStateService.AnioId.HasValue)
+            AnioId = AnioStateService.AnioId.Value;
+
         if (Id.HasValue)
         {
             await CargarDatosAsync();
         }
         else
         {
-            if (AnioId > 0)
-            {
-                var anio = await anioService.GetByIdAsync(AnioId);
-                if (anio?.Success == true && anio.Data != null)
-                {
-                    _selectedAnio = new LookupItem { Id = anio.Data.PkidAnio, Text = $"{anio.Data.Clave} - {anio.Data.Descripcion}" };
-                }
-            }
-            
             if (FkidPersonaNom > 0)
             {
                 item.FkidPersonaNom = FkidPersonaNom;
             }
         }
         _loading = false;
-    }
-
-    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await anioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -228,7 +206,6 @@ Lines="3" />
                 item = response.Data;
                 _fecha = item.Fecha;
 
-                _selectedAnio = new LookupItem { Id = item.FkidAnioSis, Text = $"{item.AnioClave} - {item.AnioDescripcion}" };
                 _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = item.ResponsableCompleto };
                 _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = item.AreaNombre };
 
@@ -256,8 +233,9 @@ Lines="3" />
             return;
         }
 
-        if (_selectedAnio == null) { Snackbar.Add("Debe seleccionar un año válido", Severity.Warning); return; }
-        item.FkidAnioSis = _selectedAnio.Id;
+        var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        if (!anioId.HasValue || anioId <= 0) { Snackbar.Add("Debe seleccionar un año presupuestal en el encabezado.", Severity.Warning); return; }
+        item.FkidAnioSis = anioId.Value;
 
         if (_selectedPersona == null) { Snackbar.Add("Debe seleccionar un responsable válido", Severity.Warning); return; }
         item.FkidPersonaNom = _selectedPersona.Id;

@@ -6,8 +6,10 @@
 @using EG.Web.Models
 @using MudBlazor
 @attribute [StreamRendering(true)]
+@implements IDisposable
 @inject IJSRuntime JS
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject HttpClient Http
 @inherits BaseCrudPage<PaaaResponse, PaaaResponse>
 
@@ -130,10 +132,6 @@
                             <MudItem xs="12" md="3">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Área</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedPaaa.AreaNombre</MudText>
-                            </MudItem>
-                            <MudItem xs="6" md="1">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Año</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedPaaa.AnioClave</MudText>
                             </MudItem>
                             <MudItem xs="6" md="2">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha</MudText>
@@ -390,10 +388,94 @@
 
     protected override string GetDefaultSortLabel() => "Descripcion";
 
+    protected override async Task<TableData<PaaaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var page = Math.Max(1, state.Page + 1);
+            CurrentPage = page;
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!AnioStateService.AnioId.HasValue)
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                return new TableData<PaaaResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidAnioSis"] = AnioStateService.AnioId.Value
+            };
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrEmpty(response?.Message))
+                    Snackbar.Add(response.Message, Severity.Error);
+            }
+
+            return new TableData<PaaaResponse>
+            {
+                Items = Elements,
+                TotalItems = TotalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<PaaaResponse>
+            {
+                Items = new List<PaaaResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadEmpresaId();
+    }
+
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            BackToTable();
+            await ReloadData();
+        });
+    }
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
     }
 
     private async Task LoadEmpresaId()
@@ -436,6 +518,60 @@
         });
     }
 
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        if (!AnioStateService.AnioId.HasValue)
+        {
+            Snackbar.Add("Selecciona un año presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidAnioSis"] = AnioStateService.AnioId.Value
+            };
+
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, SortLabel, SortDirection, filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            var excelData = MapToExcelData(response.Items);
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            await JS.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{AnioStateService.AnioClave}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportación exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         try
@@ -454,9 +590,16 @@
             return;
         }
 
+        if (!AnioStateService.AnioId.HasValue)
+        {
+            Snackbar.Add("Selecciona un año presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
         var parameters = new DialogParameters
         {
-            ["EmpresaId"] = _empresaId
+            ["EmpresaId"] = _empresaId,
+            ["AnioId"] = AnioStateService.AnioId.Value
         };
 
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}", parameters,
@@ -481,7 +624,8 @@
         var parameters = new DialogParameters
         {
             ["Id"] = id,
-            ["EmpresaId"] = _empresaId
+            ["EmpresaId"] = _empresaId,
+            ["AnioId"] = AnioStateService.AnioId
         };
 
         var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
