@@ -1,9 +1,12 @@
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Almacen
 @using EG.Web.Models
+@using EG.Web.Contracts
 @using MudBlazor
 @inject HttpClient Http
 @inject ISnackbar Snackbar
+@inject IGenericCrudService<UnidadeResponse> UnidadesService
 
 <BaseCrudDialog TItem="PaaasdetalleResponse"
                 Title="@dialogTitle"
@@ -39,6 +42,15 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedUnidad"
+                                   ValueChanged="value => _selectedUnidad = value"
+                                   Label="Unidad de Medida"
+                                   Required="true"
+                                   RequiredError="Debe seleccionar una unidad"
+                                   LoadPage="LoadUnidadesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="_lugarEntrega"
                               Label="Lugar de entrega"
                               Variant="Variant.Outlined"
@@ -65,6 +77,7 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private LookupItem? _selectedTipoBien;
+    private LookupItem? _selectedUnidad;
     private decimal _cantidad = 1m;
     private string _observaciones = string.Empty;
     private string _lugarEntrega = string.Empty;
@@ -74,19 +87,56 @@
     private string actionText => IsEdit ? "Actualizar" : "Guardar";
     private string processingText => IsEdit ? "Actualizando..." : "Guardando...";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (Item == null)
-            return;
-
-        _selectedTipoBien = new LookupItem
+        if (Item != null)
         {
-            Id = Item.FkidTipoBienAlma,
-            Text = Item.TipoBienDescripcion
-        };
-        _cantidad = Item.Cantidad <= 0 ? 1m : Item.Cantidad;
-        _observaciones = Item.Observaciones ?? string.Empty;
-        _lugarEntrega = Item.LugarEntrega ?? string.Empty;
+            _selectedTipoBien = new LookupItem
+            {
+                Id = Item.FkidTipoBienAlma,
+                Text = Item.TipoBienDescripcion
+            };
+            _cantidad = Item.Cantidad <= 0 ? 1m : Item.Cantidad;
+            _observaciones = Item.Observaciones ?? string.Empty;
+            _lugarEntrega = Item.LugarEntrega ?? string.Empty;
+            await LoadUnidadForEdit();
+            return;
+        }
+
+        await LoadDefaultUnidad();
+    }
+
+    private async Task LoadDefaultUnidad()
+    {
+        try
+        {
+            var response = await UnidadesService.GetAllPaginadoAsync(1, 50, "PIEZA", "Descripcion", SortDirection.Ascending);
+            var pieza = response?.Items?.FirstOrDefault(x =>
+                x.Descripcion?.Contains("PIEZA", StringComparison.OrdinalIgnoreCase) == true);
+            if (pieza != null)
+            {
+                _selectedUnidad = new LookupItem { Id = pieza.PkidUnidades, Text = pieza.Descripcion };
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task LoadUnidadForEdit()
+    {
+        if (Item?.FkidUnidadesAlma == null) return;
+        try
+        {
+            var response = await UnidadesService.GetByIdAsync(Item.FkidUnidadesAlma.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                _selectedUnidad = new LookupItem { Id = response.Data.PkidUnidades, Text = response.Data.Descripcion };
+            }
+        }
+        catch
+        {
+        }
     }
 
     private async Task<ComboLookupResult> LoadTiposBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -113,6 +163,22 @@
         };
     }
 
+    private async Task<ComboLookupResult> LoadUnidadesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await UnidadesService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var items = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidUnidades,
+            Text = x.Descripcion
+        }) ?? new List<LookupItem>();
+
+        return new ComboLookupResult
+        {
+            Items = items,
+            TotalCount = response?.TotalCount ?? items.Count()
+        };
+    }
+
     private async Task GuardarCambiosAsync()
     {
         if (_selectedTipoBien == null)
@@ -133,6 +199,7 @@
             FkidEmpresaSis = EmpresaId,
             FkidPaaaspartidaOrco = PartidaId,
             FkidTipoBienAlma = _selectedTipoBien.Id,
+            FkidUnidadesAlma = _selectedUnidad?.Id,
             Cantidad = _cantidad,
             Observaciones = _observaciones ?? string.Empty,
             LugarEntrega = _lugarEntrega ?? string.Empty,
