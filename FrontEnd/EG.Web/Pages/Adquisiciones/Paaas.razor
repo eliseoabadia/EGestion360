@@ -195,30 +195,26 @@
                                                 @foreach (var partida in _filteredPartidas)
                                                 {
                                                     var isSelected = SelectedPartida?.PkidPaaaspartida == partida.PkidPaaaspartida;
-                                                    <MudPaper Elevation="0"
-                                                              Class="pa-1 cursor-pointer rounded-lg"
-                                                              Style="@(isSelected ? "background: var(--mud-palette-primary-hover); border-left: 3px solid var(--mud-palette-primary);" : "border-left: 3px solid transparent;")"
-                                                              OnClick="async () => await SelectPartida(partida)">
-                                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
-                                                            <MudStack Spacing="0" Style="flex-grow: 1; min-width: 0;">
-                                                                <MudText Typo="Typo.body2" Style="font-weight: 600;">
-                                                                    @($"{partida.ClavePartida} - {partida.Descripcion}")
+                                                    <div @onclick="@(() => SelectPartida(partida))"
+                                                         @onclick:stopPropagation
+                                                         class="pa-1 rounded-lg cursor-pointer"
+                                                         style="@(isSelected ? "background: var(--mud-palette-primary-hover); border-left: 3px solid var(--mud-palette-primary); display: flex; align-items: center; gap: 4px;" : "border-left: 3px solid transparent; display: flex; align-items: center; gap: 4px;")">
+                                                        <div style="flex-grow: 1; min-width: 0;">
+                                                            <MudText Typo="Typo.body2" Style="font-weight: 600;">
+                                                                @($"{partida.ClavePartida} - {partida.Descripcion}")
+                                                            </MudText>
+                                                            @if (!string.IsNullOrWhiteSpace(partida.Observaciones))
+                                                            {
+                                                                <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="text-truncate">
+                                                                    @partida.Observaciones
                                                                 </MudText>
-                                                                @if (!string.IsNullOrWhiteSpace(partida.Observaciones))
-                                                                {
-                                                                    <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="text-truncate">
-                                                                        @partida.Observaciones
-                                                                    </MudText>
-                                                                }
-                                                            </MudStack>
-                                                            <div @onclick:stopPropagation>
-                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                                               Color="Color.Error"
-                                                                               Size="Size.Small"
-                                                                               OnClick="@(() => DeletePartida(partida))" />
-                                                            </div>
-                                                        </MudStack>
-                                                    </MudPaper>
+                                                            }
+                                                        </div>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                                       Color="Color.Error"
+                                                                       Size="Size.Small"
+                                                                       OnClick="@(() => DeletePartida(partida))" />
+                                                    </div>
                                                 }
                                             </MudStack>
                                         }
