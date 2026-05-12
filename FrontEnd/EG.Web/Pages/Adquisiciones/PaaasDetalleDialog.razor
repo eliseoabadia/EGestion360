@@ -125,17 +125,34 @@
 
     private async Task LoadUnidadForEdit()
     {
-        if (Item?.FkidUnidadesAlma == null) return;
-        try
+        if (Item?.FkidUnidadesAlma.HasValue == true && Item.FkidUnidadesAlma.Value > 0)
         {
-            var response = await UnidadesService.GetByIdAsync(Item.FkidUnidadesAlma.Value);
-            if (response?.Success == true && response.Data != null)
+            try
             {
-                _selectedUnidad = new LookupItem { Id = response.Data.PkidUnidades, Text = response.Data.Descripcion };
+                var response = await UnidadesService.GetByIdAsync(Item.FkidUnidadesAlma.Value);
+                if (response?.Success == true && response.Data != null)
+                {
+                    _selectedUnidad = new LookupItem { Id = response.Data.PkidUnidades, Text = response.Data.Descripcion };
+                    return;
+                }
             }
+            catch { }
         }
-        catch
+
+        if (!string.IsNullOrWhiteSpace(Item?.Unidad))
         {
+            try
+            {
+                var response = await UnidadesService.GetAllPaginadoAsync(1, 50, Item.Unidad, "Descripcion", SortDirection.Ascending);
+                var match = response?.Items?.FirstOrDefault(x =>
+                    x.Descripcion?.Contains(Item.Unidad, StringComparison.OrdinalIgnoreCase) == true);
+                if (match != null)
+                {
+                    _selectedUnidad = new LookupItem { Id = match.PkidUnidades, Text = match.Descripcion };
+                    return;
+                }
+            }
+            catch { }
         }
     }
 

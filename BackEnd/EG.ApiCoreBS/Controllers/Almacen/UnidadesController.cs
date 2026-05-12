@@ -39,7 +39,15 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         {
             var result = await _service.GetByIdAsync(id);
             if (result == null) return NotFound();
-            return Ok(result);
+            return Ok(new PagedResult<UnidadeResponse>
+            {
+                Success = true,
+                Data = result,
+                Items = new List<UnidadeResponse> { result },
+                TotalCount = 1,
+                Message = "OK",
+                Code = "SUCCESS"
+            });
         }
 
         [HttpPost]
