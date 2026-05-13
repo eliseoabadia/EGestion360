@@ -38,4 +38,8 @@ public partial class CotizacionDetalle
     public virtual EstudioMercadoDetalle FkidEstudioMercadoDetalleOrcoNavigation { get; set; }
 
     public virtual SolicitudCotizacion FkidSolicitudCotizacionOrcoNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

@@ -1,9 +1,7 @@
 using AutoMapper;
 using EG.ApiCoreBS.Extensions;
 using EG.Business.Mapping.General;
-using EG.Business.Services;
 using EG.Common.GenericModel;
-using EG.Domain.Interfaces;
 using EG.Infrastructure;
 using EG.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -67,17 +65,19 @@ builder.Services.AddDbContextGRP(configuration);
 
 builder.Services.AddApplicationServices(typeof(Program).Assembly);
 
-//// ===== SERVICIOS GENÉRICOS =====
-builder.Services.AddScoped(typeof(GenericService<,,>)); // 3 parámetros: TEntity, TDto, TResponse
-builder.Services.AddScoped(typeof(GenericService<,>));  // 2 parámetros: TEntity, TDto
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
 builder.Services.AddSwaggerGen(c =>
 {
     // Evita colisiones de tipos genéricos en Swagger
@@ -126,8 +126,6 @@ builder.Services.AddAuthentication(x =>
 //builder.Services.AddScoped<InitializeUserFilter>();
 
 builder.Services.AddMemoryCache();
-
-builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
 

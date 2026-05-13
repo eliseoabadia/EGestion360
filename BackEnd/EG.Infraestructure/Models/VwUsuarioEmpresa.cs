@@ -11,7 +11,7 @@ public partial class VwUsuarioEmpresa
 
     public string AspNetUserId { get; set; }
 
-    public int IdEmpresa { get; set; }
+    public int? IdEmpresa { get; set; }
 
     public string NombreCompleto { get; set; }
 
@@ -25,9 +25,9 @@ public partial class VwUsuarioEmpresa
 
     public string PayrollId { get; set; }
 
-    public string CodigoPostalUsuario { get; set; }
+    public string CodigoPostal { get; set; }
 
-    public string TelefonoUsuario { get; set; }
+    public string Telefono { get; set; }
 
     public string Direccion1 { get; set; }
 
@@ -41,13 +41,13 @@ public partial class VwUsuarioEmpresa
 
     public string SexoDescripcion { get; set; }
 
-    public bool Sexo { get; set; }
+    public string Sexo { get; set; }
 
-    public DateOnly? FechaIngreso { get; set; }
+    public DateTime? FechaIngreso { get; set; }
 
     public string FechaIngresoFormat { get; set; }
 
-    public int? AntigüedadAños { get; set; }
+    public int? AntiguedadAnios { get; set; }
 
     public int? IdIdiomaPreferido { get; set; }
 
@@ -67,11 +67,11 @@ public partial class VwUsuarioEmpresa
 
     public string UsuarioFechaCreacionFormat { get; set; }
 
-    public int UsuarioCreadorId { get; set; }
+    public int? UsuarioCreacion { get; set; }
 
     public DateTime? UsuarioFechaModificacion { get; set; }
 
-    public int? UsuarioModificadorId { get; set; }
+    public int? UsuarioModificacion { get; set; }
 
     public int? IdPersona { get; set; }
 

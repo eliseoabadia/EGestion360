@@ -19,6 +19,8 @@ public partial class Conteo
 
     public DateTime? FechaFin { get; set; }
 
+    public int? FkidPeriodoConteoAlma { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime? FechaCreacion { get; set; }
@@ -28,8 +30,6 @@ public partial class Conteo
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
-    public int? FkidPeriodoConteoAlma { get; set; }
 
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; } = new List<ConteoDetalleEscaneo>();
 

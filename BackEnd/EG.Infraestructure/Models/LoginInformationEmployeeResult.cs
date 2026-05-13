@@ -18,9 +18,9 @@ namespace EG.Infraestructure.Models
         public string PasswordHash { get; set; }
         [StringLength(256)]
         public string Name { get; set; }
-        [StringLength(60)]
+        [StringLength(250)]
         public string Email { get; set; }
-        [StringLength(194)]
+        [StringLength(152)]
         public string NombreUsuario { get; set; }
     }
 }

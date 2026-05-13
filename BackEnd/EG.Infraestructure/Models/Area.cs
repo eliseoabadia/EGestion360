@@ -54,4 +54,8 @@ public partial class Area
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

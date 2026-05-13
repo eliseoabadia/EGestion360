@@ -34,4 +34,8 @@ public partial class Paaaspartidum
     public virtual Partidum FkidPartidaContaNavigation { get; set; }
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

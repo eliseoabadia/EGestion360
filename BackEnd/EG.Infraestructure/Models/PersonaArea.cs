@@ -32,4 +32,8 @@ public partial class PersonaArea
     public virtual Area FkidAreaSisNavigation { get; set; }
 
     public virtual Persona FkidPersonaNomNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

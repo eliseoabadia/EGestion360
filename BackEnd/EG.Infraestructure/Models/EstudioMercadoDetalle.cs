@@ -40,4 +40,8 @@ public partial class EstudioMercadoDetalle
     public virtual Paaasdetalle FkidPaaasdetalleOrcoNavigation { get; set; }
 
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

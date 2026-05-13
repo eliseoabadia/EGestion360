@@ -34,6 +34,25 @@ namespace EG.Application.Services.General
             };
         }
 
+        public async Task<PagedResult<EstadoResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _service.GetAllPaginadoAsync(request);
+                return result ?? new PagedResult<EstadoResponse>
+                {
+                    Success = true, Message = "OK", Code = "SUCCESS", Items = new List<EstadoResponse>(), TotalCount = 0
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<EstadoResponse>
+                {
+                    Success = false, Message = $"Error: {ex.Message}", Code = "ERROR", TotalCount = 0
+                };
+            }
+        }
+
         public async Task<EstadoResponse> GetByIdAsync(int id)
         {
             return await _service.GetByIdAsync(id, idPropertyName: "PkidEstado");

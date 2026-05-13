@@ -13,15 +13,7 @@ public partial class FuenteFinanciamiento
 
     public string Descripcion { get; set; }
 
-    public bool Activo { get; set; }
-
-    public DateTime? FechaCreacion { get; set; }
-
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
-
-    public int? UsuarioModificacion { get; set; }
+    public int? FkidAnioSis { get; set; }
 
     public string Ff { get; set; }
 
@@ -33,7 +25,17 @@ public partial class FuenteFinanciamiento
 
     public string Ori { get; set; }
 
-    public int? FkidAnioSis { get; set; }
+    public bool Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
+
+    public virtual Anio FkidAnioSisNavigation { get; set; }
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 

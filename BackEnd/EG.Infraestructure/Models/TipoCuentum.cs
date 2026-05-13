@@ -24,4 +24,8 @@ public partial class TipoCuentum
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<CuentaContable> CuentaContables { get; set; } = new List<CuentaContable>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

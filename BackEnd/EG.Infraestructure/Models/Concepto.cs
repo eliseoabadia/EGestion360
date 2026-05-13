@@ -28,4 +28,8 @@ public partial class Concepto
     public virtual Capitulo FkidCapituloContaNavigation { get; set; }
 
     public virtual ICollection<Partidum> Partida { get; set; } = new List<Partidum>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

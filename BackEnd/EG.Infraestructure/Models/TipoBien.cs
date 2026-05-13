@@ -86,4 +86,8 @@ public partial class TipoBien
     public virtual Unidade FkidUnidadesEquivalenteNavigation { get; set; }
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

@@ -45,6 +45,8 @@
                     <MudTh><MudTableSortLabel SortLabel="PkidPaaas" T="PaaaResponse">ID</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PaaaResponse">Descripción</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="PaaaResponse">Área</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PaaaResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoDescripcion" T="PaaaResponse">Fuente Financiamiento</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="ResponsableCompleto" T="PaaaResponse">Responsable</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Fecha" T="PaaaResponse">Fecha</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Activo" T="PaaaResponse">Estatus</MudTableSortLabel></MudTh>
@@ -77,6 +79,8 @@
                         <MudChip T="string" Size="Size.Small" Color="Color.Tertiary">@item.PkidPaaas</MudChip>
                     </MudTd>
                     <MudTd Style="font-weight: 500;">@item.Descripcion</MudTd>
+                    <MudTd Style="font-weight: 500;">@item.ProgramaDescripcion</MudTd>
+                    <MudTd Style="font-weight: 500;">@item.FuenteFinanciamientoDescripcion</MudTd>
                     <MudTd>@item.AreaNombre</MudTd>
                     <MudTd>@item.ResponsableCompleto</MudTd>
                     <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
@@ -133,6 +137,14 @@
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Área</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedPaaa.AreaNombre</MudText>
                             </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Programa</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedPaaa.ProgramaDescripcion</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fuente Financiamiento</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedPaaa.FuenteFinanciamientoDescripcion</MudText>
+                            </MudItem>
                             <MudItem xs="6" md="2">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedPaaa.Fecha.ToString("dd/MM/yyyy")</MudText>
@@ -145,15 +157,11 @@
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Proyecto</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@(SelectedPaaa.ProyectoDescripcion ?? "N/A")</MudText>
                             </MudItem>
-                            <MudItem xs="12" md="2">
+                            <MudItem xs="12" md="3">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Partidas</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">
                                     <MudChip T="string" Size="Size.Small" Color="Color.Primary">@(partidas?.Count ?? 0)</MudChip>
                                 </MudText>
-                            </MudItem>
-                            <MudItem xs="12" md="10">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fuente Financiamiento</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@(SelectedPaaa.FuenteFinanciamientoDescripcion ?? "N/A")</MudText>
                             </MudItem>
                         </MudGrid>
                     </MudCardContent>

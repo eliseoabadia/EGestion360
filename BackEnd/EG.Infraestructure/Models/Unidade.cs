@@ -28,4 +28,8 @@ public partial class Unidade
     public virtual ICollection<TipoBien> TipoBienFkidUnidadesAlmaNavigations { get; set; } = new List<TipoBien>();
 
     public virtual ICollection<TipoBien> TipoBienFkidUnidadesEquivalenteNavigations { get; set; } = new List<TipoBien>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

@@ -42,4 +42,8 @@ public partial class SolicitudCotizacion
     public virtual EstudioMercado FkidEstudioMercadoOrcoNavigation { get; set; }
 
     public virtual Proveedor FkidProveedorSisNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

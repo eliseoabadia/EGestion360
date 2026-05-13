@@ -29,6 +29,8 @@ public partial class ConteoHist
 
     public string Diferencias { get; set; }
 
+    public int Nivel { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime? FechaCreacion { get; set; }
@@ -38,6 +40,4 @@ public partial class ConteoHist
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
-    public int Nivel { get; set; }
 }

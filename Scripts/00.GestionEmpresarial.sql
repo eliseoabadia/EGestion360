@@ -207,26 +207,66 @@ CREATE TABLE SIS.Departamento (
 -- USUARIOS (Integración con ASP.NET Identity)
 -- =============================================
 
--- Tabla de Usuario (se sincroniza con AspNetUsers)
+-- =============================================
+-- 6. NOM.Persona (desde RHCT.Persona)
+-- =============================================
+-- Tabla Persona
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Persona' AND schema_id = SCHEMA_ID('NOM'))
+BEGIN
+    CREATE TABLE NOM.Persona (
+        PKIdPersona INT IDENTITY(1,1) NOT NULL,
+        Clave NVARCHAR(15) NOT NULL,
+        Iniciales NVARCHAR(3) NULL,
+        Nombre NVARCHAR(50) NOT NULL,
+        Paterno NVARCHAR(50) NOT NULL,
+        Materno NVARCHAR(50) NOT NULL,
+        Sexo NVARCHAR(10) NULL,
+        FechaNacimiento DATETIME NOT NULL,
+        ESTADO_CIVIL NVARCHAR(20) NULL,
+        RFC NVARCHAR(15) NOT NULL,
+        Curp NVARCHAR(18) NOT NULL,
+        REG_IMSS NVARCHAR(12) NULL,
+        NoCartilla NVARCHAR(16) NULL,
+        NoLicencia NVARCHAR(16) NULL,
+        NoPasaporte NVARCHAR(16) NULL,
+        NoCredencialElector NVARCHAR(32) NULL,
+        Gafete NVARCHAR(11) NULL,
+        CORREO_ELECTRONICO NVARCHAR(250) NULL,
+        Telefono_particular NVARCHAR(15) NULL,
+        Telefono_movil NVARCHAR(15) NULL,
+        Calle NVARCHAR(40) NULL,
+        Num_exterior NVARCHAR(10) NULL,
+        Num_interior NVARCHAR(10) NULL,
+        Colonia NVARCHAR(40) NULL,
+        CP NVARCHAR(6) NULL,
+        Municipio NVARCHAR(20) NULL,
+        Estado NVARCHAR(30) NULL,
+        Fecha_de_Inicio DATETIME NOT NULL,
+        Fecha_Fin DATETIME NULL,
+        TIPO_CONTRATACION NVARCHAR(50) NULL,
+        PUESTO NVARCHAR(100) NULL,
+        SUELDO_BASE FLOAT NULL,
+        COMPENSACION_GARANTIZADA FLOAT NULL,
+        BANCO NVARCHAR(100) NULL,
+        NUMERO_CUENTA NVARCHAR(25) NULL,
+        CLABE NVARCHAR(50) NULL,
+        Activo BIT NOT NULL DEFAULT 1,
+        FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
+        UsuarioCreacion INT NOT NULL,
+        FechaModificacion DATETIME2 NULL,
+        UsuarioModificacion INT NULL,
+        CONSTRAINT PK_Persona PRIMARY KEY (PKIdPersona)
+    );
+END
+GO
+
+-- Tabla Usuario
 CREATE TABLE SIS.Usuario (
     PkIdUsuario INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
-    FKIdPersona_NOM INT NULL,
+    FKIdPersona_NOM INT NOT NULL,
     AspNetUserId NVARCHAR(450) NOT NULL,
-    Nombre NVARCHAR(64) NOT NULL,
-    ApellidoPaterno NVARCHAR(64) NOT NULL,
-    ApellidoMaterno NVARCHAR(64) NULL,
-    Iniciales NVARCHAR(3) NOT NULL,
     PayrollID NVARCHAR(20) NOT NULL,
-    CodigoPostal NVARCHAR(9) NULL,
-    Telefono NVARCHAR(16) NOT NULL,
-    Direccion1 NVARCHAR(128) NOT NULL,
-    Direccion2 NVARCHAR(64) NULL,
-    Email NVARCHAR(60) NOT NULL,
-    NumeroSocial NVARCHAR(12) NOT NULL,
-    Gafete NVARCHAR(11) NOT NULL,
-    Sexo BIT NOT NULL,
-    FechaIngreso DATE NULL,
     FKIdIdiomaPreferido_SIS INT NULL,
     FKIdMonedaPreferida_SIS INT NULL,
     EsAdministrador BIT NOT NULL DEFAULT 0,
@@ -235,16 +275,26 @@ CREATE TABLE SIS.Usuario (
     UsuarioCreacion INT NOT NULL,
     FechaModificacion DATETIME2 NULL,
     UsuarioModificacion INT NULL,
-    CONSTRAINT PK_Usuario PRIMARY KEY CLUSTERED (PkIdUsuario),
+    CONSTRAINT PK_Usuario PRIMARY KEY (PkIdUsuario),
     CONSTRAINT FK_Usuario_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
     CONSTRAINT FK_Usuario_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
     CONSTRAINT FK_Usuario_Moneda FOREIGN KEY (FKIdMonedaPreferida_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
-    CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona),
-    CONSTRAINT UQ_Usuario_Email UNIQUE (Email),
-    CONSTRAINT UQ_Usuario_PayrollID UNIQUE (PayrollID),
-    CONSTRAINT UQ_Usuario_Gafete UNIQUE (Gafete),
-    CONSTRAINT UQ_Usuario_AspNetUserId UNIQUE (AspNetUserId)
+    CONSTRAINT UQ_Usuario_AspNetUserId UNIQUE (AspNetUserId),
+    CONSTRAINT UQ_Usuario_PayrollID UNIQUE (PayrollID)
 );
+GO
+
+
+-- FK en Persona hacia Usuario
+ALTER TABLE NOM.Persona
+ADD CONSTRAINT FK_Persona_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Persona_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
+-- FK en Usuario hacia Persona
+ALTER TABLE SIS.Usuario
+ADD CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona);
+GO
+
 
 --update sis.usuario  set FKIdPersona_NOM = 9997 where pkIdUsuario = 1 
 
@@ -298,24 +348,32 @@ CREATE TABLE SIS.UsuarioDepartamento (
 -- =============================================
 
 --CREATE INDEX IX_Usuario_Empresa ON SIS.Usuario(FKIdEmpresa_SIS) INCLUDE (Nombre, ApellidoPaterno, Email) WHERE Activo = 1;
-CREATE INDEX IX_Usuario_AspNetUserId ON SIS.Usuario(AspNetUserId) INCLUDE (PkIdUsuario, FKIdEmpresa_SIS);
-CREATE INDEX IX_Usuario_Email ON SIS.Usuario(Email) INCLUDE (Activo) WHERE Activo = 1;
+--CREATE INDEX IX_Usuario_AspNetUserId ON SIS.Usuario(AspNetUserId) INCLUDE (PkIdUsuario, FKIdEmpresa_SIS);
+--CREATE INDEX IX_Usuario_Email ON SIS.Usuario(Email) INCLUDE (Activo) WHERE Activo = 1;
 
---CREATE INDEX IX_UsuarioSucursal_Usuario ON SIS.UsuarioSucursal(FKIdUsuario_SIS) INCLUDE (FKIdSucursal_SIS, PuedeAcceder) WHERE Activo = 1;
---CREATE INDEX IX_UsuarioSucursal_Sucursal ON SIS.UsuarioSucursal(FKIdSucursal_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
+----CREATE INDEX IX_UsuarioSucursal_Usuario ON SIS.UsuarioSucursal(FKIdUsuario_SIS) INCLUDE (FKIdSucursal_SIS, PuedeAcceder) WHERE Activo = 1;
+----CREATE INDEX IX_UsuarioSucursal_Sucursal ON SIS.UsuarioSucursal(FKIdSucursal_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
 
---drop index  IX_UsuarioDepartamento_Usuario
---drop index IX_UsuarioDepartamento_Departamento
---CREATE INDEX IX_UsuarioDepartamento_Usuario ON SIS.UsuarioDepartamento(FKIdUsuario_SIS) INCLUDE (FKIdDepartamento_SIS, EsJefe) WHERE Activo = 1;
---CREATE INDEX IX_UsuarioDepartamento_Departamento ON SIS.UsuarioDepartamento(FKIdDepartamento_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
+----drop index  IX_UsuarioDepartamento_Usuario
+----drop index IX_UsuarioDepartamento_Departamento
+----CREATE INDEX IX_UsuarioDepartamento_Usuario ON SIS.UsuarioDepartamento(FKIdUsuario_SIS) INCLUDE (FKIdDepartamento_SIS, EsJefe) WHERE Activo = 1;
+----CREATE INDEX IX_UsuarioDepartamento_Departamento ON SIS.UsuarioDepartamento(FKIdDepartamento_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
 
-CREATE INDEX IX_Sucursal_Empresa ON SIS.Sucursal(FKIdEmpresa_SIS) INCLUDE (Nombre, CodigoSucursal, Ciudad) WHERE Activo = 1;
-CREATE INDEX IX_Departamento_Empresa ON SIS.Departamento(FKIdEmpresa_SIS) INCLUDE (Nombre) WHERE Activo = 1;
-CREATE INDEX IX_Departamento_Sucursal ON SIS.Departamento(FKIdSucursal_SIS) INCLUDE (Nombre) WHERE Activo = 1;
+--CREATE INDEX IX_Sucursal_Empresa ON SIS.Sucursal(FKIdEmpresa_SIS) INCLUDE (Nombre, CodigoSucursal, Ciudad) WHERE Activo = 1;
+--CREATE INDEX IX_Departamento_Empresa ON SIS.Departamento(FKIdEmpresa_SIS) INCLUDE (Nombre) WHERE Activo = 1;
+--CREATE INDEX IX_Departamento_Sucursal ON SIS.Departamento(FKIdSucursal_SIS) INCLUDE (Nombre) WHERE Activo = 1;
 
 -- =============================================
 -- TABLAS DE ASP.NET IDENTITY
 -- =============================================
+
+/*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
+/*
+user:ADMIN001
+pasword: Tecno.2025
+*/
+/*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
+
 
 -- Roles
 CREATE TABLE dbo.AspNetRoles (
@@ -332,9 +390,12 @@ INSERT INTO [dbo].[AspNetRoles] ([Id], [Name], [Code]) VALUES
 ('739CC754-488B-4BB4-B7FB-62F6BF3C26D0', 'SOPORTE', '20000'),
 ('67A6E679-DBC4-402D-AE6E-7F28DDB11BD8', 'CONFIGURATION', '30000');
 
-67A6E679-DBC4-402D-AE6E-7F28DDB11BD8
-71804e93-9753-4684-84fd-cf037349c111
-739CC754-488B-4BB4-B7FB-62F6BF3C26D0
+
+/* user */
+INSERT INTO [dbo].[AspNetUsers]
+([Id],[Email],[EmailConfirmed],[PasswordHash],[SecurityStamp],[PhoneNumber],[PhoneNumberConfirmed],[TwoFactorEnabled],[LockoutEndDateUtc],[LockoutEnabled],[AccessFailedCount]
+,[ReferenceId],[AccessNumber],[PkIdUsuario])
+VALUES (NEWID(),'',1,'UOxg2B7HCZwZZ/drSkwHrA==','C5F91B8B-9E25-4576-96E7-CD3317F1AB87',null,0,0,null,0,0,10000,'0000010000',1)
 
 -- Claim Types
 CREATE TABLE dbo.AspNetClaimTypes (
@@ -608,9 +669,9 @@ INSERT INTO [dbo].[AspNetUsers] (
     [AccessFailedCount], [ReferenceId], [AccessNumber], [PkIdUsuario]
 )
 VALUES 
-    (NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 1),
-    (NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 2),
-    (NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 3);
+    (NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 1)--,
+    --(NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 2),
+    --(NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 3);
 
 -- Tabla AspNetUserRoles
 --drop table dbo.AspNetUserRoles

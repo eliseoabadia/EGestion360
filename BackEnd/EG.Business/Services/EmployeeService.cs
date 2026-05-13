@@ -21,7 +21,9 @@ namespace EG.Business.Services
         public async Task<IList<UsuarioResponse?>> GetAllUsersAsync()
         {
             var items = await _repository.GetAllWithIncludes2Async(
-                u => u.Activo
+                u => u.Activo,
+                u => u.FkidPersonaNomNavigation,
+                u => u.FkidEmpresaSisNavigation
             );
             return items != null ? _mapper.Map<IList<UsuarioResponse?>>(items) : null;
         }
@@ -29,24 +31,41 @@ namespace EG.Business.Services
         public async Task<PagedResult<UsuarioResponse>> GetAllUsuariosPaginadoAsync(PagedRequest _params)
         {
             // Obtener IQueryable directamente
-            var query = _repository.QueryWithIncludes(u => u.Activo); // Asume que devuelve IQueryable<Usuario>
+            var query = _repository.QueryWithIncludes(
+                u => u.Activo,
+                u => u.FkidPersonaNomNavigation,
+                u => u.FkidEmpresaSisNavigation);
 
             // Aplicar filtro si existe
             if (!string.IsNullOrWhiteSpace(_params.Filtro))
             {
-                query = query.Where(u => u.PkIdUsuario.ToString().Contains(_params.Filtro) ||
-                            (u.Nombre + " " + u.ApellidoPaterno + " " + u.ApellidoMaterno).Contains(_params.Filtro) ||
-                            u.Email.Contains(_params.Filtro) ||
-                            u.Telefono.Contains(_params.Filtro) ||
-                            u.Gafete.Contains(_params.Filtro));
+                var filtro = _params.Filtro.Trim();
+                query = query.Where(u => u.PkIdUsuario.ToString().Contains(filtro) ||
+                            ((u.FkidPersonaNomNavigation.Nombre ?? string.Empty) + " " +
+                             (u.FkidPersonaNomNavigation.Paterno ?? string.Empty) + " " +
+                             (u.FkidPersonaNomNavigation.Materno ?? string.Empty)).Contains(filtro) ||
+                            (u.FkidPersonaNomNavigation.CorreoElectronico ?? string.Empty).Contains(filtro) ||
+                            (u.FkidPersonaNomNavigation.TelefonoParticular ?? string.Empty).Contains(filtro) ||
+                            (u.FkidPersonaNomNavigation.TelefonoMovil ?? string.Empty).Contains(filtro) ||
+                            (u.FkidPersonaNomNavigation.Gafete ?? string.Empty).Contains(filtro));
             }
 
             if (_params.SortLabel.Equals("NombreCompleto"))
             {
                 if (_params.SortDirection.Contains("Descending"))
-                    query = query.OrderByDescending(x => x.Nombre + " " + x.ApellidoPaterno + " " + x.ApellidoMaterno);
+                {
+                    query = query.OrderByDescending(x =>
+                        (x.FkidPersonaNomNavigation.Nombre ?? string.Empty) + " " +
+                        (x.FkidPersonaNomNavigation.Paterno ?? string.Empty) + " " +
+                        (x.FkidPersonaNomNavigation.Materno ?? string.Empty));
+                }
                 else
-                    query = query.OrderBy(x => x.Nombre + " " + x.ApellidoPaterno + " " + x.ApellidoMaterno);
+                {
+                    query = query.OrderBy(x =>
+                        (x.FkidPersonaNomNavigation.Nombre ?? string.Empty) + " " +
+                        (x.FkidPersonaNomNavigation.Paterno ?? string.Empty) + " " +
+                        (x.FkidPersonaNomNavigation.Materno ?? string.Empty));
+                }
             }
             else
                 query = query.OrderByDynamic(_params.SortLabel, _params.SortDirection.Contains("Descending") ? true : false);

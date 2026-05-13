@@ -62,4 +62,8 @@ public partial class PeriodoConteo
     public virtual Usuario FkidSupervisorSisNavigation { get; set; }
 
     public virtual TipoConteo FkidTipoConteoAlmaNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

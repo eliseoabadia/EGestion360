@@ -32,6 +32,7 @@ namespace EG.Application.Services.General
         {
             // Includes de primer nivel
             _service.AddInclude(u => u.FkidEmpresaSisNavigation);
+            _service.AddInclude(u => u.FkidPersonaNomNavigation);
             _service.AddInclude(u => u.PerfilUsuarioUsuarioCreacionNavigations);
             _service.AddInclude(u => u.UsuarioSucursalUsuarioCreacionNavigations);
 
@@ -47,7 +48,7 @@ namespace EG.Application.Services.General
             // Filtros para la vista
             _serviceView.AddRelationFilter("Usuario", new List<string>
             {
-                "NombreUsuario", "ApellidoPaterno", "ApellidoMaterno", "Email", "PayrollId"
+                "Nombre", "ApellidoPaterno", "ApellidoMaterno", "Email", "PayrollId"
             });
             _serviceView.AddRelationFilter("Sucursal", new List<string>
             {
@@ -69,7 +70,10 @@ namespace EG.Application.Services.General
                     return false;
 
                 var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(u => u.Email.ToLower() == usuarioDto.Email.ToLower() && u.Activo);
+                    .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
+                                   u.FkidPersonaNomNavigation.CorreoElectronico != null &&
+                                   u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == usuarioDto.Email.ToLower() &&
+                                   u.Activo);
 
                 return !exists;
             });
@@ -82,7 +86,9 @@ namespace EG.Application.Services.General
                     return true;
 
                 var exists = await _service.GetQueryWithIncludes()
-                    .AnyAsync(u => u.Email.ToLower() == usuarioDto.Email.ToLower() &&
+                    .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
+                                   u.FkidPersonaNomNavigation.CorreoElectronico != null &&
+                                   u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == usuarioDto.Email.ToLower() &&
                                    u.PkIdUsuario != id.Value &&
                                    u.Activo);
 
@@ -290,7 +296,10 @@ namespace EG.Application.Services.General
                 {
                     // Validar email único
                     var emailExists = await _service.GetQueryWithIncludes()
-                        .AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower() && u.Activo);
+                        .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
+                                       u.FkidPersonaNomNavigation.CorreoElectronico != null &&
+                                       u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == dto.Email.ToLower() &&
+                                       u.Activo);
 
                     if (emailExists)
                         throw new InvalidOperationException($"El email '{dto.Email}' ya está registrado para otro usuario activo");
@@ -349,7 +358,9 @@ namespace EG.Application.Services.General
                 {
                     // Validar email único
                     var emailExists = await _service.GetQueryWithIncludes()
-                        .AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower() &&
+                        .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
+                                       u.FkidPersonaNomNavigation.CorreoElectronico != null &&
+                                       u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == dto.Email.ToLower() &&
                                        u.PkIdUsuario != id &&
                                        u.Activo);
 

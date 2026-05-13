@@ -11,31 +11,23 @@ public partial class Persona
 
     public string Clave { get; set; }
 
+    public string Iniciales { get; set; }
+
     public string Nombre { get; set; }
 
     public string Paterno { get; set; }
 
     public string Materno { get; set; }
 
-    public string TelefonoParticular { get; set; }
+    public string Sexo { get; set; }
 
-    public string TelefonoMovil { get; set; }
+    public DateTime FechaNacimiento { get; set; }
 
-    public DateTime FechaDeInicio { get; set; }
-
-    public DateTime? FechaFin { get; set; }
+    public string EstadoCivil { get; set; }
 
     public string Rfc { get; set; }
 
     public string Curp { get; set; }
-
-    public DateTime FechaNacimiento { get; set; }
-
-    public string Sexo { get; set; }
-
-    public string EstadoCivil { get; set; }
-
-    public string Municipio { get; set; }
 
     public string RegImss { get; set; }
 
@@ -47,6 +39,14 @@ public partial class Persona
 
     public string NoCredencialElector { get; set; }
 
+    public string Gafete { get; set; }
+
+    public string CorreoElectronico { get; set; }
+
+    public string TelefonoParticular { get; set; }
+
+    public string TelefonoMovil { get; set; }
+
     public string Calle { get; set; }
 
     public string NumExterior { get; set; }
@@ -57,9 +57,13 @@ public partial class Persona
 
     public string Cp { get; set; }
 
+    public string Municipio { get; set; }
+
     public string Estado { get; set; }
 
-    public string CorreoElectronico { get; set; }
+    public DateTime FechaDeInicio { get; set; }
+
+    public DateTime? FechaFin { get; set; }
 
     public string TipoContratacion { get; set; }
 
@@ -112,6 +116,10 @@ public partial class Persona
     public virtual ICollection<Requisicion> RequisicionFkidPsupervisoNomNavigations { get; set; } = new List<Requisicion>();
 
     public virtual ICollection<Requisicion> RequisicionFkidSupervisoNomNavigations { get; set; } = new List<Requisicion>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
 }

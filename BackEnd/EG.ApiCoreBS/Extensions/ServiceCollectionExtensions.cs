@@ -49,55 +49,55 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAuthAppService, AuthAppService>();
             services.AddScoped<INavigateAppService, NavigateAppService>();
 
-    // Application services - General
-    services.AddScoped<IEmpresaAppService, EmpresaAppService>();
-    services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
-    services.AddScoped<IEstadoAppService, EstadoAppService>();
-    services.AddScoped<IPaisAppService, PaisAppService>();
-    services.AddScoped<ISucursalAppService, SucursalAppService>();
-    services.AddScoped<IUsuarioAppService, UsuarioAppService>();
-    services.AddScoped<IUsuarioSucursalAppService, UsuarioSucursalAppService>();
-    services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
-    services.AddScoped<IAreaAppService, AreaAppService>();
-    services.AddScoped<IDashboardAppService, DashboardAppService>();
-    services.AddScoped<IUserProfileAppService, UserProfileAppService>();
-    services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
-    
-    // Application services - Adquisicion
-    services.AddScoped<IPaaaAppService, PaaaAppService>();
-    services.AddScoped<IArticuloAppService, ArticuloAppService>();
-    services.AddScoped<IEstatusRequisicionAppService, EstatusRequisicionAppService>();
-    services.AddScoped<IFraccionAppService, FraccionAppService>();
-    services.AddScoped<IModalidadAppService, ModalidadAppService>();
-    services.AddScoped<IProcedimientoContratacionAppService, ProcedimientoContratacionAppService>();
-    services.AddScoped<IProveedorAppService, ProveedorAppService>();
-    services.AddScoped<ITipoContratoAppService, TipoContratoAppService>();
-    services.AddScoped<ITipoDocumentoAppService, TipoDocumentoAppService>();
-    services.AddScoped<ITipoGarantiaAppService, TipoGarantiaAppService>();
-    
-    // Application services - Patrimonio
-    services.AddScoped<IFamiliaService, FamiliaService>();
-    services.AddScoped<IGrupoBienService, GrupoBienService>();
-    services.AddScoped<IMarcaService, MarcaService>();
-    services.AddScoped<INivelService, NivelService>();
-    services.AddScoped<IPartidaService, PartidaService>();
-    services.AddScoped<IPersonaService, PersonaService>();
-    services.AddScoped<ITipoAdquisicionService, TipoAdquisicionService>();
-    services.AddScoped<ITipoBienService, TipoBienService>();
-    services.AddScoped<ITipoPatrimonioService, TipoPatrimonioService>();
-    
-    // Application services - Presupuestales
-    services.AddScoped<IProgramaAppServices, ProgramaAppServices>();
-    services.AddScoped<IActividadInstitucionalAppServices, ActividadInstitucionalAppServices>();
-    services.AddScoped<IAniosAppServices, AniosAppServices>();
-    services.AddScoped<IFuenteFinanciamientoAppServices, FuenteFinanciamientoAppServices>();
-    services.AddScoped<IPgAppServices, PgAppServices>();
-    services.AddScoped<IProgramaPresupuestalAppServices, ProgramaPresupuestalAppServices>();
-    services.AddScoped<IProyectoAppServices, ProyectoAppServices>();
-    services.AddScoped<IRamoAppServices, RamoAppServices>();
-    services.AddScoped<ISectorAppServices, SectorAppServices>();
-    services.AddScoped<ITipoRecursoAppServices, TipoRecursoAppServices>();
-    services.AddScoped<IUnidadResponsableAppServices, UnidadResponsableAppServices>();
+            // Application services - General
+            services.AddScoped<IEmpresaAppService, EmpresaAppService>();
+            services.AddScoped<IDepartamentoAppService, DepartamentoAppService>();
+            services.AddScoped<IEstadoAppService, EstadoAppService>();
+            services.AddScoped<IPaisAppService, PaisAppService>();
+            services.AddScoped<ISucursalAppService, SucursalAppService>();
+            services.AddScoped<IUsuarioAppService, UsuarioAppService>();
+            services.AddScoped<IUsuarioSucursalAppService, UsuarioSucursalAppService>();
+            services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
+            services.AddScoped<IAreaAppService, AreaAppService>();
+            services.AddScoped<IDashboardAppService, DashboardAppService>();
+            services.AddScoped<IUserProfileAppService, UserProfileAppService>();
+            services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
+
+            // Application services - Adquisicion
+            services.AddScoped<IPaaaAppService, PaaaAppService>();
+            services.AddScoped<IArticuloAppService, ArticuloAppService>();
+            services.AddScoped<IEstatusRequisicionAppService, EstatusRequisicionAppService>();
+            services.AddScoped<IFraccionAppService, FraccionAppService>();
+            services.AddScoped<IModalidadAppService, ModalidadAppService>();
+            services.AddScoped<IProcedimientoContratacionAppService, ProcedimientoContratacionAppService>();
+            services.AddScoped<IProveedorAppService, ProveedorAppService>();
+            services.AddScoped<ITipoContratoAppService, TipoContratoAppService>();
+            services.AddScoped<ITipoDocumentoAppService, TipoDocumentoAppService>();
+            services.AddScoped<ITipoGarantiaAppService, TipoGarantiaAppService>();
+
+            // Application services - Patrimonio
+            services.AddScoped<IFamiliaService, FamiliaService>();
+            services.AddScoped<IGrupoBienService, GrupoBienService>();
+            services.AddScoped<IMarcaService, MarcaService>();
+            services.AddScoped<INivelService, NivelService>();
+            services.AddScoped<IPartidaService, PartidaService>();
+            services.AddScoped<IPersonaService, PersonaService>();
+            services.AddScoped<ITipoAdquisicionService, TipoAdquisicionService>();
+            services.AddScoped<ITipoBienService, TipoBienService>();
+            services.AddScoped<ITipoPatrimonioService, TipoPatrimonioService>();
+
+            // Application services - Presupuestales
+            services.AddScoped<IProgramaAppServices, ProgramaAppServices>();
+            services.AddScoped<IActividadInstitucionalAppServices, ActividadInstitucionalAppServices>();
+            services.AddScoped<IAniosAppServices, AniosAppServices>();
+            services.AddScoped<IFuenteFinanciamientoAppServices, FuenteFinanciamientoAppServices>();
+            services.AddScoped<IPgAppServices, PgAppServices>();
+            services.AddScoped<IProgramaPresupuestalAppServices, ProgramaPresupuestalAppServices>();
+            services.AddScoped<IProyectoAppServices, ProyectoAppServices>();
+            services.AddScoped<IRamoAppServices, RamoAppServices>();
+            services.AddScoped<ISectorAppServices, SectorAppServices>();
+            services.AddScoped<ITipoRecursoAppServices, TipoRecursoAppServices>();
+            services.AddScoped<IUnidadResponsableAppServices, UnidadResponsableAppServices>();
 
             // Application services - Conteo ciclico
             services.AddScoped<IConteoAppService, ConteoAppService>();
@@ -138,10 +138,6 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
 
-            // Catalog services - Contabilidad
-            services.AddScoped<ITipoPolizaService, TipoPolizaService>();
-            services.AddScoped<IMatrizConversionService, MatrizConversionService>();
-
             // Catalog services - Clave programa
             services.AddScoped<IGfService, GfService>();
             services.AddScoped<IFnService, FnService>();
@@ -150,8 +146,9 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IGfAppService, GfAppService>();
             services.AddScoped<ISfAppService, SfAppService>();
 
-            // Generic service
-            services.AddScoped(typeof(GenericService<,,>));
+            //// ===== SERVICIOS GENÉRICOS =====
+            services.AddScoped(typeof(GenericService<,,>)); // 3 parámetros: TEntity, TDto, TResponse
+            services.AddScoped(typeof(GenericService<,>));  // 2 parámetros: TEntity, TDto
         }
     }
 }

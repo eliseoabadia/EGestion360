@@ -8,6 +8,7 @@ namespace EG.Application.Interfaces.General
     {
         Task<PagedResult<EstadoResponse>> GetAllAsync();
         Task<EstadoResponse> GetByIdAsync(int id);
+        Task<PagedResult<EstadoResponse>> GetAllPaginadoAsync(PagedRequest request);
         Task<EstadoResponse> CreateAsync(EstadoDto dto, int usuarioActual);
         Task<EstadoResponse> UpdateAsync(int id, EstadoDto dto, int usuarioActual);
         Task<bool> DeleteAsync(int id);

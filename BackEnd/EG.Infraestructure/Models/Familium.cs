@@ -24,4 +24,8 @@ public partial class Familium
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<GrupoBien> GrupoBiens { get; set; } = new List<GrupoBien>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

@@ -128,6 +128,12 @@ namespace EG.ApiCoreBS.Controllers.General
         [HttpPost]
         public async Task<ActionResult<PagedResult<UsuarioResponse>>> Create([FromBody] UsuarioResponse request)
         {
+            ModelState.Clear();
+            if (string.IsNullOrWhiteSpace(request.NombreCompleto))
+                return BadRequest(new PagedResult<UsuarioResponse>
+                {
+                    Success = false, Message = "El nombre completo es requerido", Code = "INVALID_DATA", TotalCount = 0
+                });
             try
             {
                 var dto = _mapper.Map<UsuarioDto>(request);
@@ -190,6 +196,7 @@ namespace EG.ApiCoreBS.Controllers.General
         [HttpPut("{id}")]
         public async Task<ActionResult<PagedResult<UsuarioResponse>>> Update(int id, [FromBody] UsuarioResponse request)
         {
+            ModelState.Clear();
             try
             {
                 var dto = _mapper.Map<UsuarioDto>(request);

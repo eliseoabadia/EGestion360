@@ -24,4 +24,8 @@ public partial class Capitulo
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<Concepto> Conceptos { get; set; } = new List<Concepto>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

@@ -56,6 +56,16 @@ namespace EG.Web.Auth
         {
             var normalized = NormalizeToken(token);
             await _js.SetInLocalStorage(TOKEN_KEY, normalized);
+            // Asegurar que el HttpClient tenga el header Authorization inmediatamente
+            try
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", normalized);
+            }
+            catch
+            {
+                // Ignorar fallos al establecer el header para no romper el flujo de login
+            }
+
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 

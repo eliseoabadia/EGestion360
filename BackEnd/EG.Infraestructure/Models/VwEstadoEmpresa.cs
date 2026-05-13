@@ -27,7 +27,7 @@ public partial class VwEstadoEmpresa
 
     public DateTime? EmpresaFechaCreacion { get; set; }
 
-    public int EmpresaUsuarioCreacion { get; set; }
+    public int? EmpresaUsuarioCreacion { get; set; }
 
     public DateTime? EmpresaFechaModificacion { get; set; }
 

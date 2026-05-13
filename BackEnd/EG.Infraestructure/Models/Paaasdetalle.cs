@@ -42,4 +42,8 @@ public partial class Paaasdetalle
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 
     public virtual Unidade FkidUnidadesAlmaNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

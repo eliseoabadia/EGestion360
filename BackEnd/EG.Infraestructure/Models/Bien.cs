@@ -140,4 +140,8 @@ public partial class Bien
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 
     public virtual TipoPatrimonio FkidTipoPatrimonioAlmaNavigation { get; set; }
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

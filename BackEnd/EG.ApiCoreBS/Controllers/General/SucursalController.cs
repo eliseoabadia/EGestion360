@@ -66,6 +66,13 @@ namespace EG.ApiCoreBS.Controllers.General
             });
         }
 
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<SucursalResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        {
+            var result = await _appService.GetAllPaginadoAsync(request);
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<ActionResult<PagedResult<SucursalResponse>>> Create([FromBody] SucursalResponse response)
         {

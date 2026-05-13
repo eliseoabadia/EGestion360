@@ -26,4 +26,8 @@ public partial class EstadoBien
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

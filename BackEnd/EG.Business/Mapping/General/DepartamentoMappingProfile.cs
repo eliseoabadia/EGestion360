@@ -37,7 +37,8 @@ namespace EG.Business.Mapping.General
                 .ForMember(dest => dest.DepartamentoActivo, opt => opt.MapFrom(src => src.Activo))
                 .ForMember(dest => dest.EmpresaActivo, opt => opt.MapFrom(src => src.FkidEmpresaSisNavigation != null ? src.FkidEmpresaSisNavigation.Activo : false))
                 .ForMember(dest => dest.UsuarioCreacionNombre, opt => opt.MapFrom(src => src.UsuarioCreacionNavigation != null 
-                    ? $"{src.UsuarioCreacionNavigation.Nombre} {src.UsuarioCreacionNavigation.ApellidoPaterno}" 
+                    && src.UsuarioCreacionNavigation.FkidPersonaNomNavigation != null
+                    ? $"{src.UsuarioCreacionNavigation.FkidPersonaNomNavigation.Nombre} {src.UsuarioCreacionNavigation.FkidPersonaNomNavigation.Paterno}" 
                     : string.Empty));
 
             CreateMap<VwEmpresaDepartamanto, DepartamentoResponse>();

@@ -24,4 +24,8 @@ public partial class EstatusProveedor
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

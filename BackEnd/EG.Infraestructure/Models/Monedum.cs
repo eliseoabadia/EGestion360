@@ -19,8 +19,6 @@ public partial class Monedum
 
     public bool Activo { get; set; }
 
-    public virtual ICollection<Empresa> Empresas { get; set; } = new List<Empresa>();
-
     public virtual ICollection<Paise> Paises { get; set; } = new List<Paise>();
 
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();

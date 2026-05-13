@@ -63,7 +63,7 @@ public partial class VwSucursalEmpresaEstado
 
     public DateTime? FechaCreacion { get; set; }
 
-    public int UsuarioCreacion { get; set; }
+    public int? UsuarioCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 

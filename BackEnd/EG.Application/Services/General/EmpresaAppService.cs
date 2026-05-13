@@ -31,26 +31,11 @@ namespace EG.Application.Services.General
         private void ConfigureService()
         {
             // Includes para la entidad Empresa
-            _service.AddInclude(e => e.FkidMonedaBaseSisNavigation);
-            _service.AddInclude(e => e.FkidIdiomaPreferidoSisNavigation);
             _service.AddInclude(e => e.EmpresaEstados);
             _service.AddInclude(e => e.Sucursals);
             _service.AddInclude(e => e.Departamentos);
 
             // Filtros de relación para búsquedas avanzadas
-            _service.AddRelationFilter("Moneda", new List<string>
-            {
-                "FkidMonedaBaseSisNavigation.Nombre",
-                "FkidMonedaBaseSisNavigation.Codigo",
-                "FkidMonedaBaseSisNavigation.Simbolo"
-            });
-
-            _service.AddRelationFilter("Idioma", new List<string>
-            {
-                "FkidIdiomaPreferidoSisNavigation.Nombre",
-                "FkidIdiomaPreferidoSisNavigation.CodigoCultura"
-            });
-
             _service.AddRelationFilter("EmpresaEstados", new List<string>
             {
                 "FkidEstadoSisNavigation.Nombre",

@@ -44,4 +44,8 @@ public partial class EstudioMercado
     public virtual Persona FkidResponsableNomNavigation { get; set; }
 
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

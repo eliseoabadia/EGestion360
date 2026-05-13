@@ -27,7 +27,7 @@ public partial class Empresa
 
     public DateTime? FechaCreacion { get; set; }
 
-    public int UsuarioCreacion { get; set; }
+    public int? UsuarioCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 
@@ -46,10 +46,6 @@ public partial class Empresa
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
 
     public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
-
-    public virtual Idioma FkidIdiomaPreferidoSisNavigation { get; set; }
-
-    public virtual Monedum FkidMonedaBaseSisNavigation { get; set; }
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 

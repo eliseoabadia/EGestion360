@@ -36,4 +36,8 @@ public partial class Partidum
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

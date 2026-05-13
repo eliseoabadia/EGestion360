@@ -54,4 +54,8 @@ public partial class Paaa
     public virtual Proyecto FkidProyectoOrcoNavigation { get; set; }
 
     public virtual ICollection<Paaaspartidum> Paaaspartida { get; set; } = new List<Paaaspartidum>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

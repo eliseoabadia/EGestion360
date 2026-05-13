@@ -38,4 +38,8 @@ public partial class GrupoBien
     public virtual Familium FkidFamiliaAlmaNavigation { get; set; }
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();
+
+    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+
+    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }
