@@ -1,20 +1,19 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Contabilidad
 {
-    public class ConceptoMappingProfile : Profile
+    public class ConceptoMappingProfile : IRegister
     {
-        public ConceptoMappingProfile()
-        {
-            CreateMap<Concepto, ConceptoDto>().ReverseMap();
-            CreateMap<Concepto, ConceptoResponse>();
-            CreateMap<VwConcepto, ConceptoResponse>();
-            CreateMap<ConceptoResponse, ConceptoDto>()
-                .ForMember(dest => dest.PkidConcepto, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Concepto, ConceptoDto>().TwoWays();
+            config.NewConfig<Concepto, ConceptoResponse>();
+            config.NewConfig<VwConcepto, ConceptoResponse>();
+            config.NewConfig<ConceptoResponse, ConceptoDto>()
+                .Ignore(dest => dest.PkidConcepto)
+                .IgnoreNullValues(true);
         }
     }
 }

@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class TipoPatrimonioService : ITipoPatrimonioService
     {
         private readonly GenericService<TipoPatrimonio, TipoPatrimonioDto, TipoPatrimonioResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public TipoPatrimonioService(
             GenericService<TipoPatrimonio, TipoPatrimonioDto, TipoPatrimonioResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureValidations();
         }
@@ -76,7 +73,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (entity == null)
                     return new PagedResult<TipoPatrimonioResponse> { Success = false, Message = "Tipo de patrimonio no encontrado", Code = "NOT_FOUND" };
 
-                var result = _mapper.Map<TipoPatrimonioResponse>(entity);
+                var result = entity.Adapt<TipoPatrimonioResponse>();
                 return new PagedResult<TipoPatrimonioResponse>
                 {
                     Success = true,
@@ -103,7 +100,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<TipoPatrimonioDto>(request);
+                var dto = request.Adapt<TipoPatrimonioDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
 
@@ -118,8 +115,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Tipo de patrimonio creado correctamente",
                     Code = "SUCCESS",
-                    Data = created != null ? _mapper.Map<TipoPatrimonioResponse>(created) : null,
-                    Items = created != null ? new List<TipoPatrimonioResponse> { _mapper.Map<TipoPatrimonioResponse>(created) } : new List<TipoPatrimonioResponse>(),
+                    Data = created != null ? created.Adapt<TipoPatrimonioResponse>() : null,
+                    Items = created != null ? new List<TipoPatrimonioResponse> { created.Adapt<TipoPatrimonioResponse>() } : new List<TipoPatrimonioResponse>(),
                     TotalCount = 1
                 };
             }
@@ -137,7 +134,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (existing == null)
                     return new PagedResult<TipoPatrimonioResponse> { Success = false, Message = "Tipo de patrimonio no encontrado", Code = "NOT_FOUND" };
 
-                var dto = _mapper.Map<TipoPatrimonioDto>(request);
+                var dto = request.Adapt<TipoPatrimonioDto>();
                 dto.UsuarioCreacion = existing.UsuarioCreacion;
                 dto.FechaCreacion = existing.FechaCreacion;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
@@ -146,7 +143,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 await _service.CanUpdateAsync(id, dto);
                 await _service.UpdateAsync(id, dto);
 
-                var updated = _mapper.Map<TipoPatrimonioResponse>(await _service.GetByIdAsync(id));
+                var updated = (await _service.GetByIdAsync(id)).Adapt<TipoPatrimonioResponse>();
                 return new PagedResult<TipoPatrimonioResponse>
                 {
                     Success = true,
@@ -211,7 +208,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 return new PagedResult<TipoPatrimonioResponse>
                 {
-                    Items = _mapper.Map<List<TipoPatrimonioResponse>>(items),
+                    Items = items.Adapt<List<TipoPatrimonioResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -14,16 +14,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class PersonaService : IPersonaService
     {
         private readonly GenericService<Persona, PersonaDto, PersonaResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public PersonaService(
             GenericService<Persona, PersonaDto, PersonaResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureValidations();
         }
@@ -77,7 +74,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (entity == null)
                     return new PagedResult<PersonaResponse> { Success = false, Message = "Persona no encontrada", Code = "NOT_FOUND" };
 
-                var result = _mapper.Map<PersonaResponse>(entity);
+                var result = entity.Adapt<PersonaResponse>();
                 return new PagedResult<PersonaResponse>
                 {
                     Success = true,
@@ -104,7 +101,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<PersonaDto>(request);
+                var dto = request.Adapt<PersonaDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
 
@@ -119,8 +116,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Persona creada correctamente",
                     Code = "SUCCESS",
-                    Data = created != null ? _mapper.Map<PersonaResponse>(created) : null,
-                    Items = created != null ? new List<PersonaResponse> { _mapper.Map<PersonaResponse>(created) } : new List<PersonaResponse>(),
+                    Data = created != null ? created.Adapt<PersonaResponse>() : null,
+                    Items = created != null ? new List<PersonaResponse> { created.Adapt<PersonaResponse>() } : new List<PersonaResponse>(),
                     TotalCount = 1
                 };
             }
@@ -138,7 +135,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (existing == null)
                     return new PagedResult<PersonaResponse> { Success = false, Message = "Persona no encontrada", Code = "NOT_FOUND" };
 
-                var dto = _mapper.Map<PersonaDto>(request);
+                var dto = request.Adapt<PersonaDto>();
                 dto.UsuarioCreacion = existing.UsuarioCreacion;
                 dto.FechaCreacion = existing.FechaCreacion;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
@@ -147,7 +144,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 await _service.CanUpdateAsync(id, dto);
                 await _service.UpdateAsync(id, dto);
 
-                var updated = _mapper.Map<PersonaResponse>(await _service.GetByIdAsync(id));
+                var updated = (await _service.GetByIdAsync(id)).Adapt<PersonaResponse>();
                 return new PagedResult<PersonaResponse>
                 {
                     Success = true,
@@ -223,7 +220,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 return new PagedResult<PersonaResponse>
                 {
-                    Items = _mapper.Map<List<PersonaResponse>>(items),
+                    Items = items.Adapt<List<PersonaResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

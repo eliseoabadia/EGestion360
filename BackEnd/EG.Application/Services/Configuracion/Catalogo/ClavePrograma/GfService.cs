@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     public class GfService : IGfService
     {
         private readonly GenericService<Gf, GfDto, GfResponse> _service;
-        private readonly IMapper _mapper;
 
         public GfService(
-            GenericService<Gf, GfDto, GfResponse> service,
-            IMapper mapper)
+            GenericService<Gf, GfDto, GfResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using EG.Business.Interfaces;
 using EG.Common;
 using EG.Common.Enums;
@@ -14,20 +14,15 @@ namespace EG.Business.Services
         private readonly IRepository<Usuario> _repository;
         private readonly IRepositorySP<LoginInformationEmployeeResult> _repositorySP;
         private readonly IRepositorySP<spGetClaimsByUserResult> _repositoryClaimsSP;
-        private readonly IMapper _mapper;
-        //private readonly Logger.Log4NetLogger _logger;
 
         public AuthService(
             IRepository<Usuario> userRepository,
             IRepositorySP<LoginInformationEmployeeResult> repositorySP,
-            IRepositorySP<spGetClaimsByUserResult> repositoryClaimsSP,
-            IMapper mapper)
+            IRepositorySP<spGetClaimsByUserResult> repositoryClaimsSP)
         {
             _repository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _repositorySP = repositorySP ?? throw new ArgumentNullException(nameof(repositorySP));
             _repositoryClaimsSP = repositoryClaimsSP ?? throw new ArgumentNullException(nameof(repositoryClaimsSP));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            //_logger = new Logger.Log4NetLogger(typeof(AuthService));
         }
 
         /// <summary>

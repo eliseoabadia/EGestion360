@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class ProgramaPresupuestalAppServices : IProgramaPresupuestalAppServices
     {
         private readonly GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> _service;
-        private readonly IMapper _mapper;
 
         public ProgramaPresupuestalAppServices(
-            GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> service,
-            IMapper mapper)
+            GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -89,7 +86,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos del Programa Presupuestal son requeridos");
 
-            var dto = _mapper.Map<ProgramaPresupuestalDto>(response);
+            var dto = response.Adapt<ProgramaPresupuestalDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
@@ -111,7 +108,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de Programa Presupuestal inválido", nameof(id));
 
-            var dto = _mapper.Map<ProgramaPresupuestalDto>(response);
+            var dto = response.Adapt<ProgramaPresupuestalDto>();
             dto.PkidPp = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
@@ -132,7 +129,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (entity == null)
                 return false;
 
-            var dto = _mapper.Map<ProgramaPresupuestalDto>(entity);
+            var dto = entity.Adapt<ProgramaPresupuestalDto>();
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;

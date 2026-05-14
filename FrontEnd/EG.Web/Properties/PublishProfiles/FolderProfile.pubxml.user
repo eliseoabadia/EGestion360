@@ -2,7 +2,8 @@
 <!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
 <Project>
   <PropertyGroup>
-    <History>False|2026-02-07T19:04:10.1044052Z||;</History>
+    <History>True|2026-05-14T01:02:26.7481271Z||;False|2026-05-13T18:58:56.5567668-06:00||;False|2026-05-13T18:57:22.2380388-06:00||;False|2026-05-13T18:47:07.6896129-06:00||;False|2026-02-07T13:04:10.1044052-06:00||;</History>
     <LastFailureDetails />
+    <_PublishTargetUrl>C:\Temp\borrar</_PublishTargetUrl>
   </PropertyGroup>
 </Project>

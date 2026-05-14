@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class PgAppServices : IPgAppServices
     {
         private readonly GenericService<Pg, PgDto, PgResponse> _service;
-        private readonly IMapper _mapper;
 
         public PgAppServices(
-            GenericService<Pg, PgDto, PgResponse> service,
-            IMapper mapper)
+            GenericService<Pg, PgDto, PgResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -89,7 +86,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos del PG son requeridos");
 
-            var dto = _mapper.Map<PgDto>(response);
+            var dto = response.Adapt<PgDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
@@ -111,7 +108,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de PG inválido", nameof(id));
 
-            var dto = _mapper.Map<PgDto>(response);
+            var dto = response.Adapt<PgDto>();
             dto.PkidPg = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
@@ -132,7 +129,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (entity == null)
                 return false;
 
-            var dto = _mapper.Map<PgDto>(entity);
+            var dto = entity.Adapt<PgDto>();
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;

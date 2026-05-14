@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Adquisicion;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
@@ -15,18 +15,15 @@ namespace EG.Application.Services.Adquisicion
         private readonly ILogger<FraccionAppService> _logger;
         private readonly IRepository<Fraccion> _repository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
 
         public FraccionAppService(
             ILogger<FraccionAppService> logger,
             IRepository<Fraccion> repository,
-            EGestionContext context,
-            IMapper mapper)
+            EGestionContext context)
         {
             _logger = logger;
             _repository = repository;
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<FraccionResponse>> GetAllAsync()
@@ -36,7 +33,7 @@ namespace EG.Application.Services.Adquisicion
                 var items = await _context.VwFraccions.ToListAsync();
                 return new PagedResult<FraccionResponse>
                 {
-                    Items = _mapper.Map<List<FraccionResponse>>(items),
+                    Items = items.Adapt<List<FraccionResponse>>(),
                     TotalCount = items.Count,
                     Success = true,
                     Message = "OK",
@@ -67,7 +64,7 @@ namespace EG.Application.Services.Adquisicion
                         TotalCount = 0
                     };
 
-                var response = _mapper.Map<FraccionResponse>(entity);
+                var response = entity.Adapt<FraccionResponse>();
                 return new PagedResult<FraccionResponse>
                 {
                     Success = true,
@@ -92,7 +89,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var dto = _mapper.Map<FraccionDto>(response);
+                var dto = response.Adapt<FraccionDto>();
                 dto.UsuarioCreacion = usuarioActual;
                 dto.FechaCreacion = DateTime.UtcNow;
                 dto.Activo = true;
@@ -109,7 +106,7 @@ namespace EG.Application.Services.Adquisicion
                     };
                 }
 
-                var entity = _mapper.Map<Fraccion>(dto);
+                var entity = dto.Adapt<Fraccion>();
                 await _repository.AddAsync(entity);
 
                 return new PagedResult<FraccionResponse>
@@ -146,7 +143,7 @@ namespace EG.Application.Services.Adquisicion
                         TotalCount = 0
                     };
 
-                var dto = _mapper.Map<FraccionDto>(response);
+                var dto = response.Adapt<FraccionDto>();
                 dto.PkidFraccion = id;
                 dto.UsuarioModificacion = usuarioActual;
                 dto.FechaModificacion = DateTime.UtcNow;
@@ -163,7 +160,7 @@ namespace EG.Application.Services.Adquisicion
                     };
                 }
 
-                _mapper.Map(dto, entity);
+                dto.Adapt(entity);
                 entity.FechaModificacion = dto.FechaModificacion;
                 entity.UsuarioModificacion = dto.UsuarioModificacion;
                 await _repository.UpdateAsync(entity);
@@ -263,7 +260,7 @@ namespace EG.Application.Services.Adquisicion
 
                 return new PagedResult<FraccionResponse>
                 {
-                    Items = _mapper.Map<List<FraccionResponse>>(items),
+                    Items = items.Adapt<List<FraccionResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

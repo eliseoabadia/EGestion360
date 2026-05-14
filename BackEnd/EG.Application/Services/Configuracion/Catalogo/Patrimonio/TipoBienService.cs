@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -15,20 +15,17 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         private readonly GenericService<TipoBien, TipoBienDto, TipoBienResponse> _service;
         private readonly GenericService<VwTipoBien, TipoBienDto, TipoBienResponse> _serviceView;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public TipoBienService(
             GenericService<TipoBien, TipoBienDto, TipoBienResponse> service,
             GenericService<VwTipoBien, TipoBienDto, TipoBienResponse> serviceView,
             EGestionContext context,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
             _context = context;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureService();
             ConfigureValidations();
@@ -123,7 +120,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<TipoBienDto>(request);
+                var dto = request.Adapt<TipoBienDto>();
                 var userId = _userContext.GetCurrentUserId();
 
                 await _context.Procedures.SP_MantenimientoTipoBienAsync(
@@ -164,8 +161,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Tipo de bien creado correctamente",
                     Code = "SUCCESS",
-                    Data = createdView != null ? _mapper.Map<TipoBienResponse>(createdView) : null,
-                    Items = createdView != null ? new List<TipoBienResponse> { _mapper.Map<TipoBienResponse>(createdView) } : new List<TipoBienResponse>(),
+                    Data = createdView != null ? createdView.Adapt<TipoBienResponse>() : null,
+                    Items = createdView != null ? new List<TipoBienResponse> { createdView.Adapt<TipoBienResponse>() } : new List<TipoBienResponse>(),
                     TotalCount = 1
                 };
             }
@@ -183,7 +180,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (existingView == null)
                     return new PagedResult<TipoBienResponse> { Success = false, Message = "Tipo de bien no encontrado", Code = "NOT_FOUND" };
 
-                var dto = _mapper.Map<TipoBienDto>(request);
+                var dto = request.Adapt<TipoBienDto>();
                 var userId = _userContext.GetCurrentUserId();
 
                 await _service.CanUpdateAsync(id, dto);
@@ -223,8 +220,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Tipo de bien actualizado correctamente",
                     Code = "SUCCESS",
-                    Data = updatedView != null ? _mapper.Map<TipoBienResponse>(updatedView) : null,
-                    Items = updatedView != null ? new List<TipoBienResponse> { _mapper.Map<TipoBienResponse>(updatedView) } : new List<TipoBienResponse>(),
+                    Data = updatedView != null ? updatedView.Adapt<TipoBienResponse>() : null,
+                    Items = updatedView != null ? new List<TipoBienResponse> { updatedView.Adapt<TipoBienResponse>() } : new List<TipoBienResponse>(),
                     TotalCount = 1
                 };
             }
@@ -330,7 +327,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 return new PagedResult<TipoBienResponse>
                 {
-                    Items = _mapper.Map<List<TipoBienResponse>>(items),
+                    Items = items.Adapt<List<TipoBienResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

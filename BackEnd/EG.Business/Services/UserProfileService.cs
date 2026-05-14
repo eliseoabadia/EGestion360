@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using EG.Business.Interfaces;
 using EG.Domain.Interfaces;
 using EG.Dommain.DTOs.Responses;
@@ -6,27 +6,25 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Services
 {
-    public class UserProfileService(IRepository<PerfilUsuario> repositorySP,
-                    IMapper mapper) : IUserProfileService
+    public class UserProfileService(IRepository<PerfilUsuario> repositorySP) : IUserProfileService
     {
         private readonly IRepository<PerfilUsuario> _repository = repositorySP;
-        private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<PerfilUsuario>> GetAllUsuariosAsync()
         {
             var Usuarios = await _repository.GetAllAsync();
-            return _mapper.Map<IEnumerable<PerfilUsuario>>(Usuarios);
+            return Usuarios.Adapt<IEnumerable<PerfilUsuario>>();
         }
 
         public async Task<PerfilUsuario?> GetUsuarioByIdAsync(int UsuarioId)
         {
             var Usuario = await _repository.GetByIdAsync(UsuarioId);
-            return Usuario != null ? _mapper.Map<PerfilUsuario>(Usuario) : null;
+            return Usuario != null ? Usuario.Adapt<PerfilUsuario>() : null;
         }
 
         public async Task AddUsuarioAsync(PerfilUsuario dto)
         {
-            var _usuario = _mapper.Map<PerfilUsuario>(dto);
+            var _usuario = dto.Adapt<PerfilUsuario>();
             await _repository.AddAsync(_usuario);
         }
 
@@ -36,7 +34,7 @@ namespace EG.Business.Services
             if (existingUsuario == null)
                 throw new KeyNotFoundException($"Usuario {UsuarioId} No encontrada.");
 
-            _mapper.Map(dto, existingUsuario);
+            dto.Adapt(existingUsuario);
             await _repository.UpdateAsync(existingUsuario);
         }
 
@@ -46,12 +44,12 @@ namespace EG.Business.Services
             if (existingUsuario == null)
             {
                 existingUsuario = new PerfilUsuario();
-                _mapper.Map(dto, existingUsuario);
+                dto.Adapt(existingUsuario);
                 await _repository.AddAsync(existingUsuario);
             }
             else
             {
-                _mapper.Map(dto, existingUsuario);
+                dto.Adapt(existingUsuario);
                 await _repository.UpdateAsync(existingUsuario);
             }
         }

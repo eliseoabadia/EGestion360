@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Patrimonio
 {
-    public class FamiliaMappingProfile : Profile
+    public class FamiliaMappingProfile : IRegister
     {
-        public FamiliaMappingProfile()
-        {
-            CreateMap<Familium, FamiliaDto>().ReverseMap();
-            CreateMap<Familium, FamiliaResponse>();
-            CreateMap<FamiliaResponse, FamiliaDto>()
-                .ForMember(dest => dest.PkidFamilia, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Familium, FamiliaDto>().TwoWays();
+            config.NewConfig<Familium, FamiliaResponse>();
+            config.NewConfig<FamiliaResponse, FamiliaDto>()
+                .Ignore(dest => dest.PkidFamilia)
+                .IgnoreNullValues(true);
         }
     }
 }

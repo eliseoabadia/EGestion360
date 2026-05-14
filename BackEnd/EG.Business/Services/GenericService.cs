@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
 using System.Globalization;
@@ -10,14 +10,12 @@ using System.Text.Json;
 namespace EG.Business.Services
 {
     public class GenericService<TEntity, TDto, TResponse>(
-        IRepository<TEntity> repository,
-        IMapper mapper)
+        IRepository<TEntity> repository)
         where TEntity : class
         where TDto : class
         where TResponse : class
     {
         protected readonly IRepository<TEntity> _repository = repository;
-        protected readonly IMapper _mapper = mapper;
 
         // Propiedad para habilitar/deshabilitar filtro de Activo
         protected bool FilterByActivo { get; set; } = true;
@@ -136,7 +134,7 @@ namespace EG.Business.Services
         {
             var query = GetQueryWithIncludes();
             var entities = await Task.Run(() => query.ToList());
-            return _mapper.Map<IEnumerable<TResponse>>(entities);
+            return entities.Adapt<IEnumerable<TResponse>>();
         }
 
         public virtual async Task<TResponse?> GetByIdAsync(int id)
@@ -172,7 +170,7 @@ namespace EG.Business.Services
         var entities = await Task.Run(() => query.ToList());
         var entity = entities.FirstOrDefault(lambda.Compile());
 
-        return entity != null ? _mapper.Map<TResponse>(entity) : null;
+        return entity != null ? entity.Adapt<TResponse>() : null;
     }
 
         // Versi�n con par�metros personalizados - CORREGIDA
@@ -223,7 +221,7 @@ namespace EG.Business.Services
             var entities = await Task.Run(() => query.ToList());
             var entity = entities.FirstOrDefault(lambda.Compile());
 
-            return entity != null ? _mapper.Map<TResponse>(entity) : null;
+            return entity != null ? entity.Adapt<TResponse>() : null;
         }
 
         private int GetIdValue(TEntity entity)
@@ -258,7 +256,7 @@ namespace EG.Business.Services
 
         public virtual async Task AddAsync(TDto dto)
         {
-            var entity = _mapper.Map<TEntity>(dto);
+            var entity = dto.Adapt<TEntity>();
             await _repository.AddAsync(entity);
 
             // Mapear el ID de vuelta al DTO si es necesario
@@ -281,7 +279,7 @@ namespace EG.Business.Services
             if (existing == null)
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
 
-            _mapper.Map(dto, existing);
+            dto.Adapt(existing);
             await _repository.UpdateAsync(existing);
         }
 
@@ -331,7 +329,7 @@ namespace EG.Business.Services
                     .Take(_params.PageSize);
 
                 var entities = await Task.Run(() => pagedQuery.ToList());
-                var mapped = _mapper.Map<IList<TResponse>>(entities);
+                var mapped = entities.Adapt<IList<TResponse>>();
 
                 return new PagedResult<TResponse>
                 {
@@ -425,7 +423,7 @@ namespace EG.Business.Services
                 .Take(_params.PageSize);
 
             var entities = await Task.Run(() => pagedQuery.ToList());
-            var mapped = _mapper.Map<IList<TResponse>>(entities);
+            var mapped = entities.Adapt<IList<TResponse>>();
 
             return new PagedResult<TResponse>
             {
@@ -574,8 +572,7 @@ namespace EG.Business.Services
     }
 
     public class GenericService<TEntity, TDto>(
-        IRepository<TEntity> repository,
-        IMapper mapper) : GenericService<TEntity, TDto, TDto>(repository, mapper)
+        IRepository<TEntity> repository) : GenericService<TEntity, TDto, TDto>(repository)
         where TEntity : class
         where TDto : class
     {

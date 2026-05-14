@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
@@ -6,25 +6,24 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Almacen
 {
-    public class AlmacenMappingProfile : Profile
+    public class AlmacenMappingProfile : IRegister
     {
-        public AlmacenMappingProfile()
-        {
+        public void Register(TypeAdapterConfig config){
             // MotivoES
-            CreateMap<Motivo, MotivoEsResponse>().ReverseMap();
-            CreateMap<Motivo, MotivoEsDto>().ReverseMap();
+            config.NewConfig<Motivo, MotivoEsResponse>().TwoWays();
+            config.NewConfig<Motivo, MotivoEsDto>().TwoWays();
 
             // Unidades
-            CreateMap<Unidade, UnidadeResponse>().ReverseMap();
-            CreateMap<Unidade, UnidadeDto>().ReverseMap();
+            config.NewConfig<Unidade, UnidadeResponse>().TwoWays();
+            config.NewConfig<Unidade, UnidadeDto>().TwoWays();
 
             // EstatusSolicitud
-            CreateMap<EstatusSolicitud, EstatusSolicitudResponse>().ReverseMap();
-            CreateMap<EstatusSolicitud, EstatusSolicitudDto>().ReverseMap();
+            config.NewConfig<EstatusSolicitud, EstatusSolicitudResponse>().TwoWays();
+            config.NewConfig<EstatusSolicitud, EstatusSolicitudDto>().TwoWays();
 
             // PeriodoConteo
-            CreateMap<PeriodoConteo, PeriodoConteoResponse>().ReverseMap();
-            CreateMap<PeriodoConteo, PeriodoConteoDto>().ReverseMap();
+            config.NewConfig<PeriodoConteo, PeriodoConteoResponse>().TwoWays();
+            config.NewConfig<PeriodoConteo, PeriodoConteoDto>().TwoWays();
         }
     }
 }

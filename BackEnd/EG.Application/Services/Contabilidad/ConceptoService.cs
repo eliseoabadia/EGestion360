@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
@@ -15,18 +15,15 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         private readonly ILogger<ConceptoService> _logger;
         private readonly IRepository<Concepto> _repository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
 
         public ConceptoService(
             ILogger<ConceptoService> logger,
             IRepository<Concepto> repository,
-            EGestionContext context,
-            IMapper mapper)
+            EGestionContext context)
         {
             _logger = logger;
             _repository = repository;
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<ConceptoResponse>> GetAllAsync()
@@ -36,7 +33,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 var items = await _context.VwConceptos.ToListAsync();
                 return new PagedResult<ConceptoResponse>
                 {
-                    Items = _mapper.Map<List<ConceptoResponse>>(items),
+                    Items = items.Adapt<List<ConceptoResponse>>(),
                     TotalCount = items.Count,
                     Success = true,
                     Message = "OK",
@@ -59,7 +56,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             {
                 var entity = await _context.VwConceptos.FirstOrDefaultAsync(e => e.PkidConcepto == id);
                 if (entity == null) return null;
-                return _mapper.Map<ConceptoResponse>(entity);
+                return entity.Adapt<ConceptoResponse>();
             }
             catch (Exception ex)
             {
@@ -70,7 +67,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<ConceptoResponse> CreateAsync(ConceptoResponse response, int usuarioId)
         {
-            var dto = _mapper.Map<ConceptoDto>(response);
+            var dto = response.Adapt<ConceptoDto>();
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.UtcNow;
             dto.Activo = true;
@@ -79,10 +76,10 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             if (exists.Any())
                 throw new InvalidOperationException("Ya existe un concepto con esa descripción");
 
-            var entity = _mapper.Map<Concepto>(dto);
+            var entity = dto.Adapt<Concepto>();
             await _repository.AddAsync(entity);
 
-            return _mapper.Map<ConceptoResponse>(entity);
+            return entity.Adapt<ConceptoResponse>();
         }
 
         public async Task<ConceptoResponse?> UpdateAsync(int id, ConceptoResponse response, int usuarioId)
@@ -90,7 +87,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            var dto = _mapper.Map<ConceptoDto>(response);
+            var dto = response.Adapt<ConceptoDto>();
             dto.PkidConcepto = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.UtcNow;
@@ -99,12 +96,12 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             if (duplicate.Any())
                 throw new InvalidOperationException("Ya existe otro concepto con esa descripción");
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = dto.FechaModificacion;
             entity.UsuarioModificacion = dto.UsuarioModificacion;
             await _repository.UpdateAsync(entity);
 
-            return _mapper.Map<ConceptoResponse>(entity);
+            return entity.Adapt<ConceptoResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -153,7 +150,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
                 return new PagedResult<ConceptoResponse>
                 {
-                    Items = _mapper.Map<List<ConceptoResponse>>(items),
+                    Items = items.Adapt<List<ConceptoResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

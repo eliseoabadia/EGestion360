@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.ClavePrograma;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Common.GenericModel;
@@ -11,12 +11,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
     public class FnAppService : IFnAppService
     {
         private readonly IFnService _fnService;
-        private readonly IMapper _mapper;
 
-        public FnAppService(IFnService fnService, IMapper mapper)
+        public FnAppService(IFnService fnService)
         {
             _fnService = fnService;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<FnResponse>> GetAllAsync()
@@ -72,7 +70,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
 
         public async Task<PagedResult<FnResponse>> CreateAsync(FnResponse request, int usuarioActual)
         {
-            var dto = _mapper.Map<FnDto>(request);
+            var dto = request.Adapt<FnDto>();
             if (!await _fnService.CanAddAsync(dto))
             {
                 return new PagedResult<FnResponse>
@@ -98,7 +96,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
 
         public async Task<PagedResult<FnResponse>> UpdateAsync(int id, FnResponse request, int usuarioActual)
         {
-            var dto = _mapper.Map<FnDto>(request);
+            var dto = request.Adapt<FnDto>();
             dto.PkidFn = id;
 
             if (!await _fnService.CanUpdateAsync(id, dto))

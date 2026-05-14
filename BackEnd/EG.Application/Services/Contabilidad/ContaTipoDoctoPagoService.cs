@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -11,14 +11,11 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class ContaTipoDoctoPagoService : IContaTipoDoctoPagoService
     {
         private readonly GenericService<TipoDoctoPago, ContaTipoDoctoPagoDto, ContaTipoDoctoPagoResponse> _service;
-        private readonly IMapper _mapper;
 
         public ContaTipoDoctoPagoService(
-            GenericService<TipoDoctoPago, ContaTipoDoctoPagoDto, ContaTipoDoctoPagoResponse> service,
-            IMapper mapper)
+            GenericService<TipoDoctoPago, ContaTipoDoctoPagoDto, ContaTipoDoctoPagoResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -49,7 +46,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<ContaTipoDoctoPagoResponse> CreateAsync(ContaTipoDoctoPagoResponse response, int usuarioId)
         {
-            var dto = _mapper.Map<ContaTipoDoctoPagoDto>(response);
+            var dto = response.Adapt<ContaTipoDoctoPagoDto>();
             dto.UsuarioCreacion = usuarioId.ToString();
             dto.FechaCreacion = DateTime.UtcNow;
 
@@ -59,7 +56,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             var created = _service.GetQueryWithIncludes()
                 .FirstOrDefault(x => x.Descripcion == dto.Descripcion && x.Activo);
 
-            return _mapper.Map<ContaTipoDoctoPagoResponse>(created);
+            return created.Adapt<ContaTipoDoctoPagoResponse>();
         }
 
         public async Task<ContaTipoDoctoPagoResponse?> UpdateAsync(int id, ContaTipoDoctoPagoResponse response, int usuarioId)
@@ -67,7 +64,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             var existing = await _service.GetByIdAsync(id);
             if (existing == null) return null;
 
-            var dto = _mapper.Map<ContaTipoDoctoPagoDto>(response);
+            var dto = response.Adapt<ContaTipoDoctoPagoDto>();
             dto.UsuarioCreacion = existing.UsuarioCreacion;
             dto.FechaCreacion = existing.FechaCreacion;
             dto.UsuarioModificacion = usuarioId.ToString();

@@ -14,7 +14,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [ALMA].[SP_CargaInicialConteo]
+CREATE OR ALTER PROCEDURE [ALMA].[SP_CargaInicialConteo]
     @P_Partida INT = NULL,
     @P_Periodo INT = NULL
 AS
@@ -122,7 +122,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [ALMA].[SP_MantenimientoTipoBien]
+CREATE OR ALTER PROCEDURE [ALMA].[SP_MantenimientoTipoBien]
     @Action INT,
     @PKIdTipoBien INT = NULL,
     @FKIdGrupoBien_ALMA INT = NULL,
@@ -327,7 +327,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[sp_RegistrarEntidad]
+CREATE OR ALTER PROCEDURE [dbo].[sp_RegistrarEntidad]
     @Grupo          NVARCHAR(100),
     @SubGrupo       NVARCHAR(100),
     @NombreMenu     NVARCHAR(150),
@@ -471,7 +471,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[spConfiguracionDeRolYClaims]
+CREATE OR ALTER PROCEDURE [dbo].[spConfiguracionDeRolYClaims]
 	@group NVARCHAR(100),
 	@subgroup NVARCHAR(100),
 	@code NVARCHAR(10),
@@ -615,17 +615,24 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
-CREATE PROCEDURE [SIS].[LoginInformationEmployee](
+--EXEC [SIS].[LoginInformationEmployee] @PayrollID = 'ADMIN001'
+CREATE OR ALTER PROCEDURE [SIS].[LoginInformationEmployee](
 	@PayrollID NVARCHAR(60)
 )
 AS BEGIN
 	SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 	SET NOCOUNT ON;
 	
-	SELECT e.PkIdUsuario, e.FKIdPersona_NOM FKIdPersonaNOM, e.PayrollID, p.Gafete, ANU.PasswordHash, rol.Name, p.CORREO_ELECTRONICO AS Email, NombreUsuario = CONCAT(p.Nombre, ' ', p.Paterno, ' ', p.Materno)
+	SELECT e.PkIdUsuario
+    , iif(e.FKIdPersona_NOM IS NULL,0,e.FKIdPersona_NOM) FKIdPersonaNOM
+    , e.PayrollID
+    , iif(p.Gafete is null,e.PayrollID,p.Gafete) Gafete
+    , ANU.PasswordHash
+    , rol.Name
+    , iif(p.CORREO_ELECTRONICO IS NULL ,'ADMIN@eg.COM',p.CORREO_ELECTRONICO) AS Email
+    , NombreUsuario = IIF(p.Nombre IS NULL,'Admin',CONCAT(p.Nombre, ' ', p.Paterno, ' ', p.Materno))
 	FROM SIS.Usuario AS e WITH (NOLOCK)
-	INNER JOIN NOM.Persona p ON e.FKIdPersona_NOM = p.PKIdPersona
+	LEFT JOIN NOM.Persona p ON e.FKIdPersona_NOM = p.PKIdPersona
 	INNER JOIN dbo.AspNetUsers AS ANU WITH (NOLOCK) ON ANU.PkIdUsuario = e.PkIdUsuario
 	INNER JOIN [dbo].[AspNetUserRoles] AS UR WITH (NOLOCK) ON UR.UserId = ANU.Id
 	INNER JOIN AspNetRoles AS rol WITH (NOLOCK) ON UR.RoleId = rol.Id
@@ -638,7 +645,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [SIS].[spEliminarUsuarioSucursal]
+CREATE OR ALTER PROCEDURE [SIS].[spEliminarUsuarioSucursal]
     @FkidUsuarioSis INT,
     @FkidSucursalSis INT,
     @UsuarioModificacion VARCHAR(100) = NULL
@@ -695,8 +702,8 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
-CREATE PROCEDURE [SIS].[spGetClaimsByUser]
+--exec [SIS].[spGetClaimsByUser] @PkIdUser = 1, @EsParaLogin = 1
+CREATE OR ALTER PROCEDURE [SIS].[spGetClaimsByUser]
     @PkIdUser INT, 
     @EsParaLogin BIT = 0
 AS
@@ -736,8 +743,8 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
-CREATE PROCEDURE [SIS].[spNodeMenu]
+--exec [SIS].[spNodeMenu] @NoEmploye = 1, @Lenguaje = 'ESP'
+CREATE OR ALTER PROCEDURE [SIS].[spNodeMenu]
 	@NoEmploye int, 
 	@Lenguaje char(3)
 AS
@@ -779,7 +786,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [SIS].[WriteSystemLog] (
+CREATE OR ALTER PROCEDURE [SIS].[WriteSystemLog] (
 	@FK_IdOrigenLogMessage__SIS  nvarchar(24) = NULL
 	,@Date nvarchar(24) = NULL 
 	,@_Type nvarchar(24) = NULL

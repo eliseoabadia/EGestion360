@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -11,14 +11,11 @@ namespace EG.Application.Services.General
     public class EstadoAppService : IEstadoAppService
     {
         private readonly GenericService<Estado, EstadoDto, EstadoResponse> _service;
-        private readonly IMapper _mapper;
 
         public EstadoAppService(
-            GenericService<Estado, EstadoDto, EstadoResponse> service,
-            IMapper mapper)
+            GenericService<Estado, EstadoDto, EstadoResponse> service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<EstadoResponse>> GetAllAsync()

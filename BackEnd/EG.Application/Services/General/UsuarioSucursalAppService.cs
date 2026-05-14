@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -15,18 +15,15 @@ namespace EG.Application.Services.General
         private readonly GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _service;
         private readonly GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _serviceView;
         private readonly IRepositorySP<spEliminarUsuarioSucursalResult> _repositorySP;
-        private readonly IMapper _mapper;
 
         public UsuarioSucursalAppService(
             GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> service,
             GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> serviceView,
-            IRepositorySP<spEliminarUsuarioSucursalResult> repositorySP,
-            IMapper mapper)
+            IRepositorySP<spEliminarUsuarioSucursalResult> repositorySP)
         {
             _service = service;
             _serviceView = serviceView;
             _repositorySP = repositorySP;
-            _mapper = mapper;
             ConfigureService();
         }
 
@@ -112,7 +109,7 @@ namespace EG.Application.Services.General
             var result = await _serviceView.GetByIdAsync(_dto.PkIdUsuario);
 
             // Mapear y preparar el DTO
-            var dto = _mapper.Map<UsuarioSucursalDto>(result);
+            var dto = result.Adapt<UsuarioSucursalDto>();
 
             // Establecer valores por defecto
             dto.FkidSucursalSis = _dto.IdSucursal;
@@ -122,7 +119,7 @@ namespace EG.Application.Services.General
             await _service.AddAsync(dto);
 
             // Mapear y devolver el DTO
-            return _mapper.Map<UsuarioSucursalResponse>(dto);
+            return dto.Adapt<UsuarioSucursalResponse>();
         }
 
         public async Task<bool> DeleteAsync(int usuarioId, int sucursalId, int usuarioActual)

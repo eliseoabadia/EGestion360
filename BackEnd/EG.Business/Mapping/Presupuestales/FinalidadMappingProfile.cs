@@ -1,16 +1,15 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Presupuestales
 {
-    public class FinalidadMappingProfile : Profile
+    public class FinalidadMappingProfile : IRegister
     {
-        public FinalidadMappingProfile()
-        {
-            CreateMap<Fn, FnResponse>().ReverseMap();
-            CreateMap<Fn, FnDto>().ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Fn, FnResponse>().TwoWays();
+            config.NewConfig<Fn, FnDto>().TwoWays();
         }
     }
 }

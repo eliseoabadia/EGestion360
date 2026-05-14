@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Adquisicion
 {
-    public class ModalidadMappingProfile : Profile
+    public class ModalidadMappingProfile : IRegister
     {
-        public ModalidadMappingProfile()
-        {
-            CreateMap<Modalidad, ModalidadDto>().ReverseMap();
-            CreateMap<Modalidad, ModalidadResponse>();
-            CreateMap<ModalidadResponse, ModalidadDto>()
-                .ForMember(dest => dest.PkidModalidad, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Modalidad, ModalidadDto>().TwoWays();
+            config.NewConfig<Modalidad, ModalidadResponse>();
+            config.NewConfig<ModalidadResponse, ModalidadDto>()
+                .Ignore(dest => dest.PkidModalidad)
+                .IgnoreNullValues(true);
         }
     }
 }

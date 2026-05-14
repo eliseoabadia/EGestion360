@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -11,14 +11,11 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class TipoDetallePolizaService : ITipoDetallePolizaService
     {
         private readonly GenericService<TipoDetallePoliza, TipoDetallePolizaDto, TipoDetallePolizaResponse> _service;
-        private readonly IMapper _mapper;
 
         public TipoDetallePolizaService(
-            GenericService<TipoDetallePoliza, TipoDetallePolizaDto, TipoDetallePolizaResponse> service,
-            IMapper mapper)
+            GenericService<TipoDetallePoliza, TipoDetallePolizaDto, TipoDetallePolizaResponse> service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<TipoDetallePolizaResponse>> GetAllAsync()
@@ -33,7 +30,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<TipoDetallePolizaResponse> CreateAsync(TipoDetallePolizaResponse response, int usuarioId)
         {
-            var dto = _mapper.Map<TipoDetallePolizaDto>(response);
+            var dto = response.Adapt<TipoDetallePolizaDto>();
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.Now;
             dto.Activo = true;
@@ -47,7 +44,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<TipoDetallePolizaResponse?> UpdateAsync(int id, TipoDetallePolizaResponse response, int usuarioId)
         {
-            var dto = _mapper.Map<TipoDetallePolizaDto>(response);
+            var dto = response.Adapt<TipoDetallePolizaDto>();
             dto.PkidTipoDetallePoliza = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.Now;

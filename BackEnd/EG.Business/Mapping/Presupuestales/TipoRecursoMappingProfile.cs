@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Presupuestales
 {
-    public class TipoRecursoMappingProfile : Profile
+    public class TipoRecursoMappingProfile : IRegister
     {
-        public TipoRecursoMappingProfile()
-        {
-            CreateMap<TipoRecurso, TipoRecursoDto>().ReverseMap();
-            CreateMap<TipoRecurso, TipoRecursoResponse>();
-            CreateMap<TipoRecursoResponse, TipoRecursoDto>()
-                .ForMember(dest => dest.PkidTipoRecurso, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<TipoRecurso, TipoRecursoDto>().TwoWays();
+            config.NewConfig<TipoRecurso, TipoRecursoResponse>();
+            config.NewConfig<TipoRecursoResponse, TipoRecursoDto>()
+                .Ignore(dest => dest.PkidTipoRecurso)
+                .IgnoreNullValues(true);
         }
     }
 }

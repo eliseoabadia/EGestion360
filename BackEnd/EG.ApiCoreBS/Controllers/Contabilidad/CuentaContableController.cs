@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
@@ -15,14 +15,11 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     public class CuentaContableController : ControllerBase
     {
         private readonly ICuentaContableService _service;
-        private readonly IMapper _mapper;
 
         public CuentaContableController(
-            ICuentaContableService service,
-            IMapper mapper)
+            ICuentaContableService service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         [HttpGet]

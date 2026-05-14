@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Contabilidad;
@@ -15,16 +15,13 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class MatrizIngresoService : IMatrizIngresoService
     {
         private readonly GenericService<MatrizIngreso, MatrizIngresoDto, MatrizIngresoResponse> _service;
-        private readonly IMapper _mapper;
         private readonly EGestionContext _context;
 
         public MatrizIngresoService(
             GenericService<MatrizIngreso, MatrizIngresoDto, MatrizIngresoResponse> service,
-            IMapper mapper,
             EGestionContext context)
         {
             _service = service;
-            _mapper = mapper;
             _context = context;
             ConfigureService();
         }
@@ -54,7 +51,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<MatrizIngresoResponse> CreateAsync(MatrizIngresoResponse request, int usuarioId)
         {
-            var dto = _mapper.Map<MatrizIngresoDto>(request);
+            var dto = request.Adapt<MatrizIngresoDto>();
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.UtcNow;
             dto.Activo = true;
@@ -65,7 +62,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<MatrizIngresoResponse?> UpdateAsync(int id, MatrizIngresoResponse request, int usuarioId)
         {
-            var dto = _mapper.Map<MatrizIngresoDto>(request);
+            var dto = request.Adapt<MatrizIngresoDto>();
             dto.PkidMatrizIngreso = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.UtcNow;

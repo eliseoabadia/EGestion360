@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class NivelService : INivelService
     {
         private readonly GenericService<Nivel, NivelDto, NivelResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public NivelService(
             GenericService<Nivel, NivelDto, NivelResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureValidations();
         }
@@ -112,7 +109,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<NivelDto>(request);
+                var dto = request.Adapt<NivelDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
@@ -133,7 +130,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Nivel creado correctamente",
                     Code = "SUCCESS",
-                    Data = _mapper.Map<NivelResponse>(dto),
+                    Data = dto.Adapt<NivelResponse>(),
                     TotalCount = 1
                 };
             }
@@ -153,7 +150,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<NivelDto>(request);
+                var dto = request.Adapt<NivelDto>();
                 dto.PkidNivel = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;

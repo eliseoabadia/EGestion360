@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class TipoRecursoAppServices : ITipoRecursoAppServices
     {
         private readonly GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> _service;
-        private readonly IMapper _mapper;
 
         public TipoRecursoAppServices(
-            GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> service,
-            IMapper mapper)
+            GenericService<TipoRecurso, TipoRecursoDto, TipoRecursoResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -89,7 +86,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos del Tipo de Recurso son requeridos");
 
-            var dto = _mapper.Map<TipoRecursoDto>(response);
+            var dto = response.Adapt<TipoRecursoDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
@@ -111,7 +108,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de Tipo de Recurso inválido", nameof(id));
 
-            var dto = _mapper.Map<TipoRecursoDto>(response);
+            var dto = response.Adapt<TipoRecursoDto>();
             dto.PkidTipoRecurso = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
@@ -132,7 +129,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (entity == null)
                 return false;
 
-            var dto = _mapper.Map<TipoRecursoDto>(entity);
+            var dto = entity.Adapt<TipoRecursoDto>();
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;

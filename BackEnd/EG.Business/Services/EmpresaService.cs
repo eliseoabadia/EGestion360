@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using EG.Business.Interfaces;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.Interfaces;
@@ -7,28 +7,26 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Services
 {
-    public class EmpresaService(IRepository<Empresa> repositorySP,
-                IMapper mapper) : IEmpresaService
+    public class EmpresaService(IRepository<Empresa> repositorySP) : IEmpresaService
     {
         private readonly IRepository<Empresa> _repository = repositorySP;
-        private readonly IMapper _mapper = mapper;
 
 
         public async Task<IEnumerable<EmpresaDto>> GetAllEmpresasAsync()
         {
             var empresas = await _repository.GetAllAsync();
-            return _mapper.Map<IEnumerable<EmpresaDto>>(empresas);
+            return empresas.Adapt<IEnumerable<EmpresaDto>>();
         }
 
         public async Task<EmpresaDto?> GetEmpresaByIdAsync(int empresaId)
         {
             var item = await _repository.GetByIdAsync(short.Parse(empresaId.ToString()));
-            return item != null ? _mapper.Map<EmpresaDto>(item) : null;
+            return item != null ? item.Adapt<EmpresaDto>() : null;
         }
 
         public async Task AddEmpresaAsync(EmpresaDto dto)
         {
-            var item = _mapper.Map<Empresa>(dto);
+            var item = dto.Adapt<Empresa>();
             await _repository.AddAsync(item);
         }
 
@@ -38,7 +36,7 @@ namespace EG.Business.Services
             if (existingEmpresa == null)
                 throw new KeyNotFoundException($"Empresa {empresaId} No encontrada.");
 
-            _mapper.Map(dto, existingEmpresa);
+            dto.Adapt(existingEmpresa);
             await _repository.UpdateAsync(existingEmpresa);
         }
 
@@ -48,7 +46,7 @@ namespace EG.Business.Services
             if (existingEmpresa == null)
                 throw new KeyNotFoundException($"Empresa {empresaId} No encontrada.");
 
-            _mapper.Map(dto, existingEmpresa);
+            dto.Adapt(existingEmpresa);
             await _repository.UpdateAsync(existingEmpresa);
         }
 

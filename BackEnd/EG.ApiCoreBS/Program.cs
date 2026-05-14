@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.ApiCoreBS.Extensions;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
@@ -8,25 +8,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+var logger = LoggerFactory.Create(config =>
+{
+    config.AddConsole();
+    config.AddDebug();
+}).CreateLogger("Startup");
+
+try
+{
+    logger.LogInformation("=== INICIANDO APLICACIÓN ===");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddAutoMapper(cfg =>
-{
-    var businessAssembly = typeof(EmpresaMappingProfile).Assembly;
-
-    var profiles = businessAssembly.GetTypes()
-                                   .Where(t => typeof(Profile).IsAssignableFrom(t) &&
-                                               !t.IsAbstract &&
-                                               t.Namespace != null &&
-                                               t.Namespace.Contains("EG.Business.Mapping"));
-
-    foreach (var profile in profiles)
-    {
-        cfg.AddProfile(profile);
-    }
-});
+TypeAdapterConfig.GlobalSettings.Scan(typeof(EmpresaMappingProfile).Assembly);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -35,20 +31,22 @@ builder.WebHost.ConfigureKestrel(options =>
     //options.Limits.MaxRequestHeadersTotalSize = 1048576; // 1024KB (1MB)
 });
 
+var corsOrigins = new[] { "*" };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:7279", "http://localhost:5242") // tus frontends
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // solo si usas cookies/JWT en header
+              .AllowAnyHeader();
     });
 });
 
 
 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
+    logger.LogInformation("Configuración CORS cargada. Orígenes permitidos: {Origins}", string.Join(", ", corsOrigins));
+
+    builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
 
 //contexto de datos
 var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
@@ -138,7 +136,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 // Habilitar CORS antes de enrutar controladores para que las preflight requests reciban
 // los encabezados Access-Control-Allow-*
@@ -150,4 +148,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+    logger.LogInformation("Aplicación iniciada correctamente en {urls}", string.Join(", ", app.Urls));
+    app.Run();
+}
+catch (Exception ex)
+{
+    logger.LogCritical(ex, "ERROR FATAL al iniciar la aplicación: {Mensaje}", ex.Message);
+    throw;
+}

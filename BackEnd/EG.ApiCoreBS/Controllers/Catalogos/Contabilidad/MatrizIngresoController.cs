@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
@@ -15,14 +15,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
     public class MatrizIngresoController : ControllerBase
     {
         private readonly IMatrizIngresoService _service;
-        private readonly IMapper _mapper;
 
         public MatrizIngresoController(
-            IMatrizIngresoService service,
-            IMapper mapper)
+            IMatrizIngresoService service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         [HttpGet]

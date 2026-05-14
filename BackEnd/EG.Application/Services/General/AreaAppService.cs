@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.General;
@@ -9,12 +9,10 @@ namespace EG.Application.Services.General
 {
     public class AreaAppService : IAreaAppService
     {
-        private readonly IMapper _mapper;
         private readonly EGestionContext _context;
 
-        public AreaAppService(IMapper mapper, EGestionContext context)
+        public AreaAppService(EGestionContext context)
         {
-            _mapper = mapper;
             _context = context;
         }
 

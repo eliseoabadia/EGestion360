@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using EG.Application.Interfaces.General;
@@ -18,16 +18,13 @@ namespace EG.ApiCoreBS.Controllers.General
         private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(UsuarioController));
         private readonly IUsuarioAppService _appService;
         private readonly IUserContextService _userContext;
-        private readonly IMapper _mapper;
 
         public UsuarioController(
             IUsuarioAppService appService,
-            IUserContextService userContext,
-            IMapper mapper)
+            IUserContextService userContext)
         {
             _appService = appService;
             _userContext = userContext;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -136,7 +133,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 });
             try
             {
-                var dto = _mapper.Map<UsuarioDto>(request);
+                var dto = request.Adapt<UsuarioDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 
@@ -199,7 +196,7 @@ namespace EG.ApiCoreBS.Controllers.General
             ModelState.Clear();
             try
             {
-                var dto = _mapper.Map<UsuarioDto>(request);
+                var dto = request.Adapt<UsuarioDto>();
                 dto.PkIdUsuario = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;

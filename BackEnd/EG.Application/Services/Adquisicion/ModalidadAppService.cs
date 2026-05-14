@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -11,14 +11,11 @@ namespace EG.Application.Services.Adquisicion
     public class ModalidadAppService : IModalidadAppService
     {
         private readonly GenericService<Modalidad, ModalidadDto, ModalidadResponse> _service;
-        private readonly IMapper _mapper;
 
         public ModalidadAppService(
-            GenericService<Modalidad, ModalidadDto, ModalidadResponse> service,
-            IMapper mapper)
+            GenericService<Modalidad, ModalidadDto, ModalidadResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -78,7 +75,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var dto = _mapper.Map<ModalidadDto>(response);
+                var dto = response.Adapt<ModalidadDto>();
                 dto.UsuarioCreacion = usuarioActual;
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
@@ -120,7 +117,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var dto = _mapper.Map<ModalidadDto>(response);
+                var dto = response.Adapt<ModalidadDto>();
                 dto.PkidModalidad = id;
                 dto.UsuarioModificacion = usuarioActual;
                 dto.FechaModificacion = DateTime.Now;

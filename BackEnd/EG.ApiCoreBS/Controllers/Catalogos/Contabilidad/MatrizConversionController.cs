@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
@@ -22,18 +22,15 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
     public class MatrizConversionController : ControllerBase
     {
         private readonly IMatrizConversionService _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
         private readonly EGestionContext _context;
 
         public MatrizConversionController(
             IMatrizConversionService service,
-            IMapper mapper,
             IUserContextService userContext,
             EGestionContext context)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             _context = context;
         }
@@ -92,7 +89,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 });
             }
 
-            var dto = _mapper.Map<MatrizConversionDto>(request);
+            var dto = request.Adapt<MatrizConversionDto>();
 
             var existe = await _service.ExisteRegistroAsync(dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis);
             if (existe)
@@ -134,7 +131,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 });
             }
 
-            var dto = _mapper.Map<MatrizConversionDto>(request);
+            var dto = request.Adapt<MatrizConversionDto>();
             dto.PkidMatrizConversion = id;
 
             var existe = await _service.ExisteRegistroUpdateAsync(id, dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis);

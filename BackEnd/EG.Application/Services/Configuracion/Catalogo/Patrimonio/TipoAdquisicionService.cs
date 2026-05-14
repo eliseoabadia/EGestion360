@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class TipoAdquisicionService : ITipoAdquisicionService
     {
         private readonly GenericService<TipoAdquisicion, TipoAdquisicionDto, TipoAdquisicionResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public TipoAdquisicionService(
             GenericService<TipoAdquisicion, TipoAdquisicionDto, TipoAdquisicionResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureValidations();
         }
@@ -76,7 +73,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (entity == null)
                     return new PagedResult<TipoAdquisicionResponse> { Success = false, Message = "Tipo de adquisiciÃ³n no encontrado", Code = "NOT_FOUND" };
 
-                var result = _mapper.Map<TipoAdquisicionResponse>(entity);
+                var result = entity.Adapt<TipoAdquisicionResponse>();
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = true,
@@ -103,7 +100,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<TipoAdquisicionDto>(request);
+                var dto = request.Adapt<TipoAdquisicionDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
 
@@ -118,8 +115,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Tipo de adquisiciÃ³n creado correctamente",
                     Code = "SUCCESS",
-                    Data = created != null ? _mapper.Map<TipoAdquisicionResponse>(created) : null,
-                    Items = created != null ? new List<TipoAdquisicionResponse> { _mapper.Map<TipoAdquisicionResponse>(created) } : new List<TipoAdquisicionResponse>(),
+                    Data = created != null ? created.Adapt<TipoAdquisicionResponse>() : null,
+                    Items = created != null ? new List<TipoAdquisicionResponse> { created.Adapt<TipoAdquisicionResponse>() } : new List<TipoAdquisicionResponse>(),
                     TotalCount = 1
                 };
             }
@@ -137,7 +134,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (existing == null)
                     return new PagedResult<TipoAdquisicionResponse> { Success = false, Message = "Tipo de adquisiciÃ³n no encontrado", Code = "NOT_FOUND" };
 
-                var dto = _mapper.Map<TipoAdquisicionDto>(request);
+                var dto = request.Adapt<TipoAdquisicionDto>();
                 dto.UsuarioCreacion = existing.UsuarioCreacion;
                 dto.FechaCreacion = existing.FechaCreacion;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
@@ -146,7 +143,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 await _service.CanUpdateAsync(id, dto);
                 await _service.UpdateAsync(id, dto);
 
-                var updated = _mapper.Map<TipoAdquisicionResponse>(await _service.GetByIdAsync(id));
+                var updated = (await _service.GetByIdAsync(id)).Adapt<TipoAdquisicionResponse>();
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = true,
@@ -214,7 +211,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 return new PagedResult<TipoAdquisicionResponse>
                 {
-                    Items = _mapper.Map<List<TipoAdquisicionResponse>>(items),
+                    Items = items.Adapt<List<TipoAdquisicionResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

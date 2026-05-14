@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Tesoreria;
@@ -12,30 +12,27 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
     public class TipoMonedaService : ITipoMonedaService
     {
         private readonly IRepository<TipoMonedum> _repository;
-        private readonly IMapper _mapper;
 
         public TipoMonedaService(
-            IRepository<TipoMonedum> repository,
-            IMapper mapper)
+            IRepository<TipoMonedum> repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<TipoMonedaResponse?> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : _mapper.Map<TipoMonedaResponse>(entity);
+            return entity == null ? null : entity.Adapt<TipoMonedaResponse>();
         }
 
         public async Task<TipoMonedaResponse> CreateAsync(TipoMonedaDto dto, int usuarioId)
         {
-            var entity = _mapper.Map<TipoMonedum>(dto);
+            var entity = dto.Adapt<TipoMonedum>();
             entity.FkidPaisSis = 1;
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
-            return _mapper.Map<TipoMonedaResponse>(entity);
+            return entity.Adapt<TipoMonedaResponse>();
         }
 
         public async Task<TipoMonedaResponse?> UpdateAsync(int id, TipoMonedaDto dto, int usuarioId)
@@ -43,11 +40,11 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
-            return _mapper.Map<TipoMonedaResponse>(entity);
+            return entity.Adapt<TipoMonedaResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -94,7 +91,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
             return new PagedResult<TipoMonedaResponse>
             {
-                Items = _mapper.Map<List<TipoMonedaResponse>>(items),
+                Items = items.Adapt<List<TipoMonedaResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Patrimonio;
@@ -14,20 +14,17 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     {
         private readonly IRepository<GrupoBien> _repository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
         private readonly ILogger<GrupoBienService> _logger;
 
         public GrupoBienService(
             IRepository<GrupoBien> repository,
             EGestionContext context,
-            IMapper mapper,
             IUserContextService userContext,
             ILogger<GrupoBienService> logger)
         {
             _repository = repository;
             _context = context;
-            _mapper = mapper;
             _userContext = userContext;
             _logger = logger;
         }
@@ -39,7 +36,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 var items = await _context.VwGrupoBiens.ToListAsync();
                 return new PagedResult<GrupoBienResponse>
                 {
-                    Items = _mapper.Map<List<GrupoBienResponse>>(items),
+                    Items = items.Adapt<List<GrupoBienResponse>>(),
                     TotalCount = items.Count,
                     Success = true,
                     Message = "OK",
@@ -64,7 +61,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (entity == null)
                     return new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" };
 
-                var response = _mapper.Map<GrupoBienResponse>(entity);
+                var response = entity.Adapt<GrupoBienResponse>();
                 return new PagedResult<GrupoBienResponse>
                 {
                     Success = true,
@@ -89,7 +86,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<GrupoBienDto>(request);
+                var dto = request.Adapt<GrupoBienDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
 
@@ -105,7 +102,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     };
                 }
 
-                var entity = _mapper.Map<GrupoBien>(dto);
+                var entity = dto.Adapt<GrupoBien>();
                 await _repository.AddAsync(entity);
 
                 return new PagedResult<GrupoBienResponse>
@@ -113,7 +110,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Grupo de bien creado correctamente",
                     Code = "SUCCESS",
-                    Data = _mapper.Map<GrupoBienResponse>(entity),
+                    Data = entity.Adapt<GrupoBienResponse>(),
                     TotalCount = 1
                 };
             }
@@ -131,7 +128,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (entity == null)
                     return new PagedResult<GrupoBienResponse> { Success = false, Message = "Grupo de bien no encontrado", Code = "NOT_FOUND" };
 
-                var dto = _mapper.Map<GrupoBienDto>(request);
+                var dto = request.Adapt<GrupoBienDto>();
                 dto.PkidGrupoBien = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.UtcNow;
@@ -148,7 +145,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     };
                 }
 
-                _mapper.Map(dto, entity);
+                dto.Adapt(entity);
                 entity.FechaModificacion = dto.FechaModificacion;
                 entity.UsuarioModificacion = dto.UsuarioModificacion;
                 await _repository.UpdateAsync(entity);
@@ -158,7 +155,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Grupo de bien actualizado correctamente",
                     Code = "SUCCESS",
-                    Data = _mapper.Map<GrupoBienResponse>(entity),
+                    Data = entity.Adapt<GrupoBienResponse>(),
                     TotalCount = 1
                 };
             }
@@ -225,7 +222,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 return new PagedResult<GrupoBienResponse>
                 {
-                    Items = _mapper.Map<List<GrupoBienResponse>>(items),
+                    Items = items.Adapt<List<GrupoBienResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

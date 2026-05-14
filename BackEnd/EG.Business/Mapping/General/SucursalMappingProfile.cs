@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
@@ -6,47 +6,46 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.General
 {
-    public class SucursalMappingProfile : Profile
+    public class SucursalMappingProfile : IRegister
     {
-        public SucursalMappingProfile()
-        {
+        public void Register(TypeAdapterConfig config){
             // Mapeo de Entidad a DTO (para crear/actualizar)
-            CreateMap<Sucursal, SucursalDto>().ReverseMap(); 
+            config.NewConfig<Sucursal, SucursalDto>().TwoWays(); 
             // Mapeo de Entidad a DTO (para crear/actualizar)
-            CreateMap<Sucursal, SucursalResponse>()
-                .ReverseMap(); // Permite mapeo bidireccional
+            config.NewConfig<Sucursal, SucursalResponse>()
+                .TwoWays(); // Permite mapeo bidireccional
 
             // MAPPER SOLICITADO: VwSucursalEmpresaEstado a SucursalResponse
-            CreateMap<VwSucursalEmpresaEstado, SucursalResponse>()
+            config.NewConfig<VwSucursalEmpresaEstado, SucursalResponse>()
                 // Campos base de la sucursal
-                .ForMember(dest => dest.PkidSucursal, opt => opt.MapFrom(src => src.PkidSucursal))
-                .ForMember(dest => dest.FkidEmpresaSis, opt => opt.MapFrom(src => src.FkidEmpresaSis))
-                .ForMember(dest => dest.FkidEstadoSis, opt => opt.MapFrom(src => src.FkidEstadoSis))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.CodigoSucursal, opt => opt.MapFrom(src => src.CodigoSucursal))
-                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.Alias))
-                .ForMember(dest => dest.FkidTipoSucursal, opt => opt.MapFrom(src => src.FkidTipoSucursal))
-                .ForMember(dest => dest.FkidMonedaLocalSis, opt => opt.MapFrom(src => src.FkidMonedaLocalSis))
-                .ForMember(dest => dest.Direccion, opt => opt.MapFrom(src => src.Direccion))
-                .ForMember(dest => dest.Colonia, opt => opt.MapFrom(src => src.Colonia))
-                .ForMember(dest => dest.Ciudad, opt => opt.MapFrom(src => src.Ciudad))
-                .ForMember(dest => dest.CodigoPostal, opt => opt.MapFrom(src => src.CodigoPostal))
-                .ForMember(dest => dest.TelefonoPrincipal, opt => opt.MapFrom(src => src.TelefonoPrincipal))
-                .ForMember(dest => dest.TelefonoSecundario, opt => opt.MapFrom(src => src.TelefonoSecundario))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.HorarioApertura, opt => opt.MapFrom(src => src.HorarioApertura))
-                .ForMember(dest => dest.HorarioCierre, opt => opt.MapFrom(src => src.HorarioCierre))
-                .ForMember(dest => dest.EsMatriz, opt => opt.MapFrom(src => src.EsMatriz))
-                .ForMember(dest => dest.EsActiva, opt => opt.MapFrom(src => src.EsActiva))
-                .ForMember(dest => dest.Latitud, opt => opt.MapFrom(src => src.Latitud))
-                .ForMember(dest => dest.Longitud, opt => opt.MapFrom(src => src.Longitud))
+                .Map(dest => dest.PkidSucursal, src => src.PkidSucursal)
+                .Map(dest => dest.FkidEmpresaSis, src => src.FkidEmpresaSis)
+                .Map(dest => dest.FkidEstadoSis, src => src.FkidEstadoSis)
+                .Map(dest => dest.Nombre, src => src.Nombre)
+                .Map(dest => dest.CodigoSucursal, src => src.CodigoSucursal)
+                .Map(dest => dest.Alias, src => src.Alias)
+                .Map(dest => dest.FkidTipoSucursal, src => src.FkidTipoSucursal)
+                .Map(dest => dest.FkidMonedaLocalSis, src => src.FkidMonedaLocalSis)
+                .Map(dest => dest.Direccion, src => src.Direccion)
+                .Map(dest => dest.Colonia, src => src.Colonia)
+                .Map(dest => dest.Ciudad, src => src.Ciudad)
+                .Map(dest => dest.CodigoPostal, src => src.CodigoPostal)
+                .Map(dest => dest.TelefonoPrincipal, src => src.TelefonoPrincipal)
+                .Map(dest => dest.TelefonoSecundario, src => src.TelefonoSecundario)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.HorarioApertura, src => src.HorarioApertura)
+                .Map(dest => dest.HorarioCierre, src => src.HorarioCierre)
+                .Map(dest => dest.EsMatriz, src => src.EsMatriz)
+                .Map(dest => dest.EsActiva, src => src.EsActiva)
+                .Map(dest => dest.Latitud, src => src.Latitud)
+                .Map(dest => dest.Longitud, src => src.Longitud)
 
-                // Propiedades adicionales de la vista (información enriquecida)
-                .ForMember(dest => dest.NombreEmpresa, opt => opt.MapFrom(src => src.NombreEmpresa))
-                //.ForMember(dest => dest.RfcEmpresa, opt => opt.MapFrom(src => src.Rfc))
-                .ForMember(dest => dest.NombreEstado, opt => opt.MapFrom(src => src.NombreEstado))
-                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
-                .ForMember(dest => dest.NombrePais, opt => opt.MapFrom(src => src.NombrePais))
+                // Propiedades adicionales de la vista (informaci�n enriquecida)
+                .Map(dest => dest.NombreEmpresa, src => src.NombreEmpresa)
+                //.Map(dest => dest.RfcEmpresa, src => src.Rfc)
+                .Map(dest => dest.NombreEstado, src => src.NombreEstado)
+                .Map(dest => dest.CodigoEstado, src => src.CodigoEstado)
+                .Map(dest => dest.NombrePais, src => src.NombrePais)
 
                 ;
 

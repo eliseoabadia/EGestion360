@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -14,16 +14,12 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<Usuario, UsuarioDto, UsuarioResponse> _service;
         private readonly GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> _serviceView;
-        private readonly IMapper _mapper;
-
         public UsuarioAppService(
             GenericService<Usuario, UsuarioDto, UsuarioResponse> service,
-            GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> serviceView,
-            IMapper mapper)
+            GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> serviceView)
         {
             _service = service;
             _serviceView = serviceView;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }
@@ -171,7 +167,7 @@ namespace EG.Application.Services.General
             try
             {
                 var result = await _serviceView.GetAllAsync();
-                var response = _mapper.Map<List<UsuarioResponse>>(result);
+                var response = result.Adapt<List<UsuarioResponse>>();
                 
                 return new PagedResult<UsuarioResponse>
                 {
@@ -249,7 +245,7 @@ namespace EG.Application.Services.General
                     new PagedRequest { Page = 1, PageSize = 1000 },
                     u => u.IdEmpresa == empresaId && u.UsuarioActivo);
 
-                var response = _mapper.Map<List<UsuarioResponse>>(result.Items);
+                var response = result.Items.Adapt<List<UsuarioResponse>>();
 
                 return new PagedResult<UsuarioResponse>
                 {
@@ -407,7 +403,7 @@ namespace EG.Application.Services.General
                 // Obtener usuario
                 var _usuario = await _service.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
 
-                var usuario = _mapper.Map<UsuarioDto>(_usuario);
+                var usuario = _usuario.Adapt<UsuarioDto>();
 
                 if (usuario == null)
                     throw new InvalidOperationException("Usuario no encontrado");

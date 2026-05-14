@@ -57,6 +57,11 @@ VALUES
 
 --update [dbo].[AspNetUsers] set [PasswordHash] = 'UOxg2B7HCZwZZ/drSkwHrA=='
 
+INSERT INTO [dbo].[AspNetUserRoles] ([UserId], [RoleId], [ExpireDate])
+SELECT [Id], '71804e93-9753-4684-84fd-cf037349c111', '2027-12-31'
+FROM [dbo].[AspNetUsers]
+WHERE PkIdUsuario  IN (1,2,3);
+
 -- NOM.Persona (mínima para FK de PAAAS y otras tablas)
 -- NOM.Persona
 SET IDENTITY_INSERT [NOM].[Persona] ON;

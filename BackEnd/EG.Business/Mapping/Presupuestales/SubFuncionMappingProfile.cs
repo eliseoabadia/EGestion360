@@ -1,30 +1,29 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Presupuestales
 {
-    public class SubFuncionMappingProfile : Profile
+    public class SubFuncionMappingProfile : IRegister
     {
-        public SubFuncionMappingProfile()
-        {
-            CreateMap<Sf, SubFuncionDto>().ReverseMap();
-            CreateMap<Sf, SubFuncionResponse>()
-                .ForMember(dest => dest.SubFuncionClave, opt => opt.MapFrom(src => src.Clave))
-                .ForMember(dest => dest.SubFuncionDescripcion, opt => opt.MapFrom(src => src.Descripcion))
-                .ForMember(dest => dest.FuncionClave, opt => opt.MapFrom(src => src.FkidFnPresNavigation != null ? src.FkidFnPresNavigation.Clave : (int?)null))
-                .ForMember(dest => dest.FuncionDescripcion, opt => opt.MapFrom(src => src.FkidFnPresNavigation != null ? src.FkidFnPresNavigation.Descripcion : null))
-                .ForMember(dest => dest.SubFuncionClaveNombre, opt => opt.Ignore())
-                .ForMember(dest => dest.FuncionClaveNombre, opt => opt.Ignore());
-            CreateMap<VwSubFuncion, SubFuncionDto>()
-                .ForMember(dest => dest.Clave, opt => opt.MapFrom(src => src.SubFuncionClave))
-                .ForMember(dest => dest.Descripcion, opt => opt.MapFrom(src => src.SubFuncionDescripcion))
-                .ForMember(dest => dest.PkidSf, opt => opt.Ignore());
-            CreateMap<VwSubFuncion, SubFuncionResponse>();
-            CreateMap<SubFuncionResponse, SubFuncionDto>()
-                .ForMember(dest => dest.PkidSf, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Sf, SubFuncionDto>().TwoWays();
+            config.NewConfig<Sf, SubFuncionResponse>()
+                .Map(dest => dest.SubFuncionClave, src => src.Clave)
+                .Map(dest => dest.SubFuncionDescripcion, src => src.Descripcion)
+                .Map(dest => dest.FuncionClave, src => src.FkidFnPresNavigation != null ? src.FkidFnPresNavigation.Clave : (int?)null)
+                .Map(dest => dest.FuncionDescripcion, src => src.FkidFnPresNavigation != null ? src.FkidFnPresNavigation.Descripcion : null)
+                .Ignore(dest => dest.SubFuncionClaveNombre)
+                .Ignore(dest => dest.FuncionClaveNombre);
+            config.NewConfig<VwSubFuncion, SubFuncionDto>()
+                .Map(dest => dest.Clave, src => src.SubFuncionClave)
+                .Map(dest => dest.Descripcion, src => src.SubFuncionDescripcion)
+                .Ignore(dest => dest.PkidSf);
+            config.NewConfig<VwSubFuncion, SubFuncionResponse>();
+            config.NewConfig<SubFuncionResponse, SubFuncionDto>()
+                .Ignore(dest => dest.PkidSf)
+                .IgnoreNullValues(true);
         }
     }
 }

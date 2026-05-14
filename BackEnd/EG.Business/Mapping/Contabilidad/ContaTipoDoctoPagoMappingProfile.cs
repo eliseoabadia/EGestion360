@@ -1,21 +1,20 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Contabilidad
 {
-    public class ContaTipoDoctoPagoMappingProfile : Profile
+    public class ContaTipoDoctoPagoMappingProfile : IRegister
     {
-        public ContaTipoDoctoPagoMappingProfile()
-        {
+        public void Register(TypeAdapterConfig config){
             // Entity ↔ DTO
-            CreateMap<TipoDoctoPago, ContaTipoDoctoPagoDto>().ReverseMap();
+            config.NewConfig<TipoDoctoPago, ContaTipoDoctoPagoDto>().TwoWays();
             
             // Response → DTO
-            CreateMap<ContaTipoDoctoPagoResponse, ContaTipoDoctoPagoDto>()
-                .ForMember(dest => dest.PkidTipoDoctoPago, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+            config.NewConfig<ContaTipoDoctoPagoResponse, ContaTipoDoctoPagoDto>()
+                .Ignore(dest => dest.PkidTipoDoctoPago)
+                .IgnoreNullValues(true);
         }
     }
 }

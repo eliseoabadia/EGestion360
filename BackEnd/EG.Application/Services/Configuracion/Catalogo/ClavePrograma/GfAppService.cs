@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.ClavePrograma;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Common.GenericModel;
@@ -11,12 +11,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
     public class GfAppService : IGfAppService
     {
         private readonly IGfService _gfService;
-        private readonly IMapper _mapper;
 
-        public GfAppService(IGfService gfService, IMapper mapper)
+        public GfAppService(IGfService gfService)
         {
             _gfService = gfService;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<GfResponse>> GetAllAsync()
@@ -87,7 +85,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
         {
             try
             {
-                var dto = _mapper.Map<GfDto>(request);
+                var dto = request.Adapt<GfDto>();
 
                 if (!await _gfService.CanAddAsync(dto))
                 {
@@ -127,7 +125,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
         {
             try
             {
-                var dto = _mapper.Map<GfDto>(request);
+                var dto = request.Adapt<GfDto>();
                 dto.PkidGf = id;
 
                 if (!await _gfService.CanUpdateAsync(id, dto))

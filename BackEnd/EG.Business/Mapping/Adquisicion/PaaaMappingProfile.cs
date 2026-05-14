@@ -1,21 +1,20 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Adquisicion
 {
-    public class PaaaMappingProfile : Profile
+    public class PaaaMappingProfile : IRegister
     {
-        public PaaaMappingProfile()
-        {
-            CreateMap<Paaa, PaaaDto>().ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Paaa, PaaaDto>().TwoWays();
 
-            CreateMap<VwPaaa, PaaaResponse>();
+            config.NewConfig<VwPaaa, PaaaResponse>();
 
-            CreateMap<PaaaResponse, PaaaDto>()
-                .ForMember(dest => dest.PkidPaaas, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+            config.NewConfig<PaaaResponse, PaaaDto>()
+                .Ignore(dest => dest.PkidPaaas)
+                .IgnoreNullValues(true);
         }
     }
 }

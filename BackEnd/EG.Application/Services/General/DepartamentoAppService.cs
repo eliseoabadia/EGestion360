@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -14,18 +14,15 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<Departamento, DepartamentoDto, DepartamentoResponse> _service;
         private readonly GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> _serviceView;
-        private readonly IMapper _mapper;
         private readonly IRepository<Departamento> _repository;
 
         public DepartamentoAppService(
             GenericService<Departamento, DepartamentoDto, DepartamentoResponse> service,
             GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> serviceView,
-            IMapper mapper,
             IRepository<Departamento> repository)
         {
             _service = service;
             _serviceView = serviceView;
-            _mapper = mapper;
             _repository = repository;
             ConfigureService();
         }
@@ -99,7 +96,7 @@ namespace EG.Application.Services.General
             if (response == null || string.IsNullOrWhiteSpace(response.DepartamentoNombre))
                 throw new ArgumentException("Nombre de departamento es requerido");
 
-            var dto = _mapper.Map<DepartamentoDto>(response);
+            var dto = response.Adapt<DepartamentoDto>();
             dto.UsuarioCreacion = usuarioActual;
             dto.FechaCreacion = DateTime.Now;
             dto.Activo = true;
@@ -116,7 +113,7 @@ namespace EG.Application.Services.General
             if (id <= 0) throw new ArgumentException("ID debe ser mayor a 0");
             if (response == null) throw new ArgumentNullException(nameof(response));
 
-            var dto = _mapper.Map<DepartamentoDto>(response);
+            var dto = response.Adapt<DepartamentoDto>();
             dto.PkidDepartamento = id;
             dto.UsuarioModificacion = usuarioActual;
             dto.FechaModificacion = DateTime.Now;

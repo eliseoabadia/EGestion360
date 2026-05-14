@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     {
         private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
         private readonly GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> _serviceView;
-        private readonly IMapper _mapper;
 
         public SfService(
             GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
-            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView,
-            IMapper mapper)
+            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView)
         {
             _service = service;
             _serviceView = serviceView;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }
@@ -128,7 +125,7 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
             return new PagedResult<SubFuncionResponse>
             {
-                Items = _mapper.Map<List<SubFuncionResponse>>(items),
+                Items = items.Adapt<List<SubFuncionResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

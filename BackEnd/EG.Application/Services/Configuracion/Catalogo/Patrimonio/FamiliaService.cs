@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class FamiliaService : IFamiliaService
     {
         private readonly GenericService<Familium, FamiliaDto, FamiliaResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public FamiliaService(
             GenericService<Familium, FamiliaDto, FamiliaResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureValidations();
         }
@@ -112,7 +109,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<FamiliaDto>(request);
+                var dto = request.Adapt<FamiliaDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
@@ -128,7 +125,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 await _service.AddAsync(dto);
 
-                var created = _mapper.Map<FamiliaResponse>(dto);
+                var created = dto.Adapt<FamiliaResponse>();
                 return new PagedResult<FamiliaResponse>
                 {
                     Success = true,
@@ -154,7 +151,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<FamiliaDto>(request);
+                var dto = request.Adapt<FamiliaDto>();
                 dto.PkidFamilia = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;

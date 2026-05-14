@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Domain.DTOs.Requests.General;
@@ -11,14 +11,11 @@ namespace EG.Application.Services.General
     public class AspNetRolesAppService : IAspNetRolesAppService
     {
         private readonly GenericService<AspNetRole, AspNetRoleDto, AspNetRoleResponse> _service;
-        private readonly IMapper _mapper;
 
         public AspNetRolesAppService(
-            GenericService<AspNetRole, AspNetRoleDto, AspNetRoleResponse> service,
-            IMapper mapper)
+            GenericService<AspNetRole, AspNetRoleDto, AspNetRoleResponse> service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<AspNetRoleResponse>> GetAllAsync()
@@ -26,7 +23,7 @@ namespace EG.Application.Services.General
             try
             {
                 var result = await _service.GetAllAsync();
-                return _mapper.Map<IEnumerable<AspNetRoleResponse>>(result);
+                return result.Adapt<IEnumerable<AspNetRoleResponse>>();
             }
             catch (Exception ex)
             {
@@ -43,7 +40,7 @@ namespace EG.Application.Services.General
                     throw new ArgumentException("ID de rol inválido", nameof(id));
 
                 var result = await _service.GetByIdAsync(int.Parse(id), idPropertyName: "Id");
-                return _mapper.Map<AspNetRoleResponse>(result);
+                return result.Adapt<AspNetRoleResponse>();
             }
             catch (Exception ex)
             {
@@ -62,10 +59,10 @@ namespace EG.Application.Services.General
                 if (string.IsNullOrWhiteSpace(dto.Name))
                     throw new ArgumentException("El nombre del rol es obligatorio");
 
-                var dtoRequest = _mapper.Map<AspNetRoleDto>(dto);
+                var dtoRequest = dto.Adapt<AspNetRoleDto>();
                 await _service.AddAsync(dtoRequest);
 
-                return _mapper.Map<AspNetRoleResponse>(dtoRequest);
+                return dtoRequest.Adapt<AspNetRoleResponse>();
             }
             catch (Exception ex)
             {
@@ -85,10 +82,10 @@ namespace EG.Application.Services.General
                     throw new ArgumentNullException(nameof(dto), "Los datos del rol son requeridos");
 
                 dto.Id = id;
-                var dtoRequest = _mapper.Map<AspNetRoleDto>(dto);
+                var dtoRequest = dto.Adapt<AspNetRoleDto>();
                 await _service.UpdateAsync(int.Parse(id),dtoRequest);
 
-                return _mapper.Map<AspNetRoleResponse>(dtoRequest);
+                return dtoRequest.Adapt<AspNetRoleResponse>();
             }
             catch (Exception ex)
             {

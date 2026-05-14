@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using EG.Business.Extensions;
 using EG.Business.Interfaces;
 using EG.Common.GenericModel;
@@ -11,11 +11,9 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Services
 {
-    public class EmployeeService(IRepository<Usuario> repositorySP,
-                IMapper mapper) : IEmployeeService
+    public class EmployeeService(IRepository<Usuario> repositorySP) : IEmployeeService
     {
         private readonly IRepository<Usuario> _repository = repositorySP;
-        private readonly IMapper _mapper = mapper;
 
 
         public async Task<IList<UsuarioResponse?>> GetAllUsersAsync()
@@ -25,7 +23,7 @@ namespace EG.Business.Services
                 u => u.FkidPersonaNomNavigation,
                 u => u.FkidEmpresaSisNavigation
             );
-            return items != null ? _mapper.Map<IList<UsuarioResponse?>>(items) : null;
+            return items != null ? items.Adapt<IList<UsuarioResponse?>>() : null;
         }
 
         public async Task<PagedResult<UsuarioResponse>> GetAllUsuariosPaginadoAsync(PagedRequest _params)
@@ -85,7 +83,7 @@ namespace EG.Business.Services
 
 
             // Mapear a DTO
-            var mapped = _mapper.Map<IList<UsuarioResponse>>(_usuarios);
+            var mapped = _usuarios.Adapt<IList<UsuarioResponse>>();
 
             // Retornar resultado paginado
             return new PagedResult<UsuarioResponse>
@@ -98,12 +96,12 @@ namespace EG.Business.Services
         public async Task<UsuarioResponse?> GetEmployeeByIdAsync(int empId)
         {
             var emp = await _repository.GetByIdAsync(empId);
-            return emp != null ? _mapper.Map<UsuarioResponse>(emp) : null;
+            return emp != null ? emp.Adapt<UsuarioResponse>() : null;
         }
 
         public async Task<bool> AddEmployeeAsync(UsuarioDto dto)
         {
-            var emp = _mapper.Map<Usuario>(dto);
+            var emp = dto.Adapt<Usuario>();
             await _repository.AddAsync(emp);
             return true;
         }
@@ -115,7 +113,7 @@ namespace EG.Business.Services
             if (existingEmp == null)
                 throw new KeyNotFoundException($"User with ID {empId} not found.");
 
-            _mapper.Map(dto, existingEmp);
+            dto.Adapt(existingEmp);
             await _repository.UpdateAsync(existingEmp);
             return true;
         }

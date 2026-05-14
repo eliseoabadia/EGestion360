@@ -1,20 +1,19 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Tesoreria;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Tesoreria
 {
-    public class TipoCambioMappingProfile : Profile
+    public class TipoCambioMappingProfile : IRegister
     {
-        public TipoCambioMappingProfile()
-        {
-            CreateMap<TipoCambio, TipoCambioDto>().ReverseMap();
-            CreateMap<VwTipoCambio, TipoCambioResponse>();
-            CreateMap<TipoCambio, TipoCambioResponse>();
-            CreateMap<TipoCambioResponse, TipoCambioDto>()
-                .ForMember(dest => dest.PkidTipoCambio, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<TipoCambio, TipoCambioDto>().TwoWays();
+            config.NewConfig<VwTipoCambio, TipoCambioResponse>();
+            config.NewConfig<TipoCambio, TipoCambioResponse>();
+            config.NewConfig<TipoCambioResponse, TipoCambioDto>()
+                .Ignore(dest => dest.PkidTipoCambio)
+                .IgnoreNullValues(true);
         }
     }
 }

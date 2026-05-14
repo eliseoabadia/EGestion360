@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Tesoreria;
@@ -12,29 +12,26 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
     public class TipoPagoSFService : ITipoPagoSFService
     {
         private readonly IRepository<TipoPagoSf> _repository;
-        private readonly IMapper _mapper;
 
         public TipoPagoSFService(
-            IRepository<TipoPagoSf> repository,
-            IMapper mapper)
+            IRepository<TipoPagoSf> repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<TipoPagoSFResponse?> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : _mapper.Map<TipoPagoSFResponse>(entity);
+            return entity == null ? null : entity.Adapt<TipoPagoSFResponse>();
         }
 
         public async Task<TipoPagoSFResponse> CreateAsync(TipoPagoSFDto dto, int usuarioId)
         {
-            var entity = _mapper.Map<TipoPagoSf>(dto);
+            var entity = dto.Adapt<TipoPagoSf>();
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
-            return _mapper.Map<TipoPagoSFResponse>(entity);
+            return entity.Adapt<TipoPagoSFResponse>();
         }
 
         public async Task<TipoPagoSFResponse?> UpdateAsync(int id, TipoPagoSFDto dto, int usuarioId)
@@ -42,11 +39,11 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
-            return _mapper.Map<TipoPagoSFResponse>(entity);
+            return entity.Adapt<TipoPagoSFResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -90,7 +87,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
             return new PagedResult<TipoPagoSFResponse>
             {
-                Items = _mapper.Map<List<TipoPagoSFResponse>>(items),
+                Items = items.Adapt<List<TipoPagoSFResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.General;
@@ -10,12 +10,10 @@ namespace EG.Application.Services.General
     public class UsuarioAreaAppService : IUsuarioAreaAppService
     {
         private readonly IRepository<VwUsuarioPersonaArea> _repository;
-        private readonly IMapper _mapper;
 
-        public UsuarioAreaAppService(IRepository<VwUsuarioPersonaArea> repository, IMapper mapper)
+        public UsuarioAreaAppService(IRepository<VwUsuarioPersonaArea> repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<UsuarioAreaResponse>> GetAllAsync(int usuarioId)
@@ -23,7 +21,7 @@ namespace EG.Application.Services.General
             try
             {
                 var entities = await _repository.GetAllWithIncludesAsync(x => x.PkIdUsuario == usuarioId);
-                var result = _mapper.Map<List<UsuarioAreaResponse>>(entities.Where(e => e.PkidArea.HasValue));
+                var result = entities.Where(e => e.PkidArea.HasValue).Adapt<List<UsuarioAreaResponse>>();
                 return new PagedResult<UsuarioAreaResponse>
                 {
                     Success = true,

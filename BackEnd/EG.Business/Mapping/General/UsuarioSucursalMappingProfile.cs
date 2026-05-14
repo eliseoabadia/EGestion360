@@ -1,19 +1,18 @@
-ï»¿using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.General
 {
-    public class UsuarioSucursalMappingProfile : Profile
+    public class UsuarioSucursalMappingProfile : IRegister
     {
-        public UsuarioSucursalMappingProfile()
-        {
-            // Mapeo de Entidad -> DTO de creaciÃ³n/actualizaciÃ³n
-            CreateMap<UsuarioSucursal, UsuarioSucursalDto>().ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            // Mapeo de Entidad -> DTO de creación/actualización
+            config.NewConfig<UsuarioSucursal, UsuarioSucursalDto>().TwoWays();
 
-            // Mapeo de la Vista -> Response DTO (proyecciÃ³n completa)
-            CreateMap<VwUsuarioSucursal, UsuarioSucursalResponse>();
+            // Mapeo de la Vista -> Response DTO (proyección completa)
+            config.NewConfig<VwUsuarioSucursal, UsuarioSucursalResponse>();
         }
     }
 }

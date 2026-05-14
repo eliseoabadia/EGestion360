@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
@@ -13,22 +13,19 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     {
         private readonly IRepository<Area> _repository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
 
         public UnidadResponsableAppServices(
             IRepository<Area> repository,
-            EGestionContext context,
-            IMapper mapper)
+            EGestionContext context)
         {
             _repository = repository;
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<UnidadResponsableResponse>> GetAllAsync()
         {
             var items = await _context.VwAreas.ToListAsync();
-            var mapped = _mapper.Map<List<UnidadResponsableResponse>>(items);
+            var mapped = items.Adapt<List<UnidadResponsableResponse>>();
             var dict = mapped.ToDictionary(m => m.PkidUnidadResponsable);
 
             foreach (var item in mapped)
@@ -45,7 +42,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         public async Task<UnidadResponsableResponse> GetByIdAsync(int id)
         {
             var entity = await _context.VwAreas.FirstOrDefaultAsync(e => e.PkidArea == id);
-            return entity == null ? null : _mapper.Map<UnidadResponsableResponse>(entity);
+            return entity == null ? null : entity.Adapt<UnidadResponsableResponse>();
         }
 
         public async Task<PagedResult<UnidadResponsableResponse>> GetAllPaginadoAsync(PagedRequest pageRequest)
@@ -86,7 +83,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
                 return new PagedResult<UnidadResponsableResponse>
                 {
-                    Items = _mapper.Map<List<UnidadResponsableResponse>>(items),
+                    Items = items.Adapt<List<UnidadResponsableResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",
@@ -110,7 +107,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos de la Unidad Responsable son requeridos");
 
-            var dto = _mapper.Map<UnidadResponsableDto>(response);
+            var dto = response.Adapt<UnidadResponsableDto>();
             dto.UsuarioCreacion = usuarioCreacion;
             dto.FechaCreacion = DateTime.UtcNow;
             dto.Activo = true;
@@ -119,10 +116,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (exists.Any())
                 throw new InvalidOperationException("Ya existe una Unidad Responsable activa con esa clave");
 
-            var entity = _mapper.Map<Area>(dto);
+            var entity = dto.Adapt<Area>();
             await _repository.AddAsync(entity);
 
-            return _mapper.Map<UnidadResponsableResponse>(entity);
+            return entity.Adapt<UnidadResponsableResponse>();
         }
 
         public async Task<UnidadResponsableResponse> UpdateAsync(int id, UnidadResponsableResponse response, int usuarioModificacion)
@@ -134,7 +131,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (entity == null)
                 throw new KeyNotFoundException($"Unidad Responsable con ID {id} no encontrada");
 
-            var dto = _mapper.Map<UnidadResponsableDto>(response);
+            var dto = response.Adapt<UnidadResponsableDto>();
             dto.PkidUnidadResponsable = id;
             dto.UsuarioModificacion = usuarioModificacion;
             dto.FechaModificacion = DateTime.UtcNow;
@@ -143,12 +140,12 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (duplicate.Any())
                 throw new InvalidOperationException("Ya existe otra Unidad Responsable activa con esa clave");
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = dto.FechaModificacion;
             entity.UsuarioModificacion = dto.UsuarioModificacion;
             await _repository.UpdateAsync(entity);
 
-            return _mapper.Map<UnidadResponsableResponse>(entity);
+            return entity.Adapt<UnidadResponsableResponse>();
         }
 
         public async Task<bool> DeleteAsync(int id, int usuarioActual)

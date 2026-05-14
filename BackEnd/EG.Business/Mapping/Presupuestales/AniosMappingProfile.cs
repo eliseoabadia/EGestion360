@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Presupuestales
 {
-    public class AniosMappingProfile : Profile
+    public class AniosMappingProfile : IRegister
     {
-        public AniosMappingProfile()
-        {
-            CreateMap<Anio, AniosDto>().ReverseMap();
-            CreateMap<Anio, AniosResponse>();
-            CreateMap<AniosResponse, AniosDto>()
-                .ForMember(dest => dest.PkidAnio, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Anio, AniosDto>().TwoWays();
+            config.NewConfig<Anio, AniosResponse>();
+            config.NewConfig<AniosResponse, AniosDto>()
+                .Ignore(dest => dest.PkidAnio)
+                .IgnoreNullValues(true);
         }
     }
 }

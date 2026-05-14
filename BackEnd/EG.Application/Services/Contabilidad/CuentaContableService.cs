@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Contabilidad;
@@ -15,14 +15,11 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class CuentaContableService : ICuentaContableService
     {
         private readonly GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> _service;
-        private readonly IMapper _mapper;
 
         public CuentaContableService(
-            GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> service,
-            IMapper mapper)
+            GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }
@@ -64,7 +61,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<CuentaContableResponse> CreateAsync(CuentaContableResponse response, int usuarioId)
         {
-            var dto = _mapper.Map<CuentaContableDto>(response);
+            var dto = response.Adapt<CuentaContableDto>();
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.Now;
             dto.Activo = true;
@@ -78,7 +75,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<CuentaContableResponse?> UpdateAsync(int id, CuentaContableResponse response, int usuarioId)
         {
-            var dto = _mapper.Map<CuentaContableDto>(response);
+            var dto = response.Adapt<CuentaContableDto>();
             dto.PkidCuentaContable = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.Now;

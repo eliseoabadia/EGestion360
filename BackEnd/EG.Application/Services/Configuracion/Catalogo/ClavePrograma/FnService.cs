@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     public class FnService : IFnService
     {
         private readonly GenericService<Fn, FnDto, FnResponse> _service;
-        private readonly IMapper _mapper;
 
         public FnService(
-            GenericService<Fn, FnDto, FnResponse> service,
-            IMapper mapper)
+            GenericService<Fn, FnDto, FnResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }
@@ -125,7 +122,7 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
             return new PagedResult<FnResponse>
             {
-                Items = _mapper.Map<List<FnResponse>>(items),
+                Items = items.Adapt<List<FnResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

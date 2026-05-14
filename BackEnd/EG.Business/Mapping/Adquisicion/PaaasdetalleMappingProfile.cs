@@ -1,36 +1,35 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Adquisicion
 {
-    public class PaaasdetalleMappingProfile : Profile
+    public class PaaasdetalleMappingProfile : IRegister
     {
-        public PaaasdetalleMappingProfile()
-        {
-            CreateMap<Paaasdetalle, PaaasdetalleResponse>()
-                .ForMember(dest => dest.TipoBienCodigoClave, opt => opt.MapFrom(src => src.FkidTipoBienAlmaNavigation != null ? src.FkidTipoBienAlmaNavigation.CodigoClave : string.Empty))
-                .ForMember(dest => dest.TipoBienDescripcion, opt => opt.MapFrom(src => src.FkidTipoBienAlmaNavigation != null ? src.FkidTipoBienAlmaNavigation.CodigoClave + " - " + src.FkidTipoBienAlmaNavigation.Descripcion : string.Empty))
-                .ForMember(dest => dest.Unidad, opt => opt.MapFrom(src => src.FkidUnidadesAlmaNavigation != null ? src.FkidUnidadesAlmaNavigation.Descripcion : string.Empty))
-                .ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Paaasdetalle, PaaasdetalleResponse>()
+                .Map(dest => dest.TipoBienCodigoClave, src => src.FkidTipoBienAlmaNavigation != null ? src.FkidTipoBienAlmaNavigation.CodigoClave : string.Empty)
+                .Map(dest => dest.TipoBienDescripcion, src => src.FkidTipoBienAlmaNavigation != null ? src.FkidTipoBienAlmaNavigation.CodigoClave + " - " + src.FkidTipoBienAlmaNavigation.Descripcion : string.Empty)
+                .Map(dest => dest.Unidad, src => src.FkidUnidadesAlmaNavigation != null ? src.FkidUnidadesAlmaNavigation.Descripcion : string.Empty)
+                .TwoWays();
 
-            CreateMap<VwPaaasdetalle, PaaasdetalleResponse>()
-                .ForMember(dest => dest.TipoBienCodigoClave, opt => opt.MapFrom(src => src.TipoBienCodigoClave ?? string.Empty))
-                .ForMember(dest => dest.TipoBienDescripcion, opt => opt.MapFrom(src => src.BienClaveNombre ?? string.Empty))
-                .ForMember(dest => dest.Unidad, opt => opt.MapFrom(src => src.UnidadMedida ?? string.Empty));
+            config.NewConfig<VwPaaasdetalle, PaaasdetalleResponse>()
+                .Map(dest => dest.TipoBienCodigoClave, src => src.TipoBienCodigoClave ?? string.Empty)
+                .Map(dest => dest.TipoBienDescripcion, src => src.BienClaveNombre ?? string.Empty)
+                .Map(dest => dest.Unidad, src => src.UnidadMedida ?? string.Empty);
 
-            CreateMap<PaaasdetalleDto, Paaasdetalle>()
-                .ForMember(dest => dest.PkidPaaasdetalle, opt => opt.Ignore())
-                .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
-                .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.EstudioMercadoDetalles, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidEmpresaSisNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidPaaaspartidaOrcoNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidTipoBienAlmaNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidUnidadesAlmaNavigation, opt => opt.Ignore());
+            config.NewConfig<PaaasdetalleDto, Paaasdetalle>()
+                .Ignore(dest => dest.PkidPaaasdetalle)
+                .Ignore(dest => dest.FechaCreacion)
+                .Ignore(dest => dest.UsuarioCreacion)
+                .Ignore(dest => dest.FechaModificacion)
+                .Ignore(dest => dest.UsuarioModificacion)
+                .Ignore(dest => dest.EstudioMercadoDetalles)
+                .Ignore(dest => dest.FkidEmpresaSisNavigation)
+                .Ignore(dest => dest.FkidPaaaspartidaOrcoNavigation)
+                .Ignore(dest => dest.FkidTipoBienAlmaNavigation)
+                .Ignore(dest => dest.FkidUnidadesAlmaNavigation);
         }
     }
 }

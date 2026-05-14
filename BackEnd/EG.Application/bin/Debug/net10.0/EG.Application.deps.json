@@ -8,7 +8,6 @@
     ".NETCoreApp,Version=v10.0": {
       "EG.Application/1.0.0": {
         "dependencies": {
-          "AutoMapper": "16.1.1",
           "EG.Business": "1.0.0",
           "EG.Common": "1.0.0",
           "EG.Domain": "1.0.0",
@@ -20,24 +19,30 @@
           "EG.Application.dll": {}
         }
       },
-      "AutoMapper/16.1.1": {
-        "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
-          "Microsoft.Extensions.Options": "10.0.7",
-          "Microsoft.IdentityModel.JsonWebTokens": "8.16.0"
-        },
-        "runtime": {
-          "lib/net10.0/AutoMapper.dll": {
-            "assemblyVersion": "16.0.0.0",
-            "fileVersion": "16.1.1.0"
-          }
-        }
-      },
       "Dapper/2.1.72": {
         "runtime": {
           "lib/net10.0/Dapper.dll": {
             "assemblyVersion": "2.0.0.0",
             "fileVersion": "2.1.72.10375"
+          }
+        }
+      },
+      "Mapster/10.0.7": {
+        "dependencies": {
+          "Mapster.Core": "10.0.7"
+        },
+        "runtime": {
+          "lib/net10.0/Mapster.dll": {
+            "assemblyVersion": "10.0.7.0",
+            "fileVersion": "10.0.7.0"
+          }
+        }
+      },
+      "Mapster.Core/10.0.7": {
+        "runtime": {
+          "lib/netstandard2.0/Mapster.Core.dll": {
+            "assemblyVersion": "10.0.7.0",
+            "fileVersion": "10.0.7.0"
           }
         }
       },
@@ -536,10 +541,10 @@
       },
       "EG.Business/1.0.0": {
         "dependencies": {
-          "AutoMapper": "16.1.1",
           "EG.Common": "1.0.0",
           "EG.Domain": "1.0.0",
-          "EG.Infraestructure": "1.0.0"
+          "EG.Infraestructure": "1.0.0",
+          "Mapster": "10.0.7"
         },
         "runtime": {
           "EG.Business.dll": {
@@ -593,19 +598,26 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AutoMapper/16.1.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-VNEky8JA15ci+oIDRGHITOGOpV4dILsf8pnn24QhDl2urtqgJ2IXiS/V2EtGU17P/+f6OeFQPJETaZXV9QOIZg==",
-      "path": "automapper/16.1.1",
-      "hashPath": "automapper.16.1.1.nupkg.sha512"
-    },
     "Dapper/2.1.72": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-ns4mGqQd9a/MhP8m6w556vVlZIa0/MfUu03zrxjZC/jlr1uVCsUac8bkdB+Fs98Llbd56rRSo1eZH5VVmeGZyw==",
       "path": "dapper/2.1.72",
       "hashPath": "dapper.2.1.72.nupkg.sha512"
+    },
+    "Mapster/10.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bZgWXyTM21Bc6Xrvk2BzPCFTwnvyTNSO4fUli/DVm02Kya80r5sY9ackpsECVlUqbda7ck9hr/1oKrCyI8yXmw==",
+      "path": "mapster/10.0.7",
+      "hashPath": "mapster.10.0.7.nupkg.sha512"
+    },
+    "Mapster.Core/10.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-73Bd0aZ+t6DoG3X4FYDfOyVgvLxgUXJKIjrps3W1n7MR03DIWI+sL62VqQSPwuJdn7WJb8HYhkH/BNZ6ZlJydw==",
+      "path": "mapster.core/10.0.7",
+      "hashPath": "mapster.core.10.0.7.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Http/2.3.9": {
       "type": "package",

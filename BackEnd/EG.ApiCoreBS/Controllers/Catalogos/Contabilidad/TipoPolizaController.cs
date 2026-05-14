@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using EG.Application.Interfaces.Contabilidad;
@@ -19,13 +19,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
     public class TipoPolizaController : ControllerBase
     {
         private readonly ITipoPolizaService _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
-        public TipoPolizaController(ITipoPolizaService service, IMapper mapper, IUserContextService userContext)
+        public TipoPolizaController(ITipoPolizaService service, IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
         }
 
@@ -83,7 +81,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 });
             }
 
-            var dto = _mapper.Map<TipoPolizaDto>(request);
+            var dto = request.Adapt<TipoPolizaDto>();
             if (!await _service.CanAddAsync(dto))
             {
                 return Conflict(new PagedResult<TipoPolizaResponse>
@@ -123,7 +121,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 });
             }
 
-            var dto = _mapper.Map<TipoPolizaDto>(request);
+            var dto = request.Adapt<TipoPolizaDto>();
             dto.PkidTipoPoliza = id;
 
             if (!await _service.CanUpdateAsync(id, dto))

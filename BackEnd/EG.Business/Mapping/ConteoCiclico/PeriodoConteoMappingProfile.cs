@@ -1,28 +1,22 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.ConteoCiclico;
 
-public class PeriodoConteoMappingProfile : Profile
+public class PeriodoConteoMappingProfile : IRegister
 {
-    public PeriodoConteoMappingProfile()
-    {
-        CreateMap<PeriodoConteo, PeriodoConteoDto>().ReverseMap()
-            .ForMember(dest => dest.FkidEstatusAlmaNavigation, opt => opt.Ignore())
-            .ForMember(dest => dest.FkidResponsableSisNavigation, opt => opt.Ignore())
-            .ForMember(dest => dest.FkidSucursalSisNavigation, opt => opt.Ignore())
-            .ForMember(dest => dest.FkidSupervisorSisNavigation, opt => opt.Ignore())
-            .ForMember(dest => dest.FkidTipoConteoAlmaNavigation, opt => opt.Ignore());
+    public void Register(TypeAdapterConfig config){
+        config.NewConfig<PeriodoConteo, PeriodoConteoDto>().TwoWays();
 
-        CreateMap<VwPeriodoConteo, PeriodoConteoResponse>();
+        config.NewConfig<VwPeriodoConteo, PeriodoConteoResponse>();
 
-        CreateMap<PeriodoConteoResponse, PeriodoConteoDto>()
-            .ForMember(dest => dest.FkidSucursalSis, opt => opt.MapFrom(src => src.IdSucursal ?? 0))
-            .ForMember(dest => dest.FkidTipoConteoAlma, opt => opt.MapFrom(src => src.IdTipoConteo ?? 0))
-            .ForMember(dest => dest.FkidEstatusAlma, opt => opt.MapFrom(src => src.IdEstatusPeriodo ?? 1))
-            .ForMember(dest => dest.FkidResponsableSis, opt => opt.MapFrom(src => src.IdResponsable))
-            .ForMember(dest => dest.FkidSupervisorSis, opt => opt.MapFrom(src => src.IdSupervisor));
+        config.NewConfig<PeriodoConteoResponse, PeriodoConteoDto>()
+            .Map(dest => dest.FkidSucursalSis, src => src.IdSucursal ?? 0)
+            .Map(dest => dest.FkidTipoConteoAlma, src => src.IdTipoConteo ?? 0)
+            .Map(dest => dest.FkidEstatusAlma, src => src.IdEstatusPeriodo ?? 1)
+            .Map(dest => dest.FkidResponsableSis, src => src.IdResponsable)
+            .Map(dest => dest.FkidSupervisorSis, src => src.IdSupervisor);
     }
 }

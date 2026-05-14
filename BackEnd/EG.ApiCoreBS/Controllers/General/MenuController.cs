@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using EG.Business.Services;
@@ -21,17 +21,14 @@ namespace EG.ApiCoreBS.Controllers.General
         private readonly IUserContextService _userContext;
         private readonly GenericService<Menu, MenuItemsDto, MenuItemsResponse> _service;
         private readonly GenericService<VwMenu, MenuItemsDto, MenuItemsResponse> _serviceView;
-        private readonly IMapper _mapper;
 
         public MenuController(
             GenericService<Menu, MenuItemsDto, MenuItemsResponse> service,
             GenericService<VwMenu, MenuItemsDto, MenuItemsResponse> serviceView,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
-            _mapper = mapper;
             _userContext = userContext;
 
             ConfigureService();
@@ -255,7 +252,7 @@ namespace EG.ApiCoreBS.Controllers.General
             {
                 ConfigureValidations();
 
-                var dto = _mapper.Map<MenuItemsDto>(viewDto);
+                var dto = viewDto.Adapt<MenuItemsDto>();
 
                 dto.CreatedDateTime = DateTime.Now;
                 dto.CreatedByOperatorId = _userContext.GetCurrentUserId();
@@ -272,7 +269,7 @@ namespace EG.ApiCoreBS.Controllers.General
                     await _service.UpdateAsync(dto.FkidMenuSis.Value, _padre);
                 }
 
-                //var _dto = _mapper.Map<MenuItemsDto>(viewDto);
+                //var _dto = viewDto.Adapt<MenuItemsDto>();
 
                 await _service.AddAsync(dto);
 
@@ -305,7 +302,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 ConfigureValidations();
                 //dto.PkidMenu = id;
 
-                var dto = _mapper.Map<MenuItemsDto>(viewDto);
+                var dto = viewDto.Adapt<MenuItemsDto>();
 
                 dto.ModifiedDateTime = DateTime.Now;
                 dto.ModifiedByOperatorId = _userContext.GetCurrentUserId();
@@ -590,7 +587,7 @@ namespace EG.ApiCoreBS.Controllers.General
             var parentEntity = await _service.GetQueryWithIncludes()
                 .FirstOrDefaultAsync(m => m.PkidMenu == parentId.Value && m.Activo);
 
-            return parentEntity is null ? null : _mapper.Map<MenuItemsDto>(parentEntity);
+            return parentEntity is null ? null : parentEntity.Adapt<MenuItemsDto>();
         }
     }
 }

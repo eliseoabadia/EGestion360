@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class MarcaService : IMarcaService
     {
         private readonly GenericService<Marca, MarcaDto, MarcaResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public MarcaService(
             GenericService<Marca, MarcaDto, MarcaResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureValidations();
         }
@@ -76,7 +73,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (entity == null)
                     return new PagedResult<MarcaResponse> { Success = false, Message = "Marca no encontrada", Code = "NOT_FOUND" };
 
-                var result = _mapper.Map<MarcaResponse>(entity);
+                var result = entity.Adapt<MarcaResponse>();
                 return new PagedResult<MarcaResponse>
                 {
                     Success = true,
@@ -103,7 +100,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<MarcaDto>(request);
+                var dto = request.Adapt<MarcaDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
 
@@ -118,8 +115,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Marca creada correctamente",
                     Code = "SUCCESS",
-                    Data = created != null ? _mapper.Map<MarcaResponse>(created) : null,
-                    Items = created != null ? new List<MarcaResponse> { _mapper.Map<MarcaResponse>(created) } : new List<MarcaResponse>(),
+                    Data = created != null ? created.Adapt<MarcaResponse>() : null,
+                    Items = created != null ? new List<MarcaResponse> { created.Adapt<MarcaResponse>() } : new List<MarcaResponse>(),
                     TotalCount = 1
                 };
             }
@@ -137,7 +134,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 if (existing == null)
                     return new PagedResult<MarcaResponse> { Success = false, Message = "Marca no encontrada", Code = "NOT_FOUND" };
 
-                var dto = _mapper.Map<MarcaDto>(request);
+                var dto = request.Adapt<MarcaDto>();
                 dto.UsuarioCreacion = existing.UsuarioCreacion;
                 dto.FechaCreacion = existing.FechaCreacion;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
@@ -146,7 +143,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 await _service.CanUpdateAsync(id, dto);
                 await _service.UpdateAsync(id, dto);
 
-                var updated = _mapper.Map<MarcaResponse>(await _service.GetByIdAsync(id));
+                var updated = (await _service.GetByIdAsync(id)).Adapt<MarcaResponse>();
                 return new PagedResult<MarcaResponse>
                 {
                     Success = true,
@@ -211,7 +208,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 return new PagedResult<MarcaResponse>
                 {
-                    Items = _mapper.Map<List<MarcaResponse>>(items),
+                    Items = items.Adapt<List<MarcaResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

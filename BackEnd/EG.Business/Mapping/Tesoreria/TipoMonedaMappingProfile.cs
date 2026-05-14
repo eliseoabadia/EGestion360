@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Tesoreria;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Tesoreria
 {
-    public class TipoMonedaMappingProfile : Profile
+    public class TipoMonedaMappingProfile : IRegister
     {
-        public TipoMonedaMappingProfile()
-        {
-            CreateMap<TipoMonedum, TipoMonedaDto>().ReverseMap();
-            CreateMap<TipoMonedum, TipoMonedaResponse>().ReverseMap();
-            CreateMap<TipoMonedaResponse, TipoMonedaDto>()
-                .ForMember(dest => dest.PkidTipoMoneda, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<TipoMonedum, TipoMonedaDto>().TwoWays();
+            config.NewConfig<TipoMonedum, TipoMonedaResponse>().TwoWays();
+            config.NewConfig<TipoMonedaResponse, TipoMonedaDto>()
+                .Ignore(dest => dest.PkidTipoMoneda)
+                .IgnoreNullValues(true);
         }
     }
 }

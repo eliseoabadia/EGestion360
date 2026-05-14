@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Adquisicion
 {
-    public class EstatusRequisicionMappingProfile : Profile
+    public class EstatusRequisicionMappingProfile : IRegister
     {
-        public EstatusRequisicionMappingProfile()
-        {
-            CreateMap<EstatusRequisicion, EstatusRequisicionDto>().ReverseMap();
-            CreateMap<EstatusRequisicion, EstatusRequisicionResponse>();
-            CreateMap<EstatusRequisicionResponse, EstatusRequisicionDto>()
-                .ForMember(dest => dest.PkidEstatusRequisicion, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<EstatusRequisicion, EstatusRequisicionDto>().TwoWays();
+            config.NewConfig<EstatusRequisicion, EstatusRequisicionResponse>();
+            config.NewConfig<EstatusRequisicionResponse, EstatusRequisicionDto>()
+                .Ignore(dest => dest.PkidEstatusRequisicion)
+                .IgnoreNullValues(true);
         }
     }
 }

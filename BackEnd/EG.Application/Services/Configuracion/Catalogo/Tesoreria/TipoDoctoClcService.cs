@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Tesoreria;
@@ -12,29 +12,26 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
     public class TipoDoctoClcService : ITipoDoctoClcService
     {
         private readonly IRepository<TipoDoctoClc> _repository;
-        private readonly IMapper _mapper;
 
         public TipoDoctoClcService(
-            IRepository<TipoDoctoClc> repository,
-            IMapper mapper)
+            IRepository<TipoDoctoClc> repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<TipoDoctoClcResponse?> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : _mapper.Map<TipoDoctoClcResponse>(entity);
+            return entity == null ? null : entity.Adapt<TipoDoctoClcResponse>();
         }
 
         public async Task<TipoDoctoClcResponse> CreateAsync(TipoDoctoClcDto dto, int usuarioId)
         {
-            var entity = _mapper.Map<TipoDoctoClc>(dto);
+            var entity = dto.Adapt<TipoDoctoClc>();
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
-            return _mapper.Map<TipoDoctoClcResponse>(entity);
+            return entity.Adapt<TipoDoctoClcResponse>();
         }
 
         public async Task<TipoDoctoClcResponse?> UpdateAsync(int id, TipoDoctoClcDto dto, int usuarioId)
@@ -42,11 +39,11 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
-            return _mapper.Map<TipoDoctoClcResponse>(entity);
+            return entity.Adapt<TipoDoctoClcResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -92,7 +89,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
             return new PagedResult<TipoDoctoClcResponse>
             {
-                Items = _mapper.Map<List<TipoDoctoClcResponse>>(items),
+                Items = items.Adapt<List<TipoDoctoClcResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

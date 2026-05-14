@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Contabilidad
 {
-    public class TipoPolizaMappingProfile : Profile
+    public class TipoPolizaMappingProfile : IRegister
     {
-        public TipoPolizaMappingProfile()
-        {
-            CreateMap<TipoPoliza, TipoPolizaDto>().ReverseMap();
-            CreateMap<TipoPoliza, TipoPolizaResponse>();
-            CreateMap<TipoPolizaResponse, TipoPolizaDto>()
-                .ForMember(dest => dest.PkidTipoPoliza, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<TipoPoliza, TipoPolizaDto>().TwoWays();
+            config.NewConfig<TipoPoliza, TipoPolizaResponse>();
+            config.NewConfig<TipoPolizaResponse, TipoPolizaDto>()
+                .Ignore(dest => dest.PkidTipoPoliza)
+                .IgnoreNullValues(true);
         }
     }
 }

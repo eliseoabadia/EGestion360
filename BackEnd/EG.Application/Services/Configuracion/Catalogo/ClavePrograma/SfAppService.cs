@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.ClavePrograma;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Common.GenericModel;
@@ -11,12 +11,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
     public class SfAppService : ISfAppService
     {
         private readonly ISfService _sfService;
-        private readonly IMapper _mapper;
 
-        public SfAppService(ISfService sfService, IMapper mapper)
+        public SfAppService(ISfService sfService)
         {
             _sfService = sfService;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<SubFuncionResponse>> GetAllAsync()
@@ -72,7 +70,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
 
         public async Task<PagedResult<SubFuncionResponse>> CreateAsync(SubFuncionResponse request, int usuarioActual)
         {
-            var dto = _mapper.Map<SubFuncionDto>(request);
+            var dto = request.Adapt<SubFuncionDto>();
             if (!await _sfService.CanAddAsync(dto))
             {
                 return new PagedResult<SubFuncionResponse>
@@ -98,7 +96,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
 
         public async Task<PagedResult<SubFuncionResponse>> UpdateAsync(int id, SubFuncionResponse request, int usuarioActual)
         {
-            var dto = _mapper.Map<SubFuncionDto>(request);
+            var dto = request.Adapt<SubFuncionDto>();
             dto.PkidSf = id;
 
             if (!await _sfService.CanUpdateAsync(id, dto))

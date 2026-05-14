@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class ProgramaAppServices : IProgramaAppServices
     {
         private readonly GenericService<Programa, ProgramaDto, ProgramaResponse> _service;
-        private readonly IMapper _mapper;
 
         public ProgramaAppServices(
-            GenericService<Programa, ProgramaDto, ProgramaResponse> service,
-            IMapper mapper)
+            GenericService<Programa, ProgramaDto, ProgramaResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureService();
         }
 
@@ -34,8 +31,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         public async Task<IEnumerable<ProgramaResponse>> GetAllAsync()
         {
-            var programas = await _service.GetAllAsync();
-            return _mapper.Map<IEnumerable<ProgramaResponse>>(programas);
+            return await _service.GetAllAsync();
         }
 
         public async Task<ProgramaResponse> GetByIdAsync(int id)
@@ -85,7 +81,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos del programa son requeridos");
 
-            var dto = _mapper.Map<ProgramaDto>(response);
+            var dto = response.Adapt<ProgramaDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
@@ -107,7 +103,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de programa inválido", nameof(id));
 
-            var dto = _mapper.Map<ProgramaDto>(response);
+            var dto = response.Adapt<ProgramaDto>();
             dto.PkidPrograma = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
@@ -128,7 +124,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (programa == null)
                 return false;
 
-            var dto = _mapper.Map<ProgramaDto>(programa);
+            var dto = programa.Adapt<ProgramaDto>();
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;

@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -14,16 +14,12 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<Empresa, EmpresaDto, EmpresaResponse> _service;
         private readonly GenericService<VwEstadoEmpresa, EmpresaDto, EmpresaResponse> _serviceView;
-        private readonly IMapper _mapper;
-
         public EmpresaAppService(
             GenericService<Empresa, EmpresaDto, EmpresaResponse> service,
-            GenericService<VwEstadoEmpresa, EmpresaDto, EmpresaResponse> serviceView,
-            IMapper mapper)
+            GenericService<VwEstadoEmpresa, EmpresaDto, EmpresaResponse> serviceView)
         {
             _service = service;
             _serviceView = serviceView;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }
@@ -134,7 +130,7 @@ namespace EG.Application.Services.General
             try
             {
                 var result = await _serviceView.GetAllAsync();
-                var response = _mapper.Map<List<EmpresaResponse>>(result);
+                var response = result.Adapt<List<EmpresaResponse>>();
                 return new PagedResult<EmpresaResponse>
                 {
                     Success = true,
@@ -323,7 +319,7 @@ namespace EG.Application.Services.General
                     throw new ArgumentException("ID de empresa inválido", nameof(id));
 
                 var _empresa = await _service.GetByIdAsync(id, idPropertyName: "PkidEmpresa");
-                var empresa = _mapper.Map<EmpresaDto>(_empresa);
+                var empresa = _empresa.Adapt<EmpresaDto>();
                 if (empresa == null)
                     throw new InvalidOperationException("Empresa no encontrada");
 

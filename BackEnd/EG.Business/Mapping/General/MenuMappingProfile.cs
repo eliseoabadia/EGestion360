@@ -1,87 +1,86 @@
-﻿using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.General
 {
-    public class MenuMappingProfile : Profile
+    public class MenuMappingProfile : IRegister
     {
-        public MenuMappingProfile()
-        {
+        public void Register(TypeAdapterConfig config){
             // Mapeo de VwMenu a MenuItemsResponse (para consultas/lectura)
-            CreateMap<VwMenu, MenuItemsResponse>()
-                .ForMember(dest => dest.PkidMenu, opt => opt.MapFrom(src => src.PkidMenu))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.Tipo, opt => opt.MapFrom(src => src.Tipo))
-                .ForMember(dest => dest.TipoDescripcion, opt => opt.MapFrom(src => src.TipoDescripcion))
-                .ForMember(dest => dest.FkidMenuSis, opt => opt.MapFrom(src => src.FkidMenuSis))
-                .ForMember(dest => dest.NombreMenuPadre, opt => opt.MapFrom(src => src.NombreMenuPadre))
-                .ForMember(dest => dest.TipoMenuPadre, opt => opt.MapFrom(src => src.TipoMenuPadre))
-                .ForMember(dest => dest.TipoMenuPadreDescripcion, opt => opt.MapFrom(src => src.TipoMenuPadreDescripcion))
-                .ForMember(dest => dest.LegacyName, opt => opt.MapFrom(src => src.LegacyName))
-                .ForMember(dest => dest.Ruta, opt => opt.MapFrom(src => src.Ruta))
-                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
-                .ForMember(dest => dest.Lenguaje, opt => opt.MapFrom(src => src.Lenguaje))
-                .ForMember(dest => dest.Orden, opt => opt.MapFrom(src => src.Orden))
-                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo))
-                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado))
-                .ForMember(dest => dest.CreatedByOperatorId, opt => opt.MapFrom(src => src.CreatedByOperatorId))
-                .ForMember(dest => dest.CreatedDateTime, opt => opt.MapFrom(src => src.CreatedDateTime))
-                .ForMember(dest => dest.ModifiedByOperatorId, opt => opt.MapFrom(src => src.ModifiedByOperatorId))
-                .ForMember(dest => dest.ModifiedDateTime, opt => opt.MapFrom(src => src.ModifiedDateTime))
-                .ForMember(dest => dest.NivelJerarquico, opt => opt.MapFrom(src => src.NivelJerarquico))
-                .ForMember(dest => dest.RutaCompleta, opt => opt.MapFrom(src => src.RutaCompleta))
-                .ForMember(dest => dest.TieneSubmenus, opt => opt.MapFrom(src => src.TieneSubmenus))
-                .ForMember(dest => dest.ValidacionEstructura, opt => opt.MapFrom(src => src.ValidacionEstructura))
-                .ForMember(dest => dest.Children, opt => opt.Ignore()); // Los hijos se asignan manualmente
+            config.NewConfig<VwMenu, MenuItemsResponse>()
+                .Map(dest => dest.PkidMenu, src => src.PkidMenu)
+                .Map(dest => dest.Nombre, src => src.Nombre)
+                .Map(dest => dest.Tipo, src => src.Tipo)
+                .Map(dest => dest.TipoDescripcion, src => src.TipoDescripcion)
+                .Map(dest => dest.FkidMenuSis, src => src.FkidMenuSis)
+                .Map(dest => dest.NombreMenuPadre, src => src.NombreMenuPadre)
+                .Map(dest => dest.TipoMenuPadre, src => src.TipoMenuPadre)
+                .Map(dest => dest.TipoMenuPadreDescripcion, src => src.TipoMenuPadreDescripcion)
+                .Map(dest => dest.LegacyName, src => src.LegacyName)
+                .Map(dest => dest.Ruta, src => src.Ruta)
+                .Map(dest => dest.ImageUrl, src => src.ImageUrl)
+                .Map(dest => dest.Lenguaje, src => src.Lenguaje)
+                .Map(dest => dest.Orden, src => src.Orden)
+                .Map(dest => dest.Activo, src => src.Activo)
+                .Map(dest => dest.Estado, src => src.Estado)
+                .Map(dest => dest.CreatedByOperatorId, src => src.CreatedByOperatorId)
+                .Map(dest => dest.CreatedDateTime, src => src.CreatedDateTime)
+                .Map(dest => dest.ModifiedByOperatorId, src => src.ModifiedByOperatorId)
+                .Map(dest => dest.ModifiedDateTime, src => src.ModifiedDateTime)
+                .Map(dest => dest.NivelJerarquico, src => src.NivelJerarquico)
+                .Map(dest => dest.RutaCompleta, src => src.RutaCompleta)
+                .Map(dest => dest.TieneSubmenus, src => src.TieneSubmenus)
+                .Map(dest => dest.ValidacionEstructura, src => src.ValidacionEstructura)
+                .Ignore(dest => dest.Children); // Los hijos se asignan manualmente
 
             // Mapeo de MenuItemsDto a Menu (para operaciones de escritura: Create/Update)
-            //CreateMap<MenuItemsDto, Menu>()
-            //    .ForMember(dest => dest.PkidMenu, opt => opt.Ignore()) // Ignorar ID para nuevos registros
-            //    .ForMember(dest => dest.FkidMenuSisNavigation, opt => opt.Ignore())
-            //    .ForMember(dest => dest.InverseFkidMenuSisNavigation, opt => opt.Ignore())
-            //    .ForMember(dest => dest.MenuRoles, opt => opt.Ignore())
+            //config.NewConfig<MenuItemsDto, Menu>()
+            //    .Ignore(dest => dest.PkidMenu) // Ignorar ID para nuevos registros
+            //    .Ignore(dest => dest.FkidMenuSisNavigation)
+            //    .Ignore(dest => dest.InverseFkidMenuSisNavigation)
+            //    .Ignore(dest => dest.MenuRoles)
             //    // Estas propiedades se asignan en el servicio/repositorio
-            //    .ForMember(dest => dest.CreatedDateTime, opt => opt.Ignore())
-            //    .ForMember(dest => dest.ModifiedDateTime, opt => opt.Ignore())
-            //    .ForMember(dest => dest.CreatedByOperatorId, opt => opt.Ignore())
-            //    .ForMember(dest => dest.ModifiedByOperatorId, opt => opt.Ignore());
+            //    .Ignore(dest => dest.CreatedDateTime)
+            //    .Ignore(dest => dest.ModifiedDateTime)
+            //    .Ignore(dest => dest.CreatedByOperatorId)
+            //    .Ignore(dest => dest.ModifiedByOperatorId);
 
             // Mapeo de Menu a MenuItemsDto (para cuando necesitas convertir de Entity a DTO)
-            //CreateMap<Menu, MenuItemsDto>()
-            //    .ForMember(dest => dest.PkidMenu, opt => opt.MapFrom(src => src.PkidMenu))
-            //    .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-            //    .ForMember(dest => dest.Tipo, opt => opt.MapFrom(src => src.Tipo))
-            //    .ForMember(dest => dest.FkidMenuSis, opt => opt.MapFrom(src => src.FkidMenuSis))
-            //    .ForMember(dest => dest.LegacyName, opt => opt.MapFrom(src => src.LegacyName))
-            //    .ForMember(dest => dest.Ruta, opt => opt.MapFrom(src => src.Ruta))
-            //    .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
-            //    .ForMember(dest => dest.Lenguaje, opt => opt.MapFrom(src => src.Lenguaje))
-            //    .ForMember(dest => dest.Orden, opt => opt.MapFrom(src => src.Orden))
-            //    .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo))
-            //    .ForMember(dest => dest.CreatedByOperatorId, opt => opt.MapFrom(src => src.CreatedByOperatorId))
-            //    .ForMember(dest => dest.CreatedDateTime, opt => opt.MapFrom(src => src.CreatedDateTime))
-            //    .ForMember(dest => dest.ModifiedByOperatorId, opt => opt.MapFrom(src => src.ModifiedByOperatorId))
-            //    .ForMember(dest => dest.ModifiedDateTime, opt => opt.MapFrom(src => src.ModifiedDateTime));
-            CreateMap<Menu, MenuItemsDto>().ReverseMap();
+            //config.NewConfig<Menu, MenuItemsDto>()
+            //    .Map(dest => dest.PkidMenu, src => src.PkidMenu)
+            //    .Map(dest => dest.Nombre, src => src.Nombre)
+            //    .Map(dest => dest.Tipo, src => src.Tipo)
+            //    .Map(dest => dest.FkidMenuSis, src => src.FkidMenuSis)
+            //    .Map(dest => dest.LegacyName, src => src.LegacyName)
+            //    .Map(dest => dest.Ruta, src => src.Ruta)
+            //    .Map(dest => dest.ImageUrl, src => src.ImageUrl)
+            //    .Map(dest => dest.Lenguaje, src => src.Lenguaje)
+            //    .Map(dest => dest.Orden, src => src.Orden)
+            //    .Map(dest => dest.Activo, src => src.Activo)
+            //    .Map(dest => dest.CreatedByOperatorId, src => src.CreatedByOperatorId)
+            //    .Map(dest => dest.CreatedDateTime, src => src.CreatedDateTime)
+            //    .Map(dest => dest.ModifiedByOperatorId, src => src.ModifiedByOperatorId)
+            //    .Map(dest => dest.ModifiedDateTime, src => src.ModifiedDateTime);
+            config.NewConfig<Menu, MenuItemsDto>().TwoWays();
 
-            // Si necesitas mapear desde VwMenu a MenuItemsDto (útil para actualizaciones)
-            CreateMap<VwMenu, MenuItemsDto>()
-                .ForMember(dest => dest.PkidMenu, opt => opt.MapFrom(src => src.PkidMenu))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.Tipo, opt => opt.MapFrom(src => src.Tipo))
-                .ForMember(dest => dest.FkidMenuSis, opt => opt.MapFrom(src => src.FkidMenuSis))
-                .ForMember(dest => dest.LegacyName, opt => opt.MapFrom(src => src.LegacyName))
-                .ForMember(dest => dest.Ruta, opt => opt.MapFrom(src => src.Ruta))
-                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
-                .ForMember(dest => dest.Lenguaje, opt => opt.MapFrom(src => src.Lenguaje))
-                .ForMember(dest => dest.Orden, opt => opt.MapFrom(src => src.Orden))
-                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo))
-                .ForMember(dest => dest.CreatedByOperatorId, opt => opt.MapFrom(src => src.CreatedByOperatorId))
-                .ForMember(dest => dest.CreatedDateTime, opt => opt.MapFrom(src => src.CreatedDateTime))
-                .ForMember(dest => dest.ModifiedByOperatorId, opt => opt.MapFrom(src => src.ModifiedByOperatorId))
-                .ForMember(dest => dest.ModifiedDateTime, opt => opt.MapFrom(src => src.ModifiedDateTime));
+            // Si necesitas mapear desde VwMenu a MenuItemsDto (�til para actualizaciones)
+            config.NewConfig<VwMenu, MenuItemsDto>()
+                .Map(dest => dest.PkidMenu, src => src.PkidMenu)
+                .Map(dest => dest.Nombre, src => src.Nombre)
+                .Map(dest => dest.Tipo, src => src.Tipo)
+                .Map(dest => dest.FkidMenuSis, src => src.FkidMenuSis)
+                .Map(dest => dest.LegacyName, src => src.LegacyName)
+                .Map(dest => dest.Ruta, src => src.Ruta)
+                .Map(dest => dest.ImageUrl, src => src.ImageUrl)
+                .Map(dest => dest.Lenguaje, src => src.Lenguaje)
+                .Map(dest => dest.Orden, src => src.Orden)
+                .Map(dest => dest.Activo, src => src.Activo)
+                .Map(dest => dest.CreatedByOperatorId, src => src.CreatedByOperatorId)
+                .Map(dest => dest.CreatedDateTime, src => src.CreatedDateTime)
+                .Map(dest => dest.ModifiedByOperatorId, src => src.ModifiedByOperatorId)
+                .Map(dest => dest.ModifiedDateTime, src => src.ModifiedDateTime);
         }
     }
 }

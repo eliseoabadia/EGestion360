@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -11,14 +11,11 @@ namespace EG.Application.Services.General
     public class SucursalAppService : ISucursalAppService
     {
         private readonly GenericService<Sucursal, SucursalDto, SucursalResponse> _service;
-        private readonly IMapper _mapper;
 
         public SucursalAppService(
-            GenericService<Sucursal, SucursalDto, SucursalResponse> service,
-            IMapper mapper)
+            GenericService<Sucursal, SucursalDto, SucursalResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }

@@ -1,19 +1,18 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Presupuestales
 {
-    public class RamoMappingProfile : Profile
+    public class RamoMappingProfile : IRegister
     {
-        public RamoMappingProfile()
-        {
-            CreateMap<Ramo, RamoDto>().ReverseMap();
-            CreateMap<Ramo, RamoResponse>();
-            CreateMap<RamoResponse, RamoDto>()
-                .ForMember(dest => dest.PkidRamo, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Ramo, RamoDto>().TwoWays();
+            config.NewConfig<Ramo, RamoResponse>();
+            config.NewConfig<RamoResponse, RamoDto>()
+                .Ignore(dest => dest.PkidRamo)
+                .IgnoreNullValues(true);
         }
     }
 }

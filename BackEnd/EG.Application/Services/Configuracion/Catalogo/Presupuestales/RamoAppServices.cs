@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class RamoAppServices : IRamoAppServices
     {
         private readonly GenericService<Ramo, RamoDto, RamoResponse> _service;
-        private readonly IMapper _mapper;
 
         public RamoAppServices(
-            GenericService<Ramo, RamoDto, RamoResponse> service,
-            IMapper mapper)
+            GenericService<Ramo, RamoDto, RamoResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -89,7 +86,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos del Ramo son requeridos");
 
-            var dto = _mapper.Map<RamoDto>(response);
+            var dto = response.Adapt<RamoDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
@@ -111,7 +108,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de Ramo inválido", nameof(id));
 
-            var dto = _mapper.Map<RamoDto>(response);
+            var dto = response.Adapt<RamoDto>();
             dto.PkidRamo = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
@@ -132,7 +129,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (entity == null)
                 return false;
 
-            var dto = _mapper.Map<RamoDto>(entity);
+            var dto = entity.Adapt<RamoDto>();
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;

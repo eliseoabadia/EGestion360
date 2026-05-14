@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.ApiCoreBS.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -22,7 +22,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         private readonly GenericService<VwPaaa, PaaaDto, PaaaResponse> _serviceView;
         private readonly IRepository<Paaaspartidum> _partidaRepository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public PaaaController(
@@ -30,14 +29,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             GenericService<VwPaaa, PaaaDto, PaaaResponse> serviceView,
             IRepository<Paaaspartidum> partidaRepository,
             EGestionContext context,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
             _serviceView = serviceView;
             _partidaRepository = partidaRepository;
             _context = context;
-            _mapper = mapper;
             _userContext = userContext;
             ConfigureService();
             ConfigureValidations();
@@ -128,7 +125,7 @@ private void ConfigureService()
         {
             try
             {
-                var dto = _mapper.Map<PaaaDto>(response);
+                var dto = response.Adapt<PaaaDto>();
                 //dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
@@ -173,7 +170,7 @@ private void ConfigureService()
         {
             try
             {
-                var dto = _mapper.Map<PaaaDto>(response);
+                var dto = response.Adapt<PaaaDto>();
                 dto.PkidPaaas = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
@@ -307,7 +304,7 @@ private void ConfigureService()
 
                 return Ok(new PagedResult<PaaaResponse>
                 {
-                    Items = _mapper.Map<List<PaaaResponse>>(items),
+                    Items = items.Adapt<List<PaaaResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",
@@ -342,7 +339,7 @@ catch (Exception ex)
                 .OrderBy(x => x.PartidaClave)
                 .ToListAsync();
 
-            var response = _mapper.Map<List<PaaaspartidumResponse>>(partidas);
+            var response = partidas.Adapt<List<PaaaspartidumResponse>>();
 
             return Ok(new PagedResult<PaaaspartidumResponse>
             {
@@ -373,7 +370,7 @@ catch (Exception ex)
                 .ThenBy(x => x.TipoBienDescripcion)
                 .ToListAsync();
 
-            var response = _mapper.Map<List<PaaasdetalleResponse>>(detalles);
+            var response = detalles.Adapt<List<PaaasdetalleResponse>>();
 
             return Ok(new PagedResult<PaaasdetalleResponse>
             {
@@ -463,13 +460,13 @@ catch (Exception ex)
     {
         try
         {
-            var entity = _mapper.Map<Paaaspartidum>(dto);
+            var entity = dto.Adapt<Paaaspartidum>();
             entity.FechaCreacion = DateTime.Now;
             entity.UsuarioCreacion = _userContext.GetCurrentUserId();
 
             await _partidaRepository.AddAsync(entity);
 
-            var response = _mapper.Map<PaaaspartidumResponse>(entity);
+            var response = entity.Adapt<PaaaspartidumResponse>();
 
             return CreatedAtAction(nameof(GetPartidasByPaaa), new { id = entity.FkidPaaasOrco },
                 new PagedResult<PaaaspartidumResponse>
@@ -503,7 +500,7 @@ catch (Exception ex)
                 return validation.Result;
 
             var (partida, tipoBien) = validation.Value;
-            var entity = _mapper.Map<Paaasdetalle>(dto);
+            var entity = dto.Adapt<Paaasdetalle>();
             entity.FkidEmpresaSis = dto.FkidEmpresaSis > 0 ? dto.FkidEmpresaSis : partida.FkidEmpresaSis;
             entity.FkidUnidadesAlma = dto.FkidUnidadesAlma ?? tipoBien.FkidUnidadesAlma;
             entity.Observaciones = dto.Observaciones ?? string.Empty;
@@ -516,7 +513,7 @@ catch (Exception ex)
             await _context.SaveChangesAsync();
 
             var response = await GetDetalleResponseAsync(entity.PkidPaaasdetalle)
-                ?? _mapper.Map<PaaasdetalleResponse>(entity);
+                ?? entity.Adapt<PaaasdetalleResponse>();
 
             return CreatedAtAction(nameof(GetDetallesByPartida), new { partidaId = entity.FkidPaaaspartidaOrco },
                 new PagedResult<PaaasdetalleResponse>
@@ -576,7 +573,7 @@ catch (Exception ex)
             await _context.SaveChangesAsync();
 
             var response = await GetDetalleResponseAsync(detalleId)
-                ?? _mapper.Map<PaaasdetalleResponse>(entity);
+                ?? entity.Adapt<PaaasdetalleResponse>();
 
             return Ok(new PagedResult<PaaasdetalleResponse>
             {
@@ -726,7 +723,7 @@ catch (Exception ex)
         var view = await _context.VwPaaasdetalles.AsNoTracking()
             .FirstOrDefaultAsync(x => x.PkidPaaasdetalle == detalleId && x.Activo);
 
-        return view == null ? null : _mapper.Map<PaaasdetalleResponse>(view);
+        return view == null ? null : view.Adapt<PaaasdetalleResponse>();
     }
 
     private static bool TryGetIntFilter(PagedRequest request, string key, out int value)

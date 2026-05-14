@@ -1,18 +1,17 @@
-﻿
-using AutoMapper;
+
+using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.General
 {
-    public class AspNetRoleMappingProfile : Profile
+    public class AspNetRoleMappingProfile : IRegister
     {
-        public AspNetRoleMappingProfile()
-        {
-            CreateMap<AspNetRole, AspNetRoleDto>().ReverseMap();
-            CreateMap<AspNetRole, AspNetRoleResponse>().ReverseMap();
-            CreateMap<AspNetRoleDto, AspNetRoleResponse>().ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<AspNetRole, AspNetRoleDto>().TwoWays();
+            config.NewConfig<AspNetRole, AspNetRoleResponse>().TwoWays();
+            config.NewConfig<AspNetRoleDto, AspNetRoleResponse>().TwoWays();
         }
     }
 }

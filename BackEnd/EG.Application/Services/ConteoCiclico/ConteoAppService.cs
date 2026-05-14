@@ -1,4 +1,3 @@
-using AutoMapper;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,16 +11,13 @@ namespace EG.Application.Services.ConteoCiclico
     {
         private readonly GenericService<Conteo, ConteoDto, ConteoResponse> _service;
         private readonly GenericService<VwConteo, ConteoDto, ConteoResponse> _serviceView;
-        private readonly IMapper _mapper;
 
         public ConteoAppService(
             GenericService<Conteo, ConteoDto, ConteoResponse> service,
-            GenericService<VwConteo, ConteoDto, ConteoResponse> serviceView,
-            IMapper mapper)
+            GenericService<VwConteo, ConteoDto, ConteoResponse> serviceView)
         {
             _service = service;
             _serviceView = serviceView;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<ConteoResponse>> GetAllAsync()

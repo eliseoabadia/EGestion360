@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Configuracion.Catalogo.Almacen;
 using EG.Common.GenericModel;
@@ -14,31 +14,28 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Almacen
     {
         private readonly ILogger<MotivoEsService> _logger;
         private readonly IRepository<Motivo> _repository;
-        private readonly IMapper _mapper;
 
         public MotivoEsService(
             ILogger<MotivoEsService> logger,
-            IRepository<Motivo> repository,
-            IMapper mapper)
+            IRepository<Motivo> repository)
         {
             _logger = logger;
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<MotivoEsResponse?> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : _mapper.Map<MotivoEsResponse>(entity);
+            return entity == null ? null : entity.Adapt<MotivoEsResponse>();
         }
 
         public async Task<MotivoEsResponse> CreateAsync(MotivoEsDto dto, int usuarioId)
         {
-            var entity = _mapper.Map<Motivo>(dto);
+            var entity = dto.Adapt<Motivo>();
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
-            return _mapper.Map<MotivoEsResponse>(entity);
+            return entity.Adapt<MotivoEsResponse>();
         }
 
         public async Task<MotivoEsResponse?> UpdateAsync(int id, MotivoEsDto dto, int usuarioId)
@@ -46,11 +43,11 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Almacen
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
-            return _mapper.Map<MotivoEsResponse>(entity);
+            return entity.Adapt<MotivoEsResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -97,7 +94,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Almacen
 
             return new PagedResult<MotivoEsResponse>
             {
-                Items = _mapper.Map<List<MotivoEsResponse>>(items),
+                Items = items.Adapt<List<MotivoEsResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

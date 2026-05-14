@@ -1,4 +1,3 @@
-using AutoMapper;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -15,20 +14,17 @@ namespace EG.Application.Services.ConteoCiclico
         private readonly GenericService<ConteoDetalle, ConteoDetalleDto, ConteoDetalleResponse> _service;
         private readonly GenericService<VwBien, BienResponse, BienResponse> _bienService;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public ConteoDetalleAppService(
             GenericService<ConteoDetalle, ConteoDetalleDto, ConteoDetalleResponse> service,
             GenericService<VwBien, BienResponse, BienResponse> bienService,
             EGestionContext context,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
             _bienService = bienService;
             _context = context;
-            _mapper = mapper;
             _userContext = userContext;
         }
 

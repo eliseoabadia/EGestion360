@@ -1,23 +1,22 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Adquisicion
 {
-    public class FraccionMappingProfile : Profile
+    public class FraccionMappingProfile : IRegister
     {
-        public FraccionMappingProfile()
-        {
-            CreateMap<Fraccion, FraccionDto>().ReverseMap();
-            CreateMap<Fraccion, FraccionResponse>()
-                .ForMember(dest => dest.NombreArticulo, opt => opt.MapFrom(src => src.FkidArticuloOrcoNavigation != null ? src.FkidArticuloOrcoNavigation.Descripcion : string.Empty));
-            CreateMap<VwFraccion, FraccionResponse>()
-                .ForMember(dest => dest.NombreArticulo, opt => opt.MapFrom(src => src.ArticuloDescripcion));
-            CreateMap<FraccionResponse, FraccionDto>()
-                .ForMember(dest => dest.PkidFraccion, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidArticuloOrco, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Fraccion, FraccionDto>().TwoWays();
+            config.NewConfig<Fraccion, FraccionResponse>()
+                .Map(dest => dest.NombreArticulo, src => src.FkidArticuloOrcoNavigation != null ? src.FkidArticuloOrcoNavigation.Descripcion : string.Empty);
+            config.NewConfig<VwFraccion, FraccionResponse>()
+                .Map(dest => dest.NombreArticulo, src => src.ArticuloDescripcion);
+            config.NewConfig<FraccionResponse, FraccionDto>()
+                .Ignore(dest => dest.PkidFraccion)
+                .Ignore(dest => dest.FkidArticuloOrco)
+                .IgnoreNullValues(true);
         }
     }
 }

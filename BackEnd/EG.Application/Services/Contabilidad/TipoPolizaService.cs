@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class TipoPolizaService : ITipoPolizaService
     {
         private readonly GenericService<TipoPoliza, TipoPolizaDto, TipoPolizaResponse> _service;
-        private readonly IMapper _mapper;
 
         public TipoPolizaService(
-            GenericService<TipoPoliza, TipoPolizaDto, TipoPolizaResponse> service,
-            IMapper mapper)
+            GenericService<TipoPoliza, TipoPolizaDto, TipoPolizaResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureService();
             ConfigureValidations();
         }
@@ -118,7 +115,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
             return new PagedResult<TipoPolizaResponse>
             {
-                Items = _mapper.Map<List<TipoPolizaResponse>>(items),
+                Items = items.Adapt<List<TipoPolizaResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

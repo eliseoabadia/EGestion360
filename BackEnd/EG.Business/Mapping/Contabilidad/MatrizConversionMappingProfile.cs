@@ -1,29 +1,28 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Contabilidad
 {
-    public class MatrizConversionMappingProfile : Profile
+    public class MatrizConversionMappingProfile : IRegister
     {
-        public MatrizConversionMappingProfile()
-        {
-CreateMap<MatrizConversion, MatrizConversionDto>().ReverseMap();
-CreateMap<MatrizConversion, MatrizConversionResponse>()
-    .ForMember(dest => dest.ProgramaClave, opt => opt.MapFrom(src => src.FkidProgramaPresNavigation.Clave))
-    .ForMember(dest => dest.PartidaDescripcion, opt => opt.MapFrom(src => src.FkidPartidaSisNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaAprobadoNombre, opt => opt.MapFrom(src => src.FkidCuentaContableAprobadoNavigation.Cuenta + " - " + src.FkidCuentaContableAprobadoNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaPorEjercerNombre, opt => opt.MapFrom(src => src.FkidCuentaContablePorEjercerNavigation.Cuenta + " - " + src.FkidCuentaContablePorEjercerNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaModificadoNombre, opt => opt.MapFrom(src => src.FkidCuentaContableModificadoNavigation.Cuenta + " - " + src.FkidCuentaContableModificadoNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaComprometidoNombre, opt => opt.MapFrom(src => src.FkidCuentaContableComprometidoNavigation.Cuenta + " - " + src.FkidCuentaContableComprometidoNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaDevengadoNombre, opt => opt.MapFrom(src => src.FkidCuentaContableDevengadoNavigation.Cuenta + " - " + src.FkidCuentaContableDevengadoNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaEjercidoNombre, opt => opt.MapFrom(src => src.FkidCuentaContableEjercidoNavigation.Cuenta + " - " + src.FkidCuentaContableEjercidoNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaPagadoNombre, opt => opt.MapFrom(src => src.FkidCuentaContablePagadoNavigation.Cuenta + " - " + src.FkidCuentaContablePagadoNavigation.Descripcion))
-    .ForMember(dest => dest.CuentaGastoNombre, opt => opt.MapFrom(src => src.FkidCuentaContableGastoNavigation.Cuenta + " - " + src.FkidCuentaContableGastoNavigation.Descripcion));
-CreateMap<MatrizConversionResponse, MatrizConversionDto>()
-    .ForMember(dest => dest.PkidMatrizConversion, opt => opt.Ignore())
-    .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public void Register(TypeAdapterConfig config){
+config.NewConfig<MatrizConversion, MatrizConversionDto>().TwoWays();
+config.NewConfig<MatrizConversion, MatrizConversionResponse>()
+    .Map(dest => dest.ProgramaClave, src => src.FkidProgramaPresNavigation.Clave)
+    .Map(dest => dest.PartidaDescripcion, src => src.FkidPartidaSisNavigation.Descripcion)
+    .Map(dest => dest.CuentaAprobadoNombre, src => src.FkidCuentaContableAprobadoNavigation.Cuenta + " - " + src.FkidCuentaContableAprobadoNavigation.Descripcion)
+    .Map(dest => dest.CuentaPorEjercerNombre, src => src.FkidCuentaContablePorEjercerNavigation.Cuenta + " - " + src.FkidCuentaContablePorEjercerNavigation.Descripcion)
+    .Map(dest => dest.CuentaModificadoNombre, src => src.FkidCuentaContableModificadoNavigation.Cuenta + " - " + src.FkidCuentaContableModificadoNavigation.Descripcion)
+    .Map(dest => dest.CuentaComprometidoNombre, src => src.FkidCuentaContableComprometidoNavigation.Cuenta + " - " + src.FkidCuentaContableComprometidoNavigation.Descripcion)
+    .Map(dest => dest.CuentaDevengadoNombre, src => src.FkidCuentaContableDevengadoNavigation.Cuenta + " - " + src.FkidCuentaContableDevengadoNavigation.Descripcion)
+    .Map(dest => dest.CuentaEjercidoNombre, src => src.FkidCuentaContableEjercidoNavigation.Cuenta + " - " + src.FkidCuentaContableEjercidoNavigation.Descripcion)
+    .Map(dest => dest.CuentaPagadoNombre, src => src.FkidCuentaContablePagadoNavigation.Cuenta + " - " + src.FkidCuentaContablePagadoNavigation.Descripcion)
+    .Map(dest => dest.CuentaGastoNombre, src => src.FkidCuentaContableGastoNavigation.Cuenta + " - " + src.FkidCuentaContableGastoNavigation.Descripcion);
+config.NewConfig<MatrizConversionResponse, MatrizConversionDto>()
+    .Ignore(dest => dest.PkidMatrizConversion)
+    .IgnoreNullValues(true);
         }
     }
 }

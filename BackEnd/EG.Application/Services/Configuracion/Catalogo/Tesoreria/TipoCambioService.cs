@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Common.GenericModel;
@@ -15,33 +15,30 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
         private readonly ILogger<TipoCambioService> _logger;
         private readonly IRepository<TipoCambio> _repository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
 
         public TipoCambioService(
             ILogger<TipoCambioService> logger,
             IRepository<TipoCambio> repository,
-            EGestionContext context,
-            IMapper mapper)
+            EGestionContext context)
         {
             _logger = logger;
             _repository = repository;
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<TipoCambioResponse?> GetByIdAsync(int id)
         {
             var entity = await _context.VwTipoCambios.FirstOrDefaultAsync(e => e.PkidTipoCambio == id);
-            return entity == null ? null : _mapper.Map<TipoCambioResponse>(entity);
+            return entity == null ? null : entity.Adapt<TipoCambioResponse>();
         }
 
         public async Task<TipoCambioResponse> CreateAsync(TipoCambioDto dto, int usuarioId)
         {
-            var entity = _mapper.Map<TipoCambio>(dto);
+            var entity = dto.Adapt<TipoCambio>();
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
-            return _mapper.Map<TipoCambioResponse>(entity);
+            return entity.Adapt<TipoCambioResponse>();
         }
 
         public async Task<TipoCambioResponse?> UpdateAsync(int id, TipoCambioDto dto, int usuarioId)
@@ -49,11 +46,11 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
-            return _mapper.Map<TipoCambioResponse>(entity);
+            return entity.Adapt<TipoCambioResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -100,7 +97,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
             return new PagedResult<TipoCambioResponse>
             {
-                Items = _mapper.Map<List<TipoCambioResponse>>(items),
+                Items = items.Adapt<List<TipoCambioResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

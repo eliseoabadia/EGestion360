@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.General;
@@ -9,78 +9,78 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping
 {
-    public class GeneralMappingProfile : Profile
+    public class GeneralMappingProfile : IRegister
     {
-        public GeneralMappingProfile()
-        {
-            CreateMap<Empresa, EmpresaResponse>().ReverseMap();
-            CreateMap<Usuario, UsuarioResponse>().ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Empresa, EmpresaResponse>().TwoWays();
+            config.NewConfig<Usuario, UsuarioResponse>().TwoWays();
 
-            CreateMap<Programa, ProgramaDto>().ReverseMap();
-            CreateMap<Programa, ProgramaResponse>();
+            config.NewConfig<Programa, ProgramaDto>().TwoWays();
+            config.NewConfig<Programa, ProgramaResponse>();
 
-            //CreateMap<TipoBien, TipoBienDto>().ReverseMap();
-            CreateMap<TipoBien, TipoBienResponse>().ReverseMap();
-            //CreateMap<TipoBienResponse, TipoBienDto>().ReverseMap();
+            //config.NewConfig<TipoBien, TipoBienDto>().TwoWays();
+            config.NewConfig<TipoBien, TipoBienResponse>().TwoWays();
+            //config.NewConfig<TipoBienResponse, TipoBienDto>().TwoWays();
 
-            //CreateMap<EstatusPeriodo, EstatusPeriodoResponse>().ReverseMap();
-            //CreateMap<EstatusPeriodoDto, EstatusPeriodo>().ReverseMap();
-            //CreateMap<EstatusPeriodoResponse, EstatusPeriodoDto>().ReverseMap();
+            //config.NewConfig<EstatusPeriodo, EstatusPeriodoResponse>().TwoWays();
+            //config.NewConfig<EstatusPeriodoDto, EstatusPeriodo>().TwoWays();
+            //config.NewConfig<EstatusPeriodoResponse, EstatusPeriodoDto>().TwoWays();
 
-            //CreateMap<EstatusArticuloConteo, EstatusArticuloConteoResponse>().ReverseMap();
-            //CreateMap<EstatusArticuloConteoDto, EstatusArticuloConteo>().ReverseMap();
-            //CreateMap<EstatusArticuloConteoResponse, EstatusArticuloConteoDto>().ReverseMap();
+            //config.NewConfig<EstatusArticuloConteo, EstatusArticuloConteoResponse>().TwoWays();
+            //config.NewConfig<EstatusArticuloConteoDto, EstatusArticuloConteo>().TwoWays();
+            //config.NewConfig<EstatusArticuloConteoResponse, EstatusArticuloConteoDto>().TwoWays();
 
-            //CreateMap<RegistroConteo, RegistroConteoDto>().ReverseMap();
-            //CreateMap<RegistroConteo, RegistroConteoResponse>().ReverseMap();
-            //CreateMap<RegistroConteoResponse, RegistroConteoDto>().ReverseMap();
+            //config.NewConfig<RegistroConteo, RegistroConteoDto>().TwoWays();
+            //config.NewConfig<RegistroConteo, RegistroConteoResponse>().TwoWays();
+            //config.NewConfig<RegistroConteoResponse, RegistroConteoDto>().TwoWays();
 
-            CreateMap<Sucursal, SucursalDto>().ReverseMap();
-            CreateMap<SucursalResponse, SucursalDto>();
-            CreateMap<Sucursal, SucursalResponse>().ReverseMap();
+            config.NewConfig<Sucursal, SucursalDto>().TwoWays();
+            config.NewConfig<SucursalResponse, SucursalDto>();
+            config.NewConfig<Sucursal, SucursalResponse>().TwoWays();
 
-            CreateMap<Departamento, DepartamentoDto>().ReverseMap();
-            CreateMap<DepartamentoResponse, DepartamentoDto>().ReverseMap();
+            config.NewConfig<Departamento, DepartamentoDto>().TwoWays();
+            config.NewConfig<DepartamentoResponse, DepartamentoDto>().TwoWays();
 
             // Entity -> Response
-            CreateMap<Estado, EstadoResponse>()
-                .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
-                .ForMember(dest => dest.FkidPaisSis, opt => opt.MapFrom(src => src.FkidPaisSis))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
-                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo));
+            config.NewConfig<Estado, EstadoResponse>()
+                .Map(dest => dest.PkidEstado, src => src.PkidEstado)
+                .Map(dest => dest.FkidPaisSis, src => src.FkidPaisSis)
+                .Map(dest => dest.Nombre, src => src.Nombre)
+                .Map(dest => dest.CodigoEstado, src => src.CodigoEstado)
+                .Map(dest => dest.Activo, src => src.Activo);
 
             // Dto -> Entity
-            CreateMap<EstadoDto, Estado>()
-                .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
-                .ForMember(dest => dest.FkidPaisSis, opt => opt.MapFrom(src => src.FkidPaisSis))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
-                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo))
-                .ForMember(dest => dest.EmpresaEstados, opt => opt.Ignore())
-                .ForMember(dest => dest.Municipios, opt => opt.Ignore())
-                .ForMember(dest => dest.Proveedors, opt => opt.Ignore())
-                .ForMember(dest => dest.Sucursals, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidPaisSisNavigation, opt => opt.Ignore());
+            config.NewConfig<EstadoDto, Estado>()
+                .Map(dest => dest.PkidEstado, src => src.PkidEstado)
+                .Map(dest => dest.FkidPaisSis, src => src.FkidPaisSis)
+                .Map(dest => dest.Nombre, src => src.Nombre)
+                .Map(dest => dest.CodigoEstado, src => src.CodigoEstado)
+                .Map(dest => dest.Activo, src => src.Activo)
+                .Ignore(dest => dest.EmpresaEstados)
+                .Ignore(dest => dest.Municipios)
+                .Ignore(dest => dest.Proveedors)
+                .Ignore(dest => dest.Sucursals)
+                .Ignore(dest => dest.FkidPaisSisNavigation);
 
             // Response -> Dto
-            CreateMap<EstadoResponse, EstadoDto>()
-                .ForMember(dest => dest.PkidEstado, opt => opt.MapFrom(src => src.PkidEstado))
-                .ForMember(dest => dest.FkidPaisSis, opt => opt.MapFrom(src => src.FkidPaisSis))
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.CodigoEstado, opt => opt.MapFrom(src => src.CodigoEstado))
-                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activo));
+            config.NewConfig<EstadoResponse, EstadoDto>()
+                .Map(dest => dest.PkidEstado, src => src.PkidEstado)
+                .Map(dest => dest.FkidPaisSis, src => src.FkidPaisSis)
+                .Map(dest => dest.Nombre, src => src.Nombre)
+                .Map(dest => dest.CodigoEstado, src => src.CodigoEstado)
+                .Map(dest => dest.Activo, src => src.Activo);
 
-            CreateMap<LoginInformationEmployeeResult, UserResponse>().ReverseMap();
-            CreateMap<spNodeMenuResponse, spNodeMenuResult>().ReverseMap();
-            //CreateMap<DepartamentoResponse, DepartamentoDto>().ReverseMap();
-            CreateMap<PerfilUsuarioResponse, PerfilUsuario>()
-                .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
-                .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidUsuarioSisNavigation, opt => opt.Ignore())
-                .ReverseMap();
+            config.NewConfig<LoginInformationEmployeeResult, UserResponse>().TwoWays();
+            config.NewConfig<spNodeMenuResult, spNodeMenuResponse>()
+                .Map(dest => dest.FkidMenuSis, src => (long?)src.FKIdMenuSIS);
+            //config.NewConfig<DepartamentoResponse, DepartamentoDto>().TwoWays();
+            config.NewConfig<PerfilUsuarioResponse, PerfilUsuario>()
+                .Ignore(dest => dest.FechaCreacion)
+                .Ignore(dest => dest.UsuarioCreacion)
+                .Ignore(dest => dest.FechaModificacion)
+                .Ignore(dest => dest.UsuarioModificacion)
+                .Ignore(dest => dest.FkidUsuarioSisNavigation)
+                .TwoWays();
         }
     }
 }

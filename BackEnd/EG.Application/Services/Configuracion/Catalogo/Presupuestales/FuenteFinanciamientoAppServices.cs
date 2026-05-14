@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -12,14 +12,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class FuenteFinanciamientoAppServices : IFuenteFinanciamientoAppServices
     {
         private readonly GenericService<FuenteFinanciamiento, FuenteFinanciamientoDto, FuenteFinanciamientoResponse> _service;
-        private readonly IMapper _mapper;
 
         public FuenteFinanciamientoAppServices(
-            GenericService<FuenteFinanciamiento, FuenteFinanciamientoDto, FuenteFinanciamientoResponse> service,
-            IMapper mapper)
+            GenericService<FuenteFinanciamiento, FuenteFinanciamientoDto, FuenteFinanciamientoResponse> service)
         {
             _service = service;
-            _mapper = mapper;
             ConfigureValidations();
         }
 
@@ -89,7 +86,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos de la Fuente de Financiamiento son requeridos");
 
-            var dto = _mapper.Map<FuenteFinanciamientoDto>(response);
+            var dto = response.Adapt<FuenteFinanciamientoDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
             dto.UsuarioCreacion = usuarioCreacion;
@@ -111,7 +108,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de Fuente de Financiamiento inválido", nameof(id));
 
-            var dto = _mapper.Map<FuenteFinanciamientoDto>(response);
+            var dto = response.Adapt<FuenteFinanciamientoDto>();
             dto.PkidFuenteFinanciamiento = id;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
@@ -132,7 +129,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (entity == null)
                 return false;
 
-            var dto = _mapper.Map<FuenteFinanciamientoDto>(entity);
+            var dto = entity.Adapt<FuenteFinanciamientoDto>();
             dto.Activo = false;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;

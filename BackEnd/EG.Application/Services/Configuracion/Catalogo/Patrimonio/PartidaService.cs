@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,16 +13,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
     public class PartidaService : IPartidaService
     {
         private readonly GenericService<Partidum, PartidaDto, PartidaResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IUserContextService _userContext;
 
         public PartidaService(
             GenericService<Partidum, PartidaDto, PartidaResponse> service,
-            IMapper mapper,
             IUserContextService userContext)
         {
             _service = service;
-            _mapper = mapper;
             _userContext = userContext;
             _service.AddInclude(e => e.FkidConceptoSisNavigation);
             ConfigureValidations();
@@ -113,7 +110,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<PartidaDto>(request);
+                var dto = request.Adapt<PartidaDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
@@ -134,7 +131,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     Success = true,
                     Message = "Partida creada correctamente",
                     Code = "SUCCESS",
-                    Data = _mapper.Map<PartidaResponse>(dto),
+                    Data = dto.Adapt<PartidaResponse>(),
                     TotalCount = 1
                 };
             }
@@ -154,7 +151,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
         {
             try
             {
-                var dto = _mapper.Map<PartidaDto>(request);
+                var dto = request.Adapt<PartidaDto>();
                 dto.PkidPartida = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;

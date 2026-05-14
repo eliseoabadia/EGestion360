@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Adquisicion;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
@@ -15,18 +15,15 @@ namespace EG.Application.Services.Adquisicion
         private readonly ILogger<ProveedorAppService> _logger;
         private readonly IRepository<Proveedor> _repository;
         private readonly EGestionContext _context;
-        private readonly IMapper _mapper;
 
         public ProveedorAppService(
             ILogger<ProveedorAppService> logger,
             IRepository<Proveedor> repository,
-            EGestionContext context,
-            IMapper mapper)
+            EGestionContext context)
         {
             _logger = logger;
             _repository = repository;
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<PagedResult<ProveedorResponse>> GetAllAsync()
@@ -36,7 +33,7 @@ namespace EG.Application.Services.Adquisicion
                 var items = await _context.VwProveedors.ToListAsync();
                 return new PagedResult<ProveedorResponse>
                 {
-                    Items = _mapper.Map<List<ProveedorResponse>>(items),
+                    Items = items.Adapt<List<ProveedorResponse>>(),
                     TotalCount = items.Count,
                     Success = true,
                     Message = "OK",
@@ -67,7 +64,7 @@ namespace EG.Application.Services.Adquisicion
                         TotalCount = 0
                     };
 
-                var response = _mapper.Map<ProveedorResponse>(entity);
+                var response = entity.Adapt<ProveedorResponse>();
                 return new PagedResult<ProveedorResponse>
                 {
                     Success = true,
@@ -92,7 +89,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var dto = _mapper.Map<ProveedorDto>(response);
+                var dto = response.Adapt<ProveedorDto>();
                 dto.UsuarioCreacion = usuarioActual;
                 dto.FechaCreacion = DateTime.UtcNow;
                 dto.FechaAlta = DateTime.UtcNow;
@@ -110,7 +107,7 @@ namespace EG.Application.Services.Adquisicion
                     };
                 }
 
-                var entity = _mapper.Map<Proveedor>(dto);
+                var entity = dto.Adapt<Proveedor>();
                 await _repository.AddAsync(entity);
 
                 return new PagedResult<ProveedorResponse>
@@ -147,7 +144,7 @@ namespace EG.Application.Services.Adquisicion
                         TotalCount = 0
                     };
 
-                var dto = _mapper.Map<ProveedorDto>(response);
+                var dto = response.Adapt<ProveedorDto>();
                 dto.PkidProveedor = id;
                 dto.UsuarioModificacion = usuarioActual;
                 dto.FechaModificacion = DateTime.UtcNow;
@@ -164,7 +161,7 @@ namespace EG.Application.Services.Adquisicion
                     };
                 }
 
-                _mapper.Map(dto, entity);
+                dto.Adapt(entity);
                 entity.FechaModificacion = dto.FechaModificacion;
                 entity.UsuarioModificacion = dto.UsuarioModificacion;
                 await _repository.UpdateAsync(entity);
@@ -268,7 +265,7 @@ namespace EG.Application.Services.Adquisicion
 
                 return new PagedResult<ProveedorResponse>
                 {
-                    Items = _mapper.Map<List<ProveedorResponse>>(items),
+                    Items = items.Adapt<List<ProveedorResponse>>(),
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",

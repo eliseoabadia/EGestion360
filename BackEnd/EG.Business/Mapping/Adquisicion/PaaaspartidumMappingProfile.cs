@@ -1,45 +1,44 @@
-using AutoMapper;
+using Mapster;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Mapping.Adquisicion
 {
-    public class PaaaspartidumMappingProfile : Profile
+    public class PaaaspartidumMappingProfile : IRegister
     {
-        public PaaaspartidumMappingProfile()
-        {
-            CreateMap<Paaaspartidum, PaaaspartidumResponse>()
-                .ForMember(dest => dest.FkidPaaas, opt => opt.MapFrom(src => src.FkidPaaasOrco))
-                .ForMember(dest => dest.FkidPaaasOrco, opt => opt.MapFrom(src => src.FkidPaaasOrco))
-                .ForMember(dest => dest.ClavePartida, opt => opt.MapFrom(src => src.FkidPartidaContaNavigation != null ? src.FkidPartidaContaNavigation.Clave : src.FkidPartidaConta.ToString()))
-                .ForMember(dest => dest.Descripcion, opt => opt.MapFrom(src => src.FkidPartidaContaNavigation != null ? src.FkidPartidaContaNavigation.Descripcion : string.Empty))
-                .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Observaciones ?? string.Empty))
-                .ForMember(dest => dest.Monto, opt => opt.MapFrom(src => 0m))
-                .ForMember(dest => dest.Cantidad, opt => opt.MapFrom(src => src.Paaasdetalles.Count(d => d.Activo)))
-                .ForMember(dest => dest.Unidad, opt => opt.MapFrom(src => string.Empty))
-                .ReverseMap();
+        public void Register(TypeAdapterConfig config){
+            config.NewConfig<Paaaspartidum, PaaaspartidumResponse>()
+                .Map(dest => dest.FkidPaaas, src => src.FkidPaaasOrco)
+                .Map(dest => dest.FkidPaaasOrco, src => src.FkidPaaasOrco)
+                .Map(dest => dest.ClavePartida, src => src.FkidPartidaContaNavigation != null ? src.FkidPartidaContaNavigation.Clave : src.FkidPartidaConta.ToString())
+                .Map(dest => dest.Descripcion, src => src.FkidPartidaContaNavigation != null ? src.FkidPartidaContaNavigation.Descripcion : string.Empty)
+                .Map(dest => dest.Observaciones, src => src.Observaciones ?? string.Empty)
+                .Map(dest => dest.Monto, src => 0m)
+                .Map(dest => dest.Cantidad, src => src.Paaasdetalles.Count(d => d.Activo))
+                .Map(dest => dest.Unidad, src => string.Empty)
+                .TwoWays();
 
-            CreateMap<VwPaaaspartidum, PaaaspartidumResponse>()
-                .ForMember(dest => dest.FkidPaaas, opt => opt.MapFrom(src => src.FkidPaaasOrco))
-                .ForMember(dest => dest.FkidPaaasOrco, opt => opt.MapFrom(src => src.FkidPaaasOrco))
-                .ForMember(dest => dest.ClavePartida, opt => opt.MapFrom(src => src.PartidaClave ?? string.Empty))
-                .ForMember(dest => dest.Descripcion, opt => opt.MapFrom(src => src.PartidaDescripcion ?? string.Empty))
-                .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Observaciones ?? string.Empty))
-                .ForMember(dest => dest.Monto, opt => opt.MapFrom(src => 0m))
-                .ForMember(dest => dest.Cantidad, opt => opt.MapFrom(src => 0))
-                .ForMember(dest => dest.Unidad, opt => opt.MapFrom(src => string.Empty));
+            config.NewConfig<VwPaaaspartidum, PaaaspartidumResponse>()
+                .Map(dest => dest.FkidPaaas, src => src.FkidPaaasOrco)
+                .Map(dest => dest.FkidPaaasOrco, src => src.FkidPaaasOrco)
+                .Map(dest => dest.ClavePartida, src => src.PartidaClave ?? string.Empty)
+                .Map(dest => dest.Descripcion, src => src.PartidaDescripcion ?? string.Empty)
+                .Map(dest => dest.Observaciones, src => src.Observaciones ?? string.Empty)
+                .Map(dest => dest.Monto, src => 0m)
+                .Map(dest => dest.Cantidad, src => 0)
+                .Map(dest => dest.Unidad, src => string.Empty);
 
-            CreateMap<PaaaspartidaDto, Paaaspartidum>()
-                .ForMember(dest => dest.PkidPaaaspartida, opt => opt.Ignore())
-                .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioCreacion, opt => opt.Ignore())
-                .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioModificacion, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidEmpresaSisNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidPaaasOrcoNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.FkidPartidaContaNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.Paaasdetalles, opt => opt.Ignore());
+            config.NewConfig<PaaaspartidaDto, Paaaspartidum>()
+                .Ignore(dest => dest.PkidPaaaspartida)
+                .Ignore(dest => dest.FechaCreacion)
+                .Ignore(dest => dest.UsuarioCreacion)
+                .Ignore(dest => dest.FechaModificacion)
+                .Ignore(dest => dest.UsuarioModificacion)
+                .Ignore(dest => dest.FkidEmpresaSisNavigation)
+                .Ignore(dest => dest.FkidPaaasOrcoNavigation)
+                .Ignore(dest => dest.FkidPartidaContaNavigation)
+                .Ignore(dest => dest.Paaasdetalles);
         }
     }
 }

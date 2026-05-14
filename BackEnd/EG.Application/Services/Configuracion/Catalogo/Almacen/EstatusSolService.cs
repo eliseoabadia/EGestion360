@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Configuracion.Catalogo.Almacen;
 using EG.Common.GenericModel;
@@ -14,31 +14,28 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Almacen
     {
         private readonly ILogger<EstatusSolService> _logger;
         private readonly IRepository<EstatusSolicitud> _repository;
-        private readonly IMapper _mapper;
 
         public EstatusSolService(
             ILogger<EstatusSolService> logger,
-            IRepository<EstatusSolicitud> repository,
-            IMapper mapper)
+            IRepository<EstatusSolicitud> repository)
         {
             _logger = logger;
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<EstatusSolicitudResponse?> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : _mapper.Map<EstatusSolicitudResponse>(entity);
+            return entity == null ? null : entity.Adapt<EstatusSolicitudResponse>();
         }
 
         public async Task<EstatusSolicitudResponse> CreateAsync(EstatusSolicitudDto dto, int usuarioId)
         {
-            var entity = _mapper.Map<EstatusSolicitud>(dto);
+            var entity = dto.Adapt<EstatusSolicitud>();
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
-            return _mapper.Map<EstatusSolicitudResponse>(entity);
+            return entity.Adapt<EstatusSolicitudResponse>();
         }
 
         public async Task<EstatusSolicitudResponse?> UpdateAsync(int id, EstatusSolicitudDto dto, int usuarioId)
@@ -46,11 +43,11 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Almacen
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(dto, entity);
+            dto.Adapt(entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
-            return _mapper.Map<EstatusSolicitudResponse>(entity);
+            return entity.Adapt<EstatusSolicitudResponse>();
         }
 
         public async Task DeleteAsync(int id)
@@ -96,7 +93,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Almacen
 
             return new PagedResult<EstatusSolicitudResponse>
             {
-                Items = _mapper.Map<List<EstatusSolicitudResponse>>(items),
+                Items = items.Adapt<List<EstatusSolicitudResponse>>(),
                 TotalCount = totalItems,
                 Success = true,
                 Message = "OK",

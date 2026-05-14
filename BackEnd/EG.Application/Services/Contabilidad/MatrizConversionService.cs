@@ -1,4 +1,4 @@
-using AutoMapper;
+using Mapster;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -13,18 +13,15 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class MatrizConversionService : IMatrizConversionService
     {
         private readonly GenericService<MatrizConversion, MatrizConversionDto, MatrizConversionResponse> _service;
-        private readonly IMapper _mapper;
         private readonly IRepository<MatrizConversion> _repository;
         private readonly EGestionContext _context;
 
         public MatrizConversionService(
             GenericService<MatrizConversion, MatrizConversionDto, MatrizConversionResponse> service,
-            IMapper mapper,
             IRepository<MatrizConversion> repository,
             EGestionContext context)
         {
             _service = service;
-            _mapper = mapper;
             _repository = repository;
             _context = context;
             ConfigureService();
