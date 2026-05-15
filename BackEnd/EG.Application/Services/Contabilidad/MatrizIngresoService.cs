@@ -1,6 +1,5 @@
 using Mapster;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Business.Services;
 using EG.Common.GenericModel;

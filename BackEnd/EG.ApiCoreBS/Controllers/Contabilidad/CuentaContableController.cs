@@ -12,7 +12,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class CuentaContableController : ControllerBase
+    public class CuentaContableController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly ICuentaContableService _service;
 
@@ -239,12 +239,6 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             return Ok(await _service.GetLookupPaginadoAsync(page, pageSize, filter));
-        }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

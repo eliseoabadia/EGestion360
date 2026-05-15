@@ -8,21 +8,9 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
-using EG.Web.Services;
 using EG.Web.Contracts;
 using EG.Web.Models.ConteoCiclico;
-
-
-//using EG.Web.Models.ConteoCiclico;
-
-//using EG.Web.Models.Adquisicion;
-//using EG.Web.Models.Almacen;
-//using EG.Web.Models.Configuration;
-//using EG.Web.Models.Configuration.Catalogo.ClavePrograma;
-//using EG.Web.Models.ConteoCiclico;
-//using EG.Web.Models.Patrimonio;
-//using EG.Web.Models.Presupuestales;
-//using EG.Web.Models.Tesoreria;
+using EG.Web.Services;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Extensions;
@@ -31,10 +19,6 @@ public static class ApiServiceExtensions
 {
     public static IServiceCollection AddApiServices(this IServiceCollection services)
     {
-        // Registro de dependencias base necesarias
-        // services.AddHttpClient(); 
-
-        // Registro de los CRUDs específicos
         RegisterCrud<DepartamentoResponse>(services, "api/Departamento");
         RegisterCrud<UsuarioResponse>(services, "api/Usuario");
         RegisterCrud<EstadoResponse>(services, "api/Estado");
@@ -50,20 +34,12 @@ public static class ApiServiceExtensions
         RegisterCrud<ConteoDetalleEscaneoResponse>(services, "api/ConteoDetalleEscaneo");
         RegisterCrud<ConteoDetalleResponse>(services, "api/ConteoDetalle");
         RegisterCrud<BienBusquedaResponse>(services, "api/ConteoDetalle");
-   
-        //RegisterCrud<ArticuloConteoResponse>(services, "api/ArticuloConteo");
-        //RegisterCrud<RegistroConteoResponse>(services, "api/RegistroConteo");
-        //RegisterCrud<EstatusPeriodoResponse>(services, "api/EstatusPeriodo");
-        //RegisterCrud<EstatusArticuloConteoResponse>(services, "api/EstatusArticuloConteo");
-        //RegisterCrud<TipoConteoResponse>(services, "api/TipoConteo");
 
         RegisterCrud<FamiliaResponse>(services, "api/Familia");
         RegisterCrud<UnidadeResponse>(services, "api/Unidades");
         RegisterCrud<MotivoEsResponse>(services, "api/MotivoEs");
         RegisterCrud<EstatusSolicitudResponse>(services, "api/EstatusSol");
-        // RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo"); // Comentar para evitar ambigüedad
 
-        // Catálogos de Tesorería
         RegisterCrud<TipoCambioResponse>(services, "api/TipoCambio");
         RegisterCrud<TipoInversionResponse>(services, "api/TipoInversion");
         RegisterCrud<TipoMonedaResponse>(services, "api/TipoMoneda");
@@ -72,11 +48,9 @@ public static class ApiServiceExtensions
         RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
         RegisterCrud<TipoDoctoClcResponse>(services, "api/TipoDoctoClc");
 
-        // Catálogos de Presupuestales
         RegisterCrud<GfResponse>(services, "api/Gf");
         RegisterCrud<FnResponse>(services, "api/Fn");
 
-        // Catálogos de Adquisiciones
         RegisterCrud<ModalidadResponse>(services, "api/Modalidad");
         RegisterCrud<TipoContratoResponse>(services, "api/TipoContrato");
         RegisterCrud<TipoDocumentoResponse>(services, "api/TipoDocumento");
@@ -87,11 +61,8 @@ public static class ApiServiceExtensions
         RegisterCrud<FraccionResponse>(services, "api/Fraccion");
         RegisterCrud<ProveedorResponse>(services, "api/Proveedor");
         RegisterCrud<PaaaResponse>(services, "api/Paaa");
-        
-        // Catálogos de Contabilidad
+
         RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");
-        
-        // Catálogos de Patrimonio
         RegisterCrud<GrupoBienResponse>(services, "api/GrupoBien");
         RegisterCrud<NivelResponse>(services, "api/Nivel");
         RegisterCrud<PartidaResponse>(services, "api/Partida");
@@ -119,8 +90,6 @@ public static class ApiServiceExtensions
         RegisterCrud<ConceptoResponse>(services, "api/Concepto");
         RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");
         RegisterCrud<ProgramaResponse>(services, "api/Programa");
-
-        
 
         return services;
     }

@@ -11,7 +11,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UnidadesController : ControllerBase
+    public class UnidadesController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly IUnidadesService _service;
 
@@ -96,11 +96,6 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             return Ok(await _service.GetLookupPaginadoAsync(page, pageSize, filter));
         }
 
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
-        }
     }
 }
 

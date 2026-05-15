@@ -10,7 +10,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class MotivoEsController : ControllerBase
+    public class MotivoEsController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly IMotivoEsService _service;
 
@@ -75,11 +75,6 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             }
         }
 
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
-        }
     }
 }
 

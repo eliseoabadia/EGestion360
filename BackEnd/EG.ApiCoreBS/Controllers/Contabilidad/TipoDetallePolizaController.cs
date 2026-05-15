@@ -12,7 +12,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class TipoDetallePolizaController : ControllerBase
+    public class TipoDetallePolizaController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly ITipoDetallePolizaService _service;
 
@@ -226,12 +226,6 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
-        }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

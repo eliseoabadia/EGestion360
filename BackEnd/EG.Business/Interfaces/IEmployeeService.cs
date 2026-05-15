@@ -6,7 +6,7 @@ namespace EG.Business.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<IList<UsuarioResponse?>> GetAllUsersAsync();
+        Task<IList<UsuarioResponse>> GetAllUsersAsync();
 
         Task<PagedResult<UsuarioResponse>> GetAllUsuariosPaginadoAsync(PagedRequest _params);
 

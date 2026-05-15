@@ -11,7 +11,7 @@ namespace EG.ApiCore.Controllers.Contabilidad
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ContaTipoDoctoPagoController : ControllerBase
+    public class ContaTipoDoctoPagoController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly IContaTipoDoctoPagoService _service;
 
@@ -163,12 +163,6 @@ namespace EG.ApiCore.Controllers.Contabilidad
         {
             var result = await _service.GetAllPaginadoAsync(request);
             return Ok(result);
-        }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

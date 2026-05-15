@@ -16,14 +16,14 @@ namespace EG.Business.Services
         private readonly IRepository<Usuario> _repository = repositorySP;
 
 
-        public async Task<IList<UsuarioResponse?>> GetAllUsersAsync()
+        public async Task<IList<UsuarioResponse>> GetAllUsersAsync()
         {
             var items = await _repository.GetAllWithIncludes2Async(
                 u => u.Activo,
                 u => u.FkidPersonaNomNavigation,
                 u => u.FkidEmpresaSisNavigation
             );
-            return items != null ? items.Adapt<IList<UsuarioResponse?>>() : null;
+            return items?.Adapt<IList<UsuarioResponse>>() ?? [];
         }
 
         public async Task<PagedResult<UsuarioResponse>> GetAllUsuariosPaginadoAsync(PagedRequest _params)

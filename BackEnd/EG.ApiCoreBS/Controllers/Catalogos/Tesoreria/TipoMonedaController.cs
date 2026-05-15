@@ -10,7 +10,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class TipoMonedaController : ControllerBase
+    public class TipoMonedaController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly ITipoMonedaService _service;
 
@@ -66,12 +66,6 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
             {
                 return NotFound();
             }
-        }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

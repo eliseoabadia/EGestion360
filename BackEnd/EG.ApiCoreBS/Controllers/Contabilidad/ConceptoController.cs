@@ -12,7 +12,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ConceptoController : ControllerBase
+    public class ConceptoController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly IConceptoService _service;
 
@@ -194,12 +194,6 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
 
             var result = await _service.GetAllPaginadoAsync(pagedRequest);
             return Ok(result);
-        }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-            return claim != null ? int.Parse(claim.Value) : 0;
         }
     }
 }

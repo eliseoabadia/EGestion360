@@ -1,6 +1,5 @@
 using Mapster;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging;
 using EG.Application.Interfaces.Configuracion.Catalogo.Almacen;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Almacen;
