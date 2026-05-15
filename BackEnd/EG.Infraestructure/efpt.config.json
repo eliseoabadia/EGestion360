@@ -511,6 +511,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_DetalleRequisicion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ORCO].[Vw_Fraccion]",
          "ObjectType": 3
       },
@@ -528,6 +532,14 @@
       },
       {
          "Name": "[ORCO].[VW_ReporteBienesProgramaAnual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_Requisicion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_RequisicionPartida]",
          "ObjectType": 3
       },
       {

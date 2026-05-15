@@ -957,6 +957,204 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+CREATE OR ALTER VIEW  [ORCO].[Vw_Requisicion]
+AS
+SELECT
+    r.PKIdRequisicion,
+    r.FKIdEmpresa_SIS,
+    r.FKIdPersona_NOM,
+    r.FKIdArea_SIS,
+    r.Descripcion,
+    r.Observaciones,
+    r.FechaRequisicion,
+    r.Servicio,
+    r.FL_FOTO,
+    r.FKIdProyecto_ORCO,
+    r.FechaRequiereInicio,
+    r.FechaRequiereFin,
+    r.FKIdPrograma_PRES,
+    r.Importe,
+    r.FKIdJefeAlmacen_NOM,
+    r.FKIdSuficiencia_PRES,
+    r.FKIdSuperviso_NOM,
+    r.FKIdAutorizo_NOM,
+    r.FKIdPSolicita_NOM,
+    r.FKIdPJefeAlmacen_NOM,
+    r.FKIdPSuficiencia_NOM,
+    r.FKIdPSuperviso_NOM,
+    r.FKIdPAutorizo_NOM,
+    r.FKIdFuenteFinanciamiento_PRES,
+    r.FKIdAnio_SIS,
+    r.FKIdTipoGasto_PRES,
+    r.FKIdDigitoIdentificador_PRES,
+    r.FKIdDestinoGasto_PRES,
+    r.FKIdEgresoAutorizado_PRES,
+    r.Oficio,
+    r.FechaOficio,
+    r.CompraDirecta,
+    r.Activo,
+    r.FechaCreacion,
+    r.UsuarioCreacion,
+    r.FechaModificacion,
+    r.UsuarioModificacion,
+    emp.Nombre AS EmpresaNombre,
+    emp.RFC AS EmpresaRFC,
+    a.Clave AS AnioClave,
+    area.Nombre AS AreaNombre,
+    area.Clave AS AreaClave,
+    per.Nombre AS SolicitanteNombre,
+    per.Paterno AS SolicitantePaterno,
+    per.Materno AS SolicitanteMaterno,
+    CONCAT(per.Nombre, ' ', per.Paterno, ' ', COALESCE(per.Materno, '')) AS SolicitanteCompleto,
+    proy.Descripcion AS ProyectoDescripcion,
+    prog.Clave AS ProgramaClave,
+    prog.Descripcion AS ProgramaDescripcion,
+    ff.Clave AS FuenteFinanciamientoClave,
+    ff.Descripcion AS FuenteFinanciamientoDescripcion,
+    tg.Clave AS TipoGastoClave,
+    tg.Descripcion AS TipoGastoDescripcion,
+    di.Clave AS DigitoIdentificadorClave,
+    di.Descripcion AS DigitoIdentificadorDescripcion,
+    dg.Clave AS DestinoGastoClave,
+    dg.Descripcion AS DestinoGastoDescripcion,
+    suf.Descripcion AS SuficienciaDescripcion,
+    ea.Descripcion AS EgresoAutorizadoDescripcion,
+    ea.Fecha AS EgresoAutorizadoFecha,
+    jefe.Nombre AS JefeAlmacenNombre,
+    jefe.Paterno AS JefeAlmacenPaterno,
+    jefe.Materno AS JefeAlmacenMaterno,
+    CONCAT(jefe.Nombre, ' ', jefe.Paterno, ' ', COALESCE(jefe.Materno, '')) AS JefeAlmacenCompleto,
+    superviso.Nombre AS SupervisoNombre,
+    superviso.Paterno AS SupervisoPaterno,
+    superviso.Materno AS SupervisoMaterno,
+    CONCAT(superviso.Nombre, ' ', superviso.Paterno, ' ', COALESCE(superviso.Materno, '')) AS SupervisoCompleto,
+    autorizo.Nombre AS AutorizoNombre,
+    autorizo.Paterno AS AutorizoPaterno,
+    autorizo.Materno AS AutorizoMaterno,
+    CONCAT(autorizo.Nombre, ' ', autorizo.Paterno, ' ', COALESCE(autorizo.Materno, '')) AS AutorizoCompleto,
+    psolicita.Nombre AS PSolicitaNombre,
+    psolicita.Paterno AS PSolicitaPaterno,
+    psolicita.Materno AS PSolicitaMaterno,
+    CONCAT(psolicita.Nombre, ' ', psolicita.Paterno, ' ', COALESCE(psolicita.Materno, '')) AS PSolicitaCompleto,
+    pjefe.Nombre AS PJefeAlmacenNombre,
+    pjefe.Paterno AS PJefeAlmacenPaterno,
+    pjefe.Materno AS PJefeAlmacenMaterno,
+    CONCAT(pjefe.Nombre, ' ', pjefe.Paterno, ' ', COALESCE(pjefe.Materno, '')) AS PJefeAlmacenCompleto,
+    psuf.Nombre AS PSuficienciaNombre,
+    psuf.Paterno AS PSuficienciaPaterno,
+    psuf.Materno AS PSuficienciaMaterno,
+    CONCAT(psuf.Nombre, ' ', psuf.Paterno, ' ', COALESCE(psuf.Materno, '')) AS PSuficienciaCompleto,
+    psuperviso.Nombre AS PSupervisoNombre,
+    psuperviso.Paterno AS PSupervisoPaterno,
+    psuperviso.Materno AS PSupervisoMaterno,
+    CONCAT(psuperviso.Nombre, ' ', psuperviso.Paterno, ' ', COALESCE(psuperviso.Materno, '')) AS PSupervisoCompleto,
+    pautorizo.Nombre AS PAutorizoNombre,
+    pautorizo.Paterno AS PAutorizoPaterno,
+    pautorizo.Materno AS PAutorizoMaterno,
+    CONCAT(pautorizo.Nombre, ' ', pautorizo.Paterno, ' ', COALESCE(pautorizo.Materno, '')) AS PAutorizoCompleto,
+    CONCAT('REQ ', r.PKIdRequisicion, ' - ', r.Descripcion) AS ClaveNombre
+FROM ORCO.Requisicion r
+LEFT JOIN SIS.Empresa emp ON r.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN SIS.Anio a ON r.FKIdAnio_SIS = a.PKIdAnio AND a.Activo = 1
+LEFT JOIN SIS.Area area ON r.FKIdArea_SIS = area.PKIdArea AND area.Activo = 1
+LEFT JOIN NOM.Persona per ON r.FKIdPersona_NOM = per.PKIdPersona AND per.Activo = 1
+LEFT JOIN ORCO.Proyecto proy ON r.FKIdProyecto_ORCO = proy.PKIdProyecto AND proy.Activo = 1
+LEFT JOIN PRES.Programa prog ON r.FKIdPrograma_PRES = prog.PKIdPrograma AND prog.Activo = 1
+LEFT JOIN PRES.FuenteFinanciamiento ff ON r.FKIdFuenteFinanciamiento_PRES = ff.PKIdFuenteFinanciamiento AND ff.Activo = 1
+LEFT JOIN PRES.TipoGasto tg ON r.FKIdTipoGasto_PRES = tg.PKIdTipoGasto AND tg.Activo = 1
+LEFT JOIN PRES.DigitoIdentificador di ON r.FKIdDigitoIdentificador_PRES = di.PKIdDigitoIdentificador AND di.Activo = 1
+LEFT JOIN PRES.DestinoGasto dg ON r.FKIdDestinoGasto_PRES = dg.PKIdDestinoGasto AND dg.Activo = 1
+LEFT JOIN PRES.Suficiencia suf ON r.FKIdSuficiencia_PRES = suf.PKIdSuficiencia AND suf.Activo = 1
+LEFT JOIN PRES.EgresoAutorizado ea ON r.FKIdEgresoAutorizado_PRES = ea.PKIdEgresoAutorizado AND ea.Activo = 1
+LEFT JOIN NOM.Persona jefe ON r.FKIdJefeAlmacen_NOM = jefe.PKIdPersona AND jefe.Activo = 1
+LEFT JOIN NOM.Persona superviso ON r.FKIdSuperviso_NOM = superviso.PKIdPersona AND superviso.Activo = 1
+LEFT JOIN NOM.Persona autorizo ON r.FKIdAutorizo_NOM = autorizo.PKIdPersona AND autorizo.Activo = 1
+LEFT JOIN NOM.Persona psolicita ON r.FKIdPSolicita_NOM = psolicita.PKIdPersona AND psolicita.Activo = 1
+LEFT JOIN NOM.Persona pjefe ON r.FKIdPJefeAlmacen_NOM = pjefe.PKIdPersona AND pjefe.Activo = 1
+LEFT JOIN NOM.Persona psuf ON r.FKIdPSuficiencia_NOM = psuf.PKIdPersona AND psuf.Activo = 1
+LEFT JOIN NOM.Persona psuperviso ON r.FKIdPSuperviso_NOM = psuperviso.PKIdPersona AND psuperviso.Activo = 1
+LEFT JOIN NOM.Persona pautorizo ON r.FKIdPAutorizo_NOM = pautorizo.PKIdPersona AND pautorizo.Activo = 1
+WHERE r.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW  [ORCO].[Vw_RequisicionPartida]
+AS
+SELECT
+    rp.PKIdRequisicionPartida,
+    rp.FKIdEmpresa_SIS,
+    rp.FKIdRequisicion_ORCO,
+    rp.FKIdPartida_CONTA,
+    rp.Monto,
+    rp.Observaciones,
+    rp.Activo,
+    rp.FechaCreacion,
+    rp.UsuarioCreacion,
+    rp.FechaModificacion,
+    rp.UsuarioModificacion,
+    emp.Nombre AS EmpresaNombre,
+    req.Descripcion AS RequisicionDescripcion,
+    req.FechaRequisicion,
+    req.Importe AS RequisicionImporte,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS ClaveNombre
+FROM ORCO.RequisicionPartida rp
+LEFT JOIN SIS.Empresa emp ON rp.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON rp.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN CONTA.Partida part ON rp.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE rp.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW  [ORCO].[Vw_DetalleRequisicion]
+AS
+SELECT
+    dr.PKIdDetalleRequisicion,
+    dr.FKIdEmpresa_SIS,
+    dr.FKIdRequisicion_ORCO,
+    dr.FKIdTipoBien_ALMA,
+    dr.FKIdUnidades_ALMA,
+    dr.Cantidad,
+    dr.Observaciones,
+    dr.Activo,
+    dr.FechaCreacion,
+    dr.UsuarioCreacion,
+    dr.FechaModificacion,
+    dr.UsuarioModificacion,
+    emp.Nombre AS EmpresaNombre,
+    req.Descripcion AS RequisicionDescripcion,
+    req.FechaRequisicion,
+    req.Servicio AS RequisicionServicio,
+    tb.Descripcion AS TipoBienDescripcion,
+    tb.CodigoClave AS TipoBienCodigoClave,
+    tb.CABMS,
+    tb.Identificador,
+    tb.ExistenciaMinima,
+    tb.ExistenciaMaxima,
+    u.Descripcion AS UnidadMedida,
+    CONCAT(tb.CodigoClave, ' - ', tb.Descripcion) AS BienClaveNombre
+FROM ORCO.DetalleRequisicion dr
+LEFT JOIN SIS.Empresa emp ON dr.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON dr.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN ALMA.TipoBien tb ON dr.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+LEFT JOIN ALMA.Unidades u ON dr.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
+WHERE dr.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
 CREATE OR ALTER VIEW  [ORCO].[VW_ReporteBienesProgramaAnual] AS
 WITH 
 -- 1. Resumen de �reas solicitantes por bien

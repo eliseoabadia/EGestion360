@@ -1,0 +1,121 @@
+@page "/Adquisiciones/DetalleRequisicion"
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<DetalleRequisicionResponse, DetalleRequisicionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Detalle de Requisicion"
+                    Subtitle="Catalogo de bienes y servicios requisitados"
+                    Icon="@Icons.Material.Filled.Inventory2"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="DetalleRequisicionResponse"
+                      @ref="table"
+                      Title="Lista de Detalles"
+                      SearchPlaceholder="Buscar por requisicion, bien o unidad..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidDetalleRequisicion" T="DetalleRequisicionResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="DetalleRequisicionResponse">Requisicion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="DetalleRequisicionResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="DetalleRequisicionResponse">Bien</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="DetalleRequisicionResponse">Cantidad</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="DetalleRequisicionResponse">Unidad</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="DetalleRequisicionResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidDetalleRequisicion))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidDetalleRequisicion))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidDetalleRequisicion</MudTd>
+                <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
+                <MudTd>@TextOrDash(item.TipoBienCodigoClave)</MudTd>
+                <MudTd>@TextOrDash(item.TipoBienDescripcion)</MudTd>
+                <MudTd>@item.Cantidad.ToString("N2")</MudTd>
+                <MudTd>@TextOrDash(item.UnidadMedida)</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Si" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<DetalleRequisicionResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "requisicion";
+
+    protected override Type CreateDialogType => typeof(DetalleRequisicionDialog);
+    protected override Type EditDialogType => typeof(DetalleRequisicionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<DetalleRequisicionResponse>);
+
+    protected override string GetDefaultSortLabel() => "PkidDetalleRequisicion";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<DetalleRequisicionResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidDetalleRequisicion,
+            Requisicion = item.RequisicionDescripcion,
+            Clave = item.TipoBienCodigoClave,
+            Bien = item.TipoBienDescripcion,
+            item.Cantidad,
+            Unidad = item.UnidadMedida,
+            item.Observaciones,
+            Activo = item.Activo ? "Si" : "No",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.TipoBienDescripcion ?? "el detalle";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

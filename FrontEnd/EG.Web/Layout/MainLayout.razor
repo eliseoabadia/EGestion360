@@ -28,7 +28,13 @@
         }
 
         <div class="app-branding">
-            <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
+            <button type="button"
+                    class="brand-home-button"
+                    title="Ir a inicio"
+                    aria-label="Ir a inicio"
+                    @onclick="NavigateHome">
+                <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
+            </button>
             <MudText Typo="Typo.h5" Class="app-title">EGestion<span class="title-accent">360</span></MudText>
         </div>
 
@@ -479,6 +485,11 @@ catch { }
         _drawerOpen = !_drawerOpen;
     }
 
+    private void NavigateHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
     private string _version = "1.0.0";
 
     private class VersionApiResult
@@ -536,6 +547,31 @@ catch { }
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    .brand-home-button {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .brand-home-button:hover {
+        background: var(--mud-palette-action-default-hover);
+        transform: translateY(-1px);
+    }
+
+    .brand-home-button:focus-visible {
+        outline: 2px solid var(--mud-palette-primary);
+        outline-offset: 2px;
     }
 
     .brand-icon {

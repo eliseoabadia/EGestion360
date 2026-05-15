@@ -1,0 +1,303 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<RequisicionResponse> Service
+@inject IGenericCrudService<PersonaResponse> PersonaService
+@inject IGenericCrudService<UnidadResponsableResponse> AreaService
+@inject IGenericCrudService<ProyectoResponse> ProyectoService
+@inject IGenericCrudService<ProgramaResponse> ProgramaService
+@inject IGenericCrudService<FuenteFinanciamientoResponse> FuenteService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="RequisicionResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="RequisicionResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              MaxLength="100"
+                              RequiredError="La descripcion es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area"
+                                   Required="true"
+                                   RequiredError="El area es requerida"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedPersona"
+                                   ValueChanged="value => _selectedPersona = value"
+                                   Label="Solicitante"
+                                   Required="true"
+                                   RequiredError="El solicitante es requerido"
+                                   LoadPage="LoadPersonasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Value="_fechaRequisicion"
+                               Label="Fecha requisicion"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.Importe"
+                                 Label="Importe"
+                                 Variant="Variant.Outlined"
+                                 Format="C2" />
+            </MudItem>
+
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudSwitch T="bool" @bind-Value="item.Servicio" Label="Servicio" Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedProyecto"
+                                   ValueChanged="value => _selectedProyecto = value"
+                                   Label="Proyecto"
+                                   Clearable="true"
+                                   LoadPage="LoadProyectosPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedPrograma"
+                                   ValueChanged="value => _selectedPrograma = value"
+                                   Label="Programa"
+                                   Clearable="true"
+                                   LoadPage="LoadProgramasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedFuente"
+                                   ValueChanged="value => _selectedFuente = value"
+                                   Label="Fuente de financiamiento"
+                                   Clearable="true"
+                                   LoadPage="LoadFuentesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Oficio"
+                              Label="Oficio"
+                              Variant="Variant.Outlined"
+                              MaxLength="120" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Value="item.FechaOficio"
+                               Label="Fecha oficio"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<RequisicionResponse> form = null!;
+    private RequisicionResponse item = new()
+    {
+        Activo = true,
+        FechaRequisicion = DateTime.Today,
+        FlFoto = string.Empty,
+        Observaciones = string.Empty,
+        Oficio = string.Empty
+    };
+    private DateTime? _fechaRequisicion = DateTime.Today;
+
+    private LookupItem? _selectedPersona;
+    private LookupItem? _selectedArea;
+    private LookupItem? _selectedProyecto;
+    private LookupItem? _selectedPrograma;
+    private LookupItem? _selectedFuente;
+
+    private string dialogTitle => Id.HasValue ? "Editar Requisicion" : "Nueva Requisicion";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaRequisicion = item.FechaRequisicion;
+                _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = TextOrDefault(item.SolicitanteCompleto, item.FkidPersonaNom) };
+                _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
+
+                if (item.FkidProyectoOrco.HasValue)
+                {
+                    _selectedProyecto = new LookupItem { Id = item.FkidProyectoOrco.Value, Text = item.ProyectoDescripcion ?? string.Empty };
+                }
+
+                if (item.FkidProgramaPres.HasValue)
+                {
+                    _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres.Value, Text = $"{item.ProgramaClave} - {item.ProgramaDescripcion}".Trim(' ', '-') };
+                }
+
+                if (item.FkidFuenteFinanciamientoPres.HasValue)
+                {
+                    _selectedFuente = new LookupItem { Id = item.FkidFuenteFinanciamientoPres.Value, Text = $"{item.FuenteFinanciamientoClave} - {item.FuenteFinanciamientoDescripcion}".Trim(' ', '-') };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedArea == null)
+        {
+            Snackbar.Add("Debe seleccionar un area.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPersona == null)
+        {
+            Snackbar.Add("Debe seleccionar un solicitante.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidAreaSis = _selectedArea.Id;
+        item.FkidPersonaNom = _selectedPersona.Id;
+        item.FkidProyectoOrco = _selectedProyecto?.Id;
+        item.FkidProgramaPres = _selectedPrograma?.Id;
+        item.FkidFuenteFinanciamientoPres = _selectedFuente?.Id;
+        item.FechaRequisicion = _fechaRequisicion ?? DateTime.Today;
+        item.Observaciones ??= string.Empty;
+        item.FlFoto ??= string.Empty;
+        item.Oficio ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Requisicion actualizada correctamente" : "Requisicion creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar la requisicion", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PersonaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPersona, Text = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim() }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUnidadResponsable, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadProyectosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProyectoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidProyecto, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProgramaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await FuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

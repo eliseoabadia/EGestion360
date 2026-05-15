@@ -168,190 +168,104 @@
                 </MudCard>
 
                 @* ─── CUERPO MAESTRO-DETALLE: OCUPA EL RESTO ─── *@
-                <div Style="display: flex; flex-direction: row; flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
                     @* ─── PANEL IZQUIERDO: LISTA DE PARTIDAS ─── *@
-                    <div Style="width: 33.33%; display: flex; flex-direction: column; min-height: 0;">
-                        <MudCard Elevation="1" Class="d-flex flex-column" Style="border-top: 3px solid var(--mud-palette-primary); flex-grow: 1; overflow: hidden;">
-                                <MudCardContent Class="d-flex flex-column pa-0" Style="overflow: hidden; flex-grow: 1;">
-                                    <div Class="pa-2 pb-0" Style="flex-shrink: 0;">
-                                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
-                                            <MudText Typo="Typo.subtitle2" Style="font-weight: 600; flex-grow: 1;">
-                                                <MudIcon Icon="@Icons.Material.Filled.ListAlt" Size="Size.Small" Class="mr-1" />
-                                                PARTIDAS
-                                            </MudText>
-                                            <MudTooltip Text="Agregar partida">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" Size="Size.Small" OnClick="AddPartida" />
-                                            </MudTooltip>
-                                        </MudStack>
-                                        <MudTextField @bind-Value="_partidaFilter"
-                                                      Placeholder="Buscar partida..."
-                                                      Variant="Variant.Outlined"
-                                                      Size="Size.Small"
-                                                      Immediate="true"
-                                                      Clearable="true"
-                                                      Class="mb-2" />
-                                    </div>
-
-                                    <div Class="flex-grow-1" Style="overflow-y: auto; min-height: 0; padding: 0 8px 4px;">
-                                        @if (_partidasLoading)
-                                        {
-                                            <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="d-flex justify-center my-3" />
-                                        }
-                                        else if (_filteredPartidas.Count > 0)
-                                        {
-                                            <MudStack Spacing="1">
-                                                @foreach (var partida in _filteredPartidas)
-                                                {
-                                                    var isSelected = SelectedPartida?.PkidPaaaspartida == partida.PkidPaaaspartida;
-                                                    <div @onclick="@(() => SelectPartida(partida))"
-                                                         @onclick:stopPropagation
-                                                         class="pa-1 rounded-lg cursor-pointer"
-                                                         style="@(isSelected ? "background: var(--mud-palette-primary-hover); border-left: 3px solid var(--mud-palette-primary); display: flex; align-items: center; gap: 4px;" : "border-left: 3px solid transparent; display: flex; align-items: center; gap: 4px;")">
-                                                        <div style="flex-grow: 1; min-width: 0;">
-                                                            <MudText Typo="Typo.body2" Style="font-weight: 600;">
-                                                                @($"{partida.ClavePartida} - {partida.Descripcion}")
-                                                            </MudText>
-                                                            @if (!string.IsNullOrWhiteSpace(partida.Observaciones))
-                                                            {
-                                                                <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="text-truncate">
-                                                                    @partida.Observaciones
-                                                                </MudText>
-                                                            }
-                                                        </div>
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                                       Color="Color.Error"
-                                                                       Size="Size.Small"
-                                                                       OnClick="@(() => DeletePartida(partida))" />
-                                                    </div>
-                                                }
-                                            </MudStack>
-                                        }
-                                        else
-                                        {
-                                            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mt-6">
-                                                <MudIcon Icon="@Icons.Material.Filled.Inbox" Style="font-size: 2rem; color: var(--mud-palette-action-disabled);" />
-                                                <MudText Typo="Typo.body2" Color="Color.Tertiary" Align="Align.Center">
-                                                    @(string.IsNullOrEmpty(_partidaFilter) ? "No hay partidas" : "Sin resultados")
-                                                </MudText>
-                                            </MudStack>
-                                        }
-                                    </div>
-
-                                    @if (partidas?.Count > 0)
-                                    {
-                                        <div Style="flex-shrink: 0; border-top: 1px solid var(--mud-palette-lines-inputs);" Class="pa-2">
-                                            <MudText Typo="Typo.caption" Color="Color.Tertiary">
-                                                <strong>@(partidas?.Count ?? 0)</strong> partida(s)
-                                            </MudText>
-                                        </div>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-                        </div>
+                    <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
+                        <GenericTable TItem="PaaaspartidumResponse"
+                                      @ref="partidaTable"
+                                      Title="Partidas"
+                                      SearchPlaceholder="Buscar partida..."
+                                      ShowExportButton="false"
+                                      ShowAddButton="@CanCreate"
+                                      PageSize="5"
+                                      ServerDataFunc="LoadPartidasServerData"
+                                      SearchString="@partidaSearchString"
+                                      SearchStringChanged="(s) => partidaSearchString = s"
+                                      OnSearch="ReloadPartidas"
+                                      OnAdd="AddPartida">
+                            <Header>
+                                <MudTh>Acciones</MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="ClavePartida" T="PaaaspartidumResponse">Clave</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PaaaspartidumResponse">Partida</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Monto" T="PaaaspartidumResponse">Monto</MudTableSortLabel></MudTh>
+                            </Header>
+                            <Row Context="partida">
+                                <MudTd>
+                                    <MudTooltip Text="Ver bienes">
+                                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                       Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Info)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => SelectPartida(partida))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar partida">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Visible="@CanDelete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeletePartida(partida))" />
+                                    </MudTooltip>
+                                </MudTd>
+                                <MudTd>
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Primary)">
+                                        @TextOrDash(partida.ClavePartida)
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd>@TextOrDash(partida.Descripcion)</MudTd>
+                                <MudTd>@partida.Monto.ToString("C2")</MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
 
                         @* ─── PANEL DERECHO: DETALLE DE BIENES ─── *@
-                        <div Style="width: 66.66%; display: flex; flex-direction: column; min-height: 0;">
-                            <MudCard Elevation="1" Class="d-flex flex-column" Style="border-top: 3px solid var(--mud-palette-success); flex-grow: 1; overflow: hidden;">
-                                <MudCardContent Class="d-flex flex-column pa-0" Style="overflow: hidden; flex-grow: 1;">
-                                    @if (SelectedPartida != null)
-                                    {
-                                        <div Class="pa-2 pb-0" Style="flex-shrink: 0;">
-                                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-1">
-                                                <MudText Typo="Typo.subtitle2" Style="font-weight: 600; flex-grow: 1;">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Small" Class="mr-1" />
-                                                    BIENES / SERVICIOS
-                                                </MudText>
-                                                <MudTooltip Text="Agregar bien">
-                                                    <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" Size="Size.Small" OnClick="AddBien" />
-                                                </MudTooltip>
-                                            </MudStack>
-                                            <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
-                                                @($"{SelectedPartida.ClavePartida} - {SelectedPartida.Descripcion}")
-                                            </MudText>
-                                        </div>
-
-                                        <div Class="flex-grow-1" Style="overflow-y: auto; min-height: 0; padding: 0 8px 4px;">
-                                            @if (_bienesLoading)
-                                            {
-                                                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="d-flex justify-center my-3" />
-                                            }
-                                            else if (bienes?.Count > 0)
-                                            {
-                                                <MudTable Items="bienes"
-                                                          Dense="true"
-                                                          Hover="true"
-                                                          Striped="true"
-                                                          Elevation="0"
-                                                          Class="rounded-lg"
-                                                          Style="width: 100%;">
-                                                    <HeaderContent>
-                                                        <MudTh Style="width: 30px;">#</MudTh>
-                                                        <MudTh>Tipo de Bien</MudTh>
-                                                        <MudTh Style="width: 70px;">Cant.</MudTh>
-                                                        <MudTh Style="width: 70px;">Unidad</MudTh>
-                                                        <MudTh>Lugar de Entrega</MudTh>
-                                                        <MudTh>Observaciones</MudTh>
-                                                        <MudTh Style="width: 80px;">Acciones</MudTh>
-                                                    </HeaderContent>
-                                                    <RowTemplate Context="bien">
-                                                        <MudTd>
-                                                            <MudText Typo="Typo.caption" Color="Color.Tertiary">
-                                                                @(bienes.IndexOf(bien) + 1)
-                                                            </MudText>
-                                                        </MudTd>
-                                                        <MudTd Style="font-weight: 500;">@bien.TipoBienDescripcion</MudTd>
-                                                        <MudTd>@bien.Cantidad.ToString("N2")</MudTd>
-                                                        <MudTd>@TextOrDash(bien.Unidad)</MudTd>
-                                                        <MudTd>@TextOrDash(bien.LugarEntrega)</MudTd>
-                                                        <MudTd>
-                                                            <MudText Typo="Typo.caption" Class="text-truncate" Style="max-width: 150px;">
-                                                                @TextOrDash(bien.Observaciones)
-                                                            </MudText>
-                                                        </MudTd>
-                                                        <MudTd>
-                                                            <MudTooltip Text="Editar bien">
-                                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditBien(bien))" />
-                                                            </MudTooltip>
-                                                            <MudTooltip Text="Eliminar bien">
-                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteBien(bien))" />
-                                                            </MudTooltip>
-                                                        </MudTd>
-                                                    </RowTemplate>
-                                                    <NoRecordsContent>
-                                                        <MudText Typo="Typo.body2" Color="Color.Tertiary" Align="Align.Center" Class="py-3">
-                                                            No hay bienes registrados
-                                                        </MudText>
-                                                    </NoRecordsContent>
-                                                </MudTable>
-                                            }
-                                            else
-                                            {
-                                                <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mt-6">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Category" Style="font-size: 2rem; color: var(--mud-palette-action-disabled);" />
-                                                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Align="Align.Center">
-                                                        No hay bienes registrados para esta partida
-                                                    </MudText>
-                                                    <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="AddBien">
-                                                        Agregar primer bien
-                                                    </MudButton>
-                                                </MudStack>
-                                            }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Spacing="2" Class="flex-grow-1">
-                                            <MudIcon Icon="@Icons.Material.Filled.TouchApp" Style="font-size: 3rem; color: var(--mud-palette-action-disabled);" />
-                                            <MudText Typo="Typo.h6" Color="Color.Tertiary">Selecciona una partida</MudText>
-                                            <MudText Typo="Typo.body2" Color="Color.Tertiary" Align="Align.Center">
-                                                Haz clic en una partida del panel izquierdo
-                                            </MudText>
-                                        </MudStack>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-                        </div>
-                    </div>
+                    <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
+                        <GenericTable TItem="PaaasdetalleResponse"
+                                      @ref="bienTable"
+                                      Title="@BienesTableTitle"
+                                      SearchPlaceholder="Buscar bien o servicio..."
+                                      ShowExportButton="false"
+                                      ShowAddButton="@(CanCreate && SelectedPartida != null)"
+                                      PageSize="5"
+                                      ServerDataFunc="LoadBienesServerData"
+                                      SearchString="@bienSearchString"
+                                      SearchStringChanged="(s) => bienSearchString = s"
+                                      OnSearch="ReloadBienes"
+                                      OnAdd="AddBien">
+                            <Header>
+                                <MudTh>Acciones</MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="PaaasdetalleResponse">Clave</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="PaaasdetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="PaaasdetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Unidad" T="PaaasdetalleResponse">Unidad</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="LugarEntrega" T="PaaasdetalleResponse">Lugar</MudTableSortLabel></MudTh>
+                            </Header>
+                            <Row Context="bien">
+                                <MudTd>
+                                    <MudTooltip Text="Editar bien">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Visible="@CanUpdate"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditBien(bien))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar bien">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Visible="@CanDelete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteBien(bien))" />
+                                    </MudTooltip>
+                                </MudTd>
+                                <MudTd>@TextOrDash(bien.TipoBienCodigoClave)</MudTd>
+                                <MudTd>@TextOrDash(bien.TipoBienDescripcion)</MudTd>
+                                <MudTd>@bien.Cantidad.ToString("N2")</MudTd>
+                                <MudTd>@TextOrDash(bien.Unidad)</MudTd>
+                                <MudTd>@TextOrDash(bien.LugarEntrega)</MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+                </MudGrid>
                 </div>
         }
     </MudContainer>
@@ -359,29 +273,18 @@
 
 @code {
     private GenericTable<PaaaResponse> table = null!;
+    private GenericTable<PaaaspartidumResponse>? partidaTable;
+    private GenericTable<PaaasdetalleResponse>? bienTable;
     private int _empresaId;
     private PaaaResponse? SelectedPaaa;
     private List<PaaaspartidumResponse>? partidas;
     private PaaaspartidumResponse? SelectedPartida;
     private List<PaaasdetalleResponse>? bienes;
-    private string _partidaFilter = string.Empty;
-    private bool _partidasLoading = false;
-    private bool _bienesLoading = false;
-
-    private List<PaaaspartidumResponse> _filteredPartidas
-    {
-        get
-        {
-            if (partidas == null) return new();
-            if (string.IsNullOrWhiteSpace(_partidaFilter)) return partidas;
-            var f = _partidaFilter.ToLower();
-            return partidas.Where(p =>
-                (p.ClavePartida ?? string.Empty).ToLower().Contains(f) ||
-                (p.Descripcion ?? string.Empty).ToLower().Contains(f) ||
-                (p.Observaciones ?? string.Empty).ToLower().Contains(f) ||
-                p.Monto.ToString().Contains(f)).ToList();
-        }
-    }
+    private string partidaSearchString = string.Empty;
+    private string bienSearchString = string.Empty;
+    private string BienesTableTitle => SelectedPartida == null
+        ? "Bienes / Servicios"
+        : $"Bienes / Servicios - {SelectedPartida.ClavePartida}";
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Programa_Anual_Adquisiciones";
@@ -648,16 +551,25 @@
 
     protected override async Task ReloadData()
     {
-        if (table != null)
+        if (SelectedPaaa == null)
         {
-            await table.ReloadData();
-            StateHasChanged();
+            if (table != null)
+            {
+                await table.ReloadData();
+                StateHasChanged();
+            }
+
+            return;
         }
+
+        await ReloadPartidas();
+        await ReloadBienes();
     }
 
     private async Task SelectPaaa(PaaaResponse item)
     {
-        _partidaFilter = string.Empty;
+        partidaSearchString = string.Empty;
+        bienSearchString = string.Empty;
         SelectedPartida = null;
         bienes = null;
         SelectedPaaa = item;
@@ -675,70 +587,227 @@
                 SelectedPaaa = response.Data;
         }
         catch { }
-        await LoadPartidas();
+        await ReloadPartidas();
+        await ReloadBienes();
         StateHasChanged();
+    }
+
+    private async Task<TableData<PaaaspartidumResponse>> LoadPartidasServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var source = await GetPartidasAsync(cancellationToken);
+        partidas = source;
+
+        if (SelectedPartida != null && !source.Any(x => x.PkidPaaaspartida == SelectedPartida.PkidPaaaspartida))
+        {
+            SelectedPartida = null;
+            bienes = new List<PaaasdetalleResponse>();
+        }
+
+        var query = FilterPartidas(source);
+        query = SortPartidas(query, state.SortLabel, state.SortDirection);
+
+        return ToTableData(query, state);
+    }
+
+    private async Task<TableData<PaaasdetalleResponse>> LoadBienesServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var source = await GetBienesAsync(cancellationToken);
+        bienes = source;
+
+        var query = FilterBienes(source);
+        query = SortBienes(query, state.SortLabel, state.SortDirection);
+
+        return ToTableData(query, state);
     }
 
     private async Task LoadPartidas()
     {
-        if (SelectedPaaa == null) return;
+        partidas = await GetPartidasAsync();
+    }
 
-        _partidasLoading = true;
+    private async Task ReloadPartidas()
+    {
+        if (partidaTable != null)
+        {
+            await partidaTable.ReloadData();
+        }
+        else
+        {
+            await LoadPartidas();
+        }
+
         StateHasChanged();
-
-        try
-        {
-            var response = await Http.GetFromJsonAsync<ApiResponse<PaaaspartidumResponse>>($"api/Paaa/{SelectedPaaa.PkidPaaas}/partidas");
-            if (response?.Success == true && response.Items != null)
-                partidas = response.Items.ToList();
-            else
-                partidas = new List<PaaaspartidumResponse>();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading partidas: {ex.Message}");
-            partidas = new List<PaaaspartidumResponse>();
-        }
-        finally
-        {
-            _partidasLoading = false;
-            StateHasChanged();
-        }
     }
 
     private async Task SelectPartida(PaaaspartidumResponse partida)
     {
         SelectedPartida = partida;
-        await LoadBienes();
+        bienSearchString = string.Empty;
+        await ReloadBienes();
         StateHasChanged();
     }
 
     private async Task LoadBienes()
     {
-        if (SelectedPartida == null) return;
+        bienes = await GetBienesAsync();
+    }
 
-        _bienesLoading = true;
+    private async Task ReloadBienes()
+    {
+        if (bienTable != null)
+        {
+            await bienTable.ReloadData();
+        }
+        else
+        {
+            await LoadBienes();
+        }
+
         StateHasChanged();
+    }
+
+    private async Task<List<PaaaspartidumResponse>> GetPartidasAsync(CancellationToken cancellationToken = default)
+    {
+        if (SelectedPaaa == null)
+        {
+            return new List<PaaaspartidumResponse>();
+        }
 
         try
         {
-            var response = await Http.GetFromJsonAsync<ApiResponse<PaaasdetalleResponse>>($"api/Paaa/partida/{SelectedPartida.PkidPaaaspartida}/detalles");
-            if (response?.Success == true && response.Items != null)
-                bienes = response.Items.ToList();
-            else
-                bienes = new List<PaaasdetalleResponse>();
+            var response = await Http.GetFromJsonAsync<ApiResponse<PaaaspartidumResponse>>(
+                $"api/Paaa/{SelectedPaaa.PkidPaaas}/partidas",
+                cancellationToken);
+
+            return response?.Success == true && response.Items != null
+                ? response.Items.ToList()
+                : new List<PaaaspartidumResponse>();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return new List<PaaaspartidumResponse>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading partidas: {ex.Message}");
+            return new List<PaaaspartidumResponse>();
+        }
+    }
+
+    private async Task<List<PaaasdetalleResponse>> GetBienesAsync(CancellationToken cancellationToken = default)
+    {
+        if (SelectedPartida == null)
+        {
+            return new List<PaaasdetalleResponse>();
+        }
+
+        try
+        {
+            var response = await Http.GetFromJsonAsync<ApiResponse<PaaasdetalleResponse>>(
+                $"api/Paaa/partida/{SelectedPartida.PkidPaaaspartida}/detalles",
+                cancellationToken);
+
+            return response?.Success == true && response.Items != null
+                ? response.Items.ToList()
+                : new List<PaaasdetalleResponse>();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return new List<PaaasdetalleResponse>();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading bienes: {ex.Message}");
-            bienes = new List<PaaasdetalleResponse>();
-        }
-        finally
-        {
-            _bienesLoading = false;
-            StateHasChanged();
+            return new List<PaaasdetalleResponse>();
         }
     }
+
+    private IEnumerable<PaaaspartidumResponse> FilterPartidas(IEnumerable<PaaaspartidumResponse> source)
+    {
+        var filter = partidaSearchString?.Trim();
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return source;
+        }
+
+        return source.Where(partida =>
+            ContainsText(partida.ClavePartida, filter) ||
+            ContainsText(partida.Descripcion, filter) ||
+            ContainsText(partida.Observaciones, filter) ||
+            ContainsText(partida.Monto.ToString("N2"), filter) ||
+            ContainsText(partida.Monto.ToString(), filter));
+    }
+
+    private IEnumerable<PaaasdetalleResponse> FilterBienes(IEnumerable<PaaasdetalleResponse> source)
+    {
+        var filter = bienSearchString?.Trim();
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return source;
+        }
+
+        return source.Where(bien =>
+            ContainsText(bien.TipoBienCodigoClave, filter) ||
+            ContainsText(bien.TipoBienDescripcion, filter) ||
+            ContainsText(bien.Unidad, filter) ||
+            ContainsText(bien.LugarEntrega, filter) ||
+            ContainsText(bien.Observaciones, filter) ||
+            ContainsText(bien.Cantidad.ToString("N2"), filter) ||
+            ContainsText(bien.Cantidad.ToString(), filter));
+    }
+
+    private static IEnumerable<PaaaspartidumResponse> SortPartidas(
+        IEnumerable<PaaaspartidumResponse> source,
+        string? sortLabel,
+        SortDirection sortDirection)
+    {
+        var descending = sortDirection == SortDirection.Descending;
+
+        return sortLabel switch
+        {
+            "Descripcion" => OrderByDirection(source, x => x.Descripcion, descending),
+            "Monto" => OrderByDirection(source, x => x.Monto, descending),
+            _ => OrderByDirection(source, x => x.ClavePartida, descending)
+        };
+    }
+
+    private static IEnumerable<PaaasdetalleResponse> SortBienes(
+        IEnumerable<PaaasdetalleResponse> source,
+        string? sortLabel,
+        SortDirection sortDirection)
+    {
+        var descending = sortDirection == SortDirection.Descending;
+
+        return sortLabel switch
+        {
+            "TipoBienDescripcion" => OrderByDirection(source, x => x.TipoBienDescripcion, descending),
+            "Cantidad" => OrderByDirection(source, x => x.Cantidad, descending),
+            "Unidad" => OrderByDirection(source, x => x.Unidad, descending),
+            "LugarEntrega" => OrderByDirection(source, x => x.LugarEntrega, descending),
+            _ => OrderByDirection(source, x => x.TipoBienCodigoClave, descending)
+        };
+    }
+
+    private static IEnumerable<T> OrderByDirection<T, TKey>(IEnumerable<T> source, Func<T, TKey> keySelector, bool descending) =>
+        descending ? source.OrderByDescending(keySelector) : source.OrderBy(keySelector);
+
+    private static TableData<T> ToTableData<T>(IEnumerable<T> source, TableState state)
+    {
+        var items = source.ToList();
+        var pageSize = state.PageSize <= 0 ? 10 : state.PageSize;
+
+        return new TableData<T>
+        {
+            Items = items.Skip(state.Page * pageSize).Take(pageSize).ToList(),
+            TotalItems = items.Count
+        };
+    }
+
+    private bool IsSelectedPartida(PaaaspartidumResponse partida) =>
+        SelectedPartida?.PkidPaaaspartida == partida.PkidPaaaspartida;
+
+    private static bool ContainsText(string? value, string filter) =>
+        !string.IsNullOrWhiteSpace(value) && value.Contains(filter, StringComparison.OrdinalIgnoreCase);
 
     private void BackToTable()
     {
@@ -746,7 +815,8 @@
         SelectedPartida = null;
         partidas = null;
         bienes = null;
-        _partidaFilter = string.Empty;
+        partidaSearchString = string.Empty;
+        bienSearchString = string.Empty;
         StateHasChanged();
     }
 
@@ -764,9 +834,10 @@
                 if (SelectedPartida?.PkidPaaaspartida == partida.PkidPaaaspartida)
                 {
                     SelectedPartida = null;
-                    bienes = null;
+                    bienes = new List<PaaasdetalleResponse>();
                 }
-                await LoadPartidas();
+                await ReloadPartidas();
+                await ReloadBienes();
             }
             else
             {
@@ -801,7 +872,7 @@
 
         if (!result.Canceled)
         {
-            await LoadPartidas();
+            await ReloadPartidas();
         }
     }
 
@@ -840,7 +911,7 @@
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
                 Snackbar.Add("Tipo de bien eliminado correctamente", Severity.Success);
-                await LoadBienes();
+                await ReloadBienes();
                 return;
             }
 
@@ -871,7 +942,7 @@
 
         var result = await dialog.Result;
         if (!result.Canceled)
-            await LoadBienes();
+            await ReloadBienes();
     }
 
     private static string TextOrDash(string? value) =>

@@ -1,0 +1,583 @@
+@page "/Adquisiciones/Requisicion"
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<RequisicionResponse, RequisicionResponse>
+
+@inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
+@inject IGenericCrudService<DetalleRequisicionResponse> DetalleService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedRequisicion == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Requisiciones"
+                            Subtitle="Selecciona una requisicion para administrar sus partidas y detalles"
+                            Icon="@Icons.Material.Filled.Assignment"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="RequisicionResponse"
+                                  @ref="table"
+                                  Title="Lista de Requisiciones"
+                                  SearchPlaceholder="Buscar por descripcion, area o solicitante..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidRequisicion" T="RequisicionResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Descripcion" T="RequisicionResponse">Descripcion</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="RequisicionResponse">Area</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="SolicitanteCompleto" T="RequisicionResponse">Solicitante</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaRequisicion" T="RequisicionResponse">Fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Importe" T="RequisicionResponse">Importe</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Servicio" T="RequisicionResponse">Tipo</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Activo" T="RequisicionResponse">Activo</MudTableSortLabel></MudTh>
+                        </Header>
+
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectRequisicion(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidRequisicion))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteItem(item.PkidRequisicion))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>@item.PkidRequisicion</MudTd>
+                            <MudTd>@item.Descripcion</MudTd>
+                            <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                            <MudTd>@TextOrDash(item.SolicitanteCompleto)</MudTd>
+                            <MudTd>@item.FechaRequisicion.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@(item.Importe?.ToString("C2") ?? "-")</MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
+                                    @(item.Servicio ? "Servicio" : "Bien")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                                    @(item.Activo ? "Si" : "No")
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                   Color="Color.Primary"
+                                   Size="Size.Medium"
+                                   OnClick="BackToTable"
+                                   Tooltip="Volver al listado" />
+                    <MudText Typo="Typo.h6" Style="font-weight: 600;" Class="ml-2">
+                        @SelectedRequisicion.Descripcion
+                    </MudText>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@(SelectedRequisicion.Activo ? Color.Success : Color.Error)">
+                        @(SelectedRequisicion.Activo ? "Activo" : "Inactivo")
+                    </MudChip>
+                    <MudTooltip Text="Editar requisicion">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="@(() => EditItem(SelectedRequisicion.PkidRequisicion))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <MudTooltip Text="Agregar partida">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="AddPartida"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Agregar detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.AddShoppingCart"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="AddDetalle"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                </MudPaper>
+
+                <MudCard Elevation="1" Style="flex-shrink: 0;">
+                    <MudCardContent Style="padding: 8px 12px;">
+                        <MudGrid Spacing="1">
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Area</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.AreaNombre)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Solicitante</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.SolicitanteCompleto)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@SelectedRequisicion.FechaRequisicion.ToString("dd/MM/yyyy")</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Importe</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@(SelectedRequisicion.Importe?.ToString("C2") ?? "-")</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Tipo</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@(SelectedRequisicion.Servicio ? Color.Info : Color.Primary)">
+                                    @(SelectedRequisicion.Servicio ? "Servicio" : "Bien")
+                                </MudChip>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Programa</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.ProgramaDescripcion)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fuente financiamiento</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.FuenteFinanciamientoDescripcion)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Oficio</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.Oficio)</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
+                    <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
+                        <GenericTable TItem="RequisicionPartidaResponse"
+                                      @ref="partidaTable"
+                                      Title="Partidas"
+                                      SearchPlaceholder="Buscar partida..."
+                                      ShowExportButton="false"
+                                      ShowAddButton="@CanCreate"
+                                      PageSize="5"
+                                      ServerDataFunc="LoadPartidasServerData"
+                                      SearchString="@partidaSearchString"
+                                      SearchStringChanged="(s) => partidaSearchString = s"
+                                      OnSearch="ReloadPartidas"
+                                      OnAdd="AddPartida">
+                            <Header>
+                                <MudTh>Acciones</MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="RequisicionPartidaResponse">Clave</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="RequisicionPartidaResponse">Partida</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Monto" T="RequisicionPartidaResponse">Monto</MudTableSortLabel></MudTh>
+                            </Header>
+                            <Row Context="partida">
+                                <MudTd>
+                                    <MudTooltip Text="Editar partida">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Visible="@CanUpdate"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditPartida(partida.PkidRequisicionPartida))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar partida">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Visible="@CanDelete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeletePartida(partida))" />
+                                    </MudTooltip>
+                                </MudTd>
+                                <MudTd>@TextOrDash(partida.PartidaClave)</MudTd>
+                                <MudTd>@TextOrDash(partida.PartidaDescripcion)</MudTd>
+                                <MudTd>@(partida.Monto?.ToString("C2") ?? "-")</MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+
+                    <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
+                        <GenericTable TItem="DetalleRequisicionResponse"
+                                      @ref="detalleTable"
+                                      Title="Detalle de Requisicion"
+                                      SearchPlaceholder="Buscar bien o servicio..."
+                                      ShowExportButton="false"
+                                      ShowAddButton="@CanCreate"
+                                      PageSize="5"
+                                      ServerDataFunc="LoadDetallesServerData"
+                                      SearchString="@detalleSearchString"
+                                      SearchStringChanged="(s) => detalleSearchString = s"
+                                      OnSearch="ReloadDetalles"
+                                      OnAdd="AddDetalle">
+                            <Header>
+                                <MudTh>Acciones</MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="DetalleRequisicionResponse">Clave</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="DetalleRequisicionResponse">Bien / Servicio</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="DetalleRequisicionResponse">Cantidad</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="DetalleRequisicionResponse">Unidad</MudTableSortLabel></MudTh>
+                            </Header>
+                            <Row Context="detalle">
+                                <MudTd>
+                                    <MudTooltip Text="Editar detalle">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Visible="@CanUpdate"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditDetalle(detalle.PkidDetalleRequisicion))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar detalle">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Visible="@CanDelete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteDetalle(detalle))" />
+                                    </MudTooltip>
+                                </MudTd>
+                                <MudTd>@TextOrDash(detalle.TipoBienCodigoClave)</MudTd>
+                                <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
+                                <MudTd>@detalle.Cantidad.ToString("N2")</MudTd>
+                                <MudTd>@TextOrDash(detalle.UnidadMedida)</MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+                </MudGrid>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<RequisicionResponse> table = null!;
+    private GenericTable<RequisicionPartidaResponse>? partidaTable;
+    private GenericTable<DetalleRequisicionResponse>? detalleTable;
+    private RequisicionResponse? SelectedRequisicion;
+    private string partidaSearchString = string.Empty;
+    private string detalleSearchString = string.Empty;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "requisicion";
+
+    protected override Type CreateDialogType => typeof(RequisicionDialog);
+    protected override Type EditDialogType => typeof(RequisicionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<RequisicionResponse>);
+
+    protected override string GetDefaultSortLabel() => "PkidRequisicion";
+
+    protected override async Task EditItem(int id)
+    {
+        await base.EditItem(id);
+
+        if (SelectedRequisicion?.PkidRequisicion == id)
+        {
+            await RefreshSelectedRequisicion();
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<RequisicionResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidRequisicion,
+            item.Descripcion,
+            Area = item.AreaNombre,
+            Solicitante = item.SolicitanteCompleto,
+            Fecha = item.FechaRequisicion.ToString("dd/MM/yyyy"),
+            item.Importe,
+            Tipo = item.Servicio ? "Servicio" : "Bien",
+            Activo = item.Activo ? "Si" : "No",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Descripcion ?? "la requisicion";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedRequisicion == null && table != null)
+        {
+            await table.ReloadData();
+        }
+        else
+        {
+            await ReloadPartidas();
+            await ReloadDetalles();
+        }
+    }
+
+    private void SelectRequisicion(RequisicionResponse item)
+    {
+        partidaSearchString = string.Empty;
+        detalleSearchString = string.Empty;
+        SelectedRequisicion = item;
+        StateHasChanged();
+    }
+
+    private async Task RefreshSelectedRequisicion()
+    {
+        if (SelectedRequisicion == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedRequisicion.PkidRequisicion);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedRequisicion = response.Data;
+        }
+
+        await ReloadPartidas();
+        await ReloadDetalles();
+    }
+
+    private void BackToTable()
+    {
+        SelectedRequisicion = null;
+        partidaSearchString = string.Empty;
+        detalleSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task<TableData<RequisicionPartidaResponse>> LoadPartidasServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedRequisicion == null)
+        {
+            return new TableData<RequisicionPartidaResponse> { Items = new List<RequisicionPartidaResponse>(), TotalItems = 0 };
+        }
+
+        var response = await PartidaService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            partidaSearchString,
+            state.SortLabel ?? "PartidaClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
+
+        return new TableData<RequisicionPartidaResponse>
+        {
+            Items = response?.Items ?? new List<RequisicionPartidaResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task<TableData<DetalleRequisicionResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedRequisicion == null)
+        {
+            return new TableData<DetalleRequisicionResponse> { Items = new List<DetalleRequisicionResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "TipoBienCodigoClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
+
+        return new TableData<DetalleRequisicionResponse>
+        {
+            Items = response?.Items ?? new List<DetalleRequisicionResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task AddPartida()
+    {
+        if (SelectedRequisicion == null)
+        {
+            Snackbar.Add("Selecciona una requisicion primero.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SelectedRequisicion.FkidEmpresaSis,
+            ["RequisicionId"] = SelectedRequisicion.PkidRequisicion,
+            ["RequisicionDescripcion"] = SelectedRequisicion.Descripcion
+        };
+
+        var dialog = await DialogService.ShowAsync<RequisicionPartidaDialog>(
+            "Agregar Partida",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadPartidas();
+        }
+    }
+
+    private async Task EditPartida(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SelectedRequisicion?.FkidEmpresaSis ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync<RequisicionPartidaDialog>(
+            "Editar Partida",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadPartidas();
+        }
+    }
+
+    private async Task DeletePartida(RequisicionPartidaResponse partida)
+    {
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar la partida {TextOrDash(partida.ClaveNombre)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var result = await PartidaService.DeleteAsync(partida.PkidRequisicionPartida);
+        if (result?.Success == true)
+        {
+            Snackbar.Add("Partida eliminada correctamente", Severity.Success);
+            await ReloadPartidas();
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "Error al eliminar la partida", Severity.Error);
+    }
+
+    private async Task AddDetalle()
+    {
+        if (SelectedRequisicion == null)
+        {
+            Snackbar.Add("Selecciona una requisicion primero.", Severity.Warning);
+            return;
+        }
+
+        var partidasCheck = await PartidaService.GetAllPaginadoAsync(1, 1, "", "PartidaClave", SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
+        if (partidasCheck?.TotalCount == 0)
+        {
+            Snackbar.Add("Agregue al menos una partida a la requisicion antes de agregar detalles.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SelectedRequisicion.FkidEmpresaSis,
+            ["RequisicionId"] = SelectedRequisicion.PkidRequisicion,
+            ["RequisicionDescripcion"] = SelectedRequisicion.Descripcion
+        };
+
+        var dialog = await DialogService.ShowAsync<DetalleRequisicionDialog>(
+            "Agregar Detalle",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+        }
+    }
+
+    private async Task EditDetalle(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SelectedRequisicion?.FkidEmpresaSis ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync<DetalleRequisicionDialog>(
+            "Editar Detalle",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+        }
+    }
+
+    private async Task DeleteDetalle(DetalleRequisicionResponse detalle)
+    {
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar el detalle {TextOrDash(detalle.TipoBienDescripcion)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var result = await DetalleService.DeleteAsync(detalle.PkidDetalleRequisicion);
+        if (result?.Success == true)
+        {
+            Snackbar.Add("Detalle eliminado correctamente", Severity.Success);
+            await ReloadDetalles();
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "Error al eliminar el detalle", Severity.Error);
+    }
+
+    private async Task ReloadPartidas()
+    {
+        if (partidaTable != null)
+        {
+            await partidaTable.ReloadData();
+        }
+    }
+
+    private async Task ReloadDetalles()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

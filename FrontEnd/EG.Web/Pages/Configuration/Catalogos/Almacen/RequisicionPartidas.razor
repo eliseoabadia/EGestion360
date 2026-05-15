@@ -1,0 +1,118 @@
+@page "/Adquisiciones/RequisicionPartida"
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<RequisicionPartidaResponse, RequisicionPartidaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Partidas de Requisicion"
+                    Subtitle="Catalogo de partidas asociadas a requisiciones"
+                    Icon="@Icons.Material.Filled.ListAlt"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="RequisicionPartidaResponse"
+                      @ref="table"
+                      Title="Lista de Partidas"
+                      SearchPlaceholder="Buscar por requisicion o partida..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidRequisicionPartida" T="RequisicionPartidaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="RequisicionPartidaResponse">Requisicion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="RequisicionPartidaResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="RequisicionPartidaResponse">Partida</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Monto" T="RequisicionPartidaResponse">Monto</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="RequisicionPartidaResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidRequisicionPartida))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidRequisicionPartida))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidRequisicionPartida</MudTd>
+                <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
+                <MudTd>@TextOrDash(item.PartidaClave)</MudTd>
+                <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
+                <MudTd>@(item.Monto?.ToString("C2") ?? "-")</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Si" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<RequisicionPartidaResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "requisicion";
+
+    protected override Type CreateDialogType => typeof(RequisicionPartidaDialog);
+    protected override Type EditDialogType => typeof(RequisicionPartidaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<RequisicionPartidaResponse>);
+
+    protected override string GetDefaultSortLabel() => "PkidRequisicionPartida";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<RequisicionPartidaResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidRequisicionPartida,
+            Requisicion = item.RequisicionDescripcion,
+            Clave = item.PartidaClave,
+            Partida = item.PartidaDescripcion,
+            item.Monto,
+            item.Observaciones,
+            Activo = item.Activo ? "Si" : "No",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.ClaveNombre ?? "la partida";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

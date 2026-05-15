@@ -1,0 +1,261 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<DetalleRequisicionResponse> Service
+@inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
+@inject IGenericCrudService<TipoBienResponse> TipoBienService
+@inject IGenericCrudService<UnidadeResponse> UnidadeService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="DetalleRequisicionResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="DetalleRequisicionResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
+                    @if (EsRequisicionPrincipal)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="mr-1">Principal</MudChip>
+                    }
+                    <span>Requisicion</span>
+                </MudText>
+                <PagedAutocomplete Value="@_selectedRequisicion"
+                                   ValueChanged="value => _selectedRequisicion = value"
+                                   Label="Requisicion"
+                                   Required="true"
+                                   RequiredError="La requisicion es requerida"
+                                   Disabled="@EsRequisicionPrincipal"
+                                   LoadPage="LoadRequisicionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedTipoBien"
+                                   ValueChanged="value => _selectedTipoBien = value"
+                                   Label="Bien o servicio"
+                                   Required="true"
+                                   RequiredError="El bien o servicio es requerido"
+                                   LoadPage="LoadTiposBienPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="item.Cantidad"
+                                 Label="Cantidad"
+                                 Variant="Variant.Outlined"
+                                 Min="0.01m"
+                                 Format="N2"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedUnidad"
+                                   ValueChanged="value => _selectedUnidad = value"
+                                   Label="Unidad"
+                                   Clearable="true"
+                                   LoadPage="LoadUnidadesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string RequisicionDescripcion { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<DetalleRequisicionResponse> form = null!;
+    private DetalleRequisicionResponse item = new() { Activo = true, Cantidad = 1m, Observaciones = string.Empty };
+    private LookupItem? _selectedRequisicion;
+    private LookupItem? _selectedTipoBien;
+    private LookupItem? _selectedUnidad;
+
+    private string dialogTitle => Id.HasValue ? "Editar Detalle de Requisicion" : "Nuevo Detalle de Requisicion";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private bool EsRequisicionPrincipal => RequisicionId > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else if (RequisicionId > 0)
+        {
+            item.FkidRequisicionOrco = RequisicionId;
+            _selectedRequisicion = new LookupItem
+            {
+                Id = RequisicionId,
+                Text = TextOrDefault(RequisicionDescripcion, RequisicionId)
+            };
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _selectedRequisicion = new LookupItem
+                {
+                    Id = item.FkidRequisicionOrco,
+                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                };
+                _selectedTipoBien = new LookupItem
+                {
+                    Id = item.FkidTipoBienAlma,
+                    Text = TextOrDefault(item.BienClaveNombre, item.FkidTipoBienAlma)
+                };
+
+                if (item.FkidUnidadesAlma.HasValue)
+                {
+                    _selectedUnidad = new LookupItem
+                    {
+                        Id = item.FkidUnidadesAlma.Value,
+                        Text = TextOrDefault(item.UnidadMedida, item.FkidUnidadesAlma.Value)
+                    };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedRequisicion == null)
+        {
+            Snackbar.Add("Debe seleccionar una requisicion.", Severity.Warning);
+            return;
+        }
+
+        var partidasReqResponse = await PartidaService.GetAllPaginadoAsync(1, 1, "", "PartidaClave", SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = _selectedRequisicion.Id });
+        if (partidasReqResponse?.TotalCount == 0)
+        {
+            Snackbar.Add("La requisicion no tiene partidas asignadas. Agregue una partida primero.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedTipoBien == null)
+        {
+            Snackbar.Add("Debe seleccionar un bien o servicio.", Severity.Warning);
+            return;
+        }
+
+        if (item.Cantidad <= 0)
+        {
+            Snackbar.Add("La cantidad debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidRequisicionOrco = _selectedRequisicion.Id;
+        item.FkidTipoBienAlma = _selectedTipoBien.Id;
+        item.FkidUnidadesAlma = _selectedUnidad?.Id;
+        item.Observaciones ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Detalle actualizado correctamente" : "Detalle creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el detalle", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadRequisicionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await RequisicionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidRequisicion, Text = $"{x.PkidRequisicion} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "CodigoClave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoBien, Text = $"{x.CodigoClave} - {x.TipoBienDescripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadUnidadesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await UnidadeService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUnidades, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

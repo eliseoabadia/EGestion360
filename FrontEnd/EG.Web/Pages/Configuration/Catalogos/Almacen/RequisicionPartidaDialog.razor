@@ -1,0 +1,217 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<RequisicionPartidaResponse> Service
+@inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="RequisicionPartidaResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="RequisicionPartidaResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
+                    @if (EsRequisicionPrincipal)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="mr-1">Principal</MudChip>
+                    }
+                    <span>Requisicion</span>
+                </MudText>
+                <PagedAutocomplete Value="@_selectedRequisicion"
+                                   ValueChanged="value => _selectedRequisicion = value"
+                                   Label="Requisicion"
+                                   Required="true"
+                                   RequiredError="La requisicion es requerida"
+                                   Disabled="@EsRequisicionPrincipal"
+                                   LoadPage="LoadRequisicionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedPartida"
+                                   ValueChanged="value => _selectedPartida = value"
+                                   Label="Partida"
+                                   Required="true"
+                                   RequiredError="La partida es requerida"
+                                   LoadPage="LoadPartidasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="item.Monto"
+                                 Label="Monto"
+                                 Variant="Variant.Outlined"
+                                 Format="C2" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="500" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string RequisicionDescripcion { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<RequisicionPartidaResponse> form = null!;
+    private RequisicionPartidaResponse item = new() { Activo = true, Observaciones = string.Empty };
+    private LookupItem? _selectedRequisicion;
+    private LookupItem? _selectedPartida;
+
+    private string dialogTitle => Id.HasValue ? "Editar Partida de Requisicion" : "Nueva Partida de Requisicion";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private bool EsRequisicionPrincipal => RequisicionId > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else if (RequisicionId > 0)
+        {
+            item.FkidRequisicionOrco = RequisicionId;
+            _selectedRequisicion = new LookupItem
+            {
+                Id = RequisicionId,
+                Text = TextOrDefault(RequisicionDescripcion, RequisicionId)
+            };
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _selectedRequisicion = new LookupItem
+                {
+                    Id = item.FkidRequisicionOrco,
+                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                };
+                _selectedPartida = new LookupItem
+                {
+                    Id = item.FkidPartidaConta,
+                    Text = TextOrDefault(item.ClaveNombre, item.FkidPartidaConta)
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedRequisicion == null)
+        {
+            Snackbar.Add("Debe seleccionar una requisicion.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPartida == null)
+        {
+            Snackbar.Add("Debe seleccionar una partida.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidRequisicionOrco = _selectedRequisicion.Id;
+        item.FkidPartidaConta = _selectedPartida.Id;
+        item.Observaciones ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Partida actualizada correctamente" : "Partida creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar la partida", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadRequisicionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await RequisicionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidRequisicion, Text = $"{x.PkidRequisicion} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPartida, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

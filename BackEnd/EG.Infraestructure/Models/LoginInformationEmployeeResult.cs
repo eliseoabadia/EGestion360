@@ -12,7 +12,7 @@ namespace EG.Infraestructure.Models
         public int? FKIdPersonaNOM { get; set; }
         [StringLength(20)]
         public string PayrollID { get; set; }
-        [StringLength(11)]
+        [StringLength(20)]
         public string Gafete { get; set; }
         [StringLength(2147483647)]
         public string PasswordHash { get; set; }
