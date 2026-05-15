@@ -31,14 +31,23 @@ builder.WebHost.ConfigureKestrel(options =>
     //options.Limits.MaxRequestHeadersTotalSize = 1048576; // 1024KB (1MB)
 });
 
-var corsOrigins = new[] { "*" };
+var corsOrigins = builder.Configuration.GetSection("CorsSettings:AllowOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (corsOrigins.Length == 0 || corsOrigins.Contains("*"))
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            policy.WithOrigins(corsOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
     });
 });
 
@@ -136,7 +145,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 // Habilitar CORS antes de enrutar controladores para que las preflight requests reciban
 // los encabezados Access-Control-Allow-*

@@ -41,7 +41,9 @@ internal class Program
             throw new InvalidOperationException("La configuracion 'ApiSetting:baseUrl' es requerida en appsettings.json.");
         }
 
-        var apiBaseAddress = new Uri(apiBaseUrl, UriKind.Absolute);
+        var apiBaseAddress = Uri.TryCreate(apiBaseUrl, UriKind.Absolute, out var absoluteApiBaseAddress)
+            ? absoluteApiBaseAddress
+            : new Uri(new Uri(builder.HostEnvironment.BaseAddress), apiBaseUrl);
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = apiBaseAddress });
         builder.Services.AddHttpClient("ApiClient", client =>

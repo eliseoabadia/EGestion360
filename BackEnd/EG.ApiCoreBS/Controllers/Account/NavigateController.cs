@@ -73,6 +73,7 @@ namespace EG.ApiCoreBS.Controllers.Account
         }
 
         [HttpPost("ping")]
+        [HttpGet("ping")]
         [AllowAnonymous]
         public IActionResult Ping()
         {
