@@ -435,6 +435,96 @@ WHERE NOT EXISTS (SELECT 1 FROM PRES.Sector WHERE PKIdSector = PK_IdSector);
 SET IDENTITY_INSERT PRES.Sector OFF;
 GO
 
+-- PRES.GrupoPresupuesto
+SET IDENTITY_INSERT PRES.GrupoPresupuesto ON;
+INSERT INTO PRES.GrupoPresupuesto (PKIdGrupoPresupuesto, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdGrupoPresupuesto, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.GrupoPresupuesto
+WHERE NOT EXISTS (SELECT 1 FROM PRES.GrupoPresupuesto WHERE PKIdGrupoPresupuesto = PK_IdGrupoPresupuesto);
+SET IDENTITY_INSERT PRES.GrupoPresupuesto OFF;
+GO
+
+-- PRES.UR
+SET IDENTITY_INSERT PRES.UR ON;
+INSERT INTO PRES.UR (PKIdUR, FKIdGrupoPresupuesto_PRES, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdUR, FK_IdGrupoPresupuesto__PRES, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.UR
+WHERE NOT EXISTS (SELECT 1 FROM PRES.UR WHERE PKIdUR = PK_IdUR);
+SET IDENTITY_INSERT PRES.UR OFF;
+GO
+
+-- PRES.Eje
+SET IDENTITY_INSERT PRES.Eje ON;
+INSERT INTO PRES.Eje (PKIdEje, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdEje, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.Eje
+WHERE NOT EXISTS (SELECT 1 FROM PRES.Eje WHERE PKIdEje = PK_IdEje);
+SET IDENTITY_INSERT PRES.Eje OFF;
+GO
+
+-- PRES.SubEje
+SET IDENTITY_INSERT PRES.SubEje ON;
+INSERT INTO PRES.SubEje (PKIdSubEje, FKIdEje_PRES, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdSubEje, FK_IdEje, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.SubEje
+WHERE NOT EXISTS (SELECT 1 FROM PRES.SubEje WHERE PKIdSubEje = PK_IdSubEje);
+SET IDENTITY_INSERT PRES.SubEje OFF;
+GO
+
+-- PRES.SubSubEje
+SET IDENTITY_INSERT PRES.SubSubEje ON;
+INSERT INTO PRES.SubSubEje (PKIdSubSubEje, FKIdSubEje_PRES, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdSubSubEje, FK_IdSubEje, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.SubSubEje
+WHERE NOT EXISTS (SELECT 1 FROM PRES.SubSubEje WHERE PKIdSubSubEje = PK_IdSubSubEje);
+SET IDENTITY_INSERT PRES.SubSubEje OFF;
+GO
+
+-- PRES.Finalidad
+SET IDENTITY_INSERT PRES.Finalidad ON;
+INSERT INTO PRES.Finalidad (PKIdFinalidad, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdFinalidad, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.Finalidad
+WHERE NOT EXISTS (SELECT 1 FROM PRES.Finalidad WHERE PKIdFinalidad = PK_IdFinalidad);
+SET IDENTITY_INSERT PRES.Finalidad OFF;
+GO
+
+-- PRES.VertienteGasto
+SET IDENTITY_INSERT PRES.VertienteGasto ON;
+INSERT INTO PRES.VertienteGasto (PKIdVertienteGasto, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdVertienteGasto, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.VertienteGasto
+WHERE NOT EXISTS (SELECT 1 FROM PRES.VertienteGasto WHERE PKIdVertienteGasto = PK_IdVertienteGasto);
+SET IDENTITY_INSERT PRES.VertienteGasto OFF;
+GO
+
+-- PRES.Resultado
+SET IDENTITY_INSERT PRES.Resultado ON;
+INSERT INTO PRES.Resultado (PKIdResultado, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdResultado, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.Resultado
+WHERE NOT EXISTS (SELECT 1 FROM PRES.Resultado WHERE PKIdResultado = PK_IdResultado);
+SET IDENTITY_INSERT PRES.Resultado OFF;
+GO
+
+-- PRES.Subresultado
+SET IDENTITY_INSERT PRES.Subresultado ON;
+INSERT INTO PRES.Subresultado (PKIdSubresultado, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdSubresultado, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.Subresultado
+WHERE NOT EXISTS (SELECT 1 FROM PRES.Subresultado WHERE PKIdSubresultado = PK_IdSubresultado);
+SET IDENTITY_INSERT PRES.Subresultado OFF;
+GO
+
+-- PRES.SubSector
+SET IDENTITY_INSERT PRES.SubSector ON;
+INSERT INTO PRES.SubSector (PKIdSubSector, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+SELECT PK_IdSubSector, Clave, Descripcion, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1)
+FROM BD_PRESUPUESTO.PRES.SubSector
+WHERE NOT EXISTS (SELECT 1 FROM PRES.SubSector WHERE PKIdSubSector = PK_IdSubSector);
+SET IDENTITY_INSERT PRES.SubSector OFF;
+GO
+
 -- PRES.Ramo
 SET IDENTITY_INSERT PRES.Ramo ON;
 INSERT INTO PRES.Ramo (PKIdRamo, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
@@ -495,34 +585,80 @@ WHERE NOT EXISTS (SELECT 1 FROM PRES.Origen WHERE PKIdOrigen = PK_IdOrigen);
 SET IDENTITY_INSERT PRES.Origen OFF;
 GO
 
--- PRES.Programa (desde 02.Requisicion)
+-- PRES.Programa
 SET IDENTITY_INSERT PRES.Programa ON;
-INSERT INTO PRES.Programa (PKIdPrograma, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
+INSERT INTO PRES.Programa (
+    PKIdPrograma, FKIdUR_PRES, FKIdGF_PRES, FKIdFN_PRES, FKIdSF_PRES,
+    FKIdActividadInstitucional_SIS, FKIdEje_PRES, FKIdVertienteGasto_PRES,
+    FKIdResultado_PRES, FKIdSubresultado_PRES, FKIdAnio_SIS, FKIdSector_PRES,
+    FKIdSubSector_PRES, FKIdTipoRecurso_PRES, FKIdFuenteFinanciamiento_PRES,
+    Clave, Objetivo, Descripcion, FKIdSubEje_PRES, FKIdSubSubEje_PRES,
+    FKIdFinalidad_PRES, FKIdPP_PRES, Activo, FechaCreacion, UsuarioCreacion,
+    FechaModificacion, UsuarioModificacion
+)
 SELECT 
     p.PK_IdPrograma,
+    p.FK_IdUR__PRES,
+    p.FK_IdGF__PRES,
+    p.FK_IdFN__PRES,
+    p.FK_IdSF__PRES,
+    p.FK_IdActividadInstitucional__SIS,
+    p.FK_IdEje__PRES,
+    p.FK_IdVertienteGasto__PRES,
+    p.FK_IdResultado__PRES,
+    p.FK_IdSubresultado__PRES,
+    p.FK_IdAnio__SIS,
+    p.FK_IdSector__PRES,
+    p.FK_IdSubSector__PRES,
+    p.FK_IdTipoRecurso__PRES,
+    p.FK_IdFuenteFinanciamiento__PRES,
     p.Clave,
+    p.Objetivo,
     p.Descripcion,
+    p.FK_IdSubEje_PRES,
+    p.FK_IdSubSubEje_PRES,
+    p.FK_IdFinalidad_PRES,
+    p.FK_IdPP__PRES,
     ISNULL(p.CT_LIVE, 1),
     ISNULL(p.CT_CreatedDate, GETDATE()),
-    ISNULL(p.CT_CreatedBy, 1)
+    ISNULL(p.CT_CreatedBy, 1),
+    p.CT_ModifiedDate,
+    p.CT_ModifiedBy
 FROM BD_PRESUPUESTO.PRES.Programa p
 WHERE NOT EXISTS (SELECT 1 FROM PRES.Programa d WHERE d.PKIdPrograma = p.PK_IdPrograma);
 SET IDENTITY_INSERT PRES.Programa OFF;
 GO
 
--- PRES.FuenteFinanciamiento (desde 02.Requisicion - version simple)
-SET IDENTITY_INSERT PRES.FuenteFinanciamiento ON;
-INSERT INTO PRES.FuenteFinanciamiento (PKIdFuenteFinanciamiento, Clave, Descripcion, Activo, FechaCreacion, UsuarioCreacion)
-SELECT 
-    f.PK_IdFuenteFinanciamiento,
-    f.Clave,
-    f.Descripcion,
-    ISNULL(f.CT_LIVE, 1),
-    ISNULL(f.CT_CreatedDate, GETDATE()),
-    ISNULL(f.CT_CreatedBy, 1)
-FROM BD_PRESUPUESTO.PRES.FuenteFinanciamiento f
-WHERE NOT EXISTS (SELECT 1 FROM PRES.FuenteFinanciamiento d WHERE d.PKIdFuenteFinanciamiento = f.PK_IdFuenteFinanciamiento);
-SET IDENTITY_INSERT PRES.FuenteFinanciamiento OFF;
+UPDATE d
+SET
+    d.FKIdUR_PRES = p.FK_IdUR__PRES,
+    d.FKIdGF_PRES = p.FK_IdGF__PRES,
+    d.FKIdFN_PRES = p.FK_IdFN__PRES,
+    d.FKIdSF_PRES = p.FK_IdSF__PRES,
+    d.FKIdActividadInstitucional_SIS = p.FK_IdActividadInstitucional__SIS,
+    d.FKIdEje_PRES = p.FK_IdEje__PRES,
+    d.FKIdVertienteGasto_PRES = p.FK_IdVertienteGasto__PRES,
+    d.FKIdResultado_PRES = p.FK_IdResultado__PRES,
+    d.FKIdSubresultado_PRES = p.FK_IdSubresultado__PRES,
+    d.FKIdAnio_SIS = p.FK_IdAnio__SIS,
+    d.FKIdSector_PRES = p.FK_IdSector__PRES,
+    d.FKIdSubSector_PRES = p.FK_IdSubSector__PRES,
+    d.FKIdTipoRecurso_PRES = p.FK_IdTipoRecurso__PRES,
+    d.FKIdFuenteFinanciamiento_PRES = p.FK_IdFuenteFinanciamiento__PRES,
+    d.Clave = p.Clave,
+    d.Objetivo = p.Objetivo,
+    d.Descripcion = p.Descripcion,
+    d.FKIdSubEje_PRES = p.FK_IdSubEje_PRES,
+    d.FKIdSubSubEje_PRES = p.FK_IdSubSubEje_PRES,
+    d.FKIdFinalidad_PRES = p.FK_IdFinalidad_PRES,
+    d.FKIdPP_PRES = p.FK_IdPP__PRES,
+    d.Activo = ISNULL(p.CT_LIVE, 1),
+    d.FechaCreacion = ISNULL(p.CT_CreatedDate, GETDATE()),
+    d.UsuarioCreacion = ISNULL(p.CT_CreatedBy, 1),
+    d.FechaModificacion = p.CT_ModifiedDate,
+    d.UsuarioModificacion = p.CT_ModifiedBy
+FROM PRES.Programa d
+INNER JOIN BD_PRESUPUESTO.PRES.Programa p ON p.PK_IdPrograma = d.PKIdPrograma;
 GO
 
 -- PRES.TipoGasto

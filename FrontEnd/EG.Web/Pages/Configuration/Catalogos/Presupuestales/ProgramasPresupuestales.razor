@@ -1,0 +1,134 @@
+@page "/configuracion/presupuestales/programas-presupuesta"
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<ProgramaResponse, ProgramaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Programas Presupuestales"
+                    Subtitle="Catalogo de programas presupuestales"
+                    Icon="@Icons.Material.Filled.Key"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="ProgramaResponse"
+                      @ref="table"
+                      Title="Lista de Programas Presupuestales"
+                      SearchPlaceholder="Buscar por clave, descripcion o catalogos..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidPrograma" T="ProgramaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProgramaResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProgramaResponse">Descripcion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UrclaveNombre" T="ProgramaResponse">UR</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="GfclaveNombre" T="ProgramaResponse">GF</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FnclaveNombre" T="ProgramaResponse">FN</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SfclaveNombre" T="ProgramaResponse">SF</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ActividadInstitucionalClaveNombre" T="ProgramaResponse">Actividad</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="AnioClave" T="ProgramaResponse">Anio</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProgramaResponse">Activo</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidPrograma))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidPrograma))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidPrograma</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@TextOrDash(item.UrclaveNombre)</MudTd>
+                <MudTd>@TextOrDash(item.GfclaveNombre)</MudTd>
+                <MudTd>@TextOrDash(item.FnclaveNombre)</MudTd>
+                <MudTd>@TextOrDash(item.SfclaveNombre)</MudTd>
+                <MudTd>@TextOrDash(item.ActividadInstitucionalClaveNombre)</MudTd>
+                <MudTd>@(item.AnioClave?.ToString() ?? "-")</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Si" : "No")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ProgramaResponse> table = null!;
+
+    protected override string ModuleName => "Catalogos_presupuestales";
+    protected override string SubModuleName => "Programas_Presupuestales";
+
+    protected override Type CreateDialogType => typeof(ProgramaDialog);
+    protected override Type EditDialogType => typeof(ProgramaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ProgramaResponse>);
+
+    protected override string GetDefaultSortLabel() => "Clave";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ProgramaResponse> items)
+    {
+        return items.Select(p => new
+        {
+            ID = p.PkidPrograma,
+            p.Clave,
+            p.Descripcion,
+            p.Objetivo,
+            UR = p.UrclaveNombre,
+            GF = p.GfclaveNombre,
+            FN = p.FnclaveNombre,
+            SF = p.SfclaveNombre,
+            ActividadInstitucional = p.ActividadInstitucionalClaveNombre,
+            Anio = p.AnioClave,
+            Sector = p.SectorClaveNombre,
+            TipoRecurso = p.TipoRecursoClaveNombre,
+            FuenteFinanciamiento = p.FuenteFinanciamientoClaveNombre,
+            ProgramaPresupuestal = p.PpclaveNombre,
+            p.Activo,
+            p.FechaCreacion,
+            p.UsuarioCreacion,
+            p.FechaModificacion,
+            p.UsuarioModificacion
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.ClaveNombre ?? "el programa presupuestal";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

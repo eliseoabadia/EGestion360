@@ -17,6 +17,10 @@ namespace EG.Business.Mapping
 
             config.NewConfig<Programa, ProgramaDto>().TwoWays();
             config.NewConfig<Programa, ProgramaResponse>();
+            config.NewConfig<VwPrograma, ProgramaResponse>();
+            config.NewConfig<ProgramaResponse, ProgramaDto>()
+                .Ignore(dest => dest.PkidPrograma)
+                .IgnoreNullValues(true);
 
             //config.NewConfig<TipoBien, TipoBienDto>().TwoWays();
             config.NewConfig<TipoBien, TipoBienResponse>().TwoWays();

@@ -255,6 +255,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[Eje]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Finalidad]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[FN]",
          "ObjectType": 0
       },
@@ -264,6 +272,10 @@
       },
       {
          "Name": "[PRES].[GF]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[GrupoPresupuesto]",
          "ObjectType": 0
       },
       {
@@ -291,11 +303,31 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[Resultado]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[Sector]",
          "ObjectType": 0
       },
       {
          "Name": "[PRES].[SF]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[SubEje]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Subresultado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[SubSector]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[SubSubEje]",
          "ObjectType": 0
       },
       {
@@ -308,6 +340,14 @@
       },
       {
          "Name": "[PRES].[TipoRecurso]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[UR]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[VertienteGasto]",
          "ObjectType": 0
       },
       {
@@ -540,6 +580,10 @@
       },
       {
          "Name": "[ORCO].[Vw_RequisicionPartida]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_Programa]",
          "ObjectType": 3
       },
       {

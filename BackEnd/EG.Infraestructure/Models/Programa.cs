@@ -23,6 +23,44 @@ public partial class Programa
 
     public int? UsuarioModificacion { get; set; }
 
+    public int FkidUrPres { get; set; }
+
+    public int FkidGfPres { get; set; }
+
+    public int FkidFnPres { get; set; }
+
+    public int FkidSfPres { get; set; }
+
+    public int FkidActividadInstitucionalSis { get; set; }
+
+    public int? FkidEjePres { get; set; }
+
+    public int? FkidVertienteGastoPres { get; set; }
+
+    public int? FkidResultadoPres { get; set; }
+
+    public int? FkidSubresultadoPres { get; set; }
+
+    public int? FkidAnioSis { get; set; }
+
+    public int? FkidSectorPres { get; set; }
+
+    public int? FkidSubSectorPres { get; set; }
+
+    public int? FkidTipoRecursoPres { get; set; }
+
+    public int? FkidFuenteFinanciamientoPres { get; set; }
+
+    public string Objetivo { get; set; }
+
+    public int? FkidSubEjePres { get; set; }
+
+    public int? FkidSubSubEjePres { get; set; }
+
+    public int? FkidFinalidadPres { get; set; }
+
+    public int? FkidPpPres { get; set; }
+
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();

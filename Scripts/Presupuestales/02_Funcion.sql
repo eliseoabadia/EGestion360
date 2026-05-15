@@ -6,13 +6,13 @@
 -- 1. Registrar el menú de Función (Finalidad)
 -- =============================================
 DECLARE @ClaveProgramaPadreId BIGINT;
-SELECT @ClaveProgramaPadreId = PkidMenu FROM Menu WHERE LegacyName = 'ClavePrograma' AND Activo = 1;
+SELECT @ClaveProgramaPadreId = PkidMenu FROM sis.Menu WHERE LegacyName = 'ClavePrograma' AND Activo = 1;
 
 IF @ClaveProgramaPadreId IS NOT NULL
 BEGIN
     -- Insertar menú de Función
-    INSERT INTO Menu (Nombre, LegacyName, Tipo, Orden, Activo, Lenguaje, FechaCreacion, FkidMenuSis)
-    VALUES ('Función', 'Finalidad', 'M', 1, 1, 'ESP', GETDATE(), @ClaveProgramaPadreId);
+    INSERT INTO sis.Menu (Nombre, LegacyName, Tipo, Orden, Activo, Lenguaje, CreatedDateTime, FKIdMenu_SIS)
+    VALUES ('Función', 'Finalidad', 2, 1, 1, 'ESP', GETDATE(), @ClaveProgramaPadreId);
     
     DECLARE @FuncionMenuId BIGINT = SCOPE_IDENTITY();
     

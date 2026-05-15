@@ -449,7 +449,7 @@ VALUES
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP01', 'Configuracion', 'view,view-menu', 0),
 --(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Historico', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
---(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP03', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Programas_Presupuestales', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'ClavePrograma', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'UnidadResponsable', 'CONCLP01', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'ClavePrograma', NULL, 'app://{0}/{1}', GETDATE(), 'Finalidad', 'CONCLP02', 'ClavePrograma', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -529,6 +529,7 @@ VALUES
 
 
 (2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Programa_Anual_Adquisiciones', 'ADQPAA01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Requisicion', 'ADQREQ01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
 
 (1, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Configuración', 'view,view-menu', 0),
 
@@ -587,6 +588,7 @@ EXEC spConfiguracionDeRolYClaims 'Sistema', 'General', '10000', 'view,view-menu,
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Empresa', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Departamento', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Catalogos_presupuestales', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'Programas_Presupuestales', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'ClavePrograma', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'UnidadResponsable', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Finalidad', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -643,6 +645,7 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_PagoSF', '10000', 'view,view
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Programa_Anual_Adquisiciones', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,view-menu,delete,new,update';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -761,7 +764,8 @@ USING (VALUES
 
     -- Configuración -> Catálogos presupuestales
     (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'RiListCheck2', 1, 'ESP', 1, 1, GETDATE()),
-    (220, N'Clave del Programa', 1, 100, N'ClavePrograma', N'/', N'FaKey', 1, 'ESP', 1, 1, GETDATE()),
+    (219, N'Programas Presupuestales', 1, 100, N'Programas Presupuestales.', N'/configuracion/presupuestales/programas-presupuesta', N'FaKey', 1, 'ESP', 1, 1, GETDATE()),
+    (220, N'Clave del Programa', 1, 100, N'Clave del Programa', N'/configuracion/presupuestales/programa-presupuestal', N'FaKey', 1, 'ESP', 1, 1, GETDATE()),
     (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaRegUser', 1, 'ESP', 2, 1, GETDATE()),
     (222, N'Finalidad', 2, 220, N'Finalidad', N'/configuracion/presupuestales/clave-programa/finalidad', N'FaStar', 1, 'ESP', 3, 1, GETDATE()),
     (223, N'Función', 2, 220, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaGears', 1, 'ESP', 4, 1, GETDATE()),

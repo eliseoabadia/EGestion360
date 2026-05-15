@@ -230,9 +230,13 @@
 
         try
         {
+            Console.WriteLine("=== DEBUG LoadMenuAsync ===");
+
             string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", 2000);
+            Console.WriteLine($"Token found: {!string.IsNullOrWhiteSpace(rawToken)}");
             if (string.IsNullOrWhiteSpace(rawToken))
             {
+                Console.WriteLine("Redirect: no token");
                 NavigationManager.NavigateTo("/login", forceLoad: true);
                 return;
             }
@@ -248,26 +252,33 @@
                 ? rawToken.Substring("Bearer ".Length) : rawToken;
 
             _userId = await GetUserIdAsync();
+            Console.WriteLine($"UserId: {_userId}");
             if (_userId == 0)
             {
+                Console.WriteLine("Redirect: userId is 0");
                 NavigationManager.NavigateTo("/login", forceLoad: true);
                 return;
             }
 
+            Console.WriteLine("Calling NavigateService.GetMenuAsync...");
             var result = await NavigateService.GetMenuAsync(_userId);
+            Console.WriteLine($"Menu result items count: {result?.Items?.Count}");
             if (result?.Items?.Any() == true)
             {
+                Console.WriteLine($"First menu item: PkidMenu={result.Items[0].PkidMenu}, Nombre={result.Items[0].Nombre}");
                 Items = result.Items;
                 InitializeExpandedStates();
             }
             else
             {
+                Console.WriteLine("Redirect: menu items empty or null");
                 NavigationManager.NavigateTo("/login", forceLoad: true);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al cargar men&uacute;: {ex.Message}");
+            Console.WriteLine($"Error al cargar menu: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");
         }
         finally
         {

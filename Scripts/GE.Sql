@@ -616,6 +616,195 @@ CREATE TABLE PRES.Sector (
 );
 GO
 
+-- PRES.GrupoPresupuesto
+CREATE TABLE PRES.GrupoPresupuesto (
+    PKIdGrupoPresupuesto INT IDENTITY(1,1) NOT NULL,
+    Clave INT NOT NULL,
+    Descripcion NVARCHAR(50) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_GrupoPresupuesto_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_GrupoPresupuesto_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_GrupoPresupuesto PRIMARY KEY (PKIdGrupoPresupuesto),
+    CONSTRAINT FK_GrupoPresupuesto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_GrupoPresupuesto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.UR
+CREATE TABLE PRES.UR (
+    PKIdUR INT IDENTITY(1,1) NOT NULL,
+    FKIdGrupoPresupuesto_PRES INT NOT NULL,
+    Clave NVARCHAR(10) NULL,
+    Descripcion NVARCHAR(50) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_UR_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_UR_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_UR PRIMARY KEY (PKIdUR),
+    CONSTRAINT FK_UR_GrupoPresupuesto FOREIGN KEY (FKIdGrupoPresupuesto_PRES) REFERENCES PRES.GrupoPresupuesto(PKIdGrupoPresupuesto),
+    CONSTRAINT FK_UR_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_UR_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.Eje
+CREATE TABLE PRES.Eje (
+    PKIdEje INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(1) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_Eje_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_Eje_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Eje PRIMARY KEY (PKIdEje),
+    CONSTRAINT FK_Eje_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Eje_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.SubEje
+CREATE TABLE PRES.SubEje (
+    PKIdSubEje INT IDENTITY(1,1) NOT NULL,
+    FKIdEje_PRES INT NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_SubEje_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_SubEje_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_SubEje PRIMARY KEY (PKIdSubEje),
+    CONSTRAINT FK_SubEje_Eje FOREIGN KEY (FKIdEje_PRES) REFERENCES PRES.Eje(PKIdEje),
+    CONSTRAINT FK_SubEje_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_SubEje_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.SubSubEje
+CREATE TABLE PRES.SubSubEje (
+    PKIdSubSubEje INT IDENTITY(1,1) NOT NULL,
+    FKIdSubEje_PRES INT NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_SubSubEje_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_SubSubEje_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_SubSubEje PRIMARY KEY (PKIdSubSubEje),
+    CONSTRAINT FK_SubSubEje_SubEje FOREIGN KEY (FKIdSubEje_PRES) REFERENCES PRES.SubEje(PKIdSubEje),
+    CONSTRAINT FK_SubSubEje_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_SubSubEje_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.Finalidad
+CREATE TABLE PRES.Finalidad (
+    PKIdFinalidad INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_Finalidad_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_Finalidad_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Finalidad PRIMARY KEY (PKIdFinalidad),
+    CONSTRAINT FK_Finalidad_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Finalidad_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.VertienteGasto
+CREATE TABLE PRES.VertienteGasto (
+    PKIdVertienteGasto INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_VertienteGasto_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_VertienteGasto_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_VertienteGasto PRIMARY KEY (PKIdVertienteGasto),
+    CONSTRAINT FK_VertienteGasto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_VertienteGasto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.Resultado
+CREATE TABLE PRES.Resultado (
+    PKIdResultado INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_Resultado_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_Resultado_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Resultado PRIMARY KEY (PKIdResultado),
+    CONSTRAINT FK_Resultado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Resultado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.Subresultado
+CREATE TABLE PRES.Subresultado (
+    PKIdSubresultado INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_Subresultado_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_Subresultado_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Subresultado PRIMARY KEY (PKIdSubresultado),
+    CONSTRAINT FK_Subresultado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Subresultado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.SubSector
+CREATE TABLE PRES.SubSector (
+    PKIdSubSector INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(2) NOT NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_SubSector_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_SubSector_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_SubSector PRIMARY KEY (PKIdSubSector),
+    CONSTRAINT FK_SubSector_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_SubSector_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- PRES.FuenteFinanciamiento
+CREATE TABLE PRES.FuenteFinanciamiento (
+    PKIdFuenteFinanciamiento INT IDENTITY(1,1) NOT NULL,
+    Clave NVARCHAR(6) NULL,
+    Descripcion NVARCHAR(200) NOT NULL,
+    FKIdAnio_SIS INT NULL,
+    FF NVARCHAR(2) NULL,
+    FG NVARCHAR(1) NULL,
+    FE NVARCHAR(1) NULL,
+    AD NVARCHAR(1) NULL,
+    ORI NVARCHAR(1) NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_FuenteFinanciamiento_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_FuenteFinanciamiento_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_FuenteFinanciamiento PRIMARY KEY (PKIdFuenteFinanciamiento),
+    CONSTRAINT FK_FuenteFinanciamiento_Anio FOREIGN KEY (FKIdAnio_SIS) REFERENCES SIS.Anio(PKIdAnio),
+    CONSTRAINT FK_FuenteFinanciamiento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_FuenteFinanciamiento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
 -- PRES.Ramo
 CREATE TABLE PRES.Ramo (
     PKIdRamo INT IDENTITY(1,1) NOT NULL,
@@ -651,14 +840,51 @@ GO
 -- PRES.Programa
 CREATE TABLE PRES.Programa (
     PKIdPrograma INT IDENTITY(1,1) NOT NULL,
+    FKIdUR_PRES INT NOT NULL,
+    FKIdGF_PRES INT NOT NULL,
+    FKIdFN_PRES INT NOT NULL,
+    FKIdSF_PRES INT NOT NULL,
+    FKIdActividadInstitucional_SIS INT NOT NULL,
+    FKIdEje_PRES INT NULL,
+    FKIdVertienteGasto_PRES INT NULL,
+    FKIdResultado_PRES INT NULL,
+    FKIdSubresultado_PRES INT NULL,
+    FKIdAnio_SIS INT NULL,
+    FKIdSector_PRES INT NULL,
+    FKIdSubSector_PRES INT NULL,
+    FKIdTipoRecurso_PRES INT NULL,
+    FKIdFuenteFinanciamiento_PRES INT NULL,
     Clave NVARCHAR(50) NOT NULL,
-    Descripcion NVARCHAR(255) NOT NULL,
+    Objetivo NVARCHAR(500) NULL,
+    Descripcion NVARCHAR(50) NULL,
+    FKIdSubEje_PRES INT NULL,
+    FKIdSubSubEje_PRES INT NULL,
+    FKIdFinalidad_PRES INT NULL,
+    FKIdPP_PRES INT NULL,
     Activo BIT NOT NULL CONSTRAINT DF_Programa_Activo DEFAULT (1),
     FechaCreacion DATETIME2 CONSTRAINT DF_Programa_FechaCreacion DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
     FechaModificacion DATETIME2 NULL,
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_Programa PRIMARY KEY (PKIdPrograma),
+    CONSTRAINT FK_Programa_UR FOREIGN KEY (FKIdUR_PRES) REFERENCES PRES.UR(PKIdUR),
+    CONSTRAINT FK_Programa_GF FOREIGN KEY (FKIdGF_PRES) REFERENCES PRES.GF(PKIdGF),
+    CONSTRAINT FK_Programa_FN FOREIGN KEY (FKIdFN_PRES) REFERENCES PRES.FN(PKIdFN),
+    CONSTRAINT FK_Programa_SF FOREIGN KEY (FKIdSF_PRES) REFERENCES PRES.SF(PKIdSF),
+    CONSTRAINT FK_Programa_ActividadInstitucional FOREIGN KEY (FKIdActividadInstitucional_SIS) REFERENCES SIS.ActividadInstitucional(PKIdActividadInstitucional),
+    CONSTRAINT FK_Programa_Eje FOREIGN KEY (FKIdEje_PRES) REFERENCES PRES.Eje(PKIdEje),
+    CONSTRAINT FK_Programa_VertienteGasto FOREIGN KEY (FKIdVertienteGasto_PRES) REFERENCES PRES.VertienteGasto(PKIdVertienteGasto),
+    CONSTRAINT FK_Programa_Resultado FOREIGN KEY (FKIdResultado_PRES) REFERENCES PRES.Resultado(PKIdResultado),
+    CONSTRAINT FK_Programa_Subresultado FOREIGN KEY (FKIdSubresultado_PRES) REFERENCES PRES.Subresultado(PKIdSubresultado),
+    CONSTRAINT FK_Programa_Anio FOREIGN KEY (FKIdAnio_SIS) REFERENCES SIS.Anio(PKIdAnio),
+    CONSTRAINT FK_Programa_Sector FOREIGN KEY (FKIdSector_PRES) REFERENCES PRES.Sector(PKIdSector),
+    CONSTRAINT FK_Programa_SubSector FOREIGN KEY (FKIdSubSector_PRES) REFERENCES PRES.SubSector(PKIdSubSector),
+    CONSTRAINT FK_Programa_TipoRecurso FOREIGN KEY (FKIdTipoRecurso_PRES) REFERENCES PRES.TipoRecurso(PKIdTipoRecurso),
+    CONSTRAINT FK_Programa_FuenteFinanciamiento FOREIGN KEY (FKIdFuenteFinanciamiento_PRES) REFERENCES PRES.FuenteFinanciamiento(PKIdFuenteFinanciamiento),
+    CONSTRAINT FK_Programa_SubEje FOREIGN KEY (FKIdSubEje_PRES) REFERENCES PRES.SubEje(PKIdSubEje),
+    CONSTRAINT FK_Programa_SubSubEje FOREIGN KEY (FKIdSubSubEje_PRES) REFERENCES PRES.SubSubEje(PKIdSubSubEje),
+    CONSTRAINT FK_Programa_Finalidad FOREIGN KEY (FKIdFinalidad_PRES) REFERENCES PRES.Finalidad(PKIdFinalidad),
+    CONSTRAINT FK_Programa_PP FOREIGN KEY (FKIdPP_PRES) REFERENCES PRES.PP(PKIdPP),
     CONSTRAINT FK_Programa_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Programa_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
@@ -1334,29 +1560,6 @@ CREATE TABLE TES.TipoCambio (
     CONSTRAINT FK_TipoCambio_TipoMoneda FOREIGN KEY (FKIdTipoMoneda_TES) REFERENCES TES.TipoMoneda(PKIdTipoMoneda),
     CONSTRAINT FK_TipoCambio_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoCambio_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
-);
-GO
-
--- PRES.FuenteFinanciamiento
-CREATE TABLE PRES.FuenteFinanciamiento (
-    PKIdFuenteFinanciamiento INT IDENTITY(1,1) NOT NULL,
-    Clave NVARCHAR(6) NULL,
-    Descripcion NVARCHAR(200) NOT NULL,
-    FKIdAnio_SIS INT NULL,
-    FF NVARCHAR(2) NULL,
-    FG NVARCHAR(1) NULL,
-    FE NVARCHAR(1) NULL,
-    AD NVARCHAR(1) NULL,
-    ORI NVARCHAR(1) NULL,
-    Activo BIT NOT NULL CONSTRAINT DF_FuenteFinanciamiento_Activo DEFAULT (1),
-    FechaCreacion DATETIME2 CONSTRAINT DF_FuenteFinanciamiento_FechaCreacion DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT PK_FuenteFinanciamiento PRIMARY KEY (PKIdFuenteFinanciamiento),
-    CONSTRAINT FK_FuenteFinanciamiento_Anio FOREIGN KEY (FKIdAnio_SIS) REFERENCES SIS.Anio(PKIdAnio),
-    CONSTRAINT FK_FuenteFinanciamiento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_FuenteFinanciamiento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
 GO
 

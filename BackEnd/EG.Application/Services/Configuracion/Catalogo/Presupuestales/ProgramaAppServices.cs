@@ -11,42 +11,47 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 {
     public class ProgramaAppServices : IProgramaAppServices
     {
-        private readonly GenericService<Programa, ProgramaDto, ProgramaResponse> _service;
+        private readonly GenericService<Programa, ProgramaDto, ProgramaResponse> _writeService;
+        private readonly GenericService<VwPrograma, ProgramaDto, ProgramaResponse> _viewService;
 
         public ProgramaAppServices(
-            GenericService<Programa, ProgramaDto, ProgramaResponse> service)
+            GenericService<Programa, ProgramaDto, ProgramaResponse> writeService,
+            GenericService<VwPrograma, ProgramaDto, ProgramaResponse> viewService)
         {
-            _service = service;
+            _writeService = writeService;
+            _viewService = viewService;
             ConfigureService();
         }
 
         private void ConfigureService()
         {
-            _service.AddInclude(p => p.UsuarioCreacionNavigation);
-            _service.AddInclude(p => p.UsuarioModificacionNavigation);
+            _writeService.ClearConfiguration();
+            _writeService.AddInclude(p => p.UsuarioCreacionNavigation);
+            _writeService.AddInclude(p => p.UsuarioModificacionNavigation);
 
-            _service.AddRelationFilter("UsuarioCreacionNavigation", new List<string> { "Nombre", "Email" });
-            _service.AddRelationFilter("UsuarioModificacionNavigation", new List<string> { "Nombre", "Email" });
+            _writeService.AddRelationFilter("UsuarioCreacionNavigation", new List<string> { "Nombre", "Email" });
+            _writeService.AddRelationFilter("UsuarioModificacionNavigation", new List<string> { "Nombre", "Email" });
+            _writeService.AddValidationRule("UniquePrograma", dto =>
+                Task.FromResult(!_writeService.GetQueryWithIncludes().Any(e => e.Clave == dto.Clave && e.Activo)));
+            _writeService.AddValidationRuleWithId("UniqueProgramaUpdate", (dto, id) =>
+                Task.FromResult(!_writeService.GetQueryWithIncludes().Any(e => e.Clave == dto.Clave && e.PkidPrograma != id && e.Activo)));
         }
 
         public async Task<IEnumerable<ProgramaResponse>> GetAllAsync()
         {
-            return await _service.GetAllAsync();
+            return await _viewService.GetAllAsync();
         }
 
         public async Task<ProgramaResponse> GetByIdAsync(int id)
         {
-            return await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
+            return await _viewService.GetByIdAsync(id, idPropertyName: "PkidPrograma");
         }
 
         public async Task<PagedResult<ProgramaResponse>> GetAllPaginadoAsync(PagedRequest pageRequest, Func<ProgramaResponse, bool>? predicate = null)
         {
             try
             {
-                _service.ClearConfiguration();
-                ConfigureService();
-
-                var result = await _service.GetAllPaginadoAsync(pageRequest);
+                var result = await _viewService.GetAllPaginadoAsync(pageRequest);
                 var items = result.Items.AsEnumerable();
 
                 if (predicate != null)
@@ -81,6 +86,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (response == null)
                 throw new ArgumentNullException(nameof(response), "Los datos del programa son requeridos");
 
+            ValidateRequiredFields(response);
+
             var dto = response.Adapt<ProgramaDto>();
             dto.Activo = true;
             dto.FechaCreacion = DateTime.Now;
@@ -88,11 +95,12 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             dto.FechaModificacion = null;
             dto.UsuarioModificacion = null;
 
-            if (!await _service.CanAddAsync(dto))
-                throw new InvalidOperationException("No se puede crear el programa. Verifique la clave única u otras reglas.");
+            if (!await _writeService.CanAddAsync(dto))
+                throw new InvalidOperationException("Ya existe un programa activo con esa clave.");
 
-            await _service.AddAsync(dto);
-            return await _service.GetByIdAsync(dto.PkidPrograma, idPropertyName: "PkidPrograma");
+            await _writeService.AddAsync(dto);
+            return await GetByIdAsync(dto.PkidPrograma)
+                ?? await _writeService.GetByIdAsync(dto.PkidPrograma, idPropertyName: "PkidPrograma");
         }
 
         public async Task<ProgramaResponse> UpdateAsync(int id, ProgramaResponse response, int usuarioModificacion)
@@ -103,16 +111,25 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de programa inválido", nameof(id));
 
+            ValidateRequiredFields(response);
+
+            var existing = await _writeService.GetByIdAsync(id, idPropertyName: "PkidPrograma");
+            if (existing == null)
+                throw new InvalidOperationException($"Programa con ID {id} no encontrado");
+
             var dto = response.Adapt<ProgramaDto>();
             dto.PkidPrograma = id;
+            dto.FechaCreacion = existing.FechaCreacion;
+            dto.UsuarioCreacion = existing.UsuarioCreacion;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
 
-            if (!await _service.CanUpdateAsync(id, dto))
-                throw new InvalidOperationException("No se puede actualizar el programa. Verifique la clave única u otras reglas.");
+            if (!await _writeService.CanUpdateAsync(id, dto))
+                throw new InvalidOperationException("Ya existe otro programa activo con esa clave.");
 
-            await _service.UpdateAsync(id, dto);
-            return await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
+            await _writeService.UpdateAsync(id, dto);
+            return await GetByIdAsync(id)
+                ?? await _writeService.GetByIdAsync(id, idPropertyName: "PkidPrograma");
         }
 
         public async Task<bool> DeleteAsync(int id, int usuarioActual)
@@ -120,7 +137,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de programa inválido", nameof(id));
 
-            var programa = await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
+            var programa = await _writeService.GetByIdAsync(id, idPropertyName: "PkidPrograma");
             if (programa == null)
                 return false;
 
@@ -129,7 +146,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;
 
-            await _service.UpdateAsync(id, dto);
+            await _writeService.UpdateAsync(id, dto);
             return true;
         }
 
@@ -137,13 +154,31 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             try
             {
-                var programa = await _service.GetByIdAsync(id, idPropertyName: "PkidPrograma");
+                var programa = await _writeService.GetByIdAsync(id, idPropertyName: "PkidPrograma");
                 return programa != null;
             }
             catch
             {
                 return false;
             }
+        }
+
+        private static void ValidateRequiredFields(ProgramaResponse response)
+        {
+            if (string.IsNullOrWhiteSpace(response.Clave))
+                throw new ArgumentException("La clave es requerida", nameof(response.Clave));
+            if (string.IsNullOrWhiteSpace(response.Descripcion))
+                throw new ArgumentException("La descripción es requerida", nameof(response.Descripcion));
+            if (response.FkidUrPres <= 0)
+                throw new ArgumentException("La unidad responsable es requerida", nameof(response.FkidUrPres));
+            if (response.FkidGfPres <= 0)
+                throw new ArgumentException("El grupo funcional es requerido", nameof(response.FkidGfPres));
+            if (response.FkidFnPres <= 0)
+                throw new ArgumentException("La función es requerida", nameof(response.FkidFnPres));
+            if (response.FkidSfPres <= 0)
+                throw new ArgumentException("La subfunción es requerida", nameof(response.FkidSfPres));
+            if (response.FkidActividadInstitucionalSis <= 0)
+                throw new ArgumentException("La actividad institucional es requerida", nameof(response.FkidActividadInstitucionalSis));
         }
     }
 }

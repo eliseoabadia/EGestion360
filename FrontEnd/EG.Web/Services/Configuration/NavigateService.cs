@@ -71,19 +71,25 @@ namespace EG.Web.Services
                 var request = new HttpRequestMessage(HttpMethod.Get, $"api/Navigate/{_userId}");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenValue);
 
+                Console.WriteLine($"=== NavigateService.GetMenuAsync: Sending request to api/Navigate/{_userId} ===");
                 HttpResponseMessage response = await _httpClient.SendAsync(request);
+                Console.WriteLine($"Response status: {(int)response.StatusCode} {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Response body length: {responseBody.Length}");
+                    Console.WriteLine($"Response body (first 300 chars): {responseBody.Substring(0, Math.Min(300, responseBody.Length))}");
 
                     // Deserializamos directamente a una lista
                     var items = JsonSerializer.Deserialize<List<MenuItem>>(responseBody, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
+                    Console.WriteLine($"Deserialized items count: {items?.Count}");
 
                     resultado.Items = BuildMenuTreeV2(items ?? new List<MenuItem>()) ?? new List<MenuItem>();
+                    Console.WriteLine($"After BuildMenuTreeV2 - root items: {resultado.Items?.Count}");
 
                     return resultado;
                 }
@@ -96,7 +102,8 @@ namespace EG.Web.Services
                 }
                 else
                 {
-                    Console.WriteLine($"Error al obtener menú: {response.StatusCode}");
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al obtener menú: {response.StatusCode}, Body: {errorBody}");
                 }
             }
             catch (Exception ex)

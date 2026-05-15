@@ -67,6 +67,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<EgresoAutorizado> EgresoAutorizados { get; set; }
 
+    public virtual DbSet<Eje> Ejes { get; set; }
+
     public virtual DbSet<Empresa> Empresas { get; set; }
 
     public virtual DbSet<EmpresaEstado> EmpresaEstados { get; set; }
@@ -91,6 +93,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Familium> Familia { get; set; }
 
+    public virtual DbSet<Finalidad> Finalidads { get; set; }
+
     public virtual DbSet<Fn> Fns { get; set; }
 
     public virtual DbSet<Fraccion> Fraccions { get; set; }
@@ -100,6 +104,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Gf> Gfs { get; set; }
 
     public virtual DbSet<GrupoBien> GrupoBiens { get; set; }
+
+    public virtual DbSet<GrupoPresupuesto> GrupoPresupuestos { get; set; }
 
     public virtual DbSet<Idioma> Idiomas { get; set; }
 
@@ -169,11 +175,21 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<RequisicionPartidum> RequisicionPartida { get; set; }
 
+    public virtual DbSet<Resultado> Resultados { get; set; }
+
     public virtual DbSet<Sector> Sectors { get; set; }
 
     public virtual DbSet<Sf> Sfs { get; set; }
 
     public virtual DbSet<SolicitudCotizacion> SolicitudCotizacions { get; set; }
+
+    public virtual DbSet<SubEje> SubEjes { get; set; }
+
+    public virtual DbSet<SubSector> SubSectors { get; set; }
+
+    public virtual DbSet<SubSubEje> SubSubEjes { get; set; }
+
+    public virtual DbSet<Subresultado> Subresultados { get; set; }
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
@@ -229,11 +245,15 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Unidade> Unidades { get; set; }
 
+    public virtual DbSet<Ur> Urs { get; set; }
+
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<UsuarioDepartamento> UsuarioDepartamentos { get; set; }
 
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
+
+    public virtual DbSet<VertienteGasto> VertienteGastos { get; set; }
 
     public virtual DbSet<VwArea> VwAreas { get; set; }
 
@@ -274,6 +294,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwPaaaspartidum> VwPaaaspartida { get; set; }
 
     public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
+
+    public virtual DbSet<VwPrograma> VwProgramas { get; set; }
 
     public virtual DbSet<VwProveedor> VwProveedors { get; set; }
 
@@ -1173,6 +1195,23 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_EgresoAutorizado_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<Eje>(entity =>
+        {
+            entity.HasKey(e => e.PkidEje);
+
+            entity.ToTable("Eje", "PRES");
+
+            entity.Property(e => e.PkidEje).HasColumnName("PKIdEje");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Eje_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(1);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Eje_FechaCreacion");
+        });
+
         modelBuilder.Entity<Empresa>(entity =>
         {
             entity.HasKey(e => e.PkidEmpresa);
@@ -1512,6 +1551,23 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_Familia_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<Finalidad>(entity =>
+        {
+            entity.HasKey(e => e.PkidFinalidad);
+
+            entity.ToTable("Finalidad", "PRES");
+
+            entity.Property(e => e.PkidFinalidad).HasColumnName("PKIdFinalidad");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Finalidad_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Finalidad_FechaCreacion");
+        });
+
         modelBuilder.Entity<Fn>(entity =>
         {
             entity.HasKey(e => e.PkidFn);
@@ -1677,6 +1733,20 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.GrupoBienUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_GrupoBien_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<GrupoPresupuesto>(entity =>
+        {
+            entity.HasKey(e => e.PkidGrupoPresupuesto);
+
+            entity.ToTable("GrupoPresupuesto", "PRES");
+
+            entity.Property(e => e.PkidGrupoPresupuesto).HasColumnName("PKIdGrupoPresupuesto");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_GrupoPresupuesto_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_GrupoPresupuesto_FechaCreacion");
         });
 
         modelBuilder.Entity<Idioma>(entity =>
@@ -2696,6 +2766,25 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(255);
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Programa_FechaCreacion");
+            entity.Property(e => e.FkidActividadInstitucionalSis).HasColumnName("FKIdActividadInstitucional_SIS");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidEjePres).HasColumnName("FKIdEje_PRES");
+            entity.Property(e => e.FkidFinalidadPres).HasColumnName("FKIdFinalidad_PRES");
+            entity.Property(e => e.FkidFnPres).HasColumnName("FKIdFN_PRES");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
+            entity.Property(e => e.FkidGfPres).HasColumnName("FKIdGF_PRES");
+            entity.Property(e => e.FkidPpPres).HasColumnName("FKIdPP_PRES");
+            entity.Property(e => e.FkidResultadoPres).HasColumnName("FKIdResultado_PRES");
+            entity.Property(e => e.FkidSectorPres).HasColumnName("FKIdSector_PRES");
+            entity.Property(e => e.FkidSfPres).HasColumnName("FKIdSF_PRES");
+            entity.Property(e => e.FkidSubEjePres).HasColumnName("FKIdSubEje_PRES");
+            entity.Property(e => e.FkidSubSectorPres).HasColumnName("FKIdSubSector_PRES");
+            entity.Property(e => e.FkidSubSubEjePres).HasColumnName("FKIdSubSubEje_PRES");
+            entity.Property(e => e.FkidSubresultadoPres).HasColumnName("FKIdSubresultado_PRES");
+            entity.Property(e => e.FkidTipoRecursoPres).HasColumnName("FKIdTipoRecurso_PRES");
+            entity.Property(e => e.FkidUrPres).HasColumnName("FKIdUR_PRES");
+            entity.Property(e => e.FkidVertienteGastoPres).HasColumnName("FKIdVertienteGasto_PRES");
+            entity.Property(e => e.Objetivo).HasMaxLength(500);
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ProgramaUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
@@ -3047,6 +3136,23 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_RequisicionPartida_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<Resultado>(entity =>
+        {
+            entity.HasKey(e => e.PkidResultado);
+
+            entity.ToTable("Resultado", "PRES");
+
+            entity.Property(e => e.PkidResultado).HasColumnName("PKIdResultado");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Resultado_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Resultado_FechaCreacion");
+        });
+
         modelBuilder.Entity<Sector>(entity =>
         {
             entity.HasKey(e => e.PkidSector);
@@ -3145,6 +3251,76 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.SolicitudCotizacionUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_SolicitudCotizacion_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<SubEje>(entity =>
+        {
+            entity.HasKey(e => e.PkidSubEje);
+
+            entity.ToTable("SubEje", "PRES");
+
+            entity.Property(e => e.PkidSubEje).HasColumnName("PKIdSubEje");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SubEje_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_SubEje_FechaCreacion");
+            entity.Property(e => e.FkidEjePres).HasColumnName("FKIdEje_PRES");
+        });
+
+        modelBuilder.Entity<SubSector>(entity =>
+        {
+            entity.HasKey(e => e.PkidSubSector);
+
+            entity.ToTable("SubSector", "PRES");
+
+            entity.Property(e => e.PkidSubSector).HasColumnName("PKIdSubSector");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SubSector_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_SubSector_FechaCreacion");
+        });
+
+        modelBuilder.Entity<SubSubEje>(entity =>
+        {
+            entity.HasKey(e => e.PkidSubSubEje);
+
+            entity.ToTable("SubSubEje", "PRES");
+
+            entity.Property(e => e.PkidSubSubEje).HasColumnName("PKIdSubSubEje");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SubSubEje_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_SubSubEje_FechaCreacion");
+            entity.Property(e => e.FkidSubEjePres).HasColumnName("FKIdSubEje_PRES");
+        });
+
+        modelBuilder.Entity<Subresultado>(entity =>
+        {
+            entity.HasKey(e => e.PkidSubresultado);
+
+            entity.ToTable("Subresultado", "PRES");
+
+            entity.Property(e => e.PkidSubresultado).HasColumnName("PKIdSubresultado");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Subresultado_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Subresultado_FechaCreacion");
         });
 
         modelBuilder.Entity<Sucursal>(entity =>
@@ -3921,6 +4097,22 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_Unidades_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<Ur>(entity =>
+        {
+            entity.HasKey(e => e.PkidUr);
+
+            entity.ToTable("UR", "PRES");
+
+            entity.Property(e => e.PkidUr).HasColumnName("PKIdUR");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_UR_Activo");
+            entity.Property(e => e.Clave).HasMaxLength(10);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_UR_FechaCreacion");
+            entity.Property(e => e.FkidGrupoPresupuestoPres).HasColumnName("FKIdGrupoPresupuesto_PRES");
+        });
+
         modelBuilder.Entity<Usuario>(entity =>
         {
             entity.HasKey(e => e.PkIdUsuario);
@@ -4032,6 +4224,23 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.UsuarioSucursalUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_UsuarioSucursal_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<VertienteGasto>(entity =>
+        {
+            entity.HasKey(e => e.PkidVertienteGasto);
+
+            entity.ToTable("VertienteGasto", "PRES");
+
+            entity.Property(e => e.PkidVertienteGasto).HasColumnName("PKIdVertienteGasto");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_VertienteGasto_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(2);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_VertienteGasto_FechaCreacion");
         });
 
         modelBuilder.Entity<VwArea>(entity =>
@@ -4666,6 +4875,133 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(152);
             entity.Property(e => e.TipoConteo).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<VwPrograma>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Programa", "PRES");
+
+            entity.Property(e => e.ActividadInstitucionalClave).HasMaxLength(3);
+            entity.Property(e => e.ActividadInstitucionalClaveNombre).HasMaxLength(70);
+            entity.Property(e => e.ActividadInstitucionalDescripcion).HasMaxLength(64);
+            entity.Property(e => e.Ad)
+                .HasMaxLength(1)
+                .HasColumnName("AD");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.ClaveNombre)
+                .IsRequired()
+                .HasMaxLength(308);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(255);
+            entity.Property(e => e.EjeClave).HasMaxLength(1);
+            entity.Property(e => e.EjeClaveNombre).HasMaxLength(204);
+            entity.Property(e => e.EjeDescripcion).HasMaxLength(200);
+            entity.Property(e => e.Fe)
+                .HasMaxLength(1)
+                .HasColumnName("FE");
+            entity.Property(e => e.Ff)
+                .HasMaxLength(2)
+                .HasColumnName("FF");
+            entity.Property(e => e.Fg)
+                .HasMaxLength(1)
+                .HasColumnName("FG");
+            entity.Property(e => e.FinalidadClave).HasMaxLength(2);
+            entity.Property(e => e.FinalidadClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.FinalidadDescripcion).HasMaxLength(200);
+            entity.Property(e => e.FkidActividadInstitucionalSis).HasColumnName("FKIdActividadInstitucional_SIS");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidEjePres).HasColumnName("FKIdEje_PRES");
+            entity.Property(e => e.FkidFinalidadPres).HasColumnName("FKIdFinalidad_PRES");
+            entity.Property(e => e.FkidFnPres).HasColumnName("FKIdFN_PRES");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
+            entity.Property(e => e.FkidGfPres).HasColumnName("FKIdGF_PRES");
+            entity.Property(e => e.FkidPpPres).HasColumnName("FKIdPP_PRES");
+            entity.Property(e => e.FkidResultadoPres).HasColumnName("FKIdResultado_PRES");
+            entity.Property(e => e.FkidSectorPres).HasColumnName("FKIdSector_PRES");
+            entity.Property(e => e.FkidSfPres).HasColumnName("FKIdSF_PRES");
+            entity.Property(e => e.FkidSubEjePres).HasColumnName("FKIdSubEje_PRES");
+            entity.Property(e => e.FkidSubSectorPres).HasColumnName("FKIdSubSector_PRES");
+            entity.Property(e => e.FkidSubSubEjePres).HasColumnName("FKIdSubSubEje_PRES");
+            entity.Property(e => e.FkidSubresultadoPres).HasColumnName("FKIdSubresultado_PRES");
+            entity.Property(e => e.FkidTipoRecursoPres).HasColumnName("FKIdTipoRecurso_PRES");
+            entity.Property(e => e.FkidUrPres).HasColumnName("FKIdUR_PRES");
+            entity.Property(e => e.FkidVertienteGastoPres).HasColumnName("FKIdVertienteGasto_PRES");
+            entity.Property(e => e.Fnclave).HasColumnName("FNClave");
+            entity.Property(e => e.FnclaveNombre)
+                .HasMaxLength(65)
+                .HasColumnName("FNClaveNombre");
+            entity.Property(e => e.Fndescripcion)
+                .HasMaxLength(50)
+                .HasColumnName("FNDescripcion");
+            entity.Property(e => e.FuenteFinanciamientoClave).HasMaxLength(6);
+            entity.Property(e => e.FuenteFinanciamientoClaveNombre).HasMaxLength(209);
+            entity.Property(e => e.FuenteFinanciamientoDescripcion).HasMaxLength(200);
+            entity.Property(e => e.Gfclave).HasColumnName("GFClave");
+            entity.Property(e => e.GfclaveNombre)
+                .HasMaxLength(45)
+                .HasColumnName("GFClaveNombre");
+            entity.Property(e => e.Gfdescripcion)
+                .HasMaxLength(30)
+                .HasColumnName("GFDescripcion");
+            entity.Property(e => e.Objetivo).HasMaxLength(500);
+            entity.Property(e => e.Ori)
+                .HasMaxLength(1)
+                .HasColumnName("ORI");
+            entity.Property(e => e.PkidPrograma).HasColumnName("PKIdPrograma");
+            entity.Property(e => e.Ppclave)
+                .HasMaxLength(4)
+                .HasColumnName("PPClave");
+            entity.Property(e => e.PpclaveNombre)
+                .HasMaxLength(157)
+                .HasColumnName("PPClaveNombre");
+            entity.Property(e => e.Ppdescripcion)
+                .HasMaxLength(150)
+                .HasColumnName("PPDescripcion");
+            entity.Property(e => e.ResultadoClave).HasMaxLength(2);
+            entity.Property(e => e.ResultadoClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.ResultadoDescripcion).HasMaxLength(200);
+            entity.Property(e => e.SectorClave).HasMaxLength(2);
+            entity.Property(e => e.SectorClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.SectorDescripcion).HasMaxLength(200);
+            entity.Property(e => e.Sfclave).HasColumnName("SFClave");
+            entity.Property(e => e.SfclaveNombre)
+                .HasMaxLength(65)
+                .HasColumnName("SFClaveNombre");
+            entity.Property(e => e.Sfdescripcion)
+                .HasMaxLength(50)
+                .HasColumnName("SFDescripcion");
+            entity.Property(e => e.SubEjeClave).HasMaxLength(2);
+            entity.Property(e => e.SubEjeClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.SubEjeDescripcion).HasMaxLength(200);
+            entity.Property(e => e.SubSectorClave).HasMaxLength(2);
+            entity.Property(e => e.SubSectorClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.SubSectorDescripcion).HasMaxLength(200);
+            entity.Property(e => e.SubSubEjeClave).HasMaxLength(2);
+            entity.Property(e => e.SubSubEjeClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.SubSubEjeDescripcion).HasMaxLength(200);
+            entity.Property(e => e.SubresultadoClave).HasMaxLength(2);
+            entity.Property(e => e.SubresultadoClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.SubresultadoDescripcion).HasMaxLength(200);
+            entity.Property(e => e.TipoRecursoClave).HasMaxLength(1);
+            entity.Property(e => e.TipoRecursoClaveNombre).HasMaxLength(204);
+            entity.Property(e => e.TipoRecursoDescripcion).HasMaxLength(200);
+            entity.Property(e => e.Urclave)
+                .HasMaxLength(10)
+                .HasColumnName("URClave");
+            entity.Property(e => e.UrclaveNombre)
+                .HasMaxLength(63)
+                .HasColumnName("URClaveNombre");
+            entity.Property(e => e.Urdescripcion)
+                .HasMaxLength(50)
+                .HasColumnName("URDescripcion");
+            entity.Property(e => e.VertienteGastoClave).HasMaxLength(2);
+            entity.Property(e => e.VertienteGastoClaveNombre).HasMaxLength(205);
+            entity.Property(e => e.VertienteGastoDescripcion).HasMaxLength(200);
         });
 
         modelBuilder.Entity<VwProveedor>(entity =>
