@@ -37,13 +37,13 @@
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkIdUsuario" T="UsuarioResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="UsuarioResponse">Nombre Completo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Email" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TelefonoUsuario" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PayrollId" T="UsuarioResponse">Usuario</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreCompletoPersona" T="UsuarioResponse">Nombre Persona</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreCompletoPersona" T="UsuarioResponse">Persona</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EmailPersona" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TelefonoMovil" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ClavePersona" T="UsuarioResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PayrollId" T="UsuarioResponse">Payroll ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NumeroSocial" T="UsuarioResponse">NSS</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="UsuarioActivo" T="UsuarioResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="usuario">
@@ -73,13 +73,17 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@usuario.PkIdUsuario</MudTd>
-                <MudTd>@usuario.NombreCompleto</MudTd>
-                <MudTd>@usuario.Email</MudTd>
-                <MudTd>@usuario.TelefonoUsuario</MudTd>
-                <MudTd>@usuario.PayrollId</MudTd>
                 <MudTd>@usuario.NombreCompletoPersona</MudTd>
+                <MudTd>@usuario.EmailPersona</MudTd>
+                <MudTd>@(usuario.TelefonoMovil ?? usuario.TelefonoParticular ?? "-")</MudTd>
+                <MudTd>@usuario.ClavePersona</MudTd>
+                <MudTd>@usuario.PayrollId</MudTd>
                 <MudTd>@usuario.NombreEmpresa</MudTd>
-                <MudTd>@usuario.NumeroSocial</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@(usuario.UsuarioActivo ? Color.Success : Color.Error)">
+                        @(usuario.UsuarioActivo ? "Si" : "No")
+                    </MudChip>
+                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>

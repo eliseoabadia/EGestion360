@@ -126,10 +126,10 @@ namespace EG.ApiCoreBS.Controllers.General
         public async Task<ActionResult<PagedResult<UsuarioResponse>>> Create([FromBody] UsuarioResponse request)
         {
             ModelState.Clear();
-            if (string.IsNullOrWhiteSpace(request.NombreCompleto))
+            if (!request.IdPersona.HasValue || request.IdPersona.Value <= 0)
                 return BadRequest(new PagedResult<UsuarioResponse>
                 {
-                    Success = false, Message = "El nombre completo es requerido", Code = "INVALID_DATA", TotalCount = 0
+                    Success = false, Message = "Debe seleccionar una persona vinculada", Code = "INVALID_DATA", TotalCount = 0
                 });
             try
             {

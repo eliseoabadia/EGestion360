@@ -11,7 +11,7 @@
 
 <BaseCrudDialog TItem="UsuarioResponse"
                 Title="@dialogTitle"
-                MaxWidth="MaxWidth.Large"
+                MaxWidth="MaxWidth.Medium"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos del usuario..."
@@ -23,25 +23,14 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            <!-- Datos personales - Fila 1 -->
-            <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="usuario.NombreCompleto"
-                              Label="Nombre completo"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="El nombre completo es requerido"
-                              Validation="@(new Func<string, IEnumerable<string>>(ValidarNombreCompleto))"
-                              For="@(() => usuario.NombreCompleto)" />
-            </MudItem>
-
-            <!-- Sucursal -->
-            <MudItem xs="12" md="4">
-                <MudSelect Label="Sucursal"
+            <!-- Empresa -->
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Empresa"
                            @bind-Value="usuario.IdEmpresa"
                            T="int"
                            Variant="Variant.Outlined"
                            Required="true"
-                           RequiredError="Debe seleccionar una sucursal"
+                           RequiredError="Debe seleccionar una empresa"
                            For="@(() => usuario.IdEmpresa)">
                     <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
                     @foreach (var empresa in listadoEmpresas)
@@ -51,86 +40,66 @@
                 </MudSelect>
             </MudItem>
 
-            <!-- Persona -->
+            <!-- Payroll ID -->
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedPersona"
-                                   ValueChanged="OnPersonaChanged"
-                                   Label="Nombre Persona"
-                                   Clearable="true"
-                                   LoadPage="LoadPersonasPageAsync" />
-            </MudItem>
-
-            <!-- Contacto - Fila 2 -->
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="usuario.Email"
-                              Label="Email"
-                              Variant="Variant.Outlined"
-                              InputType="InputType.Email"
-                              Required="true"
-                              RequiredError="El email es requerido"
-                              Validation="@(new Func<string, IEnumerable<string>>(ValidarEmail))"
-                              For="@(() => usuario.Email)" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="usuario.TelefonoUsuario"
-                              Label="Tel�fono"
-                              Variant="Variant.Outlined"
-                              Placeholder="(99) 9999-9999" />
-                @* Sin Mask para permitir edici�n libre *@
-            </MudItem>
-
-            <!-- Direcci�n - Fila 3 -->
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="usuario.Direccion1"
-                              Label="Direcci�n 1"
-                              Required="true"
-                              Variant="Variant.Outlined" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="usuario.Direccion2"
-                              Label="Direcci�n 2"
-                              Variant="Variant.Outlined" />
-            </MudItem>
-
-            <!-- Fila 4: 4 columnas -->
-            <MudItem xs="12" md="3">
-                <MudTextField @bind-Value="usuario.CodigoPostalUsuario"
-                              Label="C�digo Postal"
-                              Required="true"
-                              Variant="Variant.Outlined"
-                              Placeholder="12345" />
-                @* Sin Mask para permitir edici�n libre *@
-            </MudItem>
-
-            <MudItem xs="12" md="3">
                 <MudTextField @bind-Value="usuario.PayrollId"
                               Label="Payroll ID"
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <MudItem xs="12" md="3">
-                <MudTextField @bind-Value="usuario.NumeroSocial"
-                              Label="N�mero Social"
-                              Variant="Variant.Outlined" />
+            <!-- Persona (requerido) -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
+                    <span>Persona vinculada</span>
+                </MudText>
+                <PagedAutocomplete Value="@_selectedPersona"
+                                   ValueChanged="OnPersonaChanged"
+                                   Label="Seleccione una persona"
+                                   Required="true"
+                                   RequiredError="Debe seleccionar una persona"
+                                   LoadPage="LoadPersonasPageAsync" />
             </MudItem>
 
-            <MudItem xs="12" md="3">
-                <MudTextField @bind-Value="usuario.Gafete"
-                              Label="Gafete"
-                              Variant="Variant.Outlined" />
-            </MudItem>
+            @if (_selectedPersona != null)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Datos de la persona vinculada</MudText>
+                        <MudDivider Class="mb-2" />
+                        <MudGrid Spacing="1">
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Nombre completo</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaNombreCompleto</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Email</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaEmail</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Teléfono</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaTelefono</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Clave</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaClave</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">RFC</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaRfc</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            }
 
-            <!-- Fila 5: Estado y G�nero en la misma l�nea -->
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px; height: 100%;">
+            <!-- Estado del Usuario -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
                     <MudText Class="mb-2" Typo="Typo.subtitle2">Estado del Usuario</MudText>
                     <MudDivider Class="mb-3" />
 
                     @if (Id.HasValue && usuario.UsuarioActivo == true)
                     {
-                        <!-- Caso 1: Edici�n - Usuario ACTIVO (puede dar de baja) -->
                         <div class="d-flex align-center">
                             <MudSwitch @bind-Value="usuario.UsuarioActivo"
                                        Color="Color.Error"
@@ -147,7 +116,6 @@
                     }
                     else if (Id.HasValue && usuario.UsuarioActivo == false)
                     {
-                        <!-- Caso 2: Edici�n - Usuario INACTIVO (solo lectura) -->
                         <div class="d-flex align-center">
                             <MudBadge Color="Color.Error"
                                       Variant="Variant.Filled"
@@ -162,7 +130,6 @@
                     }
                     else
                     {
-                        <!-- Caso 3: Alta - Nuevo usuario (siempre activo) -->
                         <div class="d-flex align-center">
                             <MudBadge Color="Color.Success"
                                       Variant="Variant.Filled"
@@ -175,20 +142,6 @@
                         </div>
                         <input type="hidden" @bind="usuario.UsuarioActivo" />
                     }
-                </MudPaper>
-            </MudItem>
-
-            <!-- G�nero -->
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px; height: 100%;">
-                    <MudText Class="mb-2" Typo="Typo.subtitle2">G�nero</MudText>
-                    <MudDivider Class="mb-3" />
-                    <div class="d-flex align-center" style="min-height: 36px;">
-                        <MudRadioGroup @bind-Value="usuario.Sexo" Dense="true" Class="d-flex">
-                            <MudRadio Value="true" Color="Color.Primary">Femenino</MudRadio>
-                            <MudRadio Value="false" Color="Color.Primary" Class="ml-4">Masculino</MudRadio>
-                        </MudRadioGroup>
-                    </div>
                 </MudPaper>
             </MudItem>
         </MudGrid>
@@ -208,6 +161,13 @@
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
+    private LookupItem? _selectedPersona;
+    private string _personaNombreCompleto = string.Empty;
+    private string _personaEmail = string.Empty;
+    private string _personaTelefono = string.Empty;
+    private string _personaClave = string.Empty;
+    private string _personaRfc = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await Task.WhenAll(CargarSucursales());
@@ -226,18 +186,15 @@
             if (response?.Success == true && response.Items != null)
             {
                 listadoEmpresas = response.Items.ToList();
-                Console.WriteLine($"Cargadas {listadoEmpresas.Count} sucursales");
             }
             else
             {
-                Console.WriteLine("No se pudieron cargar las sucursales");
-                Snackbar.Add(response?.Message ?? "Error al cargar sucursales", Severity.Warning);
+                Snackbar.Add(response?.Message ?? "Error al cargar empresas", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando sucursales: {ex.Message}");
-            Snackbar.Add($"Error al cargar sucursales: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
         }
     }
 
@@ -258,72 +215,54 @@
                             ? usuario.NombreCompletoPersona.Trim()
                             : $"{usuario.PersonaNombre} {usuario.PersonaPaterno} {usuario.PersonaMaterno}".Trim()
                     };
+                    await CargarDatosPersona(usuario.IdPersona.Value);
                 }
-                Console.WriteLine($"Usuario cargado: {usuario.NombreCompleto}");
             }
             else
             {
-                Console.WriteLine("No se pudo cargar el usuario");
                 Snackbar.Add(response?.Message ?? "Error al cargar usuario", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando usuario: {ex.Message}");
-            Snackbar.Add($"Error al cargar usuario: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error cargando usuario: {ex.Message}", Severity.Error);
         }
     }
 
-    private IEnumerable<string> ValidarNombreCompleto(string nombre)
+    private async Task CargarDatosPersona(int personaId)
     {
-        if (string.IsNullOrWhiteSpace(nombre))
+        try
         {
-            yield return "El nombre completo es requerido";
-            yield break;
+            var response = await personaService.GetByIdAsync(personaId);
+            if (response?.Success == true && response.Data != null)
+            {
+                var p = response.Data;
+                _personaNombreCompleto = $"{p.Nombre} {p.Paterno} {p.Materno}".Trim();
+                _personaEmail = p.CorreoElectronico ?? string.Empty;
+                _personaTelefono = p.TelefonoMovil ?? p.TelefonoParticular ?? string.Empty;
+                _personaClave = p.Clave ?? string.Empty;
+                _personaRfc = p.Rfc ?? string.Empty;
+            }
         }
-        nombre = nombre.Trim();
-        if (nombre.Length < 3)
-            yield return "El nombre debe tener al menos 3 caracteres";
-        if (nombre.Length > 100)
-            yield return "El nombre no puede exceder los 100 caracteres";
+        catch { }
     }
-
-    private IEnumerable<string> ValidarEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            yield return "El email es requerido";
-            yield break;
-        }
-        email = email.Trim().ToLowerInvariant();
-        if (!email.Contains("@") || !email.Contains("."))
-        {
-            yield return "El email no tiene un formato v�lido";
-            yield break;
-        }
-        if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-        {
-            yield return "El formato del email no es v�lido";
-        }
-    }
-
-    private string GenerarIniciales()
-    {
-        if (string.IsNullOrWhiteSpace(usuario.NombreCompleto))
-            return string.Empty;
-        var palabras = usuario.NombreCompleto.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (palabras.Length == 0)
-            return string.Empty;
-        var iniciales = string.Concat(palabras.Select(p => char.ToUpper(p[0])));
-        return iniciales.Length > 3 ? iniciales.Substring(0, 3) : iniciales;
-    }
-
-    private LookupItem? _selectedPersona;
 
     private void OnPersonaChanged(LookupItem? item)
     {
         _selectedPersona = item;
         usuario.IdPersona = item?.Id;
+        if (item != null)
+        {
+            _ = CargarDatosPersona(item.Id);
+        }
+        else
+        {
+            _personaNombreCompleto = string.Empty;
+            _personaEmail = string.Empty;
+            _personaTelefono = string.Empty;
+            _personaClave = string.Empty;
+            _personaRfc = string.Empty;
+        }
     }
 
     private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -350,16 +289,20 @@
 
         if (usuario.IdEmpresa == null || usuario.IdEmpresa <= 0)
         {
-            Snackbar.Add("Debe seleccionar una sucursal", Severity.Warning);
+            Snackbar.Add("Debe seleccionar una empresa", Severity.Warning);
             return;
         }
 
-        usuario.IdPersona = _selectedPersona?.Id;
+        if (_selectedPersona == null)
+        {
+            Snackbar.Add("Debe seleccionar una persona vinculada", Severity.Warning);
+            return;
+        }
+
+        usuario.IdPersona = _selectedPersona.Id;
 
         try
         {
-            usuario.Iniciales = GenerarIniciales();
-
             ApiResponse<UsuarioResponse> response;
 
             if (Id.HasValue)

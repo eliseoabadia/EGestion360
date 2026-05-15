@@ -6,7 +6,6 @@ using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Mail;
 
 namespace EG.Application.Services.General
 {
@@ -42,10 +41,6 @@ namespace EG.Application.Services.General
             });
 
             // Filtros para la vista
-            _serviceView.AddRelationFilter("Usuario", new List<string>
-            {
-                "Nombre", "ApellidoPaterno", "ApellidoMaterno", "Email", "PayrollId"
-            });
             _serviceView.AddRelationFilter("Sucursal", new List<string>
             {
                 "NombreSucursal", "CodigoSucursal", "AliasSucursal"
@@ -122,39 +117,14 @@ namespace EG.Application.Services.General
                 return !exists;
             });
 
-            // REGLA 5: Nombre obligatorio
-            _service.AddValidationRule("ValidNombre", async (dto) =>
+            // REGLA 5: Persona vinculada obligatoria
+            _service.AddValidationRule("ValidPersona", async (dto) =>
             {
                 var usuarioDto = dto as UsuarioDto;
-                return !string.IsNullOrWhiteSpace(usuarioDto?.Nombre);
+                return usuarioDto?.FkidPersonaNom.HasValue == true && usuarioDto.FkidPersonaNom.Value > 0;
             });
 
-            // REGLA 6: Apellido paterno obligatorio
-            _service.AddValidationRule("ValidApellidoPaterno", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                return !string.IsNullOrWhiteSpace(usuarioDto?.ApellidoPaterno);
-            });
-
-            // REGLA 7: Email válido
-            _service.AddValidationRule("ValidEmailFormat", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                if (string.IsNullOrWhiteSpace(usuarioDto?.Email))
-                    return false;
-
-                try
-                {
-                    var addr = new MailAddress(usuarioDto.Email);
-                    return addr.Address == usuarioDto.Email;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
-
-            // REGLA 8: Empresa válida
+            // REGLA 6: Empresa válida
             _service.AddValidationRule("ValidCompany", async (dto) =>
             {
                 var usuarioDto = dto as UsuarioDto;
@@ -278,8 +248,8 @@ namespace EG.Application.Services.General
                     throw new ArgumentNullException(nameof(dto), "Los datos del usuario son requeridos");
 
                 // Validar campos obligatorios mínimos
-                if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Email))
-                    throw new ArgumentException("El nombre y email son campos obligatorios");
+                if (!dto.FkidPersonaNom.HasValue || dto.FkidPersonaNom.Value <= 0)
+                    throw new ArgumentException("Debe seleccionar una persona vinculada");
 
                 // Preparar DTO
                 dto.FechaCreacion = DateTime.Now;
@@ -340,8 +310,8 @@ namespace EG.Application.Services.General
                     throw new ArgumentException("ID de usuario inválido", nameof(id));
 
                 // Validar campos obligatorios
-                if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Email))
-                    throw new ArgumentException("El nombre y email son campos obligatorios");
+                if (!dto.FkidPersonaNom.HasValue || dto.FkidPersonaNom.Value <= 0)
+                    throw new ArgumentException("Debe seleccionar una persona vinculada");
 
                 // Preparar DTO
                 dto.PkIdUsuario = id;
