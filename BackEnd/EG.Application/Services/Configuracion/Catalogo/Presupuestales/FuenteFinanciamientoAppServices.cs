@@ -6,6 +6,7 @@ using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 {
@@ -53,6 +54,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             try
             {
+                if (TryGetIntFilter(pageRequest, "FkidAnioSis", out var anioId))
+                {
+                    return await GetAllPaginadoByAnioAsync(pageRequest, anioId, predicate);
+                }
+
                 var result = await _service.GetAllPaginadoAsync(pageRequest);
                 var items = result.Items.AsEnumerable();
 
@@ -79,6 +85,65 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                     TotalCount = 0
                 };
             }
+        }
+
+        private async Task<PagedResult<FuenteFinanciamientoResponse>> GetAllPaginadoByAnioAsync(
+            PagedRequest pageRequest,
+            int anioId,
+            Func<FuenteFinanciamientoResponse, bool>? predicate)
+        {
+            var query = _service.GetQueryWithIncludes()
+                .Where(f => f.FkidAnioSis == anioId || f.FkidAnioSis == null);
+
+            if (!string.IsNullOrWhiteSpace(pageRequest.Filtro))
+            {
+                var filtro = pageRequest.Filtro.ToLower();
+                query = query.Where(f =>
+                    (f.Clave != null && f.Clave.ToLower().Contains(filtro)) ||
+                    (f.Descripcion != null && f.Descripcion.ToLower().Contains(filtro)));
+            }
+
+            var isAscending = string.IsNullOrWhiteSpace(pageRequest.SortDirection) ||
+                pageRequest.SortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
+
+            query = pageRequest.SortLabel switch
+            {
+                "PkidFuenteFinanciamiento" => isAscending ? query.OrderBy(f => f.PkidFuenteFinanciamiento) : query.OrderByDescending(f => f.PkidFuenteFinanciamiento),
+                "Descripcion" => isAscending ? query.OrderBy(f => f.Descripcion) : query.OrderByDescending(f => f.Descripcion),
+                "Activo" => isAscending ? query.OrderBy(f => f.Activo) : query.OrderByDescending(f => f.Activo),
+                _ => isAscending ? query.OrderBy(f => f.Clave) : query.OrderByDescending(f => f.Clave)
+            };
+
+            var totalCount = await query.CountAsync();
+            var page = pageRequest.Page < 1 ? 1 : pageRequest.Page;
+            var pageSize = pageRequest.PageSize <= 0 ? 10 : pageRequest.PageSize;
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(f => new FuenteFinanciamientoResponse
+                {
+                    PkidFuenteFinanciamiento = f.PkidFuenteFinanciamiento,
+                    Clave = f.Clave ?? string.Empty,
+                    Descripcion = f.Descripcion ?? string.Empty,
+                    FkidAnioSis = f.FkidAnioSis,
+                    Activo = f.Activo,
+                    FechaCreacion = f.FechaCreacion
+                })
+                .ToListAsync();
+
+            if (predicate != null)
+            {
+                items = items.Where(predicate).ToList();
+            }
+
+            return new PagedResult<FuenteFinanciamientoResponse>
+            {
+                Success = true,
+                Message = "Fuentes de Financiamiento obtenidas correctamente",
+                Code = "SUCCESS",
+                Items = items,
+                TotalCount = totalCount
+            };
         }
 
         public async Task<FuenteFinanciamientoResponse> CreateAsync(FuenteFinanciamientoResponse response, int usuarioCreacion)
@@ -149,6 +214,30 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             {
                 return false;
             }
+        }
+
+        private static bool TryGetIntFilter(PagedRequest request, string key, out int value)
+        {
+            value = 0;
+            if (request.AdditionalFilters == null || !request.AdditionalFilters.TryGetValue(key, out var raw) || raw == null)
+            {
+                return false;
+            }
+
+            if (raw is JsonElement json)
+            {
+                if (json.ValueKind == JsonValueKind.Number && json.TryGetInt32(out value))
+                {
+                    return true;
+                }
+
+                if (json.ValueKind == JsonValueKind.String && int.TryParse(json.GetString(), out value))
+                {
+                    return true;
+                }
+            }
+
+            return int.TryParse(raw.ToString(), out value);
         }
     }
 }

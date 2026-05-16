@@ -1,4 +1,5 @@
 using EG.Application.Interfaces.Account;
+using EG.Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -31,20 +32,20 @@ namespace EG.ApiCoreBS.Controllers.Account
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                return NotFound(Error(ex.Message, ApiResponseCode.NotFound));
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error obteniendo menú para usuario {Id}", id);
-                return StatusCode(500, new { success = false, message = "Error interno" });
+                return StatusCode(500, Error("Error interno"));
             }
         }
 
@@ -58,17 +59,17 @@ namespace EG.ApiCoreBS.Controllers.Account
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Error obteniendo claims para usuario {UserId}", userId);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error inesperado obteniendo claims para usuario {UserId}", userId);
-                return StatusCode(500, new { success = false, message = "Error interno" });
+                return StatusCode(500, Error("Error interno"));
             }
         }
 
@@ -86,5 +87,8 @@ namespace EG.ApiCoreBS.Controllers.Account
             var version = _configuration["ApplicationVersion"] ?? "1.0.0";
             return Ok(new { success = true, version = version });
         }
+
+        private static object Error(string message, ApiResponseCode code = ApiResponseCode.Error) =>
+            new { success = false, message, code = code.ToCode() };
     }
 }

@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.General
 {
@@ -61,8 +62,78 @@ namespace EG.Application.Services.General
 
         public async Task<PagedResult<UsuarioSucursalResponse>> GetByUsuarioAsync(int usuarioId)
         {
-            var todos = await _serviceView.GetAllAsync();
-            var result = todos.Where(x => x.PkIdUsuario == usuarioId && x.AsignacionActiva).ToList();
+            var result = await _serviceView.GetQueryWithIncludes(x => x.PkIdUsuario == usuarioId && x.AsignacionActiva)
+                .Select(x => new UsuarioSucursalResponse
+                {
+                    PkIdUsuario = x.PkIdUsuario,
+                    AspNetUserId = x.AspNetUserId,
+                    IdEmpresa = x.IdEmpresa,
+                    Nombre = x.Nombre,
+                    ApellidoPaterno = x.ApellidoPaterno,
+                    ApellidoMaterno = x.ApellidoMaterno,
+                    NombreCompleto = x.NombreCompleto,
+                    Iniciales = x.Iniciales,
+                    InicialesNombre = x.InicialesNombre,
+                    PayrollId = x.PayrollId,
+                    CodigoPostalUsuario = x.CodigoPostal,
+                    TelefonoUsuario = x.Telefono,
+                    Direccion1 = x.Direccion1,
+                    Direccion2 = x.Direccion2,
+                    Email = x.Email,
+                    NumeroSocial = x.NumeroSocial,
+                    Gafete = x.Gafete,
+                    Sexo = x.Sexo,
+                    SexoDescripcion = x.SexoDescripcion,
+                    FechaIngreso = x.FechaIngreso,
+                    FechaIngresoFormat = x.FechaIngresoFormat,
+                    AntigüedadAños = x.AntiguedadAnios,
+                    IdIdiomaPreferido = x.IdIdiomaPreferido,
+                    IdiomaPreferido = x.IdiomaPreferido,
+                    IdMonedaPreferida = x.IdMonedaPreferida,
+                    MonedaPreferida = x.MonedaPreferida,
+                    SimboloMoneda = x.SimboloMoneda,
+                    EsAdministrador = x.EsAdministrador,
+                    UsuarioActivo = x.UsuarioActivo,
+                    PkidEmpresa = x.PkidEmpresa,
+                    NombreEmpresa = x.NombreEmpresa,
+                    RfcEmpresa = x.RfcEmpresa,
+                    RazonSocialEmpresa = x.RazonSocialEmpresa,
+                    GiroEmpresa = x.GiroEmpresa,
+                    IdMonedaBaseEmpresa = x.IdMonedaBaseEmpresa,
+                    MonedaBaseEmpresa = x.MonedaBaseEmpresa,
+                    SimboloMonedaBase = x.SimboloMonedaBase,
+                    EmpresaFechaCreacion = x.EmpresaFechaCreacion,
+                    IdSucursal = x.IdSucursal,
+                    NombreSucursal = x.NombreSucursal,
+                    CodigoSucursal = x.CodigoSucursal,
+                    DireccionSucursal = x.DireccionSucursal,
+                    EsMatriz = x.EsMatriz,
+                    PuedeAcceder = x.PuedeAcceder,
+                    PuedeConfigurar = x.PuedeConfigurar,
+                    PuedeOperar = x.PuedeOperar,
+                    PuedeReportes = x.PuedeReportes,
+                    EsGerente = x.EsGerente,
+                    EsSupervisor = x.EsSupervisor,
+                    AsignacionActiva = x.AsignacionActiva,
+                    EsJefeEnSucursal = x.EsJefeEnSucursal,
+                    FechaCreacion = x.FechaCreacion,
+                    UsuarioCreacion = x.UsuarioCreacion,
+                    FechaModificacion = x.FechaModificacion,
+                    UsuarioModificacion = x.UsuarioModificacion,
+                    IdPersona = x.IdPersona,
+                    ClavePersona = x.ClavePersona,
+                    PersonaNombre = x.PersonaNombre,
+                    PersonaPaterno = x.PersonaPaterno,
+                    PersonaMaterno = x.PersonaMaterno,
+                    NombreCompletoPersona = x.NombreCompletoPersona,
+                    Rfc = x.Rfc,
+                    Curp = x.Curp,
+                    EmailPersona = x.EmailPersona,
+                    TelefonoParticular = x.TelefonoParticular,
+                    TelefonoMovil = x.TelefonoMovil,
+                    IdEmpresaPersona = x.IdEmpresaPersona
+                })
+                .ToListAsync();
 
             return new PagedResult<UsuarioSucursalResponse>
             {

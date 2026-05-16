@@ -36,17 +36,16 @@ Tienes asignadas varias sucursales. Por favor, selecciona una para continuar:
 
 @code {
 [Parameter]
-public List<VwUsuarioSucursalResponse> Sucursales { get; set; } = new();
+public List<UsuarioSucursalResponse> Sucursales { get; set; } = new();
 
 [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private async Task SeleccionarSucursal(VwUsuarioSucursalResponse sucursal)
+    private async Task SeleccionarSucursal(UsuarioSucursalResponse sucursal)
     {
-        var empresaId = (int?)sucursal.PkidEmpresa ?? (int?)sucursal.IdEmpresa ?? 0;
         await SucursalStateService.SetSucursalAsync(
-            sucursal.IdSucursal ?? 0,
+            sucursal.IdSucursal,
             sucursal.NombreSucursal ?? string.Empty,
-            empresaId,
+            sucursal.IdEmpresaPersona,
             sucursal.NombreEmpresa);
         MudDialog.Close(DialogResult.Ok(sucursal));
     }

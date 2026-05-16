@@ -1,5 +1,6 @@
 using EG.ApiCoreBS.Services;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
+using EG.Common.Enums;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.Interfaces;
@@ -35,21 +36,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 {
                     Success = true,
                     Message = "Programas obtenidos correctamente",
-                    Code = "SUCCESS",
+                    Code = ApiResponseCode.Success.ToCode(),
                     Items = lista,
                     TotalCount = lista.Count
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new PagedResult<ProgramaResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "ERROR",
-                    Items = new List<ProgramaResponse>(),
-                    TotalCount = 0
-                });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -62,29 +56,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
 
                 if (programa == null)
                 {
-                    return NotFound(new PagedResult<ProgramaResponse>
-                    {
-                        Success = false,
-                        Message = "Programa no encontrado",
-                        Code = "NOTFOUND_PROGRAMA",
-                        Items = new List<ProgramaResponse>(),
-                        TotalCount = 0
-                    });
+                    return NotFound(Error("Programa no encontrado", ApiResponseCode.NotFound));
                 }
 
-                return Ok(new PagedResult<ProgramaResponse>
-                {
-                    Success = true,
-                    Message = "Programa encontrado",
-                    Code = "SUCCESS",
-                    Data = programa,
-                    Items = new List<ProgramaResponse> { programa },
-                    TotalCount = 1
-                });
+                return Ok(Success("Programa encontrado", programa));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -98,14 +77,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 {
                     Success = true,
                     Message = "Programas obtenidos correctamente",
-                    Code = "SUCCESS",
+                    Code = ApiResponseCode.Success.ToCode(),
                     Items = result.Items,
                     TotalCount = result.TotalCount
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -118,49 +97,23 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 var result = await _appService.CreateAsync(request, usuarioActual);
 
                 return CreatedAtAction(nameof(GetById), new { id = result.PkidPrograma },
-                    new PagedResult<ProgramaResponse>
-                    {
-                        Success = true,
-                        Message = "Programa creado correctamente",
-                        Code = "SUCCESS",
-                        Data = result,
-                        Items = new List<ProgramaResponse> { result },
-                        TotalCount = 1
-                    });
+                    Success("Programa creado correctamente", result));
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(new PagedResult<ProgramaResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "INVALID_DATA",
-                    TotalCount = 0
-                });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new PagedResult<ProgramaResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "MISSING_REQUIRED_FIELDS",
-                    TotalCount = 0
-                });
+                return BadRequest(Error(ex.Message, ApiResponseCode.MissingRequiredFields));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new PagedResult<ProgramaResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "DUPLICATE_PROGRAMA",
-                    TotalCount = 0
-                });
+                return Conflict(Error(ex.Message, ApiResponseCode.Duplicated));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -172,55 +125,73 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 int usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, request, usuarioActual);
 
-                return Ok(new PagedResult<ProgramaResponse>
-                {
-                    Success = true,
-                    Message = "Programa actualizado correctamente",
-                    Code = "SUCCESS",
-                    Data = result,
-                    Items = new List<ProgramaResponse> { result },
-                    TotalCount = 1
-                });
+                return Ok(Success("Programa actualizado correctamente", result));
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.MissingRequiredFields));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { success = false, message = ex.Message });
+                return Conflict(Error(ex.Message, ApiResponseCode.Duplicated));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<bool>> Delete(int id)
+        public async Task<ActionResult<PagedResult<ProgramaResponse>>> Delete(int id)
         {
             try
             {
                 int usuarioActual = _userContext.GetCurrentUserId();
-                var result = await _appService.DeleteAsync(id, usuarioActual);
-                return Ok(new { success = result, message = "Programa eliminado correctamente" });
+                await _appService.DeleteAsync(id, usuarioActual);
+                return Ok(new PagedResult<ProgramaResponse>
+                {
+                    Success = true,
+                    Message = "Programa eliminado correctamente",
+                    Code = ApiResponseCode.Success.ToCode(),
+                    TotalCount = 0
+                });
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                return NotFound(Error(ex.Message, ApiResponseCode.NotFound));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
+
+        private static PagedResult<ProgramaResponse> Success(string message, ProgramaResponse data) =>
+            new()
+            {
+                Success = true,
+                Message = message,
+                Code = ApiResponseCode.Success.ToCode(),
+                Data = data,
+                Items = new List<ProgramaResponse> { data },
+                TotalCount = 1
+            };
+
+        private static PagedResult<ProgramaResponse> Error(string message, ApiResponseCode code = ApiResponseCode.Error) =>
+            new()
+            {
+                Success = false,
+                Message = message,
+                Code = code.ToCode(),
+                TotalCount = 0
+            };
     }
 }

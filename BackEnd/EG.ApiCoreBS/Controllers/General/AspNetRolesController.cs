@@ -4,6 +4,7 @@ using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EG.Common.Enums;
 using EG.Common.GenericModel;
 
 namespace EG.ApiCoreBS.Controllers.General
@@ -34,7 +35,7 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -48,11 +49,11 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                return NotFound(Error(ex.Message, ApiResponseCode.NotFound));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -66,7 +67,7 @@ namespace EG.ApiCoreBS.Controllers.General
         //    }
         //    catch (Exception ex)
         //    {
-        //        return StatusCode(500, new { success = false, message = ex.Message });
+            //        return StatusCode(500, Error(ex.Message));
         //    }
         //}
 
@@ -81,11 +82,11 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -100,15 +101,15 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                return NotFound(Error(ex.Message, ApiResponseCode.NotFound));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -122,16 +123,19 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                return NotFound(Error(ex.Message, ApiResponseCode.NotFound));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
+
+        private static object Error(string message, ApiResponseCode code = ApiResponseCode.Error) =>
+            new { success = false, message, code = code.ToCode() };
     }
 }

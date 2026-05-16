@@ -7,6 +7,7 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public int PkidFuenteFinanciamiento { get; set; }
         public string Clave { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
+        public int? FkidAnioSis { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
     }

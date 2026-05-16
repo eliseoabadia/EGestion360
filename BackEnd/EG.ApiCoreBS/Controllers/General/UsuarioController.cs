@@ -2,6 +2,7 @@ using Mapster;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using EG.Application.Interfaces.General;
+using EG.Common.Enums;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
@@ -38,19 +39,12 @@ namespace EG.ApiCoreBS.Controllers.General
             catch (Exception ex)
             {
                 _logger.LogError($"Error en GetAll: {ex.Message}", ex);
-                return StatusCode(500, new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "ERROR",
-                    ////Items = new(),
-                    TotalCount = 0
-                });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UsuarioResponse>> GetById(int id)
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> GetById(int id)
         {
             try
             {
@@ -58,30 +52,15 @@ namespace EG.ApiCoreBS.Controllers.General
 
                 if (usuario == null)
                 {
-                    return NotFound(new PagedResult<UsuarioResponse>
-                    {
-                        Success = false,
-                        Message = "Usuario no encontrado",
-                        Code = "NOTFOUND_USER",
-                        ////Items = new(),
-                        TotalCount = 0
-                    });
+                    return NotFound(Error("Usuario no encontrado", ApiResponseCode.NotFound));
                 }
 
-                return Ok(new PagedResult<UsuarioResponse>
-                {
-                    Success = true,
-                    Message = "Usuario encontrado",
-                    Code = "SUCCESS",
-                    Data = usuario,
-                    Items = new List<UsuarioResponse> { usuario },
-                    TotalCount = 1
-                });
+                return Ok(Success("Usuario encontrado", usuario));
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error en GetById: {ex.Message}", ex);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -96,7 +75,7 @@ namespace EG.ApiCoreBS.Controllers.General
             catch (Exception ex)
             {
                 _logger.LogError($"Error en GetByEmpresaId: {ex.Message}", ex);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -109,8 +88,8 @@ namespace EG.ApiCoreBS.Controllers.General
                 return Ok(new PagedResult<UsuarioResponse>
                 {
                     Success = true,
-                    Message = "Usuario optenidos correctamente",
-                    Code = "SUCCESS",
+                    Message = "Usuarios obtenidos correctamente",
+                    Code = ApiResponseCode.Success.ToCode(),
                     Items = result.Items,
                     TotalCount = result.TotalCount
                 });
@@ -118,7 +97,7 @@ namespace EG.ApiCoreBS.Controllers.General
             catch (Exception ex)
             {
                 _logger.LogError($"Error en GetAllPaginado: {ex.Message}", ex);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -127,66 +106,40 @@ namespace EG.ApiCoreBS.Controllers.General
         {
             ModelState.Clear();
             if (!request.IdPersona.HasValue || request.IdPersona.Value <= 0)
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false, Message = "Debe seleccionar una persona vinculada", Code = "INVALID_DATA", TotalCount = 0
-                });
+            {
+                return BadRequest(Error("Debe seleccionar una persona vinculada", ApiResponseCode.InvalidData));
+            }
+
             try
             {
                 var dto = request.Adapt<UsuarioDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
-                
+
                 var result = await _appService.CreateAsync(dto, dto.UsuarioCreacion);
 
                 return CreatedAtAction(nameof(GetById), new { id = result.PkIdUsuario },
-                    new PagedResult<UsuarioResponse>
-                    {
-                        Success = true,
-                        Message = "Usuario creado correctamente",
-                        Code = "SUCCESS",
-                        Data = result,
-                        Items = new List<UsuarioResponse> { result },
-                        TotalCount = 1
-                    });
+                    Success("Usuario creado correctamente", result));
             }
             catch (ArgumentNullException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "INVALID_DATA",
-                    TotalCount = 0
-                });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "MISSING_REQUIRED_FIELDS",
-                    TotalCount = 0
-                });
+                return BadRequest(Error(ex.Message, ApiResponseCode.MissingRequiredFields));
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return Conflict(new PagedResult<UsuarioResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "DUPLICATE_USER",
-                    TotalCount = 0
-                });
+                return Conflict(Error(ex.Message, ApiResponseCode.Duplicated));
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error en Create: {ex.Message}", ex);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
@@ -200,65 +153,83 @@ namespace EG.ApiCoreBS.Controllers.General
                 dto.PkIdUsuario = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
-                
+
                 var result = await _appService.UpdateAsync(id, dto, dto.UsuarioModificacion ?? 0);
 
-                return Ok(new PagedResult<UsuarioResponse>
-                {
-                    Success = true,
-                    Message = "Usuario actualizado correctamente",
-                    Code = "SUCCESS",
-                    Data = result,
-                    Items = new List<UsuarioResponse> { result },
-                    TotalCount = 1
-                });
+                return Ok(Success("Usuario actualizado correctamente", result));
             }
             catch (ArgumentNullException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.MissingRequiredFields));
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return Conflict(new { success = false, message = ex.Message });
+                return Conflict(Error(ex.Message, ApiResponseCode.Duplicated));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<bool>> Delete(int id)
+        public async Task<ActionResult<PagedResult<UsuarioResponse>>> Delete(int id)
         {
             try
             {
                 var usuarioActual = _userContext.GetCurrentUserId();
-                var result = await _appService.DeleteAsync(id, usuarioActual);
-                return Ok(new { success = result, message = "Usuario eliminado correctamente" });
+                await _appService.DeleteAsync(id, usuarioActual);
+                return Ok(new PagedResult<UsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Usuario eliminado correctamente",
+                    Code = ApiResponseCode.Success.ToCode(),
+                    TotalCount = 0
+                });
             }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return NotFound(new { success = false, message = ex.Message });
+                return NotFound(Error(ex.Message, ApiResponseCode.NotFound));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, Error(ex.Message));
             }
         }
+
+        private static PagedResult<UsuarioResponse> Success(string message, UsuarioResponse data) =>
+            new()
+            {
+                Success = true,
+                Message = message,
+                Code = ApiResponseCode.Success.ToCode(),
+                Data = data,
+                Items = new List<UsuarioResponse> { data },
+                TotalCount = 1
+            };
+
+        private static PagedResult<UsuarioResponse> Error(string message, ApiResponseCode code = ApiResponseCode.Error) =>
+            new()
+            {
+                Success = false,
+                Message = message,
+                Code = code.ToCode(),
+                TotalCount = 0
+            };
     }
 }

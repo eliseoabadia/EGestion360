@@ -359,12 +359,15 @@
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
             await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
-            var filters = new Dictionary<string, object> { { "PkIdUsuario", result.PkIdUsuario } };
-            var _sucursalesUsuario = await _serviceUS.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Descripcion", SortDirection.Ascending, filters);
+            var _sucursalesUsuario = await LoadSucursalesUsuarioAsync(result.PkIdUsuario, result.AccessToken);
 
-            if (_sucursalesUsuario.TotalCount > 1)
+            if (_sucursalesUsuario.Success != true)
             {
-                var parameters = new DialogParameters { { "Sucursales", _sucursalesUsuario } };
+                Snackbar.Add(_sucursalesUsuario.Message ?? "No se pudieron cargar las sucursales del usuario.", Severity.Error);
+            }
+            else if (_sucursalesUsuario.Items.Count > 1)
+            {
+                var parameters = new DialogParameters { { "Sucursales", _sucursalesUsuario.Items.ToList() } };
                 var options = new DialogOptions { CloseOnEscapeKey = false };
                 var dialog = await DialogService.ShowAsync<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options);
                 var dialogResult = await dialog.Result;
@@ -394,7 +397,7 @@
             }
             else
             {
-                Snackbar.Add("No tienes sucursales asignadas. Contacta al administrador.", Severity.Warning);
+                Snackbar.Add(_sucursalesUsuario.Message ?? "No tienes sucursales asignadas. Contacta al administrador.", Severity.Warning);
             }
         }
         else
@@ -403,5 +406,46 @@
         }
 
         isLoading = false;
+    }
+
+    private async Task<ApiResponse<UsuarioSucursalResponse>> LoadSucursalesUsuarioAsync(int usuarioId, string? accessToken)
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"api/UsuarioSucursal/usuario/{usuarioId}");
+            request.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken?.Trim('"', '\''));
+
+            using var response = await HttpClient.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var result = string.IsNullOrWhiteSpace(responseBody)
+                ? null
+                : System.Text.Json.JsonSerializer.Deserialize<ApiResponse<UsuarioSucursalResponse>>(
+                    responseBody,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (response.IsSuccessStatusCode)
+            {
+                return result ?? new ApiResponse<UsuarioSucursalResponse>
+                {
+                    Success = false,
+                    Message = "No se pudieron leer las sucursales del usuario."
+                };
+            }
+
+            return result ?? new ApiResponse<UsuarioSucursalResponse>
+            {
+                Success = false,
+                Message = $"Error al cargar sucursales: {(int)response.StatusCode} {response.ReasonPhrase}"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<UsuarioSucursalResponse>
+            {
+                Success = false,
+                Message = $"Error al cargar sucursales: {ex.Message}"
+            };
+        }
     }
 }

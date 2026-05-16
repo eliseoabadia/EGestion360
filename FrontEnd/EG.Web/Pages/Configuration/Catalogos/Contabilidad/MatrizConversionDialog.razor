@@ -267,26 +267,18 @@
             _item.FkidCuentaContablePagado = _selectedPagado!.Id;
             _item.FkidCuentaContableGasto = _selectedGasto!.Id;
 
-            bool success;
-            if (Id.HasValue)
-            {
-                var response = await Service.UpdateAsync(_item, Id.Value);
-                success = response?.Success == true;
-            }
-            else
-            {
-                var response = await Service.CreateAsync(_item);
-                success = response?.Success == true;
-            }
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(_item, Id.Value)
+                : await Service.CreateAsync(_item);
 
-            if (success)
+            if (response?.Success == true)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Matriz actualizada correctamente" : "Matriz creada correctamente", Severity.Success);
+                Snackbar.Add(response.Message ?? (dialogTitle.Contains("Editar") ? "Matriz actualizada correctamente" : "Matriz creada correctamente"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al guardar los cambios", Severity.Error);
             }
         }
         catch (Exception ex)

@@ -6,7 +6,7 @@ public partial class UsuarioSucursalResponse
 
     public string AspNetUserId { get; set; }
 
-    public int IdEmpresa { get; set; }
+    public int? IdEmpresa { get; set; }
 
     public string Nombre { get; set; }
 
@@ -36,11 +36,11 @@ public partial class UsuarioSucursalResponse
 
     public string Gafete { get; set; }
 
-    public bool Sexo { get; set; }
+    public string Sexo { get; set; }
 
     public string SexoDescripcion { get; set; }
 
-    public DateOnly? FechaIngreso { get; set; }
+    public DateTime? FechaIngreso { get; set; }
 
     public string FechaIngresoFormat { get; set; }
 
@@ -106,7 +106,7 @@ public partial class UsuarioSucursalResponse
 
     public DateTime? FechaCreacion { get; set; }
 
-    public int UsuarioCreacion { get; set; }
+    public int? UsuarioCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 
@@ -134,5 +134,5 @@ public partial class UsuarioSucursalResponse
 
     public string TelefonoMovil { get; set; }
 
-    public int IdEmpresaPersona { get; set; }
+    public int? IdEmpresaPersona { get; set; }
 }

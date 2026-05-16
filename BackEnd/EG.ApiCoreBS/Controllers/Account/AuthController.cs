@@ -26,7 +26,7 @@ namespace EG.ApiCoreBS.Controllers.Account
             try
             {
                 if (loginRequest == null)
-                    return BadRequest(new { success = false, message = "Solicitud inválida" });
+                    return BadRequest(Error("Solicitud invalida", ApiResponseCode.InvalidData));
 
                 var response = await _authAppService.LoginAsync(loginRequest);
 
@@ -52,12 +52,12 @@ namespace EG.ApiCoreBS.Controllers.Account
                         "0",
                         "");
 
-                    return Unauthorized(new { success = false, message = response?.Message ?? "Credenciales incorrectas" });
+                    return Unauthorized(Error(response?.Message ?? "Credenciales incorrectas", ApiResponseCode.Unauthorized));
                 }
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (InvalidOperationException ex)
             {
@@ -69,7 +69,7 @@ namespace EG.ApiCoreBS.Controllers.Account
                     "0",
                     ex.StackTrace ?? "");
 
-                return StatusCode(500, new { success = false, message = "Error interno del servidor" });
+                return StatusCode(500, Error("Error interno del servidor"));
             }
             catch (Exception ex)
             {
@@ -81,8 +81,11 @@ namespace EG.ApiCoreBS.Controllers.Account
                     "0",
                     ex.StackTrace ?? "");
 
-                return StatusCode(500, new { success = false, message = "Error interno del servidor" });
+                return StatusCode(500, Error("Error interno del servidor"));
             }
         }
+
+        private static object Error(string message, ApiResponseCode code = ApiResponseCode.Error) =>
+            new { success = false, message, code = code.ToCode() };
     }
 }
