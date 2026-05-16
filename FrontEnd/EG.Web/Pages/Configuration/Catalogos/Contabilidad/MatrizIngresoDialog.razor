@@ -6,6 +6,7 @@
 @inject IGenericCrudService<MatrizIngresoResponse> Service
 @inject ISnackbar Snackbar
 @inject HttpClient Http
+@inject AnioPresupuestalStateService AnioStateService
 
 <BaseCrudDialog TItem="MatrizIngresoResponse"
                 Title="@dialogTitle"
@@ -125,6 +126,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await AnioStateService.InitializeAsync();
+
         if (Id.HasValue)
         {
             await CargarDatosAsync();
@@ -134,7 +137,7 @@
     }
 
     private Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-        => LoadLookupPageAsync("api/MatrizIngreso/GetProgramaLookupPaginado", page, pageSize, filter, ct);
+        => LoadAnioLookupPageAsync("api/MatrizIngreso/GetProgramaLookupPaginado", page, pageSize, filter, ct);
 
     private Task<ComboLookupResult> LoadOrigenesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
         => LoadLookupPageAsync("api/MatrizIngreso/GetOrigenLookupPaginado", page, pageSize, filter, ct);
@@ -145,6 +148,17 @@
     private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
     {
         var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
+    }
+
+    private async Task<ComboLookupResult> LoadAnioLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            return new ComboLookupResult();
+        }
+
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}&idAnio={AnioStateService.AnioId.Value}";
         return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
     }
 
@@ -184,6 +198,14 @@
             _item.FkIdCuentaContableDevengado = _selectedDevengado?.Id;
             _item.FkIdCuentaContableRecaudado = _selectedRecaudado?.Id;
             _item.FkIdCuentaContableDeposito = _selectedDeposito?.Id;
+
+            if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+            {
+                Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
+                return;
+            }
+
+            _item.FkIdAnioSis = AnioStateService.AnioId.Value;
 
             bool success;
             if (Id.HasValue)

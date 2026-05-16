@@ -265,14 +265,15 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpGet("GetAllProgramasLookupPaginado")]
-        public async Task<ActionResult<PagedResult<LookupItem>>> GetAllProgramasLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetAllProgramasLookupPaginado(int page = 1, int pageSize = 25, string? filter = null, int? idAnio = null)
         {
             var query = _context.Set<Programa>()
+                .Where(p => p.Activo && (!idAnio.HasValue || p.FkidAnioSis == idAnio.Value))
                 .OrderBy(p => p.Clave)
                 .Select(p => new LookupItem
                 {
                     Id = p.PkidPrograma,
-                    Text = p.Clave ?? ""
+                    Text = (p.Clave ?? "") + " - " + (p.Descripcion ?? "")
                 });
 
             return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));

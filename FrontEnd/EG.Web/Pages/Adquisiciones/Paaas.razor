@@ -308,16 +308,17 @@
             SortLabel = state.SortLabel ?? GetDefaultSortLabel();
             SortDirection = state.SortDirection;
 
-            if (!AnioStateService.AnioId.HasValue)
+            if (!HasSelectedAnio())
             {
                 Elements.Clear();
                 TotalCount = 0;
+                Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
                 return new TableData<PaaaResponse> { Items = Elements, TotalItems = TotalCount };
             }
 
             var filters = new Dictionary<string, object>
             {
-                ["FkidAnioSis"] = AnioStateService.AnioId.Value
+                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
             };
 
             var response = await Service.GetAllPaginadoAsync(
@@ -433,7 +434,7 @@
             return;
         }
 
-        if (!AnioStateService.AnioId.HasValue)
+        if (!HasSelectedAnio())
         {
             Snackbar.Add("Selecciona un año presupuestal en el encabezado.", Severity.Warning);
             return;
@@ -446,7 +447,7 @@
         {
             var filters = new Dictionary<string, object>
             {
-                ["FkidAnioSis"] = AnioStateService.AnioId.Value
+                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
             };
 
             var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, SortLabel, SortDirection, filters);
@@ -497,7 +498,7 @@
             return;
         }
 
-        if (!AnioStateService.AnioId.HasValue)
+        if (!HasSelectedAnio())
         {
             Snackbar.Add("Selecciona un año presupuestal en el encabezado.", Severity.Warning);
             return;
@@ -506,7 +507,7 @@
         var parameters = new DialogParameters
         {
             ["EmpresaId"] = _empresaId,
-            ["AnioId"] = AnioStateService.AnioId.Value
+            ["AnioId"] = AnioStateService.AnioId!.Value
         };
 
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}", parameters,
@@ -805,6 +806,9 @@
 
     private bool IsSelectedPartida(PaaaspartidumResponse partida) =>
         SelectedPartida?.PkidPaaaspartida == partida.PkidPaaaspartida;
+
+    private bool HasSelectedAnio() =>
+        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
 
     private static bool ContainsText(string? value, string filter) =>
         !string.IsNullOrWhiteSpace(value) && value.Contains(filter, StringComparison.OrdinalIgnoreCase);

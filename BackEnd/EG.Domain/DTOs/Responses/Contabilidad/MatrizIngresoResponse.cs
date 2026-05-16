@@ -13,6 +13,7 @@ namespace EG.Domain.DTOs.Responses.Contabilidad
         public int? FkIdCuentaContableDevengado { get; set; }
         public int? FkIdCuentaContableRecaudado { get; set; }
         public int? FkIdCuentaContableDeposito { get; set; }
+        public int? FkIdAnioSis { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int? UsuarioCreacion { get; set; }

@@ -1,5 +1,6 @@
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
@@ -10,11 +11,12 @@
 
 @inject IGenericCrudService<RequisicionResponse> Service
 @inject IGenericCrudService<PersonaResponse> PersonaService
-@inject IGenericCrudService<UnidadResponsableResponse> AreaService
+@inject IGenericCrudService<UsuarioAreaResponse> AreaService
 @inject IGenericCrudService<ProyectoResponse> ProyectoService
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> FuenteService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="RequisicionResponse"
@@ -162,6 +164,7 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
 
         if (Id.HasValue)
         {
@@ -231,6 +234,13 @@
         }
 
         item.FkidEmpresaSis = empresaId.Value;
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        item.FkidAnioSis = AnioStateService.AnioId.Value;
         item.FkidAreaSis = _selectedArea.Id;
         item.FkidPersonaNom = _selectedPersona.Id;
         item.FkidProyectoOrco = _selectedProyecto?.Id;
@@ -270,8 +280,11 @@
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUnidadResponsable, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+        var response = await AreaService.GetAllAsync();
+        var items = FilterUsuarioAreas(response?.Items, filter)
+            .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
+
+        return ToPagedComboResult(items, page, pageSize);
     }
 
     private async Task<ComboLookupResult> LoadProyectosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -282,13 +295,25 @@
 
     private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await ProgramaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        var anioFilter = GetAnioFilter();
+        if (anioFilter == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await ProgramaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await FuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        var anioFilter = GetAnioFilter();
+        if (anioFilter == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await FuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
@@ -296,6 +321,37 @@
     {
         var list = items?.ToList() ?? new List<LookupItem>();
         return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private Dictionary<string, object>? GetAnioFilter() =>
+        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value }
+            : null;
+
+    private static IEnumerable<UsuarioAreaResponse> FilterUsuarioAreas(IEnumerable<UsuarioAreaResponse>? items, string filter)
+    {
+        var query = (items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidArea > 0);
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(x => x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return query.OrderBy(x => x.UsuarioAreaDescripcion);
+    }
+
+    private static ComboLookupResult ToPagedComboResult(IEnumerable<LookupItem> items, int page, int pageSize)
+    {
+        var list = items.ToList();
+        var currentPage = Math.Max(1, page);
+        var currentPageSize = pageSize <= 0 ? 10 : pageSize;
+
+        return new ComboLookupResult
+        {
+            Items = list.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
+            TotalCount = list.Count
+        };
     }
 
     private static string TextOrDefault(string? text, int id) =>

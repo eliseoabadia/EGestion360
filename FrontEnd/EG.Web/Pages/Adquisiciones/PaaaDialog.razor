@@ -1,5 +1,6 @@
 @using MudBlazor
 @using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Common.GenericModel
@@ -7,11 +8,10 @@
 @inject AnioPresupuestalStateService AnioStateService
 
 @inject IGenericCrudService<PaaaResponse> Service
-@inject IGenericCrudService<PersonaResponse> personaService
 @inject IGenericCrudService<ProyectoResponse> proyectoService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> fuenteService
 @inject IGenericCrudService<ProgramaResponse> programaService
-@inject IGenericCrudService<UnidadResponsableResponse> areaService
+@inject IGenericCrudService<UsuarioAreaResponse> areaService
 
 
 @inject ISnackbar Snackbar
@@ -66,7 +66,7 @@ LoadPage="LoadPersonasPageAsync" />
 </MudItem>
 
 <MudItem xs="12" md="6">
-<MudDatePicker @bind-Value="_fecha"
+<MudDatePicker @bind-Date="_fecha"
 Label="Fecha"
 Variant="Variant.Outlined"
 Required="true"
@@ -125,7 +125,7 @@ Lines="3" />
 
     private BaseEntityForm<PaaaResponse> form = null!;
     private PaaaResponse item = new() { Activo = true, Fecha = DateTime.Today };
-    private DateTime? _fecha;
+    private DateTime? _fecha = DateTime.Today;
     private bool _loading = true;
 
     private LookupItem? _selectedPersona;
@@ -160,8 +160,11 @@ Lines="3" />
 
     private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await personaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPersona, Text = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim() }), response?.TotalCount);
+        var response = await areaService.GetAllAsync();
+        var items = FilterSolicitantes(response?.Items, filter)
+            .Select(x => new LookupItem { Id = x.PkidPersona, Text = GetPersonaText(x) });
+
+        return ToPagedComboResult(items, page, pageSize);
     }
 
     private async Task<ComboLookupResult> LoadProyectosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -172,28 +175,100 @@ Lines="3" />
 
     private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        
-        var response = await programaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        var anioFilter = GetAnioFilter();
+        if (anioFilter == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await programaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await fuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        var anioFilter = GetAnioFilter();
+        if (anioFilter == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await fuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        
-        var response = await areaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUnidadResponsable, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+        var response = await areaService.GetAllAsync();
+        var items = FilterUsuarioAreas(response?.Items, filter)
+            .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
+
+        return ToPagedComboResult(items, page, pageSize);
     }
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
     {
         var list = items?.ToList() ?? new List<LookupItem>();
         return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private Dictionary<string, object>? GetAnioFilter()
+    {
+        var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        return anioId.HasValue && anioId.Value > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = anioId.Value }
+            : null;
+    }
+
+    private static IEnumerable<UsuarioAreaResponse> FilterUsuarioAreas(IEnumerable<UsuarioAreaResponse>? items, string filter)
+    {
+        var query = (items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidArea > 0);
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(x => x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return query.OrderBy(x => x.UsuarioAreaDescripcion);
+    }
+
+    private static IEnumerable<UsuarioAreaResponse> FilterSolicitantes(IEnumerable<UsuarioAreaResponse>? items, string filter)
+    {
+        var query = (items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidPersona > 0 && x.EsSolicitante)
+            .GroupBy(x => x.PkidPersona)
+            .Select(x => x.First());
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(x =>
+                GetPersonaText(x).Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return query.OrderBy(GetPersonaText);
+    }
+
+    private static string GetPersonaText(UsuarioAreaResponse item)
+    {
+        var nombreCompleto = $"{item.PersonaNombre} {item.PersonaPaterno} {item.PersonaMaterno}".Trim();
+        return string.IsNullOrWhiteSpace(nombreCompleto)
+            ? item.PkidPersona.ToString()
+            : nombreCompleto;
+    }
+
+    private static ComboLookupResult ToPagedComboResult(IEnumerable<LookupItem> items, int page, int pageSize)
+    {
+        var list = items.ToList();
+        var currentPage = Math.Max(1, page);
+        var currentPageSize = pageSize <= 0 ? 10 : pageSize;
+
+        return new ComboLookupResult
+        {
+            Items = list.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
+            TotalCount = list.Count
+        };
     }
 
     private async Task CargarDatosAsync()

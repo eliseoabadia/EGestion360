@@ -6,6 +6,7 @@
 @inject IGenericCrudService<MatrizConversionResponse> Service
 @inject ISnackbar Snackbar
 @inject HttpClient Http
+@inject AnioPresupuestalStateService AnioStateService
 
 <BaseCrudDialog TItem="MatrizConversionResponse"
                 Title="@dialogTitle"
@@ -156,6 +157,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await AnioStateService.InitializeAsync();
+
         if (Id.HasValue)
         {
             await CargarDatosAsync();
@@ -165,7 +168,7 @@
     }
 
     private Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-        => LoadLookupPageAsync("api/MatrizConversion/GetAllProgramasLookupPaginado", page, pageSize, filter, ct);
+        => LoadAnioLookupPageAsync("api/MatrizConversion/GetAllProgramasLookupPaginado", page, pageSize, filter, ct);
 
     private Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
         => LoadLookupPageAsync("api/MatrizConversion/GetPartidaLookupPaginado", page, pageSize, filter, ct);
@@ -197,6 +200,17 @@
     private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
     {
         var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
+    }
+
+    private async Task<ComboLookupResult> LoadAnioLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            return new ComboLookupResult();
+        }
+
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}&idAnio={AnioStateService.AnioId.Value}";
         return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
     }
 
@@ -235,6 +249,13 @@
                 return;
             }
 
+            if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+            {
+                Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
+                return;
+            }
+
+            _item.FkidAnioSis = AnioStateService.AnioId.Value;
             _item.FkidProgramaPres = _selectedPrograma!.Id;
             _item.FkidPartidaSis = _selectedPartida!.Id;
             _item.FkidCuentaContableAprobado = _selectedAprobado!.Id;

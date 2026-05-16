@@ -8,6 +8,7 @@ using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EG.ApiCoreBS.Services.Contabilidad
 {
@@ -35,6 +36,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             _service.AddInclude(e => e.FkIdCuentaContableDevengadoNavigation);
             _service.AddInclude(e => e.FkIdCuentaContableRecaudadoNavigation);
             _service.AddInclude(e => e.FkIdCuentaContableDepositoNavigation);
+            _service.AddInclude(e => e.FkIdAnioSisNavigation);
             _service.AddInclude(e => e.UsuarioCreacionNavigation);
         }
 
@@ -88,6 +90,12 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             var query = _service.GetQueryWithIncludes();
 
+            if (TryGetIntFilter(request, "FkIdAnioSis", out var anioId) ||
+                TryGetIntFilter(request, "FkidAnioSis", out anioId))
+            {
+                query = query.Where(e => e.FkIdAnioSis == anioId);
+            }
+
             if (!string.IsNullOrWhiteSpace(request.Filtro))
             {
                 query = query.Where(e =>
@@ -128,6 +136,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 FkIdCuentaContableDevengado = e.FkIdCuentaContableDevengado,
                 FkIdCuentaContableRecaudado = e.FkIdCuentaContableRecaudado,
                 FkIdCuentaContableDeposito = e.FkIdCuentaContableDeposito,
+                FkIdAnioSis = e.FkIdAnioSis,
                 ProgramaClave = e.FkIdProgramaNavigation?.Clave ?? string.Empty,
                 ProgramaDescripcion = e.FkIdProgramaNavigation?.Descripcion ?? string.Empty,
                 OrigenDescripcion = e.FkIdOrigenNavigation?.Descripcion ?? string.Empty,
@@ -177,15 +186,21 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 .ToListAsync();
         }
 
-        public async Task<PagedResult<LookupItem>> GetProgramaLookupPaginadoAsync(int page, int pageSize, string? filter)
+        public async Task<PagedResult<LookupItem>> GetProgramaLookupPaginadoAsync(int page, int pageSize, string? filter, int? idAnio)
         {
             var query = _context.Set<Programa>()
+                .Where(p => p.Activo && (!idAnio.HasValue || p.FkidAnioSis == idAnio.Value))
                 .OrderBy(p => p.Clave)
                 .Select(p => new LookupItem
                 {
                     Id = p.PkidPrograma,
                     Text = (p.Clave ?? "") + " - " + (p.Descripcion ?? "")
                 });
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                query = query.Where(p => p.Text.Contains(filter));
+            }
 
             var totalCount = await query.CountAsync();
             var items = await query
@@ -200,6 +215,30 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 Items = items,
                 TotalCount = totalCount
             };
+        }
+
+        private static bool TryGetIntFilter(PagedRequest request, string key, out int value)
+        {
+            value = 0;
+            if (request.AdditionalFilters == null || !request.AdditionalFilters.TryGetValue(key, out var raw) || raw == null)
+            {
+                return false;
+            }
+
+            if (raw is JsonElement json)
+            {
+                if (json.ValueKind == JsonValueKind.Number && json.TryGetInt32(out value))
+                {
+                    return true;
+                }
+
+                if (json.ValueKind == JsonValueKind.String && int.TryParse(json.GetString(), out value))
+                {
+                    return true;
+                }
+            }
+
+            return int.TryParse(raw.ToString(), out value);
         }
 
         public async Task<PagedResult<LookupItem>> GetOrigenLookupPaginadoAsync(int page, int pageSize, string? filter)

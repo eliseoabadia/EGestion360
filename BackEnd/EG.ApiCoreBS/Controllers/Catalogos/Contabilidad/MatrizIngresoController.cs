@@ -182,9 +182,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpGet("GetProgramaLookupPaginado")]
-        public async Task<ActionResult<PagedResult<LookupItem>>> GetProgramaLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetProgramaLookupPaginado(int page = 1, int pageSize = 25, string? filter = null, int? idAnio = null)
         {
-            return Ok(await _service.GetProgramaLookupPaginadoAsync(page, pageSize, filter));
+            return Ok(await _service.GetProgramaLookupPaginadoAsync(page, pageSize, filter, idAnio));
         }
 
         [HttpGet("GetOrigen")]

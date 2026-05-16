@@ -17,7 +17,7 @@ namespace EG.Application.Interfaces.Contabilidad
         Task<IEnumerable<object>> GetProgramasAsync();
         Task<IEnumerable<object>> GetOrigenAsync();
         Task<IEnumerable<object>> GetCuentaContableAsync();
-        Task<PagedResult<LookupItem>> GetProgramaLookupPaginadoAsync(int page, int pageSize, string? filter);
+        Task<PagedResult<LookupItem>> GetProgramaLookupPaginadoAsync(int page, int pageSize, string? filter, int? idAnio);
         Task<PagedResult<LookupItem>> GetOrigenLookupPaginadoAsync(int page, int pageSize, string? filter);
         Task<PagedResult<LookupItem>> GetCuentaContableLookupPaginadoAsync(int page, int pageSize, string? filter);
     }

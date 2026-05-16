@@ -2,7 +2,11 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
+@using EG.Web.Services
+@using MiniExcelLibs
 @using MudBlazor
+@implements IDisposable
+@inject AnioPresupuestalStateService AnioStateService
 @inherits BaseCrudPage<ProgramaResponse, ProgramaResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
@@ -89,6 +93,82 @@
 
     protected override string GetDefaultSortLabel() => "Clave";
 
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+    }
+
+    protected override async Task<TableData<ProgramaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var page = Math.Max(1, state.Page + 1);
+            CurrentPage = page;
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!HasSelectedAnio())
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+                return new TableData<ProgramaResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
+            };
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrEmpty(response?.Message))
+                    Snackbar.Add(response.Message, Severity.Error);
+            }
+
+            return new TableData<ProgramaResponse>
+            {
+                Items = Elements,
+                TotalItems = TotalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<ProgramaResponse>
+            {
+                Items = new List<ProgramaResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
     protected override IEnumerable<object> MapToExcelData(IEnumerable<ProgramaResponse> items)
     {
         return items.Select(p => new
@@ -121,6 +201,61 @@
         return response?.Data?.ClaveNombre ?? "el programa presupuestal";
     }
 
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
+            };
+
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            var excelData = MapToExcelData(response.Items);
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{AnioStateService.AnioClave}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
     protected override async Task ReloadData()
     {
         if (table != null)
@@ -129,6 +264,19 @@
         }
     }
 
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(ReloadData);
+    }
+
+    private bool HasSelectedAnio() =>
+        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
+
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
 }
