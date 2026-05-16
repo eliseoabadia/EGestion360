@@ -1,6 +1,7 @@
 @page "/Adquisiciones/Requisicion"
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @using EG.Web.Services
@@ -8,6 +9,8 @@
 @using MudBlazor
 @implements IDisposable
 @inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
+@inject HttpClient Http
 @inherits BaseCrudPage<RequisicionResponse, RequisicionResponse>
 
 @inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
@@ -132,6 +135,7 @@
                                        Color="Color.Success"
                                        Size="Size.Small"
                                        Visible="@CanCreate"
+                                       Disabled="@(SelectedPartida == null)"
                                        OnClick="AddDetalle"
                                        Class="ml-1" />
                     </MudTooltip>
@@ -200,6 +204,12 @@
                             </Header>
                             <Row Context="partida">
                                 <MudTd>
+                                    <MudTooltip Text="Seleccionar partida">
+                                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                       Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Info)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => SelectPartida(partida))" />
+                                    </MudTooltip>
                                     <MudTooltip Text="Editar partida">
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                        Visible="@CanUpdate"
@@ -215,7 +225,13 @@
                                                        OnClick="@(() => DeletePartida(partida))" />
                                     </MudTooltip>
                                 </MudTd>
-                                <MudTd>@TextOrDash(partida.PartidaClave)</MudTd>
+                                <MudTd>
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Primary)">
+                                        @TextOrDash(partida.PartidaClave)
+                                    </MudChip>
+                                </MudTd>
                                 <MudTd>@TextOrDash(partida.PartidaDescripcion)</MudTd>
                                 <MudTd>@(partida.Monto?.ToString("C2") ?? "-")</MudTd>
                             </Row>
@@ -225,10 +241,10 @@
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
                         <GenericTable TItem="DetalleRequisicionResponse"
                                       @ref="detalleTable"
-                                      Title="Detalle de Requisicion"
+                                      Title="@DetalleTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@CanCreate"
+                                      ShowAddButton="@(CanCreate && SelectedPartida != null)"
                                       PageSize="5"
                                       ServerDataFunc="LoadDetallesServerData"
                                       SearchString="@detalleSearchString"
@@ -277,8 +293,12 @@
     private GenericTable<RequisicionPartidaResponse>? partidaTable;
     private GenericTable<DetalleRequisicionResponse>? detalleTable;
     private RequisicionResponse? SelectedRequisicion;
+    private RequisicionPartidaResponse? SelectedPartida;
     private string partidaSearchString = string.Empty;
     private string detalleSearchString = string.Empty;
+    private string DetalleTableTitle => SelectedPartida == null
+        ? "Detalle de Requisicion"
+        : $"Detalle de Requisicion - {SelectedPartida.PartidaClave}";
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "requisicion";
@@ -367,7 +387,28 @@
 
     protected override async Task EditItem(int id)
     {
-        await base.EditItem(id);
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
 
         if (SelectedRequisicion?.PkidRequisicion == id)
         {
@@ -472,6 +513,7 @@
     {
         partidaSearchString = string.Empty;
         detalleSearchString = string.Empty;
+        SelectedPartida = null;
         SelectedRequisicion = item;
         StateHasChanged();
     }
@@ -496,9 +538,35 @@
     private void BackToTable()
     {
         SelectedRequisicion = null;
+        SelectedPartida = null;
         partidaSearchString = string.Empty;
         detalleSearchString = string.Empty;
         StateHasChanged();
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
     }
 
     private void OnAnioChanged(int? anioId)
@@ -528,6 +596,12 @@
             state.SortDirection,
             new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
 
+        if (SelectedPartida != null && response?.Items?.Any(x => x.PkidRequisicionPartida == SelectedPartida.PkidRequisicionPartida) != true)
+        {
+            SelectedPartida = null;
+            await ReloadDetalles();
+        }
+
         return new TableData<RequisicionPartidaResponse>
         {
             Items = response?.Items ?? new List<RequisicionPartidaResponse>(),
@@ -537,7 +611,7 @@
 
     private async Task<TableData<DetalleRequisicionResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
     {
-        if (SelectedRequisicion == null)
+        if (SelectedRequisicion == null || SelectedPartida == null)
         {
             return new TableData<DetalleRequisicionResponse> { Items = new List<DetalleRequisicionResponse>(), TotalItems = 0 };
         }
@@ -584,6 +658,14 @@
         }
     }
 
+    private async Task SelectPartida(RequisicionPartidaResponse partida)
+    {
+        SelectedPartida = partida;
+        detalleSearchString = string.Empty;
+        await ReloadDetalles();
+        StateHasChanged();
+    }
+
     private async Task EditPartida(int id)
     {
         if (!CanUpdate)
@@ -618,15 +700,29 @@
             return;
         }
 
-        var result = await PartidaService.DeleteAsync(partida.PkidRequisicionPartida);
-        if (result?.Success == true)
+        try
         {
-            Snackbar.Add("Partida eliminada correctamente", Severity.Success);
-            await ReloadPartidas();
-            return;
-        }
+            var response = await Http.DeleteAsync($"api/RequisicionPartida/{partida.PkidRequisicionPartida}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
-        Snackbar.Add(result?.Message ?? "Error al eliminar la partida", Severity.Error);
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Partida eliminada correctamente", Severity.Success);
+                if (SelectedPartida?.PkidRequisicionPartida == partida.PkidRequisicionPartida)
+                {
+                    SelectedPartida = null;
+                }
+                await ReloadPartidas();
+                await ReloadDetalles();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al eliminar la partida", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task AddDetalle()
@@ -637,11 +733,9 @@
             return;
         }
 
-        var partidasCheck = await PartidaService.GetAllPaginadoAsync(1, 1, "", "PartidaClave", SortDirection.Ascending,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
-        if (partidasCheck?.TotalCount == 0)
+        if (SelectedPartida == null)
         {
-            Snackbar.Add("Agregue al menos una partida a la requisicion antes de agregar detalles.", Severity.Warning);
+            Snackbar.Add("Selecciona una partida antes de agregar detalles.", Severity.Warning);
             return;
         }
 
@@ -649,7 +743,9 @@
         {
             ["EmpresaId"] = SelectedRequisicion.FkidEmpresaSis,
             ["RequisicionId"] = SelectedRequisicion.PkidRequisicion,
-            ["RequisicionDescripcion"] = SelectedRequisicion.Descripcion
+            ["RequisicionDescripcion"] = SelectedRequisicion.Descripcion,
+            ["PartidaContaId"] = SelectedPartida.FkidPartidaConta,
+            ["PartidaNombre"] = $"{SelectedPartida.PartidaClave} - {SelectedPartida.PartidaDescripcion}"
         };
 
         var dialog = await DialogService.ShowAsync<DetalleRequisicionDialog>(
@@ -675,7 +771,11 @@
         var parameters = new DialogParameters
         {
             ["Id"] = id,
-            ["EmpresaId"] = SelectedRequisicion?.FkidEmpresaSis ?? 0
+            ["EmpresaId"] = SelectedRequisicion?.FkidEmpresaSis ?? 0,
+            ["PartidaContaId"] = SelectedPartida?.FkidPartidaConta ?? 0,
+            ["PartidaNombre"] = SelectedPartida == null
+                ? string.Empty
+                : $"{SelectedPartida.PartidaClave} - {SelectedPartida.PartidaDescripcion}"
         };
 
         var dialog = await DialogService.ShowAsync<DetalleRequisicionDialog>(
@@ -698,15 +798,24 @@
             return;
         }
 
-        var result = await DetalleService.DeleteAsync(detalle.PkidDetalleRequisicion);
-        if (result?.Success == true)
+        try
         {
-            Snackbar.Add("Detalle eliminado correctamente", Severity.Success);
-            await ReloadDetalles();
-            return;
-        }
+            var response = await Http.DeleteAsync($"api/DetalleRequisicion/{detalle.PkidDetalleRequisicion}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
-        Snackbar.Add(result?.Message ?? "Error al eliminar el detalle", Severity.Error);
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Detalle eliminado correctamente", Severity.Success);
+                await ReloadDetalles();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al eliminar el detalle", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task ReloadPartidas()
@@ -727,6 +836,9 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private bool IsSelectedPartida(RequisicionPartidaResponse partida) =>
+        SelectedPartida?.PkidRequisicionPartida == partida.PkidRequisicionPartida;
 
     public void Dispose()
     {

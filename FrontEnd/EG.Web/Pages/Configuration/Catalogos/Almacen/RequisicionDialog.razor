@@ -137,6 +137,7 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int AnioId { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -307,13 +308,7 @@
 
     private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var anioFilter = GetAnioFilter();
-        if (anioFilter == null)
-        {
-            return new ComboLookupResult();
-        }
-
-        var response = await FuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
+        var response = await FuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
@@ -323,10 +318,13 @@
         return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
     }
 
-    private Dictionary<string, object>? GetAnioFilter() =>
-        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0
-            ? new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value }
+    private Dictionary<string, object>? GetAnioFilter()
+    {
+        var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        return anioId.HasValue && anioId.Value > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = anioId.Value }
             : null;
+    }
 
     private static IEnumerable<UsuarioAreaResponse> FilterUsuarioAreas(IEnumerable<UsuarioAreaResponse>? items, string filter)
     {

@@ -187,13 +187,13 @@ Lines="3" />
 
     private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var anioFilter = GetAnioFilter();
-        if (anioFilter == null)
-        {
-            return new ComboLookupResult();
-        }
+        // var anioFilter = GetAnioFilter();
+        // if (anioFilter == null)
+        // {
+        //     return new ComboLookupResult();
+        // }
 
-        var response = await fuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
+        var response = await fuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, null);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 

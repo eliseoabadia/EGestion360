@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 {
@@ -284,6 +285,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
             {
                 var query = _serviceView.GetQueryWithIncludes();
 
+                if (TryGetIntFilter(request, "FkidPartidaConta", out var partidaId))
+                {
+                    query = query.Where(e => e.FkidPartidaConta == partidaId);
+                }
+
                 if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
                     query = query.Where(e =>
@@ -344,6 +350,30 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     TotalCount = 0
                 };
             }
+        }
+
+        private static bool TryGetIntFilter(PagedRequest request, string key, out int value)
+        {
+            value = 0;
+            if (request.AdditionalFilters == null || !request.AdditionalFilters.TryGetValue(key, out var raw) || raw == null)
+            {
+                return false;
+            }
+
+            if (raw is JsonElement json)
+            {
+                if (json.ValueKind == JsonValueKind.Number && json.TryGetInt32(out value))
+                {
+                    return true;
+                }
+
+                if (json.ValueKind == JsonValueKind.String && int.TryParse(json.GetString(), out value))
+                {
+                    return true;
+                }
+            }
+
+            return int.TryParse(raw.ToString(), out value);
         }
     }
 }

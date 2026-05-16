@@ -54,10 +54,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             try
             {
-                if (TryGetIntFilter(pageRequest, "FkidAnioSis", out var anioId))
-                {
-                    return await GetAllPaginadoByAnioAsync(pageRequest, anioId, predicate);
-                }
+                //Hay que quitar el año, no lleva
+                //if (TryGetIntFilter(pageRequest, "FkidAnioSis", out var anioId))
+                //{
+                //    return await GetAllPaginadoByAnioAsync(pageRequest, anioId, predicate);
+                //}
 
                 var result = await _service.GetAllPaginadoAsync(pageRequest);
                 var items = result.Items.AsEnumerable();

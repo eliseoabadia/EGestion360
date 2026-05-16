@@ -48,6 +48,13 @@
                                    LoadPage="LoadRequisicionesPageAsync" />
             </MudItem>
 
+            @if (PartidaContaId > 0)
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@PartidaNombre</MudText>
+                </MudItem>
+            }
+
             <MudItem xs="12">
                 <PagedAutocomplete Value="@_selectedTipoBien"
                                    ValueChanged="value => _selectedTipoBien = value"
@@ -97,6 +104,8 @@
     [Parameter] public int EmpresaId { get; set; }
     [Parameter] public int RequisicionId { get; set; }
     [Parameter] public string RequisicionDescripcion { get; set; } = string.Empty;
+    [Parameter] public int PartidaContaId { get; set; }
+    [Parameter] public string PartidaNombre { get; set; } = string.Empty;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -248,7 +257,11 @@
 
     private async Task<ComboLookupResult> LoadTiposBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "CodigoClave", SortDirection.Ascending);
+        var additionalFilters = PartidaContaId > 0
+            ? new Dictionary<string, object> { ["FkidPartidaConta"] = PartidaContaId }
+            : null;
+
+        var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "CodigoClave", SortDirection.Ascending, additionalFilters);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoBien, Text = $"{x.CodigoClave} - {x.TipoBienDescripcion}" }), response?.TotalCount);
     }
 
