@@ -63,6 +63,8 @@ public partial class Programa
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
+    public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
+
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();

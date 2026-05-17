@@ -1,0 +1,485 @@
+@page "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
+@using EG.Dommain.DTOs.Responses
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@using System.Globalization
+@implements IDisposable
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inherits BaseCrudPage<EgresoProyectadoResponse, EgresoProyectadoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column anteproyecto-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Anteproyecto de Egresos"
+                    Subtitle="Planeacion mensual por programa, partida y area"
+                    Icon="@Icons.Material.Filled.StackedLineChart"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <div class="summary-strip">
+            <div>
+                <span class="summary-label">Total proyectado</span>
+                <strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong>
+            </div>
+            <div>
+                <span class="summary-label">Registros</span>
+                <strong>@TotalCount.ToString("N0")</strong>
+            </div>
+            <div>
+                <span class="summary-label">Moneda base</span>
+                <strong>@_currencyName (@_currencySymbol)</strong>
+            </div>
+        </div>
+
+        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericTable TItem="EgresoProyectadoResponse"
+                          @ref="table"
+                          Title="Partidas del anteproyecto"
+                          SearchPlaceholder="Buscar programa, partida, area o descripcion..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoProyectadoResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoProyectadoResponse">Partida</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoProyectadoResponse">Area</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoProyectadoResponse">Descripcion</MudTableSortLabel></MudTh>
+                    <MudTh>Meses</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoProyectadoResponse">Total</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Activo" T="EgresoProyectadoResponse">Activo</MudTableSortLabel></MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd>
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Visible="@CanUpdate"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditItem(item.PkidEgresoProyectado))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Visible="@CanDelete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteEgreso(item))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
+                        <span>@TextOrDash(item.ProgramaDescripcion)</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
+                        <span>@TextOrDash(item.PartidaDescripcion)</span>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
+                    <MudTd>
+                        <div class="month-spark">
+                            @foreach (var month in GetMonths(item))
+                            {
+                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
+                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
+                            }
+                        </div>
+                    </MudTd>
+                    <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
+                    <MudTd>
+                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                            @(item.Activo ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .anteproyecto-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .anteproyecto-page .summary-strip > div {
+        border: 1px solid rgba(25, 118, 210, .18);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(245,249,252,.96));
+    }
+
+    .anteproyecto-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: #607d8b;
+        text-transform: uppercase;
+    }
+
+    .anteproyecto-page .summary-strip strong {
+        font-size: 1.05rem;
+    }
+
+    .anteproyecto-page .main-cell {
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .anteproyecto-page td span {
+        color: #607d8b;
+        font-size: .78rem;
+    }
+
+    .month-spark {
+        display: grid;
+        grid-template-columns: repeat(12, 6px);
+        align-items: end;
+        gap: 3px;
+        height: 34px;
+        min-width: 105px;
+    }
+
+    .month-spark span {
+        display: block;
+        min-height: 4px;
+        border-radius: 4px 4px 0 0;
+        background: #1976d2;
+    }
+</style>
+
+@code {
+    private GenericTable<EgresoProyectadoResponse> table = null!;
+    private string _currencySymbol = "$";
+    private string _currencyName = "Peso Mexicano";
+
+    protected override string ModuleName => "Planeacion";
+    protected override string SubModuleName => "Anteproyecto_Egresos";
+    protected override Type CreateDialogType => typeof(AnteproyectoEgresosDialog);
+    protected override Type EditDialogType => typeof(AnteproyectoEgresosDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EgresoProyectadoResponse>);
+
+    protected override string GetDefaultSortLabel() => "ProgramaClave";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        await LoadCurrencyAsync();
+    }
+
+    protected override async Task<TableData<EgresoProyectadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var page = Math.Max(1, state.Page + 1);
+            CurrentPage = page;
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!HasSelectedAnio())
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+                return new TableData<EgresoProyectadoResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId!.Value });
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                    Snackbar.Add(response.Message, Severity.Error);
+            }
+
+            return new TableData<EgresoProyectadoResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<EgresoProyectadoResponse> { Items = new List<EgresoProyectadoResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["AnioId"] = AnioStateService.AnioId!.Value,
+            ["CurrencySymbol"] = _currencySymbol,
+            ["CurrencyName"] = _currencyName
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear anteproyecto", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await ReloadData();
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["AnioId"] = AnioStateService.AnioId ?? 0,
+            ["CurrencySymbol"] = _currencySymbol,
+            ["CurrencyName"] = _currencyName
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar anteproyecto", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await ReloadData();
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EgresoProyectadoResponse> items)
+    {
+        return items.Select(x => new
+        {
+            ID = x.PkidEgresoProyectado,
+            Anio = x.AnioClave,
+            Programa = x.ProgramaClaveNombre,
+            Partida = x.PartidaClaveNombre,
+            Area = x.AreaNombre,
+            x.Descripcion,
+            Fecha = x.Fecha.ToString("dd/MM/yyyy"),
+            x.Enero,
+            x.Febrero,
+            x.Marzo,
+            x.Abril,
+            x.Mayo,
+            x.Junio,
+            x.Julio,
+            x.Agosto,
+            x.Septiembre,
+            x.Octubre,
+            x.Noviembre,
+            x.Diciembre,
+            x.Total,
+            x.Activo,
+            x.UsuarioCreacion,
+            x.FechaCreacion,
+            x.UsuarioModificacion,
+            x.FechaModificacion
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.PartidaClaveNombre ?? "el anteproyecto";
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await Service.GetAllPaginadoAsync(
+                1,
+                int.MaxValue,
+                SearchString,
+                string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel,
+                SortDirection,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId!.Value });
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{AnioStateService.AnioClave}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+            await table.ReloadData();
+    }
+
+    private async Task DeleteEgreso(EgresoProyectadoResponse item)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Eliminar anteproyecto de {TextOrDash(item.PartidaClaveNombre)}?");
+        if (!confirm)
+            return;
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/EgresoProyectado/{item.PkidEgresoProyectado}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Anteproyecto eliminado correctamente", Severity.Success);
+                await ReloadData();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al eliminar el anteproyecto", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                if (response?.Success == true && response.Data != null)
+                {
+                    _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+                    _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
+                }
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+
+    private bool HasSelectedAnio() =>
+        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string Money(decimal amount) => $"{_currencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static int GetMonthHeight(decimal amount, decimal total)
+    {
+        if (amount <= 0 || total <= 0)
+            return 10;
+
+        return Math.Clamp((int)Math.Round((amount / total) * 100m * 3m), 12, 100);
+    }
+
+    private static IEnumerable<(string Label, decimal Amount)> GetMonths(EgresoProyectadoResponse item)
+    {
+        yield return ("Ene", item.Enero);
+        yield return ("Feb", item.Febrero);
+        yield return ("Mar", item.Marzo);
+        yield return ("Abr", item.Abril);
+        yield return ("May", item.Mayo);
+        yield return ("Jun", item.Junio);
+        yield return ("Jul", item.Julio);
+        yield return ("Ago", item.Agosto);
+        yield return ("Sep", item.Septiembre);
+        yield return ("Oct", item.Octubre);
+        yield return ("Nov", item.Noviembre);
+        yield return ("Dic", item.Diciembre);
+    }
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
+}

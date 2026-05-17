@@ -255,6 +255,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[EgresoProyectado]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[Eje]",
          "ObjectType": 0
       },
@@ -583,11 +587,19 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_EgresoProyectado]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_Programa]",
          "ObjectType": 3
       },
       {
          "Name": "[PRES].[Vw_SubFuncion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[VwPrograma]",
          "ObjectType": 3
       },
       {

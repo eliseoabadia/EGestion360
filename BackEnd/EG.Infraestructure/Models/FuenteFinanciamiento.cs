@@ -13,8 +13,6 @@ public partial class FuenteFinanciamiento
 
     public string Descripcion { get; set; }
 
-    public int? FkidAnioSis { get; set; }
-
     public string Ff { get; set; }
 
     public string Fg { get; set; }
@@ -34,8 +32,6 @@ public partial class FuenteFinanciamiento
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
-    public virtual Anio FkidAnioSisNavigation { get; set; }
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 

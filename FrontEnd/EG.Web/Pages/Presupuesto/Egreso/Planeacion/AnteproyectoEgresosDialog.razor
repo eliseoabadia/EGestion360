@@ -1,0 +1,425 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+@using System.Globalization
+
+@inject IGenericCrudService<EgresoProyectadoResponse> Service
+@inject IGenericCrudService<ProgramaResponse> ProgramaService
+@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject IGenericCrudService<UsuarioAreaResponse> AreaService
+@inject AnioPresupuestalStateService AnioStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EgresoProyectadoResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.ExtraExtraLarge"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando anteproyecto..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="EgresoProyectadoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2" Class="anteproyecto-dialog">
+            <MudItem xs="12">
+                <div class="budget-ribbon">
+                    <div>
+                        <span>Anio presupuestal</span>
+                        <strong>@BudgetYearText</strong>
+                    </div>
+                    <div>
+                        <span>Total mensual @CurrencyDisplay</span>
+                        <strong>@Money(TotalMeses)</strong>
+                    </div>
+                    <div>
+                        <span>Promedio @CurrencyDisplay</span>
+                        <strong>@Money(TotalMeses / 12m)</strong>
+                    </div>
+                </div>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedPrograma"
+                                   ValueChanged="OnProgramaChanged"
+                                   Label="Programa"
+                                   Required="true"
+                                   RequiredError="El programa es requerido"
+                                   LoadPage="LoadProgramasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedPartida"
+                                   ValueChanged="value => _selectedPartida = value"
+                                   Label="Partida"
+                                   Required="true"
+                                   RequiredError="La partida es requerida"
+                                   LoadPage="LoadPartidasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area"
+                                   Required="true"
+                                   RequiredError="El area es requerida"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fecha"
+                               Label="Fecha"
+                               Variant="Variant.Outlined"
+                               DateFormat="dd/MM/yyyy"
+                               Culture="@DateCulture"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <div class="months-panel">
+                    <div class="months-header">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Distribucion mensual</MudText>
+                            <MudText Typo="Typo.caption">Captura el monto por mes; el total se recalcula automaticamente.</MudText>
+                        </div>
+                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
+                    </div>
+
+                    <MudGrid GutterSize="2">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                        </MudItem>
+                    </MudGrid>
+                </div>
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+<style>
+    .anteproyecto-dialog .budget-ribbon {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+
+    .anteproyecto-dialog .budget-ribbon > div {
+        border: 1px solid rgba(96, 165, 250, .38);
+        border-radius: 8px;
+        padding: 12px;
+        background: #172234;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .anteproyecto-dialog .budget-ribbon span {
+        display: block;
+        color: #9fc2dd;
+        font-size: .72rem;
+        text-transform: uppercase;
+    }
+
+    .anteproyecto-dialog .budget-ribbon strong {
+        color: #f8fbff;
+        font-size: 1.08rem;
+        font-weight: 700;
+    }
+
+    .anteproyecto-dialog .months-panel {
+        border: 1px solid rgba(96, 165, 250, .28);
+        border-radius: 8px;
+        padding: 14px;
+        background: #172234;
+        color: #edf6ff;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 10px 24px rgba(3, 7, 18, .28);
+    }
+
+    .anteproyecto-dialog .months-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .anteproyecto-dialog .months-header .mud-typography {
+        color: #edf6ff;
+    }
+
+    .anteproyecto-dialog .months-header .mud-typography-caption {
+        color: #a9bfd2;
+    }
+
+    .anteproyecto-dialog .months-panel .mud-input,
+    .anteproyecto-dialog .months-panel .mud-input input,
+    .anteproyecto-dialog .months-panel .mud-input-adornment,
+    .anteproyecto-dialog .months-panel .mud-input-label {
+        color: #f8fbff;
+    }
+
+    .anteproyecto-dialog .months-panel .mud-input-outlined-border {
+        border-color: rgba(169, 191, 210, .5);
+    }
+
+    .anteproyecto-dialog .months-panel .mud-input-control:hover .mud-input-outlined-border,
+    .anteproyecto-dialog .months-panel .mud-input:focus-within .mud-input-outlined-border {
+        border-color: #60a5fa;
+    }
+
+    .anteproyecto-dialog .months-panel input::selection {
+        color: #ffffff;
+        background: #2563eb;
+    }
+
+    @@media (max-width: 760px) {
+        .anteproyecto-dialog .budget-ribbon {
+            grid-template-columns: 1fr;
+        }
+
+        .anteproyecto-dialog .months-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int AnioId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<EgresoProyectadoResponse> form = null!;
+    private EgresoProyectadoResponse item = new()
+    {
+        Activo = true,
+        Fecha = DateOnly.FromDateTime(DateTime.Today)
+    };
+
+    private DateTime? _fecha = DateTime.Today;
+    private LookupItem? _selectedPrograma;
+    private LookupItem? _selectedPartida;
+    private LookupItem? _selectedArea;
+
+    private string dialogTitle => Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
+    private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
+    private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+                _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres, Text = TextOrDefault(item.ProgramaClaveNombre, item.FkidProgramaPres) };
+                _selectedPartida = new LookupItem { Id = item.FkidPartidaConta, Text = TextOrDefault(item.PartidaClaveNombre, item.FkidPartidaConta) };
+                _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPrograma == null || _selectedPartida == null || _selectedArea == null)
+        {
+            Snackbar.Add("Debe seleccionar programa, partida y area.", Severity.Warning);
+            return;
+        }
+
+        item.FkidAnioSis = AnioStateService.AnioId.Value;
+        item.FkidProgramaPres = _selectedPrograma.Id;
+        item.FkidPartidaConta = _selectedPartida.Id;
+        item.FkidAreaSis = _selectedArea.Id;
+        item.Fecha = DateOnly.FromDateTime(_fecha ?? DateTime.Today);
+        item.Total = TotalMeses;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Anteproyecto actualizado correctamente" : "Anteproyecto creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el anteproyecto", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void OnProgramaChanged(LookupItem? value)
+    {
+        _selectedPrograma = value;
+    }
+
+    private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var anioFilter = GetAnioFilter();
+        if (anioFilter == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await ProgramaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPartida, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllAsync();
+        var items = FilterUsuarioAreas(response?.Items, filter)
+            .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
+
+        return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private Dictionary<string, object>? GetAnioFilter()
+    {
+        var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        return anioId.HasValue && anioId.Value > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = anioId.Value }
+            : null;
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static IEnumerable<UsuarioAreaResponse> FilterUsuarioAreas(IEnumerable<UsuarioAreaResponse>? items, string filter)
+    {
+        var query = (items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidArea > 0);
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(x => x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return query.OrderBy(x => x.UsuarioAreaDescripcion);
+    }
+
+    private static ComboLookupResult ToPagedComboResult(IEnumerable<LookupItem> items, int page, int pageSize)
+    {
+        var list = items.ToList();
+        var currentPage = Math.Max(1, page);
+        var currentPageSize = pageSize <= 0 ? 10 : pageSize;
+
+        return new ComboLookupResult
+        {
+            Items = list.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
+            TotalCount = list.Count
+        };
+    }
+
+    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

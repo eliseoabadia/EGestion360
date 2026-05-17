@@ -45,6 +45,8 @@ public partial class Area
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
+    public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
+
     public virtual Area FkidAreaSisNavigation { get; set; }
 
     public virtual ICollection<Area> InverseFkidAreaSisNavigation { get; set; } = new List<Area>();

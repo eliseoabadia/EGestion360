@@ -174,7 +174,6 @@ BEGIN
         PKIdFuenteFinanciamiento INT IDENTITY(1,1) NOT NULL,
         Clave NVARCHAR(6) NULL,
         Descripcion NVARCHAR(200) NOT NULL,
-        FKIdAnio_SIS INT NULL,
         FF NVARCHAR(2) NULL,
         FG NVARCHAR(1) NULL,
         FE NVARCHAR(1) NULL,
@@ -192,7 +191,12 @@ GO
 
 IF OBJECT_ID('PRES.FuenteFinanciamiento', 'U') IS NOT NULL
 BEGIN
-    IF COL_LENGTH('PRES.FuenteFinanciamiento', 'FKIdAnio_SIS') IS NULL ALTER TABLE PRES.FuenteFinanciamiento ADD FKIdAnio_SIS INT NULL;
+    IF EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_FuenteFinanciamiento_Anio')
+        ALTER TABLE PRES.FuenteFinanciamiento DROP CONSTRAINT FK_FuenteFinanciamiento_Anio;
+
+    IF COL_LENGTH('PRES.FuenteFinanciamiento', 'FKIdAnio_SIS') IS NOT NULL
+        ALTER TABLE PRES.FuenteFinanciamiento DROP COLUMN FKIdAnio_SIS;
+
     IF COL_LENGTH('PRES.FuenteFinanciamiento', 'FF') IS NULL ALTER TABLE PRES.FuenteFinanciamiento ADD FF NVARCHAR(2) NULL;
     IF COL_LENGTH('PRES.FuenteFinanciamiento', 'FG') IS NULL ALTER TABLE PRES.FuenteFinanciamiento ADD FG NVARCHAR(1) NULL;
     IF COL_LENGTH('PRES.FuenteFinanciamiento', 'FE') IS NULL ALTER TABLE PRES.FuenteFinanciamiento ADD FE NVARCHAR(1) NULL;
@@ -339,12 +343,12 @@ IF OBJECT_ID('BD_PRESUPUESTO.PRES.FuenteFinanciamiento', 'U') IS NOT NULL
 BEGIN
     SET IDENTITY_INSERT PRES.FuenteFinanciamiento ON;
     INSERT INTO PRES.FuenteFinanciamiento (
-        PKIdFuenteFinanciamiento, Clave, Descripcion, FKIdAnio_SIS,
+        PKIdFuenteFinanciamiento, Clave, Descripcion,
         FF, FG, FE, AD, ORI, Activo, FechaCreacion, UsuarioCreacion,
         FechaModificacion, UsuarioModificacion
     )
     SELECT
-        PK_IdFuenteFinanciamiento, Clave, Descripcion, FK_IdAnio__SIS,
+        PK_IdFuenteFinanciamiento, Clave, Descripcion,
         FF, FG, FE, AD, ORI, ISNULL(CT_LIVE, 1), ISNULL(CT_CreatedDate, GETDATE()), ISNULL(CT_CreatedBy, 1),
         CT_ModifiedDate, CT_ModifiedBy
     FROM BD_PRESUPUESTO.PRES.FuenteFinanciamiento s
@@ -355,7 +359,6 @@ BEGIN
     SET
         d.Clave = s.Clave,
         d.Descripcion = s.Descripcion,
-        d.FKIdAnio_SIS = s.FK_IdAnio__SIS,
         d.FF = s.FF,
         d.FG = s.FG,
         d.FE = s.FE,

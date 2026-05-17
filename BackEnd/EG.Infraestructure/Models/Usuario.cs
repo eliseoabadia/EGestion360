@@ -111,6 +111,10 @@ public partial class Usuario
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizadoUsuarioModificacionNavigations { get; set; } = new List<EgresoAutorizado>();
 
+    public virtual ICollection<EgresoProyectado> EgresoProyectadoUsuarioCreacionNavigations { get; set; } = new List<EgresoProyectado>();
+
+    public virtual ICollection<EgresoProyectado> EgresoProyectadoUsuarioModificacionNavigations { get; set; } = new List<EgresoProyectado>();
+
     public virtual ICollection<Empresa> EmpresaUsuarioCreacionNavigations { get; set; } = new List<Empresa>();
 
     public virtual ICollection<Empresa> EmpresaUsuarioModificacionNavigations { get; set; } = new List<Empresa>();

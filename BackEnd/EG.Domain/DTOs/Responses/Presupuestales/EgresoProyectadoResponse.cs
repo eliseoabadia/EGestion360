@@ -1,0 +1,40 @@
+namespace EG.Domain.DTOs.Responses.Presupuestales
+{
+    public class EgresoProyectadoResponse
+    {
+        public int PkidEgresoProyectado { get; set; }
+        public int? FkidAnioSis { get; set; }
+        public int? AnioClave { get; set; }
+        public int FkidProgramaPres { get; set; }
+        public string? ProgramaClave { get; set; }
+        public string? ProgramaDescripcion { get; set; }
+        public string? ProgramaClaveNombre { get; set; }
+        public int FkidPartidaConta { get; set; }
+        public string? PartidaClave { get; set; }
+        public string? PartidaDescripcion { get; set; }
+        public string? PartidaClaveNombre { get; set; }
+        public int FkidAreaSis { get; set; }
+        public string? AreaClave { get; set; }
+        public string? AreaNombre { get; set; }
+        public string? Descripcion { get; set; }
+        public DateOnly Fecha { get; set; }
+        public decimal Enero { get; set; }
+        public decimal Febrero { get; set; }
+        public decimal Marzo { get; set; }
+        public decimal Abril { get; set; }
+        public decimal Mayo { get; set; }
+        public decimal Junio { get; set; }
+        public decimal Julio { get; set; }
+        public decimal Agosto { get; set; }
+        public decimal Septiembre { get; set; }
+        public decimal Octubre { get; set; }
+        public decimal Noviembre { get; set; }
+        public decimal Diciembre { get; set; }
+        public decimal? Total { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
+}
