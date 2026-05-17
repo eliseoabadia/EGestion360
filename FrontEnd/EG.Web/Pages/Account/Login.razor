@@ -1,4 +1,5 @@
 @page "/login"
+@implements IDisposable
 @using EG.Web.Auth
 @using EG.Web.Contracts
 @using EG.Web.Contracts.Configuration
@@ -9,6 +10,7 @@
 @using MudBlazor
 
 @inject SucursalStateService SucursalStateService
+@inject ThemeStateService ThemeStateService
 @inject IGenericCrudService<UsuarioSucursalResponse> _serviceUS
 @inject IJSRuntime _jsRuntime
 @inject INavigateService _navigateService
@@ -19,76 +21,89 @@
 @inject IDialogService DialogService
 
 <div class="login-root">
-    <div class="login-two-columns">
-        <!-- COLUMNA IZQUIERDA: BRANDING Y VALOR -->
-        <div class="login-branding">
-            <div class="branding-content">
-                <div class="logo-area">
-                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Class="brand-logo-icon" />
-                    <MudText Typo="Typo.h3" Class="brand-name">EGestion<span>360</span></MudText>
-                </div>
-                <MudText Typo="Typo.h5" Class="brand-tagline">Transforma la gestión de tu negocio</MudText>
-                
-                <div class="features-list">
-                    <div class="feature">
-                        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Medium" />
-                        <span>Panel de control en tiempo real</span>
-                    </div>
-                    <div class="feature">
-                        <MudIcon Icon="@Icons.Material.Filled.Insights" Size="Size.Medium" />
-                        <span>Análisis avanzado con IA</span>
-                    </div>
-                    <div class="feature">
-                        <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Medium" />
-                        <span>Seguridad de nivel empresarial</span>
-                    </div>
-                    <div class="feature">
-                        <MudIcon Icon="@Icons.Material.Filled.Devices" Size="Size.Medium" />
-                        <span>Acceso multi-dispositivo</span>
-                    </div>
-                </div>
+    <div class="login-shell">
+        <section class="login-brand-panel" aria-label="EGestion360">
+            <div class="login-theme-selector" aria-label="Seleccionar tema">
+                @foreach (var option in Enum.GetValues<AppThemeOption>())
+                {
+                    <MudTooltip Text="@GetThemeLabel(option)">
+                        <MudIconButton Icon="@GetThemeIcon(option)"
+                                       Size="Size.Small"
+                                       Color="@(ThemeStateService.SelectedOption == option ? Color.Primary : Color.Default)"
+                                       Class="@GetLoginThemeButtonClass(option)"
+                                       OnClick="@(() => SelectThemeAsync(option))" />
+                    </MudTooltip>
+                }
+            </div>
 
-                <div class="testimonial">
-                    <MudIcon Icon="@Icons.Material.Filled.FormatQuote" Size="Size.Small" />
-                    <MudText Typo="Typo.body2">"Gracias a EGestion360 aumentamos nuestra productividad en un 40%."</MudText>
-                    <MudText Typo="Typo.caption">— CFO, Empresa Líder</MudText>
+            <div class="brand-lockup">
+                <div class="brand-mark">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.h4" Class="brand-name">EGestion<span>360</span></MudText>
+                    <MudText Typo="Typo.body2" Class="brand-caption">Gestion empresarial</MudText>
                 </div>
             </div>
-        </div>
 
-        <!-- COLUMNA DERECHA: FORMULARIO DE LOGIN -->
-        <div class="login-form-container">
+            <div class="login-context">
+                <MudText Typo="Typo.overline">Acceso institucional</MudText>
+                <MudText Typo="Typo.h4">Portal administrativo</MudText>
+                <MudText Typo="Typo.body2">
+                    Utiliza tu cuenta asignada para continuar con tu sesion de trabajo.
+                </MudText>
+            </div>
+
+            <div class="trust-list">
+                <div class="trust-item">
+                    <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" />
+                    <span>Sesion protegida</span>
+                </div>
+                <div class="trust-item">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" />
+                    <span>Perfil por empresa y sucursal</span>
+                </div>
+                <div class="trust-item">
+                    <MudIcon Icon="@Icons.Material.Filled.SupportAgent" />
+                    <span>Soporte operativo</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="login-form-panel">
             <MudPaper Elevation="0" Class="form-paper">
                 <div class="form-header">
-                    <MudText Typo="Typo.h4" Class="form-title">Bienvenido de vuelta</MudText>
-                    <MudText Typo="Typo.body2" Class="form-subtitle">Ingresa tus credenciales para continuar</MudText>
+                    <MudText Typo="Typo.h4" Class="form-title">Iniciar sesion</MudText>
+                    <MudText Typo="Typo.body2" Class="form-subtitle">Ingresa tus credenciales para acceder al sistema.</MudText>
                 </div>
 
                 <MudForm @ref="loginForm" Class="login-form">
                     <MudTextField @bind-Value="login.Usuario"
-                                  Label="Usuario o correo electrónico"
+                                  Label="Usuario o correo"
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
                                   Margin="Margin.Dense"
                                   Required="true"
+                                  RequiredError="El usuario es requerido"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Person"
-                                  Class="mb-4" />
+                                  Class="login-field" />
 
                     <MudTextField @bind-Value="login.Password"
-                                  Label="Contraseña"
+                                  Label="Contrasena"
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
                                   Margin="Margin.Dense"
                                   InputType="@passwordInputType"
                                   Required="true"
+                                  RequiredError="La contrasena es requerida"
                                   Adornment="Adornment.End"
                                   AdornmentIcon="@passwordIcon"
                                   OnAdornmentClick="TogglePasswordVisibility"
-                                  Class="mb-2" />
+                                  Class="login-field" />
 
-                    <div class="forgot-password">
-                        <MudLink Href="/resetPassword" Typo="Typo.body2" Color="Color.Primary">¿Olvidaste tu contraseña?</MudLink>
+                    <div class="form-actions-row">
+                        <MudLink Href="/resetPassword" Typo="Typo.body2" Color="Color.Primary">Recuperar acceso</MudLink>
                     </div>
 
                     <MudButton Variant="Variant.Filled"
@@ -102,229 +117,274 @@
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="mr-2" />
                         }
-                        Acceder al sistema
+                        Acceder
                     </MudButton>
-
-                    <div class="signup-prompt">
-                        <MudText Typo="Typo.body2">¿Aún no tienes cuenta? <MudLink Href="/register" Color="Color.Primary">Solicita acceso</MudLink></MudText>
-                    </div>
                 </MudForm>
 
-                <MudDivider Class="my-6" />
-                <div class="contact-support">
-                    <MudText Typo="Typo.body2" Align="Align.Center">
-                        <MudIcon Icon="@Icons.Material.Filled.SupportAgent" Size="Size.Small" /> ¿Problemas para acceder?
+                <div class="form-footer">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">
+                        Sin cuenta activa?
                         <MudLink Href="/soporte" Color="Color.Primary">Contacta a soporte</MudLink>
                     </MudText>
                 </div>
             </MudPaper>
-        </div>
+        </section>
     </div>
 </div>
 
 <style>
-    /* ==================== RESET Y ESTRUCTURA ==================== */
     .login-root {
-        min-height: 100vh;
+        min-height: 100%;
         width: 100%;
-        background-color: var(--mud-palette-background);
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 28px;
+        background:
+            linear-gradient(120deg, color-mix(in srgb, var(--mud-palette-primary) 8%, transparent), transparent 42%),
+            var(--mud-palette-background);
+        color: var(--mud-palette-text-primary);
         font-family: var(--mud-typography-default-font-family);
     }
 
-    .login-two-columns {
-        display: flex;
-        width: 100%;
-        max-width: 1400px;
-        min-height: 700px;
-        background-color: var(--mud-palette-surface);
-        border-radius: 28px;
+    .login-shell {
+        display: grid;
+        grid-template-columns: minmax(340px, .86fr) minmax(360px, 1fr);
+        width: min(1120px, 100%);
+        min-height: 620px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        margin: 20px;
+        background: var(--mud-palette-surface);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, .18);
     }
 
-    /* ==================== COLUMNA IZQUIERDA (BRANDING) ==================== */
-    .login-branding {
-        flex: 1.2;
-        background: linear-gradient(135deg, var(--mud-palette-primary), var(--mud-palette-secondary));
-        padding: 48px;
+    .login-brand-panel {
+        position: relative;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        color: white;
+        justify-content: space-between;
+        gap: 32px;
+        padding: 34px;
+        background:
+            linear-gradient(160deg, color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-surface)), var(--mud-palette-surface));
+        border-right: 1px solid var(--mud-palette-lines-default);
     }
 
-    .branding-content {
-        max-width: 400px;
-        margin: 0 auto;
+    .login-theme-selector {
+        display: inline-flex;
+        align-self: flex-start;
+        gap: 6px;
+        padding: 4px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--mud-palette-surface) 92%, transparent);
     }
 
-    .logo-area {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 24px;
+    .login-theme-button {
+        border-radius: 6px;
+        color: var(--mud-palette-text-secondary);
     }
 
-    .brand-logo-icon {
-        font-size: 48px;
-        color: white;
+    .login-theme-button.active {
+        background: var(--eg-primary-soft);
+        color: var(--mud-palette-primary);
     }
 
-    .brand-name {
-        font-weight: 700;
-        letter-spacing: -0.5px;
-    }
-
-        .brand-name span {
-            font-weight: 300;
-            opacity: 0.9;
-        }
-
-    .brand-tagline {
-        margin-bottom: 40px;
-        opacity: 0.9;
-        font-weight: 400;
-    }
-
-    .features-list {
-        margin: 32px 0;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .feature {
+    .brand-lockup {
         display: flex;
         align-items: center;
         gap: 14px;
-        font-size: 1rem;
     }
 
-        .feature .mud-icon-root {
-            color: white;
-            opacity: 0.9;
-        }
-
-    .testimonial {
-        margin-top: 40px;
-        padding: 20px;
-        background: rgba(255,255,255,0.15);
-        border-radius: 20px;
-        backdrop-filter: blur(4px);
+    .brand-mark {
+        width: 48px;
+        height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--mud-palette-primary);
+        color: var(--eg-on-primary);
     }
 
-        .testimonial .mud-icon-root {
-            color: white;
-            margin-bottom: 8px;
-        }
+    .brand-mark .mud-icon-root {
+        font-size: 30px;
+    }
 
-    /* ==================== COLUMNA DERECHA (FORM) ==================== */
-    .login-form-container {
-        flex: 1;
-        background-color: var(--mud-palette-surface);
+    .brand-name {
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: 0;
+    }
+
+    .brand-name span {
+        color: var(--mud-palette-primary);
+        font-weight: 600;
+    }
+
+    .brand-caption,
+    .login-context .mud-typography-body2,
+    .form-subtitle,
+    .form-footer {
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .login-context {
+        display: grid;
+        gap: 10px;
+        max-width: 430px;
+    }
+
+    .login-context .mud-typography-overline {
+        color: var(--mud-palette-primary);
+        font-weight: 800;
+        letter-spacing: .08em;
+    }
+
+    .login-context .mud-typography-h4 {
+        font-weight: 800;
+        line-height: 1.14;
+    }
+
+    .trust-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 5%, var(--mud-palette-surface));
+        color: var(--mud-palette-text-primary);
+    }
+
+    .trust-item .mud-icon-root {
+        color: var(--mud-palette-primary);
+    }
+
+    .login-form-panel {
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 48px;
+        background: var(--mud-palette-surface);
     }
 
     .form-paper {
         width: 100%;
-        max-width: 440px;
+        max-width: 430px;
         background: transparent !important;
         box-shadow: none !important;
     }
 
+    .form-paper:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
     .form-header {
-        margin-bottom: 32px;
+        margin-bottom: 28px;
     }
 
     .form-title {
-        font-weight: 700;
+        font-weight: 800;
         color: var(--mud-palette-text-primary);
+        line-height: 1.18;
     }
 
     .form-subtitle {
-        color: var(--mud-palette-text-secondary);
         margin-top: 8px;
     }
 
-    .forgot-password {
-        text-align: right;
-        margin: 8px 0 24px 0;
+    .login-form {
+        display: grid;
+        gap: 14px;
+    }
+
+    .login-field .mud-input-root {
+        min-height: 44px;
+    }
+
+    .form-actions-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: -4px;
+        margin-bottom: 4px;
     }
 
     .login-button {
-        padding: 12px 0;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        transition: all 0.2s ease;
+        min-height: 44px;
+        border-radius: 8px;
+        font-weight: 700;
+        letter-spacing: 0;
+        box-shadow: none;
+        transition: transform .16s ease, filter .16s ease;
     }
 
-        .login-button:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.02);
+    .login-button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.02);
+    }
+
+    .form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 1px solid var(--mud-palette-lines-default);
+        text-align: center;
+    }
+
+    @@media (max-width: 900px) {
+        .login-root {
+            padding: 0;
         }
 
-    .signup-prompt {
-        text-align: center;
-        margin-top: 32px;
-    }
-
-    .contact-support {
-        text-align: center;
-    }
-
-    /* ==================== RESPONSIVE ==================== */
-    @@media (max-width: 960px) {
-        .login-two-columns {
-            flex-direction: column;
+        .login-shell {
+            min-height: 100%;
+            grid-template-columns: 1fr;
             border-radius: 0;
-            margin: 0;
-            min-height: 100vh;
+            border-left: 0;
+            border-right: 0;
         }
 
-        .login-branding {
-            padding: 48px 24px;
-            text-align: center;
+        .login-brand-panel {
+            gap: 22px;
+            padding: 24px;
+            border-right: 0;
+            border-bottom: 1px solid var(--mud-palette-lines-default);
         }
 
-        .branding-content {
-            margin: 0 auto;
-        }
-
-        .logo-area {
-            justify-content: center;
-        }
-
-        .feature {
-            justify-content: center;
-        }
-
-        .testimonial {
-            text-align: center;
-        }
-
-        .login-form-container {
-            padding: 48px 24px;
+        .login-form-panel {
+            padding: 32px 24px;
+            align-items: flex-start;
         }
     }
 
-    @@media (max-width: 600px) {
-        .login-branding {
-            padding: 32px 20px;
+    @@media (max-width: 560px) {
+        .login-brand-panel {
+            padding: 20px;
         }
 
-        .features-list {
-            gap: 16px;
+        .brand-lockup {
+            align-items: flex-start;
         }
 
-        .brand-name {
-            font-size: 1.8rem;
+        .trust-list {
+            display: none;
+        }
+
+        .login-form-panel {
+            padding: 28px 20px;
         }
     }
 </style>
@@ -333,12 +393,44 @@
     private LoginDTO login = new();
     private MudForm? loginForm;
 
-    private bool isShow = false;
-    private bool isLoading = false;
+    private bool isShow;
+    private bool isLoading;
     private InputType passwordInputType = InputType.Password;
     private string passwordIcon = Icons.Material.Filled.VisibilityOff;
 
     [Inject] private HttpClient HttpClient { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeStateService.InitializeAsync();
+        ThemeStateService.OnThemeChanged += OnThemeChanged;
+    }
+
+    private void OnThemeChanged(AppThemeOption option)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SelectThemeAsync(AppThemeOption option)
+    {
+        await ThemeStateService.SetThemeAsync(option);
+    }
+
+    private static string GetThemeIcon(AppThemeOption option) => option switch
+    {
+        AppThemeOption.Claro => Icons.Material.Outlined.LightMode,
+        AppThemeOption.Oscuro => Icons.Material.Outlined.DarkMode,
+        AppThemeOption.Morena => Icons.Material.Filled.Park,
+        _ => Icons.Material.Outlined.DarkMode
+    };
+
+    private static string GetThemeLabel(AppThemeOption option) =>
+        EG.Web.Services.ThemeStateService.GetThemeName(option);
+
+    private string GetLoginThemeButtonClass(AppThemeOption option) =>
+        ThemeStateService.SelectedOption == option
+            ? "login-theme-button active"
+            : "login-theme-button";
 
     private void TogglePasswordVisibility()
     {
@@ -349,63 +441,83 @@
 
     private async Task HandleLogin()
     {
-        isLoading = true;
-        UserResult result = await LoginService.LoginAsync(login.Usuario, login.Password);
+        if (isLoading)
+            return;
 
-        if (!result.PayrollId.Equals("0"))
+        if (loginForm != null)
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
-            await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
-
-            var _sucursalesUsuario = await LoadSucursalesUsuarioAsync(result.PkIdUsuario, result.AccessToken);
-
-            if (_sucursalesUsuario.Success != true)
+            await loginForm.Validate();
+            if (!loginForm.IsValid)
             {
-                Snackbar.Add(_sucursalesUsuario.Message ?? "No se pudieron cargar las sucursales del usuario.", Severity.Error);
+                Snackbar.Add("Completa usuario y contrasena.", Severity.Warning);
+                return;
             }
-            else if (_sucursalesUsuario.Items.Count > 1)
+        }
+
+        isLoading = true;
+
+        try
+        {
+            UserResult result = await LoginService.LoginAsync(login.Usuario, login.Password);
+
+            if (result != null && !string.Equals(result.PayrollId, "0", StringComparison.Ordinal))
             {
-                var parameters = new DialogParameters { { "Sucursales", _sucursalesUsuario.Items.ToList() } };
-                var options = new DialogOptions { CloseOnEscapeKey = false };
-                var dialog = await DialogService.ShowAsync<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options);
-                var dialogResult = await dialog.Result;
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
+                await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
 
-                if (dialogResult.Canceled)
+                var sucursalesUsuario = await LoadSucursalesUsuarioAsync(result.PkIdUsuario, result.AccessToken);
+
+                if (sucursalesUsuario.Success != true)
                 {
-                    isLoading = false;
-                    return;
+                    Snackbar.Add(sucursalesUsuario.Message ?? "No se pudieron cargar las sucursales del usuario.", Severity.Error);
                 }
-
-                var selectedSucursal = dialogResult.Data as UsuarioSucursalResponse;
-                if (selectedSucursal != null)
+                else if (sucursalesUsuario.Items.Count > 1)
                 {
-                    Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Info);
+                    var parameters = new DialogParameters { { "Sucursales", sucursalesUsuario.Items.ToList() } };
+                    var options = new DialogOptions { CloseOnEscapeKey = false };
+                    var dialog = await DialogService.ShowAsync<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options);
+                    var dialogResult = await dialog.Result;
+
+                    if (dialogResult.Canceled)
+                        return;
+
+                    var selectedSucursal = dialogResult.Data as UsuarioSucursalResponse;
+                    if (selectedSucursal != null)
+                    {
+                        Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Info);
+                        NavigationManager.NavigateTo("/", forceLoad: true);
+                    }
+                }
+                else if (sucursalesUsuario.Items.Count == 1)
+                {
+                    await SucursalStateService.SetSucursalAsync(
+                        sucursalesUsuario.Items[0].IdSucursal,
+                        sucursalesUsuario.Items[0].NombreSucursal,
+                        sucursalesUsuario.Items[0].IdEmpresaPersona,
+                        sucursalesUsuario.Items[0].NombreEmpresa);
+                    Snackbar.Add("Bienvenido.", Severity.Success);
                     NavigationManager.NavigateTo("/", forceLoad: true);
                 }
-            }
-            else if (_sucursalesUsuario.Items.Count == 1)
-            {
-                await SucursalStateService.SetSucursalAsync(
-                    _sucursalesUsuario.Items[0].IdSucursal,
-                    _sucursalesUsuario.Items[0].NombreSucursal,
-                    _sucursalesUsuario.Items[0].IdEmpresaPersona,
-                    _sucursalesUsuario.Items[0].NombreEmpresa);
-                Snackbar.Add("¡Bienvenido!", Severity.Success);
-                NavigationManager.NavigateTo("/", forceLoad: true);
+                else
+                {
+                    Snackbar.Add(sucursalesUsuario.Message ?? "No tienes sucursales asignadas. Contacta al administrador.", Severity.Warning);
+                }
             }
             else
             {
-                Snackbar.Add(_sucursalesUsuario.Message ?? "No tienes sucursales asignadas. Contacta al administrador.", Severity.Warning);
+                Snackbar.Add("Correo o contrasena incorrectos.", Severity.Error);
             }
         }
-        else
+        catch (Exception ex)
         {
-            Snackbar.Add("Correo o contraseña incorrectos.", Severity.Error);
+            Snackbar.Add($"Error al iniciar sesion: {ex.Message}", Severity.Error);
         }
-
-        isLoading = false;
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task<ApiResponse<UsuarioSucursalResponse>> LoadSucursalesUsuarioAsync(int usuarioId, string? accessToken)
@@ -447,5 +559,10 @@
                 Message = $"Error al cargar sucursales: {ex.Message}"
             };
         }
+    }
+
+    public void Dispose()
+    {
+        ThemeStateService.OnThemeChanged -= OnThemeChanged;
     }
 }

@@ -9,26 +9,26 @@
 @using MudBlazor
 @using System.Globalization
 
-@inject IGenericCrudService<EgresoProyectadoResponse> Service
+@inject IGenericCrudService<EgresoAutorizadoResponse> Service
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<PartidaResponse> PartidaService
 @inject IGenericCrudService<UsuarioAreaResponse> AreaService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="EgresoProyectadoResponse"
+<BaseCrudDialog TItem="EgresoAutorizadoResponse"
                 Title="@dialogTitle"
                 MaxWidth="MaxWidth.ExtraExtraLarge"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando anteproyecto..."
+                LoadingMessage="Cargando presupuesto autorizado..."
                 OnConfirm="GuardarCambiosAsync">
 
-    <BaseEntityForm TEntity="EgresoProyectadoResponse"
+    <BaseEntityForm TEntity="EgresoAutorizadoResponse"
                     @ref="form"
                     ShowHeader="false">
 
-        <MudGrid GutterSize="1" Class="anteproyecto-dialog">
+        <MudGrid GutterSize="1" Class="presupuesto-autorizado-dialog">
             <MudItem xs="12">
                 <div class="budget-ribbon">
                     <div>
@@ -36,7 +36,7 @@
                         <strong>@BudgetYearText</strong>
                     </div>
                     <div>
-                        <span>Total mensual @CurrencyDisplay</span>
+                        <span>Total autorizado @CurrencyDisplay</span>
                         <strong>@Money(TotalMeses)</strong>
                     </div>
                     <div>
@@ -48,7 +48,7 @@
 
             <MudItem xs="12" md="4">
                 <PagedAutocomplete Value="@_selectedPrograma"
-                                   ValueChanged="OnProgramaChanged"
+                                   ValueChanged="value => _selectedPrograma = value"
                                    Label="Programa"
                                    Required="true"
                                    RequiredError="El programa es requerido"
@@ -74,8 +74,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker Date="@_fecha"
-                               DateChanged="OnFechaChanged"
+                <MudDatePicker @bind-Date="_fecha"
                                Label="Fecha"
                                Variant="Variant.Outlined"
                                DateFormat="dd/MM/yyyy"
@@ -96,48 +95,24 @@
                     <div class="months-header">
                         <div>
                             <MudText Typo="Typo.subtitle1">Distribucion mensual</MudText>
-                            <MudText Typo="Typo.caption">Captura el monto por mes; el total se recalcula automaticamente.</MudText>
+                            <MudText Typo="Typo.caption">Captura el monto autorizado por mes.</MudText>
                         </div>
                         <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
                     </div>
 
                     <MudGrid GutterSize="1">
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(1)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(2)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(3)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(4)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(5)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(6)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(7)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(8)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(9)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(10)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(11)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(12)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
-                        </MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
                     </MudGrid>
                 </div>
             </MudItem>
@@ -153,44 +128,43 @@
 </BaseCrudDialog>
 
 <style>
-    .anteproyecto-dialog .budget-ribbon {
+    .presupuesto-autorizado-dialog .budget-ribbon {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
         margin-bottom: 2px;
     }
 
-    .anteproyecto-dialog .budget-ribbon > div {
+    .presupuesto-autorizado-dialog .budget-ribbon > div,
+    .presupuesto-autorizado-dialog .months-panel {
         border: 1px solid color-mix(in srgb, var(--eg-primary) 38%, var(--mud-palette-lines-default));
         border-radius: 8px;
-        padding: 8px 10px;
         background: color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface));
         box-shadow: inset 0 1px 0 color-mix(in srgb, var(--mud-palette-white) 5%, transparent);
     }
 
-    .anteproyecto-dialog .budget-ribbon span {
+    .presupuesto-autorizado-dialog .budget-ribbon > div {
+        padding: 8px 10px;
+    }
+
+    .presupuesto-autorizado-dialog .budget-ribbon span {
         display: block;
         color: var(--mud-palette-text-secondary);
         font-size: .72rem;
         text-transform: uppercase;
     }
 
-    .anteproyecto-dialog .budget-ribbon strong {
+    .presupuesto-autorizado-dialog .budget-ribbon strong,
+    .presupuesto-autorizado-dialog .months-header .mud-typography {
         color: var(--mud-palette-text-primary);
-        font-size: 1.08rem;
-        font-weight: 700;
     }
 
-    .anteproyecto-dialog .months-panel {
-        border: 1px solid color-mix(in srgb, var(--eg-primary) 28%, var(--mud-palette-lines-default));
-        border-radius: 8px;
+    .presupuesto-autorizado-dialog .months-panel {
         padding: 10px;
-        background: color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface));
         color: var(--mud-palette-text-primary);
-        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--mud-palette-white) 5%, transparent), var(--mud-elevation-8);
     }
 
-    .anteproyecto-dialog .months-header {
+    .presupuesto-autorizado-dialog .months-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -198,41 +172,32 @@
         margin-bottom: 8px;
     }
 
-    .anteproyecto-dialog .months-header .mud-typography {
-        color: var(--mud-palette-text-primary);
-    }
-
-    .anteproyecto-dialog .months-header .mud-typography-caption {
+    .presupuesto-autorizado-dialog .months-header .mud-typography-caption {
         color: var(--mud-palette-text-secondary);
     }
 
-    .anteproyecto-dialog .months-panel .mud-input,
-    .anteproyecto-dialog .months-panel .mud-input input,
-    .anteproyecto-dialog .months-panel .mud-input-adornment,
-    .anteproyecto-dialog .months-panel .mud-input-label {
+    .presupuesto-autorizado-dialog .months-panel .mud-input,
+    .presupuesto-autorizado-dialog .months-panel .mud-input input,
+    .presupuesto-autorizado-dialog .months-panel .mud-input-adornment,
+    .presupuesto-autorizado-dialog .months-panel .mud-input-label {
         color: var(--mud-palette-text-primary);
     }
 
-    .anteproyecto-dialog .months-panel .mud-input-outlined-border {
+    .presupuesto-autorizado-dialog .months-panel .mud-input-outlined-border {
         border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 50%, transparent);
     }
 
-    .anteproyecto-dialog .months-panel .mud-input-control:hover .mud-input-outlined-border,
-    .anteproyecto-dialog .months-panel .mud-input:focus-within .mud-input-outlined-border {
-        border-color: var(--eg-primary);
-    }
-
-    .anteproyecto-dialog .months-panel input::selection {
+    .presupuesto-autorizado-dialog .months-panel input::selection {
         color: var(--eg-on-primary);
         background: var(--eg-primary);
     }
 
     @@media (max-width: 760px) {
-        .anteproyecto-dialog .budget-ribbon {
+        .presupuesto-autorizado-dialog .budget-ribbon {
             grid-template-columns: 1fr;
         }
 
-        .anteproyecto-dialog .months-header {
+        .presupuesto-autorizado-dialog .months-header {
             align-items: flex-start;
             flex-direction: column;
         }
@@ -247,11 +212,12 @@
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private BaseEntityForm<EgresoProyectadoResponse> form = null!;
-    private EgresoProyectadoResponse item = new()
+    private BaseEntityForm<EgresoAutorizadoResponse> form = null!;
+    private EgresoAutorizadoResponse item = new()
     {
         Activo = true,
-        Fecha = DateOnly.FromDateTime(DateTime.Today)
+        Fecha = DateOnly.FromDateTime(DateTime.Today),
+        FechaAutorizacion = DateTime.Now
     };
 
     private DateTime? _fecha = DateTime.Today;
@@ -259,11 +225,12 @@
     private LookupItem? _selectedPartida;
     private LookupItem? _selectedArea;
 
-    private string dialogTitle => Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
+    private string dialogTitle => Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
     private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
+    private bool AmountsLocked => Id.HasValue;
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");
@@ -287,7 +254,6 @@
             {
                 item = response.Data;
                 _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
-                ClearMonthsBeforeStartDate();
                 _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres, Text = TextOrDefault(item.ProgramaClaveNombre, item.FkidProgramaPres) };
                 _selectedPartida = new LookupItem { Id = item.FkidPartidaConta, Text = TextOrDefault(item.PartidaClaveNombre, item.FkidPartidaConta) };
                 _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
@@ -324,8 +290,8 @@
         item.FkidPartidaConta = _selectedPartida.Id;
         item.FkidAreaSis = _selectedArea.Id;
         item.Fecha = DateOnly.FromDateTime(_fecha ?? DateTime.Today);
-        ClearMonthsBeforeStartDate();
         item.Total = TotalMeses;
+        item.FechaAutorizacion ??= DateTime.Now;
 
         try
         {
@@ -335,12 +301,12 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(Id.HasValue ? "Anteproyecto actualizado correctamente" : "Anteproyecto creado correctamente", Severity.Success);
+                Snackbar.Add(Id.HasValue ? "Presupuesto autorizado actualizado correctamente" : "Presupuesto autorizado creado correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
                 return;
             }
 
-            Snackbar.Add(response?.Message ?? "Error al guardar el anteproyecto", Severity.Error);
+            Snackbar.Add(response?.Message ?? "Error al guardar el presupuesto autorizado", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -348,24 +314,11 @@
         }
     }
 
-    private void OnProgramaChanged(LookupItem? value)
-    {
-        _selectedPrograma = value;
-    }
-
-    private void OnFechaChanged(DateTime? value)
-    {
-        _fecha = value;
-        ClearMonthsBeforeStartDate();
-    }
-
     private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var anioFilter = GetAnioFilter();
         if (anioFilter == null)
-        {
             return new ComboLookupResult();
-        }
 
         var response = await ProgramaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
@@ -430,29 +383,4 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
-
-    private bool IsMonthDisabled(int month) =>
-        _fecha.HasValue && month < _fecha.Value.Month;
-
-    private void ClearMonthsBeforeStartDate()
-    {
-        if (!_fecha.HasValue)
-        {
-            return;
-        }
-
-        var startMonth = _fecha.Value.Month;
-
-        if (startMonth > 1) item.Enero = 0m;
-        if (startMonth > 2) item.Febrero = 0m;
-        if (startMonth > 3) item.Marzo = 0m;
-        if (startMonth > 4) item.Abril = 0m;
-        if (startMonth > 5) item.Mayo = 0m;
-        if (startMonth > 6) item.Junio = 0m;
-        if (startMonth > 7) item.Julio = 0m;
-        if (startMonth > 8) item.Agosto = 0m;
-        if (startMonth > 9) item.Septiembre = 0m;
-        if (startMonth > 10) item.Octubre = 0m;
-        if (startMonth > 11) item.Noviembre = 0m;
-    }
 }

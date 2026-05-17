@@ -13,7 +13,7 @@
 
 <AuthorizeView>
     <Authorized>
-        <div class="bootstrap-sidebar @(IsCollapsed ? "collapsed" : "expanded")">
+        <div class="bootstrap-sidebar @ThemeClass @(IsCollapsed ? "collapsed" : "expanded")">
             @if (!IsCollapsed)
             {
                 <div class="sidebar-search-section">
@@ -117,6 +117,9 @@
 
     [Parameter] public List<MenuItem> Items { get; set; } = new();
     [Parameter] public bool IsCollapsed { get; set; } = false;
+    [Parameter] public string ThemeKey { get; set; } = "default";
+
+    private string ThemeClass => ThemeKey == "morena" ? "morena" : string.Empty;
 
     private string _searchText = string.Empty;
     private List<MenuItem> _filteredItems = new();
@@ -544,7 +547,7 @@
 
     .sidebar-search-section .form-control:focus {
         border-color: var(--mud-palette-primary);
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--eg-primary) 25%, transparent);
         background: var(--mud-palette-surface);
         color: var(--mud-palette-drawer-text);
     }
@@ -590,7 +593,7 @@
     }
 
     .search-result-item:hover {
-        background: rgba(99, 102, 241, 0.15);
+        background: var(--eg-primary-soft);
     }
 
     .search-result-item i {
@@ -665,13 +668,13 @@
     }
 
     .favorite-item:hover {
-        background: rgba(99, 102, 241, 0.15);
-        color: var(--mud-palette-primary);
+        background: var(--eg-primary-soft);
+        color: var(--eg-primary);
     }
 
     .favorite-item i {
         font-size: 0.9rem;
-        color: #fbbf24;
+        color: var(--eg-accent);
     }
 
     .sidebar-nav {
@@ -731,116 +734,116 @@
 
     /* ===================== THEME: MORENA ===================== */
     .bootstrap-sidebar.morena {
-        background: linear-gradient(180deg, #1A1209 0%, #2D1B0F 50%, #3D2A1C 100%) !important;
+        background: linear-gradient(180deg, var(--eg-primary) 0%, var(--eg-primary-dark) 100%) !important;
     }
 
     .bootstrap-sidebar.morena .sidebar-search-section .input-group-text,
     .bootstrap-sidebar.morena .sidebar-search-section .form-control {
-        background: #2D1B0F;
-        border-color: #5D3A1A;
-        color: #F4E4C1;
+        background: color-mix(in srgb, var(--mud-palette-drawer-text) 12%, transparent);
+        border-color: color-mix(in srgb, var(--mud-palette-drawer-text) 28%, transparent);
+        color: var(--mud-palette-drawer-text);
     }
 
     .bootstrap-sidebar.morena .sidebar-search-section .form-control::placeholder {
-        color: #8B7355;
+        color: color-mix(in srgb, var(--mud-palette-drawer-text) 72%, transparent);
     }
 
     .bootstrap-sidebar.morena .favorites-header {
-        color: #8B7355;
+        color: var(--eg-accent);
     }
 
     .bootstrap-sidebar.morena .favorite-item {
-        color: #F4E4C1;
+        color: var(--mud-palette-drawer-text);
     }
 
     .bootstrap-sidebar.morena .favorite-item:hover {
-        background: rgba(205, 133, 63, 0.2);
-        color: #DEB887;
+        background: var(--eg-accent-soft);
+        color: var(--eg-accent);
     }
 
     .bootstrap-sidebar.morena .search-result-item:hover {
-        background: rgba(205, 133, 63, 0.2);
+        background: var(--eg-accent-soft);
     }
 
     .bootstrap-sidebar.morena .search-result-item i {
-        color: #CD853F;
+        color: var(--eg-accent);
     }
 
     .bootstrap-sidebar.morena .result-name {
-        color: #F4E4C1;
+        color: var(--mud-palette-drawer-text);
     }
 
-    /* Morena - Level 0: Amber-Brown gradient */
+    /* Morena - Level 0 */
     .bootstrap-sidebar.morena .sidebar-link.level-0,
     .bootstrap-sidebar.morena .sidebar-group-header.level-0 {
-        background: linear-gradient(135deg, rgba(205, 133, 63, 0.22) 0%, rgba(139, 92, 246, 0.08) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-dark) 20%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 14%, transparent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-0::before,
     .bootstrap-sidebar.morena .sidebar-group-header.level-0::before {
-        background: linear-gradient(180deg, #CD853F 0%, #DEB887 100%);
+        background: linear-gradient(180deg, var(--eg-accent) 0%, var(--eg-secondary) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-0:hover,
     .bootstrap-sidebar.morena .sidebar-group-header.level-0:hover {
-        background: linear-gradient(135deg, rgba(205, 133, 63, 0.35) 0%, rgba(222, 184, 135, 0.15) 100%);
+        background: linear-gradient(135deg, var(--eg-accent-soft) 0%, color-mix(in srgb, var(--eg-primary) 22%, transparent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-0.active,
     .bootstrap-sidebar.morena .sidebar-group-header.level-0.active {
-        background: linear-gradient(135deg, rgba(205, 133, 63, 0.45) 0%, rgba(222, 184, 135, 0.25) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 60%, transparent) 0%, color-mix(in srgb, var(--eg-primary-light) 34%, transparent) 100%);
     }
 
-    /* Morena - Level 1: Olive-Green gradient */
+    /* Morena - Level 1 */
     .bootstrap-sidebar.morena .sidebar-link.level-1,
     .bootstrap-sidebar.morena .sidebar-group-header.level-1 {
-        background: linear-gradient(135deg, rgba(107, 142, 35, 0.18) 0%, rgba(85, 107, 47, 0.10) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 72%, transparent) 0%, color-mix(in srgb, var(--eg-primary-dark) 42%, transparent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-1::before,
     .bootstrap-sidebar.morena .sidebar-group-header.level-1::before {
-        background: linear-gradient(180deg, #6B8E23 0%, #556B2F 100%);
+        background: linear-gradient(180deg, var(--eg-secondary-light) 0%, var(--eg-accent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-1:hover,
     .bootstrap-sidebar.morena .sidebar-group-header.level-1:hover {
-        background: linear-gradient(135deg, rgba(107, 142, 35, 0.30) 0%, rgba(85, 107, 47, 0.18) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 68%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 58%, transparent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-1.active,
     .bootstrap-sidebar.morena .sidebar-group-header.level-1.active {
-        background: linear-gradient(135deg, rgba(107, 142, 35, 0.40) 0%, rgba(85, 107, 47, 0.25) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 78%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 62%, transparent) 100%);
     }
 
-    /* Morena - Level 2: Terracotta gradient */
+    /* Morena - Level 2 */
     .bootstrap-sidebar.morena .sidebar-link.level-2,
     .bootstrap-sidebar.morena .sidebar-group-header.level-2 {
-        background: linear-gradient(135deg, rgba(210, 105, 30, 0.18) 0%, rgba(178, 34, 34, 0.10) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-dark) 72%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 52%, transparent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-2::before,
     .bootstrap-sidebar.morena .sidebar-group-header.level-2::before {
-        background: linear-gradient(180deg, #D2691E 0%, #B22222 100%);
+        background: linear-gradient(180deg, var(--eg-accent) 0%, var(--eg-secondary) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-2:hover,
     .bootstrap-sidebar.morena .sidebar-group-header.level-2:hover {
-        background: linear-gradient(135deg, rgba(210, 105, 30, 0.30) 0%, rgba(178, 34, 34, 0.18) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 72%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 60%, transparent) 100%);
     }
 
     .bootstrap-sidebar.morena .sidebar-link.level-2.active,
     .bootstrap-sidebar.morena .sidebar-group-header.level-2.active {
-        background: linear-gradient(135deg, rgba(210, 105, 30, 0.40) 0%, rgba(178, 34, 34, 0.25) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 86%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 68%, transparent) 100%);
     }
 
     /* Morena - scrollbar */
     .bootstrap-sidebar.morena .sidebar-nav::-webkit-scrollbar-thumb,
     .bootstrap-sidebar.morena .sidebar-children::-webkit-scrollbar-thumb {
-        background: rgba(205, 133, 63, 0.4);
+        background: color-mix(in srgb, var(--eg-accent) 46%, transparent);
     }
 
     .bootstrap-sidebar.morena .sidebar-nav::-webkit-scrollbar-thumb:hover,
     .bootstrap-sidebar.morena .sidebar-children::-webkit-scrollbar-thumb:hover {
-        background: rgba(205, 133, 63, 0.6);
+        background: color-mix(in srgb, var(--eg-accent) 68%, transparent);
     }
 </style>

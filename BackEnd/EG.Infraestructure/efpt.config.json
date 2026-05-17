@@ -587,6 +587,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_EgresoAutorizado]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_EgresoProyectado]",
          "ObjectType": 3
       },
@@ -660,6 +664,10 @@
       },
       {
          "Name": "[dbo].[spConfiguracionDeRolYClaims]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[spAutorizarEgresoProyectado]",
          "ObjectType": 1
       },
       {

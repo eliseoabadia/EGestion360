@@ -124,20 +124,20 @@ else
         z-index: 1;
     }
 
-    /* ===================== LEVEL 0 - Indigo ===================== */
+    /* ===================== LEVEL 0 ===================== */
     .sidebar-link.level-0,
     .sidebar-group-header.level-0 {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.06) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 12%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 6%, transparent) 100%);
     }
 
     .sidebar-link.level-0::before,
     .sidebar-group-header.level-0::before {
-        background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+        background: linear-gradient(180deg, var(--eg-primary) 0%, var(--eg-secondary) 100%);
     }
 
     .sidebar-link.level-0:hover,
     .sidebar-group-header.level-0:hover {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(139, 92, 246, 0.14) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 22%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 14%, transparent) 100%);
     }
 
     .sidebar-link.level-0:hover::before,
@@ -147,32 +147,32 @@ else
 
     .sidebar-link.level-0.active,
     .sidebar-group-header.level-0.active {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.30) 0%, rgba(139, 92, 246, 0.20) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 30%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 20%, transparent) 100%);
         font-weight: 650;
     }
 
     .sidebar-link.level-0.active::before,
     .sidebar-group-header.level-0.active::before {
         width: 4px;
-        box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--eg-primary) 50%, transparent);
     }
 
-    /* ===================== LEVEL 1 - Emerald ===================== */
+    /* ===================== LEVEL 1 ===================== */
     .sidebar-link.level-1,
     .sidebar-group-header.level-1 {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.10) 0%, rgba(20, 184, 166, 0.05) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 10%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 5%, transparent) 100%);
         padding-left: calc(12px + 16px) !important;
         font-size: 0.84rem !important;
     }
 
     .sidebar-link.level-1::before,
     .sidebar-group-header.level-1::before {
-        background: linear-gradient(180deg, #10b981 0%, #14b8a6 100%);
+        background: linear-gradient(180deg, var(--eg-secondary) 0%, var(--eg-primary-light) 100%);
     }
 
     .sidebar-link.level-1:hover,
     .sidebar-group-header.level-1:hover {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.20) 0%, rgba(20, 184, 166, 0.12) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 20%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 12%, transparent) 100%);
     }
 
     .sidebar-link.level-1:hover::before,
@@ -182,20 +182,20 @@ else
 
     .sidebar-link.level-1.active,
     .sidebar-group-header.level-1.active {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(20, 184, 166, 0.18) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 28%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 18%, transparent) 100%);
         font-weight: 600;
     }
 
     .sidebar-link.level-1.active::before,
     .sidebar-group-header.level-1.active::before {
         width: 3px;
-        box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 6px color-mix(in srgb, var(--eg-secondary) 40%, transparent);
     }
 
-    /* ===================== LEVEL 2 - Amber ===================== */
+    /* ===================== LEVEL 2 ===================== */
     .sidebar-link.level-2,
     .sidebar-group-header.level-2 {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.10) 0%, rgba(251, 146, 60, 0.05) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 10%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 5%, transparent) 100%);
         padding-left: calc(12px + 32px) !important;
         font-size: 0.80rem !important;
         font-weight: 400 !important;
@@ -203,12 +203,12 @@ else
 
     .sidebar-link.level-2::before,
     .sidebar-group-header.level-2::before {
-        background: linear-gradient(180deg, #f59e0b 0%, #fb923c 100%);
+        background: linear-gradient(180deg, var(--eg-accent) 0%, var(--eg-secondary) 100%);
     }
 
     .sidebar-link.level-2:hover,
     .sidebar-group-header.level-2:hover {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.20) 0%, rgba(251, 146, 60, 0.12) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 20%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 12%, transparent) 100%);
     }
 
     .sidebar-link.level-2:hover::before,
@@ -218,14 +218,14 @@ else
 
     .sidebar-link.level-2.active,
     .sidebar-group-header.level-2.active {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.28) 0%, rgba(251, 146, 60, 0.18) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 28%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 18%, transparent) 100%);
         font-weight: 600;
     }
 
     .sidebar-link.level-2.active::before,
     .sidebar-group-header.level-2.active::before {
         width: 3px;
-        box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 0 6px color-mix(in srgb, var(--eg-accent) 40%, transparent);
     }
 
     /* ===================== GROUP HEADER ===================== */
@@ -318,12 +318,12 @@ else
     }
 
     .sidebar-children::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.3);
+        background: color-mix(in srgb, var(--eg-primary) 30%, transparent);
         border-radius: 4px;
     }
 
     .sidebar-children::-webkit-scrollbar-thumb:hover {
-        background: rgba(99, 102, 241, 0.5);
+        background: color-mix(in srgb, var(--eg-primary) 50%, transparent);
     }
 
     /* ===================== COLLAPSED STATE ===================== */
@@ -352,44 +352,44 @@ else
         font-size: 1.3rem;
     }
 
-    /* ===================== THEME: DARK ===================== */
+    /* ===================== THEME VARIABLES ===================== */
     .sidebar-link.level-0, .sidebar-group-header.level-0 {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(139, 92, 246, 0.10) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 18%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 10%, transparent) 100%);
     }
 
     .sidebar-link.level-0:hover, .sidebar-group-header.level-0:hover {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.28) 0%, rgba(139, 92, 246, 0.18) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 28%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 18%, transparent) 100%);
     }
 
     .sidebar-link.level-0.active, .sidebar-group-header.level-0.active {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.38) 0%, rgba(139, 92, 246, 0.25) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 38%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 25%, transparent) 100%);
     }
 
     .sidebar-link.level-1, .sidebar-group-header.level-1 {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(20, 184, 166, 0.08) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 15%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 8%, transparent) 100%);
     }
 
     .sidebar-link.level-1:hover, .sidebar-group-header.level-1:hover {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(20, 184, 166, 0.15) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 25%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 15%, transparent) 100%);
     }
 
     .sidebar-link.level-1.active, .sidebar-group-header.level-1.active {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.35) 0%, rgba(20, 184, 166, 0.22) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 35%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 22%, transparent) 100%);
     }
 
     .sidebar-link.level-2, .sidebar-group-header.level-2 {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 146, 60, 0.08) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 15%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 8%, transparent) 100%);
     }
 
     .sidebar-link.level-2:hover, .sidebar-group-header.level-2:hover {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(251, 146, 60, 0.15) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 25%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 15%, transparent) 100%);
     }
 
     .sidebar-link.level-2.active, .sidebar-group-header.level-2.active {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(251, 146, 60, 0.22) 100%);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 35%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 22%, transparent) 100%);
     }
 
     .sidebar-children.expanded::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.35);
+        background: color-mix(in srgb, var(--eg-primary) 35%, transparent);
     }
 </style>

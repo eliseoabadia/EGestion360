@@ -107,6 +107,8 @@ public partial class Usuario
 
     public virtual ICollection<DigitoIdentificador> DigitoIdentificadorUsuarioModificacionNavigations { get; set; } = new List<DigitoIdentificador>();
 
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizadoUsuarioAutorizacionNavigations { get; set; } = new List<EgresoAutorizado>();
+
     public virtual ICollection<EgresoAutorizado> EgresoAutorizadoUsuarioCreacionNavigations { get; set; } = new List<EgresoAutorizado>();
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizadoUsuarioModificacionNavigations { get; set; } = new List<EgresoAutorizado>();

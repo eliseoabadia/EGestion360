@@ -1,7 +1,6 @@
-@page "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
+@page "/Presupuesto/Egreso/Presupuesto_Autorizado"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.General
-@using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -16,22 +15,22 @@
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
 @inject HttpClient Http
-@inherits BaseCrudPage<EgresoProyectadoResponse, EgresoProyectadoResponse>
+@inherits BaseCrudPage<EgresoAutorizadoResponse, EgresoAutorizadoResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column anteproyecto-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
-        <PageHeader Title="Anteproyecto de Egresos"
-                    Subtitle="Planeacion mensual por programa, partida y area"
-                    Icon="@Icons.Material.Filled.StackedLineChart"
+    <MudContainer Class="px-3 d-flex flex-column presupuesto-autorizado-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Presupuesto Autorizado"
+                    Subtitle="Egresos autorizados por programa, partida y area"
+                    Icon="@Icons.Material.Filled.Verified"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
         <div class="summary-strip">
             <div>
-                <span class="summary-label">Total proyectado</span>
+                <span class="summary-label">Total autorizado</span>
                 <strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong>
             </div>
             <div>
@@ -45,9 +44,9 @@
         </div>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="EgresoProyectadoResponse"
+            <GenericTable TItem="EgresoAutorizadoResponse"
                           @ref="table"
-                          Title="Partidas del anteproyecto"
+                          Title="Partidas autorizadas"
                           SearchPlaceholder="Buscar programa, partida, area o descripcion..."
                           ShowExportButton="@CanExport"
                           ServerDataFunc="LoadServerData"
@@ -58,44 +57,30 @@
 
                 <Header>
                     <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoProyectadoResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoProyectadoResponse">Partida</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoProyectadoResponse">Area</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoProyectadoResponse">Descripcion</MudTableSortLabel></MudTh>
-                    <MudTh>Meses</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoProyectadoResponse">Total</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="EgresoProyectadoResponse">Activo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoAutorizadoResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoAutorizadoResponse">Partida</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoAutorizadoResponse">Area</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoAutorizadoResponse">Descripcion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="EgresoAutorizadoResponse">Autorizacion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoAutorizadoResponse">Total</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Activo" T="EgresoAutorizadoResponse">Activo</MudTableSortLabel></MudTh>
                 </Header>
 
                 <Row Context="item">
                     <MudTd>
-                        <MudTooltip Text="Autorizar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                           Visible="@(CanUpdate && !item.EstaAutorizado)"
-                                           Color="Color.Success"
-                                           Size="Size.Small"
-                                           OnClick="@(() => AutorizarEgreso(item))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Desautorizar">
-                            <MudIconButton Icon="@Icons.Material.Filled.LockOpen"
-                                           Visible="@(CanUpdate && item.EstaAutorizado && item.PkidEgresoAutorizado.HasValue)"
-                                           Color="Color.Warning"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DesautorizarEgreso(item))" />
-                        </MudTooltip>
                         <MudTooltip Text="Editar">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Visible="@(CanUpdate && !item.EstaAutorizado)"
+                                           Visible="@CanUpdate"
                                            Color="Color.Primary"
                                            Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidEgresoProyectado))" />
+                                           OnClick="@(() => EditItem(item.PkidEgresoAutorizado))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Visible="@(CanDelete && !item.EstaAutorizado)"
+                        <MudTooltip Text="@(item.FkidEgresoProyectadoPres.HasValue ? "Desautorizar" : "Eliminar")">
+                            <MudIconButton Icon="@(item.FkidEgresoProyectadoPres.HasValue ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Delete)"
+                                           Visible="@CanDelete"
                                            Color="Color.Error"
                                            Size="Size.Small"
-                                           OnClick="@(() => DeleteEgreso(item))" />
+                                           OnClick="@(() => DeleteAutorizado(item))" />
                         </MudTooltip>
                     </MudTd>
                     <MudTd>
@@ -108,24 +93,12 @@
                     </MudTd>
                     <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd>
-                        <div class="month-spark">
-                            @foreach (var month in GetMonths(item))
-                            {
-                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
-                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
-                            }
-                        </div>
-                    </MudTd>
+                    <MudTd>@(item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</MudTd>
                     <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
                     <MudTd>
                         <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                             @(item.Activo ? "Activo" : "Inactivo")
                         </MudChip>
-                        @if (item.EstaAutorizado)
-                        {
-                            <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="ml-1">Autorizado</MudChip>
-                        }
                     </MudTd>
                 </Row>
             </GenericTable>
@@ -134,14 +107,14 @@
 </AccessVerification>
 
 <style>
-    .anteproyecto-page .summary-strip {
+    .presupuesto-autorizado-page .summary-strip {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         margin: 8px 0 12px;
     }
 
-    .anteproyecto-page .summary-strip > div {
+    .presupuesto-autorizado-page .summary-strip > div {
         min-width: 0;
         border: 1px solid var(--mud-palette-lines-default);
         border-radius: 8px;
@@ -151,14 +124,14 @@
         box-shadow: var(--mud-elevation-1);
     }
 
-    .anteproyecto-page .summary-label {
+    .presupuesto-autorizado-page .summary-label {
         display: block;
         font-size: .72rem;
         color: var(--mud-palette-text-secondary);
         text-transform: uppercase;
     }
 
-    .anteproyecto-page .summary-strip strong {
+    .presupuesto-autorizado-page .summary-strip strong {
         display: block;
         min-width: 0;
         overflow: hidden;
@@ -169,43 +142,27 @@
         line-height: 1.35;
     }
 
-    .anteproyecto-page .main-cell {
+    .presupuesto-autorizado-page .main-cell {
         font-weight: 700;
         line-height: 1.1;
     }
 
-    .anteproyecto-page td span {
+    .presupuesto-autorizado-page td span {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
-    }
-
-    .month-spark {
-        display: grid;
-        grid-template-columns: repeat(12, 6px);
-        align-items: end;
-        gap: 3px;
-        height: 34px;
-        min-width: 105px;
-    }
-
-    .month-spark span {
-        display: block;
-        min-height: 4px;
-        border-radius: 4px 4px 0 0;
-        background: var(--eg-primary);
     }
 </style>
 
 @code {
-    private GenericTable<EgresoProyectadoResponse> table = null!;
+    private GenericTable<EgresoAutorizadoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
 
-    protected override string ModuleName => "Planeacion";
-    protected override string SubModuleName => "Anteproyecto_Egresos";
-    protected override Type CreateDialogType => typeof(AnteproyectoEgresosDialog);
-    protected override Type EditDialogType => typeof(AnteproyectoEgresosDialog);
-    protected override Type DeleteDialogType => typeof(DeleteDialog<EgresoProyectadoResponse>);
+    protected override string ModuleName => "Egreso";
+    protected override string SubModuleName => "Presupuesto_Autorizado";
+    protected override Type CreateDialogType => typeof(PresupuestoAutorizadoDialog);
+    protected override Type EditDialogType => typeof(PresupuestoAutorizadoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EgresoAutorizadoResponse>);
 
     protected override string GetDefaultSortLabel() => "ProgramaClave";
 
@@ -217,15 +174,14 @@
         await LoadCurrencyAsync();
     }
 
-    protected override async Task<TableData<EgresoProyectadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    protected override async Task<TableData<EgresoAutorizadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         Loading = true;
         StateHasChanged();
 
         try
         {
-            var page = Math.Max(1, state.Page + 1);
-            CurrentPage = page;
+            CurrentPage = Math.Max(1, state.Page + 1);
             PageSize = state.PageSize;
             SortLabel = state.SortLabel ?? GetDefaultSortLabel();
             SortDirection = state.SortDirection;
@@ -235,7 +191,7 @@
                 Elements.Clear();
                 TotalCount = 0;
                 Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
-                return new TableData<EgresoProyectadoResponse> { Items = Elements, TotalItems = TotalCount };
+                return new TableData<EgresoAutorizadoResponse> { Items = Elements, TotalItems = TotalCount };
             }
 
             var response = await Service.GetAllPaginadoAsync(
@@ -259,12 +215,12 @@
                     Snackbar.Add(response.Message, Severity.Error);
             }
 
-            return new TableData<EgresoProyectadoResponse> { Items = Elements, TotalItems = TotalCount };
+            return new TableData<EgresoAutorizadoResponse> { Items = Elements, TotalItems = TotalCount };
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
-            return new TableData<EgresoProyectadoResponse> { Items = new List<EgresoProyectadoResponse>(), TotalItems = 0 };
+            return new TableData<EgresoAutorizadoResponse> { Items = new List<EgresoAutorizadoResponse>(), TotalItems = 0 };
         }
         finally
         {
@@ -294,7 +250,7 @@
             ["CurrencyName"] = _currencyName
         };
 
-        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear anteproyecto", parameters,
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear presupuesto autorizado", parameters,
             new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
 
         var result = await dialog.Result;
@@ -310,12 +266,6 @@
             return;
         }
 
-        if (Elements.FirstOrDefault(x => x.PkidEgresoProyectado == id)?.EstaAutorizado == true)
-        {
-            Snackbar.Add("El anteproyecto ya fue autorizado y no puede editarse.", Severity.Warning);
-            return;
-        }
-
         var parameters = new DialogParameters
         {
             ["Id"] = id,
@@ -324,7 +274,7 @@
             ["CurrencyName"] = _currencyName
         };
 
-        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar anteproyecto", parameters,
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar presupuesto autorizado", parameters,
             new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
 
         var result = await dialog.Result;
@@ -332,17 +282,19 @@
             await ReloadData();
     }
 
-    protected override IEnumerable<object> MapToExcelData(IEnumerable<EgresoProyectadoResponse> items)
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EgresoAutorizadoResponse> items)
     {
         return items.Select(x => new
         {
-            ID = x.PkidEgresoProyectado,
+            ID = x.PkidEgresoAutorizado,
+            Anteproyecto = x.FkidEgresoProyectadoPres,
             Anio = x.AnioClave,
             Programa = x.ProgramaClaveNombre,
             Partida = x.PartidaClaveNombre,
             Area = x.AreaNombre,
             x.Descripcion,
             Fecha = x.Fecha.ToString("dd/MM/yyyy"),
+            FechaAutorizacion = x.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm"),
             x.Enero,
             x.Febrero,
             x.Marzo,
@@ -357,6 +309,7 @@
             x.Diciembre,
             x.Total,
             x.Activo,
+            x.UsuarioAutorizacion,
             x.UsuarioCreacion,
             x.FechaCreacion,
             x.UsuarioModificacion,
@@ -367,7 +320,7 @@
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.PartidaClaveNombre ?? "el anteproyecto";
+        return response?.Data?.PartidaClaveNombre ?? "el presupuesto autorizado";
     }
 
     protected override async Task ExportToExcel()
@@ -430,97 +383,29 @@
             await table.ReloadData();
     }
 
-    private async Task DeleteEgreso(EgresoProyectadoResponse item)
+    private async Task DeleteAutorizado(EgresoAutorizadoResponse item)
     {
-        if (item.EstaAutorizado)
-        {
-            Snackbar.Add("El anteproyecto ya fue autorizado y no puede eliminarse.", Severity.Warning);
-            return;
-        }
-
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Eliminar anteproyecto de {TextOrDash(item.PartidaClaveNombre)}?");
+        var isLinkedToProyectado = item.FkidEgresoProyectadoPres.HasValue;
+        var confirmText = isLinkedToProyectado
+            ? $"Desautorizar presupuesto de {TextOrDash(item.PartidaClaveNombre)}?"
+            : $"Eliminar presupuesto autorizado de {TextOrDash(item.PartidaClaveNombre)}?";
+        var confirm = await JS.InvokeAsync<bool>("confirm", confirmText);
         if (!confirm)
             return;
 
         try
         {
-            var response = await Http.DeleteAsync($"api/EgresoProyectado/{item.PkidEgresoProyectado}");
+            var response = await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado}");
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
-                Snackbar.Add("Anteproyecto eliminado correctamente", Severity.Success);
+                Snackbar.Add(isLinkedToProyectado ? "Presupuesto desautorizado correctamente" : "Presupuesto autorizado eliminado correctamente", Severity.Success);
                 await ReloadData();
                 return;
             }
 
-            Snackbar.Add(result?.Message ?? "Error al eliminar el anteproyecto", Severity.Error);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task AutorizarEgreso(EgresoProyectadoResponse item)
-    {
-        if (item.EstaAutorizado)
-        {
-            Snackbar.Add("El anteproyecto ya esta autorizado.", Severity.Info);
-            return;
-        }
-
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Autorizar anteproyecto de {TextOrDash(item.PartidaClaveNombre)} por {Money(item.Total ?? 0m)}?");
-        if (!confirm)
-            return;
-
-        try
-        {
-            var response = await Http.PostAsJsonAsync(
-                $"api/EgresoAutorizado/autorizar-proyectado/{item.PkidEgresoProyectado}",
-                new { descripcion = item.Descripcion });
-
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<EgresoAutorizadoResponse>>();
-            if (response.IsSuccessStatusCode && result?.Success == true)
-            {
-                Snackbar.Add("Anteproyecto autorizado correctamente", Severity.Success);
-                await ReloadData();
-                return;
-            }
-
-            Snackbar.Add(result?.Message ?? "Error al autorizar el anteproyecto", Severity.Error);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task DesautorizarEgreso(EgresoProyectadoResponse item)
-    {
-        if (!item.EstaAutorizado || !item.PkidEgresoAutorizado.HasValue)
-        {
-            Snackbar.Add("El anteproyecto no tiene un presupuesto autorizado activo.", Severity.Info);
-            return;
-        }
-
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Desautorizar anteproyecto de {TextOrDash(item.PartidaClaveNombre)} por {Money(item.Total ?? 0m)}?");
-        if (!confirm)
-            return;
-
-        try
-        {
-            var response = await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado.Value}");
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
-
-            if (response.IsSuccessStatusCode && result?.Success == true)
-            {
-                Snackbar.Add("Anteproyecto desautorizado correctamente", Severity.Success);
-                await ReloadData();
-                return;
-            }
-
-            Snackbar.Add(result?.Message ?? "Error al desautorizar el anteproyecto", Severity.Error);
+            Snackbar.Add(result?.Message ?? (isLinkedToProyectado ? "Error al desautorizar el presupuesto" : "Error al eliminar el presupuesto autorizado"), Severity.Error);
         }
         catch (Exception ex)
         {
@@ -559,30 +444,6 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
-
-    private static int GetMonthHeight(decimal amount, decimal total)
-    {
-        if (amount <= 0 || total <= 0)
-            return 10;
-
-        return Math.Clamp((int)Math.Round((amount / total) * 100m * 3m), 12, 100);
-    }
-
-    private static IEnumerable<(string Label, decimal Amount)> GetMonths(EgresoProyectadoResponse item)
-    {
-        yield return ("Ene", item.Enero);
-        yield return ("Feb", item.Febrero);
-        yield return ("Mar", item.Marzo);
-        yield return ("Abr", item.Abril);
-        yield return ("May", item.Mayo);
-        yield return ("Jun", item.Junio);
-        yield return ("Jul", item.Julio);
-        yield return ("Ago", item.Agosto);
-        yield return ("Sep", item.Septiembre);
-        yield return ("Oct", item.Octubre);
-        yield return ("Nov", item.Noviembre);
-        yield return ("Dic", item.Diciembre);
-    }
 
     public void Dispose()
     {

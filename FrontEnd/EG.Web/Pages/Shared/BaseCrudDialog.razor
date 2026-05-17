@@ -1,13 +1,15 @@
 @using MudBlazor
 @typeparam TItem
 
-<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true">
+<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="crud-dialog">
     <TitleContent>
-        <div class="d-flex align-center justify-space-between">
-            <MudText Typo="Typo.h6">@Title</MudText>
+        <div class="crud-dialog-title">
+            <MudText Typo="Typo.h6" Class="crud-dialog-title-text">@Title</MudText>
             <MudIconButton Icon="@Icons.Material.Filled.Close" 
                          OnClick="Cancelar" 
-                         Disabled="@isProcessing" />
+                         Disabled="@isProcessing"
+                         Size="Size.Small"
+                         Class="crud-dialog-close" />
         </div>
     </TitleContent>
     <DialogContent>
@@ -22,13 +24,12 @@
         @if (!loading)
         {
             <CascadingValue Value="this" Name="BaseDialog">
-                <MudPaper Class="pa-6 my-6" Elevation="6">
+                <MudPaper Class="crud-dialog-shell" Elevation="2">
                     @ChildContent
 
-                    <div class="d-flex justify-end mt-6">
+                    <div class="crud-dialog-actions">
                         <MudButton Variant="Variant.Text"
                                    Color="Color.Secondary"
-                                   Class="mr-2"
                                    OnClick="@(() => { Console.WriteLine("🔔 Click en Cancelar"); Cancelar(); })"
                                    Disabled="@isProcessing">
                             Cancelar
@@ -55,6 +56,64 @@
         }
     </DialogContent>
 </MudDialog>
+
+<style>
+    .crud-dialog-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        min-height: 36px;
+    }
+
+    .crud-dialog-title-text {
+        color: var(--eg-primary-dark, var(--mud-palette-primary));
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .crud-dialog-close {
+        color: var(--eg-primary, var(--mud-palette-primary));
+    }
+
+    .crud-dialog-shell {
+        margin: 0 0 8px;
+        padding: 14px 16px 12px;
+        border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 24%, var(--mud-palette-lines-default));
+        border-top: 3px solid var(--eg-primary, var(--mud-palette-primary));
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-2) !important;
+        transition: box-shadow .18s ease;
+    }
+
+    .crud-dialog-shell:hover {
+        transform: none;
+        box-shadow: var(--mud-elevation-3) !important;
+    }
+
+    .crud-dialog-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--mud-palette-lines-default);
+    }
+
+    @@media (max-height: 760px) {
+        .crud-dialog-shell {
+            padding: 12px;
+        }
+
+        .crud-dialog-actions {
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+    }
+</style>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }

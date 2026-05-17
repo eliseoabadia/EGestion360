@@ -105,6 +105,78 @@ code {
     color: #c02d76;
 }
 
+:root,
+body,
+.mud-dialog {
+    --eg-primary: var(--mud-palette-primary);
+    --eg-primary-light: var(--mud-palette-primary-lighten, var(--mud-palette-primary));
+    --eg-primary-dark: var(--mud-palette-primary-darken, var(--mud-palette-primary));
+    --eg-secondary: var(--mud-palette-secondary);
+    --eg-secondary-light: var(--mud-palette-secondary-lighten, var(--mud-palette-secondary));
+    --eg-secondary-dark: var(--mud-palette-secondary-darken, var(--mud-palette-secondary));
+    --eg-accent: var(--mud-palette-drawer-icon, var(--mud-palette-secondary));
+    --eg-on-primary: var(--mud-palette-primary-text, var(--mud-palette-white));
+    --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 14%, transparent);
+    --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 24%, transparent);
+    --eg-primary-active: color-mix(in srgb, var(--eg-primary) 34%, transparent);
+    --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 18%, transparent);
+}
+
+.mud-dialog {
+    border-radius: 8px !important;
+    overflow: hidden;
+}
+
+.mud-dialog .mud-dialog-title {
+    min-height: 44px;
+    padding: 10px 20px 8px !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 18%, var(--mud-palette-lines-default));
+    background: color-mix(in srgb, var(--eg-primary) 4%, var(--mud-palette-surface));
+}
+
+.mud-dialog .mud-dialog-title .mud-typography-h6 {
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.mud-dialog .mud-dialog-content {
+    padding: 12px 20px 4px !important;
+}
+
+.mud-dialog .mud-dialog-actions {
+    gap: 8px;
+    padding: 10px 20px 14px !important;
+    border-top: 1px solid var(--mud-palette-lines-default);
+    background: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
+}
+
+.mud-dialog .mud-dialog-actions .mud-button-root {
+    min-height: 34px;
+}
+
+.mud-dialog .mud-paper:not(.icono-item):hover {
+    transform: none;
+}
+
+.mud-dialog .icono-item:hover {
+    transform: scale(1.04);
+}
+
+@media (max-height: 760px) {
+    .mud-dialog .mud-dialog-title {
+        min-height: 40px;
+        padding: 8px 16px 6px !important;
+    }
+
+    .mud-dialog .mud-dialog-content {
+        padding: 10px 16px 2px !important;
+    }
+
+    .mud-dialog .mud-dialog-actions {
+        padding: 8px 16px 10px !important;
+    }
+}
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;

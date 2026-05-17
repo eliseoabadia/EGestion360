@@ -1,7 +1,7 @@
 ﻿@typeparam TItem
 @using MudBlazor
 
-<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg">
+<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table">
     <MudTable ServerData="LoadServerData"
               RowsPerPage="@PageSize"
               Page="@CurrentPage"
@@ -23,20 +23,6 @@
         <ToolBarContent>
             <MudText Typo="Typo.h6">@Title</MudText>
             <MudSpacer />
-
-            @if (ShowAddButton)
-            {
-                <MudTooltip Text="Agregar">
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.Add"
-                               OnClick="OnAddClick"
-                               Size="Size.Small"
-                               Class="mr-2">
-                        Agregar
-                    </MudButton>
-                </MudTooltip>
-            }
 
             @if (ShowExportButton)
             {
@@ -103,6 +89,63 @@
         </PagerContent>
     </MudTable>
 </MudPaper>
+
+<style>
+    .themed-table {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-top: 4px solid var(--eg-primary);
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+        overflow: hidden;
+    }
+
+    .themed-table .mud-table-toolbar {
+        background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 13%, var(--mud-palette-surface)) 0%, var(--mud-palette-surface) 72%);
+        border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+        margin: -16px -16px 0;
+        padding: 16px;
+    }
+
+    .themed-table .mud-table-toolbar .mud-typography-h6 {
+        color: var(--eg-primary-dark);
+        font-weight: 700;
+    }
+
+    .themed-table .mud-table-toolbar .mud-input,
+    .themed-table .mud-table-toolbar .mud-input input,
+    .themed-table .mud-table-toolbar .mud-input-adornment,
+    .themed-table .mud-table-toolbar .mud-input-adornment .mud-icon-root {
+        color: var(--mud-palette-text-primary);
+    }
+
+    .themed-table .mud-table-toolbar .mud-input-adornment .mud-icon-root {
+        color: var(--eg-primary);
+    }
+
+    .themed-table .mud-table-head .mud-table-cell {
+        background: color-mix(in srgb, var(--eg-primary) 10%, var(--mud-palette-surface));
+        color: var(--eg-primary-dark);
+        border-bottom-color: color-mix(in srgb, var(--eg-primary) 42%, var(--mud-palette-lines-default));
+        font-weight: 700;
+    }
+
+    .themed-table .mud-table-body .mud-table-row:nth-child(even) {
+        background-color: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
+    }
+
+    .themed-table .mud-table-row:hover {
+        background-color: var(--eg-primary-soft) !important;
+    }
+
+    .themed-table .mud-table-pagination {
+        border-top: 1px solid color-mix(in srgb, var(--eg-primary) 20%, var(--mud-palette-lines-default));
+    }
+
+    .themed-table .mud-input:focus-within .mud-input-underline::after,
+    .themed-table .mud-input:focus-within .mud-input-outlined-border {
+        border-color: var(--eg-primary);
+    }
+</style>
 
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
@@ -171,11 +214,6 @@
         {
             await ExportFunc();
         }
-    }
-
-    private async Task OnAddClick()
-    {
-        await OnAdd.InvokeAsync();
     }
 
     public async Task ReloadData()

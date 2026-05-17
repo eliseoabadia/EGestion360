@@ -2,24 +2,51 @@
 @typeparam TEntity where TEntity : class, new()
 
 <MudForm @ref="mudForm">
-    <MudCard Elevation="2" Class="pa-2">
-        @if (ShowHeader)
+    <MudCard Elevation="0" Class="entity-form-card">
+        @if (ShouldShowHeader)
         {
-            <MudCardHeader>
+            <MudCardHeader Class="entity-form-header">
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="entity-form-title">
                         @HeaderTitle
                     </MudText>
                 </CardHeaderContent>
             </MudCardHeader>
-            <MudDivider Class="mb-4" />
+            <MudDivider />
         }
         
-        <MudCardContent>
+        <MudCardContent Class="entity-form-content">
             @ChildContent
         </MudCardContent>
     </MudCard>
 </MudForm>
+
+<style>
+    .entity-form-card {
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        box-shadow: none !important;
+    }
+
+    .entity-form-card:hover {
+        transform: none;
+        box-shadow: none !important;
+    }
+
+    .entity-form-header {
+        padding: 8px 4px 10px;
+    }
+
+    .entity-form-title {
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .entity-form-content {
+        padding: 0 !important;
+    }
+</style>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -30,6 +57,7 @@
     private object? BaseDialog { get; set; }
     
     private MudForm mudForm = new();
+    private bool ShouldShowHeader => ShowHeader && BaseDialog == null;
     
     // Propiedades para acceder al estado del formulario
     public bool IsValid => mudForm.IsValid;

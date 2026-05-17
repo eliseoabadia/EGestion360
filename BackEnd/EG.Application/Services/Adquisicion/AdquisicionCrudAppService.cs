@@ -31,7 +31,7 @@ namespace EG.Application.Services.Adquisicion
             _setId = setId;
         }
 
-        public async Task<PagedResult<TResponse>> GetAllAsync()
+        public virtual async Task<PagedResult<TResponse>> GetAllAsync()
         {
             var result = await _serviceView.GetAllAsync();
             var items = result.ToList();
@@ -46,7 +46,7 @@ namespace EG.Application.Services.Adquisicion
             };
         }
 
-        public async Task<PagedResult<TResponse>> GetByIdAsync(int id)
+        public virtual async Task<PagedResult<TResponse>> GetByIdAsync(int id)
         {
             var result = await _serviceView.GetByIdAsync(id, idPropertyName: _idPropertyName);
 
@@ -66,7 +66,7 @@ namespace EG.Application.Services.Adquisicion
             };
         }
 
-        public async Task<PagedResult<TResponse>> CreateAsync(TResponse response, int usuarioActual)
+        public virtual async Task<PagedResult<TResponse>> CreateAsync(TResponse response, int usuarioActual)
         {
             try
             {
@@ -97,7 +97,7 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        public async Task<PagedResult<TResponse>> UpdateAsync(int id, TResponse response, int usuarioActual)
+        public virtual async Task<PagedResult<TResponse>> UpdateAsync(int id, TResponse response, int usuarioActual)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        public async Task<PagedResult<bool>> DeleteAsync(int id)
+        public virtual async Task<PagedResult<bool>> DeleteAsync(int id)
         {
             try
             {
@@ -178,7 +178,7 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        public async Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest request)
+        public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
             var result = await _serviceView.GetAllPaginadoAsync(request);
 

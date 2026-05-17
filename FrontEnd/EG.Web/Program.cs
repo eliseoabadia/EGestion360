@@ -67,6 +67,7 @@ internal class Program
         builder.Services.AddScoped<MenuStateService>();
         builder.Services.AddScoped<SucursalStateService>();
         builder.Services.AddScoped<AnioPresupuestalStateService>();
+        builder.Services.AddScoped<ThemeStateService>();
         builder.Services.AddScoped<DashboardService>();
 
         builder.Services.AddApiServices();

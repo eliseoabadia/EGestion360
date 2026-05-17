@@ -382,6 +382,51 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<spAutorizarEgresoProyectadoResult>> spAutorizarEgresoProyectadoAsync(int? pKIdEgresoProyectado, int? usuarioAutorizacion, int? fKIdPoliza_CONTA, string descripcion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PKIdEgresoProyectado",
+                    Value = pKIdEgresoProyectado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioAutorizacion",
+                    Value = usuarioAutorizacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPoliza_CONTA",
+                    Value = fKIdPoliza_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = 500,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spAutorizarEgresoProyectadoResult>("EXEC @returnValue = [PRES].[spAutorizarEgresoProyectado] @PKIdEgresoProyectado = @PKIdEgresoProyectado, @UsuarioAutorizacion = @UsuarioAutorizacion, @FKIdPoliza_CONTA = @FKIdPoliza_CONTA, @Descripcion = @Descripcion", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spConfiguracionDeRolYClaimsResult>> spConfiguracionDeRolYClaimsAsync(string group, string subgroup, string code, string values, string description, string rolName, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

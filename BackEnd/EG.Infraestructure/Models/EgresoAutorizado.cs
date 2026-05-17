@@ -31,13 +31,49 @@ public partial class EgresoAutorizado
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidEgresoProyectadoPres { get; set; }
+
+    public decimal Enero { get; set; }
+
+    public decimal Febrero { get; set; }
+
+    public decimal Marzo { get; set; }
+
+    public decimal Abril { get; set; }
+
+    public decimal Mayo { get; set; }
+
+    public decimal Junio { get; set; }
+
+    public decimal Julio { get; set; }
+
+    public decimal Agosto { get; set; }
+
+    public decimal Septiembre { get; set; }
+
+    public decimal Octubre { get; set; }
+
+    public decimal Noviembre { get; set; }
+
+    public decimal Diciembre { get; set; }
+
+    public decimal? Total { get; set; }
+
+    public DateTime? FechaAutorizacion { get; set; }
+
+    public int? UsuarioAutorizacion { get; set; }
+
     public virtual Area FkidAreaSisNavigation { get; set; }
+
+    public virtual EgresoProyectado FkidEgresoProyectadoPresNavigation { get; set; }
 
     public virtual Partidum FkidPartidaContaNavigation { get; set; }
 
     public virtual Programa FkidProgramaPresNavigation { get; set; }
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
+
+    public virtual Usuario UsuarioAutorizacionNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

@@ -5,15 +5,11 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class VwEgresoProyectado
+public partial class VwEgresoAutorizado
 {
-    public int PkidEgresoProyectado { get; set; }
+    public int PkidEgresoAutorizado { get; set; }
 
-    public int? PkidEgresoAutorizado { get; set; }
-
-    public bool EstaAutorizado { get; set; }
-
-    public DateTime? FechaAutorizacion { get; set; }
+    public int? FkidEgresoProyectadoPres { get; set; }
 
     public int? FkidAnioSis { get; set; }
 
@@ -45,6 +41,8 @@ public partial class VwEgresoProyectado
 
     public DateOnly Fecha { get; set; }
 
+    public int? FkidPolizaConta { get; set; }
+
     public decimal Enero { get; set; }
 
     public decimal Febrero { get; set; }
@@ -70,6 +68,10 @@ public partial class VwEgresoProyectado
     public decimal Diciembre { get; set; }
 
     public decimal? Total { get; set; }
+
+    public DateTime? FechaAutorizacion { get; set; }
+
+    public int? UsuarioAutorizacion { get; set; }
 
     public bool Activo { get; set; }
 

@@ -1,11 +1,9 @@
 namespace EG.Domain.DTOs.Responses.Presupuestales
 {
-    public class EgresoProyectadoResponse
+    public class EgresoAutorizadoResponse
     {
-        public int PkidEgresoProyectado { get; set; }
-        public int? PkidEgresoAutorizado { get; set; }
-        public bool EstaAutorizado { get; set; }
-        public DateTime? FechaAutorizacion { get; set; }
+        public int PkidEgresoAutorizado { get; set; }
+        public int? FkidEgresoProyectadoPres { get; set; }
         public int? FkidAnioSis { get; set; }
         public int? AnioClave { get; set; }
         public int FkidProgramaPres { get; set; }
@@ -21,6 +19,7 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public string? AreaNombre { get; set; }
         public string? Descripcion { get; set; }
         public DateOnly Fecha { get; set; }
+        public int? FkidPolizaConta { get; set; }
         public decimal Enero { get; set; }
         public decimal Febrero { get; set; }
         public decimal Marzo { get; set; }
@@ -34,6 +33,8 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public decimal Noviembre { get; set; }
         public decimal Diciembre { get; set; }
         public decimal? Total { get; set; }
+        public DateTime? FechaAutorizacion { get; set; }
+        public int? UsuarioAutorizacion { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }

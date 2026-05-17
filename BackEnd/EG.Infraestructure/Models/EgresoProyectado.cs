@@ -55,6 +55,8 @@ public partial class EgresoProyectado
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual EgresoAutorizado EgresoAutorizado { get; set; }
+
     public virtual Area FkidAreaSisNavigation { get; set; }
 
     public virtual Partidum FkidPartidaContaNavigation { get; set; }

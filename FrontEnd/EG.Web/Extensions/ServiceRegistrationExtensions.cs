@@ -85,6 +85,7 @@ public static class ApiServiceExtensions
         RegisterCrud<TipoRecursoResponse>(services, "api/TipoRecurso");
         RegisterCrud<FuenteFinanciamientoResponse>(services, "api/FuenteFinanciamiento");
         RegisterCrud<EgresoProyectadoResponse>(services, "api/EgresoProyectado");
+        RegisterCrud<EgresoAutorizadoResponse>(services, "api/EgresoAutorizado");
         RegisterCrud<PgResponse>(services, "api/Pg");
         RegisterCrud<RamoResponse>(services, "api/Ramo");
         RegisterCrud<ProyectoResponse>(services, "api/Proyecto");

@@ -1,8 +1,10 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @using EG.Domain.DTOs.Responses.Presupuestales
 @inject NavigationManager NavigationManager
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
+@inject ThemeStateService ThemeStateService
 @inject IGenericCrudService<AniosResponse> AnioService
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
@@ -86,7 +88,8 @@
                          Color="Color.Primary"
                          Variant="Variant.Outlined"
                          Size="Size.Small"
-                         Icon="@Icons.Material.Filled.Person">
+                         Icon="@Icons.Material.Filled.Person"
+                         class="user-chip">
                     @nombreUsuario
                 </MudChip>
                 
@@ -96,23 +99,16 @@
                          AnchorOrigin="Origin.BottomRight"
                          TransformOrigin="Origin.TopRight"
                          Class="theme-menu">
-                    @foreach (var option in Enum.GetValues<ThemeOption>())
+                    @foreach (var option in Enum.GetValues<AppThemeOption>())
                     {
                         <MudMenuItem OnClick="@(() => SelectThemeOption(option))">
                             <div class="theme-option">
-                                @if (option == ThemeOption.Claro)
+                                <MudIcon Icon="@GetThemeIcon(option)" />
+                                <span>@GetThemeLabel(option)</span>
+                                @if (option == _selectedThemeOption)
                                 {
-                                    <MudIcon Icon="@Icons.Material.Outlined.LightMode" />
+                                    <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Class="theme-check" />
                                 }
-                                else if (option == ThemeOption.Oscuro)
-                                {
-                                    <MudIcon Icon="@Icons.Material.Outlined.DarkMode" />
-                                }
-                                else if (option == ThemeOption.Morena)
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Park" Style="color: #8B4513;" />
-                                }
-                                <span>@option.ToString()</span>
                             </div>
                         </MudMenuItem>
                     }
@@ -136,7 +132,7 @@
     {
         <div class="page-body">
             <div class="sidebar-container @(_drawerOpen ? "expanded" : "collapsed")">
-                <DynamicMenu IsCollapsed="!_drawerOpen" />
+                <DynamicMenu IsCollapsed="!_drawerOpen" ThemeKey="@_selectedTheme" />
             </div>
             <main class="main-content">
                 <div class="content-wrapper">
@@ -164,15 +160,8 @@
 </div>
 
 @code {
-    public enum ThemeOption
-    {
-        Claro,
-        Oscuro,
-        Morena
-    }
-
     private MudThemeProvider _themeProvider = null!;
-    private ThemeOption _selectedThemeOption { get; set; } = ThemeOption.Oscuro;
+    private AppThemeOption _selectedThemeOption { get; set; } = AppThemeOption.Oscuro;
 
     private bool _drawerOpen = true;
     private bool _isDarkMode = true;
@@ -184,23 +173,28 @@
     private bool _aniosLoading;
     private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
 
-protected override async Task OnInitializedAsync()
-{
-base.OnInitialized();
-OnThemeOptionChanged();
-await CargarUsuarioAsync();
-await SucursalStateService.InitializeAsync();
-if (!esPaginaLogin)
-{
-await AnioStateService.InitializeAsync();
-await LoadAniosAsync();
-}
-await LoadVersionAsync();
-SucursalStateService.OnSucursalChanged += OnSucursalChanged;
-}
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await ThemeStateService.InitializeAsync();
+        ApplyThemeFromState();
+        ThemeStateService.OnThemeChanged += OnThemeChanged;
+
+        await CargarUsuarioAsync();
+        await SucursalStateService.InitializeAsync();
+
+        if (!esPaginaLogin)
+        {
+            await AnioStateService.InitializeAsync();
+            await LoadAniosAsync();
+        }
+
+        await LoadVersionAsync();
+        SucursalStateService.OnSucursalChanged += OnSucursalChanged;
+    }
 
 protected override async Task OnAfterRenderAsync(bool firstRender)
-{
+    {
 if (firstRender)
 {
 await ApplyMenuThemeClass();
@@ -281,17 +275,16 @@ await ApplyMenuThemeClass();
         await Task.CompletedTask;
     }
 
-private async Task SelectThemeOption(ThemeOption option)
+    private async Task SelectThemeOption(AppThemeOption option)
 {
-_selectedThemeOption = option;
-OnThemeOptionChanged();
-await InvokeAsync(StateHasChanged);
-await JSRuntime.InvokeVoidAsync("mudBlazorTheme.applyTheme");
+        await ThemeStateService.SetThemeAsync(option);
+        await InvokeAsync(StateHasChanged);
+        await JSRuntime.InvokeVoidAsync("mudBlazorTheme.applyTheme");
 
 // Forzar actualización del menú - aplicar clase morena si corresponde
-await Task.Delay(100); // Esperar a que el DOM se actualice
-await ApplyMenuThemeClass();
-}
+        await Task.Delay(100);
+        await ApplyMenuThemeClass();
+    }
 
 private async Task ApplyMenuThemeClass()
 {
@@ -299,35 +292,44 @@ try
 {
 if (_selectedTheme == "morena")
 {
-await JSRuntime.InvokeVoidAsync("eval", "document.querySelectorAll('.professional-nav-menu').forEach(el => el.classList.add('morena'))");
+await JSRuntime.InvokeVoidAsync("eval", "document.querySelectorAll('.bootstrap-sidebar, .professional-nav-menu').forEach(el => el.classList.add('morena'))");
 }
 else
 {
-await JSRuntime.InvokeVoidAsync("eval", "document.querySelectorAll('.professional-nav-menu').forEach(el => el.classList.remove('morena'))");
+await JSRuntime.InvokeVoidAsync("eval", "document.querySelectorAll('.bootstrap-sidebar, .professional-nav-menu').forEach(el => el.classList.remove('morena'))");
 }
 }
 catch { }
 }
 
-    private void OnThemeOptionChanged()
+    private void OnThemeChanged(AppThemeOption option)
     {
-        switch (_selectedThemeOption)
+        ApplyThemeFromState();
+        _ = InvokeAsync(async () =>
         {
-            case ThemeOption.Claro:
-                _isDarkMode = false;
-                _selectedTheme = "default";
-                break;
-            case ThemeOption.Oscuro:
-                _isDarkMode = true;
-                _selectedTheme = "default";
-                break;
-            case ThemeOption.Morena:
-                _isDarkMode = true;
-                _selectedTheme = "morena";
-                break;
-        }
+            StateHasChanged();
+            await ApplyMenuThemeClass();
+        });
+    }
+
+    private void ApplyThemeFromState()
+    {
+        _selectedThemeOption = ThemeStateService.SelectedOption;
+        _isDarkMode = ThemeStateService.IsDarkMode;
+        _selectedTheme = ThemeStateService.ThemeKey;
         LoadTheme();
     }
+
+    private static string GetThemeIcon(AppThemeOption option) => option switch
+    {
+        AppThemeOption.Claro => Icons.Material.Outlined.LightMode,
+        AppThemeOption.Oscuro => Icons.Material.Outlined.DarkMode,
+        AppThemeOption.Morena => Icons.Material.Filled.Park,
+        _ => Icons.Material.Outlined.DarkMode
+    };
+
+    private static string GetThemeLabel(AppThemeOption option) =>
+        EG.Web.Services.ThemeStateService.GetThemeName(option);
 
     private void LoadTheme()
     {
@@ -367,6 +369,45 @@ catch { }
 
     private PaletteLight GetLightPalette()
     {
+        if (_selectedTheme == "morena")
+        {
+            return new PaletteLight
+            {
+                Primary = "#A11A1F",
+                PrimaryLighten = "#C43A3F",
+                PrimaryDarken = "#6F000B",
+                Secondary = "#D8A13A",
+                SecondaryLighten = "#F0C66A",
+                SecondaryDarken = "#A77418",
+                Tertiary = "#7B0010",
+                TertiaryLighten = "#9D1B2A",
+                TertiaryDarken = "#520008",
+                Background = "#F7F7F8",
+                Surface = "#FFFFFF",
+                AppbarBackground = "#76000D",
+                AppbarText = "#FFFFFF",
+                DrawerBackground = "#A11A1F",
+                DrawerText = "#FFFFFF",
+                DrawerIcon = "#FFC928",
+                TextDisabled = "#9CA3AF",
+                ActionDefault = "#A11A1F",
+                ActionDisabled = "#C7B9B9",
+                ActionDisabledBackground = "#F3EAEA",
+                Divider = "#E7D6D6",
+                LinesDefault = "#E7D6D6",
+                TableLines = "#E7D6D6",
+                Info = "#6F000B",
+                Success = "#198754",
+                Warning = "#D8A13A",
+                Error = "#D71920",
+                GrayLight = "#E7D6D6",
+                GrayLighter = "#F3EAEA",
+                OverlayLight = "#6F000B40",
+                Black = "#000000",
+                White = "#FFFFFF",
+            };
+        }
+
         return new PaletteLight
         {
             Primary = "#2563EB",
@@ -410,34 +451,34 @@ catch { }
         {
             return new PaletteDark
             {
-                Primary = "#CD853F",
-                PrimaryLighten = "#DEB887",
-                PrimaryDarken = "#8B4513",
-                Secondary = "#D2691E",
-                SecondaryLighten = "#DEB887",
-                SecondaryDarken = "#8B4513",
-                Tertiary = "#6B8E23",
-                Background = "#1A1209",
-                Surface = "#2D1B0F",
-                AppbarBackground = "#2D1B0F",
-                AppbarText = "#F4E4C1",
-                DrawerBackground = "#1A1209",
-                DrawerText = "#F4E4C1",
-                DrawerIcon = "#CD853F",
-                TextDisabled = "#8B7355",
-                ActionDefault = "#CD853F",
-                ActionDisabled = "#5D3A1A",
-                ActionDisabledBackground = "#3D2A1C",
-                Divider = "#5D3A1A",
-                LinesDefault = "#5D3A1A",
-                TableLines = "#5D3A1A",
-                Info = "#5F9EA0",
-                Success = "#6B8E23",
-                Warning = "#D97706",
-                Error = "#B22222",
-                GrayLight = "#5D3A1A",
-                GrayLighter = "#3D2A1C",
-                OverlayLight = "#1A120980",
+                Primary = "#B91C2B",
+                PrimaryLighten = "#DC3545",
+                PrimaryDarken = "#7B0010",
+                Secondary = "#D8A13A",
+                SecondaryLighten = "#F0C66A",
+                SecondaryDarken = "#A77418",
+                Tertiary = "#FFC928",
+                Background = "#1A0709",
+                Surface = "#2A0B0F",
+                AppbarBackground = "#65000A",
+                AppbarText = "#F8FAFC",
+                DrawerBackground = "#8F151C",
+                DrawerText = "#FFFFFF",
+                DrawerIcon = "#FFC928",
+                TextDisabled = "#C9A7AA",
+                ActionDefault = "#D8A13A",
+                ActionDisabled = "#704046",
+                ActionDisabledBackground = "#3A1015",
+                Divider = "#5A1A20",
+                LinesDefault = "#5A1A20",
+                TableLines = "#5A1A20",
+                Info = "#F0C66A",
+                Success = "#74C69D",
+                Warning = "#FFC928",
+                Error = "#FF6B6B",
+                GrayLight = "#5A1A20",
+                GrayLighter = "#3A1015",
+                OverlayLight = "#1A070980",
                 Black = "#000000",
                 White = "#FFFFFF",
             };
@@ -513,6 +554,12 @@ catch { }
             _version = "1.0.0";
         }
     }
+
+    public void Dispose()
+    {
+        ThemeStateService.OnThemeChanged -= OnThemeChanged;
+        SucursalStateService.OnSucursalChanged -= OnSucursalChanged;
+    }
 }
 
 <style>
@@ -525,6 +572,24 @@ catch { }
     html, body {
         height: 100vh;
         overflow: hidden;
+    }
+
+    :root,
+    body,
+    .layout-root,
+    .mud-dialog {
+        --eg-primary: var(--mud-palette-primary);
+        --eg-primary-light: var(--mud-palette-primary-lighten, var(--mud-palette-primary));
+        --eg-primary-dark: var(--mud-palette-primary-darken, var(--mud-palette-primary));
+        --eg-secondary: var(--mud-palette-secondary);
+        --eg-secondary-light: var(--mud-palette-secondary-lighten, var(--mud-palette-secondary));
+        --eg-secondary-dark: var(--mud-palette-secondary-darken, var(--mud-palette-secondary));
+        --eg-accent: var(--mud-palette-drawer-icon, var(--mud-palette-secondary));
+        --eg-on-primary: var(--mud-palette-primary-text, var(--mud-palette-white));
+        --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 14%, transparent);
+        --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 24%, transparent);
+        --eg-primary-active: color-mix(in srgb, var(--eg-primary) 34%, transparent);
+        --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 18%, transparent);
     }
 
     .layout-root {
@@ -576,7 +641,7 @@ catch { }
 
     .brand-icon {
         font-size: 1.5rem;
-        color: var(--mud-palette-primary);
+        color: var(--mud-palette-drawer-icon);
     }
 
     .app-title {
@@ -585,7 +650,7 @@ catch { }
     }
 
     .title-accent {
-        color: var(--mud-palette-primary);
+        color: var(--mud-palette-drawer-icon);
     }
 
     .menu-toggle {
@@ -607,16 +672,55 @@ catch { }
         margin-top: 0;
     }
 
+    .modern-app-bar .mud-input,
+    .modern-app-bar .mud-input input,
+    .modern-app-bar .mud-select-input,
+    .modern-app-bar .mud-input-label,
+    .modern-app-bar .mud-input-adornment,
+    .modern-app-bar .mud-input-adornment .mud-icon-root {
+        color: var(--mud-palette-appbar-text) !important;
+        opacity: 1;
+    }
+
+    .modern-app-bar .mud-input-label {
+        background: var(--mud-palette-appbar-background);
+        padding: 0 4px;
+    }
+
+    .modern-app-bar .mud-input-outlined-border {
+        border-color: color-mix(in srgb, var(--mud-palette-appbar-text) 78%, transparent) !important;
+    }
+
+    .modern-app-bar .mud-input:hover .mud-input-outlined-border,
+    .modern-app-bar .mud-input:focus-within .mud-input-outlined-border {
+        border-color: var(--eg-accent) !important;
+    }
+
+    .modern-app-bar .mud-chip {
+        color: var(--mud-palette-appbar-text);
+    }
+
+    .modern-app-bar .mud-chip .mud-icon-root,
+    .modern-app-bar .mud-button-root .mud-icon-root {
+        color: var(--eg-accent);
+    }
+
     .user-chip {
-        background: rgba(99, 102, 241, 0.15);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-        color: #e2e8f0;
+        background: var(--eg-primary-soft);
+        border: 1px solid color-mix(in srgb, var(--eg-accent) 70%, transparent);
+        color: var(--mud-palette-appbar-text);
     }
 
     .theme-option {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 132px;
+    }
+
+    .theme-check {
+        margin-left: auto;
+        color: var(--mud-palette-primary);
     }
 
     .page-body {
@@ -681,9 +785,11 @@ catch { }
     .login-page-container {
         display: flex;
         justify-content: center;
-        align-items: center;
-        height: calc(100vh - 40px - 30px);
+        align-items: stretch;
+        height: calc(100vh - 40px);
         width: 100%;
         flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
 </style>

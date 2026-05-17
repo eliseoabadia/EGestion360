@@ -95,6 +95,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAniosAppServices, AniosAppServices>();
             services.AddScoped<IFuenteFinanciamientoAppServices, FuenteFinanciamientoAppServices>();
             services.AddScoped<IEgresoProyectadoAppService, EgresoProyectadoAppService>();
+            services.AddScoped<IEgresoAutorizadoAppService, EgresoAutorizadoAppService>();
             services.AddScoped<IPgAppServices, PgAppServices>();
             services.AddScoped<IProgramaPresupuestalAppServices, ProgramaPresupuestalAppServices>();
             services.AddScoped<IProyectoAppServices, ProyectoAppServices>();

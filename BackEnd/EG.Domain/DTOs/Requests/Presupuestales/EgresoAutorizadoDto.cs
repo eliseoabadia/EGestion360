@@ -1,26 +1,15 @@
-namespace EG.Domain.DTOs.Responses.Presupuestales
+namespace EG.Domain.DTOs.Requests.Presupuestales
 {
-    public class EgresoProyectadoResponse
+    public class EgresoAutorizadoDto
     {
-        public int PkidEgresoProyectado { get; set; }
-        public int? PkidEgresoAutorizado { get; set; }
-        public bool EstaAutorizado { get; set; }
-        public DateTime? FechaAutorizacion { get; set; }
-        public int? FkidAnioSis { get; set; }
-        public int? AnioClave { get; set; }
+        public int PkidEgresoAutorizado { get; set; }
+        public int? FkidEgresoProyectadoPres { get; set; }
         public int FkidProgramaPres { get; set; }
-        public string? ProgramaClave { get; set; }
-        public string? ProgramaDescripcion { get; set; }
-        public string? ProgramaClaveNombre { get; set; }
         public int FkidPartidaConta { get; set; }
-        public string? PartidaClave { get; set; }
-        public string? PartidaDescripcion { get; set; }
-        public string? PartidaClaveNombre { get; set; }
         public int FkidAreaSis { get; set; }
-        public string? AreaClave { get; set; }
-        public string? AreaNombre { get; set; }
         public string? Descripcion { get; set; }
         public DateOnly Fecha { get; set; }
+        public int? FkidPolizaConta { get; set; }
         public decimal Enero { get; set; }
         public decimal Febrero { get; set; }
         public decimal Marzo { get; set; }
@@ -33,11 +22,12 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public decimal Octubre { get; set; }
         public decimal Noviembre { get; set; }
         public decimal Diciembre { get; set; }
-        public decimal? Total { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public DateTime? FechaAutorizacion { get; set; }
+        public int? UsuarioAutorizacion { get; set; }
     }
 }
