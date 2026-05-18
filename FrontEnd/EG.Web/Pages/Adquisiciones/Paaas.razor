@@ -97,41 +97,54 @@
         else
         {
             @* ─── CONTENEDOR FLEX QUE LLENA EL ESPACIO RESTANTE ─── *@
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 6px;">
+            <div Class="d-flex flex-column paaa-detail-page" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
                 @* ─── ENCABEZADO DEL PAAA SELECCIONADO ─── *@
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
-                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
-                                   Color="Color.Primary"
-                                   Size="Size.Medium"
-                                   OnClick="BackToTable"
-                                   Tooltip="Volver al listado" />
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;" Class="ml-2">
-                        @SelectedPaaa.Descripcion
-                    </MudText>
-                    <MudSpacer />
-                    <MudChip T="string" Size="Size.Small" Color="@(SelectedPaaa.Activo ? Color.Success : Color.Error)">
-                        @(SelectedPaaa.Activo ? "Activo" : "Inactivo")
-                    </MudChip>
-                    <MudTooltip Text="Editar programa">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Visible="@CanUpdate"
-                                       OnClick="@(() => EditItem(SelectedPaaa.PkidPaaas))"
-                                       Class="ml-2" />
-                    </MudTooltip>
-                    <MudTooltip Text="Agregar partida">
-                        <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       OnClick="AddPartida"
-                                       Class="ml-1" />
-                    </MudTooltip>
+                <MudPaper Elevation="1" Class="paaa-selected-header">
+                    <div class="paaa-header-main">
+                        <div class="paaa-title-group">
+                            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="BackToTable"
+                                           Class="paaa-back-button"
+                                           Tooltip="Volver al listado" />
+                            <div class="paaa-title-copy">
+                                <div class="paaa-title-line">
+                                    <MudText Typo="Typo.h6" Class="paaa-title">@TextOrDash(SelectedPaaa.Descripcion)</MudText>
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="@(SelectedPaaa.Activo ? Color.Success : Color.Error)"
+                                             Variant="Variant.Filled">
+                                        @(SelectedPaaa.Activo ? "Activo" : "Inactivo")
+                                    </MudChip>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="paaa-subtitle">
+                                    Programa anual @SelectedPaaa.PkidPaaas.ToString("N0") | @SelectedPaaa.Fecha.ToString("dd/MM/yyyy")
+                                </MudText>
+                            </div>
+                        </div>
+
+                        <div class="paaa-header-actions">
+                            <MudTooltip Text="Editar programa">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               Visible="@CanUpdate"
+                                               OnClick="@(() => EditItem(SelectedPaaa.PkidPaaas))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Agregar partida">
+                                <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="AddPartida" />
+                            </MudTooltip>
+                        </div>
+                    </div>
                 </MudPaper>
 
                 @* ─── TARJETA DE INFORMACIÓN GENERAL (compacta) ─── *@
-                <MudCard Elevation="1" Style="flex-shrink: 0;">
-                    <MudCardContent Style="padding: 8px 12px;">
+                <MudPaper Elevation="0" Class="paaa-summary-panel">
+                    <div class="paaa-summary-content">
                         <MudGrid Spacing="1">
                             <MudItem xs="12" md="3">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Área</MudText>
@@ -163,9 +176,13 @@
                                     <MudChip T="string" Size="Size.Small" Color="Color.Primary">@(partidas?.Count ?? 0)</MudChip>
                                 </MudText>
                             </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Monto partidas</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@PartidasTotal.ToString("C2")</MudText>
+                            </MudItem>
                         </MudGrid>
-                    </MudCardContent>
-                </MudCard>
+                    </div>
+                </MudPaper>
 
                 @* ─── CUERPO MAESTRO-DETALLE: OCUPA EL RESTO ─── *@
                 <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
@@ -271,6 +288,145 @@
     </MudContainer>
 </AccessVerification>
 
+<style>
+    .paaa-detail-page .paaa-selected-header,
+    .paaa-detail-page .paaa-summary-panel {
+        flex-shrink: 0;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-lines-default));
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+    }
+
+    .paaa-detail-page .paaa-selected-header {
+        padding: 10px 12px;
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        box-shadow: none !important;
+    }
+
+    .paaa-detail-page .paaa-summary-panel {
+        margin-top: -8px;
+        padding: 10px 12px 12px;
+        border-top: 0;
+        border-radius: 0 0 8px 8px;
+        box-shadow: var(--mud-elevation-1) !important;
+    }
+
+    .paaa-detail-page .paaa-selected-header:hover,
+    .paaa-detail-page .paaa-summary-panel:hover {
+        transform: none;
+    }
+
+    .paaa-header-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .paaa-title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .paaa-back-button {
+        flex-shrink: 0;
+    }
+
+    .paaa-title-copy {
+        min-width: 0;
+    }
+
+    .paaa-title-line {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .paaa-title {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--mud-palette-text-primary);
+        font-weight: 800;
+        line-height: 1.18;
+    }
+
+    .paaa-subtitle {
+        color: var(--mud-palette-text-secondary);
+        line-height: 1.1;
+    }
+
+    .paaa-header-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .paaa-summary-content {
+        padding-left: 42px;
+    }
+
+    .paaa-summary-panel .mud-grid {
+        row-gap: 4px;
+    }
+
+    .paaa-summary-panel .mud-typography-caption {
+        display: block;
+        color: var(--mud-palette-primary) !important;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1.1;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+    }
+
+    .paaa-summary-panel .mud-typography-body2 {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--mud-palette-text-primary);
+        font-weight: 650 !important;
+        line-height: 1.24;
+    }
+
+    @@media (max-width: 960px) {
+        .paaa-header-main,
+        .paaa-title-line {
+            align-items: flex-start;
+        }
+
+        .paaa-header-main {
+            flex-direction: column;
+        }
+
+        .paaa-header-actions {
+            align-self: flex-end;
+        }
+
+        .paaa-title-line {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .paaa-summary-content {
+            padding-left: 0;
+        }
+
+        .paaa-title {
+            white-space: normal;
+        }
+    }
+</style>
+
 @code {
     private GenericTable<PaaaResponse> table = null!;
     private GenericTable<PaaaspartidumResponse>? partidaTable;
@@ -285,6 +441,7 @@
     private string BienesTableTitle => SelectedPartida == null
         ? "Bienes / Servicios"
         : $"Bienes / Servicios - {SelectedPartida.ClavePartida}";
+    private decimal PartidasTotal => partidas?.Sum(x => x.Monto) ?? 0m;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Programa_Anual_Adquisiciones";

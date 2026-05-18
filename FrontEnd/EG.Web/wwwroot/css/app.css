@@ -139,6 +139,25 @@ body,
     line-height: 1.2;
 }
 
+.mud-dialog .eg-dialog-drag-handle {
+    cursor: move;
+    user-select: none;
+}
+
+.mud-dialog .eg-dialog-drag-handle button,
+.mud-dialog .eg-dialog-drag-handle a,
+.mud-dialog .eg-dialog-drag-handle .mud-button-root {
+    cursor: pointer;
+}
+
+.mud-dialog.eg-dialog-dragging {
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.24) !important;
+}
+
+.mud-dialog.eg-dialog-dragging .eg-dialog-drag-handle {
+    cursor: grabbing;
+}
+
 .mud-dialog .mud-dialog-content {
     padding: 12px 20px 4px !important;
 }
