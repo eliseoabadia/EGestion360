@@ -77,17 +77,17 @@
                                            Size="Size.Small"
                                            OnClick="@(() => AutorizarEgreso(item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Regresar a proyectado">
+                        <MudTooltip Text="Quitar autorizacion">
                             <MudIconButton Icon="@Icons.Material.Filled.LockOpen"
                                            Visible="@(CanUpdate && item.EstaAutorizado && item.PkidEgresoAutorizado.HasValue)"
                                            Color="Color.Warning"
                                            Size="Size.Small"
                                            OnClick="@(() => DesautorizarEgreso(item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@(item.EstaAutorizado ? "Ver anteproyecto" : "Editar")">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Visible="@(CanUpdate && !item.EstaAutorizado)"
-                                           Color="Color.Primary"
+                                           Visible="@CanUpdate"
+                                           Color="@(item.EstaAutorizado ? Color.Info : Color.Primary)"
                                            Size="Size.Small"
                                            OnClick="@(() => EditItem(item.PkidEgresoProyectado))" />
                         </MudTooltip>
@@ -318,21 +318,19 @@
             return;
         }
 
-        if (Elements.FirstOrDefault(x => x.PkidEgresoProyectado == id)?.EstaAutorizado == true)
-        {
-            Snackbar.Add("El anteproyecto ya fue autorizado y no puede editarse.", Severity.Warning);
-            return;
-        }
+        var isAuthorized = Elements.FirstOrDefault(x => x.PkidEgresoProyectado == id)?.EstaAutorizado == true;
 
         var parameters = new DialogParameters
         {
             ["Id"] = id,
             ["AnioId"] = AnioStateService.AnioId ?? 0,
             ["CurrencySymbol"] = _currencySymbol,
-            ["CurrencyName"] = _currencyName
+            ["CurrencyName"] = _currencyName,
+            ["IsReadOnly"] = isAuthorized
         };
 
-        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar anteproyecto", parameters,
+        var dialogTitle = isAuthorized ? "Ver anteproyecto autorizado" : "Editar anteproyecto";
+        var dialog = await DialogService.ShowAsync(EditDialogType, dialogTitle, parameters,
             new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
 
         var result = await dialog.Result;
@@ -514,28 +512,34 @@
             return;
         }
 
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Regresar a proyectado el presupuesto de {TextOrDash(item.PartidaClaveNombre)} por {Money(item.Total ?? 0m)}?");
-        if (!confirm)
-            return;
-
-        try
+        var parameters = new DialogParameters
         {
-            var response = await Http.PostAsync($"api/EgresoAutorizado/regresar-a-proyectado/{item.PkidEgresoAutorizado.Value}", null);
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+            ["EgresoAutorizadoId"] = item.PkidEgresoAutorizado.Value,
+            ["Programa"] = item.ProgramaClaveNombre,
+            ["Partida"] = item.PartidaClaveNombre,
+            ["Area"] = item.AreaNombre,
+            ["FuenteFinanciamiento"] = item.FuenteFinanciamientoClaveNombre,
+            ["Descripcion"] = item.Descripcion,
+            ["Total"] = Money(item.Total ?? 0m),
+            ["FechaAutorizacion"] = item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm"),
+            ["DialogTitle"] = "Quitar autorizacion",
+            ["DialogSubtitle"] = "El anteproyecto dejara de estar autorizado.",
+            ["DialogIcon"] = Icons.Material.Filled.LockOpen,
+            ["WarningText"] = "Esta accion quitara la autorizacion vigente del anteproyecto.",
+            ["EffectText"] = "El autorizado se conservara como registro inactivo para trazabilidad. El anteproyecto podra editarse o autorizarse nuevamente.",
+            ["ConfirmCheckText"] = "Entiendo que se quitara la autorizacion vigente",
+            ["ConfirmText"] = "Quitar autorizacion",
+            ["SuccessFallbackMessage"] = "Autorizacion quitada correctamente.",
+            ["ErrorFallbackMessage"] = "No fue posible quitar la autorizacion.",
+            ["ErrorPrefix"] = "Error al quitar la autorizacion"
+        };
 
-            if (response.IsSuccessStatusCode && result?.Success == true)
-            {
-                Snackbar.Add("Presupuesto regresado a proyectado correctamente", Severity.Success);
-                await ReloadData();
-                return;
-            }
+        var dialog = await DialogService.ShowAsync(typeof(RegresarAProyectadoDialog), "Quitar autorizacion", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-            Snackbar.Add(result?.Message ?? "Error al regresar el presupuesto a proyectado", Severity.Error);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await ReloadData();
     }
 
     private async Task LoadCurrencyAsync()

@@ -23,6 +23,7 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando anteproyecto..."
+                CanConfirm="@(!IsReadOnly)"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EgresoProyectadoResponse"
@@ -53,6 +54,7 @@
                                    Label="Programa"
                                    Required="true"
                                    RequiredError="El programa es requerido"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadProgramasPageAsync" />
             </MudItem>
 
@@ -62,6 +64,7 @@
                                    Label="Partida"
                                    Required="true"
                                    RequiredError="La partida es requerida"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadPartidasPageAsync" />
             </MudItem>
 
@@ -71,6 +74,7 @@
                                    Label="Area"
                                    Required="true"
                                    RequiredError="El area es requerida"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadAreasPageAsync" />
             </MudItem>
 
@@ -82,14 +86,16 @@
                                DateFormat="dd/MM/yyyy"
                                Culture="@DateCulture"
                                Required="true"
-                               RequiredError="La fecha es requerida" />
+                               RequiredError="La fecha es requerida"
+                               Disabled="@IsReadOnly" />
             </MudItem>
 
             <MudItem xs="12" md="8">
                 <MudTextField @bind-Value="item.Descripcion"
                               Label="Descripcion"
                               Variant="Variant.Outlined"
-                              MaxLength="250" />
+                              MaxLength="250"
+                              Disabled="@IsReadOnly" />
             </MudItem>
 
             <MudItem xs="12" md="4">
@@ -97,6 +103,7 @@
                                    ValueChanged="value => _selectedFuenteFinanciamiento = value"
                                    Label="Fuente de financiamiento"
                                    Clearable="true"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadFuentesFinanciamientoPageAsync" />
             </MudItem>
 
@@ -105,6 +112,7 @@
                                    ValueChanged="value => _selectedTipoGasto = value"
                                    Label="Tipo de gasto"
                                    Clearable="true"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadTiposGastoPageAsync" />
             </MudItem>
 
@@ -113,6 +121,7 @@
                                    ValueChanged="value => _selectedDigitoIdentificador = value"
                                    Label="Digito identificador"
                                    Clearable="true"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadDigitosIdentificadorPageAsync" />
             </MudItem>
 
@@ -121,6 +130,7 @@
                                    ValueChanged="value => _selectedDestinoGasto = value"
                                    Label="Destino de gasto"
                                    Clearable="true"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadDestinosGastoPageAsync" />
             </MudItem>
 
@@ -129,6 +139,7 @@
                                    ValueChanged="value => _selectedPy = value"
                                    Label="PY"
                                    Clearable="true"
+                                   Disabled="@IsReadOnly"
                                    LoadPage="LoadPyPageAsync" />
             </MudItem>
 
@@ -144,40 +155,40 @@
 
                     <MudGrid GutterSize="1">
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(1)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(1)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(2)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(2)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(3)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(3)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(4)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(4)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(5)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(5)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(6)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(6)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(7)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(7)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(8)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(8)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(9)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(9)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(10)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(10)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(11)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(11)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="2">
-                            <MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsMonthDisabled(12)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
+                            <MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@IsAmountDisabled(12)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" />
                         </MudItem>
                     </MudGrid>
                 </div>
@@ -186,7 +197,7 @@
             @if (Id.HasValue)
             {
                 <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" Disabled="@IsReadOnly" />
                 </MudItem>
             }
         </MudGrid>
@@ -285,6 +296,7 @@
     [Parameter] public int AnioId { get; set; }
     [Parameter] public string CurrencySymbol { get; set; } = "$";
     [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
+    [Parameter] public bool IsReadOnly { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -305,7 +317,7 @@
     private LookupItem? _selectedDestinoGasto;
     private LookupItem? _selectedPy;
 
-    private string dialogTitle => Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
+    private string dialogTitle => IsReadOnly ? "Ver Anteproyecto Autorizado" : Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
@@ -333,7 +345,10 @@
             {
                 item = response.Data;
                 _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
-                ClearMonthsBeforeStartDate();
+                if (!IsReadOnly)
+                {
+                    ClearMonthsBeforeStartDate();
+                }
                 _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres, Text = TextOrDefault(item.ProgramaClaveNombre, item.FkidProgramaPres) };
                 _selectedPartida = new LookupItem { Id = item.FkidPartidaConta, Text = TextOrDefault(item.PartidaClaveNombre, item.FkidPartidaConta) };
                 _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
@@ -352,6 +367,11 @@
 
     private async Task GuardarCambiosAsync()
     {
+        if (IsReadOnly)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
@@ -512,6 +532,9 @@
         id.HasValue && id.Value > 0
             ? new LookupItem { Id = id.Value, Text = TextOrDefault(text, id.Value) }
             : null;
+
+    private bool IsAmountDisabled(int month) =>
+        IsReadOnly || IsMonthDisabled(month);
 
     private bool IsMonthDisabled(int month) =>
         _fecha.HasValue && month < _fecha.Value.Month;

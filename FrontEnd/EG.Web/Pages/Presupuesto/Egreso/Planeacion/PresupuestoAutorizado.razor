@@ -399,6 +399,12 @@
     private async Task DeleteAutorizado(EgresoAutorizadoResponse item)
     {
         var isLinkedToProyectado = item.FkidEgresoProyectadoPres.HasValue;
+        if (isLinkedToProyectado)
+        {
+            await ShowRegresarAProyectadoDialog(item);
+            return;
+        }
+
         var confirmText = isLinkedToProyectado
             ? $"Regresar a proyectado el presupuesto de {TextOrDash(item.PartidaClaveNombre)}?"
             : $"Eliminar presupuesto autorizado de {TextOrDash(item.PartidaClaveNombre)}?";
@@ -408,24 +414,44 @@
 
         try
         {
-            var response = isLinkedToProyectado
-                ? await Http.PostAsync($"api/EgresoAutorizado/regresar-a-proyectado/{item.PkidEgresoAutorizado}", null)
-                : await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado}");
+            var response = await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado}");
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
-                Snackbar.Add(isLinkedToProyectado ? "Presupuesto regresado a proyectado correctamente" : "Presupuesto autorizado eliminado correctamente", Severity.Success);
+                Snackbar.Add("Presupuesto autorizado eliminado correctamente", Severity.Success);
                 await ReloadData();
                 return;
             }
 
-            Snackbar.Add(result?.Message ?? (isLinkedToProyectado ? "Error al regresar el presupuesto a proyectado" : "Error al eliminar el presupuesto autorizado"), Severity.Error);
+            Snackbar.Add(result?.Message ?? "Error al eliminar el presupuesto autorizado", Severity.Error);
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task ShowRegresarAProyectadoDialog(EgresoAutorizadoResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["EgresoAutorizadoId"] = item.PkidEgresoAutorizado,
+            ["Programa"] = item.ProgramaClaveNombre,
+            ["Partida"] = item.PartidaClaveNombre,
+            ["Area"] = item.AreaNombre,
+            ["FuenteFinanciamiento"] = item.FuenteFinanciamientoClaveNombre,
+            ["Descripcion"] = item.Descripcion,
+            ["Total"] = Money(item.Total ?? 0m),
+            ["FechaAutorizacion"] = item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm")
+        };
+
+        var dialog = await DialogService.ShowAsync(typeof(RegresarAProyectadoDialog), "Regresar a proyectado", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await ReloadData();
     }
 
     private async Task LoadCurrencyAsync()
