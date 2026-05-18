@@ -1183,10 +1183,15 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Febrero).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EgresoAutorizado_FechaCreacion");
             entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidDestinoGastoPres).HasColumnName("FKIdDestinoGasto_PRES");
+            entity.Property(e => e.FkidDigitoIdentificadorPres).HasColumnName("FKIdDigitoIdentificador_PRES");
             entity.Property(e => e.FkidEgresoProyectadoPres).HasColumnName("FKIdEgresoProyectado_PRES");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
             entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
             entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidPyPres).HasColumnName("FKIdPY_PRES");
+            entity.Property(e => e.FkidTipoGastoPres).HasColumnName("FKIdTipoGasto_PRES");
             entity.Property(e => e.Julio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Junio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Marzo).HasColumnType("decimal(18, 2)");
@@ -1203,9 +1208,21 @@ public partial class EGestionContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EgresoAutorizado_Area");
 
+            entity.HasOne(d => d.FkidDestinoGastoPresNavigation).WithMany(p => p.EgresoAutorizados)
+                .HasForeignKey(d => d.FkidDestinoGastoPres)
+                .HasConstraintName("FK_EgresoAutorizado_DestinoGasto");
+
+            entity.HasOne(d => d.FkidDigitoIdentificadorPresNavigation).WithMany(p => p.EgresoAutorizados)
+                .HasForeignKey(d => d.FkidDigitoIdentificadorPres)
+                .HasConstraintName("FK_EgresoAutorizado_DigitoIdentificador");
+
             entity.HasOne(d => d.FkidEgresoProyectadoPresNavigation).WithOne(p => p.EgresoAutorizado)
                 .HasForeignKey<EgresoAutorizado>(d => d.FkidEgresoProyectadoPres)
                 .HasConstraintName("FK_EgresoAutorizado_EgresoProyectado");
+
+            entity.HasOne(d => d.FkidFuenteFinanciamientoPresNavigation).WithMany(p => p.EgresoAutorizados)
+                .HasForeignKey(d => d.FkidFuenteFinanciamientoPres)
+                .HasConstraintName("FK_EgresoAutorizado_FuenteFinanciamiento");
 
             entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.EgresoAutorizados)
                 .HasForeignKey(d => d.FkidPartidaConta)
@@ -1216,6 +1233,14 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidProgramaPres)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EgresoAutorizado_Programa");
+
+            entity.HasOne(d => d.FkidPyPresNavigation).WithMany(p => p.EgresoAutorizados)
+                .HasForeignKey(d => d.FkidPyPres)
+                .HasConstraintName("FK_EgresoAutorizado_PY");
+
+            entity.HasOne(d => d.FkidTipoGastoPresNavigation).WithMany(p => p.EgresoAutorizados)
+                .HasForeignKey(d => d.FkidTipoGastoPres)
+                .HasConstraintName("FK_EgresoAutorizado_TipoGasto");
 
             entity.HasOne(d => d.UsuarioAutorizacionNavigation).WithMany(p => p.EgresoAutorizadoUsuarioAutorizacionNavigations)
                 .HasForeignKey(d => d.UsuarioAutorizacion)
@@ -1247,8 +1272,13 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Febrero).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EgresoProyectado_FechaCreacion");
             entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidDestinoGastoPres).HasColumnName("FKIdDestinoGasto_PRES");
+            entity.Property(e => e.FkidDigitoIdentificadorPres).HasColumnName("FKIdDigitoIdentificador_PRES");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
             entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
             entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidPyPres).HasColumnName("FKIdPY_PRES");
+            entity.Property(e => e.FkidTipoGastoPres).HasColumnName("FKIdTipoGasto_PRES");
             entity.Property(e => e.Julio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Junio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Marzo).HasColumnType("decimal(18, 2)");
@@ -1265,6 +1295,18 @@ public partial class EGestionContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EgresoProyectado_Area");
 
+            entity.HasOne(d => d.FkidDestinoGastoPresNavigation).WithMany(p => p.EgresoProyectados)
+                .HasForeignKey(d => d.FkidDestinoGastoPres)
+                .HasConstraintName("FK_EgresoProyectado_DestinoGasto");
+
+            entity.HasOne(d => d.FkidDigitoIdentificadorPresNavigation).WithMany(p => p.EgresoProyectados)
+                .HasForeignKey(d => d.FkidDigitoIdentificadorPres)
+                .HasConstraintName("FK_EgresoProyectado_DigitoIdentificador");
+
+            entity.HasOne(d => d.FkidFuenteFinanciamientoPresNavigation).WithMany(p => p.EgresoProyectados)
+                .HasForeignKey(d => d.FkidFuenteFinanciamientoPres)
+                .HasConstraintName("FK_EgresoProyectado_FuenteFinanciamiento");
+
             entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.EgresoProyectados)
                 .HasForeignKey(d => d.FkidPartidaConta)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -1274,6 +1316,14 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidProgramaPres)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EgresoProyectado_Programa");
+
+            entity.HasOne(d => d.FkidPyPresNavigation).WithMany(p => p.EgresoProyectados)
+                .HasForeignKey(d => d.FkidPyPres)
+                .HasConstraintName("FK_EgresoProyectado_PY");
+
+            entity.HasOne(d => d.FkidTipoGastoPresNavigation).WithMany(p => p.EgresoProyectados)
+                .HasForeignKey(d => d.FkidTipoGastoPres)
+                .HasConstraintName("FK_EgresoProyectado_TipoGasto");
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.EgresoProyectadoUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
@@ -4608,15 +4658,29 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.AreaClave).HasMaxLength(15);
             entity.Property(e => e.AreaNombre).HasMaxLength(200);
             entity.Property(e => e.Descripcion).HasMaxLength(250);
+            entity.Property(e => e.DestinoGastoClave).HasMaxLength(2);
+            entity.Property(e => e.DestinoGastoClaveNombre).HasMaxLength(255);
+            entity.Property(e => e.DestinoGastoDescripcion).HasMaxLength(250);
             entity.Property(e => e.Diciembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DigitoIdentificadorClave).HasMaxLength(1);
+            entity.Property(e => e.DigitoIdentificadorClaveNombre).HasMaxLength(204);
+            entity.Property(e => e.DigitoIdentificadorDescripcion).HasMaxLength(200);
             entity.Property(e => e.Enero).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Febrero).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
             entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidDestinoGastoPres).HasColumnName("FKIdDestinoGasto_PRES");
+            entity.Property(e => e.FkidDigitoIdentificadorPres).HasColumnName("FKIdDigitoIdentificador_PRES");
             entity.Property(e => e.FkidEgresoProyectadoPres).HasColumnName("FKIdEgresoProyectado_PRES");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
             entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
             entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidPyPres).HasColumnName("FKIdPY_PRES");
+            entity.Property(e => e.FkidTipoGastoPres).HasColumnName("FKIdTipoGasto_PRES");
+            entity.Property(e => e.FuenteFinanciamientoClave).HasMaxLength(6);
+            entity.Property(e => e.FuenteFinanciamientoClaveNombre).HasMaxLength(209);
+            entity.Property(e => e.FuenteFinanciamientoDescripcion).HasMaxLength(200);
             entity.Property(e => e.Julio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Junio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Marzo).HasColumnType("decimal(18, 2)");
@@ -4638,7 +4702,14 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ProgramaDescripcion)
                 .IsRequired()
                 .HasMaxLength(255);
+            entity.Property(e => e.PyClave)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.PyClaveNombre).HasMaxLength(168);
+            entity.Property(e => e.PyDescripcion).HasMaxLength(150);
             entity.Property(e => e.Septiembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TipoGastoClaveNombre).HasMaxLength(215);
+            entity.Property(e => e.TipoGastoDescripcion).HasMaxLength(200);
             entity.Property(e => e.Total).HasColumnType("decimal(29, 2)");
         });
 
@@ -4653,13 +4724,27 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.AreaClave).HasMaxLength(15);
             entity.Property(e => e.AreaNombre).HasMaxLength(200);
             entity.Property(e => e.Descripcion).HasMaxLength(250);
+            entity.Property(e => e.DestinoGastoClave).HasMaxLength(2);
+            entity.Property(e => e.DestinoGastoClaveNombre).HasMaxLength(255);
+            entity.Property(e => e.DestinoGastoDescripcion).HasMaxLength(250);
             entity.Property(e => e.Diciembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DigitoIdentificadorClave).HasMaxLength(1);
+            entity.Property(e => e.DigitoIdentificadorClaveNombre).HasMaxLength(204);
+            entity.Property(e => e.DigitoIdentificadorDescripcion).HasMaxLength(200);
             entity.Property(e => e.Enero).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Febrero).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
             entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidDestinoGastoPres).HasColumnName("FKIdDestinoGasto_PRES");
+            entity.Property(e => e.FkidDigitoIdentificadorPres).HasColumnName("FKIdDigitoIdentificador_PRES");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
             entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
             entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidPyPres).HasColumnName("FKIdPY_PRES");
+            entity.Property(e => e.FkidTipoGastoPres).HasColumnName("FKIdTipoGasto_PRES");
+            entity.Property(e => e.FuenteFinanciamientoClave).HasMaxLength(6);
+            entity.Property(e => e.FuenteFinanciamientoClaveNombre).HasMaxLength(209);
+            entity.Property(e => e.FuenteFinanciamientoDescripcion).HasMaxLength(200);
             entity.Property(e => e.Julio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Junio).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Marzo).HasColumnType("decimal(18, 2)");
@@ -4682,7 +4767,14 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ProgramaDescripcion)
                 .IsRequired()
                 .HasMaxLength(255);
+            entity.Property(e => e.PyClave)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.PyClaveNombre).HasMaxLength(168);
+            entity.Property(e => e.PyDescripcion).HasMaxLength(150);
             entity.Property(e => e.Septiembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TipoGastoClaveNombre).HasMaxLength(215);
+            entity.Property(e => e.TipoGastoDescripcion).HasMaxLength(200);
             entity.Property(e => e.Total).HasColumnType("decimal(29, 2)");
         });
 

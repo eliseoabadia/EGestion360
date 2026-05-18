@@ -69,6 +69,10 @@ public partial class Py
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
+    public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

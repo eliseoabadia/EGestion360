@@ -10,6 +10,11 @@ namespace EG.Domain.DTOs.Requests.Presupuestales
         public string? Descripcion { get; set; }
         public DateOnly Fecha { get; set; }
         public int? FkidPolizaConta { get; set; }
+        public int? FkidFuenteFinanciamientoPres { get; set; }
+        public int? FkidTipoGastoPres { get; set; }
+        public int? FkidDigitoIdentificadorPres { get; set; }
+        public int? FkidDestinoGastoPres { get; set; }
+        public int? FkidPyPres { get; set; }
         public decimal Enero { get; set; }
         public decimal Febrero { get; set; }
         public decimal Marzo { get; set; }

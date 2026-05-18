@@ -47,7 +47,7 @@
             <GenericTable TItem="EgresoAutorizadoResponse"
                           @ref="table"
                           Title="Partidas autorizadas"
-                          SearchPlaceholder="Buscar programa, partida, area o descripcion..."
+                          SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
                           ShowExportButton="@CanExport"
                           ServerDataFunc="LoadServerData"
                           ExportFunc="ExportToExcel"
@@ -60,6 +60,7 @@
                     <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoAutorizadoResponse">Programa</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoAutorizadoResponse">Partida</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoAutorizadoResponse">Area</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="EgresoAutorizadoResponse">Clasificacion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoAutorizadoResponse">Descripcion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="EgresoAutorizadoResponse">Autorizacion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoAutorizadoResponse">Total</MudTableSortLabel></MudTh>
@@ -75,7 +76,7 @@
                                            Size="Size.Small"
                                            OnClick="@(() => EditItem(item.PkidEgresoAutorizado))" />
                         </MudTooltip>
-                        <MudTooltip Text="@(item.FkidEgresoProyectadoPres.HasValue ? "Desautorizar" : "Eliminar")">
+                        <MudTooltip Text="@(item.FkidEgresoProyectadoPres.HasValue ? "Regresar a proyectado" : "Eliminar")">
                             <MudIconButton Icon="@(item.FkidEgresoProyectadoPres.HasValue ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Delete)"
                                            Visible="@CanDelete"
                                            Color="Color.Error"
@@ -92,6 +93,13 @@
                         <span>@TextOrDash(item.PartidaDescripcion)</span>
                     </MudTd>
                     <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.FuenteFinanciamientoClaveNombre)</div>
+                        <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span><br />
+                        <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span><br />
+                        <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
+                        <span>PY: @TextOrDash(item.PyClaveNombre)</span>
+                    </MudTd>
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd>
                     <MudTd>@(item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</MudTd>
                     <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
@@ -292,6 +300,11 @@
             Programa = x.ProgramaClaveNombre,
             Partida = x.PartidaClaveNombre,
             Area = x.AreaNombre,
+            FuenteFinanciamiento = x.FuenteFinanciamientoClaveNombre,
+            TipoGasto = x.TipoGastoClaveNombre,
+            DigitoIdentificador = x.DigitoIdentificadorClaveNombre,
+            DestinoGasto = x.DestinoGastoClaveNombre,
+            PY = x.PyClaveNombre,
             x.Descripcion,
             Fecha = x.Fecha.ToString("dd/MM/yyyy"),
             FechaAutorizacion = x.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm"),
@@ -387,7 +400,7 @@
     {
         var isLinkedToProyectado = item.FkidEgresoProyectadoPres.HasValue;
         var confirmText = isLinkedToProyectado
-            ? $"Desautorizar presupuesto de {TextOrDash(item.PartidaClaveNombre)}?"
+            ? $"Regresar a proyectado el presupuesto de {TextOrDash(item.PartidaClaveNombre)}?"
             : $"Eliminar presupuesto autorizado de {TextOrDash(item.PartidaClaveNombre)}?";
         var confirm = await JS.InvokeAsync<bool>("confirm", confirmText);
         if (!confirm)
@@ -395,17 +408,19 @@
 
         try
         {
-            var response = await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado}");
+            var response = isLinkedToProyectado
+                ? await Http.PostAsync($"api/EgresoAutorizado/regresar-a-proyectado/{item.PkidEgresoAutorizado}", null)
+                : await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado}");
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
-                Snackbar.Add(isLinkedToProyectado ? "Presupuesto desautorizado correctamente" : "Presupuesto autorizado eliminado correctamente", Severity.Success);
+                Snackbar.Add(isLinkedToProyectado ? "Presupuesto regresado a proyectado correctamente" : "Presupuesto autorizado eliminado correctamente", Severity.Success);
                 await ReloadData();
                 return;
             }
 
-            Snackbar.Add(result?.Message ?? (isLinkedToProyectado ? "Error al desautorizar el presupuesto" : "Error al eliminar el presupuesto autorizado"), Severity.Error);
+            Snackbar.Add(result?.Message ?? (isLinkedToProyectado ? "Error al regresar el presupuesto a proyectado" : "Error al eliminar el presupuesto autorizado"), Severity.Error);
         }
         catch (Exception ex)
         {

@@ -77,6 +77,125 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             };
         }
 
+        public Task<PagedResult<LookupItem>> GetFuenteFinanciamientoLookupPaginadoAsync(int page, int pageSize, string? filter)
+        {
+            var query = _context.FuenteFinanciamientos
+                .AsNoTracking()
+                .Where(x => x.Activo && (x.Clave ?? string.Empty).Trim() != "6");
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                var term = $"%{filter.Trim()}%";
+                query = query.Where(x =>
+                    EF.Functions.Like(x.Clave ?? string.Empty, term) ||
+                    EF.Functions.Like(x.Descripcion ?? string.Empty, term));
+            }
+
+            query = query.OrderBy(x => x.Clave).ThenBy(x => x.Descripcion);
+
+            return ToLookupResultAsync(
+                query,
+                page,
+                pageSize,
+                x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = BuildText(x.Clave, x.Descripcion) },
+                "Fuentes de financiamiento obtenidas correctamente");
+        }
+
+        public Task<PagedResult<LookupItem>> GetTipoGastoLookupPaginadoAsync(int page, int pageSize, string? filter)
+        {
+            var query = _context.TipoGastos
+                .AsNoTracking()
+                .Where(x => x.Activo);
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                var term = $"%{filter.Trim()}%";
+                query = query.Where(x => EF.Functions.Like(x.Descripcion ?? string.Empty, term));
+            }
+
+            query = query.OrderBy(x => x.Clave).ThenBy(x => x.Descripcion);
+
+            return ToLookupResultAsync(
+                query,
+                page,
+                pageSize,
+                x => new LookupItem { Id = x.PkidTipoGasto, Text = BuildText(x.Clave, x.Descripcion) },
+                "Tipos de gasto obtenidos correctamente");
+        }
+
+        public Task<PagedResult<LookupItem>> GetDigitoIdentificadorLookupPaginadoAsync(int page, int pageSize, string? filter)
+        {
+            var query = _context.DigitoIdentificadors
+                .AsNoTracking()
+                .Where(x => x.Activo);
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                var term = $"%{filter.Trim()}%";
+                query = query.Where(x =>
+                    EF.Functions.Like(x.Clave ?? string.Empty, term) ||
+                    EF.Functions.Like(x.Descripcion ?? string.Empty, term));
+            }
+
+            query = query.OrderBy(x => x.Clave).ThenBy(x => x.Descripcion);
+
+            return ToLookupResultAsync(
+                query,
+                page,
+                pageSize,
+                x => new LookupItem { Id = x.PkidDigitoIdentificador, Text = BuildText(x.Clave, x.Descripcion) },
+                "Digitos identificadores obtenidos correctamente");
+        }
+
+        public Task<PagedResult<LookupItem>> GetDestinoGastoLookupPaginadoAsync(int page, int pageSize, string? filter)
+        {
+            var query = _context.DestinoGastos
+                .AsNoTracking()
+                .Where(x => x.Activo);
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                var term = $"%{filter.Trim()}%";
+                query = query.Where(x =>
+                    EF.Functions.Like(x.Clave ?? string.Empty, term) ||
+                    EF.Functions.Like(x.Descripcion ?? string.Empty, term));
+            }
+
+            query = query.OrderBy(x => x.Clave).ThenBy(x => x.Descripcion);
+
+            return ToLookupResultAsync(
+                query,
+                page,
+                pageSize,
+                x => new LookupItem { Id = x.PkidDestinoGasto, Text = BuildText(x.Clave, x.Descripcion) },
+                "Destinos de gasto obtenidos correctamente");
+        }
+
+        public Task<PagedResult<LookupItem>> GetPyLookupPaginadoAsync(int page, int pageSize, string? filter)
+        {
+            var query = _context.Pies
+                .AsNoTracking()
+                .Where(x => x.Activo);
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                var term = $"%{filter.Trim()}%";
+                query = query.Where(x =>
+                    EF.Functions.Like(x.Clave ?? string.Empty, term) ||
+                    EF.Functions.Like(x.Descripcion ?? string.Empty, term) ||
+                    EF.Functions.Like(x.NombreProyecto ?? string.Empty, term));
+            }
+
+            query = query.OrderBy(x => x.Clave).ThenBy(x => x.Descripcion);
+
+            return ToLookupResultAsync(
+                query,
+                page,
+                pageSize,
+                x => new LookupItem { Id = x.PkidPy, Text = BuildText(x.Clave, x.Descripcion) },
+                "Proyectos PY obtenidos correctamente");
+        }
+
         private async Task<bool> IsAuthorizedAsync(int id)
         {
             return await _context.EgresoAutorizados
@@ -113,6 +232,50 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             response.Total = response.Enero + response.Febrero + response.Marzo + response.Abril +
                 response.Mayo + response.Junio + response.Julio + response.Agosto +
                 response.Septiembre + response.Octubre + response.Noviembre + response.Diciembre;
+        }
+
+        private static async Task<PagedResult<LookupItem>> ToLookupResultAsync<T>(
+            IQueryable<T> query,
+            int page,
+            int pageSize,
+            Func<T, LookupItem> map,
+            string message)
+        {
+            var currentPage = Math.Max(1, page);
+            var currentPageSize = pageSize <= 0 ? 25 : pageSize;
+            var totalCount = await query.CountAsync();
+            var rows = await query
+                .Skip((currentPage - 1) * currentPageSize)
+                .Take(currentPageSize)
+                .ToListAsync();
+
+            return new PagedResult<LookupItem>
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Items = rows.Select(map).Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList(),
+                TotalCount = totalCount
+            };
+        }
+
+        private static string BuildText(string? clave, string? descripcion)
+        {
+            if (string.IsNullOrWhiteSpace(clave))
+            {
+                return descripcion ?? string.Empty;
+            }
+
+            return string.IsNullOrWhiteSpace(descripcion)
+                ? clave
+                : $"{clave} - {descripcion}";
+        }
+
+        private static string BuildText(int clave, string? descripcion)
+        {
+            return string.IsNullOrWhiteSpace(descripcion)
+                ? clave.ToString()
+                : $"{clave} - {descripcion}";
         }
     }
 }

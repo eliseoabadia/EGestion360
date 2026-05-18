@@ -33,11 +33,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             if (response.FkidEgresoProyectadoPres.HasValue && response.FkidEgresoProyectadoPres.Value > 0)
             {
-                return AutorizarProyectadoAsync(
-                    response.FkidEgresoProyectadoPres.Value,
-                    usuarioActual,
-                    response.FkidPolizaConta,
-                    response.Descripcion);
+                return CrearAutorizacionCapturadaAsync(response, usuarioActual);
             }
 
             response.FechaAutorizacion ??= DateTime.Now;
@@ -73,6 +69,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 response.FkidProgramaPres = existing.FkidProgramaPres;
                 response.FkidPartidaConta = existing.FkidPartidaConta;
                 response.FkidAreaSis = existing.FkidAreaSis;
+                response.FkidFuenteFinanciamientoPres = existing.FkidFuenteFinanciamientoPres;
+                response.FkidTipoGastoPres = existing.FkidTipoGastoPres;
+                response.FkidDigitoIdentificadorPres = existing.FkidDigitoIdentificadorPres;
+                response.FkidDestinoGastoPres = existing.FkidDestinoGastoPres;
+                response.FkidPyPres = existing.FkidPyPres;
             }
 
             return await base.UpdateAsync(id, response, usuarioActual);
@@ -84,13 +85,69 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 .AsNoTracking()
                 .AnyAsync(x => x.PkidEgresoAutorizado == id && x.Activo && x.FkidEgresoProyectadoPres.HasValue);
 
-            var result = await base.DeleteAsync(id);
-            if (result.Success && isLinkedToProyectado)
+            if (isLinkedToProyectado)
             {
-                result.Message = "Egreso proyectado desautorizado correctamente.";
+                return new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = "Para regresar un presupuesto autorizado a proyectado usa el proceso de regresar a proyectado.",
+                    Code = "LOCKED",
+                    Data = false,
+                    TotalCount = 0
+                };
             }
 
+            var result = await base.DeleteAsync(id);
+
             return result;
+        }
+
+        public async Task<PagedResult<bool>> RegresarAProyectadoAsync(int pkidEgresoAutorizado, int usuarioActual)
+        {
+            try
+            {
+                var autorizado = await _context.EgresoAutorizados
+                    .FirstOrDefaultAsync(x => x.PkidEgresoAutorizado == pkidEgresoAutorizado && x.Activo);
+
+                if (autorizado == null)
+                {
+                    return BoolFailure($"Presupuesto autorizado con ID {pkidEgresoAutorizado} no encontrado.", "NOT_FOUND");
+                }
+
+                if (!autorizado.FkidEgresoProyectadoPres.HasValue)
+                {
+                    return BoolFailure("El presupuesto autorizado no proviene de un egreso proyectado.", "INVALID_OPERATION");
+                }
+
+                var proyectadoActivo = await _context.EgresoProyectados
+                    .AsNoTracking()
+                    .AnyAsync(x => x.PkidEgresoProyectado == autorizado.FkidEgresoProyectadoPres.Value && x.Activo);
+
+                if (!proyectadoActivo)
+                {
+                    return BoolFailure("El egreso proyectado origen no existe o no esta activo.", "NOT_FOUND");
+                }
+
+                autorizado.Activo = false;
+                autorizado.UsuarioModificacion = usuarioActual;
+                autorizado.FechaModificacion = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return new PagedResult<bool>
+                {
+                    Success = true,
+                    Message = "Presupuesto autorizado regresado a proyectado correctamente.",
+                    Code = "SUCCESS",
+                    Data = true,
+                    Items = new List<bool> { true },
+                    TotalCount = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                return BoolFailure($"Error al regresar el presupuesto autorizado a proyectado: {ex.Message}", "ERROR");
+            }
         }
 
         public async Task<PagedResult<EgresoAutorizadoResponse>> AutorizarProyectadoAsync(
@@ -133,6 +190,85 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             }
         }
 
+        private async Task<PagedResult<EgresoAutorizadoResponse>> CrearAutorizacionCapturadaAsync(
+            EgresoAutorizadoResponse response,
+            int usuarioActual)
+        {
+            try
+            {
+                var pkidEgresoProyectado = response.FkidEgresoProyectadoPres!.Value;
+                var proyectado = await _context.EgresoProyectados
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.PkidEgresoProyectado == pkidEgresoProyectado && x.Activo);
+
+                if (proyectado == null)
+                {
+                    return Failure("El egreso proyectado no existe o no esta activo.", "NOT_FOUND");
+                }
+
+                var existingId = await _context.EgresoAutorizados
+                    .AsNoTracking()
+                    .Where(x => x.FkidEgresoProyectadoPres == pkidEgresoProyectado && x.Activo)
+                    .Select(x => (int?)x.PkidEgresoAutorizado)
+                    .FirstOrDefaultAsync();
+
+                if (existingId.HasValue)
+                {
+                    return await GetByIdAsync(existingId.Value);
+                }
+
+                var now = DateTime.Now;
+                var autorizado = new EgresoAutorizado
+                {
+                    FkidEgresoProyectadoPres = pkidEgresoProyectado,
+                    FkidProgramaPres = proyectado.FkidProgramaPres,
+                    FkidPartidaConta = proyectado.FkidPartidaConta,
+                    FkidAreaSis = proyectado.FkidAreaSis,
+                    FkidFuenteFinanciamientoPres = proyectado.FkidFuenteFinanciamientoPres,
+                    FkidTipoGastoPres = proyectado.FkidTipoGastoPres,
+                    FkidDigitoIdentificadorPres = proyectado.FkidDigitoIdentificadorPres,
+                    FkidDestinoGastoPres = proyectado.FkidDestinoGastoPres,
+                    FkidPyPres = proyectado.FkidPyPres,
+                    Descripcion = proyectado.Descripcion,
+                    Fecha = proyectado.Fecha,
+                    FkidPolizaConta = response.FkidPolizaConta,
+                    Enero = proyectado.Enero,
+                    Febrero = proyectado.Febrero,
+                    Marzo = proyectado.Marzo,
+                    Abril = proyectado.Abril,
+                    Mayo = proyectado.Mayo,
+                    Junio = proyectado.Junio,
+                    Julio = proyectado.Julio,
+                    Agosto = proyectado.Agosto,
+                    Septiembre = proyectado.Septiembre,
+                    Octubre = proyectado.Octubre,
+                    Noviembre = proyectado.Noviembre,
+                    Diciembre = proyectado.Diciembre,
+                    Total = proyectado.Total,
+                    FechaAutorizacion = now,
+                    UsuarioAutorizacion = usuarioActual,
+                    Activo = true,
+                    FechaCreacion = now,
+                    UsuarioCreacion = usuarioActual
+                };
+
+                _context.EgresoAutorizados.Add(autorizado);
+                await _context.SaveChangesAsync();
+
+                return await GetByIdAsync(autorizado.PkidEgresoAutorizado);
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<EgresoAutorizadoResponse>
+                {
+                    Success = false,
+                    Message = $"Error al autorizar el anteproyecto: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
+        }
+
         private static PagedResult<EgresoAutorizadoResponse> Locked(string message)
         {
             return new PagedResult<EgresoAutorizadoResponse>
@@ -140,6 +276,29 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 Success = false,
                 Message = message,
                 Code = "LOCKED",
+                TotalCount = 0
+            };
+        }
+
+        private static PagedResult<EgresoAutorizadoResponse> Failure(string message, string code)
+        {
+            return new PagedResult<EgresoAutorizadoResponse>
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                TotalCount = 0
+            };
+        }
+
+        private static PagedResult<bool> BoolFailure(string message, string code)
+        {
+            return new PagedResult<bool>
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                Data = false,
                 TotalCount = 0
             };
         }

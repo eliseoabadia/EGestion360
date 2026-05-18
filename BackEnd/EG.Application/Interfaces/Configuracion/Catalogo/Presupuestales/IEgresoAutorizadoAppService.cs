@@ -11,5 +11,7 @@ namespace EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales
             int usuarioActual,
             int? fkidPolizaConta,
             string? descripcion);
+
+        Task<PagedResult<bool>> RegresarAProyectadoAsync(int pkidEgresoAutorizado, int usuarioActual);
     }
 }

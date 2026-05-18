@@ -48,7 +48,7 @@
             <GenericTable TItem="EgresoProyectadoResponse"
                           @ref="table"
                           Title="Partidas del anteproyecto"
-                          SearchPlaceholder="Buscar programa, partida, area o descripcion..."
+                          SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
                           ShowExportButton="@CanExport"
                           ServerDataFunc="LoadServerData"
                           ExportFunc="ExportToExcel"
@@ -61,6 +61,7 @@
                     <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoProyectadoResponse">Programa</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoProyectadoResponse">Partida</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoProyectadoResponse">Area</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="EgresoProyectadoResponse">Clasificacion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoProyectadoResponse">Descripcion</MudTableSortLabel></MudTh>
                     <MudTh>Meses</MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoProyectadoResponse">Total</MudTableSortLabel></MudTh>
@@ -76,7 +77,7 @@
                                            Size="Size.Small"
                                            OnClick="@(() => AutorizarEgreso(item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Desautorizar">
+                        <MudTooltip Text="Regresar a proyectado">
                             <MudIconButton Icon="@Icons.Material.Filled.LockOpen"
                                            Visible="@(CanUpdate && item.EstaAutorizado && item.PkidEgresoAutorizado.HasValue)"
                                            Color="Color.Warning"
@@ -107,6 +108,13 @@
                         <span>@TextOrDash(item.PartidaDescripcion)</span>
                     </MudTd>
                     <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.FuenteFinanciamientoClaveNombre)</div>
+                        <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span><br />
+                        <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span><br />
+                        <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
+                        <span>PY: @TextOrDash(item.PyClaveNombre)</span>
+                    </MudTd>
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd>
                     <MudTd>
                         <div class="month-spark">
@@ -341,6 +349,11 @@
             Programa = x.ProgramaClaveNombre,
             Partida = x.PartidaClaveNombre,
             Area = x.AreaNombre,
+            FuenteFinanciamiento = x.FuenteFinanciamientoClaveNombre,
+            TipoGasto = x.TipoGastoClaveNombre,
+            DigitoIdentificador = x.DigitoIdentificadorClaveNombre,
+            DestinoGasto = x.DestinoGastoClaveNombre,
+            PY = x.PyClaveNombre,
             x.Descripcion,
             Fecha = x.Fecha.ToString("dd/MM/yyyy"),
             x.Enero,
@@ -470,30 +483,27 @@
             return;
         }
 
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Autorizar anteproyecto de {TextOrDash(item.PartidaClaveNombre)} por {Money(item.Total ?? 0m)}?");
-        if (!confirm)
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
             return;
-
-        try
-        {
-            var response = await Http.PostAsJsonAsync(
-                $"api/EgresoAutorizado/autorizar-proyectado/{item.PkidEgresoProyectado}",
-                new { descripcion = item.Descripcion });
-
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<EgresoAutorizadoResponse>>();
-            if (response.IsSuccessStatusCode && result?.Success == true)
-            {
-                Snackbar.Add("Anteproyecto autorizado correctamente", Severity.Success);
-                await ReloadData();
-                return;
-            }
-
-            Snackbar.Add(result?.Message ?? "Error al autorizar el anteproyecto", Severity.Error);
         }
-        catch (Exception ex)
+
+        var parameters = new DialogParameters
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
+            ["AnioId"] = AnioStateService.AnioId!.Value,
+            ["CurrencySymbol"] = _currencySymbol,
+            ["CurrencyName"] = _currencyName,
+            ["IsAuthorizationFlow"] = true,
+            ["PrefillItem"] = MapToAutorizado(item)
+        };
+
+        var dialog = await DialogService.ShowAsync(typeof(PresupuestoAutorizadoDialog), "Autorizar presupuesto", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await ReloadData();
     }
 
     private async Task DesautorizarEgreso(EgresoProyectadoResponse item)
@@ -504,23 +514,23 @@
             return;
         }
 
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Desautorizar anteproyecto de {TextOrDash(item.PartidaClaveNombre)} por {Money(item.Total ?? 0m)}?");
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Regresar a proyectado el presupuesto de {TextOrDash(item.PartidaClaveNombre)} por {Money(item.Total ?? 0m)}?");
         if (!confirm)
             return;
 
         try
         {
-            var response = await Http.DeleteAsync($"api/EgresoAutorizado/{item.PkidEgresoAutorizado.Value}");
+            var response = await Http.PostAsync($"api/EgresoAutorizado/regresar-a-proyectado/{item.PkidEgresoAutorizado.Value}", null);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
-                Snackbar.Add("Anteproyecto desautorizado correctamente", Severity.Success);
+                Snackbar.Add("Presupuesto regresado a proyectado correctamente", Severity.Success);
                 await ReloadData();
                 return;
             }
 
-            Snackbar.Add(result?.Message ?? "Error al desautorizar el anteproyecto", Severity.Error);
+            Snackbar.Add(result?.Message ?? "Error al regresar el presupuesto a proyectado", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -582,6 +592,64 @@
         yield return ("Oct", item.Octubre);
         yield return ("Nov", item.Noviembre);
         yield return ("Dic", item.Diciembre);
+    }
+
+    private static EgresoAutorizadoResponse MapToAutorizado(EgresoProyectadoResponse item)
+    {
+        return new EgresoAutorizadoResponse
+        {
+            FkidEgresoProyectadoPres = item.PkidEgresoProyectado,
+            FkidAnioSis = item.FkidAnioSis,
+            AnioClave = item.AnioClave,
+            FkidProgramaPres = item.FkidProgramaPres,
+            ProgramaClave = item.ProgramaClave,
+            ProgramaDescripcion = item.ProgramaDescripcion,
+            ProgramaClaveNombre = item.ProgramaClaveNombre,
+            FkidPartidaConta = item.FkidPartidaConta,
+            PartidaClave = item.PartidaClave,
+            PartidaDescripcion = item.PartidaDescripcion,
+            PartidaClaveNombre = item.PartidaClaveNombre,
+            FkidAreaSis = item.FkidAreaSis,
+            AreaClave = item.AreaClave,
+            AreaNombre = item.AreaNombre,
+            FkidFuenteFinanciamientoPres = item.FkidFuenteFinanciamientoPres,
+            FuenteFinanciamientoClave = item.FuenteFinanciamientoClave,
+            FuenteFinanciamientoDescripcion = item.FuenteFinanciamientoDescripcion,
+            FuenteFinanciamientoClaveNombre = item.FuenteFinanciamientoClaveNombre,
+            FkidTipoGastoPres = item.FkidTipoGastoPres,
+            TipoGastoClave = item.TipoGastoClave,
+            TipoGastoDescripcion = item.TipoGastoDescripcion,
+            TipoGastoClaveNombre = item.TipoGastoClaveNombre,
+            FkidDigitoIdentificadorPres = item.FkidDigitoIdentificadorPres,
+            DigitoIdentificadorClave = item.DigitoIdentificadorClave,
+            DigitoIdentificadorDescripcion = item.DigitoIdentificadorDescripcion,
+            DigitoIdentificadorClaveNombre = item.DigitoIdentificadorClaveNombre,
+            FkidDestinoGastoPres = item.FkidDestinoGastoPres,
+            DestinoGastoClave = item.DestinoGastoClave,
+            DestinoGastoDescripcion = item.DestinoGastoDescripcion,
+            DestinoGastoClaveNombre = item.DestinoGastoClaveNombre,
+            FkidPyPres = item.FkidPyPres,
+            PyClave = item.PyClave,
+            PyDescripcion = item.PyDescripcion,
+            PyClaveNombre = item.PyClaveNombre,
+            Descripcion = item.Descripcion,
+            Fecha = item.Fecha,
+            Enero = item.Enero,
+            Febrero = item.Febrero,
+            Marzo = item.Marzo,
+            Abril = item.Abril,
+            Mayo = item.Mayo,
+            Junio = item.Junio,
+            Julio = item.Julio,
+            Agosto = item.Agosto,
+            Septiembre = item.Septiembre,
+            Octubre = item.Octubre,
+            Noviembre = item.Noviembre,
+            Diciembre = item.Diciembre,
+            Total = item.Total,
+            Activo = true,
+            FechaAutorizacion = DateTime.Now
+        };
     }
 
     public void Dispose()

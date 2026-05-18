@@ -313,8 +313,7 @@ namespace EG.Business.Services
 
                         if (value == null) continue;
 
-                        // Construir expresión dinámica: x => x.PropertyName == value
-                        query = ApplyEqualsFilter(query, propertyName, value);
+                        query = ApplyAdditionalFilter(query, propertyName, value);
                     }
                 }
 
@@ -349,8 +348,15 @@ namespace EG.Business.Services
             };
         }
 
-        private IQueryable<TEntity> ApplyEqualsFilter(IQueryable<TEntity> query, string propertyName, object value)
+        private IQueryable<TEntity> ApplyAdditionalFilter(IQueryable<TEntity> query, string propertyName, object value)
         {
+            const string notEqualSuffix = "__ne";
+            var useNotEqual = propertyName.EndsWith(notEqualSuffix, StringComparison.OrdinalIgnoreCase);
+            if (useNotEqual)
+            {
+                propertyName = propertyName[..^notEqualSuffix.Length];
+            }
+
             var parameter = Expression.Parameter(typeof(TEntity), "x");
             var property = Expression.Property(parameter, propertyName);
             var propertyType = property.Type;
@@ -367,9 +373,14 @@ namespace EG.Business.Services
                 convertedValue = Convert.ChangeType(value, propertyType, CultureInfo.InvariantCulture);
             }
 
-            var constant = Expression.Constant(convertedValue, propertyType);
-            var equality = Expression.Equal(property, constant);
-            var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
+            Expression left = useNotEqual && propertyType == typeof(string)
+                ? Expression.Call(property, typeof(string).GetMethod(nameof(string.Trim), Type.EmptyTypes)!)
+                : property;
+            var constant = Expression.Constant(convertedValue, left.Type);
+            var comparison = useNotEqual
+                ? Expression.NotEqual(left, constant)
+                : Expression.Equal(left, constant);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(comparison, parameter);
             return query.Where(lambda);
         }
 

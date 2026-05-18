@@ -88,6 +88,41 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             return Ok(result);
         }
 
+        [HttpGet("GetFuenteFinanciamientoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetFuenteFinanciamientoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var result = await _appService.GetFuenteFinanciamientoLookupPaginadoAsync(page, pageSize, filter);
+            return Ok(result);
+        }
+
+        [HttpGet("GetTipoGastoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetTipoGastoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var result = await _appService.GetTipoGastoLookupPaginadoAsync(page, pageSize, filter);
+            return Ok(result);
+        }
+
+        [HttpGet("GetDigitoIdentificadorLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetDigitoIdentificadorLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var result = await _appService.GetDigitoIdentificadorLookupPaginadoAsync(page, pageSize, filter);
+            return Ok(result);
+        }
+
+        [HttpGet("GetDestinoGastoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetDestinoGastoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var result = await _appService.GetDestinoGastoLookupPaginadoAsync(page, pageSize, filter);
+            return Ok(result);
+        }
+
+        [HttpGet("GetPyLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetPyLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var result = await _appService.GetPyLookupPaginadoAsync(page, pageSize, filter);
+            return Ok(result);
+        }
+
         [HttpPost("buscar")]
         public async Task<ActionResult<PagedResult<EgresoProyectadoResponse>>> Buscar([FromBody] BusquedaRequest request)
         {

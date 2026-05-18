@@ -23,6 +23,10 @@ public partial class DestinoGasto
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
+    public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

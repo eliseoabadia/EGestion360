@@ -13,6 +13,7 @@
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<PartidaResponse> PartidaService
 @inject IGenericCrudService<UsuarioAreaResponse> AreaService
+@inject HttpClient Http
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
@@ -89,6 +90,46 @@
                               Label="Descripcion"
                               Variant="Variant.Outlined"
                               MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
+                                   ValueChanged="value => _selectedFuenteFinanciamiento = value"
+                                   Label="Fuente de financiamiento"
+                                   Clearable="true"
+                                   LoadPage="LoadFuentesFinanciamientoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoGasto"
+                                   ValueChanged="value => _selectedTipoGasto = value"
+                                   Label="Tipo de gasto"
+                                   Clearable="true"
+                                   LoadPage="LoadTiposGastoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedDigitoIdentificador"
+                                   ValueChanged="value => _selectedDigitoIdentificador = value"
+                                   Label="Digito identificador"
+                                   Clearable="true"
+                                   LoadPage="LoadDigitosIdentificadorPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedDestinoGasto"
+                                   ValueChanged="value => _selectedDestinoGasto = value"
+                                   Label="Destino de gasto"
+                                   Clearable="true"
+                                   LoadPage="LoadDestinosGastoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <PagedAutocomplete Value="@_selectedPy"
+                                   ValueChanged="value => _selectedPy = value"
+                                   Label="PY"
+                                   Clearable="true"
+                                   LoadPage="LoadPyPageAsync" />
             </MudItem>
 
             <MudItem xs="12">
@@ -258,6 +299,11 @@
     private LookupItem? _selectedPrograma;
     private LookupItem? _selectedPartida;
     private LookupItem? _selectedArea;
+    private LookupItem? _selectedFuenteFinanciamiento;
+    private LookupItem? _selectedTipoGasto;
+    private LookupItem? _selectedDigitoIdentificador;
+    private LookupItem? _selectedDestinoGasto;
+    private LookupItem? _selectedPy;
 
     private string dialogTitle => Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -291,6 +337,11 @@
                 _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres, Text = TextOrDefault(item.ProgramaClaveNombre, item.FkidProgramaPres) };
                 _selectedPartida = new LookupItem { Id = item.FkidPartidaConta, Text = TextOrDefault(item.PartidaClaveNombre, item.FkidPartidaConta) };
                 _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
+                _selectedFuenteFinanciamiento = BuildLookup(item.FkidFuenteFinanciamientoPres, item.FuenteFinanciamientoClaveNombre);
+                _selectedTipoGasto = BuildLookup(item.FkidTipoGastoPres, item.TipoGastoClaveNombre);
+                _selectedDigitoIdentificador = BuildLookup(item.FkidDigitoIdentificadorPres, item.DigitoIdentificadorClaveNombre);
+                _selectedDestinoGasto = BuildLookup(item.FkidDestinoGastoPres, item.DestinoGastoClaveNombre);
+                _selectedPy = BuildLookup(item.FkidPyPres, item.PyClaveNombre);
             }
         }
         catch (Exception ex)
@@ -323,6 +374,11 @@
         item.FkidProgramaPres = _selectedPrograma.Id;
         item.FkidPartidaConta = _selectedPartida.Id;
         item.FkidAreaSis = _selectedArea.Id;
+        item.FkidFuenteFinanciamientoPres = _selectedFuenteFinanciamiento?.Id;
+        item.FkidTipoGastoPres = _selectedTipoGasto?.Id;
+        item.FkidDigitoIdentificadorPres = _selectedDigitoIdentificador?.Id;
+        item.FkidDestinoGastoPres = _selectedDestinoGasto?.Id;
+        item.FkidPyPres = _selectedPy?.Id;
         item.Fecha = DateOnly.FromDateTime(_fecha ?? DateTime.Today);
         ClearMonthsBeforeStartDate();
         item.Total = TotalMeses;
@@ -386,6 +442,27 @@
         return ToPagedComboResult(items, page, pageSize);
     }
 
+    private Task<ComboLookupResult> LoadFuentesFinanciamientoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetFuenteFinanciamientoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadTiposGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetTipoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDigitosIdentificadorPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetDigitoIdentificadorLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDestinosGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetDestinoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadPyPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetPyLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
+    }
+
     private Dictionary<string, object>? GetAnioFilter()
     {
         var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
@@ -430,6 +507,11 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static LookupItem? BuildLookup(int? id, string? text) =>
+        id.HasValue && id.Value > 0
+            ? new LookupItem { Id = id.Value, Text = TextOrDefault(text, id.Value) }
+            : null;
 
     private bool IsMonthDisabled(int month) =>
         _fecha.HasValue && month < _fecha.Value.Month;

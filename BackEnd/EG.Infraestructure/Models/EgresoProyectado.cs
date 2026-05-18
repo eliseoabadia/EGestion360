@@ -55,13 +55,33 @@ public partial class EgresoProyectado
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidFuenteFinanciamientoPres { get; set; }
+
+    public int? FkidTipoGastoPres { get; set; }
+
+    public int? FkidDigitoIdentificadorPres { get; set; }
+
+    public int? FkidDestinoGastoPres { get; set; }
+
+    public int? FkidPyPres { get; set; }
+
     public virtual EgresoAutorizado EgresoAutorizado { get; set; }
 
     public virtual Area FkidAreaSisNavigation { get; set; }
 
+    public virtual DestinoGasto FkidDestinoGastoPresNavigation { get; set; }
+
+    public virtual DigitoIdentificador FkidDigitoIdentificadorPresNavigation { get; set; }
+
+    public virtual FuenteFinanciamiento FkidFuenteFinanciamientoPresNavigation { get; set; }
+
     public virtual Partidum FkidPartidaContaNavigation { get; set; }
 
     public virtual Programa FkidProgramaPresNavigation { get; set; }
+
+    public virtual Py FkidPyPresNavigation { get; set; }
+
+    public virtual TipoGasto FkidTipoGastoPresNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

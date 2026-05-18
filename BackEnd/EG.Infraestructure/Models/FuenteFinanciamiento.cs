@@ -33,6 +33,10 @@ public partial class FuenteFinanciamiento
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
+    public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
+
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();

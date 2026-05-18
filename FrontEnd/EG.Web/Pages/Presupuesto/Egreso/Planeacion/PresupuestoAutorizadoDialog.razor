@@ -13,12 +13,15 @@
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<PartidaResponse> PartidaService
 @inject IGenericCrudService<UsuarioAreaResponse> AreaService
+@inject HttpClient Http
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EgresoAutorizadoResponse"
                 Title="@dialogTitle"
                 MaxWidth="MaxWidth.ExtraExtraLarge"
+                ActionColor="@actionColor"
+                ActionIcon="@actionIcon"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando presupuesto autorizado..."
@@ -52,6 +55,7 @@
                                    Label="Programa"
                                    Required="true"
                                    RequiredError="El programa es requerido"
+                                   Disabled="@SourceFieldsLocked"
                                    LoadPage="LoadProgramasPageAsync" />
             </MudItem>
 
@@ -61,6 +65,7 @@
                                    Label="Partida"
                                    Required="true"
                                    RequiredError="La partida es requerida"
+                                   Disabled="@SourceFieldsLocked"
                                    LoadPage="LoadPartidasPageAsync" />
             </MudItem>
 
@@ -70,6 +75,7 @@
                                    Label="Area"
                                    Required="true"
                                    RequiredError="El area es requerida"
+                                   Disabled="@SourceFieldsLocked"
                                    LoadPage="LoadAreasPageAsync" />
             </MudItem>
 
@@ -80,14 +86,61 @@
                                DateFormat="dd/MM/yyyy"
                                Culture="@DateCulture"
                                Required="true"
-                               RequiredError="La fecha es requerida" />
+                               RequiredError="La fecha es requerida"
+                               Disabled="@SourceFieldsLocked" />
             </MudItem>
 
             <MudItem xs="12" md="8">
                 <MudTextField @bind-Value="item.Descripcion"
                               Label="Descripcion"
                               Variant="Variant.Outlined"
-                              MaxLength="250" />
+                              MaxLength="250"
+                              Disabled="@SourceFieldsLocked" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
+                                   ValueChanged="value => _selectedFuenteFinanciamiento = value"
+                                   Label="Fuente de financiamiento"
+                                   Clearable="true"
+                                   Disabled="@SourceFieldsLocked"
+                                   LoadPage="LoadFuentesFinanciamientoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoGasto"
+                                   ValueChanged="value => _selectedTipoGasto = value"
+                                   Label="Tipo de gasto"
+                                   Clearable="true"
+                                   Disabled="@SourceFieldsLocked"
+                                   LoadPage="LoadTiposGastoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedDigitoIdentificador"
+                                   ValueChanged="value => _selectedDigitoIdentificador = value"
+                                   Label="Digito identificador"
+                                   Clearable="true"
+                                   Disabled="@SourceFieldsLocked"
+                                   LoadPage="LoadDigitosIdentificadorPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedDestinoGasto"
+                                   ValueChanged="value => _selectedDestinoGasto = value"
+                                   Label="Destino de gasto"
+                                   Clearable="true"
+                                   Disabled="@SourceFieldsLocked"
+                                   LoadPage="LoadDestinosGastoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <PagedAutocomplete Value="@_selectedPy"
+                                   ValueChanged="value => _selectedPy = value"
+                                   Label="PY"
+                                   Clearable="true"
+                                   Disabled="@SourceFieldsLocked"
+                                   LoadPage="LoadPyPageAsync" />
             </MudItem>
 
             <MudItem xs="12">
@@ -120,7 +173,7 @@
             @if (Id.HasValue)
             {
                 <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" Disabled="@SourceFieldsLocked" />
                 </MudItem>
             }
         </MudGrid>
@@ -209,6 +262,8 @@
     [Parameter] public int AnioId { get; set; }
     [Parameter] public string CurrencySymbol { get; set; } = "$";
     [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
+    [Parameter] public EgresoAutorizadoResponse? PrefillItem { get; set; }
+    [Parameter] public bool IsAuthorizationFlow { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -224,13 +279,21 @@
     private LookupItem? _selectedPrograma;
     private LookupItem? _selectedPartida;
     private LookupItem? _selectedArea;
+    private LookupItem? _selectedFuenteFinanciamiento;
+    private LookupItem? _selectedTipoGasto;
+    private LookupItem? _selectedDigitoIdentificador;
+    private LookupItem? _selectedDestinoGasto;
+    private LookupItem? _selectedPy;
 
-    private string dialogTitle => Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string dialogTitle => IsAuthorizationFlow ? "Autorizar Presupuesto de Egresos" : Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
+    private string actionText => IsAuthorizationFlow ? "Firmar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
+    private Color actionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
+    private string actionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
     private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
     private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
-    private bool AmountsLocked => Id.HasValue;
+    private bool AmountsLocked => IsAuthorizationFlow || Id.HasValue;
+    private bool SourceFieldsLocked => IsAuthorizationFlow || (Id.HasValue && item.FkidEgresoProyectadoPres.HasValue);
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");
@@ -243,6 +306,10 @@
         {
             await CargarDatosAsync();
         }
+        else if (PrefillItem != null)
+        {
+            CargarPrellenado(PrefillItem);
+        }
     }
 
     private async Task CargarDatosAsync()
@@ -254,15 +321,93 @@
             {
                 item = response.Data;
                 _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
-                _selectedPrograma = new LookupItem { Id = item.FkidProgramaPres, Text = TextOrDefault(item.ProgramaClaveNombre, item.FkidProgramaPres) };
-                _selectedPartida = new LookupItem { Id = item.FkidPartidaConta, Text = TextOrDefault(item.PartidaClaveNombre, item.FkidPartidaConta) };
-                _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
+                SetSelectedLookups();
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
         }
+    }
+
+    private void CargarPrellenado(EgresoAutorizadoResponse source)
+    {
+        item = new EgresoAutorizadoResponse
+        {
+            Activo = true,
+            FkidEgresoProyectadoPres = source.FkidEgresoProyectadoPres,
+            FkidAnioSis = source.FkidAnioSis,
+            AnioClave = source.AnioClave,
+            FkidProgramaPres = source.FkidProgramaPres,
+            ProgramaClave = source.ProgramaClave,
+            ProgramaDescripcion = source.ProgramaDescripcion,
+            ProgramaClaveNombre = source.ProgramaClaveNombre,
+            FkidPartidaConta = source.FkidPartidaConta,
+            PartidaClave = source.PartidaClave,
+            PartidaDescripcion = source.PartidaDescripcion,
+            PartidaClaveNombre = source.PartidaClaveNombre,
+            FkidAreaSis = source.FkidAreaSis,
+            AreaClave = source.AreaClave,
+            AreaNombre = source.AreaNombre,
+            FkidFuenteFinanciamientoPres = source.FkidFuenteFinanciamientoPres,
+            FuenteFinanciamientoClave = source.FuenteFinanciamientoClave,
+            FuenteFinanciamientoDescripcion = source.FuenteFinanciamientoDescripcion,
+            FuenteFinanciamientoClaveNombre = source.FuenteFinanciamientoClaveNombre,
+            FkidTipoGastoPres = source.FkidTipoGastoPres,
+            TipoGastoClave = source.TipoGastoClave,
+            TipoGastoDescripcion = source.TipoGastoDescripcion,
+            TipoGastoClaveNombre = source.TipoGastoClaveNombre,
+            FkidDigitoIdentificadorPres = source.FkidDigitoIdentificadorPres,
+            DigitoIdentificadorClave = source.DigitoIdentificadorClave,
+            DigitoIdentificadorDescripcion = source.DigitoIdentificadorDescripcion,
+            DigitoIdentificadorClaveNombre = source.DigitoIdentificadorClaveNombre,
+            FkidDestinoGastoPres = source.FkidDestinoGastoPres,
+            DestinoGastoClave = source.DestinoGastoClave,
+            DestinoGastoDescripcion = source.DestinoGastoDescripcion,
+            DestinoGastoClaveNombre = source.DestinoGastoClaveNombre,
+            FkidPyPres = source.FkidPyPres,
+            PyClave = source.PyClave,
+            PyDescripcion = source.PyDescripcion,
+            PyClaveNombre = source.PyClaveNombre,
+            Descripcion = source.Descripcion,
+            Fecha = source.Fecha == default ? DateOnly.FromDateTime(DateTime.Today) : source.Fecha,
+            FkidPolizaConta = source.FkidPolizaConta,
+            Enero = source.Enero,
+            Febrero = source.Febrero,
+            Marzo = source.Marzo,
+            Abril = source.Abril,
+            Mayo = source.Mayo,
+            Junio = source.Junio,
+            Julio = source.Julio,
+            Agosto = source.Agosto,
+            Septiembre = source.Septiembre,
+            Octubre = source.Octubre,
+            Noviembre = source.Noviembre,
+            Diciembre = source.Diciembre,
+            Total = source.Total,
+            FechaAutorizacion = DateTime.Now
+        };
+
+        _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+        SetSelectedLookups();
+    }
+
+    private void SetSelectedLookups()
+    {
+        _selectedPrograma = item.FkidProgramaPres > 0
+            ? new LookupItem { Id = item.FkidProgramaPres, Text = TextOrDefault(item.ProgramaClaveNombre, item.FkidProgramaPres) }
+            : null;
+        _selectedPartida = item.FkidPartidaConta > 0
+            ? new LookupItem { Id = item.FkidPartidaConta, Text = TextOrDefault(item.PartidaClaveNombre, item.FkidPartidaConta) }
+            : null;
+        _selectedArea = item.FkidAreaSis > 0
+            ? new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) }
+            : null;
+        _selectedFuenteFinanciamiento = BuildLookup(item.FkidFuenteFinanciamientoPres, item.FuenteFinanciamientoClaveNombre);
+        _selectedTipoGasto = BuildLookup(item.FkidTipoGastoPres, item.TipoGastoClaveNombre);
+        _selectedDigitoIdentificador = BuildLookup(item.FkidDigitoIdentificadorPres, item.DigitoIdentificadorClaveNombre);
+        _selectedDestinoGasto = BuildLookup(item.FkidDestinoGastoPres, item.DestinoGastoClaveNombre);
+        _selectedPy = BuildLookup(item.FkidPyPres, item.PyClaveNombre);
     }
 
     private async Task GuardarCambiosAsync()
@@ -273,7 +418,9 @@
             return;
         }
 
-        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        var selectedAnioId = AnioStateService.AnioId ?? (AnioId > 0 ? AnioId : null);
+
+        if (!selectedAnioId.HasValue || selectedAnioId.Value <= 0)
         {
             Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
             return;
@@ -285,13 +432,21 @@
             return;
         }
 
-        item.FkidAnioSis = AnioStateService.AnioId.Value;
+        item.FkidAnioSis = selectedAnioId.Value;
         item.FkidProgramaPres = _selectedPrograma.Id;
         item.FkidPartidaConta = _selectedPartida.Id;
         item.FkidAreaSis = _selectedArea.Id;
+        item.FkidFuenteFinanciamientoPres = _selectedFuenteFinanciamiento?.Id;
+        item.FkidTipoGastoPres = _selectedTipoGasto?.Id;
+        item.FkidDigitoIdentificadorPres = _selectedDigitoIdentificador?.Id;
+        item.FkidDestinoGastoPres = _selectedDestinoGasto?.Id;
+        item.FkidPyPres = _selectedPy?.Id;
         item.Fecha = DateOnly.FromDateTime(_fecha ?? DateTime.Today);
         item.Total = TotalMeses;
-        item.FechaAutorizacion ??= DateTime.Now;
+        if (IsAuthorizationFlow || !item.FechaAutorizacion.HasValue)
+        {
+            item.FechaAutorizacion = DateTime.Now;
+        }
 
         try
         {
@@ -301,7 +456,11 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(Id.HasValue ? "Presupuesto autorizado actualizado correctamente" : "Presupuesto autorizado creado correctamente", Severity.Success);
+                var message = IsAuthorizationFlow
+                    ? "Presupuesto autorizado firmado correctamente"
+                    : Id.HasValue ? "Presupuesto autorizado actualizado correctamente" : "Presupuesto autorizado creado correctamente";
+
+                Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
                 return;
             }
@@ -337,6 +496,27 @@
             .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
 
         return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private Task<ComboLookupResult> LoadFuentesFinanciamientoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetFuenteFinanciamientoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadTiposGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetTipoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDigitosIdentificadorPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetDigitoIdentificadorLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDestinosGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetDestinoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadPyPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetPyLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
     }
 
     private Dictionary<string, object>? GetAnioFilter()
@@ -383,4 +563,9 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static LookupItem? BuildLookup(int? id, string? text) =>
+        id.HasValue && id.Value > 0
+            ? new LookupItem { Id = id.Value, Text = TextOrDefault(text, id.Value) }
+            : null;
 }

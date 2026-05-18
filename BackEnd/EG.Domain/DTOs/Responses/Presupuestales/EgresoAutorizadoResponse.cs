@@ -20,6 +20,26 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public string? Descripcion { get; set; }
         public DateOnly Fecha { get; set; }
         public int? FkidPolizaConta { get; set; }
+        public int? FkidFuenteFinanciamientoPres { get; set; }
+        public string? FuenteFinanciamientoClave { get; set; }
+        public string? FuenteFinanciamientoDescripcion { get; set; }
+        public string? FuenteFinanciamientoClaveNombre { get; set; }
+        public int? FkidTipoGastoPres { get; set; }
+        public int? TipoGastoClave { get; set; }
+        public string? TipoGastoDescripcion { get; set; }
+        public string? TipoGastoClaveNombre { get; set; }
+        public int? FkidDigitoIdentificadorPres { get; set; }
+        public string? DigitoIdentificadorClave { get; set; }
+        public string? DigitoIdentificadorDescripcion { get; set; }
+        public string? DigitoIdentificadorClaveNombre { get; set; }
+        public int? FkidDestinoGastoPres { get; set; }
+        public string? DestinoGastoClave { get; set; }
+        public string? DestinoGastoDescripcion { get; set; }
+        public string? DestinoGastoClaveNombre { get; set; }
+        public int? FkidPyPres { get; set; }
+        public string? PyClave { get; set; }
+        public string? PyDescripcion { get; set; }
+        public string? PyClaveNombre { get; set; }
         public decimal Enero { get; set; }
         public decimal Febrero { get; set; }
         public decimal Marzo { get; set; }

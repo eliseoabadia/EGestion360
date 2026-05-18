@@ -721,6 +721,72 @@ and Descripcion not Like '%test%';
 SET IDENTITY_INSERT PRES.Suficiencia OFF;
 GO
 
+-- PRES.EgresoProyectado
+SET IDENTITY_INSERT PRES.EgresoProyectado ON;
+INSERT INTO PRES.EgresoProyectado (
+    PKIdEgresoProyectado,
+    FKIdPrograma_PRES,
+    FKIdPartida_CONTA,
+    FKIdArea_SIS,
+    Descripcion,
+    Fecha,
+    FKIdFuenteFinanciamiento_PRES,
+    FKIdTipoGasto_PRES,
+    FKIdDigitoIdentificador_PRES,
+    FKIdDestinoGasto_PRES,
+    FKIdPY_PRES,
+    Enero,
+    Febrero,
+    Marzo,
+    Abril,
+    Mayo,
+    Junio,
+    Julio,
+    Agosto,
+    Septiembre,
+    Octubre,
+    Noviembre,
+    Diciembre,
+    Activo,
+    FechaCreacion,
+    UsuarioCreacion,
+    FechaModificacion,
+    UsuarioModificacion
+)
+SELECT
+    e.Pk_IdEgresoProyectado,
+    e.Fk_IdPrograma,
+    e.Fk_IdPartida,
+    e.Fk_IdArea,
+    e.Descripcion,
+    e.Fecha,
+    e.FK_IdFuenteFinanciamiento,
+    e.FK_IdTG,
+    e.Fk_IdDigitoIdentificador,
+    e.Fk_IdDestinoGasto,
+    e.Fk_IdPY,
+    ISNULL(e.Ene, 0),
+    ISNULL(e.Feb, 0),
+    ISNULL(e.Mar, 0),
+    ISNULL(e.Abr, 0),
+    ISNULL(e.May, 0),
+    ISNULL(e.Jun, 0),
+    ISNULL(e.Jul, 0),
+    ISNULL(e.Ago, 0),
+    ISNULL(e.Sep, 0),
+    ISNULL(e.Oct, 0),
+    ISNULL(e.Nov, 0),
+    ISNULL(e.Dic, 0),
+    ISNULL(e.CT_LIVE, 1),
+    ISNULL(e.CT_CreatedDate, GETDATE()),
+    ISNULL(e.CT_CreatedBy, 1),
+    e.CT_ModifiedDate,
+    e.CT_ModifiedBy
+FROM BD_PRESUPUESTO.PRES.EgresoProyectado e
+WHERE NOT EXISTS (SELECT 1 FROM PRES.EgresoProyectado d WHERE d.PKIdEgresoProyectado = e.Pk_IdEgresoProyectado);
+SET IDENTITY_INSERT PRES.EgresoProyectado OFF;
+GO
+
 -- PRES.EgresoAutorizado
 SET IDENTITY_INSERT PRES.EgresoAutorizado ON;
 INSERT INTO PRES.EgresoAutorizado (
@@ -731,9 +797,28 @@ INSERT INTO PRES.EgresoAutorizado (
     Descripcion,
     Fecha,
     FKIdPoliza_CONTA,
+    FKIdFuenteFinanciamiento_PRES,
+    FKIdTipoGasto_PRES,
+    FKIdDigitoIdentificador_PRES,
+    FKIdDestinoGasto_PRES,
+    FKIdPY_PRES,
+    Enero,
+    Febrero,
+    Marzo,
+    Abril,
+    Mayo,
+    Junio,
+    Julio,
+    Agosto,
+    Septiembre,
+    Octubre,
+    Noviembre,
+    Diciembre,
     Activo,
     FechaCreacion,
-    UsuarioCreacion
+    UsuarioCreacion,
+    FechaModificacion,
+    UsuarioModificacion
 )
 SELECT 
     e.Pk_IdEgresoAutorizado,
@@ -743,9 +828,28 @@ SELECT
     e.Descripcion,
     e.Fecha,
     e.FK_IdPoliza,
+    e.FK_IdFuenteFinanciamiento,
+    e.FK_IdTG,
+    e.Fk_IdDigitoIdentificador,
+    e.Fk_IdDestinoGasto,
+    e.Fk_IdPY,
+    ISNULL(e.Ene, 0),
+    ISNULL(e.Feb, 0),
+    ISNULL(e.Mar, 0),
+    ISNULL(e.Abr, 0),
+    ISNULL(e.May, 0),
+    ISNULL(e.Jun, 0),
+    ISNULL(e.Jul, 0),
+    ISNULL(e.Ago, 0),
+    ISNULL(e.Sep, 0),
+    ISNULL(e.Oct, 0),
+    ISNULL(e.Nov, 0),
+    ISNULL(e.Dic, 0),
     ISNULL(e.CT_LIVE, 1),
     ISNULL(e.CT_CreatedDate, GETDATE()),
-    1
+    ISNULL(e.CT_CreatedBy, 1),
+    e.CT_ModifiedDate,
+    e.CT_ModifiedBy
 FROM BD_PRESUPUESTO.PRES.EgresoAutorizado e
 WHERE NOT EXISTS (SELECT 1 FROM PRES.EgresoAutorizado d WHERE d.PKIdEgresoAutorizado = e.Pk_IdEgresoAutorizado);
 SET IDENTITY_INSERT PRES.EgresoAutorizado OFF;

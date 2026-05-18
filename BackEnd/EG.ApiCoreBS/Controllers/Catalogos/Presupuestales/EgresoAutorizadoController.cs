@@ -69,6 +69,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             return Ok(result);
         }
 
+        [HttpPost("regresar-a-proyectado/{id:int}")]
+        public async Task<ActionResult<PagedResult<bool>>> RegresarAProyectado(int id)
+        {
+            var result = await _appService.RegresarAProyectadoAsync(id, _userContext.GetCurrentUserId());
+            if (!result.Success)
+            {
+                if (result.Code == "NOT_FOUND")
+                    return NotFound(result);
+
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<PagedResult<EgresoAutorizadoResponse>>> Update(int id, [FromBody] EgresoAutorizadoResponse response)
         {
