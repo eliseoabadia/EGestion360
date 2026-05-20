@@ -111,6 +111,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[CONTA].[ConsecutivoPoliza]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[CONTA].[CuentaContable]",
          "ObjectType": 0
       },
@@ -124,6 +128,14 @@
       },
       {
          "Name": "[CONTA].[Partida]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[Poliza]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[PolizaDetalle]",
          "ObjectType": 0
       },
       {
@@ -555,6 +567,14 @@
          "ObjectType": 3
       },
       {
+         "Name": "[CONTA].[Vw_Poliza]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[CONTA].[Vw_PolizaDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ORCO].[Vw_DetalleRequisicion]",
          "ObjectType": 3
       },
@@ -656,6 +676,14 @@
       },
       {
          "Name": "[ALMA].[SP_MantenimientoTipoBien]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SP_CREATE_ClavePoliza]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SP_MantenimientoPoliza]",
          "ObjectType": 1
       },
       {

@@ -118,6 +118,8 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IConceptoService, ConceptoService>();
             services.AddScoped<ICuentaContableService, CuentaContableService>();
             services.AddScoped<ITipoDetallePolizaService, TipoDetallePolizaService>();
+            services.AddScoped<IPolizaService, PolizaService>();
+            services.AddScoped<IPolizaDetalleService, PolizaDetalleService>();
 
             // Application services - Tesoreria
             services.AddScoped<ITipoCambioService, TipoCambioService>();

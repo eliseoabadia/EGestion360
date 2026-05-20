@@ -91,6 +91,8 @@ public static class ApiServiceExtensions
         RegisterCrud<ProyectoResponse>(services, "api/Proyecto");
         RegisterCrud<TipoPolizaResponse>(services, "api/TipoPoliza");
         RegisterCrud<TipoDetallePolizaResponse>(services, "api/TipoDetallePoliza");
+        RegisterCrud<PolizaResponse>(services, "api/Poliza");
+        RegisterCrud<PolizaDetalleResponse>(services, "api/PolizaDetalle");
         RegisterCrud<MatrizIngresoResponse>(services, "api/MatrizIngreso");
         RegisterCrud<ConceptoResponse>(services, "api/Concepto");
         RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");

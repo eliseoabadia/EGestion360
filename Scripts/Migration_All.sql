@@ -281,6 +281,48 @@ WHERE s.FK_IdTipoCuenta__SIS IN (1, 2)
 SET IDENTITY_INSERT CONTA.CuentaContable OFF;
 GO
 
+-- CONTA.Poliza
+SET IDENTITY_INSERT CONTA.Poliza ON;
+INSERT INTO CONTA.Poliza (
+    PKIdPoliza, FKIdAnio_SIS, FKIdMes_SIS, FKIdTipoPoliza_SIS,
+    ClavePoliza, NombrePoliza, FechaPoliza, EstaBalanceado,
+    Activo, FechaCreacion, UsuarioCreacion, FechaModificacion, UsuarioModificacion,
+    PermitirModificar, FKIdAccionAutorizar_SIS, Autorizado, FechaSolicitud, FechaAutorizacion
+)
+SELECT
+    p.PK_IdPoliza, p.FK_IdAnio__SIS, p.FK_IdMes__SIS, p.FK_IdTipoPoliza__SIS,
+    p.ClavePoliza, p.NombrePoliza, p.FechaPoliza, ISNULL(p.EstaBalanceado, 0),
+    ISNULL(p.CT_Live, 1), ISNULL(p.CT_CreatedDate, GETDATE()), ISNULL(p.CT_CreatedBy, 1),
+    p.CT_ModifiedDate, p.CT_ModifiedBy,
+    p.PermitirModificar, p.Fk_IdAccionAutorizar, p.Autorizado, p.FechaSolicitud, p.FechaAutorizacion
+FROM BD_PRESUPUESTO.CONTA.Poliza p
+INNER JOIN SIS.Anio a ON p.FK_IdAnio__SIS = a.PKIdAnio
+INNER JOIN SIS.TipoPoliza tp ON p.FK_IdTipoPoliza__SIS = tp.PKIdTipoPoliza
+WHERE NOT EXISTS (SELECT 1 FROM CONTA.Poliza d WHERE d.PKIdPoliza = p.PK_IdPoliza);
+SET IDENTITY_INSERT CONTA.Poliza OFF;
+GO
+
+-- CONTA.PolizaDetalle (desde BD_PRESUPUESTO.CONTA.DetallePoliza)
+SET IDENTITY_INSERT CONTA.PolizaDetalle ON;
+INSERT INTO CONTA.PolizaDetalle (
+    PKIdPolizaDetalle, FKIdCuentaContable_CONTA, FKIdPoliza_CONTA,
+    Descripcion, ImporteDebe, ImporteHaber, FKIdReferencia, FKIdTipoDetallePoliza_SIS,
+    Activo, FechaCreacion, UsuarioCreacion, FechaModificacion, UsuarioModificacion
+)
+SELECT
+    d.PK_IdDetallePoliza, d.FK_IdCuentaContable__SIS, d.FK_IdPoliza__CONTA,
+    d.Descripcion, d.ImporteDebe, d.ImporteHaber, d.Fk_IdReferencia, d.Fk_IdTipoDetallePoliza,
+    ISNULL(d.CT_LIVE, 1), ISNULL(d.CT_CreatedDate, GETDATE()), ISNULL(d.CT_CreatedBy, 1),
+    d.CT_ModifiedDate, d.CT_ModifiedBy
+FROM BD_PRESUPUESTO.CONTA.DetallePoliza d
+INNER JOIN CONTA.CuentaContable cc ON d.FK_IdCuentaContable__SIS = cc.PKIdCuentaContable
+INNER JOIN CONTA.Poliza p ON d.FK_IdPoliza__CONTA = p.PKIdPoliza
+LEFT JOIN SIS.TipoDetallePoliza tdp ON d.Fk_IdTipoDetallePoliza = tdp.PkIdTipoDetallePoliza
+WHERE (d.Fk_IdTipoDetallePoliza IS NULL OR tdp.PkIdTipoDetallePoliza IS NOT NULL)
+  AND NOT EXISTS (SELECT 1 FROM CONTA.PolizaDetalle pd WHERE pd.PKIdPolizaDetalle = d.PK_IdDetallePoliza);
+SET IDENTITY_INSERT CONTA.PolizaDetalle OFF;
+GO
+
 -- CONTA.Capitulo
 SET IDENTITY_INSERT [CONTA].[Capitulo] ON;
 INSERT INTO [CONTA].[Capitulo] (

@@ -482,6 +482,7 @@ VALUES
 (2, 'Configuracion', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Cuentas_Contables', 'CONCON06', 'Contabilidad', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Formas_Pago', 'CONCON07', 'Contabilidad', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Sigevi_Partidas', 'CONCON08', 'Contabilidad', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Contabilidad', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Polizas', 'CONPOL01', 'Contabilidad', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Adquisiciones', 'CON002', 'Configuracion', 'view,view-menu', 0),
@@ -615,6 +616,7 @@ EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Partidas_Presupuestales', '100
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Cuentas_Contables', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Formas_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Sigevi_Partidas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Polizas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Adquisiciones', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Modalidad', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -843,7 +845,9 @@ USING (VALUES
     (311, N'Anteproyecto de Egresos', 1, 310, N'Anteproyecto de Egresos', N'/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
 
     (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
-    (401, N'Requisicion', 2, 4, N'Requisicion', N'/Adquisiciones/Requisicion', N'FaClipboardList', 1, 'ESP', 5, 1, GETDATE())
+    (401, N'Requisicion', 2, 4, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
+
+    (500, N'Pólizas', 1, 3, N'Pólizas', N'/Contabilidad/Polizas', N'FaDocument', 1, 'ESP', 4, 1, GETDATE())
 
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)

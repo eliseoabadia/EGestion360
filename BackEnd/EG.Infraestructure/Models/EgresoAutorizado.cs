@@ -85,6 +85,8 @@ public partial class EgresoAutorizado
 
     public virtual Partidum FkidPartidaContaNavigation { get; set; }
 
+    public virtual Poliza FkidPolizaContaNavigation { get; set; }
+
     public virtual Programa FkidProgramaPresNavigation { get; set; }
 
     public virtual Py FkidPyPresNavigation { get; set; }

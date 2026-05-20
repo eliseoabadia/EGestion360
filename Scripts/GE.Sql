@@ -1602,6 +1602,79 @@ CREATE TABLE CONTA.CuentaContable (
 );
 GO
 
+-- CONTA.Poliza
+CREATE TABLE CONTA.Poliza (
+    PKIdPoliza INT IDENTITY(1,1) NOT NULL,
+    FKIdAnio_SIS INT NOT NULL,
+    FKIdMes_SIS INT NOT NULL,
+    FKIdTipoPoliza_SIS INT NOT NULL,
+    ClavePoliza NVARCHAR(10) NOT NULL,
+    NombrePoliza NVARCHAR(1000) NOT NULL,
+    FechaPoliza DATETIME NOT NULL,
+    EstaBalanceado BIT NOT NULL CONSTRAINT DF_Poliza_EstaBalanceado DEFAULT (0),
+    Activo BIT NOT NULL CONSTRAINT DF_Poliza_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_Poliza_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    PermitirModificar BIT NULL,
+    FKIdAccionAutorizar_SIS INT NULL,
+    Autorizado BIT NULL,
+    FechaSolicitud DATETIME NULL,
+    FechaAutorizacion DATETIME NULL,
+    CONSTRAINT PK_Poliza PRIMARY KEY (PKIdPoliza),
+    CONSTRAINT FK_Poliza_Anio FOREIGN KEY (FKIdAnio_SIS) REFERENCES SIS.Anio(PKIdAnio),
+    CONSTRAINT FK_Poliza_TipoPoliza FOREIGN KEY (FKIdTipoPoliza_SIS) REFERENCES SIS.TipoPoliza(PKIdTipoPoliza),
+    CONSTRAINT FK_Poliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Poliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- CONTA.ConsecutivoPoliza (consecutivo anual por mes y tipo de p�liza)
+CREATE TABLE CONTA.ConsecutivoPoliza (
+    PKIdConsecutivoPoliza INT IDENTITY(1,1) NOT NULL,
+    FK_IdAnio__SIS INT NOT NULL,
+    FK_IdMes__SIS INT NOT NULL,
+    FK_IdTipoPoliza__SIS INT NOT NULL,
+    UltimoValor INT NOT NULL CONSTRAINT DF_ConsecutivoPoliza_UltimoValor DEFAULT (0),
+    Activo BIT NOT NULL CONSTRAINT DF_ConsecutivoPoliza_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_ConsecutivoPoliza_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_ConsecutivoPoliza PRIMARY KEY (PKIdConsecutivoPoliza),
+    CONSTRAINT FK_ConsecutivoPoliza_Anio FOREIGN KEY (FK_IdAnio__SIS) REFERENCES SIS.Anio(PKIdAnio),
+    CONSTRAINT FK_ConsecutivoPoliza_TipoPoliza FOREIGN KEY (FK_IdTipoPoliza__SIS) REFERENCES SIS.TipoPoliza(PKIdTipoPoliza),
+    CONSTRAINT UQ_ConsecutivoPoliza UNIQUE (FK_IdAnio__SIS, FK_IdMes__SIS, FK_IdTipoPoliza__SIS),
+    CONSTRAINT FK_ConsecutivoPoliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_ConsecutivoPoliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
+-- CONTA.PolizaDetalle (origen CONTA.DetallePoliza)
+CREATE TABLE CONTA.PolizaDetalle (
+    PKIdPolizaDetalle INT IDENTITY(1,1) NOT NULL,
+    FKIdCuentaContable_CONTA INT NOT NULL,
+    FKIdPoliza_CONTA INT NOT NULL,
+    Descripcion NVARCHAR(600) NULL,
+    ImporteDebe [dbo].[dmoney] NULL,
+    ImporteHaber [dbo].[dmoney] NULL,
+    FKIdReferencia INT NULL,
+    FKIdTipoDetallePoliza_SIS INT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_PolizaDetalle_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_PolizaDetalle_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_PolizaDetalle PRIMARY KEY (PKIdPolizaDetalle),
+    CONSTRAINT FK_PolizaDetalle_CuentaContable FOREIGN KEY (FKIdCuentaContable_CONTA) REFERENCES CONTA.CuentaContable(PKIdCuentaContable),
+    CONSTRAINT FK_PolizaDetalle_Poliza FOREIGN KEY (FKIdPoliza_CONTA) REFERENCES CONTA.Poliza(PKIdPoliza),
+    CONSTRAINT FK_PolizaDetalle_TipoDetallePoliza FOREIGN KEY (FKIdTipoDetallePoliza_SIS) REFERENCES SIS.TipoDetallePoliza(PkIdTipoDetallePoliza),
+    CONSTRAINT FK_PolizaDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_PolizaDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+GO
+
 -- ALMA.TipoBien
 CREATE TABLE ALMA.TipoBien (
     PKIdTipoBien INT IDENTITY(1,1) NOT NULL,
@@ -2041,6 +2114,7 @@ CREATE TABLE PRES.EgresoAutorizado (
     CONSTRAINT FK_EgresoAutorizado_DigitoIdentificador FOREIGN KEY (FKIdDigitoIdentificador_PRES) REFERENCES PRES.DigitoIdentificador(PKIdDigitoIdentificador),
     CONSTRAINT FK_EgresoAutorizado_DestinoGasto FOREIGN KEY (FKIdDestinoGasto_PRES) REFERENCES PRES.DestinoGasto(PKIdDestinoGasto),
     CONSTRAINT FK_EgresoAutorizado_PY FOREIGN KEY (FKIdPY_PRES) REFERENCES PRES.PY(PKIdPY),
+    CONSTRAINT FK_EgresoAutorizado_Poliza FOREIGN KEY (FKIdPoliza_CONTA) REFERENCES CONTA.Poliza(PKIdPoliza),
     CONSTRAINT FK_EgresoAutorizado_UsuarioAutorizacion FOREIGN KEY (UsuarioAutorizacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EgresoAutorizado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EgresoAutorizado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)

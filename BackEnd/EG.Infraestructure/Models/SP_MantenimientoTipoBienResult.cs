@@ -8,5 +8,50 @@ namespace EG.Infraestructure.Models
 {
     public partial class SP_MantenimientoTipoBienResult
     {
+        public int PKIdTipoBien { get; set; }
+        public int? FKIdGrupoBien_ALMA { get; set; }
+        [StringLength(800)]
+        public string GrupoBien { get; set; }
+        public int? FKIdNivel_ALMA { get; set; }
+        public int? FKIdPartida_CONTA { get; set; }
+        [StringLength(10)]
+        public string PartidaClave { get; set; }
+        [StringLength(255)]
+        public string PartidaDescripcion { get; set; }
+        public int? FKIdCuentaContable_CONTA { get; set; }
+        public int? FKIdUnidades_ALMA { get; set; }
+        [StringLength(50)]
+        public string UnidadMedida { get; set; }
+        public int? FKIdLocalizacion_ALMA { get; set; }
+        public int? FKIdUnidades_Equivalente { get; set; }
+        [StringLength(200)]
+        public string CodigoClave { get; set; }
+        [StringLength(1200)]
+        public string Descripcion { get; set; }
+        [Column("DepreciacionAnual", TypeName = "decimal(18,4)")]
+        public decimal? DepreciacionAnual { get; set; }
+        public int? Consecutivo { get; set; }
+        [StringLength(50)]
+        public string CABMS { get; set; }
+        [StringLength(50)]
+        public string Identificador { get; set; }
+        [Column("ExistenciaMinima", TypeName = "decimal(18,4)")]
+        public decimal? ExistenciaMinima { get; set; }
+        [Column("ExistenciaMaxima", TypeName = "decimal(18,4)")]
+        public decimal? ExistenciaMaxima { get; set; }
+        public int? TiempoVida { get; set; }
+        public int? Pk_IdTratadoInt { get; set; }
+        [Column("Cuota", TypeName = "decimal(8,2)")]
+        public decimal? Cuota { get; set; }
+        public bool? ProveeduriaNac { get; set; }
+        public bool? CatalogoBasico { get; set; }
+        [StringLength(25)]
+        public string CUCOP_PLUS { get; set; }
+        public int? Cantidad_Equivalente { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
     }
 }

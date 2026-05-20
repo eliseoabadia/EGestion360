@@ -102,7 +102,185 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<SP_MantenimientoTipoBienResult>> SP_MantenimientoTipoBienAsync(int? action, int? pKIdTipoBien, int? fKIdGrupoBien_ALMA, int? fKIdNivel_ALMA, int? fKIdPartida_CONTA, int? fKIdCuentaContable_CONTA, int? fKIdUnidades_ALMA, int? fKIdLocalizacion_ALMA, int? fKIdUnidades_Equivalente, string codigoClave, string descripcion, decimal? depreciacionAnual, int? consecutivo, string cABMS, string identificador, decimal? existenciaMinima, decimal? existenciaMaxima, int? tiempoVida, int? pk_IdTratadoInt, decimal? cuota, bool? proveeduriaNac, bool? catalogoBasico, string cUCOP_PLUS, int? cantidad_Equivalente, int? idC, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<int> SP_CREATE_ClavePolizaAsync(int? fK_IdAnio__SIS, int? fK_IdMesConta__SIS, int? fK_IdTipoPolizaConta__SIS, int? cT_ModifiedBy, OutputParameter<string> clavePoliza, OutputParameter<string> error, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterClavePoliza = new SqlParameter
+            {
+                ParameterName = "ClavePoliza",
+                Size = 20,
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = clavePoliza?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.NVarChar,
+            };
+            var parameterError = new SqlParameter
+            {
+                ParameterName = "Error",
+                Size = -1,
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = error?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.NVarChar,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "FK_IdAnio__SIS",
+                    Value = fK_IdAnio__SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FK_IdMesConta__SIS",
+                    Value = fK_IdMesConta__SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FK_IdTipoPolizaConta__SIS",
+                    Value = fK_IdTipoPolizaConta__SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CT_ModifiedBy",
+                    Value = cT_ModifiedBy ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterClavePoliza,
+                parameterError,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [CONTA].[SP_CREATE_ClavePoliza] @FK_IdAnio__SIS = @FK_IdAnio__SIS, @FK_IdMesConta__SIS = @FK_IdMesConta__SIS, @FK_IdTipoPolizaConta__SIS = @FK_IdTipoPolizaConta__SIS, @CT_ModifiedBy = @CT_ModifiedBy, @ClavePoliza = @ClavePoliza OUTPUT, @Error = @Error OUTPUT", sqlParameters, cancellationToken);
+
+            clavePoliza?.SetValue(parameterClavePoliza.Value);
+            error?.SetValue(parameterError.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoPolizaResult>> SP_MantenimientoPolizaAsync(int? action, int? pKIdPoliza, int? fKIdAnio_SIS, int? fKIdMes_SIS, int? fKIdTipoPoliza_SIS, string nombrePoliza, DateTime? fechaPoliza, bool? estaBalanceado, bool? permitirModificar, int? fKIdAccionAutorizar_SIS, bool? autorizado, DateTime? fechaSolicitud, DateTime? fechaAutorizacion, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdPoliza",
+                    Value = pKIdPoliza ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdAnio_SIS",
+                    Value = fKIdAnio_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdMes_SIS",
+                    Value = fKIdMes_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoPoliza_SIS",
+                    Value = fKIdTipoPoliza_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombrePoliza",
+                    Size = 2000,
+                    Value = nombrePoliza ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaPoliza",
+                    Value = fechaPoliza ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EstaBalanceado",
+                    Value = estaBalanceado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PermitirModificar",
+                    Value = permitirModificar ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdAccionAutorizar_SIS",
+                    Value = fKIdAccionAutorizar_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Autorizado",
+                    Value = autorizado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaSolicitud",
+                    Value = fechaSolicitud ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaAutorizacion",
+                    Value = fechaAutorizacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoPolizaResult>("EXEC @returnValue = [CONTA].[SP_MantenimientoPoliza] @Action = @Action, @PKIdPoliza = @PKIdPoliza, @FKIdAnio_SIS = @FKIdAnio_SIS, @FKIdMes_SIS = @FKIdMes_SIS, @FKIdTipoPoliza_SIS = @FKIdTipoPoliza_SIS, @NombrePoliza = @NombrePoliza, @FechaPoliza = @FechaPoliza, @EstaBalanceado = @EstaBalanceado, @PermitirModificar = @PermitirModificar, @FKIdAccionAutorizar_SIS = @FKIdAccionAutorizar_SIS, @Autorizado = @Autorizado, @FechaSolicitud = @FechaSolicitud, @FechaAutorizacion = @FechaAutorizacion, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoTipoBienResult>> SP_MantenimientoTipoBienAsync(int? action, int? pKIdTipoBien, int? fKIdGrupoBien_ALMA, int? fKIdNivel_ALMA, int? fKIdPartida_CONTA, int? fKIdCuentaContable_CONTA, int? fKIdUnidades_ALMA, int? fKIdLocalizacion_ALMA, int? fKIdUnidades_Equivalente, string codigoClave, string descripcion, decimal? depreciacionAnual, int? consecutivo, string cABMS, string identificador, decimal? existenciaMinima, decimal? existenciaMaxima, int? tiempoVida, int? pk_IdTratadoInt, decimal? cuota, bool? proveeduriaNac, bool? catalogoBasico, string cUCOP_PLUS, int? cantidad_Equivalente, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterId = new SqlParameter
             {
@@ -279,12 +457,6 @@ namespace EG.Infraestructure.Models
                 },
                 new SqlParameter
                 {
-                    ParameterName = "IdC",
-                    Value = idC ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.Int,
-                },
-                new SqlParameter
-                {
                     ParameterName = "IdUser",
                     Value = idUser ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
@@ -292,7 +464,7 @@ namespace EG.Infraestructure.Models
                 parameterId,
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_MantenimientoTipoBienResult>("EXEC @returnValue = [ALMA].[SP_MantenimientoTipoBien] @Action = @Action, @PKIdTipoBien = @PKIdTipoBien, @FKIdGrupoBien_ALMA = @FKIdGrupoBien_ALMA, @FKIdNivel_ALMA = @FKIdNivel_ALMA, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @FKIdLocalizacion_ALMA = @FKIdLocalizacion_ALMA, @FKIdUnidades_Equivalente = @FKIdUnidades_Equivalente, @CodigoClave = @CodigoClave, @Descripcion = @Descripcion, @DepreciacionAnual = @DepreciacionAnual, @Consecutivo = @Consecutivo, @CABMS = @CABMS, @Identificador = @Identificador, @ExistenciaMinima = @ExistenciaMinima, @ExistenciaMaxima = @ExistenciaMaxima, @TiempoVida = @TiempoVida, @Pk_IdTratadoInt = @Pk_IdTratadoInt, @Cuota = @Cuota, @ProveeduriaNac = @ProveeduriaNac, @CatalogoBasico = @CatalogoBasico, @CUCOP_PLUS = @CUCOP_PLUS, @Cantidad_Equivalente = @Cantidad_Equivalente, @IdC = @IdC, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoTipoBienResult>("EXEC @returnValue = [ALMA].[SP_MantenimientoTipoBien] @Action = @Action, @PKIdTipoBien = @PKIdTipoBien, @FKIdGrupoBien_ALMA = @FKIdGrupoBien_ALMA, @FKIdNivel_ALMA = @FKIdNivel_ALMA, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @FKIdLocalizacion_ALMA = @FKIdLocalizacion_ALMA, @FKIdUnidades_Equivalente = @FKIdUnidades_Equivalente, @CodigoClave = @CodigoClave, @Descripcion = @Descripcion, @DepreciacionAnual = @DepreciacionAnual, @Consecutivo = @Consecutivo, @CABMS = @CABMS, @Identificador = @Identificador, @ExistenciaMinima = @ExistenciaMinima, @ExistenciaMaxima = @ExistenciaMaxima, @TiempoVida = @TiempoVida, @Pk_IdTratadoInt = @Pk_IdTratadoInt, @Cuota = @Cuota, @ProveeduriaNac = @ProveeduriaNac, @CatalogoBasico = @CatalogoBasico, @CUCOP_PLUS = @CUCOP_PLUS, @Cantidad_Equivalente = @Cantidad_Equivalente, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);

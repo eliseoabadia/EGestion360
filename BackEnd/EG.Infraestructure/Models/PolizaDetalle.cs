@@ -5,11 +5,23 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class TipoPoliza
+public partial class PolizaDetalle
 {
-    public int PkidTipoPoliza { get; set; }
+    public int PkidPolizaDetalle { get; set; }
+
+    public int FkidCuentaContableConta { get; set; }
+
+    public int FkidPolizaConta { get; set; }
 
     public string Descripcion { get; set; }
+
+    public decimal? ImporteDebe { get; set; }
+
+    public decimal? ImporteHaber { get; set; }
+
+    public int? FkidReferencia { get; set; }
+
+    public int? FkidTipoDetallePolizaSis { get; set; }
 
     public bool Activo { get; set; }
 
@@ -21,9 +33,11 @@ public partial class TipoPoliza
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<ConsecutivoPoliza> ConsecutivoPolizas { get; set; } = new List<ConsecutivoPoliza>();
+    public virtual CuentaContable FkidCuentaContableContaNavigation { get; set; }
 
-    public virtual ICollection<Poliza> Polizas { get; set; } = new List<Poliza>();
+    public virtual Poliza FkidPolizaContaNavigation { get; set; }
+
+    public virtual TipoDetallePoliza FkidTipoDetallePolizaSisNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

@@ -1,0 +1,263 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<PolizaDetalleResponse> Service
+@inject IGenericCrudService<CuentaContableResponse> CuentaService
+@inject IGenericCrudService<TipoDetallePolizaResponse> TipoDetalleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PolizaDetalleResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="PolizaDetalleResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Póliza</MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 700;">
+                    @PolizaClave - @PolizaNombre
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedCuenta"
+                                   ValueChanged="value => _selectedCuenta = value"
+                                   Label="Cuenta contable"
+                                   Required="true"
+                                   RequiredError="La cuenta contable es requerida"
+                                   LoadPage="LoadCuentasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedTipoDetalle"
+                                   ValueChanged="value => _selectedTipoDetalle = value"
+                                   Label="Tipo de movimiento"
+                                   Clearable="true"
+                                   LoadPage="LoadTiposDetallePageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Concepto"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="600" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="decimal?"
+                                 Value="@item.ImporteDebe"
+                                 ValueChanged="OnDebeChanged"
+                                 Label="Debe"
+                                 Variant="Variant.Outlined"
+                                 Min="0m"
+                                 Format="C2" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="decimal?"
+                                 Value="@item.ImporteHaber"
+                                 ValueChanged="OnHaberChanged"
+                                 Label="Haber"
+                                 Variant="Variant.Outlined"
+                                 Min="0m"
+                                 Format="C2" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int PolizaId { get; set; }
+    [Parameter] public string PolizaClave { get; set; } = string.Empty;
+    [Parameter] public string PolizaNombre { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<PolizaDetalleResponse> form = null!;
+    private PolizaDetalleResponse item = new() { Activo = true };
+    private LookupItem? _selectedCuenta;
+    private LookupItem? _selectedTipoDetalle;
+
+    private string dialogTitle => Id.HasValue ? "Editar Movimiento" : "Nuevo Movimiento";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+            return;
+        }
+
+        item.FkidPolizaConta = PolizaId;
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                PolizaId = item.FkidPolizaConta;
+                PolizaClave = TextOrDefault(item.ClavePoliza, PolizaId);
+                PolizaNombre = item.NombrePoliza ?? string.Empty;
+                _selectedCuenta = new LookupItem
+                {
+                    Id = item.FkidCuentaContableConta,
+                    Text = TextOrDefault(item.CuentaClaveNombre, item.FkidCuentaContableConta)
+                };
+
+                if (item.FkidTipoDetallePolizaSis.HasValue)
+                {
+                    _selectedTipoDetalle = new LookupItem
+                    {
+                        Id = item.FkidTipoDetallePolizaSis.Value,
+                        Text = TextOrDefault(item.TipoDetallePoliza, item.FkidTipoDetallePolizaSis.Value)
+                    };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (PolizaId <= 0)
+        {
+            Snackbar.Add("Debe existir una póliza seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedCuenta == null)
+        {
+            Snackbar.Add("Selecciona una cuenta contable.", Severity.Warning);
+            return;
+        }
+
+        var debe = item.ImporteDebe ?? 0m;
+        var haber = item.ImporteHaber ?? 0m;
+
+        if (debe <= 0m && haber <= 0m)
+        {
+            Snackbar.Add("Captura un importe en debe o en haber.", Severity.Warning);
+            return;
+        }
+
+        if (debe > 0m && haber > 0m)
+        {
+            Snackbar.Add("Un movimiento no puede tener importe en debe y haber al mismo tiempo.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPolizaConta = PolizaId;
+        item.FkidCuentaContableConta = _selectedCuenta.Id;
+        item.FkidTipoDetallePolizaSis = _selectedTipoDetalle?.Id;
+        item.ImporteDebe = debe == 0m ? null : debe;
+        item.ImporteHaber = haber == 0m ? null : haber;
+        item.Descripcion = string.IsNullOrWhiteSpace(item.Descripcion) ? null : item.Descripcion.Trim();
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Movimiento actualizado correctamente." : "Movimiento creado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el movimiento.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Task OnDebeChanged(decimal? value)
+    {
+        item.ImporteDebe = value;
+        if (value.GetValueOrDefault() > 0m)
+        {
+            item.ImporteHaber = null;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnHaberChanged(decimal? value)
+    {
+        item.ImporteHaber = value;
+        if (value.GetValueOrDefault() > 0m)
+        {
+            item.ImporteDebe = null;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadCuentasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await CuentaService.GetAllPaginadoAsync(page, pageSize, filter, "Cuenta", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidCuentaContable,
+            Text = $"{x.Cuenta} - {x.Descripcion}".Trim(' ', '-')
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposDetallePageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoDetalleService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidTipoDetallePoliza,
+            Text = string.IsNullOrWhiteSpace(x.Clave) ? x.Descripcion : $"{x.Clave} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

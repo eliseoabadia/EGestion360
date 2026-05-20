@@ -1,0 +1,30 @@
+namespace EG.Domain.DTOs.Responses.Contabilidad
+{
+    public class PolizaDetalleResponse
+    {
+        public int PkidPolizaDetalle { get; set; }
+        public int FkidPolizaConta { get; set; }
+        public string? ClavePoliza { get; set; }
+        public string? NombrePoliza { get; set; }
+        public DateTime FechaPoliza { get; set; }
+        public int FkidAnioSis { get; set; }
+        public int Anio { get; set; }
+        public int FkidMesSis { get; set; }
+        public string? Mes { get; set; }
+        public int FkidCuentaContableConta { get; set; }
+        public string? CuentaClave { get; set; }
+        public string? CuentaDescripcion { get; set; }
+        public string? CuentaClaveNombre { get; set; }
+        public int? FkidTipoDetallePolizaSis { get; set; }
+        public string? TipoDetallePoliza { get; set; }
+        public string? Descripcion { get; set; }
+        public decimal? ImporteDebe { get; set; }
+        public decimal? ImporteHaber { get; set; }
+        public int? FkidReferencia { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
+}

@@ -45,6 +45,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Concepto1> Conceptos1 { get; set; }
 
+    public virtual DbSet<ConsecutivoPoliza> ConsecutivoPolizas { get; set; }
+
     public virtual DbSet<Conteo> Conteos { get; set; }
 
     public virtual DbSet<ConteoDetalle> ConteoDetalles { get; set; }
@@ -158,6 +160,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<PersonaArea> PersonaAreas { get; set; }
 
     public virtual DbSet<Pg> Pgs { get; set; }
+
+    public virtual DbSet<Poliza> Polizas { get; set; }
+
+    public virtual DbSet<PolizaDetalle> PolizaDetalles { get; set; }
 
     public virtual DbSet<Pp> Pps { get; set; }
 
@@ -300,6 +306,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwPaaaspartidum> VwPaaaspartida { get; set; }
 
     public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
+
+    public virtual DbSet<VwPoliza> VwPolizas { get; set; }
+
+    public virtual DbSet<VwPolizaDetalle> VwPolizaDetalles { get; set; }
 
     public virtual DbSet<VwPrograma> VwProgramas { get; set; }
 
@@ -760,6 +770,32 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.Concepto1UsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_Concepto_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<ConsecutivoPoliza>(entity =>
+        {
+            entity.HasKey(e => e.PkidConsecutivoPoliza);
+
+            entity.ToTable("ConsecutivoPoliza", "CONTA");
+
+            entity.HasIndex(e => new { e.FkIdAnioSis, e.FkIdMesSis, e.FkIdTipoPolizaSis }, "UQ_ConsecutivoPoliza").IsUnique();
+
+            entity.Property(e => e.PkidConsecutivoPoliza).HasColumnName("PKIdConsecutivoPoliza");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ConsecutivoPoliza_Activo");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_ConsecutivoPoliza_FechaCreacion");
+            entity.Property(e => e.FkIdAnioSis).HasColumnName("FK_IdAnio__SIS");
+            entity.Property(e => e.FkIdMesSis).HasColumnName("FK_IdMes__SIS");
+            entity.Property(e => e.FkIdTipoPolizaSis).HasColumnName("FK_IdTipoPoliza__SIS");
+
+            entity.HasOne(d => d.FkIdAnioSisNavigation).WithMany(p => p.ConsecutivoPolizas)
+                .HasForeignKey(d => d.FkIdAnioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ConsecutivoPoliza_Anio");
+
+            entity.HasOne(d => d.FkIdTipoPolizaSisNavigation).WithMany(p => p.ConsecutivoPolizas)
+                .HasForeignKey(d => d.FkIdTipoPolizaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ConsecutivoPoliza_TipoPoliza");
         });
 
         modelBuilder.Entity<Conteo>(entity =>
@@ -1228,6 +1264,10 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidPartidaConta)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EgresoAutorizado_Partida");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.EgresoAutorizados)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .HasConstraintName("FK_EgresoAutorizado_Poliza");
 
             entity.HasOne(d => d.FkidProgramaPresNavigation).WithMany(p => p.EgresoAutorizados)
                 .HasForeignKey(d => d.FkidProgramaPres)
@@ -2832,6 +2872,90 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.PgUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_PG_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Poliza>(entity =>
+        {
+            entity.HasKey(e => e.PkidPoliza);
+
+            entity.ToTable("Poliza", "CONTA");
+
+            entity.Property(e => e.PkidPoliza).HasColumnName("PKIdPoliza");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Poliza_Activo");
+            entity.Property(e => e.ClavePoliza)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.FechaAutorizacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Poliza_FechaCreacion");
+            entity.Property(e => e.FechaPoliza).HasColumnType("datetime");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FkidAccionAutorizarSis).HasColumnName("FKIdAccionAutorizar_SIS");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidMesSis).HasColumnName("FKIdMes_SIS");
+            entity.Property(e => e.FkidTipoPolizaSis).HasColumnName("FKIdTipoPoliza_SIS");
+            entity.Property(e => e.NombrePoliza)
+                .IsRequired()
+                .HasMaxLength(1000);
+
+            entity.HasOne(d => d.FkidAnioSisNavigation).WithMany(p => p.Polizas)
+                .HasForeignKey(d => d.FkidAnioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Poliza_Anio");
+
+            entity.HasOne(d => d.FkidTipoPolizaSisNavigation).WithMany(p => p.Polizas)
+                .HasForeignKey(d => d.FkidTipoPolizaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Poliza_TipoPoliza");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.PolizaUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Poliza_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.PolizaUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Poliza_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<PolizaDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidPolizaDetalle);
+
+            entity.ToTable("PolizaDetalle", "CONTA");
+
+            entity.Property(e => e.PkidPolizaDetalle).HasColumnName("PKIdPolizaDetalle");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_PolizaDetalle_Activo");
+            entity.Property(e => e.Descripcion).HasMaxLength(600);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_PolizaDetalle_FechaCreacion");
+            entity.Property(e => e.FkidCuentaContableConta).HasColumnName("FKIdCuentaContable_CONTA");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidReferencia).HasColumnName("FKIdReferencia");
+            entity.Property(e => e.FkidTipoDetallePolizaSis).HasColumnName("FKIdTipoDetallePoliza_SIS");
+            entity.Property(e => e.ImporteDebe).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.ImporteHaber).HasColumnType("decimal(20, 4)");
+
+            entity.HasOne(d => d.FkidCuentaContableContaNavigation).WithMany(p => p.PolizaDetalles)
+                .HasForeignKey(d => d.FkidCuentaContableConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PolizaDetalle_CuentaContable");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.PolizaDetalles)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PolizaDetalle_Poliza");
+
+            entity.HasOne(d => d.FkidTipoDetallePolizaSisNavigation).WithMany(p => p.PolizaDetalles)
+                .HasForeignKey(d => d.FkidTipoDetallePolizaSis)
+                .HasConstraintName("FK_PolizaDetalle_TipoDetallePoliza");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.PolizaDetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PolizaDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.PolizaDetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_PolizaDetalle_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Pp>(entity =>
@@ -5141,6 +5265,76 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(152);
             entity.Property(e => e.TipoConteo).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<VwPoliza>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Poliza", "CONTA");
+
+            entity.Property(e => e.ClavePoliza)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.Diferencia).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.FechaAutorizacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaPoliza).HasColumnType("datetime");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FkidAccionAutorizarSis).HasColumnName("FKIdAccionAutorizar_SIS");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidMesSis).HasColumnName("FKIdMes_SIS");
+            entity.Property(e => e.FkidTipoPolizaSis).HasColumnName("FKIdTipoPoliza_SIS");
+            entity.Property(e => e.Mes)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.NombrePoliza)
+                .IsRequired()
+                .HasMaxLength(1000);
+            entity.Property(e => e.PkidPoliza).HasColumnName("PKIdPoliza");
+            entity.Property(e => e.TipoPoliza)
+                .IsRequired()
+                .HasMaxLength(25);
+            entity.Property(e => e.TotalDebe).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.TotalHaber).HasColumnType("decimal(38, 4)");
+        });
+
+        modelBuilder.Entity<VwPolizaDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_PolizaDetalle", "CONTA");
+
+            entity.Property(e => e.ClavePoliza)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.CuentaClave)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(301)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaDescripcion)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Descripcion).HasMaxLength(600);
+            entity.Property(e => e.FechaPoliza).HasColumnType("datetime");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidCuentaContableConta).HasColumnName("FKIdCuentaContable_CONTA");
+            entity.Property(e => e.FkidMesSis).HasColumnName("FKIdMes_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidReferencia).HasColumnName("FKIdReferencia");
+            entity.Property(e => e.FkidTipoDetallePolizaSis).HasColumnName("FKIdTipoDetallePoliza_SIS");
+            entity.Property(e => e.ImporteDebe).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.ImporteHaber).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mes)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.NombrePoliza)
+                .IsRequired()
+                .HasMaxLength(1000);
+            entity.Property(e => e.PkidPolizaDetalle).HasColumnName("PKIdPolizaDetalle");
+            entity.Property(e => e.TipoDetallePoliza).HasMaxLength(25);
         });
 
         modelBuilder.Entity<VwPrograma>(entity =>

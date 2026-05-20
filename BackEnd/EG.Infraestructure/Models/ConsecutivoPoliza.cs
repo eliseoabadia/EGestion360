@@ -5,11 +5,17 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class TipoDetallePoliza
+public partial class ConsecutivoPoliza
 {
-    public int PkIdTipoDetallePoliza { get; set; }
+    public int PkidConsecutivoPoliza { get; set; }
 
-    public string Descripcion { get; set; }
+    public int FkIdAnioSis { get; set; }
+
+    public int FkIdMesSis { get; set; }
+
+    public int FkIdTipoPolizaSis { get; set; }
+
+    public int UltimoValor { get; set; }
 
     public bool Activo { get; set; }
 
@@ -21,9 +27,7 @@ public partial class TipoDetallePoliza
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<PolizaDetalle> PolizaDetalles { get; set; } = new List<PolizaDetalle>();
+    public virtual Anio FkIdAnioSisNavigation { get; set; }
 
-    public virtual Usuario UsuarioCreacionNavigation { get; set; }
-
-    public virtual Usuario UsuarioModificacionNavigation { get; set; }
+    public virtual TipoPoliza FkIdTipoPolizaSisNavigation { get; set; }
 }

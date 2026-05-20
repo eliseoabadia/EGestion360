@@ -122,7 +122,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE OR ALTER PROCEDURE [ALMA].[SP_MantenimientoTipoBien]
+CREATE OR ALTER PROCEDURE [ALMA].[SP_MantenimientoTipoBien] (
     @Action INT,
     @PKIdTipoBien INT = NULL,
     @FKIdGrupoBien_ALMA INT = NULL,
@@ -147,170 +147,219 @@ CREATE OR ALTER PROCEDURE [ALMA].[SP_MantenimientoTipoBien]
     @CatalogoBasico BIT = NULL,
     @CUCOP_PLUS VARCHAR(25) = NULL,
     @Cantidad_Equivalente INT = NULL,
-    @IdC INT = NULL,
     @IdUser INT = NULL,
     @Id INT = NULL OUTPUT
+)
 AS
 BEGIN
     SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     DECLARE @tipo NVARCHAR(100);
-    DECLARE @message NVARCHAR(100);
-    DECLARE @FKIdPartidaCalculada INT;
-    DECLARE @CABMSCalculada VARCHAR(50);
+    DECLARE @message NVARCHAR(4000);
+    DECLARE @errorMessage NVARCHAR(MAX);
+    DECLARE @today DATETIME = GETDATE();
 
     BEGIN TRY
+        BEGIN TRANSACTION;
+
         IF @Action = 1
         BEGIN
-            SET @FKIdPartidaCalculada = @FKIdPartida_CONTA;
-            SET @CABMSCalculada = @CABMS;
-
-            BEGIN TRANSACTION;
+            DECLARE @FKIdPartidaCalculada INT = @FKIdPartida_CONTA;
+            DECLARE @CABMSCalculada VARCHAR(50) = @CABMS;
 
             INSERT INTO ALMA.TipoBien (
-                FKIdGrupoBien_ALMA,
-                FKIdNivel_ALMA,
-                FKIdPartida_CONTA,
-                FKIdCuentaContable_CONTA,
-                FKIdUnidades_ALMA,
-                FKIdLocalizacion_ALMA,
+                FKIdGrupoBien_ALMA, FKIdNivel_ALMA,
+                FKIdPartida_CONTA, FKIdCuentaContable_CONTA,
+                FKIdUnidades_ALMA, FKIdLocalizacion_ALMA,
                 FKIdUnidades_Equivalente,
-                CodigoClave,
-                Descripcion,
-                DepreciacionAnual,
-                Consecutivo,
-                CABMS,
-                Identificador,
-                ExistenciaMinima,
-                ExistenciaMaxima,
-                TiempoVida,
-                Pk_IdTratadoInt,
-                Cuota,
-                ProveeduriaNac,
-                CatalogoBasico,
-                CUCOP_PLUS,
+                CodigoClave, Descripcion,
+                DepreciacionAnual, Consecutivo, CABMS,
+                Identificador, ExistenciaMinima, ExistenciaMaxima,
+                TiempoVida, Pk_IdTratadoInt, Cuota,
+                ProveeduriaNac, CatalogoBasico, CUCOP_PLUS,
                 Cantidad_Equivalente,
-                Activo,
-                FechaCreacion,
-                UsuarioCreacion,
-                FechaModificacion,
-                UsuarioModificacion
+                Activo, FechaCreacion, UsuarioCreacion
             )
             VALUES (
-                @FKIdGrupoBien_ALMA,
-                @FKIdNivel_ALMA,
-                @FKIdPartidaCalculada,
-                @FKIdCuentaContable_CONTA,
-                @FKIdUnidades_ALMA,
-                @FKIdLocalizacion_ALMA,
+                @FKIdGrupoBien_ALMA, @FKIdNivel_ALMA,
+                @FKIdPartidaCalculada, @FKIdCuentaContable_CONTA,
+                @FKIdUnidades_ALMA, @FKIdLocalizacion_ALMA,
                 @FKIdUnidades_Equivalente,
-                @CodigoClave,
-                @Descripcion,
-                @DepreciacionAnual,
-                @Consecutivo,
-                @CABMSCalculada,
-                @Identificador,
-                @ExistenciaMinima,
-                @ExistenciaMaxima,
-                @TiempoVida,
-                @Pk_IdTratadoInt,
-                @Cuota,
-                @ProveeduriaNac,
-                @CatalogoBasico,
-                @CUCOP_PLUS,
+                @CodigoClave, @Descripcion,
+                @DepreciacionAnual, @Consecutivo, @CABMSCalculada,
+                @Identificador, @ExistenciaMinima, @ExistenciaMaxima,
+                @TiempoVida, @Pk_IdTratadoInt, @Cuota,
+                @ProveeduriaNac, @CatalogoBasico, @CUCOP_PLUS,
                 @Cantidad_Equivalente,
-                1,
-                GETDATE(),
-                @IdUser,
-                NULL,
-                NULL
+                1, @today, @IdUser
             );
 
             SET @Id = SCOPE_IDENTITY();
             SET @tipo = 'OK';
-            SET @message = 'Los datos se han guardado correctamente.';
+            SET @message = 'Tipo de bien creado correctamente.';
         END
         ELSE IF @Action = 2
         BEGIN
-            BEGIN TRANSACTION;
+            IF @PKIdTipoBien IS NULL OR NOT EXISTS (SELECT 1 FROM ALMA.TipoBien WHERE PKIdTipoBien = @PKIdTipoBien AND Activo = 1)
+            BEGIN
+                SET @tipo = 'ERROR';
+                SET @message = 'Tipo de bien no encontrado';
+                GOTO ERR_HANDLER;
+            END
 
             UPDATE ALMA.TipoBien
-            SET 
-                FKIdGrupoBien_ALMA = @FKIdGrupoBien_ALMA,
-                FKIdNivel_ALMA = @FKIdNivel_ALMA,
-                FKIdPartida_CONTA = @FKIdPartida_CONTA,
-                FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA,
-                FKIdUnidades_ALMA = @FKIdUnidades_ALMA,
-                FKIdLocalizacion_ALMA = @FKIdLocalizacion_ALMA,
-                FKIdUnidades_Equivalente = @FKIdUnidades_Equivalente,
-                CodigoClave = @CodigoClave,
-                Descripcion = @Descripcion,
-                DepreciacionAnual = @DepreciacionAnual,
-                Consecutivo = @Consecutivo,
-                CABMS = @CABMS,
-                Identificador = @Identificador,
-                ExistenciaMinima = @ExistenciaMinima,
-                ExistenciaMaxima = @ExistenciaMaxima,
-                TiempoVida = @TiempoVida,
-                Pk_IdTratadoInt = @Pk_IdTratadoInt,
-                Cuota = @Cuota,
-                ProveeduriaNac = @ProveeduriaNac,
-                CatalogoBasico = @CatalogoBasico,
-                CUCOP_PLUS = @CUCOP_PLUS,
-                Cantidad_Equivalente = @Cantidad_Equivalente,
-                FechaModificacion = GETDATE(),
+            SET
+                FKIdGrupoBien_ALMA = ISNULL(@FKIdGrupoBien_ALMA, FKIdGrupoBien_ALMA),
+                FKIdNivel_ALMA = ISNULL(@FKIdNivel_ALMA, FKIdNivel_ALMA),
+                FKIdPartida_CONTA = ISNULL(@FKIdPartida_CONTA, FKIdPartida_CONTA),
+                FKIdCuentaContable_CONTA = ISNULL(@FKIdCuentaContable_CONTA, FKIdCuentaContable_CONTA),
+                FKIdUnidades_ALMA = ISNULL(@FKIdUnidades_ALMA, FKIdUnidades_ALMA),
+                FKIdLocalizacion_ALMA = ISNULL(@FKIdLocalizacion_ALMA, FKIdLocalizacion_ALMA),
+                FKIdUnidades_Equivalente = ISNULL(@FKIdUnidades_Equivalente, FKIdUnidades_Equivalente),
+                CodigoClave = ISNULL(@CodigoClave, CodigoClave),
+                Descripcion = ISNULL(@Descripcion, Descripcion),
+                DepreciacionAnual = ISNULL(@DepreciacionAnual, DepreciacionAnual),
+                Consecutivo = ISNULL(@Consecutivo, Consecutivo),
+                CABMS = ISNULL(@CABMS, CABMS),
+                Identificador = ISNULL(@Identificador, Identificador),
+                ExistenciaMinima = ISNULL(@ExistenciaMinima, ExistenciaMinima),
+                ExistenciaMaxima = ISNULL(@ExistenciaMaxima, ExistenciaMaxima),
+                TiempoVida = ISNULL(@TiempoVida, TiempoVida),
+                Pk_IdTratadoInt = ISNULL(@Pk_IdTratadoInt, Pk_IdTratadoInt),
+                Cuota = ISNULL(@Cuota, Cuota),
+                ProveeduriaNac = ISNULL(@ProveeduriaNac, ProveeduriaNac),
+                CatalogoBasico = ISNULL(@CatalogoBasico, CatalogoBasico),
+                CUCOP_PLUS = ISNULL(@CUCOP_PLUS, CUCOP_PLUS),
+                Cantidad_Equivalente = ISNULL(@Cantidad_Equivalente, Cantidad_Equivalente),
+                FechaModificacion = @today,
                 UsuarioModificacion = @IdUser
             WHERE PKIdTipoBien = @PKIdTipoBien;
 
             SET @Id = @PKIdTipoBien;
             SET @tipo = 'OK';
-            SET @message = 'Los datos se han actualizado correctamente.';
+            SET @message = 'Tipo de bien actualizado correctamente.';
         END
         ELSE IF @Action = 3
         BEGIN
-            BEGIN TRANSACTION;
+            IF @PKIdTipoBien IS NULL OR NOT EXISTS (SELECT 1 FROM ALMA.TipoBien WHERE PKIdTipoBien = @PKIdTipoBien AND Activo = 1)
+            BEGIN
+                SET @tipo = 'ERROR';
+                SET @message = 'Tipo de bien no encontrado';
+                GOTO ERR_HANDLER;
+            END
 
             UPDATE ALMA.TipoBien
-            SET 
+            SET
                 Activo = 0,
-                FechaModificacion = GETDATE(),
+                FechaModificacion = @today,
                 UsuarioModificacion = @IdUser
-            WHERE PKIdTipoBien = @IdC;
+            WHERE PKIdTipoBien = @PKIdTipoBien;
 
-            SET @Id = @IdC;
+            SET @Id = @PKIdTipoBien;
             SET @tipo = 'OK';
-            SET @message = 'Registro eliminado correctamente.';
+            SET @message = 'Tipo de bien eliminado correctamente.';
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT
+                tb.PKIdTipoBien,
+                tb.FKIdGrupoBien_ALMA,
+                gb.Descripcion AS GrupoBien,
+                tb.FKIdNivel_ALMA,
+                tb.FKIdPartida_CONTA,
+                p.Clave AS PartidaClave,
+                p.Descripcion AS PartidaDescripcion,
+                tb.FKIdCuentaContable_CONTA,
+                tb.FKIdUnidades_ALMA,
+                u.Descripcion AS UnidadMedida,
+                tb.FKIdLocalizacion_ALMA,
+                tb.FKIdUnidades_Equivalente,
+                tb.CodigoClave,
+                tb.Descripcion,
+                tb.DepreciacionAnual,
+                tb.Consecutivo,
+                tb.CABMS,
+                tb.Identificador,
+                tb.ExistenciaMinima,
+                tb.ExistenciaMaxima,
+                tb.TiempoVida,
+                tb.Pk_IdTratadoInt,
+                tb.Cuota,
+                tb.ProveeduriaNac,
+                tb.CatalogoBasico,
+                tb.CUCOP_PLUS,
+                tb.Cantidad_Equivalente,
+                tb.Activo,
+                tb.FechaCreacion,
+                tb.UsuarioCreacion,
+                tb.FechaModificacion,
+                tb.UsuarioModificacion
+            FROM ALMA.TipoBien tb
+            LEFT JOIN ALMA.GrupoBien gb ON tb.FKIdGrupoBien_ALMA = gb.PKIdGrupoBien
+            LEFT JOIN CONTA.Partida p ON tb.FKIdPartida_CONTA = p.PKIdPartida
+            LEFT JOIN ALMA.Unidades u ON tb.FKIdUnidades_ALMA = u.PKIdUnidades
+            WHERE tb.PKIdTipoBien = @PKIdTipoBien;
+
+            SET @tipo = 'OK';
+            GOTO FINISH;
         END
         ELSE
         BEGIN
             SET @tipo = 'ERROR';
-            SET @message = 'Acci�n no v�lida. Use 1=Insert, 2=Update, 3=Delete';
+            SET @message = 'Acci�n no v�lida. Use 1=Insert, 2=Update, 3=Delete, 4=GetById';
             GOTO ERR_HANDLER;
         END
 
-        IF @@TRANCOUNT > 0 COMMIT TRANSACTION;
+        FINISH:
+        IF @@TRANCOUNT > 0 AND XACT_STATE() = 1
+            COMMIT TRANSACTION;
 
         SELECT JSON_QUERY(
-            CONCAT('{"tipo":"', @tipo, '","mensaje":"', @message, '","liga":""}')
+            CONCAT('{"tipo":"', @tipo, '","mensaje":"', @message, '","liga":"idTipoBien:', ISNULL(CAST(@Id AS NVARCHAR), ''), '"}')
         ) AS ResultJson;
 
         RETURN 0;
 
-    END TRY
-    BEGIN CATCH
         ERR_HANDLER:
-        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0
+        BEGIN
+            IF XACT_STATE() = 1
+                ROLLBACK TRANSACTION;
+            ELSE IF XACT_STATE() = -1
+                ROLLBACK TRANSACTION;
+        END
 
-        DECLARE @ErrorMessage VARCHAR(MAX);
-        SELECT @ErrorMessage = CONCAT(
+        SELECT @errorMessage = CONCAT(
             ISNULL(PROGRAM_NAME(), ''), CHAR(10),
             'Error: ', ERROR_MESSAGE(), CHAR(10),
-            'L�nea: ', ERROR_LINE()
+            'Línea: ', ERROR_LINE()
         );
 
         SELECT JSON_QUERY(
-            CONCAT('{"tipo":"ERROR","mensaje":"', @ErrorMessage, '","liga":""}')
+            CONCAT('{"tipo":"ERROR","mensaje":"', @errorMessage, '","liga":""}')
+        ) AS ResultJson;
+
+        RETURN -1;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+        BEGIN
+            IF XACT_STATE() = 1
+                ROLLBACK TRANSACTION;
+            ELSE IF XACT_STATE() = -1
+                ROLLBACK TRANSACTION;
+        END
+
+        SELECT @errorMessage = CONCAT(
+            ISNULL(PROGRAM_NAME(), ''), CHAR(10),
+            'Error: ', ERROR_MESSAGE(), CHAR(10),
+            'Línea: ', ERROR_LINE()
+        );
+
+        SELECT JSON_QUERY(
+            CONCAT('{"tipo":"ERROR","mensaje":"', @errorMessage, '","liga":""}')
         ) AS ResultJson;
 
         RETURN -1;
@@ -870,5 +919,365 @@ BEGIN
 END
 GO
 
-PRINT 'Stored Procedures creados exitosamente.';
+-- =============================================
+-- CONTA
+-- =============================================
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Tabla de consecutivos para p�lizas (por a�o, mes y tipo)
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ConsecutivoPoliza' AND schema_id = SCHEMA_ID('CONTA'))
+BEGIN
+    CREATE TABLE CONTA.ConsecutivoPoliza (
+        PKIdConsecutivoPoliza INT IDENTITY(1,1) NOT NULL,
+        FK_IdAnio__SIS INT NOT NULL,
+        FK_IdMes__SIS INT NOT NULL,
+        FK_IdTipoPoliza__SIS INT NOT NULL,
+        UltimoValor INT NOT NULL CONSTRAINT DF_ConsecutivoPoliza_UltimoValor DEFAULT (0),
+        Activo BIT NOT NULL CONSTRAINT DF_ConsecutivoPoliza_Activo DEFAULT (1),
+        FechaCreacion DATETIME2 CONSTRAINT DF_ConsecutivoPoliza_FechaCreacion DEFAULT SYSDATETIME(),
+        UsuarioCreacion INT NOT NULL,
+        FechaModificacion DATETIME2 NULL,
+        UsuarioModificacion INT NULL,
+        CONSTRAINT PK_ConsecutivoPoliza PRIMARY KEY (PKIdConsecutivoPoliza),
+        CONSTRAINT FK_ConsecutivoPoliza_Anio FOREIGN KEY (FK_IdAnio__SIS) REFERENCES SIS.Anio(PKIdAnio),
+        CONSTRAINT FK_ConsecutivoPoliza_TipoPoliza FOREIGN KEY (FK_IdTipoPoliza__SIS) REFERENCES SIS.TipoPoliza(PKIdTipoPoliza),
+        CONSTRAINT UQ_ConsecutivoPoliza UNIQUE (FK_IdAnio__SIS, FK_IdMes__SIS, FK_IdTipoPoliza__SIS),
+        CONSTRAINT FK_ConsecutivoPoliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+        CONSTRAINT FK_ConsecutivoPoliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+    );
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER PROCEDURE [CONTA].[SP_CREATE_ClavePoliza]
+    @FK_IdAnio__SIS INT,
+    @FK_IdMesConta__SIS INT,
+    @FK_IdTipoPolizaConta__SIS INT,
+    @CT_ModifiedBy INT,
+    @ClavePoliza NVARCHAR(10) OUTPUT,
+    @Error NVARCHAR(MAX) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRAN;
+
+        -- Auto-registro: si no existe el consecutivo, lo crea
+        IF NOT EXISTS (
+            SELECT 1 FROM CONTA.ConsecutivoPoliza
+            WHERE FK_IdAnio__SIS = @FK_IdAnio__SIS
+              AND FK_IdMes__SIS = @FK_IdMesConta__SIS
+              AND FK_IdTipoPoliza__SIS = @FK_IdTipoPolizaConta__SIS
+        )
+        BEGIN
+            INSERT INTO CONTA.ConsecutivoPoliza (
+                FK_IdAnio__SIS, FK_IdMes__SIS, FK_IdTipoPoliza__SIS,
+                UltimoValor, Activo, FechaCreacion, UsuarioCreacion
+            ) VALUES (
+                @FK_IdAnio__SIS, @FK_IdMesConta__SIS, @FK_IdTipoPolizaConta__SIS,
+                0, 1, GETDATE(), @CT_ModifiedBy
+            );
+        END
+
+        SELECT @ClavePoliza = CONVERT(NVARCHAR, (CC.FK_IdMes__SIS + CC.UltimoValor + 1))
+        FROM CONTA.ConsecutivoPoliza CC WITH (UPDLOCK, ROWLOCK)
+        WHERE CC.FK_IdAnio__SIS = @FK_IdAnio__SIS
+          AND CC.FK_IdMes__SIS = @FK_IdMesConta__SIS
+          AND CC.FK_IdTipoPoliza__SIS = @FK_IdTipoPolizaConta__SIS;
+
+        IF @ClavePoliza IS NULL
+        BEGIN
+            SET @Error = 'No se pudo generar la clave de p�liza';
+            GOTO ERR_HANDLER;
+        END
+
+        UPDATE CP
+        SET CP.UltimoValor = CP.UltimoValor + 1,
+            CP.FechaModificacion = GETDATE(),
+            CP.UsuarioModificacion = @CT_ModifiedBy
+        FROM CONTA.ConsecutivoPoliza CP
+        WHERE CP.FK_IdAnio__SIS = @FK_IdAnio__SIS
+          AND CP.FK_IdMes__SIS = @FK_IdMesConta__SIS
+          AND CP.FK_IdTipoPoliza__SIS = @FK_IdTipoPolizaConta__SIS;
+
+        IF @@ERROR <> 0
+        BEGIN
+            SET @Error = CAST(@@ERROR AS NVARCHAR);
+            GOTO ERR_HANDLER;
+        END
+
+        IF @@TRANCOUNT > 0 AND XACT_STATE() = 1
+            COMMIT TRAN;
+        RETURN 0;
+
+        ERR_HANDLER:
+        IF @@TRANCOUNT > 0
+        BEGIN
+            IF XACT_STATE() = 1
+                ROLLBACK;
+        END
+        RETURN 1;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+        BEGIN
+            IF XACT_STATE() = 1
+                ROLLBACK;
+        END
+        SET @Error = CONCAT('Error: ', ERROR_MESSAGE(), ' Línea: ', ERROR_LINE());
+        RETURN 1;
+    END CATCH
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER PROCEDURE [CONTA].[SP_MantenimientoPoliza] (
+    @Action INT,
+    @PKIdPoliza INT = NULL,
+    @FKIdAnio_SIS INT = NULL,
+    @FKIdMes_SIS INT = NULL,
+    @FKIdTipoPoliza_SIS INT = NULL,
+    @NombrePoliza NVARCHAR(1000) = NULL,
+    @FechaPoliza DATETIME = NULL,
+    @EstaBalanceado BIT = NULL,
+    @PermitirModificar BIT = NULL,
+    @FKIdAccionAutorizar_SIS INT = NULL,
+    @Autorizado BIT = NULL,
+    @FechaSolicitud DATETIME = NULL,
+    @FechaAutorizacion DATETIME = NULL,
+    @IdUser INT = NULL,
+    @Id INT = NULL OUTPUT
+)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(100);
+    DECLARE @message NVARCHAR(4000);
+    DECLARE @errorMessage NVARCHAR(MAX);
+    DECLARE @today DATETIME = GETDATE();
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            DECLARE @ClavePoliza NVARCHAR(10);
+            DECLARE @ErrMsg NVARCHAR(MAX);
+
+            EXEC [CONTA].[SP_CREATE_ClavePoliza]
+                @FK_IdAnio__SIS = @FKIdAnio_SIS,
+                @FK_IdMesConta__SIS = @FKIdMes_SIS,
+                @FK_IdTipoPolizaConta__SIS = @FKIdTipoPoliza_SIS,
+                @CT_ModifiedBy = @IdUser,
+                @ClavePoliza = @ClavePoliza OUTPUT,
+                @Error = @ErrMsg OUTPUT;
+
+            IF @ClavePoliza IS NULL OR @ClavePoliza = ''
+            BEGIN
+                SET @message = ISNULL(@ErrMsg, 'Error al generar clave de p�liza');
+                SET @tipo = 'ERROR';
+                GOTO ERR_HANDLER;
+            END
+
+            INSERT INTO CONTA.Poliza (
+                FKIdAnio_SIS,
+                FKIdMes_SIS,
+                FKIdTipoPoliza_SIS,
+                ClavePoliza,
+                NombrePoliza,
+                FechaPoliza,
+                EstaBalanceado,
+                PermitirModificar,
+                FKIdAccionAutorizar_SIS,
+                Autorizado,
+                FechaSolicitud,
+                FechaAutorizacion,
+                Activo,
+                FechaCreacion,
+                UsuarioCreacion
+            )
+            VALUES (
+                @FKIdAnio_SIS,
+                @FKIdMes_SIS,
+                @FKIdTipoPoliza_SIS,
+                @ClavePoliza,
+                @NombrePoliza,
+                @FechaPoliza,
+                ISNULL(@EstaBalanceado, 0),
+                @PermitirModificar,
+                @FKIdAccionAutorizar_SIS,
+                @Autorizado,
+                @FechaSolicitud,
+                @FechaAutorizacion,
+                1,
+                @today,
+                @IdUser
+            );
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @tipo = 'OK';
+            SET @message = CONCAT('P�liza creada correctamente. Clave: ', @ClavePoliza);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdPoliza IS NULL OR NOT EXISTS (SELECT 1 FROM CONTA.Poliza WHERE PKIdPoliza = @PKIdPoliza AND Activo = 1)
+            BEGIN
+                SET @tipo = 'ERROR';
+                SET @message = 'P�liza no encontrada';
+                GOTO ERR_HANDLER;
+            END
+
+            UPDATE CONTA.Poliza
+            SET
+                FKIdAnio_SIS = ISNULL(@FKIdAnio_SIS, FKIdAnio_SIS),
+                FKIdMes_SIS = ISNULL(@FKIdMes_SIS, FKIdMes_SIS),
+                FKIdTipoPoliza_SIS = ISNULL(@FKIdTipoPoliza_SIS, FKIdTipoPoliza_SIS),
+                NombrePoliza = ISNULL(@NombrePoliza, NombrePoliza),
+                FechaPoliza = ISNULL(@FechaPoliza, FechaPoliza),
+                EstaBalanceado = ISNULL(@EstaBalanceado, EstaBalanceado),
+                PermitirModificar = ISNULL(@PermitirModificar, PermitirModificar),
+                FKIdAccionAutorizar_SIS = ISNULL(@FKIdAccionAutorizar_SIS, FKIdAccionAutorizar_SIS),
+                Autorizado = ISNULL(@Autorizado, Autorizado),
+                FechaSolicitud = ISNULL(@FechaSolicitud, FechaSolicitud),
+                FechaAutorizacion = ISNULL(@FechaAutorizacion, FechaAutorizacion),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdPoliza = @PKIdPoliza;
+
+            SET @Id = @PKIdPoliza;
+            SET @tipo = 'OK';
+            SET @message = 'P�liza actualizada correctamente.';
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdPoliza IS NULL OR NOT EXISTS (SELECT 1 FROM CONTA.Poliza WHERE PKIdPoliza = @PKIdPoliza AND Activo = 1)
+            BEGIN
+                SET @tipo = 'ERROR';
+                SET @message = 'P�liza no encontrada';
+                GOTO ERR_HANDLER;
+            END
+
+            UPDATE CONTA.Poliza
+            SET
+                Activo = 0,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdPoliza = @PKIdPoliza;
+
+            SET @Id = @PKIdPoliza;
+            SET @tipo = 'OK';
+            SET @message = 'P�liza eliminada correctamente.';
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT
+                p.PKIdPoliza,
+                p.FKIdAnio_SIS,
+                a.Clave AS AnioClave,
+                p.FKIdMes_SIS,
+                p.FKIdTipoPoliza_SIS,
+                tp.Descripcion AS TipoPoliza,
+                p.ClavePoliza,
+                p.NombrePoliza,
+                p.FechaPoliza,
+                p.EstaBalanceado,
+                p.PermitirModificar,
+                p.FKIdAccionAutorizar_SIS,
+                p.Autorizado,
+                p.FechaSolicitud,
+                p.FechaAutorizacion,
+                p.Activo,
+                p.FechaCreacion,
+                p.UsuarioCreacion,
+                p.FechaModificacion,
+                p.UsuarioModificacion
+            FROM CONTA.Poliza p
+            LEFT JOIN SIS.Anio a ON p.FKIdAnio_SIS = a.PKIdAnio
+            LEFT JOIN SIS.TipoPoliza tp ON p.FKIdTipoPoliza_SIS = tp.PKIdTipoPoliza
+            WHERE p.PKIdPoliza = @PKIdPoliza;
+
+            SET @tipo = 'OK';
+            GOTO FINISH;
+        END
+        ELSE
+        BEGIN
+            SET @tipo = 'ERROR';
+            SET @message = 'Acci�n no v�lida. Use 1=Insert, 2=Update, 3=Delete, 4=GetById';
+            GOTO ERR_HANDLER;
+        END
+
+        FINISH:
+        IF @@TRANCOUNT > 0 AND XACT_STATE() = 1
+            COMMIT TRANSACTION;
+
+        SELECT JSON_QUERY(
+            CONCAT('{"tipo":"', @tipo, '","mensaje":"', @message, '","liga":"idPoliza:', ISNULL(CAST(@Id AS NVARCHAR), ''), '"}')
+        ) AS ResultJson;
+
+        RETURN 0;
+
+        ERR_HANDLER:
+        IF @@TRANCOUNT > 0
+        BEGIN
+            IF XACT_STATE() = 1
+                ROLLBACK TRANSACTION;
+            ELSE IF XACT_STATE() = -1
+                ROLLBACK TRANSACTION;
+        END
+
+        SELECT @errorMessage = CONCAT(
+            ISNULL(PROGRAM_NAME(), ''), CHAR(10),
+            'Error: ', ERROR_MESSAGE(), CHAR(10),
+            'Línea: ', ERROR_LINE()
+        );
+
+        SELECT JSON_QUERY(
+            CONCAT('{"tipo":"ERROR","mensaje":"', @errorMessage, '","liga":""}')
+        ) AS ResultJson;
+
+        RETURN -1;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+        BEGIN
+            IF XACT_STATE() = 1
+                ROLLBACK TRANSACTION;
+            ELSE IF XACT_STATE() = -1
+                ROLLBACK TRANSACTION;
+        END
+
+        SELECT @errorMessage = CONCAT(
+            ISNULL(PROGRAM_NAME(), ''), CHAR(10),
+            'Error: ', ERROR_MESSAGE(), CHAR(10),
+            'Línea: ', ERROR_LINE()
+        );
+
+        SELECT JSON_QUERY(
+            CONCAT('{"tipo":"ERROR","mensaje":"', @errorMessage, '","liga":""}')
+        ) AS ResultJson;
+
+        RETURN -1;
+    END CATCH
+END
+GO
+
+PRINT 'Procedimientos de CONTA creados exitosamente.';
 GO

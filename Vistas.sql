@@ -130,6 +130,135 @@ LEFT JOIN CONTA.Vw_Cuentas ctaDep ON mi.Fk_IdCuentaContableDeposito = ctaDep.PkI
 WHERE mi.Activo = 1;
 GO
 
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [CONTA].[Vw_Poliza]
+AS
+SELECT
+    p.PKIdPoliza,
+    p.FKIdAnio_SIS,
+    a.Clave AS Anio,
+    p.FKIdMes_SIS,
+    CASE p.FKIdMes_SIS
+        WHEN 1 THEN 'Enero'
+        WHEN 2 THEN 'Febrero'
+        WHEN 3 THEN 'Marzo'
+        WHEN 4 THEN 'Abril'
+        WHEN 5 THEN 'Mayo'
+        WHEN 6 THEN 'Junio'
+        WHEN 7 THEN 'Julio'
+        WHEN 8 THEN 'Agosto'
+        WHEN 9 THEN 'Septiembre'
+        WHEN 10 THEN 'Octubre'
+        WHEN 11 THEN 'Noviembre'
+        WHEN 12 THEN 'Diciembre'
+    END AS Mes,
+    p.FKIdTipoPoliza_SIS,
+    tp.Descripcion AS TipoPoliza,
+    p.ClavePoliza,
+    p.NombrePoliza,
+    p.FechaPoliza,
+    p.EstaBalanceado,
+    ISNULL(COUNT(pd.PKIdPolizaDetalle), 0) AS TotalDetalles,
+    ISNULL(SUM(pd.ImporteDebe), 0) AS TotalDebe,
+    ISNULL(SUM(pd.ImporteHaber), 0) AS TotalHaber,
+    ISNULL(SUM(pd.ImporteDebe), 0) - ISNULL(SUM(pd.ImporteHaber), 0) AS Diferencia,
+    p.PermitirModificar,
+    p.FKIdAccionAutorizar_SIS,
+    p.Autorizado,
+    p.FechaSolicitud,
+    p.FechaAutorizacion,
+    p.Activo,
+    p.FechaCreacion,
+    p.UsuarioCreacion,
+    p.FechaModificacion,
+    p.UsuarioModificacion
+FROM CONTA.Poliza p
+INNER JOIN SIS.Anio a ON p.FKIdAnio_SIS = a.PKIdAnio
+INNER JOIN SIS.TipoPoliza tp ON p.FKIdTipoPoliza_SIS = tp.PKIdTipoPoliza
+LEFT JOIN CONTA.PolizaDetalle pd ON p.PKIdPoliza = pd.FKIdPoliza_CONTA
+    AND pd.Activo = 1
+WHERE p.Activo = 1
+GROUP BY
+    p.PKIdPoliza,
+    p.FKIdAnio_SIS,
+    a.Clave,
+    p.FKIdMes_SIS,
+    p.FKIdTipoPoliza_SIS,
+    tp.Descripcion,
+    p.ClavePoliza,
+    p.NombrePoliza,
+    p.FechaPoliza,
+    p.EstaBalanceado,
+    p.PermitirModificar,
+    p.FKIdAccionAutorizar_SIS,
+    p.Autorizado,
+    p.FechaSolicitud,
+    p.FechaAutorizacion,
+    p.Activo,
+    p.FechaCreacion,
+    p.UsuarioCreacion,
+    p.FechaModificacion,
+    p.UsuarioModificacion;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [CONTA].[Vw_PolizaDetalle]
+AS
+SELECT
+    pd.PKIdPolizaDetalle,
+    pd.FKIdPoliza_CONTA,
+    p.ClavePoliza,
+    p.NombrePoliza,
+    p.FechaPoliza,
+    p.FKIdAnio_SIS,
+    a.Clave AS Anio,
+    p.FKIdMes_SIS,
+    CASE p.FKIdMes_SIS
+        WHEN 1 THEN 'Enero'
+        WHEN 2 THEN 'Febrero'
+        WHEN 3 THEN 'Marzo'
+        WHEN 4 THEN 'Abril'
+        WHEN 5 THEN 'Mayo'
+        WHEN 6 THEN 'Junio'
+        WHEN 7 THEN 'Julio'
+        WHEN 8 THEN 'Agosto'
+        WHEN 9 THEN 'Septiembre'
+        WHEN 10 THEN 'Octubre'
+        WHEN 11 THEN 'Noviembre'
+        WHEN 12 THEN 'Diciembre'
+    END AS Mes,
+    pd.FKIdCuentaContable_CONTA,
+    cc.ClaveOrd AS CuentaClave,
+    cc.Descripcion AS CuentaDescripcion,
+    CONCAT(cc.ClaveOrd, ' ', cc.Descripcion) AS CuentaClaveNombre,
+    pd.FKIdTipoDetallePoliza_SIS,
+    tdp.Descripcion AS TipoDetallePoliza,
+    pd.Descripcion,
+    pd.ImporteDebe,
+    pd.ImporteHaber,
+    pd.FKIdReferencia,
+    pd.Activo,
+    pd.FechaCreacion,
+    pd.UsuarioCreacion,
+    pd.FechaModificacion,
+    pd.UsuarioModificacion
+FROM CONTA.PolizaDetalle pd
+INNER JOIN CONTA.Poliza p ON pd.FKIdPoliza_CONTA = p.PKIdPoliza
+INNER JOIN SIS.Anio a ON p.FKIdAnio_SIS = a.PKIdAnio
+INNER JOIN CONTA.CuentaContable cc ON pd.FKIdCuentaContable_CONTA = cc.PKIdCuentaContable
+LEFT JOIN SIS.TipoDetallePoliza tdp ON pd.FKIdTipoDetallePoliza_SIS = tdp.PkIdTipoDetallePoliza
+WHERE pd.Activo = 1
+  AND p.Activo = 1;
+GO
+
 -- =============================================
 -- ALMA
 -- =============================================
@@ -2303,6 +2432,63 @@ SELECT
 FROM TES.TipoCambio tc
 LEFT JOIN TES.TipoMoneda tm ON tc.FKIdTipoMoneda_TES = tm.PKIdTipoMoneda AND tm.Activo = 1
 WHERE tc.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+--drop VIEW [ORCO].[VwEstudioMercado]
+CREATE OR ALTER VIEW [ORCO].[Vw_EstudioMercado] AS
+SELECT
+    em.PKIdEstudioMercado,
+    em.FKIdEmpresa_SIS,
+    em.FKIdAnio_SIS,
+    a.Clave AS AnioClave,
+    em.Nombre,
+    em.Descripcion,
+    em.FechaSolicitud,
+    em.FechaCierre,
+    em.FKIdResponsable_NOM,
+    CONCAT(p.Nombre, ' ', p.Paterno, ' ', ISNULL(p.Materno, '')) AS ResponsableNombre,
+    em.Estatus,
+    em.Activo,
+    em.FechaCreacion,
+    em.UsuarioCreacion,
+    em.FechaModificacion,
+    em.UsuarioModificacion
+FROM ORCO.EstudioMercado em
+LEFT JOIN SIS.Anio a ON em.FKIdAnio_SIS = a.PKIdAnio AND a.Activo = 1
+LEFT JOIN NOM.Persona p ON em.FKIdResponsable_NOM = p.PKIdPersona AND p.Activo = 1
+WHERE em.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+--drop VIEW [ORCO].[VwEstudioMercadoDetalle]
+CREATE OR ALTER VIEW [ORCO].[Vw_EstudioMercadoDetalle] AS
+SELECT
+    emd.PKIdEstudioMercadoDetalle,
+    emd.FKIdEmpresa_SIS,
+    emd.FKIdEstudioMercado_ORCO,
+    em.Nombre AS EstudioMercadoNombre,
+    emd.FKIdPAAASDetalle_ORCO,
+    emd.FKIdTipoBien_ALMA,
+    tb.Descripcion AS TipoBienDescripcion,
+    tb.CodigoClave AS TipoBienClave,
+    emd.Cantidad,
+    emd.Observaciones,
+    emd.Activo,
+    emd.FechaCreacion,
+    emd.UsuarioCreacion,
+    emd.FechaModificacion,
+    emd.UsuarioModificacion
+FROM ORCO.EstudioMercadoDetalle emd
+LEFT JOIN ORCO.EstudioMercado em ON emd.FKIdEstudioMercado_ORCO = em.PKIdEstudioMercado AND em.Activo = 1
+LEFT JOIN ALMA.TipoBien tb ON emd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+WHERE emd.Activo = 1;
 GO
 
 PRINT 'Vistas creadas exitosamente.';

@@ -1,0 +1,282 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<PolizaResponse> Service
+@inject IGenericCrudService<AniosResponse> AnioService
+@inject IGenericCrudService<TipoPolizaResponse> TipoPolizaService
+@inject AnioPresupuestalStateService AnioStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PolizaResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="PolizaResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedAnio"
+                                   ValueChanged="value => _selectedAnio = value"
+                                   Label="Año"
+                                   Required="true"
+                                   RequiredError="El año es requerido"
+                                   LoadPage="LoadAniosPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="int"
+                           @bind-Value="item.FkidMesSis"
+                           Label="Mes"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="El mes es requerido">
+                    @foreach (var mes in MonthOptions)
+                    {
+                        <MudSelectItem T="int" Value="@mes.Id">@mes.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedTipoPoliza"
+                                   ValueChanged="value => _selectedTipoPoliza = value"
+                                   Label="Tipo de póliza"
+                                   Required="true"
+                                   RequiredError="El tipo de póliza es requerido"
+                                   LoadPage="LoadTiposPolizaPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.ClavePoliza"
+                              Label="Clave"
+                              Variant="Variant.Outlined"
+                              MaxLength="10"
+                              Required="true"
+                              RequiredError="La clave es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudDatePicker @bind-Value="_fechaPoliza"
+                               Label="Fecha"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.NombrePoliza"
+                              Label="Nombre"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="1000"
+                              Required="true"
+                              RequiredError="El nombre de la póliza es requerido" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch T="bool"
+                           @bind-Value="_permitirModificar"
+                           Label="Permitir modificación"
+                           Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch T="bool"
+                           @bind-Value="_autorizado"
+                           Label="Autorizada"
+                           Color="Color.Success" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<PolizaResponse> form = null!;
+    private PolizaResponse item = new()
+    {
+        Activo = true,
+        FechaPoliza = DateTime.Today,
+        FkidMesSis = DateTime.Today.Month,
+        PermitirModificar = true,
+        Autorizado = false
+    };
+    private DateTime? _fechaPoliza = DateTime.Today;
+    private LookupItem? _selectedAnio;
+    private LookupItem? _selectedTipoPoliza;
+    private bool _permitirModificar = true;
+    private bool _autorizado;
+
+    private string dialogTitle => Id.HasValue ? "Editar Póliza" : "Nueva Póliza";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    private static readonly IReadOnlyList<MonthOption> MonthOptions = new List<MonthOption>
+    {
+        new(1, "Enero"),
+        new(2, "Febrero"),
+        new(3, "Marzo"),
+        new(4, "Abril"),
+        new(5, "Mayo"),
+        new(6, "Junio"),
+        new(7, "Julio"),
+        new(8, "Agosto"),
+        new(9, "Septiembre"),
+        new(10, "Octubre"),
+        new(11, "Noviembre"),
+        new(12, "Diciembre")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+            return;
+        }
+
+        if (AnioStateService.AnioId.HasValue)
+        {
+            item.FkidAnioSis = AnioStateService.AnioId.Value;
+            _selectedAnio = new LookupItem
+            {
+                Id = AnioStateService.AnioId.Value,
+                Text = string.IsNullOrWhiteSpace(AnioStateService.AnioTexto)
+                    ? AnioStateService.AnioId.Value.ToString()
+                    : AnioStateService.AnioTexto
+            };
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaPoliza = item.FechaPoliza;
+                _permitirModificar = item.PermitirModificar ?? true;
+                _autorizado = item.Autorizado ?? false;
+                _selectedAnio = new LookupItem
+                {
+                    Id = item.FkidAnioSis,
+                    Text = item.Anio > 0 ? item.Anio.ToString() : item.FkidAnioSis.ToString()
+                };
+                _selectedTipoPoliza = new LookupItem
+                {
+                    Id = item.FkidTipoPolizaSis,
+                    Text = TextOrDefault(item.TipoPoliza, item.FkidTipoPolizaSis)
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedAnio == null)
+        {
+            Snackbar.Add("Selecciona el año de la póliza.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedTipoPoliza == null)
+        {
+            Snackbar.Add("Selecciona el tipo de póliza.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidMesSis < 1 || item.FkidMesSis > 12)
+        {
+            Snackbar.Add("Selecciona un mes válido.", Severity.Warning);
+            return;
+        }
+
+        item.FkidAnioSis = _selectedAnio.Id;
+        item.FkidTipoPolizaSis = _selectedTipoPoliza.Id;
+        item.FechaPoliza = _fechaPoliza ?? DateTime.Today;
+        item.ClavePoliza = item.ClavePoliza?.Trim() ?? string.Empty;
+        item.NombrePoliza = item.NombrePoliza?.Trim() ?? string.Empty;
+        item.PermitirModificar = _permitirModificar;
+        item.Autorizado = _autorizado;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Póliza actualizada correctamente." : "Póliza creada correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar la póliza.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AnioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Descending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = $"{x.Clave} - {x.Descripcion}".Trim(' ', '-') }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposPolizaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoPolizaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoPoliza, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private sealed record MonthOption(int Id, string Nombre);
+}

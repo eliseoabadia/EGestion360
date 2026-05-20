@@ -97,6 +97,8 @@ public partial class CuentaContable
 
     public virtual ICollection<MatrizIngreso> MatrizIngresoFkIdCuentaContableRecaudadoNavigations { get; set; } = new List<MatrizIngreso>();
 
+    public virtual ICollection<PolizaDetalle> PolizaDetalles { get; set; } = new List<PolizaDetalle>();
+
     public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();

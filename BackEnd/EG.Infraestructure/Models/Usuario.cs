@@ -263,6 +263,14 @@ public partial class Usuario
 
     public virtual ICollection<Pg> PgUsuarioModificacionNavigations { get; set; } = new List<Pg>();
 
+    public virtual ICollection<PolizaDetalle> PolizaDetalleUsuarioCreacionNavigations { get; set; } = new List<PolizaDetalle>();
+
+    public virtual ICollection<PolizaDetalle> PolizaDetalleUsuarioModificacionNavigations { get; set; } = new List<PolizaDetalle>();
+
+    public virtual ICollection<Poliza> PolizaUsuarioCreacionNavigations { get; set; } = new List<Poliza>();
+
+    public virtual ICollection<Poliza> PolizaUsuarioModificacionNavigations { get; set; } = new List<Poliza>();
+
     public virtual ICollection<Pp> PpUsuarioCreacionNavigations { get; set; } = new List<Pp>();
 
     public virtual ICollection<Pp> PpUsuarioModificacionNavigations { get; set; } = new List<Pp>();
