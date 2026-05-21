@@ -1,0 +1,268 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<EstudioMercadoResponse> Service
+@inject IGenericCrudService<PersonaResponse> PersonaService
+@inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EstudioMercadoResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando estudio..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="EstudioMercadoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Value="_fechaSolicitud"
+                               Label="Fecha de solicitud"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha de solicitud es requerida" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Nombre"
+                              Label="Nombre del estudio"
+                              Variant="Variant.Outlined"
+                              MaxLength="200"
+                              Required="true"
+                              RequiredError="El nombre es requerido" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_selectedResponsable"
+                                   ValueChanged="value => _selectedResponsable = value"
+                                   Label="Responsable"
+                                   Required="true"
+                                   RequiredError="El responsable es requerido"
+                                   LoadPage="LoadResponsablesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <MudSelect T="int"
+                           @bind-Value="item.Estatus"
+                           Label="Estatus"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="El estatus es requerido">
+                    @foreach (var status in StatusOptions)
+                    {
+                        <MudSelectItem T="int" Value="@status.Id">@status.Text</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Value="_fechaCierre"
+                               Label="Fecha de cierre"
+                               Variant="Variant.Outlined"
+                               Clearable="true" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int? AnioId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<EstudioMercadoResponse> form = null!;
+    private EstudioMercadoResponse item = new()
+    {
+        Activo = true,
+        FechaSolicitud = DateTime.Today,
+        Estatus = 1
+    };
+    private DateTime? _fechaSolicitud = DateTime.Today;
+    private DateTime? _fechaCierre;
+    private LookupItem? _selectedResponsable;
+
+    private string dialogTitle => Id.HasValue ? "Editar Investigacion de Mercado" : "Nueva Investigacion de Mercado";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    private static readonly IReadOnlyList<StatusOption> StatusOptions = new List<StatusOption>
+    {
+        new(1, "Preparacion"),
+        new(2, "Precios mercado"),
+        new(3, "Analisis"),
+        new(4, "Cerrado"),
+        new(5, "Cancelado")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+        await EnsureEmpresaIdAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+            return;
+        }
+
+        item.FkidAnioSis = ResolveAnioId();
+        item.FkidEmpresaSis = EmpresaId;
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaSolicitud = item.FechaSolicitud;
+                _fechaCierre = item.FechaCierre;
+                EmpresaId = item.FkidEmpresaSis;
+                _selectedResponsable = new LookupItem
+                {
+                    Id = item.FkidResponsableNom,
+                    Text = TextOrDefault(item.ResponsableNombre, item.FkidResponsableNom)
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedResponsable == null)
+        {
+            Snackbar.Add("Selecciona un responsable.", Severity.Warning);
+            return;
+        }
+
+        if (_fechaCierre.HasValue && _fechaSolicitud.HasValue && _fechaCierre.Value.Date < _fechaSolicitud.Value.Date)
+        {
+            Snackbar.Add("La fecha de cierre no puede ser anterior a la solicitud.", Severity.Warning);
+            return;
+        }
+
+        await EnsureEmpresaIdAsync();
+
+        item.FkidEmpresaSis = EmpresaId;
+        item.FkidAnioSis = item.FkidAnioSis > 0 ? item.FkidAnioSis : ResolveAnioId();
+        item.FkidResponsableNom = _selectedResponsable.Id;
+        item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;
+        item.FechaCierre = _fechaCierre;
+        item.Nombre = item.Nombre?.Trim() ?? string.Empty;
+        item.Descripcion = string.IsNullOrWhiteSpace(item.Descripcion) ? null : item.Descripcion.Trim();
+        item.Estatus = item.Estatus <= 0 ? 1 : item.Estatus;
+
+        if (item.FkidAnioSis <= 0)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Estudio actualizado correctamente." : "Estudio creado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el estudio.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadResponsablesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PersonaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidPersona,
+            Text = $"{x.Clave} - {BuildPersonaName(x)}".Trim(' ', '-')
+        }), response?.TotalCount);
+    }
+
+    private async Task EnsureEmpresaIdAsync()
+    {
+        if (EmpresaId > 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await SucursalStateService.InitializeAsync();
+            EmpresaId = SucursalStateService.EmpresaId ?? 0;
+        }
+        catch
+        {
+        }
+    }
+
+    private int ResolveAnioId() =>
+        AnioId.GetValueOrDefault() > 0
+            ? AnioId.Value
+            : AnioStateService.AnioId.GetValueOrDefault();
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildPersonaName(PersonaResponse persona) =>
+        string.Join(" ", new[] { persona.Nombre, persona.Paterno, persona.Materno }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private sealed record StatusOption(int Id, string Text);
+}

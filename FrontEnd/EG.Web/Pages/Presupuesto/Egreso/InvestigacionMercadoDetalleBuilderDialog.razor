@@ -1,0 +1,746 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Requests.Adquisicion
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<ProveedorResponse> ProveedorService
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog DisableSidePadding="true" Class="market-builder-dialog">
+    <DialogContent>
+        <div class="builder-shell">
+            <div class="builder-header">
+                <div class="builder-title">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalOffer" Color="Color.Primary" />
+                    <div>
+                        <MudText Typo="Typo.h6">Detalle de investigacion de mercado</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@EstudioMercadoNombre</MudText>
+                    </div>
+                </div>
+                <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small">
+                    @_items.Count.ToString("N0") bienes PAAAS
+                </MudChip>
+            </div>
+
+            <MudGrid Spacing="2" Class="mb-2">
+                <MudItem xs="12" md="8">
+                    <PagedAutocomplete Value="@_selectedPaaas"
+                                       ValueChanged="OnPaaasChanged"
+                                       Label="PAAAS"
+                                       Required="true"
+                                       RequiredError="Selecciona un PAAAS"
+                                       LoadPage="LoadPaaasPageAsync" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_bulkProveedor"
+                                       ValueChanged="value => _bulkProveedor = value"
+                                       Label="Proveedor comun"
+                                       Clearable="true"
+                                       LoadPage="LoadProveedoresPageAsync" />
+                </MudItem>
+            </MudGrid>
+
+            @if (_loadingDetalles)
+            {
+                <div class="builder-loading">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                </div>
+            }
+            else
+            {
+                <MudDropContainer T="PaaasDetalleDragItem"
+                                  Items="_items"
+                                  ItemsSelector="ItemBelongsToZone"
+                                  ItemDropped="OnItemDropped">
+                    <ChildContent>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="6">
+                                <section class="builder-zone">
+                                    <div class="zone-toolbar">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2">Disponibles</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@AvailableItems.Count().ToString("N0") renglones</MudText>
+                                        </div>
+                                        <MudSpacer />
+                                        <MudTooltip Text="Marcar disponibles">
+                                            <MudIconButton Icon="@Icons.Material.Filled.SelectAll"
+                                                           Color="Color.Default"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!AvailableItems.Any())"
+                                                           OnClick="ToggleAvailableChecks" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Pasar marcados">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!AvailableItems.Any(x => x.Checked))"
+                                                           OnClick="MoveCheckedToSelected" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Pasar todos">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DoubleArrow"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!AvailableItems.Any())"
+                                                           OnClick="MoveAllToSelected" />
+                                        </MudTooltip>
+                                    </div>
+                                    <MudTextField T="string"
+                                                  Value="@_detailFilter"
+                                                  ValueChanged="OnDetailFilterChanged"
+                                                  Label="Filtrar bienes cargados"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Immediate="true"
+                                                  Clearable="true"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.Search" />
+                                    <div class="zone-scroll">
+                                        <MudDropZone T="PaaasDetalleDragItem"
+                                                     Identifier="@AvailableZone"
+                                                     Class="dropzone" />
+                                    </div>
+                                </section>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <section class="builder-zone">
+                                    <div class="zone-toolbar">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2">Seleccionados</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@SelectedItems.Count().ToString("N0") renglones</MudText>
+                                        </div>
+                                        <MudSpacer />
+                                        <MudTooltip Text="Aplicar proveedor comun">
+                                            <MudIconButton Icon="@Icons.Material.Filled.GroupAdd"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Disabled="@(_bulkProveedor == null || !SelectedItems.Any())"
+                                                           OnClick="ApplyProviderToSelected" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Regresar marcados">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                                                           Color="Color.Default"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!SelectedItems.Any(x => x.Checked))"
+                                                           OnClick="MoveCheckedToAvailable" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Limpiar seleccionados">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ClearAll"
+                                                           Color="Color.Error"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!SelectedItems.Any())"
+                                                           OnClick="ClearSelected" />
+                                        </MudTooltip>
+                                    </div>
+                                    <div class="zone-scroll selected-zone">
+                                        <MudDropZone T="PaaasDetalleDragItem"
+                                                     Identifier="@SelectedZone"
+                                                     Class="dropzone" />
+                                    </div>
+                                </section>
+                            </MudItem>
+                        </MudGrid>
+                    </ChildContent>
+                    <ItemRenderer>
+                        <div class="paaas-card">
+                            <MudCheckBox T="bool"
+                                         Value="@context.Checked"
+                                         ValueChanged="@((bool value) => context.Checked = value)"
+                                         Dense="true"
+                                         Color="Color.Primary" />
+                            <div class="paaas-card-copy">
+                                <MudText Typo="Typo.body2" Class="paaas-card-title">@context.TipoBienTexto</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.PartidaTexto</MudText>
+                                <div class="paaas-card-meta">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Outlined">
+                                        @context.Cantidad.ToString("N2") @context.UnidadMedida
+                                    </MudChip>
+                                </div>
+                            </div>
+                        </div>
+                    </ItemRenderer>
+                </MudDropContainer>
+
+                <section class="detail-container">
+                    <div class="detail-heading">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Contenedor detalle</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Total estimado @Money(TotalEstimado)</MudText>
+                        </div>
+                    </div>
+
+                    @if (!SelectedItems.Any())
+                    {
+                        <div class="empty-detail">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Sin bienes seleccionados.</MudText>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudTable Items="@SelectedItems" Dense="true" Hover="true" Elevation="0" Class="detail-table">
+                            <HeaderContent>
+                                <MudTh>Bien PAAAS</MudTh>
+                                <MudTh>Proveedor</MudTh>
+                                <MudTh>Cantidad</MudTh>
+                                <MudTh>Costo unitario</MudTh>
+                                <MudTh>Importe</MudTh>
+                                <MudTh>Observaciones</MudTh>
+                                <MudTh></MudTh>
+                            </HeaderContent>
+                            <RowTemplate Context="row">
+                                <MudTd DataLabel="Bien PAAAS">
+                                    <MudText Typo="Typo.body2" Class="main-cell">@row.TipoBienTexto</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@row.PartidaTexto</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Proveedor">
+                                    <PagedAutocomplete Value="@row.Proveedor"
+                                                       ValueChanged="@((LookupItem? value) => row.Proveedor = value)"
+                                                       Label="Proveedor"
+                                                       Required="true"
+                                                       RequiredError="Proveedor requerido"
+                                                       LoadPage="LoadProveedoresPageAsync" />
+                                </MudTd>
+                                <MudTd DataLabel="Cantidad">@row.Cantidad.ToString("N2")</MudTd>
+                                <MudTd DataLabel="Costo unitario">
+                                    <MudNumericField T="decimal?"
+                                                     Value="@row.CostoUnitario"
+                                                     ValueChanged="@((decimal? value) => row.CostoUnitario = value)"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="0.01m"
+                                                     Format="C2"
+                                                     HideSpinButtons="true" />
+                                </MudTd>
+                                <MudTd DataLabel="Importe">
+                                    <MudText Typo="Typo.body2" Class="main-cell">@Money(row.Importe)</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Observaciones">
+                                    <MudTextField T="string"
+                                                  Value="@row.Observaciones"
+                                                  ValueChanged="@((string value) => row.Observaciones = value)"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  MaxLength="1000" />
+                                </MudTd>
+                                <MudTd>
+                                    <MudTooltip Text="Quitar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => RemoveFromSelected(row))" />
+                                    </MudTooltip>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </section>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   Disabled="@_saving"
+                   OnClick="Cancel">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(_saving || !SelectedItems.Any())"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveAsync">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Guardar detalle
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .market-builder-dialog .mud-dialog-content {
+        max-height: calc(100vh - 140px);
+        overflow: hidden;
+    }
+
+    .builder-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px;
+        min-height: 0;
+    }
+
+    .builder-header,
+    .zone-toolbar,
+    .detail-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .builder-header {
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .builder-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .builder-zone,
+    .detail-container {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .builder-zone {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        min-height: 360px;
+        max-height: 420px;
+    }
+
+    .zone-scroll {
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .dropzone {
+        min-height: 280px;
+        border: 1px dashed color-mix(in srgb, var(--eg-primary) 28%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        padding: 8px;
+        background: color-mix(in srgb, var(--mud-palette-surface) 92%, var(--eg-primary) 8%);
+    }
+
+    .dropzone.mud-drop-zone-drag-over {
+        border-color: var(--eg-primary);
+        background: color-mix(in srgb, var(--mud-palette-surface) 84%, var(--eg-primary) 16%);
+    }
+
+    .paaas-card {
+        display: flex;
+        gap: 6px;
+        align-items: flex-start;
+        padding: 8px;
+        margin-bottom: 8px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        cursor: grab;
+    }
+
+    .paaas-card:hover {
+        border-color: color-mix(in srgb, var(--eg-primary) 48%, var(--mud-palette-lines-default));
+    }
+
+    .paaas-card-copy {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .paaas-card-title,
+    .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .paaas-card-meta {
+        margin-top: 6px;
+    }
+
+    .detail-container {
+        padding: 10px;
+        min-height: 180px;
+        max-height: 300px;
+        overflow: auto;
+    }
+
+    .detail-table .mud-table-cell {
+        vertical-align: top;
+    }
+
+    .empty-detail,
+    .builder-loading {
+        min-height: 130px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    @@media (max-width: 960px) {
+        .builder-zone {
+            max-height: none;
+        }
+
+        .market-builder-dialog .mud-dialog-content {
+            overflow: auto;
+        }
+    }
+</style>
+
+@code {
+    private const string AvailableZone = "disponibles";
+    private const string SelectedZone = "seleccionados";
+
+    [Parameter] public int EstudioMercadoId { get; set; }
+    [Parameter] public string EstudioMercadoNombre { get; set; } = string.Empty;
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int AnioId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private readonly List<PaaasDetalleDragItem> _items = new();
+    private LookupItem? _selectedPaaas;
+    private LookupItem? _bulkProveedor;
+    private string _detailFilter = string.Empty;
+    private bool _loadingDetalles;
+    private bool _saving;
+
+    private IEnumerable<PaaasDetalleDragItem> AvailableItems => _items.Where(x => x.Zona == AvailableZone && MatchesFilter(x));
+    private IEnumerable<PaaasDetalleDragItem> SelectedItems => _items.Where(x => x.Zona == SelectedZone);
+    private decimal TotalEstimado => SelectedItems.Sum(x => x.Importe);
+
+    private async Task OnPaaasChanged(LookupItem? value)
+    {
+        _selectedPaaas = value;
+        _items.Clear();
+        _detailFilter = string.Empty;
+
+        if (value == null)
+        {
+            return;
+        }
+
+        await LoadPaaasDetallesAsync(value.Id);
+    }
+
+    private async Task LoadPaaasDetallesAsync(int paaasId)
+    {
+        try
+        {
+            _loadingDetalles = true;
+            var all = new List<EstudioMercadoPaaasDetalleResponse>();
+            const int pageSize = 500;
+            var page = 1;
+            var total = 0;
+
+            do
+            {
+                var request = new EG.Common.GenericModel.PagedRequest
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    Filtro = string.Empty,
+                    SearchString = string.Empty,
+                    SortLabel = "TipoBienCodigoClave",
+                    SortDirection = SortDirection.Ascending.ToString(),
+                    AdditionalFilters = BuildPaaasDetalleFilters(paaasId)
+                };
+
+                var response = await Http.PostAsJsonAsync("api/EstudioMercadoDetalle/paaas-detalles", request);
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<EstudioMercadoPaaasDetalleResponse>>();
+
+                if (!response.IsSuccessStatusCode || result?.Success != true)
+                {
+                    Snackbar.Add(result?.Message ?? "No se pudieron cargar los bienes del PAAAS.", Severity.Error);
+                    return;
+                }
+
+                var batch = result.Items?.ToList() ?? new List<EstudioMercadoPaaasDetalleResponse>();
+                all.AddRange(batch);
+                total = result.TotalCount;
+                page++;
+            }
+            while (all.Count < total && total > 0);
+
+            _items.Clear();
+            _items.AddRange(all.Select(x => new PaaasDetalleDragItem(x)));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar bienes PAAAS: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingDetalles = false;
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadPaaasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var request = new EG.Common.GenericModel.PagedRequest
+        {
+            Page = page,
+            PageSize = pageSize,
+            Filtro = filter ?? string.Empty,
+            SearchString = filter ?? string.Empty,
+            SortLabel = "Fecha",
+            SortDirection = SortDirection.Descending.ToString(),
+            AdditionalFilters = BuildBaseFilters()
+        };
+
+        var response = await Http.PostAsJsonAsync("api/EstudioMercadoDetalle/paaas-lookup", request, ct);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<LookupItem>>(cancellationToken: ct);
+        var items = result?.Items ?? new List<LookupItem>();
+
+        return new ComboLookupResult
+        {
+            Items = items,
+            TotalCount = result?.TotalCount ?? items.Count
+        };
+    }
+
+    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidProveedor,
+            Text = BuildProveedorText(x.Clave, x.Nombre, x.PkidProveedor)
+        }), response?.TotalCount);
+    }
+
+    private bool ItemBelongsToZone(PaaasDetalleDragItem item, string zone) =>
+        item.Zona == zone && (zone != AvailableZone || MatchesFilter(item));
+
+    private bool MatchesFilter(PaaasDetalleDragItem item)
+    {
+        if (string.IsNullOrWhiteSpace(_detailFilter))
+        {
+            return true;
+        }
+
+        var filter = _detailFilter.Trim();
+        return item.TipoBienTexto.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+               item.PartidaTexto.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+               item.Observaciones.Contains(filter, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private Task OnItemDropped(MudItemDropInfo<PaaasDetalleDragItem> dropInfo)
+    {
+        if (dropInfo.Item == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        dropInfo.Item.Zona = dropInfo.DropzoneIdentifier;
+        dropInfo.Item.Checked = false;
+        return Task.CompletedTask;
+    }
+
+    private void ToggleAvailableChecks()
+    {
+        var items = AvailableItems.ToList();
+        var check = items.Any(x => !x.Checked);
+        foreach (var item in items)
+        {
+            item.Checked = check;
+        }
+    }
+
+    private void MoveCheckedToSelected() => MoveItems(AvailableItems.Where(x => x.Checked), SelectedZone);
+
+    private void MoveAllToSelected() => MoveItems(AvailableItems, SelectedZone);
+
+    private void MoveCheckedToAvailable() => MoveItems(SelectedItems.Where(x => x.Checked), AvailableZone);
+
+    private void ClearSelected() => MoveItems(SelectedItems, AvailableZone);
+
+    private void RemoveFromSelected(PaaasDetalleDragItem item)
+    {
+        item.Zona = AvailableZone;
+        item.Checked = false;
+    }
+
+    private void MoveItems(IEnumerable<PaaasDetalleDragItem> items, string zone)
+    {
+        foreach (var item in items.ToList())
+        {
+            item.Zona = zone;
+            item.Checked = false;
+        }
+    }
+
+    private void ApplyProviderToSelected()
+    {
+        if (_bulkProveedor == null)
+        {
+            Snackbar.Add("Selecciona un proveedor comun.", Severity.Warning);
+            return;
+        }
+
+        foreach (var item in SelectedItems)
+        {
+            item.Proveedor = new LookupItem
+            {
+                Id = _bulkProveedor.Id,
+                Text = _bulkProveedor.Text
+            };
+        }
+    }
+
+    private void OnDetailFilterChanged(string value)
+    {
+        _detailFilter = value ?? string.Empty;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_saving)
+        {
+            return;
+        }
+
+        var selected = SelectedItems.ToList();
+        if (!selected.Any())
+        {
+            Snackbar.Add("Selecciona al menos un bien PAAAS.", Severity.Warning);
+            return;
+        }
+
+        if (selected.Any(x => x.Proveedor == null))
+        {
+            Snackbar.Add("Todos los bienes seleccionados deben tener proveedor.", Severity.Warning);
+            return;
+        }
+
+        if (selected.Any(x => !x.CostoUnitario.HasValue || x.CostoUnitario.Value <= 0m))
+        {
+            Snackbar.Add("Todos los costos unitarios deben ser mayores a cero.", Severity.Warning);
+            return;
+        }
+
+        var duplicated = selected
+            .GroupBy(x => PairKey(x.TipoBienId, x.Proveedor!.Id))
+            .FirstOrDefault(x => x.Count() > 1);
+
+        if (duplicated != null)
+        {
+            Snackbar.Add("No se puede repetir el mismo tipo de bien con el mismo proveedor.", Severity.Warning);
+            return;
+        }
+
+        var request = new EstudioMercadoDetalleBatchRequest
+        {
+            FkidEstudioMercadoOrco = EstudioMercadoId,
+            FkidEmpresaSis = EmpresaId,
+            Items = selected.Select(x => new EstudioMercadoDetalleBatchItemRequest
+            {
+                FkidPaaasdetalleOrco = x.PaaasDetalleId,
+                FkidProveedorSis = x.Proveedor!.Id,
+                CostoUnitario = x.CostoUnitario,
+                Observaciones = string.IsNullOrWhiteSpace(x.Observaciones) ? null : x.Observaciones.Trim()
+            }).ToList()
+        };
+
+        try
+        {
+            _saving = true;
+            var response = await Http.PostAsJsonAsync("api/EstudioMercadoDetalle/batch", request);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<EstudioMercadoDetalleResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add($"{result.TotalCount:N0} bienes agregados a la investigacion.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudo guardar el detalle.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar detalle: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private Dictionary<string, object> BuildBaseFilters()
+    {
+        var filters = new Dictionary<string, object>();
+        if (AnioId > 0)
+        {
+            filters["FkidAnioSis"] = AnioId;
+        }
+
+        if (EmpresaId > 0)
+        {
+            filters["FkidEmpresaSis"] = EmpresaId;
+        }
+
+        return filters;
+    }
+
+    private Dictionary<string, object> BuildPaaasDetalleFilters(int paaasId)
+    {
+        var filters = BuildBaseFilters();
+        filters["FkidPaaasOrco"] = paaasId;
+        return filters;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildProveedorText(string? clave, string? nombre, int id)
+    {
+        var text = $"{clave} - {nombre}".Trim(' ', '-');
+        return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+    }
+
+    private static string PairKey(int tipoBienId, int proveedorId) => $"{tipoBienId}:{proveedorId}";
+
+    private static string Money(decimal value) => value.ToString("C2");
+
+    private sealed class PaaasDetalleDragItem
+    {
+        public PaaasDetalleDragItem(EstudioMercadoPaaasDetalleResponse detalle)
+        {
+            PaaasDetalleId = detalle.PaaasDetalleId;
+            TipoBienId = detalle.TipoBienId;
+            TipoBienTexto = string.IsNullOrWhiteSpace(detalle.BienClaveNombre)
+                ? $"{detalle.TipoBienClave} - {detalle.TipoBienDescripcion}".Trim(' ', '-')
+                : detalle.BienClaveNombre;
+            PartidaTexto = $"{detalle.PartidaClave} - {detalle.PartidaDescripcion}".Trim(' ', '-');
+            Cantidad = detalle.Cantidad;
+            UnidadMedida = detalle.UnidadMedida;
+            Observaciones = detalle.Observaciones ?? string.Empty;
+        }
+
+        public int PaaasDetalleId { get; }
+        public int TipoBienId { get; }
+        public string TipoBienTexto { get; }
+        public string PartidaTexto { get; }
+        public decimal Cantidad { get; }
+        public string UnidadMedida { get; }
+        public string Observaciones { get; set; }
+        public decimal? CostoUnitario { get; set; }
+        public LookupItem? Proveedor { get; set; }
+        public string Zona { get; set; } = AvailableZone;
+        public bool Checked { get; set; }
+        public decimal Importe => Cantidad * (CostoUnitario ?? 0m);
+    }
+}

@@ -535,6 +535,7 @@ VALUES
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Egreso', 'PREEGRE01', 'Presupuesto', 'view,view-menu', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion', 'PREEGRE02', 'Egreso', 'view,view-menu', 0),
 (2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Anteproyecto_Egresos', 'EGREPLA01', 'Planeacion', 'view,view-menu,delete,new,update', 0),
+(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Investigacion_Mercado', 'EGREPLA02', 'Planeacion', 'view,view-menu,delete,new,update', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Autorizado', 'PREEGRE03', 'Presupuesto', 'view,view-menu,delete,new,update', 0),
 
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
@@ -654,6 +655,7 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Investigacion_Mercado', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
@@ -842,6 +844,7 @@ USING (VALUES
     (300, N'Egreso', 1, 2, N'Egreso', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
     (310, N'Planeación', 1, 300, N'Planeación', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
     (301, N'Presupuesto Autorizado', 1, 300, N'Presupuesto Autorizado', N'/Presupuesto/Egreso/Presupuesto_Autorizado', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
+    (302, N'Investigación de Mercado', 1, 300, N'Investigación de Mercado', N'/Presupuesto/Egreso/Investigacion_Mercado', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
     (311, N'Anteproyecto de Egresos', 1, 310, N'Anteproyecto de Egresos', N'/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
 
     (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),

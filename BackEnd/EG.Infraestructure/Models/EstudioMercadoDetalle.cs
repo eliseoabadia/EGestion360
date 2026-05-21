@@ -31,6 +31,10 @@ public partial class EstudioMercadoDetalle
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidProveedorSis { get; set; }
+
+    public decimal? CostoUnitario { get; set; }
+
     public virtual ICollection<CotizacionDetalle> CotizacionDetalles { get; set; } = new List<CotizacionDetalle>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
@@ -38,6 +42,8 @@ public partial class EstudioMercadoDetalle
     public virtual EstudioMercado FkidEstudioMercadoOrcoNavigation { get; set; }
 
     public virtual Paaasdetalle FkidPaaasdetalleOrcoNavigation { get; set; }
+
+    public virtual Proveedor FkidProveedorSisNavigation { get; set; }
 
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 

@@ -1,0 +1,359 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<EstudioMercadoDetalleResponse> Service
+@inject IGenericCrudService<ProveedorResponse> ProveedorService
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EstudioMercadoDetalleResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando bien..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="EstudioMercadoDetalleResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Estudio</MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 700;">
+                    @EstudioMercadoNombre
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedPaaasDetalle"
+                                   ValueChanged="OnPaaasDetalleChanged"
+                                   Label="Bien PAAAS"
+                                   Required="true"
+                                   RequiredError="El bien PAAAS es requerido"
+                                   LoadPage="LoadPaaasDetallesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Value="@TipoBienTexto"
+                              Label="Tipo de bien"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true"
+                              Required="true"
+                              RequiredError="El tipo de bien es requerido" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedProveedor"
+                                   ValueChanged="value => _selectedProveedor = value"
+                                   Label="Proveedor"
+                                   Required="true"
+                                   RequiredError="El proveedor es requerido"
+                                   LoadPage="LoadProveedoresPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.Cantidad"
+                                 Label="Cantidad"
+                                 Variant="Variant.Outlined"
+                                 Min="0.01m"
+                                 Format="N2"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField T="decimal?"
+                                 @bind-Value="item.CostoUnitario"
+                                 Label="Costo unitario"
+                                 Variant="Variant.Outlined"
+                                 Min="0.01m"
+                                 Format="C2"
+                                 Required="true"
+                                 RequiredError="El costo unitario es requerido" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Importe estimado</MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 700;">
+                    @Money(ImporteEstimado)
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EstudioMercadoId { get; set; }
+    [Parameter] public string EstudioMercadoNombre { get; set; } = string.Empty;
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int AnioId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<EstudioMercadoDetalleResponse> form = null!;
+    private EstudioMercadoDetalleResponse item = new() { Activo = true, Cantidad = 1m };
+    private LookupItem? _selectedPaaasDetalle;
+    private LookupItem? _selectedTipoBien;
+    private LookupItem? _selectedProveedor;
+
+    private string dialogTitle => Id.HasValue ? "Editar Bien a Investigar" : "Nuevo Bien a Investigar";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private decimal ImporteEstimado => item.Cantidad * (item.CostoUnitario ?? 0m);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+            return;
+        }
+
+        item.FkidEmpresaSis = EmpresaId;
+        item.FkidEstudioMercadoOrco = EstudioMercadoId;
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                EstudioMercadoId = item.FkidEstudioMercadoOrco;
+                EmpresaId = item.FkidEmpresaSis;
+                EstudioMercadoNombre = TextOrDefault(item.EstudioMercadoNombre, EstudioMercadoId);
+
+                _selectedPaaasDetalle = new LookupItem
+                {
+                    Id = item.FkidPaaasdetalleOrco,
+                    Text = $"PAAAS {item.FkidPaaasdetalleOrco} | {TextOrDefault(item.TipoBienDescripcion, item.FkidPaaasdetalleOrco)}"
+                };
+
+                _selectedTipoBien = new LookupItem
+                {
+                    Id = item.FkidTipoBienAlma,
+                    Text = BuildTipoBienText(item.TipoBienClave, item.TipoBienDescripcion, item.FkidTipoBienAlma)
+                };
+
+                if (item.FkidProveedorSis.HasValue)
+                {
+                    _selectedProveedor = new LookupItem
+                    {
+                        Id = item.FkidProveedorSis.Value,
+                        Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre, item.FkidProveedorSis.Value)
+                    };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (EstudioMercadoId <= 0)
+        {
+            Snackbar.Add("Debe existir un estudio de mercado seleccionado.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPaaasDetalle == null)
+        {
+            Snackbar.Add("Selecciona un bien del PAAAS.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedTipoBien == null)
+        {
+            Snackbar.Add("El tipo de bien debe venir del bien PAAAS seleccionado.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedProveedor == null)
+        {
+            Snackbar.Add("Selecciona un proveedor.", Severity.Warning);
+            return;
+        }
+
+        if (item.Cantidad <= 0m)
+        {
+            Snackbar.Add("La cantidad debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        if (!item.CostoUnitario.HasValue || item.CostoUnitario.Value <= 0m)
+        {
+            Snackbar.Add("El costo unitario debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = EmpresaId;
+        item.FkidEstudioMercadoOrco = EstudioMercadoId;
+        item.FkidPaaasdetalleOrco = _selectedPaaasDetalle.Id;
+        item.FkidTipoBienAlma = _selectedTipoBien.Id;
+        item.FkidProveedorSis = _selectedProveedor.Id;
+        item.Observaciones = string.IsNullOrWhiteSpace(item.Observaciones) ? null : item.Observaciones.Trim();
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Bien actualizado correctamente." : "Bien agregado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el bien.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnPaaasDetalleChanged(LookupItem? value)
+    {
+        _selectedPaaasDetalle = value;
+        if (value == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var seed = await Http.GetFromJsonAsync<ApiResponse<EstudioMercadoDetalleSeedResponse>>(
+                $"api/EstudioMercadoDetalle/paaas-detalle/{value.Id}");
+
+            if (seed?.Success == true && seed.Data != null)
+            {
+                EmpresaId = EmpresaId > 0 ? EmpresaId : seed.Data.EmpresaId;
+                item.Cantidad = seed.Data.Cantidad > 0m ? seed.Data.Cantidad : item.Cantidad;
+                item.Observaciones = string.IsNullOrWhiteSpace(item.Observaciones)
+                    ? seed.Data.Observaciones
+                    : item.Observaciones;
+                _selectedTipoBien = new LookupItem
+                {
+                    Id = seed.Data.TipoBienId,
+                    Text = TextOrDefault(seed.Data.TipoBienTexto, seed.Data.TipoBienId)
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No se pudo cargar el detalle PAAAS: {ex.Message}", Severity.Warning);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadPaaasDetallesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var request = new
+        {
+            page,
+            pageSize,
+            filtro = filter ?? string.Empty,
+            sortLabel = "TipoBienCodigoClave",
+            sortDirection = "Ascending",
+            searchString = filter ?? string.Empty,
+            additionalFilters = BuildPaaasFilters()
+        };
+
+        var response = await Http.PostAsJsonAsync("api/EstudioMercadoDetalle/paaas-detalles-lookup", request, ct);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<LookupItem>>(cancellationToken: ct);
+        var items = result?.Items ?? new List<LookupItem>();
+
+        return new ComboLookupResult
+        {
+            Items = items,
+            TotalCount = result?.TotalCount ?? items.Count
+        };
+    }
+
+    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidProveedor,
+            Text = BuildProveedorText(x.Clave, x.Nombre, x.PkidProveedor)
+        }), response?.TotalCount);
+    }
+
+    private Dictionary<string, object> BuildPaaasFilters()
+    {
+        var filters = new Dictionary<string, object>();
+        if (AnioId > 0)
+        {
+            filters["FkidAnioSis"] = AnioId;
+        }
+
+        if (EmpresaId > 0)
+        {
+            filters["FkidEmpresaSis"] = EmpresaId;
+        }
+
+        return filters;
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildTipoBienText(string? clave, string? descripcion, int id)
+    {
+        var text = $"{clave} - {descripcion}".Trim(' ', '-');
+        return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+    }
+
+    private static string BuildProveedorText(string? clave, string? nombre, int id)
+    {
+        var text = $"{clave} - {nombre}".Trim(' ', '-');
+        return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+    }
+
+    private static string Money(decimal value) => value.ToString("C2");
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private string TipoBienTexto => _selectedTipoBien?.Text ?? string.Empty;
+}

@@ -65,6 +65,8 @@ namespace EG.ApiCoreBS.Extensions
 
             // Application services - Adquisicion
             services.AddScoped<IPaaaAppService, PaaaAppService>();
+            services.AddScoped<IEstudioMercadoService, EstudioMercadoService>();
+            services.AddScoped<IEstudioMercadoDetalleService, EstudioMercadoDetalleService>();
             services.AddScoped<IArticuloAppService, ArticuloAppService>();
             services.AddScoped<IEstatusRequisicionAppService, EstatusRequisicionAppService>();
             services.AddScoped<IFraccionAppService, FraccionAppService>();

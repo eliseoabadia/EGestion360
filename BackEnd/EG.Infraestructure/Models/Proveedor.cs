@@ -73,6 +73,8 @@ public partial class Proveedor
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
+    public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
+
     public virtual TipoProveedor FkIdTipoProveedorSisNavigation { get; set; }
 
     public virtual CuentaContable FkidCuentaContableSisNavigation { get; set; }

@@ -149,7 +149,6 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     catalogoBasico: dto.CatalogoBasico,
                     cUCOP_PLUS: dto.CucopPlus,
                     cantidad_Equivalente: dto.CantidadEquivalente,
-                    idC: null,
                     idUser: userId,
                     id: null);
 
@@ -211,7 +210,6 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     catalogoBasico: dto.CatalogoBasico,
                     cUCOP_PLUS: dto.CucopPlus,
                     cantidad_Equivalente: dto.CantidadEquivalente,
-                    idC: null,
                     idUser: userId,
                     id: null);
 
@@ -267,7 +265,6 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     catalogoBasico: existingView.CatalogoBasico,
                     cUCOP_PLUS: existingView.CucopPlus,
                     cantidad_Equivalente: existingView.CantidadEquivalente,
-                    idC: null,
                     idUser: userId,
                     id: null);
 

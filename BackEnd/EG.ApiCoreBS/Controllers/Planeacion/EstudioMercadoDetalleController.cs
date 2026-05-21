@@ -1,0 +1,134 @@
+using EG.Application.Interfaces.Adquisicion;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.Adquisicion;
+using EG.Domain.DTOs.Responses;
+using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EG.ApiCoreBS.Controllers.Planeacion
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class EstudioMercadoDetalleController : ControllerBase
+    {
+        private readonly IEstudioMercadoDetalleService _service;
+        private readonly IUserContextService _userContext;
+
+        public EstudioMercadoDetalleController(IEstudioMercadoDetalleService service, IUserContextService userContext)
+        {
+            _service = service;
+            _userContext = userContext;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> GetAll()
+        {
+            var result = await _service.GetAllAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> GetById(int id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> Create([FromBody] EstudioMercadoDetalleResponse response)
+        {
+            var result = await _service.CreateAsync(response, _userContext.GetCurrentUserId());
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return CreatedAtAction(nameof(GetById), new { id = response.PkidEstudioMercadoDetalle }, result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> Update(int id, [FromBody] EstudioMercadoDetalleResponse response)
+        {
+            var result = await _service.UpdateAsync(id, response, _userContext.GetCurrentUserId());
+            if (!result.Success)
+            {
+                return result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
+        {
+            var result = await _service.DeleteAsync(id, _userContext.GetCurrentUserId());
+            if (!result.Success)
+            {
+                return result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        {
+            var result = await _service.GetAllPaginadoAsync(request);
+            return Ok(result);
+        }
+
+        [HttpPost("buscar")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> Buscar([FromBody] BusquedaRequest request)
+        {
+            var pagedRequest = new PagedRequest
+            {
+                Page = request.Page,
+                PageSize = request.PageSize,
+                Filtro = request.TerminoBusqueda,
+                SortLabel = request.SortLabel,
+                SortDirection = request.SortDirection
+            };
+
+            var result = await _service.GetAllPaginadoAsync(pagedRequest);
+            return Ok(result);
+        }
+
+        [HttpPost("paaas-detalles-lookup")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetPaaasDetallesLookup([FromBody] PagedRequest request)
+        {
+            var result = await _service.GetPaaasDetallesLookupAsync(request);
+            return Ok(result);
+        }
+
+        [HttpPost("paaas-lookup")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetPaaasLookup([FromBody] PagedRequest request)
+        {
+            var result = await _service.GetPaaasLookupAsync(request);
+            return Ok(result);
+        }
+
+        [HttpPost("paaas-detalles")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoPaaasDetalleResponse>>> GetPaaasDetalles([FromBody] PagedRequest request)
+        {
+            var result = await _service.GetPaaasDetallesAsync(request);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("paaas-detalle/{paaasDetalleId}")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleSeedResponse>>> GetPaaasDetalleSeed(int paaasDetalleId)
+        {
+            var result = await _service.GetPaaasDetalleSeedAsync(paaasDetalleId);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        [HttpPost("batch")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoDetalleResponse>>> CreateBatch([FromBody] EstudioMercadoDetalleBatchRequest request)
+        {
+            var result = await _service.CreateBatchAsync(request, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+    }
+}

@@ -579,6 +579,14 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_EstudioMercado]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_EstudioMercadoDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ORCO].[Vw_Fraccion]",
          "ObjectType": 3
       },

@@ -287,6 +287,10 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwEstadoEmpresa> VwEstadoEmpresas { get; set; }
 
+    public virtual DbSet<VwEstudioMercado> VwEstudioMercados { get; set; }
+
+    public virtual DbSet<VwEstudioMercadoDetalle> VwEstudioMercadoDetalles { get; set; }
+
     public virtual DbSet<VwExistencia> VwExistencias { get; set; }
 
     public virtual DbSet<VwFraccion> VwFraccions { get; set; }
@@ -1668,13 +1672,17 @@ public partial class EGestionContext : DbContext
 
             entity.ToTable("EstudioMercadoDetalle", "ORCO");
 
+            entity.HasIndex(e => e.FkidProveedorSis, "IX_EstudioMercadoDetalle_Proveedor");
+
             entity.Property(e => e.PkidEstudioMercadoDetalle).HasColumnName("PKIdEstudioMercadoDetalle");
             entity.Property(e => e.Activo).HasDefaultValue(true, "DF_EstudioMercadoDetalle_Activo");
             entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.CostoUnitario).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EstudioMercadoDetalle_FechaCreacion");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidEstudioMercadoOrco).HasColumnName("FKIdEstudioMercado_ORCO");
             entity.Property(e => e.FkidPaaasdetalleOrco).HasColumnName("FKIdPAAASDetalle_ORCO");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
             entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
 
             entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.EstudioMercadoDetalles)
@@ -1691,6 +1699,10 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidPaaasdetalleOrco)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EstudioMercadoDetalle_PAAASDetalle");
+
+            entity.HasOne(d => d.FkidProveedorSisNavigation).WithMany(p => p.EstudioMercadoDetalles)
+                .HasForeignKey(d => d.FkidProveedorSis)
+                .HasConstraintName("FK_EstudioMercadoDetalle_Proveedor");
 
             entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.EstudioMercadoDetalles)
                 .HasForeignKey(d => d.FkidTipoBienAlma)
@@ -4949,6 +4961,55 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(13)
                 .HasColumnName("RFC");
+        });
+
+        modelBuilder.Entity<VwEstudioMercado>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_EstudioMercado", "ORCO");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.FechaCierre).HasColumnType("datetime");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidResponsableNom).HasColumnName("FKIdResponsable_NOM");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(80)
+                .IsUnicode(false);
+            entity.Property(e => e.PkidEstudioMercado).HasColumnName("PKIdEstudioMercado");
+            entity.Property(e => e.ResponsableNombre)
+                .IsRequired()
+                .HasMaxLength(152);
+        });
+
+        modelBuilder.Entity<VwEstudioMercadoDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_EstudioMercadoDetalle", "ORCO");
+
+            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.CostoUnitario).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.EstudioMercadoNombre)
+                .HasMaxLength(80)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstudioMercadoOrco).HasColumnName("FKIdEstudioMercado_ORCO");
+            entity.Property(e => e.FkidPaaasdetalleOrco).HasColumnName("FKIdPAAASDetalle_ORCO");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.ImporteEstimado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.PkidEstudioMercadoDetalle).HasColumnName("PKIdEstudioMercadoDetalle");
+            entity.Property(e => e.ProveedorClave).HasMaxLength(10);
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+            entity.Property(e => e.ProveedorRfc)
+                .HasMaxLength(50)
+                .HasColumnName("ProveedorRFC");
+            entity.Property(e => e.TipoBienClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
         });
 
         modelBuilder.Entity<VwExistencia>(entity =>

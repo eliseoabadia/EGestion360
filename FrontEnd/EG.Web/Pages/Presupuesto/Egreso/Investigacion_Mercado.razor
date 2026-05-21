@@ -1,0 +1,817 @@
+@page "/Presupuesto/Egreso/Investigacion_Mercado"
+@page "/Planeacion/Investigacion_Mercado"
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+@inject IGenericCrudService<EstudioMercadoDetalleResponse> DetalleService
+@inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inherits BaseCrudPage<EstudioMercadoResponse, EstudioMercadoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column investigacion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedEstudio == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Investigacion de Mercado"
+                            Subtitle="Estudios de precios y bienes a investigar desde PAAAS"
+                            Icon="@Icons.Material.Filled.LocalOffer"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div class="summary-strip">
+                    <div>
+                        <span class="summary-label">Estudios</span>
+                        <strong>@TotalCount.ToString("N0")</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">En proceso</span>
+                        <strong>@Elements.Count(x => x.Estatus is 1 or 2 or 3).ToString("N0")</strong>
+                    </div>
+                </div>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="EstudioMercadoResponse"
+                                  @ref="table"
+                                  Title="Estudios registrados"
+                                  SearchPlaceholder="Buscar por nombre, descripcion o responsable..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidEstudioMercado" T="EstudioMercadoResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Nombre" T="EstudioMercadoResponse">Estudio</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ResponsableNombre" T="EstudioMercadoResponse">Responsable</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="EstudioMercadoResponse">Solicitud</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaCierre" T="EstudioMercadoResponse">Cierre</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="EstudioMercadoResponse">Estatus</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Activo" T="EstudioMercadoResponse">Activo</MudTableSortLabel></MudTh>
+                        </Header>
+
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectEstudio(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidEstudioMercado))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteItem(item.PkidEstudioMercado))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@item.PkidEstudioMercado</MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.Nombre)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Descripcion)</MudText>
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.ResponsableNombre)</MudTd>
+                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@DateOrDash(item.FechaCierre)</MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@StatusColor(item.Estatus)" Size="Size.Small">
+                                    @StatusText(item.Estatus)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                                    @(item.Activo ? "Activo" : "Inactivo")
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column detail-layout" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="selected-header">
+                    <div class="selected-title">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                       Color="Color.Primary"
+                                       Size="Size.Medium"
+                                       OnClick="BackToTable"
+                                       Tooltip="Volver al listado" />
+                        <div class="selected-copy">
+                            <MudText Typo="Typo.h6" Class="selected-name">@TextOrDash(SelectedEstudio.Nombre)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(SelectedEstudio.Descripcion)</MudText>
+                        </div>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Color="@StatusColor(SelectedEstudio.Estatus)" Size="Size.Small">
+                        @StatusText(SelectedEstudio.Estatus)
+                    </MudChip>
+                    <MudTooltip Text="Editar estudio">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="@(() => EditItem(SelectedEstudio.PkidEstudioMercado))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <MudTooltip Text="Agregar bienes desde PAAAS">
+                        <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="AddDetalle"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Actualizar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="RefreshSelectedAndDetails"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                </MudPaper>
+
+                <MudPaper Elevation="1" Class="summary-panel">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Solicitud</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@SelectedEstudio.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Cierre</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@DateOrDash(SelectedEstudio.FechaCierre)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Responsable</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@TextOrDash(SelectedEstudio.ResponsableNombre)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="1">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Bienes</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@_detalleCount.ToString("N0")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Creacion</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@DateTimeOrDash(SelectedEstudio.FechaCreacion)</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="EstudioMercadoDetalleResponse"
+                                  @ref="detalleTable"
+                                  Title="Bienes a investigar"
+                                  SearchPlaceholder="Buscar por bien, proveedor u observaciones..."
+                                  ShowExportButton="false"
+                                  ShowAddButton="@CanCreate"
+                                  PageSize="10"
+                                  ServerDataFunc="LoadDetallesServerData"
+                                  SearchString="@detalleSearchString"
+                                  SearchStringChanged="(s) => detalleSearchString = s"
+                                  OnSearch="ReloadDetalles"
+                                  OnAdd="AddDetalle">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidEstudioMercadoDetalle" T="EstudioMercadoDetalleResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienClave" T="EstudioMercadoDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="EstudioMercadoDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Cantidad" T="EstudioMercadoDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="EstudioMercadoDetalleResponse">Proveedor</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="CostoUnitario" T="EstudioMercadoDetalleResponse">Costo unitario</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ImporteEstimado" T="EstudioMercadoDetalleResponse">Importe estimado</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Observaciones" T="EstudioMercadoDetalleResponse">Observaciones</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="EstudioMercadoDetalleResponse">Control</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="detalle">
+                            <MudTd>
+                                <MudTooltip Text="Editar bien">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditDetalle(detalle.PkidEstudioMercadoDetalle))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar bien">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteDetalle(detalle))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>@detalle.PkidEstudioMercadoDetalle</MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(detalle.TipoBienClave)</MudChip>
+                            </MudTd>
+                            <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
+                            <MudTd>@detalle.Cantidad.ToString("N2")</MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(detalle.ProveedorNombre)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(detalle.ProveedorRfc)</MudText>
+                            </MudTd>
+                            <MudTd>@Money(detalle.CostoUnitario ?? 0m)</MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@Money(detalle.ImporteEstimado ?? (detalle.Cantidad * (detalle.CostoUnitario ?? 0m)))</MudText>
+                            </MudTd>
+                            <MudTd>@TextOrDash(detalle.Observaciones)</MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2">Usuario @detalle.UsuarioCreacion</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@DateTimeOrDash(detalle.FechaCreacion)</MudText>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .investigacion-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .investigacion-page .summary-strip > div,
+    .investigacion-page .summary-panel {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+    }
+
+    .investigacion-page .summary-strip > div {
+        min-width: 0;
+        padding: 10px 12px;
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .investigacion-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .investigacion-page .summary-strip strong,
+    .investigacion-page .metric {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--mud-palette-text-primary);
+        font-weight: 700;
+    }
+
+    .investigacion-page .main-cell {
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .investigacion-page .selected-header {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        gap: 8px;
+        padding: 8px 10px;
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .investigacion-page .selected-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .investigacion-page .selected-copy {
+        min-width: 0;
+    }
+
+    .investigacion-page .selected-name {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .investigacion-page .summary-panel {
+        flex-shrink: 0;
+        padding: 12px;
+    }
+
+    @@media (max-width: 760px) {
+        .investigacion-page .summary-strip {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<EstudioMercadoResponse> table = null!;
+    private GenericTable<EstudioMercadoDetalleResponse> detalleTable = null!;
+    private EstudioMercadoResponse? SelectedEstudio;
+    private string detalleSearchString = string.Empty;
+    private int _empresaId;
+    private int _detalleCount;
+
+    protected override string ModuleName => "Planeacion";
+    protected override string SubModuleName => "Investigacion_Mercado";
+    protected override Type CreateDialogType => typeof(InvestigacionMercadoDialog);
+    protected override Type EditDialogType => typeof(InvestigacionMercadoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EstudioMercadoResponse>);
+
+    protected override string GetDefaultSortLabel() => "FechaSolicitud";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        await LoadEmpresaId();
+    }
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
+
+    protected override async Task<TableData<EstudioMercadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!HasSelectedAnio())
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                return new TableData<EstudioMercadoResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
+            };
+
+            if (_empresaId > 0)
+            {
+                filters["FkidEmpresaSis"] = _empresaId;
+            }
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<EstudioMercadoResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar estudios: {ex.Message}", Severity.Error);
+            return new TableData<EstudioMercadoResponse>
+            {
+                Items = new List<EstudioMercadoResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EstudioMercadoResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidEstudioMercado,
+            Anio = item.AnioClave ?? item.FkidAnioSis,
+            Estudio = item.Nombre,
+            Descripcion = item.Descripcion,
+            Responsable = item.ResponsableNombre,
+            FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
+            FechaCierre = item.FechaCierre?.ToString("dd/MM/yyyy") ?? string.Empty,
+            Estatus = StatusText(item.Estatus),
+            Activo = item.Activo ? "Si" : "No",
+            UsuarioCreacion = item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioModificacion = item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Nombre ?? "el estudio de mercado";
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear.", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = _empresaId,
+            ["AnioId"] = AnioStateService.AnioId!.Value
+        };
+
+        var dialog = await DialogService.ShowAsync<InvestigacionMercadoDialog>(
+            "Crear Investigacion de Mercado",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = _empresaId,
+            ["AnioId"] = AnioStateService.AnioId
+        };
+
+        var dialog = await DialogService.ShowAsync<InvestigacionMercadoDialog>(
+            "Editar Investigacion de Mercado",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            if (SelectedEstudio?.PkidEstudioMercado == id)
+            {
+                await RefreshSelectedAndDetails();
+            }
+            else
+            {
+                await ReloadData();
+            }
+        }
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = await GetItemNameForDelete(id),
+            ["DeleteFunc"] = new Func<int, Task<bool>>(DeleteEstudioAsync)
+        };
+
+        var dialog = await DialogService.ShowAsync<DeleteDialog<EstudioMercadoResponse>>(
+            "Eliminar Investigacion de Mercado",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedEstudio != null)
+        {
+            await RefreshSelectedAndDetails();
+            return;
+        }
+
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task<TableData<EstudioMercadoDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedEstudio == null)
+        {
+            _detalleCount = 0;
+            return new TableData<EstudioMercadoDetalleResponse> { Items = new List<EstudioMercadoDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "TipoBienClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidEstudioMercadoOrco"] = SelectedEstudio.PkidEstudioMercado });
+
+        _detalleCount = response?.TotalCount ?? 0;
+
+        return new TableData<EstudioMercadoDetalleResponse>
+        {
+            Items = response?.Items ?? new List<EstudioMercadoDetalleResponse>(),
+            TotalItems = _detalleCount
+        };
+    }
+
+    private async Task SelectEstudio(EstudioMercadoResponse estudio)
+    {
+        SelectedEstudio = estudio;
+        detalleSearchString = string.Empty;
+        _detalleCount = 0;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task BackToTable()
+    {
+        SelectedEstudio = null;
+        detalleSearchString = string.Empty;
+        _detalleCount = 0;
+        await InvokeAsync(StateHasChanged);
+
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task AddDetalle()
+    {
+        if (SelectedEstudio == null)
+        {
+            Snackbar.Add("Selecciona un estudio de mercado primero.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EstudioMercadoId"] = SelectedEstudio.PkidEstudioMercado,
+            ["EstudioMercadoNombre"] = SelectedEstudio.Nombre,
+            ["EmpresaId"] = SelectedEstudio.FkidEmpresaSis,
+            ["AnioId"] = SelectedEstudio.FkidAnioSis
+        };
+
+        var dialog = await DialogService.ShowAsync<InvestigacionMercadoDetalleBuilderDialog>(
+            "Agregar Bienes desde PAAAS",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+        }
+    }
+
+    private async Task EditDetalle(int id)
+    {
+        if (SelectedEstudio == null)
+        {
+            return;
+        }
+
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EstudioMercadoId"] = SelectedEstudio.PkidEstudioMercado,
+            ["EstudioMercadoNombre"] = SelectedEstudio.Nombre,
+            ["EmpresaId"] = SelectedEstudio.FkidEmpresaSis,
+            ["AnioId"] = SelectedEstudio.FkidAnioSis
+        };
+
+        var dialog = await DialogService.ShowAsync<InvestigacionMercadoDetalleDialog>(
+            "Editar Bien a Investigar",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+        }
+    }
+
+    private async Task DeleteDetalle(EstudioMercadoDetalleResponse detalle)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Eliminar el bien {TextOrDash(detalle.TipoBienDescripcion)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/EstudioMercadoDetalle/{detalle.PkidEstudioMercadoDetalle}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Bien eliminado correctamente.", Severity.Success);
+                await ReloadDetalles();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al eliminar el bien.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<bool> DeleteEstudioAsync(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/EstudioMercado/{id}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Estudio de mercado eliminado correctamente.", Severity.Success);
+                return true;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al eliminar el estudio.", Severity.Error);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            return false;
+        }
+    }
+
+    private async Task RefreshSelectedAndDetails()
+    {
+        await RefreshSelectedEstudio();
+        await ReloadDetalles();
+    }
+
+    private async Task RefreshSelectedEstudio()
+    {
+        if (SelectedEstudio == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedEstudio.PkidEstudioMercado);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedEstudio = response.Data;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReloadDetalles()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private async Task LoadEmpresaId()
+    {
+        try
+        {
+            await SucursalStateService.InitializeAsync();
+            if (SucursalStateService.EmpresaId.HasValue)
+            {
+                _empresaId = SucursalStateService.EmpresaId.Value;
+                return;
+            }
+
+            var empresaIdStr = await JS.InvokeAsync<string>("localStorage.getItem", "empresa_seleccionada");
+            if (!string.IsNullOrWhiteSpace(empresaIdStr) && int.TryParse(empresaIdStr, out var empresaId))
+            {
+                _empresaId = empresaId;
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            SelectedEstudio = null;
+            await ReloadData();
+        });
+    }
+
+    private bool HasSelectedAnio() =>
+        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string DateOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
+
+    private static string DateTimeOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy HH:mm") : "-";
+
+    private static string Money(decimal value) => value.ToString("C2");
+
+    private static string StatusText(int estatus) => estatus switch
+    {
+        1 => "Preparacion",
+        2 => "Precios mercado",
+        3 => "Analisis",
+        4 => "Cerrado",
+        5 => "Cancelado",
+        _ => "Sin estatus"
+    };
+
+    private static Color StatusColor(int estatus) => estatus switch
+    {
+        1 => Color.Info,
+        2 => Color.Primary,
+        3 => Color.Warning,
+        4 => Color.Success,
+        5 => Color.Error,
+        _ => Color.Default
+    };
+}
