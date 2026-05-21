@@ -17,11 +17,25 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public decimal Cantidad { get; set; }
         public decimal? CostoUnitario { get; set; }
         public decimal? ImporteEstimado { get; set; }
+        public List<EstudioMercadoDetalleProveedorResponse> ProveedoresCotizacion { get; set; } = new();
+        public int SolicitudesCotizacion { get; set; }
+        public int CotizacionesRecibidas { get; set; }
+        public decimal? MenorPrecioUnitario { get; set; }
+        public decimal? ImporteMenorCotizacion { get; set; }
+        public DateTime? UltimaCotizacion { get; set; }
         public string? Observaciones { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+    }
+
+    public class EstudioMercadoDetalleProveedorResponse
+    {
+        public int PkidProveedor { get; set; }
+        public string ProveedorNombre { get; set; } = string.Empty;
+        public string ProveedorClave { get; set; } = string.Empty;
+        public string ProveedorRfc { get; set; } = string.Empty;
     }
 }

@@ -140,6 +140,7 @@ namespace EG.ApiCoreBS.Extensions
             // Business services
             services.AddHttpContextAccessor();
             services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<INavigateService, NavigateService>();

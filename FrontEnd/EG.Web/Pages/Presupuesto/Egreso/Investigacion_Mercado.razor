@@ -1,12 +1,15 @@
 @page "/Presupuesto/Egreso/Investigacion_Mercado"
 @page "/Planeacion/Investigacion_Mercado"
+@using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @using EG.Web.Services
 @using MudBlazor
+@using System.Globalization
 @implements IDisposable
 @inject IGenericCrudService<EstudioMercadoDetalleResponse> DetalleService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject AnioPresupuestalStateService AnioStateService
 @inject SucursalStateService SucursalStateService
 @inject HttpClient Http
@@ -143,6 +146,14 @@
                                        OnClick="AddDetalle"
                                        Class="ml-1" />
                     </MudTooltip>
+                    <MudTooltip Text="Recibir cotizaciones">
+                        <MudIconButton Icon="@Icons.Material.Filled.AttachMoney"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="OpenRecepcionCotizaciones"
+                                       Class="ml-1" />
+                    </MudTooltip>
                     <MudTooltip Text="Actualizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"
@@ -180,8 +191,8 @@
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
                     <GenericTable TItem="EstudioMercadoDetalleResponse"
                                   @ref="detalleTable"
-                                  Title="Bienes a investigar"
-                                  SearchPlaceholder="Buscar por bien, proveedor u observaciones..."
+                                  Title="Bienes a cotizar"
+                                  SearchPlaceholder="Buscar por bien u observaciones..."
                                   ShowExportButton="false"
                                   ShowAddButton="@CanCreate"
                                   PageSize="10"
@@ -196,14 +207,14 @@
                             <MudTh><MudTableSortLabel SortLabel="TipoBienClave" T="EstudioMercadoDetalleResponse">Clave</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="EstudioMercadoDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Cantidad" T="EstudioMercadoDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="EstudioMercadoDetalleResponse">Proveedor</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="CostoUnitario" T="EstudioMercadoDetalleResponse">Costo unitario</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ImporteEstimado" T="EstudioMercadoDetalleResponse">Importe estimado</MudTableSortLabel></MudTh>
+                            <MudTh>Proveedores</MudTh>
+                            <MudTh>Solicitudes</MudTh>
+                            <MudTh>Cotizaciones</MudTh>
+                            <MudTh>Mejor precio</MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Observaciones" T="EstudioMercadoDetalleResponse">Observaciones</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="EstudioMercadoDetalleResponse">Control</MudTableSortLabel></MudTh>
                         </Header>
                         <Row Context="detalle">
-                            <MudTd>
+                            <MudTd Class="detail-actions">
                                 <MudTooltip Text="Editar bien">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -218,26 +229,61 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => DeleteDetalle(detalle))" />
                                 </MudTooltip>
+                                <MudTooltip Text="Imprimir solicitud">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Print"
+                                                   Color="Color.Default"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => PrintDetallePending(detalle))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Enviar solicitud por mail">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Email"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   Disabled="@(_emailingDetalleId == detalle.PkidEstudioMercadoDetalle || detalle.SolicitudesCotizacion <= 0)"
+                                                   OnClick="@(() => SendSolicitudCorreo(detalle))" />
+                                </MudTooltip>
                             </MudTd>
                             <MudTd>@detalle.PkidEstudioMercadoDetalle</MudTd>
                             <MudTd>
                                 <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(detalle.TipoBienClave)</MudChip>
                             </MudTd>
                             <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
-                            <MudTd>@detalle.Cantidad.ToString("N2")</MudTd>
+                            <MudTd>@Quantity(detalle.Cantidad)</MudTd>
                             <MudTd>
-                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(detalle.ProveedorNombre)</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(detalle.ProveedorRfc)</MudText>
+                                @if (detalle.ProveedoresCotizacion.Any())
+                                {
+                                    <div class="provider-chip-list">
+                                        @foreach (var proveedor in detalle.ProveedoresCotizacion)
+                                        {
+                                            <MudChip T="string"
+                                                     Color="Color.Primary"
+                                                     Variant="Variant.Outlined"
+                                                     Size="Size.Small">
+                                                @ProviderText(proveedor)
+                                            </MudChip>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                }
                             </MudTd>
-                            <MudTd>@Money(detalle.CostoUnitario ?? 0m)</MudTd>
                             <MudTd>
-                                <MudText Typo="Typo.body2" Class="main-cell">@Money(detalle.ImporteEstimado ?? (detalle.Cantidad * (detalle.CostoUnitario ?? 0m)))</MudText>
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
+                                    @detalle.SolicitudesCotizacion.ToString("N0")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@QuoteProgressColor(detalle)" Size="Size.Small">
+                                    @detalle.CotizacionesRecibidas.ToString("N0") / @detalle.SolicitudesCotizacion.ToString("N0")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@MoneyOrDash(detalle.MenorPrecioUnitario)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@MoneyOrDash(detalle.ImporteMenorCotizacion)</MudText>
                             </MudTd>
                             <MudTd>@TextOrDash(detalle.Observaciones)</MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2">Usuario @detalle.UsuarioCreacion</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@DateTimeOrDash(detalle.FechaCreacion)</MudText>
-                            </MudTd>
                         </Row>
                     </GenericTable>
                 </div>
@@ -291,6 +337,19 @@
         line-height: 1.1;
     }
 
+    .investigacion-page .detail-actions {
+        min-width: 132px;
+        white-space: nowrap;
+    }
+
+    .investigacion-page .provider-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        min-width: 180px;
+        max-width: 340px;
+    }
+
     .investigacion-page .selected-header {
         display: flex;
         align-items: center;
@@ -337,6 +396,8 @@
     private string detalleSearchString = string.Empty;
     private int _empresaId;
     private int _detalleCount;
+    private int? _emailingDetalleId;
+    private string _currencySymbol = "$";
 
     protected override string ModuleName => "Planeacion";
     protected override string SubModuleName => "Investigacion_Mercado";
@@ -352,6 +413,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadEmpresaId();
+        await LoadCurrencyAsync();
     }
 
     public void Dispose()
@@ -625,7 +687,34 @@
         };
 
         var dialog = await DialogService.ShowAsync<InvestigacionMercadoDetalleBuilderDialog>(
-            "Agregar Bienes desde PAAAS",
+            "Generar Solicitudes desde PAAAS",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+        }
+    }
+
+    private async Task OpenRecepcionCotizaciones()
+    {
+        if (SelectedEstudio == null)
+        {
+            Snackbar.Add("Selecciona un estudio de mercado primero.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EstudioMercadoId"] = SelectedEstudio.PkidEstudioMercado,
+            ["EstudioMercadoNombre"] = SelectedEstudio.Nombre,
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var dialog = await DialogService.ShowAsync<RecepcionCotizacionesDialog>(
+            "Recibir Cotizaciones",
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
 
@@ -695,6 +784,50 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void PrintDetallePending(EstudioMercadoDetalleResponse detalle)
+    {
+        Snackbar.Add("La impresion de solicitudes aun no esta implementada.", Severity.Info);
+    }
+
+    private async Task SendSolicitudCorreo(EstudioMercadoDetalleResponse detalle)
+    {
+        if (SelectedEstudio == null)
+        {
+            Snackbar.Add("Selecciona un estudio de mercado primero.", Severity.Warning);
+            return;
+        }
+
+        if (detalle.SolicitudesCotizacion <= 0)
+        {
+            Snackbar.Add("Primero genera solicitudes de cotizacion para este bien.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _emailingDetalleId = detalle.PkidEstudioMercadoDetalle;
+            var url = $"api/EstudioMercadoDetalle/cotizaciones/solicitudes/{SelectedEstudio.PkidEstudioMercado}/enviar-correo?estudioMercadoDetalleId={detalle.PkidEstudioMercadoDetalle}";
+            var response = await Http.PostAsync(url, null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<EstudioMercadoCotizacionSolicitudResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Solicitudes enviadas por correo.", Severity.Success);
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudieron enviar las solicitudes por correo.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al enviar correo: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _emailingDetalleId = null;
         }
     }
 
@@ -772,6 +905,25 @@
         }
     }
 
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                if (response?.Success == true && response.Data != null)
+                {
+                    _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+                }
+            }
+        }
+        catch
+        {
+        }
+    }
+
     private void OnAnioChanged(int? anioId)
     {
         _ = InvokeAsync(async () =>
@@ -793,7 +945,37 @@
     private static string DateTimeOrDash(DateTime? value) =>
         value.HasValue ? value.Value.ToString("dd/MM/yyyy HH:mm") : "-";
 
-    private static string Money(decimal value) => value.ToString("C2");
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private string MoneyOrDash(decimal? value) =>
+        value.HasValue ? Money(value.Value) : "-";
+
+    private static string ProviderText(EstudioMercadoDetalleProveedorResponse proveedor)
+    {
+        var text = $"{proveedor.ProveedorClave} - {proveedor.ProveedorNombre}".Trim(' ', '-');
+        return string.IsNullOrWhiteSpace(text) ? proveedor.PkidProveedor.ToString() : text;
+    }
+
+    private static Color QuoteProgressColor(EstudioMercadoDetalleResponse detalle)
+    {
+        if (detalle.SolicitudesCotizacion <= 0)
+        {
+            return Color.Default;
+        }
+
+        if (detalle.CotizacionesRecibidas <= 0)
+        {
+            return Color.Warning;
+        }
+
+        return detalle.CotizacionesRecibidas >= detalle.SolicitudesCotizacion
+            ? Color.Success
+            : Color.Info;
+    }
 
     private static string StatusText(int estatus) => estatus switch
     {

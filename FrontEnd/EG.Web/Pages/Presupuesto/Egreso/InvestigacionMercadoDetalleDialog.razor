@@ -4,9 +4,9 @@
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using MudBlazor
+@using System.Globalization
 
 @inject IGenericCrudService<EstudioMercadoDetalleResponse> Service
-@inject IGenericCrudService<ProveedorResponse> ProveedorService
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
@@ -50,41 +50,15 @@
                               RequiredError="El tipo de bien es requerido" />
             </MudItem>
 
-            <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedProveedor"
-                                   ValueChanged="value => _selectedProveedor = value"
-                                   Label="Proveedor"
-                                   Required="true"
-                                   RequiredError="El proveedor es requerido"
-                                   LoadPage="LoadProveedoresPageAsync" />
-            </MudItem>
-
             <MudItem xs="12" md="4">
                 <MudNumericField @bind-Value="item.Cantidad"
                                  Label="Cantidad"
                                  Variant="Variant.Outlined"
                                  Min="0.01m"
-                                 Format="N2"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
                                  Required="true"
                                  RequiredError="La cantidad es requerida" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <MudNumericField T="decimal?"
-                                 @bind-Value="item.CostoUnitario"
-                                 Label="Costo unitario"
-                                 Variant="Variant.Outlined"
-                                 Min="0.01m"
-                                 Format="C2"
-                                 Required="true"
-                                 RequiredError="El costo unitario es requerido" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <MudText Typo="Typo.caption" Color="Color.Tertiary">Importe estimado</MudText>
-                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 700;">
-                    @Money(ImporteEstimado)
-                </MudText>
             </MudItem>
 
             <MudItem xs="12" md="8">
@@ -118,12 +92,10 @@
     private EstudioMercadoDetalleResponse item = new() { Activo = true, Cantidad = 1m };
     private LookupItem? _selectedPaaasDetalle;
     private LookupItem? _selectedTipoBien;
-    private LookupItem? _selectedProveedor;
 
-    private string dialogTitle => Id.HasValue ? "Editar Bien a Investigar" : "Nuevo Bien a Investigar";
+    private string dialogTitle => Id.HasValue ? "Editar Bien a Cotizar" : "Nuevo Bien a Cotizar";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
-    private decimal ImporteEstimado => item.Cantidad * (item.CostoUnitario ?? 0m);
 
     protected override async Task OnInitializedAsync()
     {
@@ -161,14 +133,6 @@
                     Text = BuildTipoBienText(item.TipoBienClave, item.TipoBienDescripcion, item.FkidTipoBienAlma)
                 };
 
-                if (item.FkidProveedorSis.HasValue)
-                {
-                    _selectedProveedor = new LookupItem
-                    {
-                        Id = item.FkidProveedorSis.Value,
-                        Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre, item.FkidProveedorSis.Value)
-                    };
-                }
             }
         }
         catch (Exception ex)
@@ -203,21 +167,9 @@
             return;
         }
 
-        if (_selectedProveedor == null)
-        {
-            Snackbar.Add("Selecciona un proveedor.", Severity.Warning);
-            return;
-        }
-
         if (item.Cantidad <= 0m)
         {
             Snackbar.Add("La cantidad debe ser mayor a cero.", Severity.Warning);
-            return;
-        }
-
-        if (!item.CostoUnitario.HasValue || item.CostoUnitario.Value <= 0m)
-        {
-            Snackbar.Add("El costo unitario debe ser mayor a cero.", Severity.Warning);
             return;
         }
 
@@ -225,7 +177,6 @@
         item.FkidEstudioMercadoOrco = EstudioMercadoId;
         item.FkidPaaasdetalleOrco = _selectedPaaasDetalle.Id;
         item.FkidTipoBienAlma = _selectedTipoBien.Id;
-        item.FkidProveedorSis = _selectedProveedor.Id;
         item.Observaciones = string.IsNullOrWhiteSpace(item.Observaciones) ? null : item.Observaciones.Trim();
 
         try
@@ -306,16 +257,6 @@
         };
     }
 
-    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem
-        {
-            Id = x.PkidProveedor,
-            Text = BuildProveedorText(x.Clave, x.Nombre, x.PkidProveedor)
-        }), response?.TotalCount);
-    }
-
     private Dictionary<string, object> BuildPaaasFilters()
     {
         var filters = new Dictionary<string, object>();
@@ -332,28 +273,16 @@
         return filters;
     }
 
-    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
-    {
-        var list = items?.ToList() ?? new List<LookupItem>();
-        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
-    }
-
     private static string BuildTipoBienText(string? clave, string? descripcion, int id)
     {
         var text = $"{clave} - {descripcion}".Trim(' ', '-');
         return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
     }
 
-    private static string BuildProveedorText(string? clave, string? nombre, int id)
-    {
-        var text = $"{clave} - {nombre}".Trim(' ', '-');
-        return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
-    }
-
-    private static string Money(decimal value) => value.ToString("C2");
-
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     private string TipoBienTexto => _selectedTipoBien?.Text ?? string.Empty;
 }

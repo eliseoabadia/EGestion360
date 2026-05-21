@@ -1,0 +1,395 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Requests.Adquisicion
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Models
+@using MudBlazor
+@using System.Globalization
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog DisableSidePadding="true" Class="quote-reception-dialog">
+    <DialogContent>
+        <div class="quote-shell">
+            <div class="quote-header">
+                <div class="quote-title">
+                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Primary" />
+                    <div>
+                        <MudText Typo="Typo.h6">Recepcion de cotizaciones</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@EstudioMercadoNombre</MudText>
+                    </div>
+                </div>
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                    @Cotizadas.ToString("N0") / @_rows.Count.ToString("N0") cotizadas
+                </MudChip>
+            </div>
+
+            <MudGrid Spacing="2" Class="mb-2">
+                <MudItem xs="12" md="5">
+                    <MudSelect T="int"
+                               Value="@_selectedProveedorId"
+                               ValueChanged="OnProveedorChanged"
+                               Label="Proveedor"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense">
+                        <MudSelectItem T="int" Value="0">Todos</MudSelectItem>
+                        @foreach (var proveedor in Proveedores)
+                        {
+                            <MudSelectItem T="int" Value="@proveedor.Id">@proveedor.Text</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="7">
+                    <div class="quote-metrics">
+                        <div>
+                            <span>Proveedores</span>
+                            <strong>@Proveedores.Count().ToString("N0")</strong>
+                        </div>
+                        <div>
+                            <span>Pendientes</span>
+                            <strong>@Pendientes.ToString("N0")</strong>
+                        </div>
+                        <div>
+                            <span>Total capturado</span>
+                            <strong>@Money(TotalCapturado)</strong>
+                        </div>
+                    </div>
+                </MudItem>
+            </MudGrid>
+
+            @if (_loading)
+            {
+                <div class="quote-loading">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                </div>
+            }
+            else if (!_rows.Any())
+            {
+                <div class="quote-empty">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Secondary" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Aun no hay solicitudes de cotizacion generadas.</MudText>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@FilteredRows" Dense="true" Hover="true" Elevation="0" Class="quote-table">
+                    <HeaderContent>
+                        <MudTh>Proveedor</MudTh>
+                        <MudTh>Bien PAAAS</MudTh>
+                        <MudTh>Cantidad</MudTh>
+                        <MudTh>Precio unitario</MudTh>
+                        <MudTh>Importe</MudTh>
+                        <MudTh>Entrega</MudTh>
+                        <MudTh>Condiciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="row">
+                        <MudTd DataLabel="Proveedor">
+                            <MudText Typo="Typo.body2" Class="main-cell">@row.ProveedorNombre</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@row.ProveedorRfc</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Bien PAAAS">
+                            <MudText Typo="Typo.body2" Class="main-cell">@row.TipoBienTexto</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Detalle @row.FkidEstudioMercadoDetalleOrco</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Cantidad">@Quantity(row.Cantidad)</MudTd>
+                        <MudTd DataLabel="Precio unitario">
+                            <MudNumericField T="decimal?"
+                                             Value="@row.PrecioUnitario"
+                                             ValueChanged="@((decimal? value) => row.PrecioUnitario = value)"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             Min="0.01m"
+                                             Format="0.00"
+                                             Culture="@NumberCulture"
+                                             Adornment="Adornment.Start"
+                                             AdornmentText="@CurrencySymbol"
+                                             HideSpinButtons="true" />
+                        </MudTd>
+                        <MudTd DataLabel="Importe">
+                            <MudText Typo="Typo.body2" Class="main-cell">@Money(row.Importe)</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Entrega">
+                            <MudNumericField T="int?"
+                                             Value="@row.TiempoEntregaDias"
+                                             ValueChanged="@((int? value) => row.TiempoEntregaDias = value)"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             Min="0"
+                                             HideSpinButtons="true" />
+                        </MudTd>
+                        <MudTd DataLabel="Condiciones">
+                            <MudTextField T="string"
+                                          Value="@row.Condiciones"
+                                          ValueChanged="@((string value) => row.Condiciones = value)"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          MaxLength="500" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   Disabled="@_saving"
+                   OnClick="Cancel">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(_saving || !_rows.Any())"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveAsync">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Guardar cotizaciones
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .quote-reception-dialog .mud-dialog-content {
+        max-height: calc(100vh - 140px);
+        overflow: hidden;
+    }
+
+    .quote-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px;
+        min-height: 0;
+    }
+
+    .quote-header,
+    .quote-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .quote-header {
+        justify-content: space-between;
+    }
+
+    .quote-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .quote-metrics > div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 7px 9px;
+        background: var(--mud-palette-surface);
+    }
+
+    .quote-metrics span {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .quote-metrics strong,
+    .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .quote-table {
+        max-height: 58vh;
+        overflow: auto;
+    }
+
+    .quote-table .mud-table-cell {
+        vertical-align: top;
+    }
+
+    .quote-empty,
+    .quote-loading {
+        min-height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+    }
+
+    @@media (max-width: 960px) {
+        .quote-reception-dialog .mud-dialog-content {
+            overflow: auto;
+        }
+
+        .quote-metrics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int EstudioMercadoId { get; set; }
+    [Parameter] public string EstudioMercadoNombre { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private readonly List<CotizacionRecepcionRow> _rows = new();
+    private int _selectedProveedorId;
+    private bool _loading;
+    private bool _saving;
+
+    private IEnumerable<CotizacionRecepcionRow> FilteredRows =>
+        _selectedProveedorId <= 0
+            ? _rows
+            : _rows.Where(x => x.FkidProveedorSis == _selectedProveedorId);
+
+    private IEnumerable<LookupItem> Proveedores => _rows
+        .GroupBy(x => x.FkidProveedorSis)
+        .Select(x => new LookupItem
+        {
+            Id = x.Key,
+            Text = x.First().ProveedorNombre
+        })
+        .OrderBy(x => x.Text);
+
+    private int Cotizadas => _rows.Count(x => x.PrecioUnitario.HasValue);
+    private int Pendientes => _rows.Count(x => !x.PrecioUnitario.HasValue);
+    private decimal TotalCapturado => _rows.Sum(x => x.Importe);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRowsAsync();
+    }
+
+    private async Task LoadRowsAsync()
+    {
+        try
+        {
+            _loading = true;
+            var response = await Http.GetFromJsonAsync<ApiResponse<EstudioMercadoCotizacionRecepcionResponse>>(
+                $"api/EstudioMercadoDetalle/cotizaciones/recepcion/{EstudioMercadoId}");
+
+            _rows.Clear();
+            if (response?.Success == true)
+            {
+                _rows.AddRange((response.Items ?? new List<EstudioMercadoCotizacionRecepcionResponse>())
+                    .Select(x => new CotizacionRecepcionRow(x)));
+            }
+            else if (!string.IsNullOrWhiteSpace(response?.Message))
+            {
+                Snackbar.Add(response.Message, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar cotizaciones: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OnProveedorChanged(int proveedorId)
+    {
+        _selectedProveedorId = proveedorId;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_saving)
+        {
+            return;
+        }
+
+        if (_rows.Any(x => x.PrecioUnitario.HasValue && x.PrecioUnitario.Value <= 0m))
+        {
+            Snackbar.Add("Los precios capturados deben ser mayores a cero.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _saving = true;
+            var request = new EstudioMercadoCotizacionRecepcionRequest
+            {
+                FkidEstudioMercadoOrco = EstudioMercadoId,
+                Items = _rows.Select(x => new EstudioMercadoCotizacionRecepcionItemRequest
+                {
+                    PkidCotizacionDetalle = x.PkidCotizacionDetalle,
+                    PrecioUnitario = x.PrecioUnitario,
+                    TiempoEntregaDias = x.PrecioUnitario.HasValue ? x.TiempoEntregaDias : null,
+                    Condiciones = x.PrecioUnitario.HasValue && !string.IsNullOrWhiteSpace(x.Condiciones)
+                        ? x.Condiciones.Trim()
+                        : null
+                }).ToList()
+            };
+
+            var response = await Http.PostAsJsonAsync("api/EstudioMercadoDetalle/cotizaciones/recepcion", request);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<EstudioMercadoCotizacionRecepcionResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Cotizaciones guardadas correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudieron guardar las cotizaciones.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar cotizaciones: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private sealed class CotizacionRecepcionRow
+    {
+        public CotizacionRecepcionRow(EstudioMercadoCotizacionRecepcionResponse response)
+        {
+            PkidCotizacionDetalle = response.PkidCotizacionDetalle;
+            FkidProveedorSis = response.FkidProveedorSis;
+            ProveedorNombre = string.IsNullOrWhiteSpace(response.ProveedorNombre)
+                ? response.FkidProveedorSis.ToString()
+                : response.ProveedorNombre;
+            ProveedorRfc = response.ProveedorRfc ?? string.Empty;
+            FkidEstudioMercadoDetalleOrco = response.FkidEstudioMercadoDetalleOrco;
+            TipoBienTexto = $"{response.TipoBienClave} - {response.TipoBienDescripcion}".Trim(' ', '-');
+            Cantidad = response.Cantidad;
+            PrecioUnitario = response.PrecioUnitario;
+            TiempoEntregaDias = response.TiempoEntregaDias;
+            Condiciones = response.Condiciones;
+        }
+
+        public int PkidCotizacionDetalle { get; }
+        public int FkidProveedorSis { get; }
+        public string ProveedorNombre { get; }
+        public string ProveedorRfc { get; }
+        public int FkidEstudioMercadoDetalleOrco { get; }
+        public string TipoBienTexto { get; }
+        public decimal Cantidad { get; }
+        public decimal? PrecioUnitario { get; set; }
+        public int? TiempoEntregaDias { get; set; }
+        public string? Condiciones { get; set; }
+        public decimal Importe => Cantidad * (PrecioUnitario ?? 0m);
+    }
+}

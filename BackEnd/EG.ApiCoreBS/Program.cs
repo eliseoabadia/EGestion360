@@ -1,6 +1,7 @@
 using EG.ApiCoreBS.Extensions;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
+using EG.Domain.Settings;
 using EG.Infrastructure;
 using EG.Logger;
 using Mapster;
@@ -45,6 +46,7 @@ try
     logger.LogInformation("Configuracion CORS cargada. Origenes permitidos: {Origins}", string.Join(", ", corsOrigins));
 
     builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JsonWebTokenKeys"));
+    builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     builder.Services.AddLoggerGRP(builder.Configuration);
     builder.Services.AddDbContextGRP(builder.Configuration);
     builder.Services.AddApplicationServices(typeof(Program).Assembly);

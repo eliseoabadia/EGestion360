@@ -130,5 +130,40 @@ namespace EG.ApiCoreBS.Controllers.Planeacion
             var result = await _service.CreateBatchAsync(request, _userContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost("cotizaciones/solicitar")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionSolicitudResponse>>> CreateSolicitudesCotizacion([FromBody] EstudioMercadoCotizacionRequest request)
+        {
+            var result = await _service.CreateSolicitudesCotizacionAsync(request, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("cotizaciones/solicitudes/{estudioMercadoId}")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionSolicitudResponse>>> GetSolicitudesCotizacion(int estudioMercadoId)
+        {
+            var result = await _service.GetSolicitudesCotizacionAsync(estudioMercadoId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("cotizaciones/solicitudes/{estudioMercadoId}/enviar-correo")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionSolicitudResponse>>> SendSolicitudesCotizacionEmail(int estudioMercadoId, [FromQuery] int? estudioMercadoDetalleId)
+        {
+            var result = await _service.SendSolicitudesCotizacionEmailAsync(estudioMercadoId, estudioMercadoDetalleId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("cotizaciones/recepcion/{estudioMercadoId}")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionRecepcionResponse>>> GetRecepcionCotizaciones(int estudioMercadoId, [FromQuery] int? proveedorId)
+        {
+            var result = await _service.GetRecepcionCotizacionesAsync(estudioMercadoId, proveedorId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("cotizaciones/recepcion")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionRecepcionResponse>>> SaveRecepcionCotizaciones([FromBody] EstudioMercadoCotizacionRecepcionRequest request)
+        {
+            var result = await _service.SaveRecepcionCotizacionesAsync(request, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }
