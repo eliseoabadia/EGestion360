@@ -1,3 +1,4 @@
+@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Almacen
@@ -36,7 +37,8 @@
                                  Label="Cantidad"
                                  Variant="Variant.Outlined"
                                  Min="0.01m"
-                                 Format="N2"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
                                  Required="true"
                                  RequiredError="La cantidad es requerida" />
             </MudItem>
@@ -245,4 +247,6 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

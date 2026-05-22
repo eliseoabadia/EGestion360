@@ -1,4 +1,5 @@
 @page "/ALMAConteo"
+@using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -117,7 +118,7 @@
                             </MudChip>
                         </MudTd>
                         <MudTd>
-                            <MudText Align="Align.Right">@conteo.CantidadInventario.ToString("N2")</MudText>
+                            <MudText Align="Align.Right">@Quantity(conteo.CantidadInventario)</MudText>
                         </MudTd>
                         <MudTd>
                             <MudBadge Content="@conteo.TotalLecturas" Color="Color.Info" Overlap="true">
@@ -437,6 +438,10 @@
             "cerrado" => Color.Error,
             _ => Color.Default
         };
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 
     private async Task AbrirScanner(ConteoResponse conteo)
     {

@@ -23,19 +23,7 @@ public partial class VwEstudioMercadoDetalle
 
     public string TipoBienClave { get; set; }
 
-    public int? FkidProveedorSis { get; set; }
-
-    public string ProveedorNombre { get; set; }
-
-    public string ProveedorClave { get; set; }
-
-    public string ProveedorRfc { get; set; }
-
     public decimal Cantidad { get; set; }
-
-    public decimal? CostoUnitario { get; set; }
-
-    public decimal? ImporteEstimado { get; set; }
 
     public string Observaciones { get; set; }
 

@@ -2,7 +2,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
 {
     public class EstudioMercadoCotizacionRecepcionResponse
     {
-        public int PkidCotizacionDetalle { get; set; }
+        public int PkidEstudioMercadoDetalleCosto { get; set; }
         public int PkidSolicitudCotizacion { get; set; }
         public int FkidProveedorSis { get; set; }
         public string ProveedorNombre { get; set; } = string.Empty;

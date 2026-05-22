@@ -1,4 +1,5 @@
 @page "/Adquisiciones/Programa_Anual"
+@using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -178,7 +179,7 @@
                             </MudItem>
                             <MudItem xs="12" md="3">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Monto partidas</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@PartidasTotal.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@Money(PartidasTotal)</MudText>
                             </MudItem>
                         </MudGrid>
                     </div>
@@ -230,7 +231,7 @@
                                     </MudChip>
                                 </MudTd>
                                 <MudTd>@TextOrDash(partida.Descripcion)</MudTd>
-                                <MudTd>@partida.Monto.ToString("C2")</MudTd>
+                                <MudTd>@Money(partida.Monto)</MudTd>
                             </Row>
                         </GenericTable>
                     </MudItem>
@@ -276,7 +277,7 @@
                                 </MudTd>
                                 <MudTd>@TextOrDash(bien.TipoBienCodigoClave)</MudTd>
                                 <MudTd>@TextOrDash(bien.TipoBienDescripcion)</MudTd>
-                                <MudTd>@bien.Cantidad.ToString("N2")</MudTd>
+                                <MudTd>@Quantity(bien.Cantidad)</MudTd>
                                 <MudTd>@TextOrDash(bien.Unidad)</MudTd>
                                 <MudTd>@TextOrDash(bien.LugarEntrega)</MudTd>
                             </Row>
@@ -892,7 +893,7 @@
             ContainsText(partida.ClavePartida, filter) ||
             ContainsText(partida.Descripcion, filter) ||
             ContainsText(partida.Observaciones, filter) ||
-            ContainsText(partida.Monto.ToString("N2"), filter) ||
+            ContainsText(Quantity(partida.Monto), filter) ||
             ContainsText(partida.Monto.ToString(), filter));
     }
 
@@ -910,7 +911,7 @@
             ContainsText(bien.Unidad, filter) ||
             ContainsText(bien.LugarEntrega, filter) ||
             ContainsText(bien.Observaciones, filter) ||
-            ContainsText(bien.Cantidad.ToString("N2"), filter) ||
+            ContainsText(Quantity(bien.Cantidad), filter) ||
             ContainsText(bien.Cantidad.ToString(), filter));
     }
 
@@ -1108,4 +1109,10 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string Money(decimal value) => $"${value.ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 }

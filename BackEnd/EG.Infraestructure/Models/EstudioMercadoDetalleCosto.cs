@@ -5,21 +5,23 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class DetalleRequisicion
+public partial class EstudioMercadoDetalleCosto
 {
-    public int PkidDetalleRequisicion { get; set; }
+    public int PkidEstudioMercadoDetalleCosto { get; set; }
 
     public int FkidEmpresaSis { get; set; }
 
-    public int FkidRequisicionOrco { get; set; }
+    public int FkidSolicitudCotizacionOrco { get; set; }
 
-    public int FkidTipoBienAlma { get; set; }
+    public int FkidEstudioMercadoDetalleOrco { get; set; }
 
-    public int? FkidUnidadesAlma { get; set; }
+    public decimal? PrecioUnitario { get; set; }
 
-    public decimal Cantidad { get; set; }
+    public int? TiempoEntregaDias { get; set; }
 
-    public string Observaciones { get; set; }
+    public string Condiciones { get; set; }
+
+    public DateTime? FechaRespuesta { get; set; }
 
     public bool Activo { get; set; }
 
@@ -31,15 +33,11 @@ public partial class DetalleRequisicion
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<CotizacionDetalle> CotizacionDetalles { get; set; } = new List<CotizacionDetalle>();
-
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
-    public virtual Requisicion FkidRequisicionOrcoNavigation { get; set; }
+    public virtual EstudioMercadoDetalle FkidEstudioMercadoDetalleOrcoNavigation { get; set; }
 
-    public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
-
-    public virtual Unidade FkidUnidadesAlmaNavigation { get; set; }
+    public virtual SolicitudCotizacion FkidSolicitudCotizacionOrcoNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

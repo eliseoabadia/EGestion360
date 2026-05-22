@@ -1,0 +1,26 @@
+namespace EG.Domain.DTOs.Requests.Adquisicion
+{
+    public class CotizacionDto
+    {
+        public int PkidCotizacion { get; set; }
+        public int FkidRequisicionOrco { get; set; }
+        public int FkidProveedorSis { get; set; }
+        public DateTime FechaSolicitud { get; set; }
+        public DateTime? FechaProveedorCotiza { get; set; }
+        public DateTime? FechaProveedorCompromiso { get; set; }
+        public string? Comentarios { get; set; }
+        public bool Servicio { get; set; }
+        public string? FlDocumento { get; set; }
+        public string? Entrega { get; set; }
+        public string? Vigencia { get; set; }
+        public string? Condiciones { get; set; }
+        public int? FkidAnioSis { get; set; }
+        public int? FkidContenedorCotOrco { get; set; }
+        public int? FkidContenedorMultiCotOrco { get; set; }
+        public bool Activo { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
+}

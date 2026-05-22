@@ -1,4 +1,5 @@
 @page "/Adquisiciones/DetalleRequisicion"
+@using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -59,7 +60,7 @@
                 <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
                 <MudTd>@TextOrDash(item.TipoBienCodigoClave)</MudTd>
                 <MudTd>@TextOrDash(item.TipoBienDescripcion)</MudTd>
-                <MudTd>@item.Cantidad.ToString("N2")</MudTd>
+                <MudTd>@Quantity(item.Cantidad)</MudTd>
                 <MudTd>@TextOrDash(item.UnidadMedida)</MudTd>
                 <MudTd>
                     <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
@@ -118,4 +119,8 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 }

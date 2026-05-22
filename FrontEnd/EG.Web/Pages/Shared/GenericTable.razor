@@ -47,6 +47,18 @@
                 </MudTooltip>
             }
 
+            @if (ShowAddButton)
+            {
+                <MudTooltip Text="@AddButtonTooltip">
+                    <MudIconButton Icon="@AddButtonIcon"
+                                   Color="@AddButtonColor"
+                                   Size="Size.Small"
+                                   Disabled="@Loading"
+                                   OnClick="AddItem"
+                                   Class="mr-2" />
+                </MudTooltip>
+            }
+
             <MudTextField @bind-Value="SearchString"
                           Placeholder="@SearchPlaceholder"
                           Adornment="Adornment.Start"
@@ -152,7 +164,10 @@
     [Parameter] public int Elevation { get; set; } = 2;
     [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
     [Parameter] public bool ShowExportButton { get; set; } = true;
-    [Parameter] public bool ShowAddButton { get; set; } = true;
+    [Parameter] public bool ShowAddButton { get; set; }
+    [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
+    [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
+    [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
 
     [Parameter] public int PageSize { get; set; } = 10;
@@ -214,6 +229,11 @@
         {
             await ExportFunc();
         }
+    }
+
+    private async Task AddItem()
+    {
+        await OnAdd.InvokeAsync();
     }
 
     public async Task ReloadData()

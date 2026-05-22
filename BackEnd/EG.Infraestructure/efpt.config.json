@@ -183,6 +183,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[Cotizacion]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[CotizacionDetalle]",
          "ObjectType": 0
       },
@@ -200,6 +204,10 @@
       },
       {
          "Name": "[ORCO].[EstudioMercadoDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[EstudioMercadoDetalleCosto]",
          "ObjectType": 0
       },
       {
@@ -572,6 +580,14 @@
       },
       {
          "Name": "[CONTA].[Vw_PolizaDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_Cotizacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_CotizacionDetalle]",
          "ObjectType": 3
       },
       {

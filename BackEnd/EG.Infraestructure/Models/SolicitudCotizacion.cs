@@ -35,7 +35,7 @@ public partial class SolicitudCotizacion
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<CotizacionDetalle> CotizacionDetalles { get; set; } = new List<CotizacionDetalle>();
+    public virtual ICollection<EstudioMercadoDetalleCosto> EstudioMercadoDetalleCostos { get; set; } = new List<EstudioMercadoDetalleCosto>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

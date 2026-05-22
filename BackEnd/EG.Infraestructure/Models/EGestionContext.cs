@@ -55,6 +55,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<ConteoHist> ConteoHists { get; set; }
 
+    public virtual DbSet<Cotizacion> Cotizacions { get; set; }
+
     public virtual DbSet<CotizacionDetalle> CotizacionDetalles { get; set; }
 
     public virtual DbSet<CuentaContable> CuentaContables { get; set; }
@@ -94,6 +96,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<EstudioMercado> EstudioMercados { get; set; }
 
     public virtual DbSet<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; }
+
+    public virtual DbSet<EstudioMercadoDetalleCosto> EstudioMercadoDetalleCostos { get; set; }
 
     public virtual DbSet<Familium> Familia { get; set; }
 
@@ -274,6 +278,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwConteoDetalle> VwConteoDetalles { get; set; }
 
     public virtual DbSet<VwConteoDetalleEscaneo> VwConteoDetalleEscaneos { get; set; }
+
+    public virtual DbSet<VwCotizacion> VwCotizacions { get; set; }
+
+    public virtual DbSet<VwCotizacionDetalle> VwCotizacionDetalles { get; set; }
 
     public virtual DbSet<VwCuenta> VwCuentas { get; set; }
 
@@ -950,36 +958,82 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TercerConteo).HasColumnType("decimal(18, 2)");
         });
 
+        modelBuilder.Entity<Cotizacion>(entity =>
+        {
+            entity.HasKey(e => e.PkidCotizacion);
+
+            entity.ToTable("Cotizacion", "ORCO");
+
+            entity.HasIndex(e => e.FkidProveedorSis, "IX_Cotizacion_Proveedor");
+
+            entity.HasIndex(e => e.FkidRequisicionOrco, "IX_Cotizacion_Requisicion");
+
+            entity.Property(e => e.PkidCotizacion).HasColumnName("PKIdCotizacion");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Cotizacion_Activo");
+            entity.Property(e => e.Condiciones).HasMaxLength(200);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Cotizacion_FechaCreacion");
+            entity.Property(e => e.FechaProveedorCompromiso).HasColumnType("datetime");
+            entity.Property(e => e.FechaProveedorCotiza).HasColumnType("datetime");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidContenedorCotOrco).HasColumnName("FKIdContenedorCot_ORCO");
+            entity.Property(e => e.FkidContenedorMultiCotOrco).HasColumnName("FKIdContenedorMultiCot_ORCO");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FlDocumento)
+                .HasMaxLength(1000)
+                .HasColumnName("FL_Documento");
+
+            entity.HasOne(d => d.FkidAnioSisNavigation).WithMany(p => p.Cotizacions)
+                .HasForeignKey(d => d.FkidAnioSis)
+                .HasConstraintName("FK_Cotizacion_Anio");
+
+            entity.HasOne(d => d.FkidProveedorSisNavigation).WithMany(p => p.Cotizacions)
+                .HasForeignKey(d => d.FkidProveedorSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cotizacion_Proveedor");
+
+            entity.HasOne(d => d.FkidRequisicionOrcoNavigation).WithMany(p => p.Cotizacions)
+                .HasForeignKey(d => d.FkidRequisicionOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cotizacion_Requisicion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.CotizacionUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cotizacion_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.CotizacionUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Cotizacion_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<CotizacionDetalle>(entity =>
         {
             entity.HasKey(e => e.PkidCotizacionDetalle);
 
             entity.ToTable("CotizacionDetalle", "ORCO");
 
+            entity.HasIndex(e => e.FkidCotizacionOrco, "IX_CotizacionDetalle_Cotizacion");
+
+            entity.HasIndex(e => e.FkidDetalleRequisicionOrco, "IX_CotizacionDetalle_DetalleRequisicion");
+
             entity.Property(e => e.PkidCotizacionDetalle).HasColumnName("PKIdCotizacionDetalle");
             entity.Property(e => e.Activo).HasDefaultValue(true, "DF_CotizacionDetalle_Activo");
-            entity.Property(e => e.Condiciones).HasMaxLength(500);
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_CotizacionDetalle_FechaCreacion");
-            entity.Property(e => e.FechaRespuesta).HasColumnType("datetime");
-            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
-            entity.Property(e => e.FkidEstudioMercadoDetalleOrco).HasColumnName("FKIdEstudioMercadoDetalle_ORCO");
-            entity.Property(e => e.FkidSolicitudCotizacionOrco).HasColumnName("FKIdSolicitudCotizacion_ORCO");
+            entity.Property(e => e.FkidCotizacionOrco).HasColumnName("FKIdCotizacion_ORCO");
+            entity.Property(e => e.FkidDetalleRequisicionOrco).HasColumnName("FKIdDetalleRequisicion_ORCO");
             entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(20, 4)");
 
-            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.CotizacionDetalles)
-                .HasForeignKey(d => d.FkidEmpresaSis)
+            entity.HasOne(d => d.FkidCotizacionOrcoNavigation).WithMany(p => p.CotizacionDetalles)
+                .HasForeignKey(d => d.FkidCotizacionOrco)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CotizacionDetalle_Empresa");
+                .HasConstraintName("FK_CotizacionDetalle_Cotizacion");
 
-            entity.HasOne(d => d.FkidEstudioMercadoDetalleOrcoNavigation).WithMany(p => p.CotizacionDetalles)
-                .HasForeignKey(d => d.FkidEstudioMercadoDetalleOrco)
+            entity.HasOne(d => d.FkidDetalleRequisicionOrcoNavigation).WithMany(p => p.CotizacionDetalles)
+                .HasForeignKey(d => d.FkidDetalleRequisicionOrco)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CotizacionDetalle_EstudioMercadoDetalle");
-
-            entity.HasOne(d => d.FkidSolicitudCotizacionOrcoNavigation).WithMany(p => p.CotizacionDetalles)
-                .HasForeignKey(d => d.FkidSolicitudCotizacionOrco)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CotizacionDetalle_SolicitudCotizacion");
+                .HasConstraintName("FK_CotizacionDetalle_DetalleRequisicion");
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.CotizacionDetalleUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
@@ -1717,6 +1771,47 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.EstudioMercadoDetalleUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_EstudioMercadoDetalle_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<EstudioMercadoDetalleCosto>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstudioMercadoDetalleCosto);
+
+            entity.ToTable("EstudioMercadoDetalleCosto", "ORCO");
+
+            entity.Property(e => e.PkidEstudioMercadoDetalleCosto).HasColumnName("PKIdEstudioMercadoDetalleCosto");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_EstudioMercadoDetalleCosto_Activo");
+            entity.Property(e => e.Condiciones).HasMaxLength(500);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EstudioMercadoDetalleCosto_FechaCreacion");
+            entity.Property(e => e.FechaRespuesta).HasColumnType("datetime");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstudioMercadoDetalleOrco).HasColumnName("FKIdEstudioMercadoDetalle_ORCO");
+            entity.Property(e => e.FkidSolicitudCotizacionOrco).HasColumnName("FKIdSolicitudCotizacion_ORCO");
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(20, 4)");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.EstudioMercadoDetalleCostos)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstudioMercadoDetalleCosto_Empresa");
+
+            entity.HasOne(d => d.FkidEstudioMercadoDetalleOrcoNavigation).WithMany(p => p.EstudioMercadoDetalleCostos)
+                .HasForeignKey(d => d.FkidEstudioMercadoDetalleOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstudioMercadoDetalleCosto_EstudioMercadoDetalle");
+
+            entity.HasOne(d => d.FkidSolicitudCotizacionOrcoNavigation).WithMany(p => p.EstudioMercadoDetalleCostos)
+                .HasForeignKey(d => d.FkidSolicitudCotizacionOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstudioMercadoDetalleCosto_SolicitudCotizacion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.EstudioMercadoDetalleCostoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstudioMercadoDetalleCosto_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.EstudioMercadoDetalleCostoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_EstudioMercadoDetalleCosto_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Familium>(entity =>
@@ -4723,6 +4818,82 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
         });
 
+        modelBuilder.Entity<VwCotizacion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Cotizacion", "ORCO");
+
+            entity.Property(e => e.Condiciones).HasMaxLength(200);
+            entity.Property(e => e.FechaProveedorCompromiso).HasColumnType("datetime");
+            entity.Property(e => e.FechaProveedorCotiza).HasColumnType("datetime");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FlDocumento)
+                .HasMaxLength(1000)
+                .HasColumnName("FL_Documento");
+            entity.Property(e => e.PkidCotizacion).HasColumnName("PKIdCotizacion");
+            entity.Property(e => e.ProveedorClave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.ProveedorNombre)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.ProveedorRfc)
+                .HasMaxLength(50)
+                .HasColumnName("ProveedorRFC");
+            entity.Property(e => e.RequisicionDescripcion)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.TotalCotizado).HasColumnType("numeric(38, 6)");
+        });
+
+        modelBuilder.Entity<VwCotizacionDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_CotizacionDetalle", "ORCO");
+
+            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.Condiciones).HasMaxLength(200);
+            entity.Property(e => e.FechaProveedorCompromiso).HasColumnType("datetime");
+            entity.Property(e => e.FechaProveedorCotiza).HasColumnType("datetime");
+            entity.Property(e => e.FechaRequisicion).HasColumnType("datetime");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidContenedorCotOrco).HasColumnName("FKIdContenedorCot_ORCO");
+            entity.Property(e => e.FkidContenedorMultiCotOrco).HasColumnName("FKIdContenedorMultiCot_ORCO");
+            entity.Property(e => e.FkidCotizacionOrco).HasColumnName("FKIdCotizacion_ORCO");
+            entity.Property(e => e.FkidDetalleRequisicionOrco).HasColumnName("FKIdDetalleRequisicion_ORCO");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.FlDocumento)
+                .HasMaxLength(1000)
+                .HasColumnName("FL_Documento");
+            entity.Property(e => e.Importe).HasColumnType("numeric(29, 6)");
+            entity.Property(e => e.PkidCotizacionDetalle).HasColumnName("PKIdCotizacionDetalle");
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.ProveedorClave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.ProveedorNombre)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.ProveedorRfc)
+                .HasMaxLength(50)
+                .HasColumnName("ProveedorRFC");
+            entity.Property(e => e.RequisicionDescripcion)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.TipoBienClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<VwCuenta>(entity =>
         {
             entity
@@ -4992,22 +5163,14 @@ public partial class EGestionContext : DbContext
                 .ToView("Vw_EstudioMercadoDetalle", "ORCO");
 
             entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
-            entity.Property(e => e.CostoUnitario).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.EstudioMercadoNombre)
                 .HasMaxLength(80)
                 .IsUnicode(false);
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidEstudioMercadoOrco).HasColumnName("FKIdEstudioMercado_ORCO");
             entity.Property(e => e.FkidPaaasdetalleOrco).HasColumnName("FKIdPAAASDetalle_ORCO");
-            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
             entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
-            entity.Property(e => e.ImporteEstimado).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.PkidEstudioMercadoDetalle).HasColumnName("PKIdEstudioMercadoDetalle");
-            entity.Property(e => e.ProveedorClave).HasMaxLength(10);
-            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
-            entity.Property(e => e.ProveedorRfc)
-                .HasMaxLength(50)
-                .HasColumnName("ProveedorRFC");
             entity.Property(e => e.TipoBienClave).HasMaxLength(200);
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
         });

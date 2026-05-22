@@ -23,6 +23,8 @@ public partial class Anio
 
     public virtual ICollection<ConsecutivoPoliza> ConsecutivoPolizas { get; set; } = new List<ConsecutivoPoliza>();
 
+    public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
+
     public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
 
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();

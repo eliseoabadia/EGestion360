@@ -1,3 +1,4 @@
+@using System.Globalization
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -72,7 +73,8 @@
                                  Variant="Variant.Outlined"
                                  Min="0.01m"
                                  Max="999999999999.99m"
-                                 Format="N2"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
                                  Required="true"
                                  RequiredError="La cantidad de inventario es requerida" />
             </MudItem>
@@ -258,4 +260,6 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

@@ -720,7 +720,7 @@ namespace EG.Application.Services.Adquisicion
 
                 var solicitudIds = solicitudByProvider.Values.Select(x => x.PkidSolicitudCotizacion).ToList();
                 var estudioDetalleIds = detalleByPaaas.Values.Select(x => x.PkidEstudioMercadoDetalle).ToList();
-                var existingCotizaciones = await _context.CotizacionDetalles
+                var existingCotizaciones = await _context.EstudioMercadoDetalleCostos
                     .Where(x =>
                         x.Activo &&
                         solicitudIds.Contains(x.FkidSolicitudCotizacionOrco) &&
@@ -742,7 +742,7 @@ namespace EG.Application.Services.Adquisicion
                             continue;
                         }
 
-                        await _context.CotizacionDetalles.AddAsync(new CotizacionDetalle
+                        await _context.EstudioMercadoDetalleCostos.AddAsync(new EstudioMercadoDetalleCosto
                         {
                             FkidEmpresaSis = estudio.FkidEmpresaSis,
                             FkidSolicitudCotizacionOrco = solicitud.PkidSolicitudCotizacion,
@@ -823,7 +823,7 @@ namespace EG.Application.Services.Adquisicion
 
                 var solicitudIds = solicitudes.Select(x => x.PkidSolicitudCotizacion).ToList();
                 var detalles = await (
-                    from cotizacion in _context.CotizacionDetalles.AsNoTracking()
+                    from cotizacion in _context.EstudioMercadoDetalleCostos.AsNoTracking()
                     join detalle in _context.EstudioMercadoDetalles.AsNoTracking()
                         on cotizacion.FkidEstudioMercadoDetalleOrco equals detalle.PkidEstudioMercadoDetalle
                     where cotizacion.Activo && detalle.Activo && solicitudIds.Contains(cotizacion.FkidSolicitudCotizacionOrco)
@@ -924,7 +924,7 @@ namespace EG.Application.Services.Adquisicion
 
                 var detalleIds = detalles.Select(x => x.PkidEstudioMercadoDetalle).ToList();
                 var solicitudIds = solicitudes.Select(x => x.PkidSolicitudCotizacion).ToList();
-                var linkedSolicitudIds = await _context.CotizacionDetalles
+                var linkedSolicitudIds = await _context.EstudioMercadoDetalleCostos
                     .AsNoTracking()
                     .Where(x =>
                         x.Activo &&
@@ -965,7 +965,7 @@ namespace EG.Application.Services.Adquisicion
             try
             {
                 var query =
-                    from cotizacion in _context.CotizacionDetalles.AsNoTracking()
+                    from cotizacion in _context.EstudioMercadoDetalleCostos.AsNoTracking()
                     join solicitud in _context.SolicitudCotizacions.AsNoTracking()
                         on cotizacion.FkidSolicitudCotizacionOrco equals solicitud.PkidSolicitudCotizacion
                     join proveedor in _context.Proveedors.AsNoTracking()
@@ -1000,7 +1000,7 @@ namespace EG.Application.Services.Adquisicion
                     .ThenBy(x => x.tipoBien.Descripcion)
                     .Select(x => new EstudioMercadoCotizacionRecepcionResponse
                     {
-                        PkidCotizacionDetalle = x.cotizacion.PkidCotizacionDetalle,
+                        PkidEstudioMercadoDetalleCosto = x.cotizacion.PkidEstudioMercadoDetalleCosto,
                         PkidSolicitudCotizacion = x.solicitud.PkidSolicitudCotizacion,
                         FkidProveedorSis = x.proveedor.PkidProveedor,
                         ProveedorNombre = x.proveedor.Nombre ?? string.Empty,
@@ -1054,8 +1054,8 @@ namespace EG.Application.Services.Adquisicion
                 }
 
                 var validItems = request.Items?
-                    .Where(x => x.PkidCotizacionDetalle > 0)
-                    .GroupBy(x => x.PkidCotizacionDetalle)
+                    .Where(x => x.PkidEstudioMercadoDetalleCosto > 0)
+                    .GroupBy(x => x.PkidEstudioMercadoDetalleCosto)
                     .Select(x => x.First())
                     .ToList() ?? new List<EstudioMercadoCotizacionRecepcionItemRequest>();
 
@@ -1074,15 +1074,15 @@ namespace EG.Application.Services.Adquisicion
                     return CotizacionRecepcionValidationFailure("El tiempo de entrega no puede ser negativo.");
                 }
 
-                var ids = validItems.Select(x => x.PkidCotizacionDetalle).ToList();
-                var cotizaciones = await _context.CotizacionDetalles
+                var ids = validItems.Select(x => x.PkidEstudioMercadoDetalleCosto).ToList();
+                var cotizaciones = await _context.EstudioMercadoDetalleCostos
                     .Include(x => x.FkidSolicitudCotizacionOrcoNavigation)
                     .Where(x =>
                         x.Activo &&
-                        ids.Contains(x.PkidCotizacionDetalle) &&
+                        ids.Contains(x.PkidEstudioMercadoDetalleCosto) &&
                         x.FkidSolicitudCotizacionOrcoNavigation.Activo &&
                         x.FkidSolicitudCotizacionOrcoNavigation.FkidEstudioMercadoOrco == request.FkidEstudioMercadoOrco)
-                    .ToDictionaryAsync(x => x.PkidCotizacionDetalle);
+                    .ToDictionaryAsync(x => x.PkidEstudioMercadoDetalleCosto);
 
                 if (cotizaciones.Count != ids.Count)
                 {
@@ -1094,7 +1094,7 @@ namespace EG.Application.Services.Adquisicion
 
                 foreach (var item in validItems)
                 {
-                    var cotizacion = cotizaciones[item.PkidCotizacionDetalle];
+                    var cotizacion = cotizaciones[item.PkidEstudioMercadoDetalleCosto];
                     cotizacion.PrecioUnitario = item.PrecioUnitario;
                     cotizacion.TiempoEntregaDias = item.PrecioUnitario.HasValue ? item.TiempoEntregaDias : null;
                     cotizacion.Condiciones = item.PrecioUnitario.HasValue && !string.IsNullOrWhiteSpace(item.Condiciones)
@@ -1352,7 +1352,7 @@ namespace EG.Application.Services.Adquisicion
             }
 
             var cotizaciones = await (
-                from cotizacion in _context.CotizacionDetalles.AsNoTracking()
+                from cotizacion in _context.EstudioMercadoDetalleCostos.AsNoTracking()
                 join solicitud in _context.SolicitudCotizacions.AsNoTracking()
                     on cotizacion.FkidSolicitudCotizacionOrco equals solicitud.PkidSolicitudCotizacion
                 join proveedor in _context.Proveedors.AsNoTracking()
@@ -1426,7 +1426,7 @@ namespace EG.Application.Services.Adquisicion
                 .Where(x => solicitudIds.Contains(x.PkidSolicitudCotizacion) && x.Activo)
                 .ToListAsync();
 
-            var cotizaciones = await _context.CotizacionDetalles
+            var cotizaciones = await _context.EstudioMercadoDetalleCostos
                 .AsNoTracking()
                 .Where(x => solicitudIds.Contains(x.FkidSolicitudCotizacionOrco) && x.Activo)
                 .Select(x => new { x.FkidSolicitudCotizacionOrco, x.PrecioUnitario })

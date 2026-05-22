@@ -1,4 +1,5 @@
 @page "/Adquisiciones/RequisicionPartida"
+@using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -58,7 +59,7 @@
                 <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
                 <MudTd>@TextOrDash(item.PartidaClave)</MudTd>
                 <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
-                <MudTd>@(item.Monto?.ToString("C2") ?? "-")</MudTd>
+                <MudTd>@MoneyOrDash(item.Monto)</MudTd>
                 <MudTd>
                     <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                         @(item.Activo ? "Si" : "No")
@@ -115,4 +116,9 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string MoneyOrDash(decimal? value) =>
+        value.HasValue ? $"${value.Value.ToString("0.00", NumberCulture)}" : "-";
 }

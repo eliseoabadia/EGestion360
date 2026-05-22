@@ -33,8 +33,6 @@ public partial class Empresa
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<CotizacionDetalle> CotizacionDetalles { get; set; } = new List<CotizacionDetalle>();
-
     public virtual ICollection<CuentaContable> CuentaContables { get; set; } = new List<CuentaContable>();
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
@@ -42,6 +40,8 @@ public partial class Empresa
     public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
 
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
+
+    public virtual ICollection<EstudioMercadoDetalleCosto> EstudioMercadoDetalleCostos { get; set; } = new List<EstudioMercadoDetalleCosto>();
 
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
 

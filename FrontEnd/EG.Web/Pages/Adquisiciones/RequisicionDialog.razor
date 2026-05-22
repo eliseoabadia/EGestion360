@@ -1,3 +1,4 @@
+@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.General
@@ -72,7 +73,10 @@
                 <MudNumericField @bind-Value="item.Importe"
                                  Label="Importe"
                                  Variant="Variant.Outlined"
-                                 Format="C2" />
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="$" />
             </MudItem>
 
             <MudItem xs="12" md="4" Class="d-flex align-center">
@@ -354,4 +358,6 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

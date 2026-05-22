@@ -1,3 +1,4 @@
+@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Web.Contracts
@@ -63,7 +64,10 @@
                                  Label="Debe"
                                  Variant="Variant.Outlined"
                                  Min="0m"
-                                 Format="C2" />
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="@CurrencySymbol" />
             </MudItem>
 
             <MudItem xs="12" md="6">
@@ -73,7 +77,10 @@
                                  Label="Haber"
                                  Variant="Variant.Outlined"
                                  Min="0m"
-                                 Format="C2" />
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="@CurrencySymbol" />
             </MudItem>
 
             @if (Id.HasValue)
@@ -91,6 +98,7 @@
     [Parameter] public int PolizaId { get; set; }
     [Parameter] public string PolizaClave { get; set; } = string.Empty;
     [Parameter] public string PolizaNombre { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -260,4 +268,6 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

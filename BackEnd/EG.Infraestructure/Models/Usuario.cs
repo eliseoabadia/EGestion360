@@ -87,6 +87,10 @@ public partial class Usuario
 
     public virtual ICollection<CotizacionDetalle> CotizacionDetalleUsuarioModificacionNavigations { get; set; } = new List<CotizacionDetalle>();
 
+    public virtual ICollection<Cotizacion> CotizacionUsuarioCreacionNavigations { get; set; } = new List<Cotizacion>();
+
+    public virtual ICollection<Cotizacion> CotizacionUsuarioModificacionNavigations { get; set; } = new List<Cotizacion>();
+
     public virtual ICollection<CuentaContable> CuentaContableUsuarioCreacionNavigations { get; set; } = new List<CuentaContable>();
 
     public virtual ICollection<CuentaContable> CuentaContableUsuarioModificacionNavigations { get; set; } = new List<CuentaContable>();
@@ -136,6 +140,10 @@ public partial class Usuario
     public virtual ICollection<EstatusSolicitud> EstatusSolicitudUsuarioCreacionNavigations { get; set; } = new List<EstatusSolicitud>();
 
     public virtual ICollection<EstatusSolicitud> EstatusSolicitudUsuarioModificacionNavigations { get; set; } = new List<EstatusSolicitud>();
+
+    public virtual ICollection<EstudioMercadoDetalleCosto> EstudioMercadoDetalleCostoUsuarioCreacionNavigations { get; set; } = new List<EstudioMercadoDetalleCosto>();
+
+    public virtual ICollection<EstudioMercadoDetalleCosto> EstudioMercadoDetalleCostoUsuarioModificacionNavigations { get; set; } = new List<EstudioMercadoDetalleCosto>();
 
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalleUsuarioCreacionNavigations { get; set; } = new List<EstudioMercadoDetalle>();
 

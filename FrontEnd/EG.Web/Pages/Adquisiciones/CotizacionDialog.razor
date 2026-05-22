@@ -1,0 +1,291 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<CotizacionResponse> Service
+@inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<ProveedorResponse> ProveedorService
+@inject AnioPresupuestalStateService AnioStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="CotizacionResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="CotizacionResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_selectedRequisicion"
+                                   ValueChanged="OnRequisicionChanged"
+                                   Label="Requisicion"
+                                   Required="true"
+                                   RequiredError="La requisicion es requerida"
+                                   LoadPage="LoadRequisicionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <PagedAutocomplete Value="@_selectedProveedor"
+                                   ValueChanged="value => _selectedProveedor = value"
+                                   Label="Proveedor"
+                                   Required="true"
+                                   RequiredError="El proveedor es requerido"
+                                   LoadPage="LoadProveedoresPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Value="_fechaSolicitud"
+                               Label="Fecha solicitud"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha de solicitud es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Value="item.FechaProveedorCotiza"
+                               Label="Fecha cotizacion proveedor"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Value="item.FechaProveedorCompromiso"
+                               Label="Fecha compromiso proveedor"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudSwitch T="bool" @bind-Value="item.Servicio" Label="Servicio" Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Entrega"
+                              Label="Entrega"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Vigencia"
+                              Label="Vigencia"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Condiciones"
+                              Label="Condiciones"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="1000" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Comentarios"
+                              Label="Comentarios"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int AnioId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<CotizacionResponse> form = null!;
+    private CotizacionResponse item = new()
+    {
+        Activo = true,
+        FechaSolicitud = DateTime.Today,
+        FlDocumento = string.Empty,
+        Entrega = string.Empty,
+        Vigencia = string.Empty,
+        Condiciones = string.Empty,
+        Comentarios = string.Empty
+    };
+    private DateTime? _fechaSolicitud = DateTime.Today;
+    private LookupItem? _selectedRequisicion;
+    private LookupItem? _selectedProveedor;
+
+    private string dialogTitle => Id.HasValue ? "Editar Cotizacion" : "Nueva Cotizacion";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaSolicitud = item.FechaSolicitud;
+                _selectedRequisicion = new LookupItem
+                {
+                    Id = item.FkidRequisicionOrco,
+                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                };
+                _selectedProveedor = new LookupItem
+                {
+                    Id = item.FkidProveedorSis,
+                    Text = TextOrDefault(ProviderText(item.ProveedorClave, item.ProveedorNombre), item.FkidProveedorSis)
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Task OnRequisicionChanged(LookupItem? value)
+    {
+        _selectedRequisicion = value;
+        return Task.CompletedTask;
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedRequisicion == null)
+        {
+            Snackbar.Add("Debe seleccionar una requisicion.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedProveedor == null)
+        {
+            Snackbar.Add("Debe seleccionar un proveedor.", Severity.Warning);
+            return;
+        }
+
+        if (!_fechaSolicitud.HasValue)
+        {
+            Snackbar.Add("Debe capturar la fecha de solicitud.", Severity.Warning);
+            return;
+        }
+
+        var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        if (!anioId.HasValue || anioId.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        item.FkidRequisicionOrco = _selectedRequisicion.Id;
+        item.FkidProveedorSis = _selectedProveedor.Id;
+        item.FechaSolicitud = _fechaSolicitud.Value;
+        item.FkidAnioSis = anioId.Value;
+        item.FlDocumento ??= string.Empty;
+        item.Entrega ??= string.Empty;
+        item.Vigencia ??= string.Empty;
+        item.Condiciones ??= string.Empty;
+        item.Comentarios ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Cotizacion actualizada correctamente." : "Cotizacion creada correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar la cotizacion.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadRequisicionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var anioFilter = GetAnioFilter();
+        if (anioFilter == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await RequisicionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending, anioFilter);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidRequisicion,
+            Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidProveedor,
+            Text = ProviderText(x.Clave, x.Nombre)
+        }), response?.TotalCount);
+    }
+
+    private Dictionary<string, object>? GetAnioFilter()
+    {
+        var anioId = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        return anioId.HasValue && anioId.Value > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = anioId.Value }
+            : null;
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string ProviderText(string? clave, string? nombre)
+    {
+        var text = $"{clave} - {nombre}".Trim(' ', '-');
+        return string.IsNullOrWhiteSpace(text) ? string.Empty : text;
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

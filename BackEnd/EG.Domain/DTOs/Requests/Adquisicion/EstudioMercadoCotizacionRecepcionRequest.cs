@@ -8,7 +8,7 @@ namespace EG.Domain.DTOs.Requests.Adquisicion
 
     public class EstudioMercadoCotizacionRecepcionItemRequest
     {
-        public int PkidCotizacionDetalle { get; set; }
+        public int PkidEstudioMercadoDetalleCosto { get; set; }
         public decimal? PrecioUnitario { get; set; }
         public int? TiempoEntregaDias { get; set; }
         public string? Condiciones { get; set; }

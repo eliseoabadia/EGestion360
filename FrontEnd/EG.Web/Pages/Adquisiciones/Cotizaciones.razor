@@ -1,0 +1,769 @@
+@page "/Adquisiciones/Cotizacion"
+@using System.Globalization
+@using EG.Dommain.DTOs.Responses
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<CotizacionDetalleResponse> DetalleService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IJSRuntime JS
+@inherits BaseCrudPage<CotizacionResponse, CotizacionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column cotizacion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedCotizacion == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Cotizacion"
+                            Subtitle="Solicitudes y respuestas de proveedores por requisicion"
+                            Icon="@Icons.Material.Filled.ListAlt"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div class="summary-strip">
+                    <div>
+                        <span class="summary-label">Cotizaciones</span>
+                        <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">En la pagina</span>
+                        <strong>@Elements.Count(x => x.Activo).ToString("N0", NumberCulture) activas</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Total cotizado</span>
+                        <strong>@Money(Elements.Sum(x => x.TotalCotizado))</strong>
+                    </div>
+                </div>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="CotizacionResponse"
+                                  @ref="table"
+                                  Title="Cotizaciones registradas"
+                                  SearchPlaceholder="Buscar requisicion, proveedor o condiciones..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidCotizacion" T="CotizacionResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="CotizacionResponse">Requisicion</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="CotizacionResponse">Proveedor</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="CotizacionResponse">Solicitud</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaProveedorCotiza" T="CotizacionResponse">Cotiza</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TotalDetalles" T="CotizacionResponse">Bienes</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TotalCotizado" T="CotizacionResponse">Total</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Servicio" T="CotizacionResponse">Tipo</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Activo" T="CotizacionResponse">Activo</MudTableSortLabel></MudTh>
+                        </Header>
+
+                        <Row Context="item">
+                            <MudTd Class="row-actions">
+                                <MudTooltip Text="Ver detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectCotizacion(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidCotizacion))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteItem(item.PkidCotizacion))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@item.PkidCotizacion</MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.RequisicionDescripcion)</MudText>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.ProveedorNombre)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(ProviderMeta(item))</MudText>
+                            </MudTd>
+                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@DateOrDash(item.FechaProveedorCotiza)</MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
+                                    @item.TotalDetalles.ToString("N0", NumberCulture)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd><strong>@Money(item.TotalCotizado)</strong></MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
+                                    @(item.Servicio ? "Servicio" : "Bien")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                                    @(item.Activo ? "Si" : "No")
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column detail-layout" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="selected-header">
+                    <div class="selected-title">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                       Color="Color.Primary"
+                                       Size="Size.Medium"
+                                       OnClick="BackToTable"
+                                       Tooltip="Volver al listado" />
+                        <div class="selected-copy">
+                            <MudText Typo="Typo.h6" Class="selected-name">@TextOrDash(SelectedCotizacion.ProveedorNombre)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(SelectedCotizacion.RequisicionDescripcion)</MudText>
+                        </div>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Color="@(SelectedCotizacion.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(SelectedCotizacion.Activo ? "Activa" : "Inactiva")
+                    </MudChip>
+                    <MudChip T="string" Color="@(SelectedCotizacion.Servicio ? Color.Info : Color.Primary)" Size="Size.Small" Class="ml-1">
+                        @(SelectedCotizacion.Servicio ? "Servicio" : "Bien")
+                    </MudChip>
+                    <MudTooltip Text="Editar cotizacion">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="@(() => EditItem(SelectedCotizacion.PkidCotizacion))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <MudTooltip Text="Agregar bien cotizado">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="AddDetalle"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Actualizar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="RefreshSelectedAndDetails"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                </MudPaper>
+
+                <MudPaper Elevation="1" Class="summary-panel">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Solicitud</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@SelectedCotizacion.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Cotiza</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@DateOrDash(SelectedCotizacion.FechaProveedorCotiza)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Compromiso</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@DateOrDash(SelectedCotizacion.FechaProveedorCompromiso)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Bienes</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@SelectedCotizacion.TotalDetalles.ToString("N0", NumberCulture)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Total</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@Money(SelectedCotizacion.TotalCotizado)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">RFC</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@TextOrDash(SelectedCotizacion.ProveedorRfc)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Entrega</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@TextOrDash(SelectedCotizacion.Entrega)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Vigencia</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@TextOrDash(SelectedCotizacion.Vigencia)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Condiciones</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@TextOrDash(SelectedCotizacion.Condiciones)</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="CotizacionDetalleResponse"
+                                  @ref="detalleTable"
+                                  Title="Bienes cotizados"
+                                  SearchPlaceholder="Buscar bien, clave o unidad..."
+                                  ShowExportButton="false"
+                                  ShowAddButton="@CanCreate"
+                                  PageSize="10"
+                                  ServerDataFunc="LoadDetallesServerData"
+                                  SearchString="@detalleSearchString"
+                                  SearchStringChanged="(s) => detalleSearchString = s"
+                                  OnSearch="ReloadDetalles"
+                                  OnAdd="AddDetalle">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidCotizacionDetalle" T="CotizacionDetalleResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienClave" T="CotizacionDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="CotizacionDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Cantidad" T="CotizacionDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="CotizacionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PrecioUnitario" T="CotizacionDetalleResponse">Precio unitario</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Importe" T="CotizacionDetalleResponse">Importe</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Activo" T="CotizacionDetalleResponse">Activo</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="detalle">
+                            <MudTd Class="row-actions">
+                                <MudTooltip Text="Editar bien cotizado">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditDetalle(detalle.PkidCotizacionDetalle))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar bien cotizado">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteDetalle(detalle))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>@detalle.PkidCotizacionDetalle</MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(detalle.TipoBienClave)</MudChip>
+                            </MudTd>
+                            <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
+                            <MudTd>@Quantity(detalle.Cantidad)</MudTd>
+                            <MudTd>@TextOrDash(detalle.UnidadMedida)</MudTd>
+                            <MudTd>@MoneyOrDash(detalle.PrecioUnitario)</MudTd>
+                            <MudTd><strong>@MoneyOrDash(detalle.Importe)</strong></MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(detalle.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                                    @(detalle.Activo ? "Si" : "No")
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .cotizacion-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .cotizacion-page .summary-strip > div,
+    .cotizacion-page .summary-panel {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+    }
+
+    .cotizacion-page .summary-strip > div {
+        min-width: 0;
+        padding: 10px 12px;
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .cotizacion-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .cotizacion-page .summary-strip strong,
+    .cotizacion-page .metric {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--mud-palette-text-primary);
+        font-weight: 700;
+    }
+
+    .cotizacion-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .cotizacion-page .row-actions {
+        min-width: 112px;
+    }
+
+    .cotizacion-page .selected-header {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding: 8px 0;
+        background: transparent;
+    }
+
+    .cotizacion-page .selected-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .cotizacion-page .selected-copy {
+        min-width: 0;
+    }
+
+    .cotizacion-page .selected-name {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .cotizacion-page .summary-panel {
+        flex-shrink: 0;
+        padding: 12px;
+    }
+
+    @@media (max-width: 760px) {
+        .cotizacion-page .summary-strip {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<CotizacionResponse> table = null!;
+    private GenericTable<CotizacionDetalleResponse> detalleTable = null!;
+    private CotizacionResponse? SelectedCotizacion;
+    private string detalleSearchString = string.Empty;
+    private string _currencySymbol = "$";
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "Cotizacion";
+    protected override Type CreateDialogType => typeof(CotizacionDialog);
+    protected override Type EditDialogType => typeof(CotizacionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<CotizacionResponse>);
+
+    protected override string GetDefaultSortLabel() => "FechaSolicitud";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        await LoadCurrencyAsync();
+    }
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
+
+    protected override async Task<TableData<CotizacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!HasSelectedAnio())
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+                return new TableData<CotizacionResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId!.Value });
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<CotizacionResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar cotizaciones: {ex.Message}", Severity.Error);
+            return new TableData<CotizacionResponse> { Items = new List<CotizacionResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<CotizacionResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidCotizacion,
+            Requisicion = item.RequisicionDescripcion,
+            Proveedor = item.ProveedorNombre,
+            RFC = item.ProveedorRfc,
+            FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
+            FechaProveedorCotiza = item.FechaProveedorCotiza?.ToString("dd/MM/yyyy") ?? string.Empty,
+            FechaProveedorCompromiso = item.FechaProveedorCompromiso?.ToString("dd/MM/yyyy") ?? string.Empty,
+            Tipo = item.Servicio ? "Servicio" : "Bien",
+            item.TotalDetalles,
+            item.TotalCotizado,
+            item.Entrega,
+            item.Vigencia,
+            item.Condiciones,
+            item.Comentarios,
+            Activo = item.Activo ? "Si" : "No",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.ProveedorNombre ?? "la cotizacion";
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear.", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["AnioId"] = AnioStateService.AnioId!.Value
+        };
+
+        var dialog = await DialogService.ShowAsync<CotizacionDialog>(
+            "Crear Cotizacion",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["AnioId"] = AnioStateService.AnioId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync<CotizacionDialog>(
+            "Editar Cotizacion",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            if (SelectedCotizacion?.PkidCotizacion == id)
+            {
+                await RefreshSelectedAndDetails();
+            }
+            else
+            {
+                await ReloadData();
+            }
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedCotizacion != null)
+        {
+            await RefreshSelectedAndDetails();
+            return;
+        }
+
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task SelectCotizacion(CotizacionResponse cotizacion)
+    {
+        SelectedCotizacion = cotizacion;
+        detalleSearchString = string.Empty;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task BackToTable()
+    {
+        SelectedCotizacion = null;
+        detalleSearchString = string.Empty;
+        await InvokeAsync(StateHasChanged);
+
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task<TableData<CotizacionDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedCotizacion == null)
+        {
+            return new TableData<CotizacionDetalleResponse> { Items = new List<CotizacionDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "TipoBienClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidCotizacionOrco"] = SelectedCotizacion.PkidCotizacion });
+
+        return new TableData<CotizacionDetalleResponse>
+        {
+            Items = response?.Items ?? new List<CotizacionDetalleResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task AddDetalle()
+    {
+        if (SelectedCotizacion == null)
+        {
+            Snackbar.Add("Selecciona una cotizacion primero.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["CotizacionId"] = SelectedCotizacion.PkidCotizacion,
+            ["RequisicionId"] = SelectedCotizacion.FkidRequisicionOrco,
+            ["CotizacionNombre"] = SelectedCotizacion.ProveedorNombre,
+            ["RequisicionNombre"] = SelectedCotizacion.RequisicionDescripcion,
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var dialog = await DialogService.ShowAsync<CotizacionDetalleDialog>(
+            "Agregar Bien Cotizado",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshSelectedAndDetails();
+        }
+    }
+
+    private async Task EditDetalle(int id)
+    {
+        if (SelectedCotizacion == null)
+        {
+            return;
+        }
+
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["CotizacionId"] = SelectedCotizacion.PkidCotizacion,
+            ["RequisicionId"] = SelectedCotizacion.FkidRequisicionOrco,
+            ["CotizacionNombre"] = SelectedCotizacion.ProveedorNombre,
+            ["RequisicionNombre"] = SelectedCotizacion.RequisicionDescripcion,
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var dialog = await DialogService.ShowAsync<CotizacionDetalleDialog>(
+            "Editar Bien Cotizado",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshSelectedAndDetails();
+        }
+    }
+
+    private async Task DeleteDetalle(CotizacionDetalleResponse detalle)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Eliminar el bien cotizado {TextOrDash(detalle.TipoBienDescripcion)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        try
+        {
+            var response = await DetalleService.DeleteAsync(detalle.PkidCotizacionDetalle);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Bien cotizado eliminado correctamente.", Severity.Success);
+                await RefreshSelectedAndDetails();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al eliminar el bien cotizado.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task RefreshSelectedAndDetails()
+    {
+        await RefreshSelectedCotizacion();
+        await ReloadDetalles();
+    }
+
+    private async Task RefreshSelectedCotizacion()
+    {
+        if (SelectedCotizacion == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedCotizacion.PkidCotizacion);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedCotizacion = response.Data;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReloadDetalles()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                if (response?.Success == true && response.Data != null)
+                {
+                    _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+                }
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            SelectedCotizacion = null;
+            await ReloadData();
+        });
+    }
+
+    private bool HasSelectedAnio() =>
+        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private string MoneyOrDash(decimal? value) =>
+        value.HasValue ? Money(value.Value) : "-";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string DateOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
+
+    private static string ProviderMeta(CotizacionResponse item)
+    {
+        var text = $"{item.ProveedorClave} {item.ProveedorRfc}".Trim();
+        return string.IsNullOrWhiteSpace(text) ? string.Empty : text;
+    }
+}

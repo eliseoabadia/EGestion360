@@ -1284,6 +1284,104 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+CREATE OR ALTER VIEW [ORCO].[Vw_CotizacionDetalle] AS
+SELECT
+    cd.PKIdCotizacionDetalle,
+    cd.FKIdCotizacion_ORCO,
+    c.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    req.FechaRequisicion,
+    c.FKIdProveedor_SIS,
+    prov.Nombre AS ProveedorNombre,
+    prov.Clave AS ProveedorClave,
+    prov.RFC AS ProveedorRFC,
+    cd.FKIdDetalleRequisicion_ORCO,
+    dr.FKIdTipoBien_ALMA,
+    tb.CodigoClave AS TipoBienClave,
+    tb.Descripcion AS TipoBienDescripcion,
+    dr.FKIdUnidades_ALMA,
+    u.Descripcion AS UnidadMedida,
+    dr.Cantidad,
+    c.FechaSolicitud,
+    c.FechaProveedorCotiza,
+    c.FechaProveedorCompromiso,
+    c.Comentarios,
+    c.Servicio,
+    c.FL_Documento,
+    c.Entrega,
+    c.Vigencia,
+    c.Condiciones,
+    cd.PrecioUnitario,
+    CASE WHEN cd.PrecioUnitario IS NULL THEN NULL ELSE cd.PrecioUnitario * dr.Cantidad END AS Importe,
+    c.FKIdAnio_SIS,
+    c.FKIdContenedorCot_ORCO,
+    c.FKIdContenedorMultiCot_ORCO,
+    cd.Activo,
+    cd.FechaCreacion,
+    cd.UsuarioCreacion,
+    cd.FechaModificacion,
+    cd.UsuarioModificacion
+FROM ORCO.CotizacionDetalle cd
+INNER JOIN ORCO.Cotizacion c ON cd.FKIdCotizacion_ORCO = c.PKIdCotizacion AND c.Activo = 1
+INNER JOIN ORCO.Requisicion req ON c.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+INNER JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
+INNER JOIN ORCO.DetalleRequisicion dr ON cd.FKIdDetalleRequisicion_ORCO = dr.PKIdDetalleRequisicion AND dr.Activo = 1
+INNER JOIN ALMA.TipoBien tb ON dr.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+LEFT JOIN ALMA.Unidades u ON dr.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
+WHERE cd.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [ORCO].[Vw_Cotizacion] AS
+SELECT
+    c.PKIdCotizacion,
+    c.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    c.FKIdProveedor_SIS,
+    prov.Nombre AS ProveedorNombre,
+    prov.Clave AS ProveedorClave,
+    prov.RFC AS ProveedorRFC,
+    c.FechaSolicitud,
+    c.FechaProveedorCotiza,
+    c.FechaProveedorCompromiso,
+    c.Comentarios,
+    c.Servicio,
+    c.FL_Documento,
+    c.Entrega,
+    c.Vigencia,
+    c.Condiciones,
+    c.FKIdAnio_SIS,
+    ISNULL(resumen.TotalDetalles, 0) AS TotalDetalles,
+    ISNULL(resumen.TotalCotizado, 0) AS TotalCotizado,
+    c.Activo,
+    c.FechaCreacion,
+    c.UsuarioCreacion,
+    c.FechaModificacion,
+    c.UsuarioModificacion
+FROM ORCO.Cotizacion c
+INNER JOIN ORCO.Requisicion req ON c.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+INNER JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
+OUTER APPLY (
+    SELECT
+        COUNT(*) AS TotalDetalles,
+        SUM(CASE WHEN cd.PrecioUnitario IS NULL THEN 0 ELSE cd.PrecioUnitario * dr.Cantidad END) AS TotalCotizado
+    FROM ORCO.CotizacionDetalle cd
+    INNER JOIN ORCO.DetalleRequisicion dr ON cd.FKIdDetalleRequisicion_ORCO = dr.PKIdDetalleRequisicion AND dr.Activo = 1
+    WHERE cd.FKIdCotizacion_ORCO = c.PKIdCotizacion
+      AND cd.Activo = 1
+) resumen
+WHERE c.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
 CREATE OR ALTER VIEW  [ORCO].[VW_ReporteBienesProgramaAnual] AS
 WITH 
 -- 1. Resumen de �reas solicitantes por bien
@@ -1313,13 +1411,13 @@ CotizacionesPorBien AS (
     SELECT 
         emd.FKIdTipoBien_ALMA,
         COUNT(DISTINCT sc.FKIdProveedor_SIS) AS TotalProveedoresCotizaron,
-        COUNT(cd.PKIdCotizacionDetalle) AS TotalCotizacionesRecibidas,
+        COUNT(cd.PKIdEstudioMercadoDetalleCosto) AS TotalCotizacionesRecibidas,
         MIN(cd.PrecioUnitario) AS PrecioMinimo,
         MAX(cd.PrecioUnitario) AS PrecioMaximo,
         AVG(CAST(cd.PrecioUnitario AS DECIMAL(20,4))) AS PrecioPromedio,
         MAX(cd.FechaRespuesta) AS UltimaCotizacion
     FROM ORCO.EstudioMercadoDetalle emd
-    INNER JOIN ORCO.CotizacionDetalle cd ON emd.PKIdEstudioMercadoDetalle = cd.FKIdEstudioMercadoDetalle_ORCO
+    INNER JOIN ORCO.EstudioMercadoDetalleCosto cd ON emd.PKIdEstudioMercadoDetalle = cd.FKIdEstudioMercadoDetalle_ORCO
     INNER JOIN ORCO.SolicitudCotizacion sc ON cd.FKIdSolicitudCotizacion_ORCO = sc.PKIdSolicitudCotizacion
     WHERE emd.Activo = 1 AND cd.Activo = 1 AND sc.Activo = 1
     GROUP BY emd.FKIdTipoBien_ALMA

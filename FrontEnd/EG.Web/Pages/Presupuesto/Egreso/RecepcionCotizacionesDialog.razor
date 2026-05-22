@@ -323,7 +323,7 @@
                 FkidEstudioMercadoOrco = EstudioMercadoId,
                 Items = _rows.Select(x => new EstudioMercadoCotizacionRecepcionItemRequest
                 {
-                    PkidCotizacionDetalle = x.PkidCotizacionDetalle,
+                    PkidEstudioMercadoDetalleCosto = x.PkidEstudioMercadoDetalleCosto,
                     PrecioUnitario = x.PrecioUnitario,
                     TiempoEntregaDias = x.PrecioUnitario.HasValue ? x.TiempoEntregaDias : null,
                     Condiciones = x.PrecioUnitario.HasValue && !string.IsNullOrWhiteSpace(x.Condiciones)
@@ -366,7 +366,7 @@
     {
         public CotizacionRecepcionRow(EstudioMercadoCotizacionRecepcionResponse response)
         {
-            PkidCotizacionDetalle = response.PkidCotizacionDetalle;
+            PkidEstudioMercadoDetalleCosto = response.PkidEstudioMercadoDetalleCosto;
             FkidProveedorSis = response.FkidProveedorSis;
             ProveedorNombre = string.IsNullOrWhiteSpace(response.ProveedorNombre)
                 ? response.FkidProveedorSis.ToString()
@@ -380,7 +380,7 @@
             Condiciones = response.Condiciones;
         }
 
-        public int PkidCotizacionDetalle { get; }
+        public int PkidEstudioMercadoDetalleCosto { get; }
         public int FkidProveedorSis { get; }
         public string ProveedorNombre { get; }
         public string ProveedorRfc { get; }

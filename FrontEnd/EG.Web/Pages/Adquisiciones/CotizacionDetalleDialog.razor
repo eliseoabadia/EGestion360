@@ -1,0 +1,273 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<CotizacionDetalleResponse> Service
+@inject IGenericCrudService<DetalleRequisicionResponse> DetalleRequisicionService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="CotizacionDetalleResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="CotizacionDetalleResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Cotizacion</MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 700;">
+                    @TextOrDash(CotizacionNombre)
+                </MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(RequisicionNombre)</MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedDetalle"
+                                   ValueChanged="OnDetalleChanged"
+                                   Label="Bien requisitado"
+                                   Required="true"
+                                   RequiredError="El bien requisitado es requerido"
+                                   LoadPage="LoadDetallesRequisicionPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Cantidad</MudText>
+                <MudText Typo="Typo.body2" Style="font-weight: 700;">@Quantity(_selectedCantidad)</MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Unidad</MudText>
+                <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(_selectedUnidad)</MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Importe</MudText>
+                <MudText Typo="Typo.body2" Style="font-weight: 700;">@Money(_importeCalculado)</MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="decimal?"
+                                 Value="@item.PrecioUnitario"
+                                 ValueChanged="OnPrecioChanged"
+                                 Label="Precio unitario"
+                                 Variant="Variant.Outlined"
+                                 Min="0m"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="@CurrencySymbol"
+                                 Required="true"
+                                 RequiredError="El precio unitario es requerido" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="6" Class="d-flex align-center">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int CotizacionId { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string CotizacionNombre { get; set; } = string.Empty;
+    [Parameter] public string RequisicionNombre { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<CotizacionDetalleResponse> form = null!;
+    private CotizacionDetalleResponse item = new() { Activo = true };
+    private LookupItem? _selectedDetalle;
+    private decimal _selectedCantidad;
+    private string _selectedUnidad = string.Empty;
+    private decimal _importeCalculado;
+
+    private string dialogTitle => Id.HasValue ? "Editar Bien Cotizado" : "Nuevo Bien Cotizado";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+            return;
+        }
+
+        item.FkidCotizacionOrco = CotizacionId;
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                CotizacionId = item.FkidCotizacionOrco;
+                RequisicionId = item.FkidRequisicionOrco > 0 ? item.FkidRequisicionOrco : RequisicionId;
+                CotizacionNombre = TextOrDash(item.ProveedorNombre);
+                RequisicionNombre = TextOrDash(item.RequisicionDescripcion);
+                _selectedDetalle = new LookupItem
+                {
+                    Id = item.FkidDetalleRequisicionOrco,
+                    Text = TextOrDefault($"{item.TipoBienClave} - {item.TipoBienDescripcion}".Trim(' ', '-'), item.FkidDetalleRequisicionOrco)
+                };
+                _selectedCantidad = item.Cantidad;
+                _selectedUnidad = item.UnidadMedida ?? string.Empty;
+                RecalculateImporte();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnDetalleChanged(LookupItem? value)
+    {
+        _selectedDetalle = value;
+        if (value == null)
+        {
+            _selectedCantidad = 0m;
+            _selectedUnidad = string.Empty;
+            RecalculateImporte();
+            return;
+        }
+
+        try
+        {
+            var response = await DetalleRequisicionService.GetByIdAsync(value.Id);
+            if (response?.Success == true && response.Data != null)
+            {
+                var detalle = response.Data;
+                _selectedCantidad = detalle.Cantidad;
+                _selectedUnidad = detalle.UnidadMedida;
+            }
+        }
+        catch
+        {
+        }
+
+        RecalculateImporte();
+    }
+
+    private Task OnPrecioChanged(decimal? value)
+    {
+        item.PrecioUnitario = value;
+        RecalculateImporte();
+        return Task.CompletedTask;
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (CotizacionId <= 0)
+        {
+            Snackbar.Add("Debe existir una cotizacion seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedDetalle == null)
+        {
+            Snackbar.Add("Debe seleccionar un bien requisitado.", Severity.Warning);
+            return;
+        }
+
+        if (item.PrecioUnitario.GetValueOrDefault() <= 0m)
+        {
+            Snackbar.Add("El precio unitario debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        item.FkidCotizacionOrco = CotizacionId;
+        item.FkidDetalleRequisicionOrco = _selectedDetalle.Id;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Bien cotizado actualizado correctamente." : "Bien cotizado creado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el bien cotizado.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadDetallesRequisicionPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (RequisicionId <= 0)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await DetalleRequisicionService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            "TipoBienCodigoClave",
+            SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = RequisicionId });
+
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidDetalleRequisicion,
+            Text = $"{x.TipoBienCodigoClave} - {x.TipoBienDescripcion}"
+        }), response?.TotalCount);
+    }
+
+    private void RecalculateImporte()
+    {
+        _importeCalculado = _selectedCantidad * item.PrecioUnitario.GetValueOrDefault();
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

@@ -9,23 +9,15 @@ public partial class CotizacionDetalle
 {
     public int PkidCotizacionDetalle { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
+    public int FkidCotizacionOrco { get; set; }
 
-    public int FkidSolicitudCotizacionOrco { get; set; }
-
-    public int FkidEstudioMercadoDetalleOrco { get; set; }
+    public int FkidDetalleRequisicionOrco { get; set; }
 
     public decimal? PrecioUnitario { get; set; }
 
-    public int? TiempoEntregaDias { get; set; }
-
-    public string Condiciones { get; set; }
-
-    public DateTime? FechaRespuesta { get; set; }
-
     public bool Activo { get; set; }
 
-    public DateTime? FechaCreacion { get; set; }
+    public DateTime FechaCreacion { get; set; }
 
     public int UsuarioCreacion { get; set; }
 
@@ -33,11 +25,9 @@ public partial class CotizacionDetalle
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
+    public virtual Cotizacion FkidCotizacionOrcoNavigation { get; set; }
 
-    public virtual EstudioMercadoDetalle FkidEstudioMercadoDetalleOrcoNavigation { get; set; }
-
-    public virtual SolicitudCotizacion FkidSolicitudCotizacionOrcoNavigation { get; set; }
+    public virtual DetalleRequisicion FkidDetalleRequisicionOrcoNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

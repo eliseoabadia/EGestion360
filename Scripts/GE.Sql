@@ -1,33 +1,48 @@
-﻿-- =============================================
+-- =============================================
 -- Script: GP.Sql
 -- Description: Full database schema for GestionEmpresarial
 -- =============================================
 
 USE [GestionEmpresarial];
+
 GO
 
 -- =============================================
 -- ESQUEMAS
 -- =============================================
-CREATE SCHEMA SIS;
+IF SCHEMA_ID(N'SIS') IS NULL EXEC(N'CREATE SCHEMA SIS;');
+
 GO
-CREATE SCHEMA NOM;
+
+IF SCHEMA_ID(N'NOM') IS NULL EXEC(N'CREATE SCHEMA NOM;');
+
 GO
-CREATE SCHEMA ALMA;
+
+IF SCHEMA_ID(N'ALMA') IS NULL EXEC(N'CREATE SCHEMA ALMA;');
+
 GO
-CREATE SCHEMA CONTA;
+
+IF SCHEMA_ID(N'CONTA') IS NULL EXEC(N'CREATE SCHEMA CONTA;');
+
 GO
-CREATE SCHEMA ORCO;
+
+IF SCHEMA_ID(N'ORCO') IS NULL EXEC(N'CREATE SCHEMA ORCO;');
+
 GO
-CREATE SCHEMA PRES;
+
+IF SCHEMA_ID(N'PRES') IS NULL EXEC(N'CREATE SCHEMA PRES;');
+
 GO
-CREATE SCHEMA TES;
+
+IF SCHEMA_ID(N'TES') IS NULL EXEC(N'CREATE SCHEMA TES;');
+
 GO
 
 -- =============================================
 -- TIPO DE DATO PERSONALIZADO
 -- =============================================
-CREATE TYPE [dbo].[dmoney] FROM [decimal](20, 4) NULL;
+IF TYPE_ID(N'dbo.dmoney') IS NULL EXEC(N'CREATE TYPE [dbo].[dmoney] FROM [decimal](20, 4) NULL;');
+
 GO
 
 -- =============================================
@@ -35,6 +50,8 @@ GO
 -- =============================================
 
 -- dbo.AspNetRoles
+IF OBJECT_ID(N'dbo.AspNetRoles', N'U') IS NULL
+BEGIN
 CREATE TABLE dbo.AspNetRoles (
     Id NVARCHAR(128) NOT NULL,
     Name NVARCHAR(256) NOT NULL,
@@ -42,18 +59,26 @@ CREATE TABLE dbo.AspNetRoles (
     CONSTRAINT CONSTRAINT_PK_AspNetRoles PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT CONSTRAINT_UX_AspNetRoles_Name UNIQUE NONCLUSTERED (Name)
 );
+
+END
 GO
 
 -- dbo.AspNetClaimTypes
+IF OBJECT_ID(N'dbo.AspNetClaimTypes', N'U') IS NULL
+BEGIN
 CREATE TABLE dbo.AspNetClaimTypes (
     Id INT IDENTITY(1,1) NOT NULL,
     Name NVARCHAR(50) NOT NULL,
     Created DATETIME NOT NULL,
     CONSTRAINT CONSTRAINT_PK_AspNetClaimTypes PRIMARY KEY CLUSTERED (Id)
 );
+
+END
 GO
 
 -- SIS.Idioma
+IF OBJECT_ID(N'SIS.Idioma', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Idioma (
     PKIdIdioma INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(50) NOT NULL,
@@ -63,9 +88,13 @@ CREATE TABLE SIS.Idioma (
     CONSTRAINT PK_Idioma PRIMARY KEY CLUSTERED (PKIdIdioma),
     CONSTRAINT UQ_Idioma_Codigo UNIQUE (CodigoISO639_1)
 );
+
+END
 GO
 
 -- SIS.Moneda
+IF OBJECT_ID(N'SIS.Moneda', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Moneda (
     PKIdMoneda INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(50) NOT NULL,
@@ -76,9 +105,13 @@ CREATE TABLE SIS.Moneda (
     CONSTRAINT PK_Moneda PRIMARY KEY CLUSTERED (PKIdMoneda),
     CONSTRAINT UQ_Moneda_Codigo UNIQUE (CodigoISO4217)
 );
+
+END
 GO
 
 -- SIS.CatTipoSucursal
+IF OBJECT_ID(N'SIS.CatTipoSucursal', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.CatTipoSucursal (
     PKIdTipoSucursal INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -86,9 +119,13 @@ CREATE TABLE SIS.CatTipoSucursal (
     CONSTRAINT PK_TipoSucursal PRIMARY KEY CLUSTERED (PKIdTipoSucursal),
     CONSTRAINT UQ_TipoSucursal_Descripcion UNIQUE (Descripcion)
 );
+
+END
 GO
 
 -- SIS.OrigenLogMessage
+IF OBJECT_ID(N'SIS.OrigenLogMessage', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.OrigenLogMessage (
     PKIdOrigenLogMessage INT NOT NULL,
     Descripcion NVARCHAR(50) NULL,
@@ -99,9 +136,13 @@ CREATE TABLE SIS.OrigenLogMessage (
     UsuarioModificacion INT NULL,
     CONSTRAINT CONSTRAINT_PK_OrigenLogMessage PRIMARY KEY CLUSTERED (PKIdOrigenLogMessage)
 );
+
+END
 GO
 
 -- SIS.SystemParamCatalog
+IF OBJECT_ID(N'SIS.SystemParamCatalog', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.SystemParamCatalog (
     PKIdSystemParamCatalog INT NOT NULL,
     Code NVARCHAR(50) NOT NULL,
@@ -113,9 +154,13 @@ CREATE TABLE SIS.SystemParamCatalog (
     UsuarioModificacion INT NULL,
     CONSTRAINT CONSTRAINT_PK_SystemParamCatalog PRIMARY KEY CLUSTERED (PKIdSystemParamCatalog)
 );
+
+END
 GO
 
 -- SIS.Paises
+IF OBJECT_ID(N'SIS.Paises', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Paises (
     PKIdPais INT IDENTITY(1,1) NOT NULL,
     Nombre VARCHAR(64) NOT NULL,
@@ -131,9 +176,13 @@ CREATE TABLE SIS.Paises (
     CONSTRAINT UQ_Paises_CodigoISO2 UNIQUE (CodigoISO2),
     CONSTRAINT UQ_Paises_CodigoISO3 UNIQUE (CodigoISO3)
 );
+
+END
 GO
 
 -- SIS.Estados
+IF OBJECT_ID(N'SIS.Estados', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Estados (
     PKIdEstado INT IDENTITY(1,1) NOT NULL,
     FKIdPais_SIS INT NOT NULL,
@@ -144,9 +193,13 @@ CREATE TABLE SIS.Estados (
     CONSTRAINT FK_Estados_Paises FOREIGN KEY (FKIdPais_SIS) REFERENCES SIS.Paises(PKIdPais),
     CONSTRAINT UQ_Estados_Pais_Nombre UNIQUE (FKIdPais_SIS, Nombre)
 );
+
+END
 GO
 
 -- SIS.Municipios
+IF OBJECT_ID(N'SIS.Municipios', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Municipios (
     PKIdMunicipio INT IDENTITY(1,1) NOT NULL,
     FKIdEstado_SIS INT NOT NULL,
@@ -157,9 +210,13 @@ CREATE TABLE SIS.Municipios (
     CONSTRAINT PK_Municipios PRIMARY KEY CLUSTERED (PKIdMunicipio),
     CONSTRAINT FK_Municipios_Estados FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado)
 );
+
+END
 GO
 
 -- SIS.Empresa
+IF OBJECT_ID(N'SIS.Empresa', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Empresa (
     PKIdEmpresa INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(128) NOT NULL,
@@ -179,6 +236,8 @@ CREATE TABLE SIS.Empresa (
     --CONSTRAINT FK_Empresa_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
     CONSTRAINT UQ_Empresa_RFC UNIQUE (RFC)
 );
+
+END
 GO
 
 -- =============================================
@@ -231,6 +290,7 @@ BEGIN
         CONSTRAINT PK_Persona PRIMARY KEY (PKIdPersona)
     );
 END
+
 GO
 
 -- =============================================
@@ -260,20 +320,27 @@ BEGIN
         CONSTRAINT UQ_Usuario_PayrollID UNIQUE (PayrollID)
     );
 END
+
 GO
 
 -- FK en Persona hacia Usuario
-ALTER TABLE NOM.Persona
-ADD CONSTRAINT FK_Persona_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_Persona_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'NOM.FK_Persona_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE NOM.Persona ADD CONSTRAINT FK_Persona_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
+IF OBJECT_ID(N'NOM.FK_Persona_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE NOM.Persona ADD CONSTRAINT FK_Persona_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
 -- FK en Usuario hacia Persona
-ALTER TABLE SIS.Usuario
-ADD CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona);
+IF OBJECT_ID(N'SIS.FK_Usuario_Persona', N'F') IS NULL
+    ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona);
+
 GO
 
 -- SIS.Anio
+IF OBJECT_ID(N'SIS.Anio', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Anio (
     PKIdAnio INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -286,9 +353,13 @@ CREATE TABLE SIS.Anio (
     CONSTRAINT FK_Anio_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Anio_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.ActividadInstitucional
+IF OBJECT_ID(N'SIS.ActividadInstitucional', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.ActividadInstitucional (
     PKIdActividadInstitucional INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(3) NOT NULL,
@@ -302,9 +373,13 @@ CREATE TABLE SIS.ActividadInstitucional (
     CONSTRAINT FK_ActividadInstitucional_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_ActividadInstitucional_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.Capitulo
+IF OBJECT_ID(N'SIS.Capitulo', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Capitulo (
     PKIdCapitulo INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(30) NULL,
@@ -318,9 +393,13 @@ CREATE TABLE SIS.Capitulo (
     CONSTRAINT FK_Capitulo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Capitulo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.Concepto
+IF OBJECT_ID(N'SIS.Concepto', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Concepto (
     PKIdConcepto INT IDENTITY(1,1) NOT NULL,
     FKIdCapitulo_SIS INT NOT NULL,
@@ -336,9 +415,13 @@ CREATE TABLE SIS.Concepto (
     CONSTRAINT FK_Concepto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Concepto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.Partida
+IF OBJECT_ID(N'SIS.Partida', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Partida (
     PKIdPartida INT IDENTITY(1,1) NOT NULL,
     FKIdConcepto_SIS INT NULL,
@@ -354,9 +437,13 @@ CREATE TABLE SIS.Partida (
     CONSTRAINT FK_Partida_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Partida_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.TipoPoliza
+IF OBJECT_ID(N'SIS.TipoPoliza', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.TipoPoliza (
     PKIdTipoPoliza INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(25) NOT NULL,
@@ -369,9 +456,13 @@ CREATE TABLE SIS.TipoPoliza (
     CONSTRAINT FK_TipoPoliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoPoliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.TipoDetallePoliza
+IF OBJECT_ID(N'SIS.TipoDetallePoliza', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.TipoDetallePoliza (
     PkIdTipoDetallePoliza INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(25) NOT NULL,
@@ -384,9 +475,13 @@ CREATE TABLE SIS.TipoDetallePoliza (
     CONSTRAINT FK_TipoDetallePoliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoDetallePoliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.TipoProveedor
+IF OBJECT_ID(N'SIS.TipoProveedor', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.TipoProveedor (
     PkIdTipoProveedor INT IDENTITY(1,1) NOT NULL,
     Descripcion VARCHAR(80) NOT NULL,
@@ -399,9 +494,13 @@ CREATE TABLE SIS.TipoProveedor (
     CONSTRAINT FK_TipoProveedor_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoProveedor_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.EstatusProveedor
+IF OBJECT_ID(N'SIS.EstatusProveedor', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.EstatusProveedor (
     PKIdEstatusProveedor INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(150) NOT NULL,
@@ -415,8 +514,13 @@ CREATE TABLE SIS.EstatusProveedor (
     CONSTRAINT FK_EstatusProveedor_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EstatusProveedor_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
+
 -- SIS.TipoDoctoCLC
+IF OBJECT_ID(N'SIS.TipoDoctoCLC', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.TipoDoctoCLC (
     PKIdTipoDoctoCLC INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(50) NOT NULL,
@@ -431,9 +535,13 @@ CREATE TABLE SIS.TipoDoctoCLC (
     CONSTRAINT FK_TipoDoctoCLC_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoDoctoCLC_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.TipoCuenta
+IF OBJECT_ID(N'CONTA.TipoCuenta', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.TipoCuenta (
     PKIdTipoCuenta INT IDENTITY(1,1) NOT NULL,
     Color NVARCHAR(5) NOT NULL,
@@ -447,9 +555,13 @@ CREATE TABLE CONTA.TipoCuenta (
     CONSTRAINT FK_TipoCuenta_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoCuenta_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.TipoDoctoPago
+IF OBJECT_ID(N'CONTA.TipoDoctoPago', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.TipoDoctoPago (
     PKIdTipoDoctoPago INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -462,9 +574,13 @@ CREATE TABLE CONTA.TipoDoctoPago (
     CONSTRAINT FK_TipoDoctoPago_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoDoctoPago_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.Capitulo
+IF OBJECT_ID(N'CONTA.Capitulo', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.Capitulo (
     PKIdCapitulo INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(30) NULL,
@@ -478,9 +594,13 @@ CREATE TABLE CONTA.Capitulo (
     CONSTRAINT FK_Capitulo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Capitulo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.Concepto
+IF OBJECT_ID(N'CONTA.Concepto', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.Concepto (
     PKIdConcepto INT IDENTITY(1,1) NOT NULL,
     FKIdCapitulo_CONTA INT NOT NULL,
@@ -496,9 +616,13 @@ CREATE TABLE CONTA.Concepto (
     CONSTRAINT FK_Concepto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Concepto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.Partida
+IF OBJECT_ID(N'CONTA.Partida', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.Partida (
     PKIdPartida INT IDENTITY(1,1) NOT NULL,
     FKIdConcepto_SIS INT NULL,
@@ -514,9 +638,13 @@ CREATE TABLE CONTA.Partida (
     CONSTRAINT FK_Partida_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Partida_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.GF
+IF OBJECT_ID(N'PRES.GF', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.GF (
     PKIdGF INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -530,9 +658,13 @@ CREATE TABLE PRES.GF (
     CONSTRAINT FK_GF_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_GF_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.FN
+IF OBJECT_ID(N'PRES.FN', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.FN (
     PKIdFN INT IDENTITY(1,1) NOT NULL,
     FKIdGF_PRES INT NOT NULL,
@@ -548,9 +680,13 @@ CREATE TABLE PRES.FN (
     CONSTRAINT FK_FN_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_FN_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.SF
+IF OBJECT_ID(N'PRES.SF', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.SF (
     PKIdSF INT IDENTITY(1,1) NOT NULL,
     FKIdFN_PRES INT NOT NULL,
@@ -566,9 +702,13 @@ CREATE TABLE PRES.SF (
     CONSTRAINT FK_SF_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_SF_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.PP
+IF OBJECT_ID(N'PRES.PP', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.PP (
     PKIdPP INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(4) NOT NULL,
@@ -582,9 +722,13 @@ CREATE TABLE PRES.PP (
     CONSTRAINT FK_PP_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PP_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.TipoRecurso
+IF OBJECT_ID(N'PRES.TipoRecurso', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.TipoRecurso (
     PKIdTipoRecurso INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(1) NOT NULL,
@@ -598,9 +742,13 @@ CREATE TABLE PRES.TipoRecurso (
     CONSTRAINT FK_TipoRecurso_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoRecurso_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Sector
+IF OBJECT_ID(N'PRES.Sector', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Sector (
     PKIdSector INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -614,9 +762,13 @@ CREATE TABLE PRES.Sector (
     CONSTRAINT FK_Sector_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Sector_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.GrupoPresupuesto
+IF OBJECT_ID(N'PRES.GrupoPresupuesto', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.GrupoPresupuesto (
     PKIdGrupoPresupuesto INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -630,9 +782,13 @@ CREATE TABLE PRES.GrupoPresupuesto (
     CONSTRAINT FK_GrupoPresupuesto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_GrupoPresupuesto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.UR
+IF OBJECT_ID(N'PRES.UR', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.UR (
     PKIdUR INT IDENTITY(1,1) NOT NULL,
     FKIdGrupoPresupuesto_PRES INT NOT NULL,
@@ -648,9 +804,13 @@ CREATE TABLE PRES.UR (
     CONSTRAINT FK_UR_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_UR_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Eje
+IF OBJECT_ID(N'PRES.Eje', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Eje (
     PKIdEje INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(1) NOT NULL,
@@ -664,9 +824,13 @@ CREATE TABLE PRES.Eje (
     CONSTRAINT FK_Eje_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Eje_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.SubEje
+IF OBJECT_ID(N'PRES.SubEje', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.SubEje (
     PKIdSubEje INT IDENTITY(1,1) NOT NULL,
     FKIdEje_PRES INT NOT NULL,
@@ -682,9 +846,13 @@ CREATE TABLE PRES.SubEje (
     CONSTRAINT FK_SubEje_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_SubEje_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.SubSubEje
+IF OBJECT_ID(N'PRES.SubSubEje', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.SubSubEje (
     PKIdSubSubEje INT IDENTITY(1,1) NOT NULL,
     FKIdSubEje_PRES INT NOT NULL,
@@ -700,9 +868,13 @@ CREATE TABLE PRES.SubSubEje (
     CONSTRAINT FK_SubSubEje_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_SubSubEje_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Finalidad
+IF OBJECT_ID(N'PRES.Finalidad', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Finalidad (
     PKIdFinalidad INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -716,9 +888,13 @@ CREATE TABLE PRES.Finalidad (
     CONSTRAINT FK_Finalidad_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Finalidad_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.VertienteGasto
+IF OBJECT_ID(N'PRES.VertienteGasto', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.VertienteGasto (
     PKIdVertienteGasto INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -732,9 +908,13 @@ CREATE TABLE PRES.VertienteGasto (
     CONSTRAINT FK_VertienteGasto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_VertienteGasto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Resultado
+IF OBJECT_ID(N'PRES.Resultado', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Resultado (
     PKIdResultado INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -748,9 +928,13 @@ CREATE TABLE PRES.Resultado (
     CONSTRAINT FK_Resultado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Resultado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Subresultado
+IF OBJECT_ID(N'PRES.Subresultado', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Subresultado (
     PKIdSubresultado INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -764,9 +948,13 @@ CREATE TABLE PRES.Subresultado (
     CONSTRAINT FK_Subresultado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Subresultado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.SubSector
+IF OBJECT_ID(N'PRES.SubSector', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.SubSector (
     PKIdSubSector INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -780,9 +968,13 @@ CREATE TABLE PRES.SubSector (
     CONSTRAINT FK_SubSector_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_SubSector_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.FuenteFinanciamiento
+IF OBJECT_ID(N'PRES.FuenteFinanciamiento', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.FuenteFinanciamiento (
     PKIdFuenteFinanciamiento INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(6) NULL,
@@ -803,9 +995,13 @@ CREATE TABLE PRES.FuenteFinanciamiento (
     CONSTRAINT FK_FuenteFinanciamiento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_FuenteFinanciamiento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Ramo
+IF OBJECT_ID(N'PRES.Ramo', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Ramo (
     PKIdRamo INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -819,9 +1015,13 @@ CREATE TABLE PRES.Ramo (
     CONSTRAINT FK_Ramo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Ramo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.PG
+IF OBJECT_ID(N'PRES.PG', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.PG (
     PKIdPG INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -835,9 +1035,13 @@ CREATE TABLE PRES.PG (
     CONSTRAINT FK_PG_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PG_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Programa
+IF OBJECT_ID(N'PRES.Programa', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Programa (
     PKIdPrograma INT IDENTITY(1,1) NOT NULL,
     FKIdUR_PRES INT NOT NULL,
@@ -888,9 +1092,13 @@ CREATE TABLE PRES.Programa (
     CONSTRAINT FK_Programa_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Programa_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Origen
+IF OBJECT_ID(N'PRES.Origen', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Origen (
     PKIdOrigen INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -904,9 +1112,13 @@ CREATE TABLE PRES.Origen (
     CONSTRAINT FK_Origen_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Origen_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.TipoGasto
+IF OBJECT_ID(N'PRES.TipoGasto', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.TipoGasto (
     PKIdTipoGasto INT IDENTITY(1,1) NOT NULL,
     Clave INT NOT NULL,
@@ -920,9 +1132,13 @@ CREATE TABLE PRES.TipoGasto (
     CONSTRAINT FK_TipoGasto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoGasto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.DigitoIdentificador
+IF OBJECT_ID(N'PRES.DigitoIdentificador', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.DigitoIdentificador (
     PKIdDigitoIdentificador INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(1) NOT NULL,
@@ -936,9 +1152,13 @@ CREATE TABLE PRES.DigitoIdentificador (
     CONSTRAINT FK_DigitoIdentificador_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_DigitoIdentificador_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.DestinoGasto
+IF OBJECT_ID(N'PRES.DestinoGasto', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.DestinoGasto (
     PKIdDestinoGasto INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(2) NOT NULL,
@@ -952,9 +1172,13 @@ CREATE TABLE PRES.DestinoGasto (
     CONSTRAINT FK_DestinoGasto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_DestinoGasto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.Suficiencia
+IF OBJECT_ID(N'PRES.Suficiencia', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.Suficiencia (
     PKIdSuficiencia INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -967,9 +1191,13 @@ CREATE TABLE PRES.Suficiencia (
     CONSTRAINT FK_Suficiencia_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Suficiencia_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.PY
+IF OBJECT_ID(N'PRES.PY', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.PY (
     PKIdPY INT IDENTITY(1,1) NOT NULL,
     Clave VARCHAR(15) NULL,
@@ -1006,9 +1234,13 @@ CREATE TABLE PRES.PY (
     CONSTRAINT FK_PY_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PY_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.Nivel
+IF OBJECT_ID(N'ALMA.Nivel', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Nivel (
     PKIdNivel INT IDENTITY(1,1) NOT NULL,
     Nivel INT NOT NULL,
@@ -1022,8 +1254,13 @@ CREATE TABLE ALMA.Nivel (
     CONSTRAINT FK_Nivel_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Nivel_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
+
 -- ALMA.Unidades
+IF OBJECT_ID(N'ALMA.Unidades', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Unidades (
     PKIdUnidades INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1036,9 +1273,13 @@ CREATE TABLE ALMA.Unidades (
     CONSTRAINT FK_Unidades_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Unidades_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.Familia
+IF OBJECT_ID(N'ALMA.Familia', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Familia (
     PKIdFamilia INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(80) NOT NULL,
@@ -1052,9 +1293,13 @@ CREATE TABLE ALMA.Familia (
     CONSTRAINT FK_Familia_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Familia_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.GrupoBien
+IF OBJECT_ID(N'ALMA.GrupoBien', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.GrupoBien (
     PKIdGrupoBien INT IDENTITY(1,1) NOT NULL,
     FKIdFamilia_ALMA INT NOT NULL,
@@ -1074,9 +1319,13 @@ CREATE TABLE ALMA.GrupoBien (
     CONSTRAINT FK_GrupoBien_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_GrupoBien_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.TipoPatrimonio
+IF OBJECT_ID(N'ALMA.TipoPatrimonio', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.TipoPatrimonio (
     PKIdTipoPatrimonio INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1089,9 +1338,13 @@ CREATE TABLE ALMA.TipoPatrimonio (
     CONSTRAINT FK_TipoPatrimonio_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoPatrimonio_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.Marca
+IF OBJECT_ID(N'ALMA.Marca', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Marca (
     PKIdMarca INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1104,9 +1357,13 @@ CREATE TABLE ALMA.Marca (
     CONSTRAINT FK_Marca_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Marca_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.Material
+IF OBJECT_ID(N'ALMA.Material', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Material (
     PKIdMaterial INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1119,9 +1376,13 @@ CREATE TABLE ALMA.Material (
     CONSTRAINT FK_Material_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Material_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.EstadoBien
+IF OBJECT_ID(N'ALMA.EstadoBien', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.EstadoBien (
     PKIdEstadoBien INT IDENTITY(1,1) NOT NULL,
     DESCRIPCION_GENERAL NVARCHAR(150) NOT NULL,
@@ -1136,9 +1397,13 @@ CREATE TABLE ALMA.EstadoBien (
     CONSTRAINT FK_EstadoBien_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EstadoBien_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.TipoAdquisicion
+IF OBJECT_ID(N'ALMA.TipoAdquisicion', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.TipoAdquisicion (
     PKIdTipoAdq INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(10) NOT NULL,
@@ -1153,9 +1418,13 @@ CREATE TABLE ALMA.TipoAdquisicion (
     CONSTRAINT FK_TipoAdquisicion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoAdquisicion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.EstatusPeriodo
+IF OBJECT_ID(N'ALMA.EstatusPeriodo', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.EstatusPeriodo (
     PKIdEstatusPeriodo INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(30) NOT NULL,
@@ -1164,9 +1433,13 @@ CREATE TABLE ALMA.EstatusPeriodo (
     CONSTRAINT PK_EstatusPeriodo PRIMARY KEY (PKIdEstatusPeriodo),
     CONSTRAINT UQ_EstatusPeriodo_Nombre UNIQUE (Nombre)
 );
+
+END
 GO
 
 -- ALMA.TipoConteo
+IF OBJECT_ID(N'ALMA.TipoConteo', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.TipoConteo (
     PKIdTipoConteo INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(30) NOT NULL,
@@ -1174,9 +1447,13 @@ CREATE TABLE ALMA.TipoConteo (
     Activo BIT NOT NULL CONSTRAINT DF_TipoConteo_Activo DEFAULT (1),
     CONSTRAINT PK_TipoConteo PRIMARY KEY (PKIdTipoConteo)
 );
+
+END
 GO
 
 -- ALMA.EstatusArticuloConteo
+IF OBJECT_ID(N'ALMA.EstatusArticuloConteo', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.EstatusArticuloConteo (
     PKIdEstatusArticulo INT IDENTITY(1,1) NOT NULL,
     Nombre NVARCHAR(30) NOT NULL,
@@ -1189,9 +1466,13 @@ CREATE TABLE ALMA.EstatusArticuloConteo (
     CONSTRAINT PK_EstatusArticuloConteo PRIMARY KEY (PKIdEstatusArticulo),
     CONSTRAINT UQ_EstatusArticuloConteo_Nombre UNIQUE (Nombre)
 );
+
+END
 GO
 
 -- ALMA.MotivoES
+IF OBJECT_ID(N'ALMA.MotivoES', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.MotivoES (
     PKIdMotivoES INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1206,9 +1487,13 @@ CREATE TABLE ALMA.MotivoES (
     CONSTRAINT FK_MotivoES_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_MotivoES_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.EstatusSolicitud
+IF OBJECT_ID(N'ALMA.EstatusSolicitud', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.EstatusSolicitud (
     PKIdEstatusSolicitud INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(150) NOT NULL,
@@ -1222,9 +1507,13 @@ CREATE TABLE ALMA.EstatusSolicitud (
     CONSTRAINT FK_EstatusSolicitud_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EstatusSolicitud_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.Modalidad
+IF OBJECT_ID(N'ORCO.Modalidad', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.Modalidad (
     PKIdModalidad INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(30) NOT NULL,
@@ -1237,9 +1526,13 @@ CREATE TABLE ORCO.Modalidad (
     CONSTRAINT FK_Modalidad_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Modalidad_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.TipoContrato
+IF OBJECT_ID(N'ORCO.TipoContrato', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.TipoContrato (
     PKIdTipoContrato INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(25) NOT NULL,
@@ -1252,9 +1545,13 @@ CREATE TABLE ORCO.TipoContrato (
     CONSTRAINT FK_TipoContrato_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoContrato_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.TipoDocumento
+IF OBJECT_ID(N'ORCO.TipoDocumento', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.TipoDocumento (
     PKIdTipoDocumento INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(25) NOT NULL,
@@ -1267,9 +1564,13 @@ CREATE TABLE ORCO.TipoDocumento (
     CONSTRAINT FK_TipoDocumento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoDocumento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.TipoGarantia
+IF OBJECT_ID(N'ORCO.TipoGarantia', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.TipoGarantia (
     PKIdTipoGarantia INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(25) NOT NULL,
@@ -1282,9 +1583,13 @@ CREATE TABLE ORCO.TipoGarantia (
     CONSTRAINT FK_TipoGarantia_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoGarantia_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.ProcedimientoContratacion
+IF OBJECT_ID(N'ORCO.ProcedimientoContratacion', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.ProcedimientoContratacion (
     PKIdProcedimientoContratacion INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1298,9 +1603,13 @@ CREATE TABLE ORCO.ProcedimientoContratacion (
     CONSTRAINT FK_ProcedimientoContratacion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_ProcedimientoContratacion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.EstatusRequisicion
+IF OBJECT_ID(N'ORCO.EstatusRequisicion', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.EstatusRequisicion (
     PKIdEstatusRequisicion INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1316,9 +1625,13 @@ CREATE TABLE ORCO.EstatusRequisicion (
     CONSTRAINT FK_EstatusRequisicion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EstatusRequisicion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.Articulo
+IF OBJECT_ID(N'ORCO.Articulo', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.Articulo (
     PKIdArticulo INT IDENTITY(1,1) NOT NULL,
     Clave NVARCHAR(20) NOT NULL,
@@ -1332,9 +1645,13 @@ CREATE TABLE ORCO.Articulo (
     CONSTRAINT FK_Articulo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Articulo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.Fraccion
+IF OBJECT_ID(N'ORCO.Fraccion', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.Fraccion (
     PKIdFraccion INT IDENTITY(1,1) NOT NULL,
     FKIdArticulo_ORCO INT NOT NULL,
@@ -1350,9 +1667,13 @@ CREATE TABLE ORCO.Fraccion (
     CONSTRAINT FK_Fraccion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Fraccion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.Proyecto
+IF OBJECT_ID(N'ORCO.Proyecto', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.Proyecto (
     PKIdProyecto INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(MAX) NOT NULL,
@@ -1365,9 +1686,13 @@ CREATE TABLE ORCO.Proyecto (
     CONSTRAINT FK_Proyecto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Proyecto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- TES.TipoInversion
+IF OBJECT_ID(N'TES.TipoInversion', N'U') IS NULL
+BEGIN
 CREATE TABLE TES.TipoInversion (
     PKIdTipoInversion INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1380,9 +1705,13 @@ CREATE TABLE TES.TipoInversion (
     CONSTRAINT FK_TipoInversion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoInversion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- TES.TipoPago
+IF OBJECT_ID(N'TES.TipoPago', N'U') IS NULL
+BEGIN
 CREATE TABLE TES.TipoPago (
     PKIdTipoPago INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1395,9 +1724,13 @@ CREATE TABLE TES.TipoPago (
     CONSTRAINT FK_TipoPago_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoPago_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- TES.TipoPagoSF
+IF OBJECT_ID(N'TES.TipoPagoSF', N'U') IS NULL
+BEGIN
 CREATE TABLE TES.TipoPagoSF (
     PKIdTipoPagoSF INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1410,9 +1743,13 @@ CREATE TABLE TES.TipoPagoSF (
     CONSTRAINT FK_TipoPagoSF_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoPagoSF_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- TES.TipoSolicitudCLC
+IF OBJECT_ID(N'TES.TipoSolicitudCLC', N'U') IS NULL
+BEGIN
 CREATE TABLE TES.TipoSolicitudCLC (
     PKIdTipoSolicitudCLC INT IDENTITY(1,1) NOT NULL,
     Descripcion NVARCHAR(50) NOT NULL,
@@ -1425,12 +1762,17 @@ CREATE TABLE TES.TipoSolicitudCLC (
     CONSTRAINT FK_TipoSolicitudCLC_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoSolicitudCLC_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
+
 -- =============================================
 -- TABLAS CON DEPENDENCIAS DE FK (FASE 2)
 -- =============================================
 
 -- SIS.EmpresaEstado
+IF OBJECT_ID(N'SIS.EmpresaEstado', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.EmpresaEstado (
     FKIdEmpresa_SIS INT NOT NULL,
     FKIdEstado_SIS INT NOT NULL,
@@ -1441,9 +1783,13 @@ CREATE TABLE SIS.EmpresaEstado (
     CONSTRAINT FK_EmpresaEstado_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
     CONSTRAINT FK_EmpresaEstado_Estado FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado)
 );
+
+END
 GO
 
 -- SIS.Sucursal
+IF OBJECT_ID(N'SIS.Sucursal', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Sucursal (
     PKIdSucursal INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -1478,9 +1824,13 @@ CREATE TABLE SIS.Sucursal (
     CONSTRAINT FK_Sucursal_Moneda FOREIGN KEY (FKIdMonedaLocal_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
     CONSTRAINT UQ_Sucursal_Codigo UNIQUE (CodigoSucursal)
 );
+
+END
 GO
 
 -- SIS.Departamento
+IF OBJECT_ID(N'SIS.Departamento', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Departamento (
     PKIdDepartamento INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -1497,9 +1847,13 @@ CREATE TABLE SIS.Departamento (
     CONSTRAINT FK_Departamento_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
     CONSTRAINT FK_Departamento_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal)
 );
+
+END
 GO
 
 -- SIS.Area
+IF OBJECT_ID(N'SIS.Area', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Area (
     PKIdArea INT IDENTITY(1,1) NOT NULL,
     FKIdArea_SIS INT NULL,
@@ -1523,9 +1877,13 @@ CREATE TABLE SIS.Area (
     CONSTRAINT FK_Area_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Area_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- TES.TipoMoneda
+IF OBJECT_ID(N'TES.TipoMoneda', N'U') IS NULL
+BEGIN
 CREATE TABLE TES.TipoMoneda (
     PKIdTipoMoneda INT IDENTITY(1,1) NOT NULL,
     FKIdPais_SIS INT NOT NULL,
@@ -1543,9 +1901,13 @@ CREATE TABLE TES.TipoMoneda (
     CONSTRAINT FK_TipoMoneda_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoMoneda_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- TES.TipoCambio
+IF OBJECT_ID(N'TES.TipoCambio', N'U') IS NULL
+BEGIN
 CREATE TABLE TES.TipoCambio (
     PKIdTipoCambio INT IDENTITY(1,1) NOT NULL,
     FKIdTipoMoneda_TES INT NOT NULL,
@@ -1561,9 +1923,13 @@ CREATE TABLE TES.TipoCambio (
     CONSTRAINT FK_TipoCambio_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoCambio_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.CuentaContable
+IF OBJECT_ID(N'CONTA.CuentaContable', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.CuentaContable (
     PKIdCuentaContable INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -1600,9 +1966,13 @@ CREATE TABLE CONTA.CuentaContable (
     CONSTRAINT FK_CuentaContable_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_CuentaContable_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.Poliza
+IF OBJECT_ID(N'CONTA.Poliza', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.Poliza (
     PKIdPoliza INT IDENTITY(1,1) NOT NULL,
     FKIdAnio_SIS INT NOT NULL,
@@ -1628,9 +1998,13 @@ CREATE TABLE CONTA.Poliza (
     CONSTRAINT FK_Poliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Poliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
--- CONTA.ConsecutivoPoliza (consecutivo anual por mes y tipo de p�liza)
+-- CONTA.ConsecutivoPoliza (consecutivo anual por mes y tipo de p?liza)
+IF OBJECT_ID(N'CONTA.ConsecutivoPoliza', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.ConsecutivoPoliza (
     PKIdConsecutivoPoliza INT IDENTITY(1,1) NOT NULL,
     FK_IdAnio__SIS INT NOT NULL,
@@ -1649,9 +2023,13 @@ CREATE TABLE CONTA.ConsecutivoPoliza (
     CONSTRAINT FK_ConsecutivoPoliza_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_ConsecutivoPoliza_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.PolizaDetalle (origen CONTA.DetallePoliza)
+IF OBJECT_ID(N'CONTA.PolizaDetalle', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.PolizaDetalle (
     PKIdPolizaDetalle INT IDENTITY(1,1) NOT NULL,
     FKIdCuentaContable_CONTA INT NOT NULL,
@@ -1673,9 +2051,13 @@ CREATE TABLE CONTA.PolizaDetalle (
     CONSTRAINT FK_PolizaDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PolizaDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.TipoBien
+IF OBJECT_ID(N'ALMA.TipoBien', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.TipoBien (
     PKIdTipoBien INT IDENTITY(1,1) NOT NULL,
     FKIdGrupoBien_ALMA INT NULL,
@@ -1715,12 +2097,17 @@ CREATE TABLE ALMA.TipoBien (
     CONSTRAINT FK_TipoBien_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_TipoBien_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
+
 -- =============================================
 -- TABLAS CON DEPENDENCIAS (FASE 3)
 -- =============================================
 
 -- SIS.UsuarioSucursal
+IF OBJECT_ID(N'SIS.UsuarioSucursal', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.UsuarioSucursal (
     FKIdUsuario_SIS INT NOT NULL,
     FKIdSucursal_SIS INT NOT NULL,
@@ -1741,9 +2128,13 @@ CREATE TABLE SIS.UsuarioSucursal (
     CONSTRAINT FK_UsuarioSucursal_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_UsuarioSucursal_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal)
 );
+
+END
 GO
 
 -- SIS.UsuarioDepartamento
+IF OBJECT_ID(N'SIS.UsuarioDepartamento', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.UsuarioDepartamento (
     FKIdUsuario_SIS INT NOT NULL,
     FKIdDepartamento_SIS INT NOT NULL,
@@ -1759,9 +2150,13 @@ CREATE TABLE SIS.UsuarioDepartamento (
     CONSTRAINT FK_UsuarioDepartamento_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_UsuarioDepartamento_Departamento FOREIGN KEY (FKIdDepartamento_SIS) REFERENCES SIS.Departamento(PKIdDepartamento)
 );
+
+END
 GO
 
 -- SIS.Menu
+IF OBJECT_ID(N'SIS.Menu', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Menu (
     PKIdMenu INT IDENTITY NOT NULL,
     Nombre NVARCHAR(150) NOT NULL,
@@ -1780,9 +2175,13 @@ CREATE TABLE SIS.Menu (
     CONSTRAINT CONSTRAINT_PK_Menu PRIMARY KEY CLUSTERED (PKIdMenu),
     CONSTRAINT CONSTRAINT_FK_Menu_Padre FOREIGN KEY (FKIdMenu_SIS) REFERENCES SIS.Menu(PKIdMenu)
 );
+
+END
 GO
 
 -- SIS.MenuRole
+IF OBJECT_ID(N'SIS.MenuRole', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.MenuRole (
     FKIdMenu_SIS INT NOT NULL,
     RoleId NVARCHAR(128) NOT NULL,
@@ -1795,9 +2194,13 @@ CREATE TABLE SIS.MenuRole (
     CONSTRAINT CONSTRAINT_FK_MenuRole_Menu FOREIGN KEY (FKIdMenu_SIS) REFERENCES SIS.Menu(PKIdMenu),
     CONSTRAINT CONSTRAINT_FK_MenuRole_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id)
 );
+
+END
 GO
 
 -- dbo.AspNetClaims
+IF OBJECT_ID(N'dbo.AspNetClaims', N'U') IS NULL
+BEGIN
 CREATE TABLE dbo.AspNetClaims (
     Id INT IDENTITY(1,1) NOT NULL,
     ClaimTypeId INT,
@@ -1815,9 +2218,13 @@ CREATE TABLE dbo.AspNetClaims (
     CONSTRAINT CONSTRAINT_FK_AspNetClaims_ClaimType FOREIGN KEY (ClaimTypeId) REFERENCES dbo.AspNetClaimTypes(Id),
     CONSTRAINT CONSTRAINT_FK_AspNetClaims_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id)
 );
+
+END
 GO
 
 -- dbo.AspNetClaimValues
+IF OBJECT_ID(N'dbo.AspNetClaimValues', N'U') IS NULL
+BEGIN
 CREATE TABLE dbo.AspNetClaimValues (
     Id INT IDENTITY NOT NULL,
     ClaimId INT,
@@ -1826,9 +2233,13 @@ CREATE TABLE dbo.AspNetClaimValues (
     CONSTRAINT CONSTRAINT_PK_AspNetClaimValues PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT CONSTRAINT_FK_AspNetClaimValues_Claim FOREIGN KEY (ClaimId) REFERENCES dbo.AspNetClaims(Id)
 );
+
+END
 GO
 
 -- dbo.AspNetUsers
+IF OBJECT_ID(N'dbo.AspNetUsers', N'U') IS NULL
+BEGIN
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
     Email NVARCHAR(256),
@@ -1847,9 +2258,13 @@ CREATE TABLE dbo.AspNetUsers (
     CONSTRAINT CONSTRAINT_PK_AspNetUsers PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT CONSTRAINT_FK_AspNetUsers_Usuario FOREIGN KEY (PkIdUsuario) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- dbo.AspNetUserRoles
+IF OBJECT_ID(N'dbo.AspNetUserRoles', N'U') IS NULL
+BEGIN
 CREATE TABLE dbo.AspNetUserRoles (
     UserId NVARCHAR(128) NOT NULL,
     RoleId NVARCHAR(128) NOT NULL,
@@ -1858,9 +2273,13 @@ CREATE TABLE dbo.AspNetUserRoles (
     CONSTRAINT CONSTRAINT_FK_AspNetUserRoles_User FOREIGN KEY (UserId) REFERENCES dbo.AspNetUsers(Id),
     CONSTRAINT CONSTRAINT_FK_AspNetUserRoles_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id)
 );
+
+END
 GO
 
 -- SIS.PerfilUsuario
+IF OBJECT_ID(N'SIS.PerfilUsuario', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.PerfilUsuario (
     FKIdUsuario_SIS INT PRIMARY KEY,
     Fotografia VARBINARY(MAX),
@@ -1874,9 +2293,13 @@ CREATE TABLE SIS.PerfilUsuario (
     UsuarioModificacion INT NULL,
     CONSTRAINT FK_PerfilUsuario_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PKIdUsuario) ON DELETE CASCADE
 );
+
+END
 GO
 
 -- SIS.SystemLog
+IF OBJECT_ID(N'SIS.SystemLog', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.SystemLog (
     PKIdSystemLog INT IDENTITY(1,1) NOT NULL,
     FKIdOrigenLogMessage_SIS INT NOT NULL,
@@ -1899,9 +2322,13 @@ CREATE TABLE SIS.SystemLog (
     CONSTRAINT CONSTRAINT_PK_SystemLog PRIMARY KEY CLUSTERED (PKIdSystemLog),
     CONSTRAINT CONSTRAINT_FK_SystemLog_OrigenLogMessage FOREIGN KEY (FKIdOrigenLogMessage_SIS) REFERENCES SIS.OrigenLogMessage(PKIdOrigenLogMessage)
 );
+
+END
 GO
 
 -- SIS.SystemParamValue
+IF OBJECT_ID(N'SIS.SystemParamValue', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.SystemParamValue (
     PKIdSystemParamValue INT NOT NULL,
     FKIdSystemParamCatalog_SIS INT NOT NULL,
@@ -1915,9 +2342,13 @@ CREATE TABLE SIS.SystemParamValue (
     CONSTRAINT CONSTRAINT_PK_SystemParamValue PRIMARY KEY CLUSTERED (PKIdSystemParamValue),
     CONSTRAINT CONSTRAINT_FK_SystemParamCatalog_SystemParamValue FOREIGN KEY (FKIdSystemParamCatalog_SIS) REFERENCES SIS.SystemParamCatalog(PKIdSystemParamCatalog)
 );
+
+END
 GO
 
 -- ALMA.PeriodoConteo
+IF OBJECT_ID(N'ALMA.PeriodoConteo', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.PeriodoConteo (
     PKIdPeriodoConteo INT IDENTITY(1,1) NOT NULL,
     FKIdSucursal_SIS INT NOT NULL,
@@ -1951,9 +2382,13 @@ CREATE TABLE ALMA.PeriodoConteo (
     CONSTRAINT FK_PeriodoConteo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PeriodoConteo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- SIS.Proveedor
+IF OBJECT_ID(N'SIS.Proveedor', N'U') IS NULL
+BEGIN
 CREATE TABLE SIS.Proveedor (
     PKIdProveedor INT IDENTITY(1,1) NOT NULL,
     FkIdTipoProveedor_SIS INT NULL,
@@ -1995,9 +2430,13 @@ CREATE TABLE SIS.Proveedor (
     CONSTRAINT FK_Proveedor_Estado FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado),
     CONSTRAINT FK_Proveedor_Pais FOREIGN KEY (FKIdPais_SIS) REFERENCES SIS.Paises(PKIdPais)
 );
+
+END
 GO
 
 -- NOM.PersonaArea
+IF OBJECT_ID(N'NOM.PersonaArea', N'U') IS NULL
+BEGIN
 CREATE TABLE NOM.PersonaArea (
     PKIdPersonaArea INT IDENTITY(1,1) NOT NULL,
     FKIdPersona_NOM INT NOT NULL,
@@ -2016,9 +2455,13 @@ CREATE TABLE NOM.PersonaArea (
     CONSTRAINT FK_PersonaArea_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PersonaArea_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.EgresoProyectado
+IF OBJECT_ID(N'PRES.EgresoProyectado', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.EgresoProyectado (
     PKIdEgresoProyectado INT IDENTITY(1,1) NOT NULL,
     FKIdPrograma_PRES INT NOT NULL,
@@ -2064,9 +2507,13 @@ CREATE TABLE PRES.EgresoProyectado (
     CONSTRAINT FK_EgresoProyectado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EgresoProyectado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- PRES.EgresoAutorizado
+IF OBJECT_ID(N'PRES.EgresoAutorizado', N'U') IS NULL
+BEGIN
 CREATE TABLE PRES.EgresoAutorizado (
     PKIdEgresoAutorizado INT IDENTITY(1,1) NOT NULL,
     FKIdEgresoProyectado_PRES INT NULL,
@@ -2119,14 +2566,22 @@ CREATE TABLE PRES.EgresoAutorizado (
     CONSTRAINT FK_EgresoAutorizado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EgresoAutorizado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_EgresoAutorizado_EgresoProyectado_Activo' AND object_id = OBJECT_ID(N'PRES.EgresoAutorizado'))
+BEGIN
 CREATE UNIQUE INDEX UX_EgresoAutorizado_EgresoProyectado_Activo
     ON PRES.EgresoAutorizado(FKIdEgresoProyectado_PRES)
     WHERE FKIdEgresoProyectado_PRES IS NOT NULL AND Activo = 1;
+
+END
 GO
 
 -- CONTA.MatrizConversion
+IF OBJECT_ID(N'CONTA.MatrizConversion', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.MatrizConversion (
     PKIdMatrizConversion INT IDENTITY(1,1) NOT NULL,
     FKIdAnio_SIS INT NOT NULL,
@@ -2160,9 +2615,13 @@ CREATE TABLE CONTA.MatrizConversion (
     CONSTRAINT FK_MatrizConversion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_MatrizConversion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- CONTA.MatrizIngreso
+IF OBJECT_ID(N'CONTA.MatrizIngreso', N'U') IS NULL
+BEGIN
 CREATE TABLE CONTA.MatrizIngreso (
     Pk_IdMatrizIngreso INT IDENTITY(1,1) NOT NULL,
     Fk_IdPrograma INT NULL,
@@ -2192,8 +2651,13 @@ CREATE TABLE CONTA.MatrizIngreso (
     CONSTRAINT FK_MatrizIngreso_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_MatrizIngreso_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
+
 -- ALMA.Bien
+IF OBJECT_ID(N'ALMA.Bien', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Bien (
     PKIdBien INT IDENTITY(1,1) NOT NULL,
     FKIdGrupoBien_ALMA INT NULL,
@@ -2266,9 +2730,13 @@ CREATE TABLE ALMA.Bien (
     CONSTRAINT FK_Bien_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Bien_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.Conteo
+IF OBJECT_ID(N'ALMA.Conteo', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.Conteo (
     PKIdConteo INT IDENTITY(1,1) NOT NULL,
     FKIdTipoBien_ALMA INT NOT NULL,
@@ -2288,9 +2756,13 @@ CREATE TABLE ALMA.Conteo (
     CONSTRAINT FK_Conteo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Conteo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.ConteoDetalle
+IF OBJECT_ID(N'ALMA.ConteoDetalle', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.ConteoDetalle (
     PKIdDetalleConteo INT IDENTITY(1,1) NOT NULL,
     FKIdConteo_ALMA INT NOT NULL,
@@ -2309,9 +2781,13 @@ CREATE TABLE ALMA.ConteoDetalle (
     CONSTRAINT FK_ConteoDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_ConteoDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.ConteoDetalleEscaneo
+IF OBJECT_ID(N'ALMA.ConteoDetalleEscaneo', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.ConteoDetalleEscaneo (
     PKIdDetalleEscaneo INT IDENTITY(1,1) NOT NULL,
     FKIdConteo_ALMA INT NOT NULL,
@@ -2332,9 +2808,13 @@ CREATE TABLE ALMA.ConteoDetalleEscaneo (
     CONSTRAINT FK_ConteoDetalleEscaneo_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_ConteoDetalleEscaneo_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ALMA.ConteoHist
+IF OBJECT_ID(N'ALMA.ConteoHist', N'U') IS NULL
+BEGIN
 CREATE TABLE ALMA.ConteoHist (
     PKIdConteoHist INT IDENTITY(1,1) NOT NULL,
     PKIdConteo INT NOT NULL,
@@ -2355,9 +2835,13 @@ CREATE TABLE ALMA.ConteoHist (
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_ConteoHist PRIMARY KEY (PKIdConteoHist)
 );
+
+END
 GO
 
 -- ORCO.Requisicion
+IF OBJECT_ID(N'ORCO.Requisicion', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.Requisicion (
     PKIdRequisicion INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2420,9 +2904,13 @@ CREATE TABLE ORCO.Requisicion (
     CONSTRAINT FK_Requisicion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_Requisicion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.DetalleRequisicion
+IF OBJECT_ID(N'ORCO.DetalleRequisicion', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.DetalleRequisicion (
     PKIdDetalleRequisicion INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2444,9 +2932,99 @@ CREATE TABLE ORCO.DetalleRequisicion (
     CONSTRAINT FK_DetalleRequisicion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_DetalleRequisicion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
+GO
+
+-- ORCO.Cotizacion
+IF OBJECT_ID(N'ORCO.Cotizacion', N'U') IS NULL
+BEGIN
+CREATE TABLE ORCO.Cotizacion (
+    PKIdCotizacion INT IDENTITY(1,1) NOT NULL,
+    FKIdRequisicion_ORCO INT NOT NULL,
+    FKIdProveedor_SIS INT NOT NULL,
+    FechaSolicitud DATETIME NOT NULL,
+    FechaProveedorCotiza DATETIME NULL,
+    FechaProveedorCompromiso DATETIME NULL,
+    Comentarios NVARCHAR(MAX) NULL,
+    Servicio BIT NOT NULL CONSTRAINT DF_Cotizacion_Servicio DEFAULT (0),
+    FL_Documento NVARCHAR(1000) NULL,
+    Entrega NVARCHAR(MAX) NULL,
+    Vigencia NVARCHAR(MAX) NULL,
+    Condiciones NVARCHAR(200) NULL,
+    FKIdAnio_SIS INT NULL,
+    FKIdContenedorCot_ORCO INT NULL,
+    FKIdContenedorMultiCot_ORCO INT NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_Cotizacion_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 NOT NULL CONSTRAINT DF_Cotizacion_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_Cotizacion PRIMARY KEY (PKIdCotizacion),
+    CONSTRAINT FK_Cotizacion_Requisicion FOREIGN KEY (FKIdRequisicion_ORCO) REFERENCES ORCO.Requisicion(PKIdRequisicion),
+    CONSTRAINT FK_Cotizacion_Proveedor FOREIGN KEY (FKIdProveedor_SIS) REFERENCES SIS.Proveedor(PKIdProveedor),
+    CONSTRAINT FK_Cotizacion_Anio FOREIGN KEY (FKIdAnio_SIS) REFERENCES SIS.Anio(PKIdAnio),
+    CONSTRAINT FK_Cotizacion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_Cotizacion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Cotizacion_Requisicion' AND object_id = OBJECT_ID(N'ORCO.Cotizacion'))
+BEGIN
+CREATE INDEX IX_Cotizacion_Requisicion ON ORCO.Cotizacion(FKIdRequisicion_ORCO);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Cotizacion_Proveedor' AND object_id = OBJECT_ID(N'ORCO.Cotizacion'))
+BEGIN
+CREATE INDEX IX_Cotizacion_Proveedor ON ORCO.Cotizacion(FKIdProveedor_SIS);
+
+END
+GO
+
+-- ORCO.CotizacionDetalle
+IF OBJECT_ID(N'ORCO.CotizacionDetalle', N'U') IS NULL
+BEGIN
+CREATE TABLE ORCO.CotizacionDetalle (
+    PKIdCotizacionDetalle INT IDENTITY(1,1) NOT NULL,
+    FKIdCotizacion_ORCO INT NOT NULL,
+    FKIdDetalleRequisicion_ORCO INT NOT NULL,
+    PrecioUnitario [dbo].[dmoney] NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_CotizacionDetalle_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 NOT NULL CONSTRAINT DF_CotizacionDetalle_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_CotizacionDetalle PRIMARY KEY (PKIdCotizacionDetalle),
+    CONSTRAINT FK_CotizacionDetalle_Cotizacion FOREIGN KEY (FKIdCotizacion_ORCO) REFERENCES ORCO.Cotizacion(PKIdCotizacion),
+    CONSTRAINT FK_CotizacionDetalle_DetalleRequisicion FOREIGN KEY (FKIdDetalleRequisicion_ORCO) REFERENCES ORCO.DetalleRequisicion(PKIdDetalleRequisicion),
+    CONSTRAINT FK_CotizacionDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_CotizacionDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CotizacionDetalle_Cotizacion' AND object_id = OBJECT_ID(N'ORCO.CotizacionDetalle'))
+BEGIN
+CREATE INDEX IX_CotizacionDetalle_Cotizacion ON ORCO.CotizacionDetalle(FKIdCotizacion_ORCO);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CotizacionDetalle_DetalleRequisicion' AND object_id = OBJECT_ID(N'ORCO.CotizacionDetalle'))
+BEGIN
+CREATE INDEX IX_CotizacionDetalle_DetalleRequisicion ON ORCO.CotizacionDetalle(FKIdDetalleRequisicion_ORCO);
+
+END
 GO
 
 -- ORCO.RequisicionPartida
+IF OBJECT_ID(N'ORCO.RequisicionPartida', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.RequisicionPartida (
     PKIdRequisicionPartida INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2466,9 +3044,13 @@ CREATE TABLE ORCO.RequisicionPartida (
     CONSTRAINT FK_RequisicionPartida_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_RequisicionPartida_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.PAAAS
+IF OBJECT_ID(N'ORCO.PAAAS', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.PAAAS (
     PKIdPAAAS INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2498,9 +3080,13 @@ CREATE TABLE ORCO.PAAAS (
     CONSTRAINT FK_PAAAS_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PAAAS_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.PAAASPartida
+IF OBJECT_ID(N'ORCO.PAAASPartida', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.PAAASPartida (
     PKIdPAAASPartida INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2519,9 +3105,13 @@ CREATE TABLE ORCO.PAAASPartida (
     CONSTRAINT FK_PAAASPartida_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PAAASPartida_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.PAAASDetalle
+IF OBJECT_ID(N'ORCO.PAAASDetalle', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.PAAASDetalle (
     PKIdPAAASDetalle INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2544,9 +3134,13 @@ CREATE TABLE ORCO.PAAASDetalle (
     CONSTRAINT FK_PAAASDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_PAAASDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.EstudioMercado
+IF OBJECT_ID(N'ORCO.EstudioMercado', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.EstudioMercado (
     PKIdEstudioMercado INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2569,9 +3163,13 @@ CREATE TABLE ORCO.EstudioMercado (
     CONSTRAINT FK_EstudioMercado_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EstudioMercado_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.EstudioMercadoDetalle
+IF OBJECT_ID(N'ORCO.EstudioMercadoDetalle', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.EstudioMercadoDetalle (
     PKIdEstudioMercadoDetalle INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2593,9 +3191,13 @@ CREATE TABLE ORCO.EstudioMercadoDetalle (
     CONSTRAINT FK_EstudioMercadoDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_EstudioMercadoDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
 -- ORCO.SolicitudCotizacion
+IF OBJECT_ID(N'ORCO.SolicitudCotizacion', N'U') IS NULL
+BEGIN
 CREATE TABLE ORCO.SolicitudCotizacion (
     PKIdSolicitudCotizacion INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
@@ -2618,11 +3220,15 @@ CREATE TABLE ORCO.SolicitudCotizacion (
     CONSTRAINT FK_SolicitudCotizacion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_SolicitudCotizacion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
 
--- ORCO.CotizacionDetalle
-CREATE TABLE ORCO.CotizacionDetalle (
-    PKIdCotizacionDetalle INT IDENTITY(1,1) NOT NULL,
+-- ORCO.EstudioMercadoDetalleCosto
+IF OBJECT_ID(N'ORCO.EstudioMercadoDetalleCosto', N'U') IS NULL
+BEGIN
+CREATE TABLE ORCO.EstudioMercadoDetalleCosto (
+    PKIdEstudioMercadoDetalleCosto INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
     FKIdSolicitudCotizacion_ORCO INT NOT NULL,
     FKIdEstudioMercadoDetalle_ORCO INT NOT NULL,
@@ -2630,62 +3236,96 @@ CREATE TABLE ORCO.CotizacionDetalle (
     TiempoEntregaDias INT NULL,
     Condiciones NVARCHAR(500) NULL,
     FechaRespuesta DATETIME NULL,
-    Activo BIT NOT NULL CONSTRAINT DF_CotizacionDetalle_Activo DEFAULT (1),
-    FechaCreacion DATETIME2 CONSTRAINT DF_CotizacionDetalle_FechaCreacion DEFAULT SYSDATETIME(),
+    Activo BIT NOT NULL CONSTRAINT DF_EstudioMercadoDetalleCosto_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_EstudioMercadoDetalleCosto_FechaCreacion DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
     FechaModificacion DATETIME2 NULL,
     UsuarioModificacion INT NULL,
-    CONSTRAINT PK_CotizacionDetalle PRIMARY KEY (PKIdCotizacionDetalle),
-    CONSTRAINT FK_CotizacionDetalle_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT FK_CotizacionDetalle_SolicitudCotizacion FOREIGN KEY (FKIdSolicitudCotizacion_ORCO) REFERENCES ORCO.SolicitudCotizacion(PKIdSolicitudCotizacion),
-    CONSTRAINT FK_CotizacionDetalle_EstudioMercadoDetalle FOREIGN KEY (FKIdEstudioMercadoDetalle_ORCO) REFERENCES ORCO.EstudioMercadoDetalle(PKIdEstudioMercadoDetalle),
-    CONSTRAINT FK_CotizacionDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_CotizacionDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+    CONSTRAINT PK_EstudioMercadoDetalleCosto PRIMARY KEY (PKIdEstudioMercadoDetalleCosto),
+    CONSTRAINT FK_EstudioMercadoDetalleCosto_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_EstudioMercadoDetalleCosto_SolicitudCotizacion FOREIGN KEY (FKIdSolicitudCotizacion_ORCO) REFERENCES ORCO.SolicitudCotizacion(PKIdSolicitudCotizacion),
+    CONSTRAINT FK_EstudioMercadoDetalleCosto_EstudioMercadoDetalle FOREIGN KEY (FKIdEstudioMercadoDetalle_ORCO) REFERENCES ORCO.EstudioMercadoDetalle(PKIdEstudioMercadoDetalle),
+    CONSTRAINT FK_EstudioMercadoDetalleCosto_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_EstudioMercadoDetalleCosto_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
 GO
+
 -- =============================================
 -- ALTER TABLE PARA CLAVES FORANEAS DE AUDITORIA
 -- =============================================
 
-ALTER TABLE SIS.Empresa ADD CONSTRAINT FK_Empresa_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Empresa ADD CONSTRAINT FK_Empresa_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Empresa_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.Empresa ADD CONSTRAINT FK_Empresa_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Empresa_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.Empresa ADD CONSTRAINT FK_Empresa_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.Sucursal ADD CONSTRAINT FK_Sucursal_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Sucursal ADD CONSTRAINT FK_Sucursal_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Sucursal_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.Sucursal ADD CONSTRAINT FK_Sucursal_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Sucursal_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.Sucursal ADD CONSTRAINT FK_Sucursal_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.Departamento ADD CONSTRAINT FK_Departamento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Departamento ADD CONSTRAINT FK_Departamento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Departamento_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.Departamento ADD CONSTRAINT FK_Departamento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Departamento_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.Departamento ADD CONSTRAINT FK_Departamento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Usuario_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_Usuario_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.UsuarioSucursal ADD CONSTRAINT FK_UsuarioSucursal_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.UsuarioSucursal ADD CONSTRAINT FK_UsuarioSucursal_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_UsuarioSucursal_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.UsuarioSucursal ADD CONSTRAINT FK_UsuarioSucursal_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_UsuarioSucursal_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.UsuarioSucursal ADD CONSTRAINT FK_UsuarioSucursal_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.UsuarioDepartamento ADD CONSTRAINT FK_UsuarioDepartamento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.UsuarioDepartamento ADD CONSTRAINT FK_UsuarioDepartamento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_UsuarioDepartamento_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.UsuarioDepartamento ADD CONSTRAINT FK_UsuarioDepartamento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_UsuarioDepartamento_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.UsuarioDepartamento ADD CONSTRAINT FK_UsuarioDepartamento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.PerfilUsuario ADD CONSTRAINT FK_PerfilUsuario_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.PerfilUsuario ADD CONSTRAINT FK_PerfilUsuario_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_PerfilUsuario_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.PerfilUsuario ADD CONSTRAINT FK_PerfilUsuario_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_PerfilUsuario_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.PerfilUsuario ADD CONSTRAINT FK_PerfilUsuario_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.OrigenLogMessage ADD CONSTRAINT FK_OrigenLogMessage_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.OrigenLogMessage ADD CONSTRAINT FK_OrigenLogMessage_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_OrigenLogMessage_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.OrigenLogMessage ADD CONSTRAINT FK_OrigenLogMessage_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_OrigenLogMessage_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.OrigenLogMessage ADD CONSTRAINT FK_OrigenLogMessage_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.SystemParamCatalog ADD CONSTRAINT FK_SystemParamCatalog_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.SystemParamCatalog ADD CONSTRAINT FK_SystemParamCatalog_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_SystemParamCatalog_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.SystemParamCatalog ADD CONSTRAINT FK_SystemParamCatalog_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_SystemParamCatalog_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.SystemParamCatalog ADD CONSTRAINT FK_SystemParamCatalog_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
-ALTER TABLE SIS.SystemParamValue ADD CONSTRAINT FK_SystemParamValue_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.SystemParamValue ADD CONSTRAINT FK_SystemParamValue_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_SystemParamValue_UsuarioCreacion', N'F') IS NULL
+    ALTER TABLE SIS.SystemParamValue ADD CONSTRAINT FK_SystemParamValue_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
+IF OBJECT_ID(N'SIS.FK_SystemParamValue_UsuarioModificacion', N'F') IS NULL
+    ALTER TABLE SIS.SystemParamValue ADD CONSTRAINT FK_SystemParamValue_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
+
 GO
 
 PRINT 'Base de datos GestionEmpresarial creada exitosamente.';
+
 GO

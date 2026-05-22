@@ -1,4 +1,5 @@
 @page "/Adquisiciones/Requisicion"
+@using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -82,7 +83,7 @@
                             <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
                             <MudTd>@TextOrDash(item.SolicitanteCompleto)</MudTd>
                             <MudTd>@item.FechaRequisicion.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@(item.Importe?.ToString("C2") ?? "-")</MudTd>
+                            <MudTd>@MoneyOrDash(item.Importe)</MudTd>
                             <MudTd>
                                 <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
                                     @(item.Servicio ? "Servicio" : "Bien")
@@ -158,7 +159,7 @@
                             </MudItem>
                             <MudItem xs="6" md="2">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Importe</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@(SelectedRequisicion.Importe?.ToString("C2") ?? "-")</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@MoneyOrDash(SelectedRequisicion.Importe)</MudText>
                             </MudItem>
                             <MudItem xs="12" md="2">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Tipo</MudText>
@@ -233,7 +234,7 @@
                                     </MudChip>
                                 </MudTd>
                                 <MudTd>@TextOrDash(partida.PartidaDescripcion)</MudTd>
-                                <MudTd>@(partida.Monto?.ToString("C2") ?? "-")</MudTd>
+                                <MudTd>@MoneyOrDash(partida.Monto)</MudTd>
                             </Row>
                         </GenericTable>
                     </MudItem>
@@ -245,6 +246,8 @@
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowExportButton="false"
                                       ShowAddButton="@(CanCreate && SelectedPartida != null)"
+                                      AddButtonTooltip="Agregar bien a la requisicion"
+                                      AddButtonIcon="@Icons.Material.Filled.AddShoppingCart"
                                       PageSize="5"
                                       ServerDataFunc="LoadDetallesServerData"
                                       SearchString="@detalleSearchString"
@@ -277,7 +280,7 @@
                                 </MudTd>
                                 <MudTd>@TextOrDash(detalle.TipoBienCodigoClave)</MudTd>
                                 <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
-                                <MudTd>@detalle.Cantidad.ToString("N2")</MudTd>
+                                <MudTd>@Quantity(detalle.Cantidad)</MudTd>
                                 <MudTd>@TextOrDash(detalle.UnidadMedida)</MudTd>
                             </Row>
                         </GenericTable>
@@ -836,6 +839,13 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private static string MoneyOrDash(decimal? value) =>
+        value.HasValue ? $"${value.Value.ToString("0.00", NumberCulture)}" : "-";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 
     private bool IsSelectedPartida(RequisicionPartidaResponse partida) =>
         SelectedPartida?.PkidRequisicionPartida == partida.PkidRequisicionPartida;

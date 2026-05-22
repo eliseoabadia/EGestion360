@@ -81,6 +81,8 @@ public partial class Requisicion
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
+
     public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
 
     public virtual Anio FkidAnioSisNavigation { get; set; }
