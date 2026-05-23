@@ -47,31 +47,29 @@ namespace EG.Application.Services.Adquisicion
                 }
 
                 var now = DateTime.Now;
-                await using var transaction = await _context.Database.BeginTransactionAsync();
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoCotizacion]",
+                    StoredProcedureExecutor.Param("@Action", 1),
+                    StoredProcedureExecutor.Param("@FKIdRequisicion_ORCO", response.FkidRequisicionOrco),
+                    StoredProcedureExecutor.Param("@FKIdProveedor_SIS", response.FkidProveedorSis),
+                    StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud == default ? now.Date : response.FechaSolicitud),
+                    StoredProcedureExecutor.Param("@FechaProveedorCotiza", response.FechaProveedorCotiza),
+                    StoredProcedureExecutor.Param("@FechaProveedorCompromiso", response.FechaProveedorCompromiso),
+                    StoredProcedureExecutor.Param("@Comentarios", response.Comentarios),
+                    StoredProcedureExecutor.Param("@FL_Documento", response.FlDocumento),
+                    StoredProcedureExecutor.Param("@Entrega", response.Entrega),
+                    StoredProcedureExecutor.Param("@Vigencia", response.Vigencia),
+                    StoredProcedureExecutor.Param("@Condiciones", response.Condiciones),
+                    StoredProcedureExecutor.Param("@FKIdAnio_SIS", response.FkidAnioSis),
+                    StoredProcedureExecutor.Param("@FKIdContenedorCot_ORCO", response.FkidContenedorCotOrco),
+                    StoredProcedureExecutor.Param("@FKIdContenedorMultiCot_ORCO", response.FkidContenedorMultiCotOrco),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
-                var cotizacion = response.Adapt<Cotizacion>();
-                cotizacion.PkidCotizacion = 0;
-                cotizacion.UsuarioCreacion = usuarioActual;
-                cotizacion.FechaCreacion = now;
-                cotizacion.Activo = true;
+                response.PkidCotizacion = spResult.GetId() ?? 0;
 
-                await _context.Cotizacions.AddAsync(cotizacion);
-                await _context.SaveChangesAsync();
-
-                response.PkidCotizacion = cotizacion.PkidCotizacion;
-                var detallesCreados = await SeedDetallesFromRequisicionAsync(
-                    cotizacion.PkidCotizacion,
-                    cotizacion.FkidRequisicionOrco,
-                    usuarioActual,
-                    now);
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                var result = await GetByIdAsync(cotizacion.PkidCotizacion);
-                result.Message = detallesCreados > 0
-                    ? $"Cotizacion creada correctamente con {detallesCreados:N0} bienes cargados desde la requisicion."
-                    : "Cotizacion creada correctamente.";
+                var result = await GetByIdAsync(response.PkidCotizacion);
+                result.Message = spResult.Mensaje;
                 return result;
             }
             catch (Exception ex)
@@ -83,7 +81,75 @@ namespace EG.Application.Services.Adquisicion
         public override async Task<PagedResult<CotizacionResponse>> UpdateAsync(int id, CotizacionResponse response, int usuarioActual)
         {
             var validation = await NormalizeAndValidateAsync(response, requireDetails: false);
-            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            try
+            {
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoCotizacion]",
+                    StoredProcedureExecutor.Param("@Action", 2),
+                    StoredProcedureExecutor.Param("@PKIdCotizacion", id),
+                    StoredProcedureExecutor.Param("@FKIdRequisicion_ORCO", response.FkidRequisicionOrco),
+                    StoredProcedureExecutor.Param("@FKIdProveedor_SIS", response.FkidProveedorSis),
+                    StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud),
+                    StoredProcedureExecutor.Param("@FechaProveedorCotiza", response.FechaProveedorCotiza),
+                    StoredProcedureExecutor.Param("@FechaProveedorCompromiso", response.FechaProveedorCompromiso),
+                    StoredProcedureExecutor.Param("@Comentarios", response.Comentarios),
+                    StoredProcedureExecutor.Param("@Servicio", response.Servicio),
+                    StoredProcedureExecutor.Param("@FL_Documento", response.FlDocumento),
+                    StoredProcedureExecutor.Param("@Entrega", response.Entrega),
+                    StoredProcedureExecutor.Param("@Vigencia", response.Vigencia),
+                    StoredProcedureExecutor.Param("@Condiciones", response.Condiciones),
+                    StoredProcedureExecutor.Param("@FKIdAnio_SIS", response.FkidAnioSis),
+                    StoredProcedureExecutor.Param("@FKIdContenedorCot_ORCO", response.FkidContenedorCotOrco),
+                    StoredProcedureExecutor.Param("@FKIdContenedorMultiCot_ORCO", response.FkidContenedorMultiCotOrco),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+
+                var result = await GetByIdAsync(id);
+                result.Message = spResult.Mensaje;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return Failure<CotizacionResponse>($"Error al actualizar Cotizacion: {ex.Message}", "ERROR");
+            }
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            try
+            {
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoCotizacion]",
+                    StoredProcedureExecutor.Param("@Action", 3),
+                    StoredProcedureExecutor.Param("@PKIdCotizacion", id));
+
+                return new PagedResult<bool>
+                {
+                    Success = true,
+                    Message = spResult.Mensaje,
+                    Code = "SUCCESS",
+                    Data = true,
+                    Items = new List<bool> { true },
+                    TotalCount = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = $"Error al eliminar Cotizacion: {ex.Message}",
+                    Code = "ERROR",
+                    Data = false,
+                    TotalCount = 0
+                };
+            }
         }
 
         public async Task<PagedResult<CotizacionResponse>> SendCotizacionEmailAsync(int cotizacionId, int usuarioActual)
@@ -106,8 +172,12 @@ namespace EG.Application.Services.Adquisicion
                     return Failure<CotizacionResponse>("El proveedor no tiene email capturado.");
                 }
 
-                await SeedDetallesFromRequisicionAsync(cotizacion.PkidCotizacion, cotizacion.FkidRequisicionOrco, usuarioActual, DateTime.Now);
-                await _context.SaveChangesAsync();
+                await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoCotizacion]",
+                    StoredProcedureExecutor.Param("@Action", 5),
+                    StoredProcedureExecutor.Param("@PKIdCotizacion", cotizacion.PkidCotizacion),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
                 var detalles = await GetCotizacionEmailDetallesAsync(cotizacion.PkidCotizacion);
                 if (!detalles.Any())
@@ -199,24 +269,14 @@ namespace EG.Application.Services.Adquisicion
                     return Failure<CotizacionDetalleResponse>("Uno o mas bienes no pertenecen a la cotizacion seleccionada.");
                 }
 
-                var now = DateTime.Now;
-                foreach (var item in validItems)
-                {
-                    var detalle = detalles[item.PkidCotizacionDetalle];
-                    detalle.PrecioUnitario = item.PrecioUnitario;
-                    detalle.UsuarioModificacion = usuarioActual;
-                    detalle.FechaModificacion = now;
-                }
+                await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoCotizacion]",
+                    StoredProcedureExecutor.Param("@Action", 4),
+                    StoredProcedureExecutor.Param("@PKIdCotizacion", request.FkidCotizacionOrco),
+                    StoredProcedureExecutor.JsonParam("@ItemsJson", validItems),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
-                var cotizacion = detalles.Values.First().FkidCotizacionOrcoNavigation;
-                if (validItems.Any(x => x.PrecioUnitario.HasValue) && !cotizacion.FechaProveedorCotiza.HasValue)
-                {
-                    cotizacion.FechaProveedorCotiza = DateTime.Today;
-                    cotizacion.UsuarioModificacion = usuarioActual;
-                    cotizacion.FechaModificacion = now;
-                }
-
-                await _context.SaveChangesAsync();
                 return await GetRecepcionCotizacionAsync(request.FkidCotizacionOrco);
             }
             catch (Exception ex)
@@ -262,7 +322,7 @@ namespace EG.Application.Services.Adquisicion
 
             if (requireDetails)
             {
-                var hasDetails = await _context.DetalleRequisicions
+                var hasDetails = await _context.RequisicionDetalles
                     .AsNoTracking()
                     .AnyAsync(x => x.FkidRequisicionOrco == requisicion.PkidRequisicion && x.Activo);
 
@@ -293,10 +353,10 @@ namespace EG.Application.Services.Adquisicion
                 return 0;
             }
 
-            var detalleIds = await _context.DetalleRequisicions
+            var detalleIds = await _context.RequisicionDetalles
                 .AsNoTracking()
                 .Where(x => x.Activo && x.FkidRequisicionOrco == requisicionId)
-                .Select(x => x.PkidDetalleRequisicion)
+                .Select(x => x.PkidRequisicionDetalle)
                 .ToListAsync();
 
             if (!detalleIds.Any())
@@ -307,7 +367,7 @@ namespace EG.Application.Services.Adquisicion
             var existingIds = await _context.CotizacionDetalles
                 .AsNoTracking()
                 .Where(x => x.Activo && x.FkidCotizacionOrco == cotizacionId)
-                .Select(x => x.FkidDetalleRequisicionOrco)
+                .Select(x => x.FkidRequisicionDetalleOrco)
                 .ToListAsync();
 
             var existing = existingIds.ToHashSet();
@@ -317,7 +377,7 @@ namespace EG.Application.Services.Adquisicion
                 await _context.CotizacionDetalles.AddAsync(new CotizacionDetalle
                 {
                     FkidCotizacionOrco = cotizacionId,
-                    FkidDetalleRequisicionOrco = detalleId,
+                    FkidRequisicionDetalleOrco = detalleId,
                     PrecioUnitario = null,
                     Activo = true,
                     FechaCreacion = now,
@@ -346,8 +406,8 @@ namespace EG.Application.Services.Adquisicion
         {
             var detalles = await (
                 from cotizacionDetalle in _context.CotizacionDetalles.AsNoTracking()
-                join detalle in _context.DetalleRequisicions.AsNoTracking()
-                    on cotizacionDetalle.FkidDetalleRequisicionOrco equals detalle.PkidDetalleRequisicion
+                join detalle in _context.RequisicionDetalles.AsNoTracking()
+                    on cotizacionDetalle.FkidRequisicionDetalleOrco equals detalle.PkidRequisicionDetalle
                 join tipoBien in _context.TipoBiens.AsNoTracking()
                     on detalle.FkidTipoBienAlma equals tipoBien.PkidTipoBien
                 join unidadJoin in _context.Unidades.AsNoTracking()

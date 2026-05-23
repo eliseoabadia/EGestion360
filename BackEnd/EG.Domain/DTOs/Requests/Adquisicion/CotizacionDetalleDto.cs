@@ -4,7 +4,7 @@ namespace EG.Domain.DTOs.Requests.Adquisicion
     {
         public int PkidCotizacionDetalle { get; set; }
         public int FkidCotizacionOrco { get; set; }
-        public int FkidDetalleRequisicionOrco { get; set; }
+        public int FkidRequisicionDetalleOrco { get; set; }
         public decimal? PrecioUnitario { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaCreacion { get; set; }

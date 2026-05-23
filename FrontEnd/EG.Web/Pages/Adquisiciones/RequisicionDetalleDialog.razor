@@ -9,7 +9,7 @@
 @using EG.Web.Services
 @using MudBlazor
 
-@inject IGenericCrudService<DetalleRequisicionResponse> Service
+@inject IGenericCrudService<RequisicionDetalleResponse> Service
 @inject IGenericCrudService<RequisicionResponse> RequisicionService
 @inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
 @inject IGenericCrudService<TipoBienResponse> TipoBienService
@@ -18,7 +18,7 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="DetalleRequisicionResponse"
+<BaseCrudDialog TItem="RequisicionDetalleResponse"
                 Title="@dialogTitle"
                 MaxWidth="MaxWidth.Medium"
                 ActionText="@actionText"
@@ -26,7 +26,7 @@
                 LoadingMessage="Cargando datos..."
                 OnConfirm="GuardarCambiosAsync">
 
-    <BaseEntityForm TEntity="DetalleRequisicionResponse"
+    <BaseEntityForm TEntity="RequisicionDetalleResponse"
                     @ref="form"
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
@@ -124,8 +124,8 @@
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private BaseEntityForm<DetalleRequisicionResponse> form = null!;
-    private DetalleRequisicionResponse item = new() { Activo = true, Cantidad = 1m, Observaciones = string.Empty };
+    private BaseEntityForm<RequisicionDetalleResponse> form = null!;
+    private RequisicionDetalleResponse item = new() { Activo = true, Cantidad = 1m, Observaciones = string.Empty };
     private LookupItem? _selectedRequisicion;
     private LookupItem? _selectedPartida;
     private LookupItem? _selectedTipoBien;
@@ -353,14 +353,14 @@
 
         if (Id.HasValue)
         {
-            filters["PkidDetalleRequisicion__ne"] = Id.Value;
+            filters["PkidRequisicionDetalle__ne"] = Id.Value;
         }
 
         var response = await Service.GetAllPaginadoAsync(
             1,
             1,
             "",
-            "PkidDetalleRequisicion",
+            "PkidRequisicionDetalle",
             SortDirection.Ascending,
             filters);
 

@@ -1,4 +1,5 @@
 using Mapster;
+using EG.Application.Services.Adquisicion;
 using EG.ApiCoreBS.Services;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -142,13 +143,29 @@ private void ConfigureService()
                     });
                 }
 
-                await _service.AddAsync(dto);
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    StoredProcedureExecutor.Param("@Action", 1),
+                    StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
+                    StoredProcedureExecutor.Param("@FKIdAnio_SIS", dto.FkidAnioSis),
+                    StoredProcedureExecutor.Param("@FKIdArea_SIS", dto.FkidAreaSis),
+                    StoredProcedureExecutor.Param("@FKIdPersona_NOM", dto.FkidPersonaNom),
+                    StoredProcedureExecutor.Param("@Descripcion", dto.Descripcion),
+                    StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
+                    StoredProcedureExecutor.Param("@Fecha", dto.Fecha),
+                    StoredProcedureExecutor.Param("@FKIdProyecto_ORCO", dto.FkidProyectoOrco),
+                    StoredProcedureExecutor.Param("@FKIdPrograma_PRES", dto.FkidProgramaPres),
+                    StoredProcedureExecutor.Param("@FKIdFuenteFinanciamiento_PRES", dto.FkidFuenteFinanciamientoPres),
+                    StoredProcedureExecutor.Param("@IdUser", dto.UsuarioCreacion));
+
+                dto.PkidPaaas = spResult.GetId() ?? 0;
 
                 return CreatedAtAction(nameof(GetById), new { id = dto.PkidPaaas },
                     new PagedResult<PaaaResponse>
                     {
                         Success = true,
-                        Message = "Programa anual creado correctamente",
+                        Message = spResult.Mensaje,
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
@@ -186,12 +203,27 @@ private void ConfigureService()
                     });
                 }
 
-                await _service.UpdateAsync(id, dto);
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    StoredProcedureExecutor.Param("@Action", 2),
+                    StoredProcedureExecutor.Param("@PKIdPAAAS", id),
+                    StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
+                    StoredProcedureExecutor.Param("@FKIdAnio_SIS", dto.FkidAnioSis),
+                    StoredProcedureExecutor.Param("@FKIdArea_SIS", dto.FkidAreaSis),
+                    StoredProcedureExecutor.Param("@FKIdPersona_NOM", dto.FkidPersonaNom),
+                    StoredProcedureExecutor.Param("@Descripcion", dto.Descripcion),
+                    StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
+                    StoredProcedureExecutor.Param("@Fecha", dto.Fecha),
+                    StoredProcedureExecutor.Param("@FKIdProyecto_ORCO", dto.FkidProyectoOrco),
+                    StoredProcedureExecutor.Param("@FKIdPrograma_PRES", dto.FkidProgramaPres),
+                    StoredProcedureExecutor.Param("@FKIdFuenteFinanciamiento_PRES", dto.FkidFuenteFinanciamientoPres),
+                    StoredProcedureExecutor.Param("@IdUser", dto.UsuarioModificacion));
 
                 return Ok(new PagedResult<PaaaResponse>
                 {
                     Success = true,
-                    Message = "Programa anual actualizado correctamente",
+                    Message = spResult.Mensaje,
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
@@ -223,11 +255,16 @@ private void ConfigureService()
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    StoredProcedureExecutor.Param("@Action", 3),
+                    StoredProcedureExecutor.Param("@PKIdPAAAS", id),
+                    StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Programa anual eliminado correctamente",
+                    Message = spResult.Mensaje,
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -460,21 +497,28 @@ catch (Exception ex)
     {
         try
         {
-            var entity = dto.Adapt<Paaaspartidum>();
-            entity.FechaCreacion = DateTime.Now;
-            entity.UsuarioCreacion = _userContext.GetCurrentUserId();
+            var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                _context,
+                "[ORCO].[SP_MantenimientoPAAAS]",
+                StoredProcedureExecutor.Param("@Action", 5),
+                StoredProcedureExecutor.Param("@PKIdPAAAS", dto.FkidPaaasOrco),
+                StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
+                StoredProcedureExecutor.Param("@FKIdPartida_CONTA", dto.FkidPartidaConta),
+                StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
+                StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
 
-            await _partidaRepository.AddAsync(entity);
+            var partidaId = spResult.GetId() ?? 0;
+            var response = (await _context.VwPaaaspartida.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidPaaaspartida == partidaId))?.Adapt<PaaaspartidumResponse>()
+                ?? new PaaaspartidumResponse { PkidPaaaspartida = partidaId, FkidPaaasOrco = dto.FkidPaaasOrco };
 
-            var response = entity.Adapt<PaaaspartidumResponse>();
-
-            return CreatedAtAction(nameof(GetPartidasByPaaa), new { id = entity.FkidPaaasOrco },
+            return CreatedAtAction(nameof(GetPartidasByPaaa), new { id = dto.FkidPaaasOrco },
                 new PagedResult<PaaaspartidumResponse>
                 {
                     Items = new List<PaaaspartidumResponse> { response },
                     TotalCount = 1,
                     Success = true,
-                    Message = "Partida creada correctamente",
+                    Message = spResult.Mensaje,
                     Code = "SUCCESS"
                 });
         }
@@ -495,34 +539,31 @@ catch (Exception ex)
     {
         try
         {
-            var validation = await ValidateDetalleAsync(dto);
-            if (validation.Result != null)
-                return validation.Result;
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    StoredProcedureExecutor.Param("@Action", 7),
+                    StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
+                    StoredProcedureExecutor.Param("@PKIdPAAASPartida", dto.FkidPaaaspartidaOrco),
+                    StoredProcedureExecutor.Param("@FKIdTipoBien_ALMA", dto.FkidTipoBienAlma),
+                    StoredProcedureExecutor.Param("@FKIdUnidades_ALMA", dto.FkidUnidadesAlma),
+                    StoredProcedureExecutor.Param("@Cantidad", dto.Cantidad),
+                    StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
+                    StoredProcedureExecutor.Param("@LugarEntrega", dto.LugarEntrega),
+                    StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
 
-            var (partida, tipoBien) = validation.Value;
-            var entity = dto.Adapt<Paaasdetalle>();
-            entity.FkidEmpresaSis = dto.FkidEmpresaSis > 0 ? dto.FkidEmpresaSis : partida.FkidEmpresaSis;
-            entity.FkidUnidadesAlma = dto.FkidUnidadesAlma ?? tipoBien.FkidUnidadesAlma;
-            entity.Observaciones = dto.Observaciones ?? string.Empty;
-            entity.LugarEntrega = dto.LugarEntrega ?? string.Empty;
-            entity.Activo = true;
-            entity.FechaCreacion = DateTime.Now;
-            entity.UsuarioCreacion = _userContext.GetCurrentUserId();
+                var detalleId = spResult.GetId() ?? 0;
+                var response = await GetDetalleResponseAsync(detalleId)
+                    ?? new PaaasdetalleResponse { PkidPaaasdetalle = detalleId };
 
-            await _context.Paaasdetalles.AddAsync(entity);
-            await _context.SaveChangesAsync();
-
-            var response = await GetDetalleResponseAsync(entity.PkidPaaasdetalle)
-                ?? entity.Adapt<PaaasdetalleResponse>();
-
-            return CreatedAtAction(nameof(GetDetallesByPartida), new { partidaId = entity.FkidPaaaspartidaOrco },
+            return CreatedAtAction(nameof(GetDetallesByPartida), new { partidaId = dto.FkidPaaaspartidaOrco },
                 new PagedResult<PaaasdetalleResponse>
                 {
                     Data = response,
                     Items = new List<PaaasdetalleResponse> { response },
                     TotalCount = 1,
                     Success = true,
-                    Message = "Tipo de bien agregado correctamente",
+                    Message = spResult.Mensaje,
                     Code = "SUCCESS"
                 });
         }
@@ -543,37 +584,22 @@ catch (Exception ex)
     {
         try
         {
-            var entity = await _context.Paaasdetalles
-                .FirstOrDefaultAsync(x => x.PkidPaaasdetalle == detalleId && x.Activo);
-
-            if (entity == null)
-                return NotFound(new PagedResult<PaaasdetalleResponse>
-                {
-                    Success = false,
-                    Message = "Detalle no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-
-            dto.PkidPaaasdetalle = detalleId;
-            var validation = await ValidateDetalleAsync(dto);
-            if (validation.Result != null)
-                return validation.Result;
-
-            var (_, tipoBien) = validation.Value;
-            entity.FkidPaaaspartidaOrco = dto.FkidPaaaspartidaOrco;
-            entity.FkidTipoBienAlma = dto.FkidTipoBienAlma;
-            entity.FkidUnidadesAlma = dto.FkidUnidadesAlma ?? tipoBien.FkidUnidadesAlma;
-            entity.Cantidad = dto.Cantidad;
-            entity.Observaciones = dto.Observaciones ?? string.Empty;
-            entity.LugarEntrega = dto.LugarEntrega ?? string.Empty;
-            entity.FechaModificacion = DateTime.Now;
-            entity.UsuarioModificacion = _userContext.GetCurrentUserId();
-
-            await _context.SaveChangesAsync();
+            var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                _context,
+                "[ORCO].[SP_MantenimientoPAAAS]",
+                StoredProcedureExecutor.Param("@Action", 8),
+                StoredProcedureExecutor.Param("@PKIdPAAASDetalle", detalleId),
+                StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
+                StoredProcedureExecutor.Param("@PKIdPAAASPartida", dto.FkidPaaaspartidaOrco),
+                StoredProcedureExecutor.Param("@FKIdTipoBien_ALMA", dto.FkidTipoBienAlma),
+                StoredProcedureExecutor.Param("@FKIdUnidades_ALMA", dto.FkidUnidadesAlma),
+                StoredProcedureExecutor.Param("@Cantidad", dto.Cantidad),
+                StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
+                StoredProcedureExecutor.Param("@LugarEntrega", dto.LugarEntrega),
+                StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
 
             var response = await GetDetalleResponseAsync(detalleId)
-                ?? entity.Adapt<PaaasdetalleResponse>();
+                ?? new PaaasdetalleResponse { PkidPaaasdetalle = detalleId };
 
             return Ok(new PagedResult<PaaasdetalleResponse>
             {
@@ -581,7 +607,7 @@ catch (Exception ex)
                 Items = new List<PaaasdetalleResponse> { response },
                 TotalCount = 1,
                 Success = true,
-                Message = "Tipo de bien actualizado correctamente",
+                Message = spResult.Mensaje,
                 Code = "SUCCESS"
             });
         }
@@ -602,27 +628,17 @@ catch (Exception ex)
     {
         try
         {
-            var entity = await _context.Paaasdetalles
-                .FirstOrDefaultAsync(x => x.PkidPaaasdetalle == detalleId && x.Activo);
-
-            if (entity == null)
-                return NotFound(new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = "Detalle no encontrado",
-                    Code = "NOT_FOUND",
-                    TotalCount = 0
-                });
-
-            entity.Activo = false;
-            entity.FechaModificacion = DateTime.Now;
-            entity.UsuarioModificacion = _userContext.GetCurrentUserId();
-            await _context.SaveChangesAsync();
+            var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                _context,
+                "[ORCO].[SP_MantenimientoPAAAS]",
+                StoredProcedureExecutor.Param("@Action", 9),
+                StoredProcedureExecutor.Param("@PKIdPAAASDetalle", detalleId),
+                StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
 
             return Ok(new PagedResult<bool>
             {
                 Success = true,
-                Message = "Tipo de bien eliminado correctamente",
+                Message = spResult.Mensaje,
                 Code = "SUCCESS",
                 Data = true,
                 Items = new List<bool> { true },
@@ -749,16 +765,16 @@ catch (Exception ex)
     {
         try
         {
-            var repoDetalle = HttpContext.RequestServices.GetRequiredService<IRepository<Paaasdetalle>>();
-            var detalles = await repoDetalle.GetAllWithIncludesAsync(d => d.FkidPaaaspartidaOrco == partidaId);
-            foreach (var detalle in detalles)
-                await repoDetalle.DeleteAsync(detalle.PkidPaaasdetalle);
-
-            await _partidaRepository.DeleteAsync(partidaId);
+            var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                _context,
+                "[ORCO].[SP_MantenimientoPAAAS]",
+                StoredProcedureExecutor.Param("@Action", 6),
+                StoredProcedureExecutor.Param("@PKIdPAAASPartida", partidaId),
+                StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
             return Ok(new PagedResult<bool>
             {
                 Success = true,
-                Message = "Partida eliminada correctamente",
+                Message = spResult.Mensaje,
                 Code = "SUCCESS",
                 Data = true,
                 Items = new List<bool> { true },

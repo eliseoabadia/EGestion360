@@ -12,11 +12,13 @@ namespace EG.Application.Services.Adquisicion
             IRequisicionAppService
     {
         private readonly GenericService<Cotizacion, CotizacionDto, CotizacionResponse> _cotizacionService;
+        private readonly EGestionContext _context;
 
         public RequisicionAppService(
             GenericService<Requisicion, RequisicionDto, RequisicionResponse> service,
             GenericService<VwRequisicion, RequisicionDto, RequisicionResponse> serviceView,
-            GenericService<Cotizacion, CotizacionDto, CotizacionResponse> cotizacionService)
+            GenericService<Cotizacion, CotizacionDto, CotizacionResponse> cotizacionService,
+            EGestionContext context)
             : base(
                 service,
                 serviceView,
@@ -25,6 +27,31 @@ namespace EG.Application.Services.Adquisicion
                 (dto, id) => dto.PkidRequisicion = id)
         {
             _cotizacionService = cotizacionService;
+            _context = context;
+        }
+
+        public override async Task<PagedResult<RequisicionResponse>> CreateAsync(
+            RequisicionResponse response,
+            int usuarioActual)
+        {
+            try
+            {
+                var spResult = await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
+                response.PkidRequisicion = spResult.GetId() ?? 0;
+                var result = await GetByIdAsync(response.PkidRequisicion);
+                result.Message = spResult.Mensaje;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<RequisicionResponse>
+                {
+                    Success = false,
+                    Message = $"Error al crear Requisicion: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
         public override async Task<PagedResult<RequisicionResponse>> GetAllAsync()
@@ -66,7 +93,23 @@ namespace EG.Application.Services.Adquisicion
                 return LockedResult("La requisicion ya esta vinculada a una cotizacion activa. Liberala para poder editarla.");
             }
 
-            return await base.UpdateAsync(id, response, usuarioActual);
+            try
+            {
+                var spResult = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
+                var result = await GetByIdAsync(id);
+                result.Message = spResult.Mensaje;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<RequisicionResponse>
+                {
+                    Success = false,
+                    Message = $"Error al actualizar Requisicion: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
@@ -84,7 +127,81 @@ namespace EG.Application.Services.Adquisicion
                 };
             }
 
-            return await base.DeleteAsync(id);
+            try
+            {
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoRequisicion]",
+                    StoredProcedureExecutor.Param("@Action", 3),
+                    StoredProcedureExecutor.Param("@PKIdRequisicion", id),
+                    StoredProcedureExecutor.Param("@IdUser", null));
+
+                return new PagedResult<bool>
+                {
+                    Success = true,
+                    Message = spResult.Mensaje,
+                    Code = "SUCCESS",
+                    Data = true,
+                    Items = new List<bool> { true },
+                    TotalCount = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = $"Error al eliminar Requisicion: {ex.Message}",
+                    Code = "ERROR",
+                    Data = false,
+                    TotalCount = 0
+                };
+            }
+        }
+
+        private Task<StoredProcedureResult> ExecuteMantenimientoAsync(
+            int action,
+            int? id,
+            RequisicionResponse response,
+            int usuarioActual)
+        {
+            return StoredProcedureExecutor.ExecuteResultAsync(
+                _context,
+                "[ORCO].[SP_MantenimientoRequisicion]",
+                StoredProcedureExecutor.Param("@Action", action),
+                StoredProcedureExecutor.Param("@PKIdRequisicion", id),
+                StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
+                StoredProcedureExecutor.Param("@FKIdPersona_NOM", response.FkidPersonaNom),
+                StoredProcedureExecutor.Param("@FKIdArea_SIS", response.FkidAreaSis),
+                StoredProcedureExecutor.Param("@Descripcion", response.Descripcion),
+                StoredProcedureExecutor.Param("@Observaciones", response.Observaciones),
+                StoredProcedureExecutor.Param("@FechaRequisicion", response.FechaRequisicion),
+                StoredProcedureExecutor.Param("@Servicio", response.Servicio),
+                StoredProcedureExecutor.Param("@FL_FOTO", response.FlFoto),
+                StoredProcedureExecutor.Param("@FKIdProyecto_ORCO", response.FkidProyectoOrco),
+                StoredProcedureExecutor.Param("@FechaRequiereInicio", response.FechaRequiereInicio),
+                StoredProcedureExecutor.Param("@FechaRequiereFin", response.FechaRequiereFin),
+                StoredProcedureExecutor.Param("@FKIdPrograma_PRES", response.FkidProgramaPres),
+                StoredProcedureExecutor.Param("@Importe", response.Importe),
+                StoredProcedureExecutor.Param("@FKIdJefeAlmacen_NOM", response.FkidJefeAlmacenNom),
+                StoredProcedureExecutor.Param("@FKIdSuficiencia_PRES", response.FkidSuficienciaPres),
+                StoredProcedureExecutor.Param("@FKIdSuperviso_NOM", response.FkidSupervisoNom),
+                StoredProcedureExecutor.Param("@FKIdAutorizo_NOM", response.FkidAutorizoNom),
+                StoredProcedureExecutor.Param("@FKIdPSolicita_NOM", response.FkidPsolicitaNom),
+                StoredProcedureExecutor.Param("@FKIdPJefeAlmacen_NOM", response.FkidPjefeAlmacenNom),
+                StoredProcedureExecutor.Param("@FKIdPSuficiencia_NOM", response.FkidPsuficienciaNom),
+                StoredProcedureExecutor.Param("@FKIdPSuperviso_NOM", response.FkidPsupervisoNom),
+                StoredProcedureExecutor.Param("@FKIdPAutorizo_NOM", response.FkidPautorizoNom),
+                StoredProcedureExecutor.Param("@FKIdFuenteFinanciamiento_PRES", response.FkidFuenteFinanciamientoPres),
+                StoredProcedureExecutor.Param("@FKIdAnio_SIS", response.FkidAnioSis),
+                StoredProcedureExecutor.Param("@FKIdTipoGasto_PRES", response.FkidTipoGastoPres),
+                StoredProcedureExecutor.Param("@FKIdDigitoIdentificador_PRES", response.FkidDigitoIdentificadorPres),
+                StoredProcedureExecutor.Param("@FKIdDestinoGasto_PRES", response.FkidDestinoGastoPres),
+                StoredProcedureExecutor.Param("@FKIdEgresoAutorizado_PRES", response.FkidEgresoAutorizadoPres),
+                StoredProcedureExecutor.Param("@Oficio", response.Oficio),
+                StoredProcedureExecutor.Param("@FechaOficio", response.FechaOficio),
+                StoredProcedureExecutor.Param("@CompraDirecta", response.CompraDirecta),
+                StoredProcedureExecutor.Param("@IdUser", usuarioActual));
         }
 
         private bool IsLocked(int requisicionId) => CountActiveCotizaciones(requisicionId) > 0;

@@ -1,0 +1,154 @@
+@page "/Adquisiciones/SolicitudSuficienciaDetalle"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<SolicitudSuficienciaDetalleResponse, SolicitudSuficienciaDetalleResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Detalle Solicitud Suficiencia"
+                    Subtitle="Calendario mensual por bien y partida"
+                    Icon="@Icons.Material.Filled.FormatListBulleted"
+                    ShowCreateButton="false"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="SolicitudSuficienciaDetalleResponse"
+                          @ref="table"
+                          Title="Detalles de solicitud"
+                          SearchPlaceholder="Buscar requisicion, partida o bien..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PkidSolicitudSuficienciaDetalle" T="SolicitudSuficienciaDetalleResponse">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="SolicitudSuficienciaDetalleResponse">Requisicion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="SolicitudSuficienciaDetalleResponse">Partida</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="SolicitudSuficienciaDetalleResponse">Bien</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Cantidad" T="SolicitudSuficienciaDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Total" T="SolicitudSuficienciaDetalleResponse">Total</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Activo" T="SolicitudSuficienciaDetalleResponse">Activo</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>
+                        <MudTooltip Text="Editar calendario">
+                            <MudIconButton Icon="@Icons.Material.Filled.EditCalendar"
+                                           Visible="@CanUpdate"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditItem(item.PkidSolicitudSuficienciaDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Visible="@CanDelete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteItem(item.PkidSolicitudSuficienciaDetalle))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd>@item.PkidSolicitudSuficienciaDetalle</MudTd>
+                    <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
+                    <MudTd>@TextOrDash(item.PartidaClaveNombre)</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.TipoBienDescripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Observaciones)</MudText>
+                    </MudTd>
+                    <MudTd>@Quantity(item.Cantidad)</MudTd>
+                    <MudTd><strong>@Money(DetalleTotal(item))</strong></MudTd>
+                    <MudTd>
+                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                            @(item.Activo ? "Si" : "No")
+                        </MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<SolicitudSuficienciaDetalleResponse> table = null!;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "SolicitudSuficiencia";
+
+    protected override Type CreateDialogType => typeof(SolicitudSuficienciaDetalleDialog);
+    protected override Type EditDialogType => typeof(SolicitudSuficienciaDetalleDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<SolicitudSuficienciaDetalleResponse>);
+
+    protected override string GetDefaultSortLabel() => "PkidSolicitudSuficienciaDetalle";
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<SolicitudSuficienciaDetalleResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidSolicitudSuficienciaDetalle,
+            Requisicion = item.RequisicionDescripcion,
+            Partida = item.PartidaClaveNombre,
+            Bien = item.TipoBienDescripcion,
+            item.Cantidad,
+            item.Enero,
+            item.Febrero,
+            item.Marzo,
+            item.Abril,
+            item.Mayo,
+            item.Junio,
+            item.Julio,
+            item.Agosto,
+            item.Septiembre,
+            item.Octubre,
+            item.Noviembre,
+            item.Diciembre,
+            Total = DetalleTotal(item),
+            item.Observaciones,
+            Activo = item.Activo ? "Si" : "No",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.TipoBienDescripcion ?? "el detalle de solicitud";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Quantity(decimal? value) =>
+        (value ?? 0m).ToString("0.00", NumberCulture);
+
+    private static string Money(decimal value) =>
+        $"${value.ToString("0.00", NumberCulture)}";
+
+    private static decimal DetalleTotal(SolicitudSuficienciaDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+}

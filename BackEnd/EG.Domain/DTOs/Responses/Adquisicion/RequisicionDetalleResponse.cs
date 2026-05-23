@@ -1,8 +1,8 @@
 namespace EG.Domain.DTOs.Responses.Adquisicion
 {
-    public class DetalleRequisicionResponse
+    public class RequisicionDetalleResponse
     {
-        public int PkidDetalleRequisicion { get; set; }
+        public int PkidRequisicionDetalle { get; set; }
         public int FkidEmpresaSis { get; set; }
         public int FkidRequisicionOrco { get; set; }
         public int FkidTipoBienAlma { get; set; }

@@ -1,0 +1,540 @@
+@page "/Adquisiciones/Solicitud_Suficiencia"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<SolicitudSuficienciaResponse, SolicitudSuficienciaResponse>
+
+@inject IGenericCrudService<SolicitudSuficienciaDetalleResponse> DetalleService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column solicitud-suficiencia-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedSolicitud == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Solicitud Suficiencia"
+                            Subtitle="Generacion y seguimiento presupuestal desde requisiciones cotizadas"
+                            Icon="@Icons.Material.Filled.RuleFolder"
+                            CanCreate="@CanCreate"
+                            CreateTooltip="Generar solicitud"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div class="summary-strip">
+                    <div>
+                        <span>Solicitudes</span>
+                        <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span>Activas en pagina</span>
+                        <strong>@Elements.Count(x => x.Activo).ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span>Borrador</span>
+                        <strong>@Elements.Count(x => x.Estatus == 1).ToString("N0", NumberCulture)</strong>
+                    </div>
+                </div>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="SolicitudSuficienciaResponse"
+                                  @ref="table"
+                                  Title="Solicitudes de suficiencia"
+                                  SearchPlaceholder="Buscar requisicion, justificacion o estatus..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidSolicitudSuficiencia" T="SolicitudSuficienciaResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="SolicitudSuficienciaResponse">Requisicion</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="SolicitudSuficienciaResponse">Solicitud</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaRequisicion" T="SolicitudSuficienciaResponse">Requisicion fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="SolicitudSuficienciaResponse">Estatus</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Activo" T="SolicitudSuficienciaResponse">Activo</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectSolicitud(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidSolicitudSuficiencia))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteItem(item.PkidSolicitudSuficiencia))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@item.PkidSolicitudSuficiencia</MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.RequisicionDescripcion)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.EmpresaNombre)</MudText>
+                            </MudTd>
+                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@DateOrDash(item.FechaRequisicion)</MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@EstatusColor(item.Estatus)" Size="Size.Small">
+                                    @TextOrDash(item.EstatusDescripcion)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                                    @(item.Activo ? "Si" : "No")
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column detail-layout" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="selected-header">
+                    <div class="selected-title">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                       Color="Color.Primary"
+                                       Size="Size.Medium"
+                                       OnClick="BackToTable"
+                                       Tooltip="Volver al listado" />
+                        <div>
+                            <MudText Typo="Typo.h6" Class="selected-name">@TextOrDash(SelectedSolicitud.RequisicionDescripcion)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Solicitud @SelectedSolicitud.PkidSolicitudSuficiencia | @SelectedSolicitud.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
+                        </div>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Color="@EstatusColor(SelectedSolicitud.Estatus)" Size="Size.Small">
+                        @TextOrDash(SelectedSolicitud.EstatusDescripcion)
+                    </MudChip>
+                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="ml-1">
+                        @Money(TotalSeleccionado)
+                    </MudChip>
+                    <MudTooltip Text="Editar solicitud">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="@(() => EditItem(SelectedSolicitud.PkidSolicitudSuficiencia))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <MudTooltip Text="Actualizar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="RefreshSelectedAndDetails"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                </MudPaper>
+
+                <MudPaper Elevation="1" Class="summary-panel">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha requisicion</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@DateOrDash(SelectedSolicitud.FechaRequisicion)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Mes aplicado</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@MesAplicado</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Bienes</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@SelectedDetalles.Count.ToString("N0", NumberCulture)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Partidas</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@PartidaResumenes.Count().ToString("N0", NumberCulture)</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Total solicitado</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@Money(TotalSeleccionado)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="9" md="2">
+                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Creacion</MudText>
+                            <MudText Typo="Typo.body2" Class="metric">@DateTimeOrDash(SelectedSolicitud.FechaCreacion)</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                @if (PartidaResumenes.Any())
+                {
+                    <div class="partida-strip">
+                        @foreach (var partida in PartidaResumenes)
+                        {
+                            <div>
+                                <span>@TextOrDash(partida.Partida)</span>
+                                <strong>@Money(partida.Total)</strong>
+                                <small>@partida.Bienes.ToString("N0", NumberCulture) bienes</small>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="SolicitudSuficienciaDetalleResponse"
+                                  @ref="detalleTable"
+                                  Title="Detalle por bien y partida"
+                                  SearchPlaceholder="Buscar partida o bien..."
+                                  ShowExportButton="false"
+                                  PageSize="10"
+                                  ServerDataFunc="LoadDetallesServerData"
+                                  SearchString="@detalleSearchString"
+                                  SearchStringChanged="(s) => detalleSearchString = s"
+                                  OnSearch="ReloadDetalles">
+                        <Header>
+                            <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="SolicitudSuficienciaDetalleResponse">Partida</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienClave" T="SolicitudSuficienciaDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="SolicitudSuficienciaDetalleResponse">Bien</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Cantidad" T="SolicitudSuficienciaDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                            <MudTh>Mes</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Total" T="SolicitudSuficienciaDetalleResponse">Total</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="detalle">
+                            <MudTd>@TextOrDash(detalle.PartidaClaveNombre)</MudTd>
+                            <MudTd>@TextOrDash(detalle.TipoBienClave)</MudTd>
+                            <MudTd>
+                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(detalle.TipoBienDescripcion)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(detalle.Observaciones)</MudText>
+                            </MudTd>
+                            <MudTd>@Quantity(detalle.Cantidad)</MudTd>
+                            <MudTd>@MesConMonto(detalle)</MudTd>
+                            <MudTd><strong>@Money(DetalleTotal(detalle))</strong></MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .solicitud-suficiencia-page .summary-strip,
+    .solicitud-suficiencia-page .partida-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+    }
+
+    .solicitud-suficiencia-page .summary-strip > div,
+    .solicitud-suficiencia-page .partida-strip > div,
+    .solicitud-suficiencia-page .summary-panel {
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 30%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--eg-primary) 7%, var(--mud-palette-surface));
+    }
+
+    .solicitud-suficiencia-page .summary-strip > div,
+    .solicitud-suficiencia-page .partida-strip > div {
+        padding: 8px 10px;
+    }
+
+    .solicitud-suficiencia-page .summary-strip span,
+    .solicitud-suficiencia-page .partida-strip span,
+    .solicitud-suficiencia-page .partida-strip small {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        text-transform: uppercase;
+    }
+
+    .solicitud-suficiencia-page .summary-strip strong,
+    .solicitud-suficiencia-page .partida-strip strong,
+    .solicitud-suficiencia-page .metric,
+    .solicitud-suficiencia-page .main-cell,
+    .solicitud-suficiencia-page .selected-name {
+        font-weight: 700;
+    }
+
+    .solicitud-suficiencia-page .selected-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        flex-shrink: 0;
+    }
+
+    .solicitud-suficiencia-page .selected-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .solicitud-suficiencia-page .summary-panel {
+        padding: 12px;
+        flex-shrink: 0;
+    }
+
+    @@media (max-width: 760px) {
+        .solicitud-suficiencia-page .summary-strip,
+        .solicitud-suficiencia-page .partida-strip {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<SolicitudSuficienciaResponse> table = null!;
+    private GenericTable<SolicitudSuficienciaDetalleResponse>? detalleTable;
+    private SolicitudSuficienciaResponse? SelectedSolicitud;
+    private List<SolicitudSuficienciaDetalleResponse> SelectedDetalles { get; set; } = new();
+    private string detalleSearchString = string.Empty;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "SolicitudSuficiencia";
+
+    protected override Type CreateDialogType => typeof(SolicitudSuficienciaDialog);
+    protected override Type EditDialogType => typeof(SolicitudSuficienciaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<SolicitudSuficienciaResponse>);
+
+    protected override string GetDefaultSortLabel() => "FechaSolicitud";
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    private decimal TotalSeleccionado => SelectedDetalles.Sum(DetalleTotal);
+    private string MesAplicado => SelectedSolicitud?.FechaRequisicion.HasValue == true
+        ? DateCulture.DateTimeFormat.GetMonthName(SelectedSolicitud.FechaRequisicion.Value.Month)
+        : "-";
+
+    private IEnumerable<PartidaResumen> PartidaResumenes => SelectedDetalles
+        .GroupBy(x => new { x.FkidPartidaConta, x.PartidaClaveNombre })
+        .Select(x => new PartidaResumen
+        {
+            Partida = x.Key.PartidaClaveNombre,
+            Bienes = x.Count(),
+            Total = x.Sum(DetalleTotal)
+        })
+        .OrderBy(x => x.Partida);
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Generar Solicitud Suficiencia",
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters { ["Id"] = id };
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar Solicitud Suficiencia",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+            if (SelectedSolicitud?.PkidSolicitudSuficiencia == id)
+            {
+                await RefreshSelectedAndDetails();
+            }
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<SolicitudSuficienciaResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidSolicitudSuficiencia,
+            Requisicion = item.RequisicionDescripcion,
+            FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
+            FechaRequisicion = item.FechaRequisicion?.ToString("dd/MM/yyyy") ?? string.Empty,
+            item.Justificacion,
+            Estatus = item.EstatusDescripcion,
+            Activo = item.Activo ? "Si" : "No",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.RequisicionDescripcion ?? "la solicitud de suficiencia";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedSolicitud == null && table != null)
+        {
+            await table.ReloadData();
+        }
+        else
+        {
+            await RefreshSelectedAndDetails();
+        }
+    }
+
+    private async Task SelectSolicitud(SolicitudSuficienciaResponse item)
+    {
+        SelectedSolicitud = item;
+        detalleSearchString = string.Empty;
+        await LoadSelectedDetallesSummary();
+        StateHasChanged();
+    }
+
+    private async Task RefreshSelectedAndDetails()
+    {
+        if (SelectedSolicitud == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedSolicitud.PkidSolicitudSuficiencia);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedSolicitud = response.Data;
+        }
+
+        await LoadSelectedDetallesSummary();
+        await ReloadDetalles();
+    }
+
+    private void BackToTable()
+    {
+        SelectedSolicitud = null;
+        SelectedDetalles.Clear();
+        detalleSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task<TableData<SolicitudSuficienciaDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedSolicitud == null)
+        {
+            return new TableData<SolicitudSuficienciaDetalleResponse> { Items = new List<SolicitudSuficienciaDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "PartidaClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = SelectedSolicitud.PkidSolicitudSuficiencia });
+
+        return new TableData<SolicitudSuficienciaDetalleResponse>
+        {
+            Items = response?.Items ?? new List<SolicitudSuficienciaDetalleResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task LoadSelectedDetallesSummary()
+    {
+        if (SelectedSolicitud == null)
+        {
+            SelectedDetalles.Clear();
+            return;
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            1,
+            int.MaxValue,
+            string.Empty,
+            "PartidaClave",
+            SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = SelectedSolicitud.PkidSolicitudSuficiencia });
+
+        SelectedDetalles = response?.Items?.ToList() ?? new List<SolicitudSuficienciaDetalleResponse>();
+    }
+
+    private async Task ReloadDetalles()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private static Color EstatusColor(int estatus) => estatus switch
+    {
+        1 => Color.Info,
+        2 => Color.Warning,
+        3 => Color.Success,
+        4 => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string DateOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
+
+    private static string DateTimeOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy HH:mm") : "-";
+
+    private static string Money(decimal? value) =>
+        $"${(value ?? 0m).ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal? value) =>
+        (value ?? 0m).ToString("0.00", NumberCulture);
+
+    private static decimal DetalleTotal(SolicitudSuficienciaDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+
+    private static string MesConMonto(SolicitudSuficienciaDetalleResponse item)
+    {
+        var months = new[]
+        {
+            ("Ene", item.Enero), ("Feb", item.Febrero), ("Mar", item.Marzo), ("Abr", item.Abril),
+            ("May", item.Mayo), ("Jun", item.Junio), ("Jul", item.Julio), ("Ago", item.Agosto),
+            ("Sep", item.Septiembre), ("Oct", item.Octubre), ("Nov", item.Noviembre), ("Dic", item.Diciembre)
+        };
+
+        var month = months.FirstOrDefault(x => x.Item2.GetValueOrDefault() > 0m);
+        return month.Item1 == null ? "-" : $"{month.Item1} {Money(month.Item2)}";
+    }
+
+    private sealed class PartidaResumen
+    {
+        public string Partida { get; set; } = string.Empty;
+        public int Bienes { get; set; }
+        public decimal Total { get; set; }
+    }
+}

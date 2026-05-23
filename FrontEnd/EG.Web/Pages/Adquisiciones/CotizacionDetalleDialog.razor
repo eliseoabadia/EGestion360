@@ -7,7 +7,7 @@
 @using MudBlazor
 
 @inject IGenericCrudService<CotizacionDetalleResponse> Service
-@inject IGenericCrudService<DetalleRequisicionResponse> DetalleRequisicionService
+@inject IGenericCrudService<RequisicionDetalleResponse> RequisicionDetalleService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="CotizacionDetalleResponse"
@@ -127,8 +127,8 @@
                 RequisicionNombre = TextOrDash(item.RequisicionDescripcion);
                 _selectedDetalle = new LookupItem
                 {
-                    Id = item.FkidDetalleRequisicionOrco,
-                    Text = TextOrDefault($"{item.TipoBienClave} - {item.TipoBienDescripcion}".Trim(' ', '-'), item.FkidDetalleRequisicionOrco)
+                    Id = item.FkidRequisicionDetalleOrco,
+                    Text = TextOrDefault($"{item.TipoBienClave} - {item.TipoBienDescripcion}".Trim(' ', '-'), item.FkidRequisicionDetalleOrco)
                 };
                 _selectedCantidad = item.Cantidad;
                 _selectedUnidad = item.UnidadMedida ?? string.Empty;
@@ -154,7 +154,7 @@
 
         try
         {
-            var response = await DetalleRequisicionService.GetByIdAsync(value.Id);
+            var response = await RequisicionDetalleService.GetByIdAsync(value.Id);
             if (response?.Success == true && response.Data != null)
             {
                 var detalle = response.Data;
@@ -209,7 +209,7 @@
         }
 
         item.FkidCotizacionOrco = CotizacionId;
-        item.FkidDetalleRequisicionOrco = _selectedDetalle.Id;
+        item.FkidRequisicionDetalleOrco = _selectedDetalle.Id;
 
         try
         {
@@ -239,7 +239,7 @@
             return new ComboLookupResult();
         }
 
-        var response = await DetalleRequisicionService.GetAllPaginadoAsync(
+        var response = await RequisicionDetalleService.GetAllPaginadoAsync(
             page,
             pageSize,
             filter,
@@ -249,17 +249,17 @@
 
         return ToComboResult(response?.Items?.Select(x => new LookupItem
         {
-            Id = x.PkidDetalleRequisicion,
+            Id = x.PkidRequisicionDetalle,
             Text = $"{x.TipoBienCodigoClave} - {x.TipoBienDescripcion}"
         }), response?.TotalCount);
     }
 
-    private async Task<bool> ExistsDuplicateDetalleAsync(int detalleRequisicionId)
+    private async Task<bool> ExistsDuplicateDetalleAsync(int requisicionDetalleId)
     {
         var filters = new Dictionary<string, object>
         {
             ["FkidCotizacionOrco"] = CotizacionId,
-            ["FkidDetalleRequisicionOrco"] = detalleRequisicionId
+            ["FkidRequisicionDetalleOrco"] = requisicionDetalleId
         };
 
         if (Id.HasValue)

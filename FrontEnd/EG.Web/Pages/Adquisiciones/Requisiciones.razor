@@ -15,7 +15,8 @@
 @inherits BaseCrudPage<RequisicionResponse, RequisicionResponse>
 
 @inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
-@inject IGenericCrudService<DetalleRequisicionResponse> DetalleService
+@inject IGenericCrudService<RequisicionDetalleResponse> DetalleService
+@inject IGenericCrudService<CotizacionDetalleResponse> CotizacionDetalleService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
@@ -86,6 +87,13 @@
                                                    Color="Color.Success"
                                                    Size="Size.Small"
                                                    OnClick="@(() => OpenCotizacionFromRequisicion(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Generar solicitud de suficiencia">
+                                    <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
+                                                   Visible="@CanCreate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OpenSolicitudSuficienciaFromRequisicion(item))" />
                                 </MudTooltip>
                             </MudTd>
                             <MudTd>@item.PkidRequisicion</MudTd>
@@ -173,6 +181,14 @@
                                        Size="Size.Small"
                                        Visible="@CanCreate"
                                        OnClick="@(() => OpenCotizacionFromRequisicion(SelectedRequisicion))"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Generar solicitud de suficiencia">
+                        <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="@(() => OpenSolicitudSuficienciaFromRequisicion(SelectedRequisicion))"
                                        Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>
@@ -277,7 +293,7 @@
                     </MudItem>
 
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="DetalleRequisicionResponse"
+                        <GenericTable TItem="RequisicionDetalleResponse"
                                       @ref="detalleTable"
                                       Title="@DetalleTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
@@ -293,10 +309,10 @@
                                       OnAdd="AddDetalle">
                             <Header>
                                 <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="DetalleRequisicionResponse">Clave</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="DetalleRequisicionResponse">Bien / Servicio</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="DetalleRequisicionResponse">Cantidad</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="DetalleRequisicionResponse">Unidad</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="RequisicionDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="RequisicionDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="RequisicionDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="RequisicionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
                             </Header>
                             <Row Context="detalle">
                                 <MudTd>
@@ -306,7 +322,7 @@
                                                        Color="Color.Primary"
                                                        Size="Size.Small"
                                                        Disabled="@IsSelectedLocked"
-                                                       OnClick="@(() => EditDetalle(detalle.PkidDetalleRequisicion))" />
+                                                       OnClick="@(() => EditDetalle(detalle.PkidRequisicionDetalle))" />
                                     </MudTooltip>
                                     <MudTooltip Text="Eliminar detalle">
                                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
@@ -333,7 +349,7 @@
 @code {
     private GenericTable<RequisicionResponse> table = null!;
     private GenericTable<RequisicionPartidaResponse>? partidaTable;
-    private GenericTable<DetalleRequisicionResponse>? detalleTable;
+    private GenericTable<RequisicionDetalleResponse>? detalleTable;
     private RequisicionResponse? SelectedRequisicion;
     private RequisicionPartidaResponse? SelectedPartida;
     private string partidaSearchString = string.Empty;
@@ -673,11 +689,11 @@
         };
     }
 
-    private async Task<TableData<DetalleRequisicionResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
+    private async Task<TableData<RequisicionDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
     {
         if (SelectedRequisicion == null || SelectedPartida == null)
         {
-            return new TableData<DetalleRequisicionResponse> { Items = new List<DetalleRequisicionResponse>(), TotalItems = 0 };
+            return new TableData<RequisicionDetalleResponse> { Items = new List<RequisicionDetalleResponse>(), TotalItems = 0 };
         }
 
         var response = await DetalleService.GetAllPaginadoAsync(
@@ -688,9 +704,9 @@
             state.SortDirection,
             new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
 
-        return new TableData<DetalleRequisicionResponse>
+        return new TableData<RequisicionDetalleResponse>
         {
-            Items = response?.Items ?? new List<DetalleRequisicionResponse>(),
+            Items = response?.Items ?? new List<RequisicionDetalleResponse>(),
             TotalItems = response?.TotalCount ?? 0
         };
     }
@@ -832,7 +848,7 @@
             ["PartidaNombre"] = $"{SelectedPartida.PartidaClave} - {SelectedPartida.PartidaDescripcion}"
         };
 
-        var dialog = await DialogService.ShowAsync<DetalleRequisicionDialog>(
+        var dialog = await DialogService.ShowAsync<RequisicionDetalleDialog>(
             "Agregar Detalle",
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
@@ -896,17 +912,106 @@
         }
     }
 
+    private async Task OpenSolicitudSuficienciaFromRequisicion(RequisicionResponse? requisicion)
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear solicitudes", Severity.Warning);
+            return;
+        }
+
+        if (requisicion == null)
+        {
+            Snackbar.Add("Selecciona una requisicion primero.", Severity.Warning);
+            return;
+        }
+
+        if (!await RequisicionTieneTodosLosBienesCotizadosAsync(requisicion.PkidRequisicion))
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["RequisicionId"] = requisicion.PkidRequisicion,
+            ["RequisicionNombre"] = requisicion.Descripcion
+        };
+
+        var dialog = await DialogService.ShowAsync<SolicitudSuficienciaDialog>(
+            "Generar Solicitud Suficiencia",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            if (SelectedRequisicion?.PkidRequisicion == requisicion.PkidRequisicion)
+            {
+                await RefreshSelectedRequisicion();
+            }
+            else if (table != null)
+            {
+                await table.ReloadData();
+            }
+        }
+    }
+
     private async Task<bool> RequisicionTieneBienesAsync(int requisicionId)
     {
         var response = await DetalleService.GetAllPaginadoAsync(
             1,
             1,
             "",
-            "PkidDetalleRequisicion",
+            "PkidRequisicionDetalle",
             SortDirection.Ascending,
             new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
 
         return response?.TotalCount > 0;
+    }
+
+    private async Task<bool> RequisicionTieneTodosLosBienesCotizadosAsync(int requisicionId)
+    {
+        var detallesResponse = await DetalleService.GetAllPaginadoAsync(
+            1,
+            int.MaxValue,
+            string.Empty,
+            "PkidRequisicionDetalle",
+            SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+
+        var detalles = detallesResponse?.Items?.Where(x => x.Activo).ToList() ?? new List<RequisicionDetalleResponse>();
+        if (!detalles.Any())
+        {
+            Snackbar.Add("La requisicion debe tener al menos un bien para generar la solicitud de suficiencia.", Severity.Warning);
+            return false;
+        }
+
+        var cotizacionesResponse = await CotizacionDetalleService.GetAllPaginadoAsync(
+            1,
+            int.MaxValue,
+            string.Empty,
+            "FkidRequisicionDetalleOrco",
+            SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+
+        var cotizados = cotizacionesResponse?.Items?
+            .Where(x => x.Activo && x.PrecioUnitario.GetValueOrDefault() > 0m)
+            .Select(x => x.FkidRequisicionDetalleOrco)
+            .ToHashSet() ?? new HashSet<int>();
+
+        var pendientes = detalles
+            .Where(x => !cotizados.Contains(x.PkidRequisicionDetalle))
+            .Select(x => TextOrDash(x.TipoBienDescripcion))
+            .Take(4)
+            .ToList();
+
+        if (pendientes.Any())
+        {
+            Snackbar.Add($"Faltan bienes con monto cotizado: {string.Join(", ", pendientes)}.", Severity.Warning);
+            return false;
+        }
+
+        return true;
     }
 
     private async Task EditDetalle(int id)
@@ -932,7 +1037,7 @@
                 : $"{SelectedPartida.PartidaClave} - {SelectedPartida.PartidaDescripcion}"
         };
 
-        var dialog = await DialogService.ShowAsync<DetalleRequisicionDialog>(
+        var dialog = await DialogService.ShowAsync<RequisicionDetalleDialog>(
             "Editar Detalle",
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
@@ -944,7 +1049,7 @@
         }
     }
 
-    private async Task DeleteDetalle(DetalleRequisicionResponse detalle)
+    private async Task DeleteDetalle(RequisicionDetalleResponse detalle)
     {
         if (!CanModifySelectedRequisicion("eliminar bienes"))
         {
@@ -959,7 +1064,7 @@
 
         try
         {
-            var response = await Http.DeleteAsync($"api/DetalleRequisicion/{detalle.PkidDetalleRequisicion}");
+            var response = await Http.DeleteAsync($"api/RequisicionDetalle/{detalle.PkidRequisicionDetalle}");
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)

@@ -4,7 +4,7 @@
 @using MudBlazor
 
 @inject IGenericCrudService<CotizacionDetalleResponse> Service
-@inject IGenericCrudService<DetalleRequisicionResponse> DetalleRequisicionService
+@inject IGenericCrudService<RequisicionDetalleResponse> RequisicionDetalleService
 @inject ISnackbar Snackbar
 
 <MudDialog DisableSidePadding="true" Class="cotizacion-batch-dialog">
@@ -413,7 +413,7 @@
         {
             _loading = true;
 
-            var detallesResponse = await DetalleRequisicionService.GetAllPaginadoAsync(
+            var detallesResponse = await RequisicionDetalleService.GetAllPaginadoAsync(
                 1,
                 1000,
                 "",
@@ -430,16 +430,16 @@
                 new Dictionary<string, object> { ["FkidCotizacionOrco"] = CotizacionId });
 
             var cotizados = cotizadosResponse?.Items?
-                .Select(x => x.FkidDetalleRequisicionOrco)
+                .Select(x => x.FkidRequisicionDetalleOrco)
                 .ToHashSet() ?? new HashSet<int>();
 
             _alreadyQuotedCount = cotizados.Count;
             _totalRequisitionItems = detallesResponse?.TotalCount ?? detallesResponse?.Items?.Count ?? 0;
             _items.Clear();
 
-            foreach (var detalle in detallesResponse?.Items ?? new List<DetalleRequisicionResponse>())
+            foreach (var detalle in detallesResponse?.Items ?? new List<RequisicionDetalleResponse>())
             {
-                if (!cotizados.Contains(detalle.PkidDetalleRequisicion))
+                if (!cotizados.Contains(detalle.PkidRequisicionDetalle))
                 {
                     _items.Add(new CotizacionDetalleDragItem(detalle));
                 }
@@ -567,7 +567,7 @@
                 var response = await Service.CreateAsync(new CotizacionDetalleResponse
                 {
                     FkidCotizacionOrco = CotizacionId,
-                    FkidDetalleRequisicionOrco = detail.DetalleRequisicionId,
+                    FkidRequisicionDetalleOrco = detail.RequisicionDetalleId,
                     PrecioUnitario = detail.PrecioUnitario,
                     Activo = true
                 });
@@ -626,9 +626,9 @@
 
     private sealed class CotizacionDetalleDragItem
     {
-        public CotizacionDetalleDragItem(DetalleRequisicionResponse detalle)
+        public CotizacionDetalleDragItem(RequisicionDetalleResponse detalle)
         {
-            DetalleRequisicionId = detalle.PkidDetalleRequisicion;
+            RequisicionDetalleId = detalle.PkidRequisicionDetalle;
             TipoBienId = detalle.FkidTipoBienAlma;
             BienTexto = $"{detalle.TipoBienCodigoClave} - {detalle.TipoBienDescripcion}".Trim(' ', '-');
             Cantidad = detalle.Cantidad;
@@ -636,7 +636,7 @@
             Observaciones = detalle.Observaciones ?? string.Empty;
         }
 
-        public int DetalleRequisicionId { get; }
+        public int RequisicionDetalleId { get; }
         public int TipoBienId { get; }
         public string BienTexto { get; }
         public decimal Cantidad { get; }

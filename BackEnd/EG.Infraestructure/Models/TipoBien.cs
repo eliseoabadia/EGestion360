@@ -69,8 +69,6 @@ public partial class TipoBien
 
     public virtual ICollection<Conteo> Conteos { get; set; } = new List<Conteo>();
 
-    public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
-
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
 
     public virtual CuentaContable FkidCuentaContableContaNavigation { get; set; }
@@ -86,6 +84,8 @@ public partial class TipoBien
     public virtual Unidade FkidUnidadesEquivalenteNavigation { get; set; }
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
+
+    public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

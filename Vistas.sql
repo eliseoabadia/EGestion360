@@ -1244,21 +1244,21 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE OR ALTER VIEW  [ORCO].[Vw_DetalleRequisicion]
+CREATE OR ALTER VIEW  [ORCO].[Vw_RequisicionDetalle]
 AS
 SELECT
-    dr.PKIdDetalleRequisicion,
-    dr.FKIdEmpresa_SIS,
-    dr.FKIdRequisicion_ORCO,
-    dr.FKIdTipoBien_ALMA,
-    dr.FKIdUnidades_ALMA,
-    dr.Cantidad,
-    dr.Observaciones,
-    dr.Activo,
-    dr.FechaCreacion,
-    dr.UsuarioCreacion,
-    dr.FechaModificacion,
-    dr.UsuarioModificacion,
+    rd.PKIdRequisicionDetalle,
+    rd.FKIdEmpresa_SIS,
+    rd.FKIdRequisicion_ORCO,
+    rd.FKIdTipoBien_ALMA,
+    rd.FKIdUnidades_ALMA,
+    rd.Cantidad,
+    rd.Observaciones,
+    rd.Activo,
+    rd.FechaCreacion,
+    rd.UsuarioCreacion,
+    rd.FechaModificacion,
+    rd.UsuarioModificacion,
     emp.Nombre AS EmpresaNombre,
     req.Descripcion AS RequisicionDescripcion,
     req.FechaRequisicion,
@@ -1271,12 +1271,12 @@ SELECT
     tb.ExistenciaMaxima,
     u.Descripcion AS UnidadMedida,
     CONCAT(tb.CodigoClave, ' - ', tb.Descripcion) AS BienClaveNombre
-FROM ORCO.DetalleRequisicion dr
-LEFT JOIN SIS.Empresa emp ON dr.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
-LEFT JOIN ORCO.Requisicion req ON dr.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
-LEFT JOIN ALMA.TipoBien tb ON dr.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
-LEFT JOIN ALMA.Unidades u ON dr.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
-WHERE dr.Activo = 1;
+FROM ORCO.RequisicionDetalle rd
+LEFT JOIN SIS.Empresa emp ON rd.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON rd.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN ALMA.TipoBien tb ON rd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+LEFT JOIN ALMA.Unidades u ON rd.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
+WHERE rd.Activo = 1;
 GO
 
 SET ANSI_NULLS ON
@@ -1295,13 +1295,13 @@ SELECT
     prov.Nombre AS ProveedorNombre,
     prov.Clave AS ProveedorClave,
     prov.RFC AS ProveedorRFC,
-    cd.FKIdDetalleRequisicion_ORCO,
-    dr.FKIdTipoBien_ALMA,
+    cd.FKIdRequisicionDetalle_ORCO,
+    rd.FKIdTipoBien_ALMA,
     tb.CodigoClave AS TipoBienClave,
     tb.Descripcion AS TipoBienDescripcion,
-    dr.FKIdUnidades_ALMA,
+    rd.FKIdUnidades_ALMA,
     u.Descripcion AS UnidadMedida,
-    dr.Cantidad,
+    rd.Cantidad,
     c.FechaSolicitud,
     c.FechaProveedorCotiza,
     c.FechaProveedorCompromiso,
@@ -1312,7 +1312,7 @@ SELECT
     c.Vigencia,
     c.Condiciones,
     cd.PrecioUnitario,
-    CASE WHEN cd.PrecioUnitario IS NULL THEN NULL ELSE cd.PrecioUnitario * dr.Cantidad END AS Importe,
+    CASE WHEN cd.PrecioUnitario IS NULL THEN NULL ELSE cd.PrecioUnitario * rd.Cantidad END AS Importe,
     c.FKIdAnio_SIS,
     c.FKIdContenedorCot_ORCO,
     c.FKIdContenedorMultiCot_ORCO,
@@ -1325,9 +1325,9 @@ FROM ORCO.CotizacionDetalle cd
 INNER JOIN ORCO.Cotizacion c ON cd.FKIdCotizacion_ORCO = c.PKIdCotizacion AND c.Activo = 1
 INNER JOIN ORCO.Requisicion req ON c.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
 INNER JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
-INNER JOIN ORCO.DetalleRequisicion dr ON cd.FKIdDetalleRequisicion_ORCO = dr.PKIdDetalleRequisicion AND dr.Activo = 1
-INNER JOIN ALMA.TipoBien tb ON dr.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
-LEFT JOIN ALMA.Unidades u ON dr.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
+INNER JOIN ORCO.RequisicionDetalle rd ON cd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle AND rd.Activo = 1
+INNER JOIN ALMA.TipoBien tb ON rd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+LEFT JOIN ALMA.Unidades u ON rd.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
 WHERE cd.Activo = 1;
 GO
 
@@ -1368,9 +1368,9 @@ INNER JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND pr
 OUTER APPLY (
     SELECT
         COUNT(*) AS TotalDetalles,
-        SUM(CASE WHEN cd.PrecioUnitario IS NULL THEN 0 ELSE cd.PrecioUnitario * dr.Cantidad END) AS TotalCotizado
+        SUM(CASE WHEN cd.PrecioUnitario IS NULL THEN 0 ELSE cd.PrecioUnitario * rd.Cantidad END) AS TotalCotizado
     FROM ORCO.CotizacionDetalle cd
-    INNER JOIN ORCO.DetalleRequisicion dr ON cd.FKIdDetalleRequisicion_ORCO = dr.PKIdDetalleRequisicion AND dr.Activo = 1
+    INNER JOIN ORCO.RequisicionDetalle rd ON cd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle AND rd.Activo = 1
     WHERE cd.FKIdCotizacion_ORCO = c.PKIdCotizacion
       AND cd.Activo = 1
 ) resumen
@@ -2587,6 +2587,202 @@ FROM ORCO.EstudioMercadoDetalle emd
 LEFT JOIN ORCO.EstudioMercado em ON emd.FKIdEstudioMercado_ORCO = em.PKIdEstudioMercado AND em.Activo = 1
 LEFT JOIN ALMA.TipoBien tb ON emd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
 WHERE emd.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_SolicitudSuficiencia] AS
+SELECT
+    ss.PKIdSolicitudSuficiencia,
+    ss.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    ss.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    req.FechaRequisicion,
+    req.Importe AS RequisicionImporte,
+    ss.FechaSolicitud,
+    ss.Justificacion,
+    ss.GastoNoProgramable,
+    ss.IdGastoNoProgramable,
+    ss.IdCompromisoNomina,
+    ss.Estatus,
+    CASE ss.Estatus
+        WHEN 1 THEN 'Borrador'
+        WHEN 2 THEN 'Enviada'
+        WHEN 3 THEN 'Autorizada'
+        WHEN 4 THEN 'Rechazada'
+        ELSE 'Sin definir'
+    END AS EstatusDescripcion,
+    ss.Activo,
+    ss.FechaCreacion,
+    ss.UsuarioCreacion,
+    ss.FechaModificacion,
+    ss.UsuarioModificacion
+FROM PRES.SolicitudSuficiencia ss
+LEFT JOIN SIS.Empresa emp ON ss.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON ss.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+WHERE ss.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_SolicitudSuficienciaDetalle] AS
+SELECT
+    ssd.PKIdSolicitudSuficienciaDetalle,
+    ssd.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    ssd.FKIdSolicitudSuficiencia_PRES,
+    ss.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    ss.FechaSolicitud,
+    ss.Estatus AS SolicitudEstatus,
+    ssd.FKIdRequisicionDetalle_ORCO,
+    rd.FKIdTipoBien_ALMA,
+    tb.CodigoClave AS TipoBienClave,
+    tb.Descripcion AS TipoBienDescripcion,
+    rd.FKIdUnidades_ALMA,
+    u.Descripcion AS UnidadMedida,
+    rd.Cantidad,
+    ssd.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS PartidaClaveNombre,
+    ssd.Enero,
+    ssd.Febrero,
+    ssd.Marzo,
+    ssd.Abril,
+    ssd.Mayo,
+    ssd.Junio,
+    ssd.Julio,
+    ssd.Agosto,
+    ssd.Septiembre,
+    ssd.Octubre,
+    ssd.Noviembre,
+    ssd.Diciembre,
+    ssd.Total,
+    ssd.Observaciones,
+    ssd.Activo,
+    ssd.FechaCreacion,
+    ssd.UsuarioCreacion,
+    ssd.FechaModificacion,
+    ssd.UsuarioModificacion
+FROM PRES.SolicitudSuficienciaDetalle ssd
+INNER JOIN PRES.SolicitudSuficiencia ss ON ssd.FKIdSolicitudSuficiencia_PRES = ss.PKIdSolicitudSuficiencia AND ss.Activo = 1
+LEFT JOIN SIS.Empresa emp ON ssd.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON ss.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN ORCO.RequisicionDetalle rd ON ssd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle AND rd.Activo = 1
+LEFT JOIN ALMA.TipoBien tb ON rd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+LEFT JOIN ALMA.Unidades u ON rd.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
+LEFT JOIN CONTA.Partida part ON ssd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE ssd.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_AutorizacionSuficiencia] AS
+SELECT
+    aus.PKIdAutorizacionSuficiencia,
+    aus.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    aus.FKIdSolicitudSuficiencia_PRES,
+    ss.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    ss.FechaSolicitud,
+    aus.FechaAutorizacion,
+    aus.Justificacion,
+    aus.GastoNoProgramable,
+    aus.IdGastoNoProgramable,
+    aus.IdCompromisoNomina,
+    aus.AutorizadoPor_NOM,
+    CONCAT(per.Nombre, ' ', per.Paterno, ' ', ISNULL(per.Materno, '')) AS AutorizadoPorNombre,
+    aus.Observaciones,
+    aus.Estatus,
+    CASE aus.Estatus
+        WHEN 1 THEN 'Borrador'
+        WHEN 2 THEN 'Autorizada'
+        WHEN 3 THEN 'Rechazada'
+        ELSE 'Sin definir'
+    END AS EstatusDescripcion,
+    aus.Activo,
+    aus.FechaCreacion,
+    aus.UsuarioCreacion,
+    aus.FechaModificacion,
+    aus.UsuarioModificacion
+FROM PRES.AutorizacionSuficiencia aus
+INNER JOIN PRES.SolicitudSuficiencia ss ON aus.FKIdSolicitudSuficiencia_PRES = ss.PKIdSolicitudSuficiencia AND ss.Activo = 1
+LEFT JOIN SIS.Empresa emp ON aus.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON ss.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN NOM.Persona per ON aus.AutorizadoPor_NOM = per.PKIdPersona AND per.Activo = 1
+WHERE aus.Activo = 1;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_AutorizacionSuficienciaDetalle] AS
+SELECT
+    ausd.PKIdAutorizacionSuficienciaDetalle,
+    ausd.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    ausd.FKIdAutorizacionSuficiencia_PRES,
+    aus.FKIdSolicitudSuficiencia_PRES,
+    ss.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    aus.FechaAutorizacion,
+    aus.Estatus AS AutorizacionEstatus,
+    ausd.FKIdSolicitudSuficienciaDetalle_PRES,
+    ssd.FKIdRequisicionDetalle_ORCO,
+    rd.FKIdTipoBien_ALMA,
+    tb.CodigoClave AS TipoBienClave,
+    tb.Descripcion AS TipoBienDescripcion,
+    rd.FKIdUnidades_ALMA,
+    u.Descripcion AS UnidadMedida,
+    rd.Cantidad,
+    ausd.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS PartidaClaveNombre,
+    ausd.Enero,
+    ausd.Febrero,
+    ausd.Marzo,
+    ausd.Abril,
+    ausd.Mayo,
+    ausd.Junio,
+    ausd.Julio,
+    ausd.Agosto,
+    ausd.Septiembre,
+    ausd.Octubre,
+    ausd.Noviembre,
+    ausd.Diciembre,
+    ausd.Total,
+    ausd.Observaciones,
+    ausd.Activo,
+    ausd.FechaCreacion,
+    ausd.UsuarioCreacion,
+    ausd.FechaModificacion,
+    ausd.UsuarioModificacion
+FROM PRES.AutorizacionSuficienciaDetalle ausd
+INNER JOIN PRES.AutorizacionSuficiencia aus ON ausd.FKIdAutorizacionSuficiencia_PRES = aus.PKIdAutorizacionSuficiencia AND aus.Activo = 1
+INNER JOIN PRES.SolicitudSuficiencia ss ON aus.FKIdSolicitudSuficiencia_PRES = ss.PKIdSolicitudSuficiencia AND ss.Activo = 1
+LEFT JOIN SIS.Empresa emp ON ausd.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON ss.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN PRES.SolicitudSuficienciaDetalle ssd ON ausd.FKIdSolicitudSuficienciaDetalle_PRES = ssd.PKIdSolicitudSuficienciaDetalle AND ssd.Activo = 1
+LEFT JOIN ORCO.RequisicionDetalle rd ON ssd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle AND rd.Activo = 1
+LEFT JOIN ALMA.TipoBien tb ON rd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+LEFT JOIN ALMA.Unidades u ON rd.FKIdUnidades_ALMA = u.PKIdUnidades AND u.Activo = 1
+LEFT JOIN CONTA.Partida part ON ausd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE ausd.Activo = 1;
 GO
 
 PRINT 'Vistas creadas exitosamente.';

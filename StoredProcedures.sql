@@ -1281,3 +1281,1254 @@ GO
 
 PRINT 'Procedimientos de CONTA creados exitosamente.';
 GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoPAAAS] (
+    @Action INT,
+    @PKIdPAAAS INT = NULL,
+    @PKIdPAAASPartida INT = NULL,
+    @PKIdPAAASDetalle INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdAnio_SIS INT = NULL,
+    @FKIdArea_SIS INT = NULL,
+    @FKIdPersona_NOM INT = NULL,
+    @Descripcion NVARCHAR(100) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @Fecha DATETIME = NULL,
+    @FKIdProyecto_ORCO INT = NULL,
+    @FKIdPrograma_PRES INT = NULL,
+    @FKIdFuenteFinanciamiento_PRES INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @FKIdTipoBien_ALMA INT = NULL,
+    @FKIdUnidades_ALMA INT = NULL,
+    @Cantidad NUMERIC(8,2) = NULL,
+    @LugarEntrega VARCHAR(200) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK';
+    DECLARE @message NVARCHAR(4000) = '';
+    DECLARE @liga NVARCHAR(100) = '';
+    DECLARE @today DATETIME2 = SYSDATETIME();
+    DECLARE @Id INT = NULL;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            IF EXISTS (SELECT 1 FROM ORCO.PAAAS WHERE FKIdArea_SIS = @FKIdArea_SIS AND FKIdAnio_SIS = @FKIdAnio_SIS AND Activo = 1)
+                THROW 51000, 'Ya existe un programa anual activo para el mismo anio y area.', 1;
+
+            INSERT INTO ORCO.PAAAS (
+                FKIdEmpresa_SIS, FKIdAnio_SIS, FKIdArea_SIS, FKIdPersona_NOM,
+                Descripcion, Observaciones, Fecha, FKIdProyecto_ORCO,
+                FKIdPrograma_PRES, FKIdFuenteFinanciamiento_PRES,
+                Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdAnio_SIS, @FKIdArea_SIS, @FKIdPersona_NOM,
+                @Descripcion, @Observaciones, ISNULL(@Fecha, GETDATE()), @FKIdProyecto_ORCO,
+                @FKIdPrograma_PRES, @FKIdFuenteFinanciamiento_PRES,
+                1, @today, @IdUser
+            );
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Programa anual creado correctamente.';
+            SET @liga = CONCAT('idPAAAS:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdPAAAS IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.PAAAS WHERE PKIdPAAAS = @PKIdPAAAS AND Activo = 1)
+                THROW 51000, 'Programa anual no encontrado.', 1;
+
+            IF EXISTS (SELECT 1 FROM ORCO.PAAAS WHERE FKIdArea_SIS = @FKIdArea_SIS AND FKIdAnio_SIS = @FKIdAnio_SIS AND PKIdPAAAS <> @PKIdPAAAS AND Activo = 1)
+                THROW 51000, 'Ya existe otro programa anual activo para el mismo anio y area.', 1;
+
+            UPDATE ORCO.PAAAS
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdAnio_SIS = @FKIdAnio_SIS,
+                FKIdArea_SIS = @FKIdArea_SIS,
+                FKIdPersona_NOM = @FKIdPersona_NOM,
+                Descripcion = @Descripcion,
+                Observaciones = @Observaciones,
+                Fecha = ISNULL(@Fecha, Fecha),
+                FKIdProyecto_ORCO = @FKIdProyecto_ORCO,
+                FKIdPrograma_PRES = @FKIdPrograma_PRES,
+                FKIdFuenteFinanciamiento_PRES = @FKIdFuenteFinanciamiento_PRES,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdPAAAS = @PKIdPAAAS;
+
+            SET @Id = @PKIdPAAAS;
+            SET @message = 'Programa anual actualizado correctamente.';
+            SET @liga = CONCAT('idPAAAS:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdPAAAS IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.PAAAS WHERE PKIdPAAAS = @PKIdPAAAS AND Activo = 1)
+                THROW 51000, 'Programa anual no encontrado.', 1;
+
+            UPDATE d SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            FROM ORCO.PAAASDetalle d
+            INNER JOIN ORCO.PAAASPartida p ON d.FKIdPAAASPartida_ORCO = p.PKIdPAAASPartida
+            WHERE p.FKIdPAAAS_ORCO = @PKIdPAAAS AND d.Activo = 1;
+
+            UPDATE ORCO.PAAASPartida
+            SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE FKIdPAAAS_ORCO = @PKIdPAAAS AND Activo = 1;
+
+            UPDATE ORCO.PAAAS
+            SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdPAAAS = @PKIdPAAAS;
+
+            SET @Id = @PKIdPAAAS;
+            SET @message = 'Programa anual eliminado correctamente.';
+            SET @liga = CONCAT('idPAAAS:', @Id);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdPAAAS IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.PAAAS WHERE PKIdPAAAS = @PKIdPAAAS AND Activo = 1)
+                THROW 51000, 'PAAAS no encontrado.', 1;
+
+            IF EXISTS (SELECT 1 FROM ORCO.PAAASPartida WHERE FKIdPAAAS_ORCO = @PKIdPAAAS AND FKIdPartida_CONTA = @FKIdPartida_CONTA AND Activo = 1)
+                THROW 51000, 'La partida ya esta agregada en este PAAAS.', 1;
+
+            INSERT INTO ORCO.PAAASPartida (FKIdEmpresa_SIS, FKIdPAAAS_ORCO, FKIdPartida_CONTA, Observaciones, Activo, FechaCreacion, UsuarioCreacion)
+            SELECT ISNULL(@FKIdEmpresa_SIS, FKIdEmpresa_SIS), PKIdPAAAS, @FKIdPartida_CONTA, @Observaciones, 1, @today, @IdUser
+            FROM ORCO.PAAAS
+            WHERE PKIdPAAAS = @PKIdPAAAS;
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Partida creada correctamente.';
+            SET @liga = CONCAT('idPAAASPartida:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdPAAASPartida IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.PAAASPartida WHERE PKIdPAAASPartida = @PKIdPAAASPartida AND Activo = 1)
+                THROW 51000, 'Partida no encontrada.', 1;
+
+            UPDATE ORCO.PAAASDetalle
+            SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE FKIdPAAASPartida_ORCO = @PKIdPAAASPartida AND Activo = 1;
+
+            UPDATE ORCO.PAAASPartida
+            SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdPAAASPartida = @PKIdPAAASPartida;
+
+            SET @Id = @PKIdPAAASPartida;
+            SET @message = 'Partida eliminada correctamente.';
+            SET @liga = CONCAT('idPAAASPartida:', @Id);
+        END
+        ELSE IF @Action IN (7, 8)
+        BEGIN
+            DECLARE @PartidaConta INT, @EmpresaPartida INT, @UnidadTipoBien INT, @TipoPartida INT;
+
+            IF @Action = 8 AND (@PKIdPAAASDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.PAAASDetalle WHERE PKIdPAAASDetalle = @PKIdPAAASDetalle AND Activo = 1))
+                THROW 51000, 'Detalle no encontrado.', 1;
+
+            SELECT @PartidaConta = pp.FKIdPartida_CONTA, @EmpresaPartida = pp.FKIdEmpresa_SIS
+            FROM ORCO.PAAASPartida pp
+            WHERE pp.PKIdPAAASPartida = @PKIdPAAASPartida AND pp.Activo = 1;
+
+            IF @PartidaConta IS NULL
+                THROW 51000, 'Partida no encontrada.', 1;
+
+            SELECT @UnidadTipoBien = FKIdUnidades_ALMA, @TipoPartida = FKIdPartida_CONTA
+            FROM ALMA.TipoBien
+            WHERE PKIdTipoBien = @FKIdTipoBien_ALMA AND Activo = 1;
+
+            IF @TipoPartida IS NULL
+                THROW 51000, 'Tipo de bien no encontrado.', 1;
+
+            IF @TipoPartida <> @PartidaConta
+                THROW 51000, 'El tipo de bien no pertenece a la partida seleccionada.', 1;
+
+            IF ISNULL(@Cantidad, 0) <= 0
+                THROW 51000, 'La cantidad debe ser mayor a cero.', 1;
+
+            IF @Action = 7
+            BEGIN
+                INSERT INTO ORCO.PAAASDetalle (
+                    FKIdEmpresa_SIS, FKIdPAAASPartida_ORCO, FKIdTipoBien_ALMA, FKIdUnidades_ALMA,
+                    Cantidad, Observaciones, LugarEntrega, Activo, FechaCreacion, UsuarioCreacion
+                )
+                VALUES (
+                    ISNULL(@FKIdEmpresa_SIS, @EmpresaPartida), @PKIdPAAASPartida, @FKIdTipoBien_ALMA, ISNULL(@FKIdUnidades_ALMA, @UnidadTipoBien),
+                    @Cantidad, ISNULL(@Observaciones, ''), ISNULL(@LugarEntrega, ''), 1, @today, @IdUser
+                );
+
+                SET @Id = SCOPE_IDENTITY();
+                SET @message = 'Tipo de bien agregado correctamente.';
+            END
+            ELSE
+            BEGIN
+                UPDATE ORCO.PAAASDetalle
+                SET FKIdEmpresa_SIS = ISNULL(@FKIdEmpresa_SIS, @EmpresaPartida),
+                    FKIdPAAASPartida_ORCO = @PKIdPAAASPartida,
+                    FKIdTipoBien_ALMA = @FKIdTipoBien_ALMA,
+                    FKIdUnidades_ALMA = ISNULL(@FKIdUnidades_ALMA, @UnidadTipoBien),
+                    Cantidad = @Cantidad,
+                    Observaciones = ISNULL(@Observaciones, ''),
+                    LugarEntrega = ISNULL(@LugarEntrega, ''),
+                    FechaModificacion = @today,
+                    UsuarioModificacion = @IdUser
+                WHERE PKIdPAAASDetalle = @PKIdPAAASDetalle;
+
+                SET @Id = @PKIdPAAASDetalle;
+                SET @message = 'Tipo de bien actualizado correctamente.';
+            END
+
+            SET @liga = CONCAT('idPAAASDetalle:', @Id);
+        END
+        ELSE IF @Action = 9
+        BEGIN
+            IF @PKIdPAAASDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.PAAASDetalle WHERE PKIdPAAASDetalle = @PKIdPAAASDetalle AND Activo = 1)
+                THROW 51000, 'Detalle no encontrado.', 1;
+
+            UPDATE ORCO.PAAASDetalle
+            SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdPAAASDetalle = @PKIdPAAASDetalle;
+
+            SET @Id = @PKIdPAAASDetalle;
+            SET @message = 'Tipo de bien eliminado correctamente.';
+            SET @liga = CONCAT('idPAAASDetalle:', @Id);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para PAAAS.', 1;
+
+        COMMIT TRANSACTION;
+
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoEstudioMercado] (
+    @Action INT,
+    @PKIdEstudioMercado INT = NULL,
+    @PKIdEstudioMercadoDetalle INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdAnio_SIS INT = NULL,
+    @Nombre VARCHAR(80) = NULL,
+    @Descripcion NVARCHAR(500) = NULL,
+    @FechaSolicitud DATETIME = NULL,
+    @FechaCierre DATETIME = NULL,
+    @FKIdResponsable_NOM INT = NULL,
+    @Estatus INT = NULL,
+    @FKIdPAAASDetalle_ORCO INT = NULL,
+    @FKIdTipoBien_ALMA INT = NULL,
+    @Cantidad NUMERIC(8,2) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @FKIdProveedor_SIS INT = NULL,
+    @CostoUnitario DECIMAL(20,4) = NULL,
+    @FechaCompromisoEntrega DATETIME = NULL,
+    @Comentarios NVARCHAR(MAX) = NULL,
+    @ItemsJson NVARCHAR(MAX) = NULL,
+    @ProveedorIdsJson NVARCHAR(MAX) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            IF ISNULL(@FKIdEmpresa_SIS, 0) <= 0 OR ISNULL(@FKIdAnio_SIS, 0) <= 0 OR ISNULL(@FKIdResponsable_NOM, 0) <= 0 OR NULLIF(LTRIM(RTRIM(@Nombre)), '') IS NULL
+                THROW 51000, 'Debe capturar empresa, anio, responsable y nombre del estudio.', 1;
+            IF @FechaCierre IS NOT NULL AND @FechaCierre < ISNULL(@FechaSolicitud, CONVERT(DATE, GETDATE()))
+                THROW 51000, 'La fecha de cierre no puede ser anterior a la solicitud.', 1;
+
+            INSERT INTO ORCO.EstudioMercado (
+                FKIdEmpresa_SIS, FKIdAnio_SIS, Nombre, Descripcion, FechaSolicitud, FechaCierre,
+                FKIdResponsable_NOM, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdAnio_SIS, LTRIM(RTRIM(@Nombre)), @Descripcion, ISNULL(@FechaSolicitud, CONVERT(DATE, GETDATE())),
+                @FechaCierre, @FKIdResponsable_NOM, ISNULL(NULLIF(@Estatus, 0), 1), 1, @today, @IdUser
+            );
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Estudio de mercado creado correctamente.';
+            SET @liga = CONCAT('idEstudioMercado:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdEstudioMercado IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.EstudioMercado WHERE PKIdEstudioMercado = @PKIdEstudioMercado AND Activo = 1)
+                THROW 51000, 'Estudio de mercado no encontrado.', 1;
+            IF @FechaCierre IS NOT NULL AND @FechaCierre < ISNULL(@FechaSolicitud, CONVERT(DATE, GETDATE()))
+                THROW 51000, 'La fecha de cierre no puede ser anterior a la solicitud.', 1;
+
+            UPDATE ORCO.EstudioMercado
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdAnio_SIS = @FKIdAnio_SIS,
+                Nombre = LTRIM(RTRIM(@Nombre)),
+                Descripcion = @Descripcion,
+                FechaSolicitud = ISNULL(@FechaSolicitud, FechaSolicitud),
+                FechaCierre = @FechaCierre,
+                FKIdResponsable_NOM = @FKIdResponsable_NOM,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdEstudioMercado = @PKIdEstudioMercado;
+
+            SET @Id = @PKIdEstudioMercado;
+            SET @message = 'Estudio de mercado actualizado correctamente.';
+            SET @liga = CONCAT('idEstudioMercado:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdEstudioMercado IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.EstudioMercado WHERE PKIdEstudioMercado = @PKIdEstudioMercado AND Activo = 1)
+                THROW 51000, 'Estudio de mercado no encontrado.', 1;
+
+            UPDATE c
+            SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            FROM ORCO.EstudioMercadoDetalleCosto c
+            INNER JOIN ORCO.SolicitudCotizacion sc ON c.FKIdSolicitudCotizacion_ORCO = sc.PKIdSolicitudCotizacion
+            WHERE sc.FKIdEstudioMercado_ORCO = @PKIdEstudioMercado AND c.Activo = 1;
+
+            UPDATE ORCO.SolicitudCotizacion SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdEstudioMercado_ORCO = @PKIdEstudioMercado AND Activo = 1;
+            UPDATE ORCO.EstudioMercadoDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdEstudioMercado_ORCO = @PKIdEstudioMercado AND Activo = 1;
+            UPDATE ORCO.EstudioMercado SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdEstudioMercado = @PKIdEstudioMercado;
+
+            SET @Id = @PKIdEstudioMercado;
+            SET @message = 'Estudio de mercado eliminado correctamente.';
+            SET @liga = CONCAT('idEstudioMercado:', @Id);
+        END
+        ELSE IF @Action IN (4, 5)
+        BEGIN
+            DECLARE @EstudioEmpresa INT, @EstudioAnio INT, @PaaasEmpresa INT, @PaaasAnio INT, @PaaasTipoBien INT, @PaaasCantidad NUMERIC(8,2), @PaaasObs NVARCHAR(MAX);
+
+            SELECT @EstudioEmpresa = FKIdEmpresa_SIS, @EstudioAnio = FKIdAnio_SIS
+            FROM ORCO.EstudioMercado
+            WHERE PKIdEstudioMercado = @PKIdEstudioMercado AND Activo = 1;
+
+            IF @EstudioEmpresa IS NULL
+                THROW 51000, 'El estudio de mercado no existe o esta inactivo.', 1;
+
+            SELECT @PaaasEmpresa = d.FKIdEmpresa_SIS,
+                   @PaaasTipoBien = d.FKIdTipoBien_ALMA,
+                   @PaaasCantidad = d.Cantidad,
+                   @PaaasObs = d.Observaciones,
+                   @PaaasAnio = p.FKIdAnio_SIS
+            FROM ORCO.PAAASDetalle d
+            INNER JOIN ORCO.PAAASPartida pp ON d.FKIdPAAASPartida_ORCO = pp.PKIdPAAASPartida AND pp.Activo = 1
+            INNER JOIN ORCO.PAAAS p ON pp.FKIdPAAAS_ORCO = p.PKIdPAAAS AND p.Activo = 1
+            WHERE d.PKIdPAAASDetalle = @FKIdPAAASDetalle_ORCO AND d.Activo = 1;
+
+            IF @PaaasEmpresa IS NULL
+                THROW 51000, 'El bien del PAAAS no existe o esta inactivo.', 1;
+            IF @PaaasEmpresa <> @EstudioEmpresa
+                THROW 51000, 'Los bienes seleccionados no pertenecen a la empresa del estudio.', 1;
+            IF @PaaasAnio <> @EstudioAnio
+                THROW 51000, 'Los bienes seleccionados no pertenecen al anio presupuestal del estudio.', 1;
+            IF @CostoUnitario IS NOT NULL AND @CostoUnitario <= 0
+                THROW 51000, 'El costo unitario debe ser mayor a cero.', 1;
+            IF @FKIdProveedor_SIS IS NOT NULL AND NOT EXISTS (SELECT 1 FROM SIS.Proveedor WHERE PKIdProveedor = @FKIdProveedor_SIS AND Activo = 1)
+                THROW 51000, 'El proveedor seleccionado no existe o esta inactivo.', 1;
+
+            IF @Action = 4 AND @FKIdProveedor_SIS IS NOT NULL AND EXISTS (
+                SELECT 1 FROM ORCO.EstudioMercadoDetalle
+                WHERE FKIdEstudioMercado_ORCO = @PKIdEstudioMercado
+                  AND FKIdTipoBien_ALMA = @PaaasTipoBien
+                  AND FKIdProveedor_SIS = @FKIdProveedor_SIS
+                  AND Activo = 1
+            )
+                THROW 51000, 'Ya existe un precio de mercado para este tipo de bien con el mismo proveedor.', 1;
+
+            IF @Action = 4
+            BEGIN
+                INSERT INTO ORCO.EstudioMercadoDetalle (
+                    FKIdEmpresa_SIS, FKIdEstudioMercado_ORCO, FKIdPAAASDetalle_ORCO, FKIdTipoBien_ALMA,
+                    Cantidad, Observaciones, FKIdProveedor_SIS, CostoUnitario, Activo, FechaCreacion, UsuarioCreacion
+                )
+                VALUES (
+                    @EstudioEmpresa, @PKIdEstudioMercado, @FKIdPAAASDetalle_ORCO, @PaaasTipoBien,
+                    ISNULL(NULLIF(@Cantidad, 0), @PaaasCantidad), COALESCE(NULLIF(LTRIM(RTRIM(@Observaciones)), ''), @PaaasObs),
+                    @FKIdProveedor_SIS, @CostoUnitario, 1, @today, @IdUser
+                );
+                SET @Id = SCOPE_IDENTITY();
+                SET @message = 'Detalle de estudio de mercado creado correctamente.';
+            END
+            ELSE
+            BEGIN
+                IF @PKIdEstudioMercadoDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.EstudioMercadoDetalle WHERE PKIdEstudioMercadoDetalle = @PKIdEstudioMercadoDetalle AND Activo = 1)
+                    THROW 51000, 'Detalle de estudio de mercado no encontrado.', 1;
+
+                UPDATE ORCO.EstudioMercadoDetalle
+                SET FKIdPAAASDetalle_ORCO = @FKIdPAAASDetalle_ORCO,
+                    FKIdTipoBien_ALMA = @PaaasTipoBien,
+                    Cantidad = ISNULL(NULLIF(@Cantidad, 0), @PaaasCantidad),
+                    Observaciones = COALESCE(NULLIF(LTRIM(RTRIM(@Observaciones)), ''), @PaaasObs),
+                    FKIdProveedor_SIS = @FKIdProveedor_SIS,
+                    CostoUnitario = @CostoUnitario,
+                    FechaModificacion = @today,
+                    UsuarioModificacion = @IdUser
+                WHERE PKIdEstudioMercadoDetalle = @PKIdEstudioMercadoDetalle;
+
+                SET @Id = @PKIdEstudioMercadoDetalle;
+                SET @message = 'Detalle de estudio de mercado actualizado correctamente.';
+            END
+            SET @liga = CONCAT('idEstudioMercadoDetalle:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdEstudioMercadoDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.EstudioMercadoDetalle WHERE PKIdEstudioMercadoDetalle = @PKIdEstudioMercadoDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de estudio de mercado no encontrado.', 1;
+            UPDATE ORCO.EstudioMercadoDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdEstudioMercadoDetalle = @PKIdEstudioMercadoDetalle;
+            SET @Id = @PKIdEstudioMercadoDetalle;
+            SET @message = 'Detalle de estudio de mercado eliminado correctamente.';
+            SET @liga = CONCAT('idEstudioMercadoDetalle:', @Id);
+        END
+        ELSE IF @Action = 10
+        BEGIN
+            IF ISJSON(@ItemsJson) <> 1
+                THROW 51000, 'Debe seleccionar al menos un detalle PAAAS.', 1;
+            IF NOT EXISTS (SELECT 1 FROM ORCO.EstudioMercado WHERE PKIdEstudioMercado = @PKIdEstudioMercado AND Activo = 1)
+                THROW 51000, 'El estudio de mercado no existe o esta inactivo.', 1;
+
+            DECLARE @Batch TABLE (FKIdPAAASDetalle_ORCO INT, FKIdProveedor_SIS INT, CostoUnitario DECIMAL(20,4), Observaciones NVARCHAR(MAX));
+            INSERT INTO @Batch
+            SELECT FKIdPAAASDetalle_ORCO, FKIdProveedor_SIS, CostoUnitario, Observaciones
+            FROM OPENJSON(@ItemsJson)
+            WITH (
+                FKIdPAAASDetalle_ORCO INT '$.FkidPaaasdetalleOrco',
+                FKIdProveedor_SIS INT '$.FkidProveedorSis',
+                CostoUnitario DECIMAL(20,4) '$.CostoUnitario',
+                Observaciones NVARCHAR(MAX) '$.Observaciones'
+            )
+            WHERE FKIdPAAASDetalle_ORCO > 0;
+
+            IF NOT EXISTS (SELECT 1 FROM @Batch)
+                THROW 51000, 'Debe seleccionar al menos un detalle PAAAS.', 1;
+            IF EXISTS (SELECT 1 FROM @Batch WHERE ISNULL(FKIdProveedor_SIS, 0) <= 0)
+                THROW 51000, 'Debe seleccionar proveedor para todos los detalles.', 1;
+            IF EXISTS (SELECT 1 FROM @Batch WHERE ISNULL(CostoUnitario, 0) <= 0)
+                THROW 51000, 'Todos los costos unitarios deben ser mayores a cero.', 1;
+            IF EXISTS (SELECT 1 FROM @Batch b WHERE NOT EXISTS (SELECT 1 FROM SIS.Proveedor p WHERE p.PKIdProveedor = b.FKIdProveedor_SIS AND p.Activo = 1))
+                THROW 51000, 'Uno o mas proveedores no existen o estan inactivos.', 1;
+
+            INSERT INTO ORCO.EstudioMercadoDetalle (
+                FKIdEmpresa_SIS, FKIdEstudioMercado_ORCO, FKIdPAAASDetalle_ORCO, FKIdTipoBien_ALMA,
+                Cantidad, Observaciones, FKIdProveedor_SIS, CostoUnitario, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT em.FKIdEmpresa_SIS, em.PKIdEstudioMercado, pd.PKIdPAAASDetalle, pd.FKIdTipoBien_ALMA,
+                   pd.Cantidad, COALESCE(NULLIF(LTRIM(RTRIM(b.Observaciones)), ''), pd.Observaciones),
+                   b.FKIdProveedor_SIS, b.CostoUnitario, 1, @today, @IdUser
+            FROM @Batch b
+            INNER JOIN ORCO.PAAASDetalle pd ON pd.PKIdPAAASDetalle = b.FKIdPAAASDetalle_ORCO AND pd.Activo = 1
+            INNER JOIN ORCO.PAAASPartida pp ON pd.FKIdPAAASPartida_ORCO = pp.PKIdPAAASPartida AND pp.Activo = 1
+            INNER JOIN ORCO.PAAAS p ON pp.FKIdPAAAS_ORCO = p.PKIdPAAAS AND p.Activo = 1
+            INNER JOIN ORCO.EstudioMercado em ON em.PKIdEstudioMercado = @PKIdEstudioMercado AND em.Activo = 1
+            WHERE pd.FKIdEmpresa_SIS = em.FKIdEmpresa_SIS
+              AND p.FKIdAnio_SIS = em.FKIdAnio_SIS
+              AND NOT EXISTS (
+                  SELECT 1 FROM ORCO.EstudioMercadoDetalle ed
+                  WHERE ed.FKIdEstudioMercado_ORCO = em.PKIdEstudioMercado
+                    AND ed.FKIdTipoBien_ALMA = pd.FKIdTipoBien_ALMA
+                    AND ed.FKIdProveedor_SIS = b.FKIdProveedor_SIS
+                    AND ed.Activo = 1
+              );
+
+            SET @message = 'Detalles de estudio de mercado creados correctamente.';
+            SET @liga = CONCAT('idEstudioMercado:', @PKIdEstudioMercado);
+        END
+        ELSE IF @Action = 20
+        BEGIN
+            IF ISJSON(@ItemsJson) <> 1 OR ISJSON(@ProveedorIdsJson) <> 1
+                THROW 51000, 'Debe seleccionar bienes y proveedores para cotizar.', 1;
+
+            DECLARE @CotItems TABLE (FKIdPAAASDetalle_ORCO INT PRIMARY KEY, Observaciones NVARCHAR(MAX));
+            DECLARE @Proveedores TABLE (FKIdProveedor_SIS INT PRIMARY KEY);
+
+            INSERT INTO @CotItems
+            SELECT FKIdPAAASDetalle_ORCO, MAX(Observaciones)
+            FROM OPENJSON(@ItemsJson)
+            WITH (FKIdPAAASDetalle_ORCO INT '$.FkidPaaasdetalleOrco', Observaciones NVARCHAR(MAX) '$.Observaciones')
+            WHERE FKIdPAAASDetalle_ORCO > 0
+            GROUP BY FKIdPAAASDetalle_ORCO;
+
+            INSERT INTO @Proveedores
+            SELECT DISTINCT TRY_CONVERT(INT, value)
+            FROM OPENJSON(@ProveedorIdsJson)
+            WHERE TRY_CONVERT(INT, value) > 0;
+
+            IF NOT EXISTS (SELECT 1 FROM @CotItems)
+                THROW 51000, 'Debe seleccionar al menos un bien del PAAAS.', 1;
+            IF NOT EXISTS (SELECT 1 FROM @Proveedores)
+                THROW 51000, 'Debe seleccionar al menos un proveedor para cotizar.', 1;
+            IF EXISTS (SELECT 1 FROM @Proveedores p WHERE NOT EXISTS (SELECT 1 FROM SIS.Proveedor pr WHERE pr.PKIdProveedor = p.FKIdProveedor_SIS AND pr.Activo = 1))
+                THROW 51000, 'Uno o mas proveedores no existen o estan inactivos.', 1;
+
+            DECLARE @DetalleByPaaas TABLE (FKIdPAAASDetalle_ORCO INT PRIMARY KEY, PKIdEstudioMercadoDetalle INT);
+
+            INSERT INTO @DetalleByPaaas
+            SELECT ed.FKIdPAAASDetalle_ORCO, ed.PKIdEstudioMercadoDetalle
+            FROM ORCO.EstudioMercadoDetalle ed
+            INNER JOIN @CotItems i ON ed.FKIdPAAASDetalle_ORCO = i.FKIdPAAASDetalle_ORCO
+            WHERE ed.FKIdEstudioMercado_ORCO = @PKIdEstudioMercado AND ed.Activo = 1;
+
+            INSERT INTO ORCO.EstudioMercadoDetalle (
+                FKIdEmpresa_SIS, FKIdEstudioMercado_ORCO, FKIdPAAASDetalle_ORCO, FKIdTipoBien_ALMA,
+                Cantidad, Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            OUTPUT inserted.FKIdPAAASDetalle_ORCO, inserted.PKIdEstudioMercadoDetalle INTO @DetalleByPaaas
+            SELECT em.FKIdEmpresa_SIS, em.PKIdEstudioMercado, pd.PKIdPAAASDetalle, pd.FKIdTipoBien_ALMA,
+                   pd.Cantidad, COALESCE(NULLIF(LTRIM(RTRIM(i.Observaciones)), ''), pd.Observaciones),
+                   1, @today, @IdUser
+            FROM @CotItems i
+            INNER JOIN ORCO.PAAASDetalle pd ON pd.PKIdPAAASDetalle = i.FKIdPAAASDetalle_ORCO AND pd.Activo = 1
+            INNER JOIN ORCO.PAAASPartida pp ON pd.FKIdPAAASPartida_ORCO = pp.PKIdPAAASPartida AND pp.Activo = 1
+            INNER JOIN ORCO.PAAAS p ON pp.FKIdPAAAS_ORCO = p.PKIdPAAAS AND p.Activo = 1
+            INNER JOIN ORCO.EstudioMercado em ON em.PKIdEstudioMercado = @PKIdEstudioMercado AND em.Activo = 1
+            WHERE pd.FKIdEmpresa_SIS = em.FKIdEmpresa_SIS
+              AND p.FKIdAnio_SIS = em.FKIdAnio_SIS
+              AND NOT EXISTS (SELECT 1 FROM @DetalleByPaaas d WHERE d.FKIdPAAASDetalle_ORCO = pd.PKIdPAAASDetalle);
+
+            DECLARE @SolicitudByProveedor TABLE (FKIdProveedor_SIS INT PRIMARY KEY, PKIdSolicitudCotizacion INT);
+
+            INSERT INTO @SolicitudByProveedor
+            SELECT sc.FKIdProveedor_SIS, sc.PKIdSolicitudCotizacion
+            FROM ORCO.SolicitudCotizacion sc
+            INNER JOIN @Proveedores p ON sc.FKIdProveedor_SIS = p.FKIdProveedor_SIS
+            WHERE sc.FKIdEstudioMercado_ORCO = @PKIdEstudioMercado AND sc.Activo = 1;
+
+            INSERT INTO ORCO.SolicitudCotizacion (
+                FKIdEmpresa_SIS, FKIdEstudioMercado_ORCO, FKIdProveedor_SIS, FechaSolicitud,
+                FechaCompromisoEntrega, Comentarios, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            OUTPUT inserted.FKIdProveedor_SIS, inserted.PKIdSolicitudCotizacion INTO @SolicitudByProveedor
+            SELECT em.FKIdEmpresa_SIS, em.PKIdEstudioMercado, p.FKIdProveedor_SIS, @today,
+                   @FechaCompromisoEntrega, NULLIF(LTRIM(RTRIM(@Comentarios)), ''), 1, 1, @today, @IdUser
+            FROM @Proveedores p
+            CROSS JOIN ORCO.EstudioMercado em
+            WHERE em.PKIdEstudioMercado = @PKIdEstudioMercado
+              AND em.Activo = 1
+              AND NOT EXISTS (SELECT 1 FROM @SolicitudByProveedor s WHERE s.FKIdProveedor_SIS = p.FKIdProveedor_SIS);
+
+            INSERT INTO ORCO.EstudioMercadoDetalleCosto (
+                FKIdEmpresa_SIS, FKIdSolicitudCotizacion_ORCO, FKIdEstudioMercadoDetalle_ORCO,
+                Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT em.FKIdEmpresa_SIS, s.PKIdSolicitudCotizacion, d.PKIdEstudioMercadoDetalle,
+                   1, @today, @IdUser
+            FROM @SolicitudByProveedor s
+            CROSS JOIN @DetalleByPaaas d
+            INNER JOIN ORCO.EstudioMercado em ON em.PKIdEstudioMercado = @PKIdEstudioMercado
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ORCO.EstudioMercadoDetalleCosto c
+                WHERE c.FKIdSolicitudCotizacion_ORCO = s.PKIdSolicitudCotizacion
+                  AND c.FKIdEstudioMercadoDetalle_ORCO = d.PKIdEstudioMercadoDetalle
+                  AND c.Activo = 1
+            );
+
+            SET @message = 'Solicitudes de cotizacion generadas correctamente.';
+            SET @liga = CONCAT('idEstudioMercado:', @PKIdEstudioMercado);
+        END
+        ELSE IF @Action = 30
+        BEGIN
+            IF ISJSON(@ItemsJson) <> 1
+                THROW 51000, 'No hay cotizaciones para guardar.', 1;
+
+            DECLARE @Recepcion TABLE (PKIdEstudioMercadoDetalleCosto INT PRIMARY KEY, PrecioUnitario DECIMAL(20,4) NULL, TiempoEntregaDias INT NULL, Condiciones NVARCHAR(500) NULL);
+            INSERT INTO @Recepcion
+            SELECT PKIdEstudioMercadoDetalleCosto, PrecioUnitario, TiempoEntregaDias, Condiciones
+            FROM OPENJSON(@ItemsJson)
+            WITH (
+                PKIdEstudioMercadoDetalleCosto INT '$.PkidEstudioMercadoDetalleCosto',
+                PrecioUnitario DECIMAL(20,4) '$.PrecioUnitario',
+                TiempoEntregaDias INT '$.TiempoEntregaDias',
+                Condiciones NVARCHAR(500) '$.Condiciones'
+            )
+            WHERE PKIdEstudioMercadoDetalleCosto > 0;
+
+            IF NOT EXISTS (SELECT 1 FROM @Recepcion)
+                THROW 51000, 'No hay cotizaciones para guardar.', 1;
+            IF EXISTS (SELECT 1 FROM @Recepcion WHERE PrecioUnitario <= 0)
+                THROW 51000, 'Los precios capturados deben ser mayores a cero.', 1;
+            IF EXISTS (SELECT 1 FROM @Recepcion WHERE TiempoEntregaDias < 0)
+                THROW 51000, 'El tiempo de entrega no puede ser negativo.', 1;
+            IF EXISTS (
+                SELECT 1 FROM @Recepcion r
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM ORCO.EstudioMercadoDetalleCosto c
+                    INNER JOIN ORCO.SolicitudCotizacion sc ON c.FKIdSolicitudCotizacion_ORCO = sc.PKIdSolicitudCotizacion
+                    WHERE c.PKIdEstudioMercadoDetalleCosto = r.PKIdEstudioMercadoDetalleCosto
+                      AND c.Activo = 1
+                      AND sc.Activo = 1
+                      AND sc.FKIdEstudioMercado_ORCO = @PKIdEstudioMercado
+                )
+            )
+                THROW 51000, 'Una o mas cotizaciones no existen o no pertenecen al estudio seleccionado.', 1;
+
+            UPDATE c
+            SET PrecioUnitario = r.PrecioUnitario,
+                TiempoEntregaDias = CASE WHEN r.PrecioUnitario IS NOT NULL THEN r.TiempoEntregaDias ELSE NULL END,
+                Condiciones = CASE WHEN r.PrecioUnitario IS NOT NULL THEN NULLIF(LTRIM(RTRIM(r.Condiciones)), '') ELSE NULL END,
+                FechaRespuesta = CASE WHEN r.PrecioUnitario IS NOT NULL THEN ISNULL(c.FechaRespuesta, @today) ELSE NULL END,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM ORCO.EstudioMercadoDetalleCosto c
+            INNER JOIN @Recepcion r ON c.PKIdEstudioMercadoDetalleCosto = r.PKIdEstudioMercadoDetalleCosto;
+
+            ;WITH Conteos AS (
+                SELECT sc.PKIdSolicitudCotizacion,
+                       COUNT(c.PKIdEstudioMercadoDetalleCosto) AS Total,
+                       SUM(CASE WHEN c.PrecioUnitario IS NOT NULL THEN 1 ELSE 0 END) AS Recibidas
+                FROM ORCO.SolicitudCotizacion sc
+                INNER JOIN ORCO.EstudioMercadoDetalleCosto c ON sc.PKIdSolicitudCotizacion = c.FKIdSolicitudCotizacion_ORCO AND c.Activo = 1
+                WHERE sc.FKIdEstudioMercado_ORCO = @PKIdEstudioMercado AND sc.Activo = 1
+                GROUP BY sc.PKIdSolicitudCotizacion
+            )
+            UPDATE sc
+            SET Estatus = CASE WHEN c.Recibidas = 0 THEN 1 WHEN c.Recibidas < c.Total THEN 2 ELSE 3 END,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM ORCO.SolicitudCotizacion sc
+            INNER JOIN Conteos c ON sc.PKIdSolicitudCotizacion = c.PKIdSolicitudCotizacion;
+
+            SET @message = 'Cotizaciones guardadas correctamente.';
+            SET @liga = CONCAT('idEstudioMercado:', @PKIdEstudioMercado);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para estudio de mercado.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+PRINT 'Procedimientos de adquisiciones creados exitosamente.';
+GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoCotizacion] (
+    @Action INT,
+    @PKIdCotizacion INT = NULL,
+    @FKIdRequisicion_ORCO INT = NULL,
+    @FKIdProveedor_SIS INT = NULL,
+    @FechaSolicitud DATETIME = NULL,
+    @FechaProveedorCotiza DATETIME = NULL,
+    @FechaProveedorCompromiso DATETIME = NULL,
+    @Comentarios NVARCHAR(MAX) = NULL,
+    @Servicio BIT = NULL,
+    @FL_Documento NVARCHAR(1000) = NULL,
+    @Entrega NVARCHAR(MAX) = NULL,
+    @Vigencia NVARCHAR(MAX) = NULL,
+    @Condiciones NVARCHAR(200) = NULL,
+    @FKIdAnio_SIS INT = NULL,
+    @FKIdContenedorCot_ORCO INT = NULL,
+    @FKIdContenedorMultiCot_ORCO INT = NULL,
+    @ItemsJson NVARCHAR(MAX) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+    DECLARE @Seeded INT = 0;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM ORCO.Requisicion WHERE PKIdRequisicion = @FKIdRequisicion_ORCO AND Activo = 1)
+                THROW 51000, 'La requisicion no existe o esta inactiva.', 1;
+            IF NOT EXISTS (SELECT 1 FROM SIS.Proveedor WHERE PKIdProveedor = @FKIdProveedor_SIS AND Activo = 1)
+                THROW 51000, 'El proveedor no existe o esta inactivo.', 1;
+            IF NOT EXISTS (SELECT 1 FROM ORCO.RequisicionDetalle WHERE FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO AND Activo = 1)
+                THROW 51000, 'La requisicion debe tener al menos un bien para generar una cotizacion.', 1;
+
+            INSERT INTO ORCO.Cotizacion (
+                FKIdRequisicion_ORCO, FKIdProveedor_SIS, FechaSolicitud, FechaProveedorCotiza, FechaProveedorCompromiso,
+                Comentarios, Servicio, FL_Documento, Entrega, Vigencia, Condiciones, FKIdAnio_SIS,
+                FKIdContenedorCot_ORCO, FKIdContenedorMultiCot_ORCO, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT @FKIdRequisicion_ORCO, @FKIdProveedor_SIS, ISNULL(@FechaSolicitud, GETDATE()), @FechaProveedorCotiza, @FechaProveedorCompromiso,
+                   ISNULL(@Comentarios, ''), r.Servicio, ISNULL(@FL_Documento, ''), ISNULL(@Entrega, ''), ISNULL(@Vigencia, ''), ISNULL(@Condiciones, ''),
+                   ISNULL(@FKIdAnio_SIS, r.FKIdAnio_SIS), @FKIdContenedorCot_ORCO, @FKIdContenedorMultiCot_ORCO, 1, @today, @IdUser
+            FROM ORCO.Requisicion r
+            WHERE r.PKIdRequisicion = @FKIdRequisicion_ORCO;
+
+            SET @Id = SCOPE_IDENTITY();
+
+            INSERT INTO ORCO.CotizacionDetalle (FKIdCotizacion_ORCO, FKIdRequisicionDetalle_ORCO, PrecioUnitario, Activo, FechaCreacion, UsuarioCreacion)
+            SELECT @Id, rd.PKIdRequisicionDetalle, NULL, 1, @today, @IdUser
+            FROM ORCO.RequisicionDetalle rd
+            WHERE rd.FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO
+              AND rd.Activo = 1;
+
+            SET @Seeded = @@ROWCOUNT;
+            SET @message = CONCAT('Cotizacion creada correctamente con ', @Seeded, ' bienes cargados desde la requisicion.');
+            SET @liga = CONCAT('idCotizacion:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdCotizacion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Cotizacion WHERE PKIdCotizacion = @PKIdCotizacion AND Activo = 1)
+                THROW 51000, 'Cotizacion no encontrada.', 1;
+            IF NOT EXISTS (SELECT 1 FROM SIS.Proveedor WHERE PKIdProveedor = @FKIdProveedor_SIS AND Activo = 1)
+                THROW 51000, 'El proveedor no existe o esta inactivo.', 1;
+
+            UPDATE ORCO.Cotizacion
+            SET FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO,
+                FKIdProveedor_SIS = @FKIdProveedor_SIS,
+                FechaSolicitud = ISNULL(@FechaSolicitud, FechaSolicitud),
+                FechaProveedorCotiza = @FechaProveedorCotiza,
+                FechaProveedorCompromiso = @FechaProveedorCompromiso,
+                Comentarios = ISNULL(@Comentarios, ''),
+                Servicio = ISNULL(@Servicio, Servicio),
+                FL_Documento = ISNULL(@FL_Documento, ''),
+                Entrega = ISNULL(@Entrega, ''),
+                Vigencia = ISNULL(@Vigencia, ''),
+                Condiciones = ISNULL(@Condiciones, ''),
+                FKIdAnio_SIS = @FKIdAnio_SIS,
+                FKIdContenedorCot_ORCO = @FKIdContenedorCot_ORCO,
+                FKIdContenedorMultiCot_ORCO = @FKIdContenedorMultiCot_ORCO,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdCotizacion = @PKIdCotizacion;
+
+            SET @Id = @PKIdCotizacion;
+            SET @message = 'Cotizacion actualizada correctamente.';
+            SET @liga = CONCAT('idCotizacion:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdCotizacion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Cotizacion WHERE PKIdCotizacion = @PKIdCotizacion AND Activo = 1)
+                THROW 51000, 'Cotizacion no encontrada.', 1;
+
+            UPDATE ORCO.CotizacionDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCotizacion_ORCO = @PKIdCotizacion AND Activo = 1;
+            UPDATE ORCO.Cotizacion SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCotizacion = @PKIdCotizacion;
+
+            SET @Id = @PKIdCotizacion;
+            SET @message = 'Cotizacion eliminada correctamente.';
+            SET @liga = CONCAT('idCotizacion:', @Id);
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            IF @PKIdCotizacion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Cotizacion WHERE PKIdCotizacion = @PKIdCotizacion AND Activo = 1)
+                THROW 51000, 'Cotizacion no encontrada.', 1;
+            IF ISJSON(@ItemsJson) <> 1
+                THROW 51000, 'No hay bienes cotizados para guardar.', 1;
+            IF EXISTS (SELECT 1 FROM OPENJSON(@ItemsJson) WITH (PrecioUnitario DECIMAL(20,4) '$.PrecioUnitario') WHERE PrecioUnitario <= 0)
+                THROW 51000, 'Los precios capturados deben ser mayores a cero.', 1;
+
+            DECLARE @Items TABLE (PKIdCotizacionDetalle INT PRIMARY KEY, PrecioUnitario DECIMAL(20,4) NULL);
+            INSERT INTO @Items (PKIdCotizacionDetalle, PrecioUnitario)
+            SELECT PKIdCotizacionDetalle, PrecioUnitario
+            FROM OPENJSON(@ItemsJson)
+            WITH (PKIdCotizacionDetalle INT '$.PkidCotizacionDetalle', PrecioUnitario DECIMAL(20,4) '$.PrecioUnitario')
+            WHERE PKIdCotizacionDetalle > 0;
+
+            IF NOT EXISTS (SELECT 1 FROM @Items)
+                THROW 51000, 'No hay bienes cotizados para guardar.', 1;
+            IF EXISTS (
+                SELECT 1 FROM @Items i
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM ORCO.CotizacionDetalle cd
+                    WHERE cd.PKIdCotizacionDetalle = i.PKIdCotizacionDetalle
+                      AND cd.FKIdCotizacion_ORCO = @PKIdCotizacion
+                      AND cd.Activo = 1
+                )
+            )
+                THROW 51000, 'Uno o mas bienes no pertenecen a la cotizacion seleccionada.', 1;
+
+            UPDATE cd
+            SET PrecioUnitario = i.PrecioUnitario,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM ORCO.CotizacionDetalle cd
+            INNER JOIN @Items i ON cd.PKIdCotizacionDetalle = i.PKIdCotizacionDetalle;
+
+            IF EXISTS (SELECT 1 FROM @Items WHERE PrecioUnitario IS NOT NULL)
+            BEGIN
+                UPDATE ORCO.Cotizacion
+                SET FechaProveedorCotiza = ISNULL(FechaProveedorCotiza, CONVERT(DATE, GETDATE())),
+                    FechaModificacion = @today,
+                    UsuarioModificacion = @IdUser
+                WHERE PKIdCotizacion = @PKIdCotizacion;
+            END
+
+            SET @Id = @PKIdCotizacion;
+            SET @message = 'Montos cotizados guardados correctamente.';
+            SET @liga = CONCAT('idCotizacion:', @Id);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdCotizacion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Cotizacion WHERE PKIdCotizacion = @PKIdCotizacion AND Activo = 1)
+                THROW 51000, 'Cotizacion no encontrada.', 1;
+
+            INSERT INTO ORCO.CotizacionDetalle (FKIdCotizacion_ORCO, FKIdRequisicionDetalle_ORCO, PrecioUnitario, Activo, FechaCreacion, UsuarioCreacion)
+            SELECT c.PKIdCotizacion, rd.PKIdRequisicionDetalle, NULL, 1, @today, @IdUser
+            FROM ORCO.Cotizacion c
+            INNER JOIN ORCO.RequisicionDetalle rd ON rd.FKIdRequisicion_ORCO = c.FKIdRequisicion_ORCO AND rd.Activo = 1
+            WHERE c.PKIdCotizacion = @PKIdCotizacion
+              AND NOT EXISTS (
+                  SELECT 1 FROM ORCO.CotizacionDetalle cd
+                  WHERE cd.FKIdCotizacion_ORCO = c.PKIdCotizacion
+                    AND cd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle
+                    AND cd.Activo = 1
+              );
+
+            SET @Seeded = @@ROWCOUNT;
+            SET @Id = @PKIdCotizacion;
+            SET @message = CONCAT('Detalles de cotizacion sincronizados: ', @Seeded, '.');
+            SET @liga = CONCAT('idCotizacion:', @Id);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para cotizacion.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [PRES].[SP_MantenimientoSolicitudSuficiencia] (
+    @Action INT,
+    @PKIdSolicitudSuficiencia INT = NULL,
+    @FKIdRequisicion_ORCO INT = NULL,
+    @FechaSolicitud DATE = NULL,
+    @Justificacion NVARCHAR(1000) = NULL,
+    @GastoNoProgramable VARCHAR(3) = NULL,
+    @IdGastoNoProgramable INT = NULL,
+    @IdCompromisoNomina INT = NULL,
+    @Estatus INT = NULL,
+    @PorcentajeAjuste DECIMAL(10,4) = 0,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action IN (1, 2, 10) AND NOT EXISTS (SELECT 1 FROM ORCO.Requisicion WHERE PKIdRequisicion = @FKIdRequisicion_ORCO AND Activo = 1)
+            THROW 51000, 'La requisicion no existe o esta inactiva.', 1;
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO PRES.SolicitudSuficiencia (
+                FKIdEmpresa_SIS, FKIdRequisicion_ORCO, FechaSolicitud, Justificacion,
+                GastoNoProgramable, IdGastoNoProgramable, IdCompromisoNomina, Estatus,
+                Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT FKIdEmpresa_SIS, PKIdRequisicion, ISNULL(@FechaSolicitud, CONVERT(DATE, GETDATE())), ISNULL(@Justificacion, ''),
+                   @GastoNoProgramable, @IdGastoNoProgramable, @IdCompromisoNomina, ISNULL(NULLIF(@Estatus, 0), 1),
+                   1, @today, @IdUser
+            FROM ORCO.Requisicion
+            WHERE PKIdRequisicion = @FKIdRequisicion_ORCO;
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Solicitud de suficiencia creada correctamente.';
+            SET @liga = CONCAT('idSolicitudSuficiencia:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdSolicitudSuficiencia IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.SolicitudSuficiencia WHERE PKIdSolicitudSuficiencia = @PKIdSolicitudSuficiencia AND Activo = 1)
+                THROW 51000, 'Solicitud de suficiencia no encontrada.', 1;
+
+            UPDATE ss
+            SET FKIdEmpresa_SIS = r.FKIdEmpresa_SIS,
+                FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO,
+                FechaSolicitud = ISNULL(@FechaSolicitud, ss.FechaSolicitud),
+                Justificacion = ISNULL(@Justificacion, ''),
+                GastoNoProgramable = @GastoNoProgramable,
+                IdGastoNoProgramable = @IdGastoNoProgramable,
+                IdCompromisoNomina = @IdCompromisoNomina,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), ss.Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM PRES.SolicitudSuficiencia ss
+            INNER JOIN ORCO.Requisicion r ON r.PKIdRequisicion = @FKIdRequisicion_ORCO
+            WHERE ss.PKIdSolicitudSuficiencia = @PKIdSolicitudSuficiencia;
+
+            SET @Id = @PKIdSolicitudSuficiencia;
+            SET @message = 'Solicitud de suficiencia actualizada correctamente.';
+            SET @liga = CONCAT('idSolicitudSuficiencia:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdSolicitudSuficiencia IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.SolicitudSuficiencia WHERE PKIdSolicitudSuficiencia = @PKIdSolicitudSuficiencia AND Activo = 1)
+                THROW 51000, 'Solicitud de suficiencia no encontrada.', 1;
+
+            UPDATE PRES.SolicitudSuficienciaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdSolicitudSuficiencia_PRES = @PKIdSolicitudSuficiencia AND Activo = 1;
+            UPDATE PRES.SolicitudSuficiencia SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdSolicitudSuficiencia = @PKIdSolicitudSuficiencia;
+
+            SET @Id = @PKIdSolicitudSuficiencia;
+            SET @message = 'Solicitud de suficiencia eliminada correctamente.';
+            SET @liga = CONCAT('idSolicitudSuficiencia:', @Id);
+        END
+        ELSE IF @Action = 10
+        BEGIN
+            IF @PorcentajeAjuste < 0
+                THROW 51000, 'El porcentaje de ajuste no puede ser negativo.', 1;
+            IF EXISTS (SELECT 1 FROM PRES.SolicitudSuficiencia WHERE FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO AND Activo = 1)
+                THROW 51000, 'Ya existe una solicitud de suficiencia activa para esta requisicion.', 1;
+            IF NOT EXISTS (SELECT 1 FROM ORCO.RequisicionDetalle WHERE FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO AND Activo = 1)
+                THROW 51000, 'La requisicion debe tener al menos un bien para generar la solicitud.', 1;
+            IF EXISTS (
+                SELECT 1
+                FROM ORCO.RequisicionDetalle rd
+                INNER JOIN ALMA.TipoBien tb ON rd.FKIdTipoBien_ALMA = tb.PKIdTipoBien
+                WHERE rd.FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO
+                  AND rd.Activo = 1
+                  AND ISNULL(tb.FKIdPartida_CONTA, 0) <= 0
+            )
+                THROW 51000, 'Hay bienes sin partida presupuestal configurada.', 1;
+            IF EXISTS (SELECT 1 FROM ORCO.RequisicionDetalle WHERE FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO AND Activo = 1 AND Cantidad <= 0)
+                THROW 51000, 'Todos los bienes de la requisicion deben tener cantidad mayor a cero.', 1;
+            IF EXISTS (
+                SELECT 1
+                FROM ORCO.RequisicionDetalle rd
+                WHERE rd.FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO
+                  AND rd.Activo = 1
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM ORCO.CotizacionDetalle cd
+                      INNER JOIN ORCO.Cotizacion c ON cd.FKIdCotizacion_ORCO = c.PKIdCotizacion
+                      WHERE c.FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO
+                        AND c.Activo = 1
+                        AND cd.Activo = 1
+                        AND cd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle
+                        AND cd.PrecioUnitario > 0
+                  )
+            )
+                THROW 51000, 'Todos los bienes deben tener al menos un monto cotizado.', 1;
+
+            INSERT INTO PRES.SolicitudSuficiencia (
+                FKIdEmpresa_SIS, FKIdRequisicion_ORCO, FechaSolicitud, Justificacion,
+                GastoNoProgramable, IdGastoNoProgramable, IdCompromisoNomina, Estatus,
+                Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT FKIdEmpresa_SIS, PKIdRequisicion, ISNULL(@FechaSolicitud, CONVERT(DATE, GETDATE())), ISNULL(@Justificacion, ''),
+                   @GastoNoProgramable, @IdGastoNoProgramable, @IdCompromisoNomina, 1, 1, @today, @IdUser
+            FROM ORCO.Requisicion
+            WHERE PKIdRequisicion = @FKIdRequisicion_ORCO;
+
+            SET @Id = SCOPE_IDENTITY();
+
+            ;WITH Cotizaciones AS (
+                SELECT
+                    rd.PKIdRequisicionDetalle,
+                    r.FKIdEmpresa_SIS,
+                    r.FechaRequisicion,
+                    tb.FKIdPartida_CONTA,
+                    rd.Cantidad,
+                    AVG(CAST(cd.PrecioUnitario * rd.Cantidad AS DECIMAL(20,4))) AS PromedioImporte,
+                    COUNT(*) AS Cotizaciones
+                FROM ORCO.Requisicion r
+                INNER JOIN ORCO.RequisicionDetalle rd ON r.PKIdRequisicion = rd.FKIdRequisicion_ORCO AND rd.Activo = 1
+                INNER JOIN ALMA.TipoBien tb ON rd.FKIdTipoBien_ALMA = tb.PKIdTipoBien AND tb.Activo = 1
+                INNER JOIN ORCO.Cotizacion c ON r.PKIdRequisicion = c.FKIdRequisicion_ORCO AND c.Activo = 1
+                INNER JOIN ORCO.CotizacionDetalle cd ON c.PKIdCotizacion = cd.FKIdCotizacion_ORCO AND cd.FKIdRequisicionDetalle_ORCO = rd.PKIdRequisicionDetalle AND cd.Activo = 1 AND cd.PrecioUnitario > 0
+                WHERE r.PKIdRequisicion = @FKIdRequisicion_ORCO
+                GROUP BY rd.PKIdRequisicionDetalle, r.FKIdEmpresa_SIS, r.FechaRequisicion, tb.FKIdPartida_CONTA, rd.Cantidad
+            ),
+            Importes AS (
+                SELECT *,
+                    ROUND(PromedioImporte * (1 + (@PorcentajeAjuste / 100.0)), 4) AS ImporteAjustado,
+                    MONTH(FechaRequisicion) AS Mes
+                FROM Cotizaciones
+            )
+            INSERT INTO PRES.SolicitudSuficienciaDetalle (
+                FKIdEmpresa_SIS, FKIdSolicitudSuficiencia_PRES, FKIdRequisicionDetalle_ORCO, FKIdPartida_CONTA,
+                Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre,
+                Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT FKIdEmpresa_SIS, @Id, PKIdRequisicionDetalle, FKIdPartida_CONTA,
+                   CASE WHEN Mes = 1 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 2 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 3 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 4 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 5 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 6 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 7 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 8 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 9 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 10 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 11 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN Mes = 12 THEN ImporteAjustado ELSE 0 END,
+                   CASE WHEN @PorcentajeAjuste = 0
+                        THEN CONCAT('Promedio de ', Cotizaciones, ' cotizacion(es).')
+                        ELSE CONCAT('Promedio de ', Cotizaciones, ' cotizacion(es) mas ', CONVERT(VARCHAR(32), CAST(@PorcentajeAjuste AS DECIMAL(10,2))), '% de ajuste.')
+                   END,
+                   1, @today, @IdUser
+            FROM Importes;
+
+            SET @message = 'Solicitud de suficiencia generada correctamente desde la requisicion.';
+            SET @liga = CONCAT('idSolicitudSuficiencia:', @Id);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para solicitud de suficiencia.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoRequisicion] (
+    @Action INT,
+    @PKIdRequisicion INT = NULL,
+    @PKIdRequisicionDetalle INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdPersona_NOM INT = NULL,
+    @FKIdArea_SIS INT = NULL,
+    @Descripcion NVARCHAR(100) = NULL,
+    @Observaciones NVARCHAR(1000) = NULL,
+    @FechaRequisicion DATETIME = NULL,
+    @Servicio BIT = NULL,
+    @FL_FOTO NVARCHAR(1000) = NULL,
+    @FKIdProyecto_ORCO INT = NULL,
+    @FechaRequiereInicio DATETIME = NULL,
+    @FechaRequiereFin DATETIME = NULL,
+    @FKIdPrograma_PRES INT = NULL,
+    @Importe DECIMAL(20,4) = NULL,
+    @FKIdJefeAlmacen_NOM INT = NULL,
+    @FKIdSuficiencia_PRES INT = NULL,
+    @FKIdSuperviso_NOM INT = NULL,
+    @FKIdAutorizo_NOM INT = NULL,
+    @FKIdPSolicita_NOM INT = NULL,
+    @FKIdPJefeAlmacen_NOM INT = NULL,
+    @FKIdPSuficiencia_NOM INT = NULL,
+    @FKIdPSuperviso_NOM INT = NULL,
+    @FKIdPAutorizo_NOM INT = NULL,
+    @FKIdFuenteFinanciamiento_PRES INT = NULL,
+    @FKIdAnio_SIS INT = NULL,
+    @FKIdTipoGasto_PRES INT = NULL,
+    @FKIdDigitoIdentificador_PRES INT = NULL,
+    @FKIdDestinoGasto_PRES INT = NULL,
+    @FKIdEgresoAutorizado_PRES INT = NULL,
+    @Oficio VARCHAR(120) = NULL,
+    @FechaOficio DATETIME = NULL,
+    @CompraDirecta BIT = NULL,
+    @FKIdTipoBien_ALMA INT = NULL,
+    @FKIdUnidades_ALMA INT = NULL,
+    @Cantidad NUMERIC(8,2) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action IN (2, 3, 4, 5, 6) AND @PKIdRequisicion IS NOT NULL
+           AND EXISTS (SELECT 1 FROM ORCO.Cotizacion WHERE FKIdRequisicion_ORCO = @PKIdRequisicion AND Activo = 1)
+            THROW 51000, 'La requisicion ya esta vinculada a una cotizacion activa. Liberala para poder modificarla.', 1;
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO ORCO.Requisicion (
+                FKIdEmpresa_SIS, FKIdPersona_NOM, FKIdArea_SIS, Descripcion, Observaciones, FechaRequisicion,
+                Servicio, FL_FOTO, FKIdProyecto_ORCO, FechaRequiereInicio, FechaRequiereFin, FKIdPrograma_PRES,
+                Importe, FKIdJefeAlmacen_NOM, FKIdSuficiencia_PRES, FKIdSuperviso_NOM, FKIdAutorizo_NOM,
+                FKIdPSolicita_NOM, FKIdPJefeAlmacen_NOM, FKIdPSuficiencia_NOM, FKIdPSuperviso_NOM, FKIdPAutorizo_NOM,
+                FKIdFuenteFinanciamiento_PRES, FKIdAnio_SIS, FKIdTipoGasto_PRES, FKIdDigitoIdentificador_PRES,
+                FKIdDestinoGasto_PRES, FKIdEgresoAutorizado_PRES, Oficio, FechaOficio, CompraDirecta,
+                Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdPersona_NOM, @FKIdArea_SIS, @Descripcion, @Observaciones, ISNULL(@FechaRequisicion, GETDATE()),
+                ISNULL(@Servicio, 0), @FL_FOTO, @FKIdProyecto_ORCO, @FechaRequiereInicio, @FechaRequiereFin, @FKIdPrograma_PRES,
+                @Importe, @FKIdJefeAlmacen_NOM, @FKIdSuficiencia_PRES, @FKIdSuperviso_NOM, @FKIdAutorizo_NOM,
+                @FKIdPSolicita_NOM, @FKIdPJefeAlmacen_NOM, @FKIdPSuficiencia_NOM, @FKIdPSuperviso_NOM, @FKIdPAutorizo_NOM,
+                @FKIdFuenteFinanciamiento_PRES, @FKIdAnio_SIS, @FKIdTipoGasto_PRES, @FKIdDigitoIdentificador_PRES,
+                @FKIdDestinoGasto_PRES, @FKIdEgresoAutorizado_PRES, @Oficio, @FechaOficio, @CompraDirecta,
+                1, @today, @IdUser
+            );
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Requisicion creada correctamente.';
+            SET @liga = CONCAT('idRequisicion:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdRequisicion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Requisicion WHERE PKIdRequisicion = @PKIdRequisicion AND Activo = 1)
+                THROW 51000, 'Requisicion no encontrada.', 1;
+
+            UPDATE ORCO.Requisicion
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdPersona_NOM = @FKIdPersona_NOM,
+                FKIdArea_SIS = @FKIdArea_SIS,
+                Descripcion = @Descripcion,
+                Observaciones = @Observaciones,
+                FechaRequisicion = ISNULL(@FechaRequisicion, FechaRequisicion),
+                Servicio = ISNULL(@Servicio, Servicio),
+                FL_FOTO = @FL_FOTO,
+                FKIdProyecto_ORCO = @FKIdProyecto_ORCO,
+                FechaRequiereInicio = @FechaRequiereInicio,
+                FechaRequiereFin = @FechaRequiereFin,
+                FKIdPrograma_PRES = @FKIdPrograma_PRES,
+                Importe = @Importe,
+                FKIdJefeAlmacen_NOM = @FKIdJefeAlmacen_NOM,
+                FKIdSuficiencia_PRES = @FKIdSuficiencia_PRES,
+                FKIdSuperviso_NOM = @FKIdSuperviso_NOM,
+                FKIdAutorizo_NOM = @FKIdAutorizo_NOM,
+                FKIdPSolicita_NOM = @FKIdPSolicita_NOM,
+                FKIdPJefeAlmacen_NOM = @FKIdPJefeAlmacen_NOM,
+                FKIdPSuficiencia_NOM = @FKIdPSuficiencia_NOM,
+                FKIdPSuperviso_NOM = @FKIdPSuperviso_NOM,
+                FKIdPAutorizo_NOM = @FKIdPAutorizo_NOM,
+                FKIdFuenteFinanciamiento_PRES = @FKIdFuenteFinanciamiento_PRES,
+                FKIdAnio_SIS = @FKIdAnio_SIS,
+                FKIdTipoGasto_PRES = @FKIdTipoGasto_PRES,
+                FKIdDigitoIdentificador_PRES = @FKIdDigitoIdentificador_PRES,
+                FKIdDestinoGasto_PRES = @FKIdDestinoGasto_PRES,
+                FKIdEgresoAutorizado_PRES = @FKIdEgresoAutorizado_PRES,
+                Oficio = @Oficio,
+                FechaOficio = @FechaOficio,
+                CompraDirecta = @CompraDirecta,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdRequisicion = @PKIdRequisicion;
+
+            SET @Id = @PKIdRequisicion;
+            SET @message = 'Requisicion actualizada correctamente.';
+            SET @liga = CONCAT('idRequisicion:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdRequisicion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Requisicion WHERE PKIdRequisicion = @PKIdRequisicion AND Activo = 1)
+                THROW 51000, 'Requisicion no encontrada.', 1;
+
+            UPDATE ORCO.RequisicionDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdRequisicion_ORCO = @PKIdRequisicion AND Activo = 1;
+            UPDATE ORCO.RequisicionPartida SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdRequisicion_ORCO = @PKIdRequisicion AND Activo = 1;
+            UPDATE ORCO.Requisicion SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdRequisicion = @PKIdRequisicion;
+
+            SET @Id = @PKIdRequisicion;
+            SET @message = 'Requisicion eliminada correctamente.';
+            SET @liga = CONCAT('idRequisicion:', @Id);
+        END
+        ELSE IF @Action IN (4, 5)
+        BEGIN
+            IF @PKIdRequisicion IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.Requisicion WHERE PKIdRequisicion = @PKIdRequisicion AND Activo = 1)
+                THROW 51000, 'Requisicion no encontrada.', 1;
+
+            IF ISNULL(@Cantidad, 0) <= 0
+                THROW 51000, 'La cantidad debe ser mayor a cero.', 1;
+
+            IF EXISTS (
+                SELECT 1 FROM ORCO.RequisicionDetalle
+                WHERE FKIdRequisicion_ORCO = @PKIdRequisicion
+                  AND FKIdTipoBien_ALMA = @FKIdTipoBien_ALMA
+                  AND Activo = 1
+                  AND (@Action = 4 OR PKIdRequisicionDetalle <> @PKIdRequisicionDetalle)
+            )
+                THROW 51000, 'Ya existe un renglon activo con el mismo bien en esta requisicion.', 1;
+
+            IF @Action = 4
+            BEGIN
+                INSERT INTO ORCO.RequisicionDetalle (
+                    FKIdEmpresa_SIS, FKIdRequisicion_ORCO, FKIdTipoBien_ALMA, FKIdUnidades_ALMA,
+                    Cantidad, Observaciones, Activo, FechaCreacion, UsuarioCreacion
+                )
+                SELECT r.FKIdEmpresa_SIS, r.PKIdRequisicion, @FKIdTipoBien_ALMA, ISNULL(@FKIdUnidades_ALMA, tb.FKIdUnidades_ALMA),
+                       @Cantidad, ISNULL(@Observaciones, ''), 1, @today, @IdUser
+                FROM ORCO.Requisicion r
+                INNER JOIN ALMA.TipoBien tb ON tb.PKIdTipoBien = @FKIdTipoBien_ALMA AND tb.Activo = 1
+                WHERE r.PKIdRequisicion = @PKIdRequisicion;
+
+                SET @Id = SCOPE_IDENTITY();
+                SET @message = 'Detalle de requisicion creado correctamente.';
+            END
+            ELSE
+            BEGIN
+                IF @PKIdRequisicionDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.RequisicionDetalle WHERE PKIdRequisicionDetalle = @PKIdRequisicionDetalle AND Activo = 1)
+                    THROW 51000, 'Detalle de requisicion no encontrado.', 1;
+
+                UPDATE rd
+                SET FKIdTipoBien_ALMA = @FKIdTipoBien_ALMA,
+                    FKIdUnidades_ALMA = ISNULL(@FKIdUnidades_ALMA, tb.FKIdUnidades_ALMA),
+                    Cantidad = @Cantidad,
+                    Observaciones = ISNULL(@Observaciones, ''),
+                    FechaModificacion = @today,
+                    UsuarioModificacion = @IdUser
+                FROM ORCO.RequisicionDetalle rd
+                INNER JOIN ALMA.TipoBien tb ON tb.PKIdTipoBien = @FKIdTipoBien_ALMA AND tb.Activo = 1
+                WHERE rd.PKIdRequisicionDetalle = @PKIdRequisicionDetalle;
+
+                SET @Id = @PKIdRequisicionDetalle;
+                SET @message = 'Detalle de requisicion actualizado correctamente.';
+            END
+            SET @liga = CONCAT('idRequisicionDetalle:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdRequisicionDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM ORCO.RequisicionDetalle WHERE PKIdRequisicionDetalle = @PKIdRequisicionDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de requisicion no encontrado.', 1;
+
+            UPDATE ORCO.RequisicionDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdRequisicionDetalle = @PKIdRequisicionDetalle;
+            SET @Id = @PKIdRequisicionDetalle;
+            SET @message = 'Detalle de requisicion eliminado correctamente.';
+            SET @liga = CONCAT('idRequisicionDetalle:', @Id);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para requisicion.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO

@@ -11,7 +11,7 @@ public partial class CotizacionDetalle
 
     public int FkidCotizacionOrco { get; set; }
 
-    public int FkidDetalleRequisicionOrco { get; set; }
+    public int FkidRequisicionDetalleOrco { get; set; }
 
     public decimal? PrecioUnitario { get; set; }
 
@@ -27,7 +27,7 @@ public partial class CotizacionDetalle
 
     public virtual Cotizacion FkidCotizacionOrcoNavigation { get; set; }
 
-    public virtual DetalleRequisicion FkidDetalleRequisicionOrcoNavigation { get; set; }
+    public virtual RequisicionDetalle FkidRequisicionDetalleOrcoNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

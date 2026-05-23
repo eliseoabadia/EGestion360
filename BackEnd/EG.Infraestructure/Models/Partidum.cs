@@ -25,6 +25,8 @@ public partial class Partidum
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalles { get; set; } = new List<AutorizacionSuficienciaDetalle>();
+
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
@@ -36,6 +38,8 @@ public partial class Partidum
     public virtual ICollection<Paaaspartidum> Paaaspartida { get; set; } = new List<Paaaspartidum>();
 
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
+
+    public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalles { get; set; } = new List<SolicitudSuficienciaDetalle>();
 
     public virtual ICollection<TipoBien> TipoBiens { get; set; } = new List<TipoBien>();
 

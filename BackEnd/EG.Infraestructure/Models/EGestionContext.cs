@@ -33,6 +33,10 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<AspNetUserRole> AspNetUserRoles { get; set; }
 
+    public virtual DbSet<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalles { get; set; }
+
+    public virtual DbSet<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; }
+
     public virtual DbSet<Bien> Biens { get; set; }
 
     public virtual DbSet<Capitulo> Capitulos { get; set; }
@@ -64,8 +68,6 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Departamento> Departamentos { get; set; }
 
     public virtual DbSet<DestinoGasto> DestinoGastos { get; set; }
-
-    public virtual DbSet<DetalleRequisicion> DetalleRequisicions { get; set; }
 
     public virtual DbSet<DigitoIdentificador> DigitoIdentificadors { get; set; }
 
@@ -185,6 +187,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Requisicion> Requisicions { get; set; }
 
+    public virtual DbSet<RequisicionDetalle> RequisicionDetalles { get; set; }
+
     public virtual DbSet<RequisicionPartidum> RequisicionPartida { get; set; }
 
     public virtual DbSet<Resultado> Resultados { get; set; }
@@ -194,6 +198,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Sf> Sfs { get; set; }
 
     public virtual DbSet<SolicitudCotizacion> SolicitudCotizacions { get; set; }
+
+    public virtual DbSet<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalles { get; set; }
+
+    public virtual DbSet<SolicitudSuficiencium> SolicitudSuficiencia { get; set; }
 
     public virtual DbSet<SubEje> SubEjes { get; set; }
 
@@ -269,6 +277,10 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwArea> VwAreas { get; set; }
 
+    public virtual DbSet<VwAutorizacionSuficienciaDetalle> VwAutorizacionSuficienciaDetalles { get; set; }
+
+    public virtual DbSet<VwAutorizacionSuficiencium> VwAutorizacionSuficiencia { get; set; }
+
     public virtual DbSet<VwBien> VwBiens { get; set; }
 
     public virtual DbSet<VwConcepto> VwConceptos { get; set; }
@@ -333,7 +345,13 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwRequisicion> VwRequisicions { get; set; }
 
+    public virtual DbSet<VwRequisicionDetalle> VwRequisicionDetalles { get; set; }
+
     public virtual DbSet<VwRequisicionPartidum> VwRequisicionPartida { get; set; }
+
+    public virtual DbSet<VwSolicitudSuficienciaDetalle> VwSolicitudSuficienciaDetalles { get; set; }
+
+    public virtual DbSet<VwSolicitudSuficiencium> VwSolicitudSuficiencia { get; set; }
 
     public virtual DbSet<VwSubFuncion> VwSubFuncions { get; set; }
 
@@ -560,6 +578,146 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("CONSTRAINT_FK_AspNetUserRoles_User");
+        });
+
+        modelBuilder.Entity<AutorizacionSuficienciaDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidAutorizacionSuficienciaDetalle);
+
+            entity.ToTable("AutorizacionSuficienciaDetalle", "PRES");
+
+            entity.HasIndex(e => e.FkidAutorizacionSuficienciaPres, "IX_AutorizacionSuficienciaDetalle_Autorizacion").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidSolicitudSuficienciaDetallePres, "IX_AutorizacionSuficienciaDetalle_SolicitudDetalle").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidAutorizacionSuficienciaDetalle).HasColumnName("PKIdAutorizacionSuficienciaDetalle");
+            entity.Property(e => e.Abril)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Abr")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_AutorizacionSuficienciaDetalle_Activo");
+            entity.Property(e => e.Agosto)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Ago")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Diciembre)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Dic")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Enero)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Ene")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Feb")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_AutorizacionSuficienciaDetalle_FechaCreacion");
+            entity.Property(e => e.FkidAutorizacionSuficienciaPres).HasColumnName("FKIdAutorizacionSuficiencia_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidSolicitudSuficienciaDetallePres).HasColumnName("FKIdSolicitudSuficienciaDetalle_PRES");
+            entity.Property(e => e.Julio)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Jul")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Jun")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Mar")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_May")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Nov")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Oct")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Septiembre)
+                .HasDefaultValue(0m, "DF_AutorizacionSuficienciaDetalle_Sep")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total)
+                .HasComputedColumnSql("(((((((((((isnull([Enero],(0))+isnull([Febrero],(0)))+isnull([Marzo],(0)))+isnull([Abril],(0)))+isnull([Mayo],(0)))+isnull([Junio],(0)))+isnull([Julio],(0)))+isnull([Agosto],(0)))+isnull([Septiembre],(0)))+isnull([Octubre],(0)))+isnull([Noviembre],(0)))+isnull([Diciembre],(0)))", false)
+                .HasColumnType("decimal(31, 4)");
+
+            entity.HasOne(d => d.FkidAutorizacionSuficienciaPresNavigation).WithMany(p => p.AutorizacionSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidAutorizacionSuficienciaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficienciaDetalle_Autorizacion");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.AutorizacionSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficienciaDetalle_Empresa");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.AutorizacionSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficienciaDetalle_Partida");
+
+            entity.HasOne(d => d.FkidSolicitudSuficienciaDetallePresNavigation).WithMany(p => p.AutorizacionSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidSolicitudSuficienciaDetallePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficienciaDetalle_SolicitudDetalle");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.AutorizacionSuficienciaDetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficienciaDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.AutorizacionSuficienciaDetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_AutorizacionSuficienciaDetalle_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<AutorizacionSuficiencium>(entity =>
+        {
+            entity.HasKey(e => e.PkidAutorizacionSuficiencia);
+
+            entity.ToTable("AutorizacionSuficiencia", "PRES");
+
+            entity.HasIndex(e => e.Estatus, "IX_AutorizacionSuficiencia_Estatus").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FechaAutorizacion, "IX_AutorizacionSuficiencia_Fecha").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidSolicitudSuficienciaPres, "IX_AutorizacionSuficiencia_Solicitud").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidAutorizacionSuficiencia).HasColumnName("PKIdAutorizacionSuficiencia");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_AutorizacionSuficiencia_Activo");
+            entity.Property(e => e.AutorizadoPorNom).HasColumnName("AutorizadoPor_NOM");
+            entity.Property(e => e.Estatus).HasDefaultValue(1, "DF_AutorizacionSuficiencia_Estatus");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_AutorizacionSuficiencia_FechaCreacion");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidSolicitudSuficienciaPres).HasColumnName("FKIdSolicitudSuficiencia_PRES");
+            entity.Property(e => e.GastoNoProgramable)
+                .HasMaxLength(3)
+                .IsUnicode(false);
+            entity.Property(e => e.Justificacion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.AutorizadoPorNomNavigation).WithMany(p => p.AutorizacionSuficiencia)
+                .HasForeignKey(d => d.AutorizadoPorNom)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficiencia_AutorizadoPor");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.AutorizacionSuficiencia)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficiencia_Empresa");
+
+            entity.HasOne(d => d.FkidSolicitudSuficienciaPresNavigation).WithMany(p => p.AutorizacionSuficiencia)
+                .HasForeignKey(d => d.FkidSolicitudSuficienciaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficiencia_Solicitud");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.AutorizacionSuficienciumUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AutorizacionSuficiencia_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.AutorizacionSuficienciumUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_AutorizacionSuficiencia_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Bien>(entity =>
@@ -1016,13 +1174,13 @@ public partial class EGestionContext : DbContext
 
             entity.HasIndex(e => e.FkidCotizacionOrco, "IX_CotizacionDetalle_Cotizacion");
 
-            entity.HasIndex(e => e.FkidDetalleRequisicionOrco, "IX_CotizacionDetalle_DetalleRequisicion");
+            entity.HasIndex(e => e.FkidRequisicionDetalleOrco, "IX_CotizacionDetalle_RequisicionDetalle");
 
             entity.Property(e => e.PkidCotizacionDetalle).HasColumnName("PKIdCotizacionDetalle");
             entity.Property(e => e.Activo).HasDefaultValue(true, "DF_CotizacionDetalle_Activo");
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_CotizacionDetalle_FechaCreacion");
             entity.Property(e => e.FkidCotizacionOrco).HasColumnName("FKIdCotizacion_ORCO");
-            entity.Property(e => e.FkidDetalleRequisicionOrco).HasColumnName("FKIdDetalleRequisicion_ORCO");
+            entity.Property(e => e.FkidRequisicionDetalleOrco).HasColumnName("FKIdRequisicionDetalle_ORCO");
             entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(20, 4)");
 
             entity.HasOne(d => d.FkidCotizacionOrcoNavigation).WithMany(p => p.CotizacionDetalles)
@@ -1030,10 +1188,10 @@ public partial class EGestionContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CotizacionDetalle_Cotizacion");
 
-            entity.HasOne(d => d.FkidDetalleRequisicionOrcoNavigation).WithMany(p => p.CotizacionDetalles)
-                .HasForeignKey(d => d.FkidDetalleRequisicionOrco)
+            entity.HasOne(d => d.FkidRequisicionDetalleOrcoNavigation).WithMany(p => p.CotizacionDetalles)
+                .HasForeignKey(d => d.FkidRequisicionDetalleOrco)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CotizacionDetalle_DetalleRequisicion");
+                .HasConstraintName("FK_CotizacionDetalle_RequisicionDetalle");
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.CotizacionDetalleUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
@@ -1184,51 +1342,6 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.DestinoGastoUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_DestinoGasto_UsuarioModificacion");
-        });
-
-        modelBuilder.Entity<DetalleRequisicion>(entity =>
-        {
-            entity.HasKey(e => e.PkidDetalleRequisicion);
-
-            entity.ToTable("DetalleRequisicion", "ORCO");
-
-            entity.Property(e => e.PkidDetalleRequisicion).HasColumnName("PKIdDetalleRequisicion");
-            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_DetalleRequisicion_Activo");
-            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
-            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_DetalleRequisicion_FechaCreacion");
-            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
-            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
-            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
-            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
-            entity.Property(e => e.Observaciones).IsRequired();
-
-            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.DetalleRequisicions)
-                .HasForeignKey(d => d.FkidEmpresaSis)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DetalleRequisicion_Empresa");
-
-            entity.HasOne(d => d.FkidRequisicionOrcoNavigation).WithMany(p => p.DetalleRequisicions)
-                .HasForeignKey(d => d.FkidRequisicionOrco)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DetalleRequisicion_Requisicion");
-
-            entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.DetalleRequisicions)
-                .HasForeignKey(d => d.FkidTipoBienAlma)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DetalleRequisicion_TipoBien");
-
-            entity.HasOne(d => d.FkidUnidadesAlmaNavigation).WithMany(p => p.DetalleRequisicions)
-                .HasForeignKey(d => d.FkidUnidadesAlma)
-                .HasConstraintName("FK_DetalleRequisicion_Unidades");
-
-            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.DetalleRequisicionUsuarioCreacionNavigations)
-                .HasForeignKey(d => d.UsuarioCreacion)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DetalleRequisicion_UsuarioCreacion");
-
-            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.DetalleRequisicionUsuarioModificacionNavigations)
-                .HasForeignKey(d => d.UsuarioModificacion)
-                .HasConstraintName("FK_DetalleRequisicion_UsuarioModificacion");
         });
 
         modelBuilder.Entity<DigitoIdentificador>(entity =>
@@ -3462,6 +3575,51 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_Requisicion_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<RequisicionDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidRequisicionDetalle);
+
+            entity.ToTable("RequisicionDetalle", "ORCO");
+
+            entity.Property(e => e.PkidRequisicionDetalle).HasColumnName("PKIdRequisicionDetalle");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_RequisicionDetalle_Activo");
+            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_RequisicionDetalle_FechaCreacion");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.Observaciones).IsRequired();
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.RequisicionDetalles)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RequisicionDetalle_Empresa");
+
+            entity.HasOne(d => d.FkidRequisicionOrcoNavigation).WithMany(p => p.RequisicionDetalles)
+                .HasForeignKey(d => d.FkidRequisicionOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RequisicionDetalle_Requisicion");
+
+            entity.HasOne(d => d.FkidTipoBienAlmaNavigation).WithMany(p => p.RequisicionDetalles)
+                .HasForeignKey(d => d.FkidTipoBienAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RequisicionDetalle_TipoBien");
+
+            entity.HasOne(d => d.FkidUnidadesAlmaNavigation).WithMany(p => p.RequisicionDetalles)
+                .HasForeignKey(d => d.FkidUnidadesAlma)
+                .HasConstraintName("FK_RequisicionDetalle_Unidades");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.RequisicionDetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RequisicionDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.RequisicionDetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_RequisicionDetalle_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<RequisicionPartidum>(entity =>
         {
             entity.HasKey(e => e.PkidRequisicionPartida);
@@ -3617,6 +3775,137 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.SolicitudCotizacionUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_SolicitudCotizacion_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<SolicitudSuficienciaDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidSolicitudSuficienciaDetalle);
+
+            entity.ToTable("SolicitudSuficienciaDetalle", "PRES");
+
+            entity.HasIndex(e => e.FkidRequisicionDetalleOrco, "IX_SolicitudSuficienciaDetalle_RequisicionDetalle").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidSolicitudSuficienciaPres, "IX_SolicitudSuficienciaDetalle_Solicitud").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidSolicitudSuficienciaDetalle).HasColumnName("PKIdSolicitudSuficienciaDetalle");
+            entity.Property(e => e.Abril)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Abr")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SolicitudSuficienciaDetalle_Activo");
+            entity.Property(e => e.Agosto)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Ago")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Diciembre)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Dic")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Enero)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Ene")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Feb")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_SolicitudSuficienciaDetalle_FechaCreacion");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidRequisicionDetalleOrco).HasColumnName("FKIdRequisicionDetalle_ORCO");
+            entity.Property(e => e.FkidSolicitudSuficienciaPres).HasColumnName("FKIdSolicitudSuficiencia_PRES");
+            entity.Property(e => e.Julio)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Jul")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Jun")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Mar")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_May")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Nov")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Oct")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Septiembre)
+                .HasDefaultValue(0m, "DF_SolicitudSuficienciaDetalle_Sep")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total)
+                .HasComputedColumnSql("(((((((((((isnull([Enero],(0))+isnull([Febrero],(0)))+isnull([Marzo],(0)))+isnull([Abril],(0)))+isnull([Mayo],(0)))+isnull([Junio],(0)))+isnull([Julio],(0)))+isnull([Agosto],(0)))+isnull([Septiembre],(0)))+isnull([Octubre],(0)))+isnull([Noviembre],(0)))+isnull([Diciembre],(0)))", false)
+                .HasColumnType("decimal(31, 4)");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.SolicitudSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficienciaDetalle_Empresa");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.SolicitudSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficienciaDetalle_Partida");
+
+            entity.HasOne(d => d.FkidRequisicionDetalleOrcoNavigation).WithMany(p => p.SolicitudSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidRequisicionDetalleOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficienciaDetalle_RequisicionDetalle");
+
+            entity.HasOne(d => d.FkidSolicitudSuficienciaPresNavigation).WithMany(p => p.SolicitudSuficienciaDetalles)
+                .HasForeignKey(d => d.FkidSolicitudSuficienciaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficienciaDetalle_Solicitud");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.SolicitudSuficienciaDetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficienciaDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.SolicitudSuficienciaDetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_SolicitudSuficienciaDetalle_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<SolicitudSuficiencium>(entity =>
+        {
+            entity.HasKey(e => e.PkidSolicitudSuficiencia);
+
+            entity.ToTable("SolicitudSuficiencia", "PRES");
+
+            entity.HasIndex(e => e.Estatus, "IX_SolicitudSuficiencia_Estatus").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FechaSolicitud, "IX_SolicitudSuficiencia_Fecha").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidRequisicionOrco, "IX_SolicitudSuficiencia_Requisicion").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidSolicitudSuficiencia).HasColumnName("PKIdSolicitudSuficiencia");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SolicitudSuficiencia_Activo");
+            entity.Property(e => e.Estatus).HasDefaultValue(1, "DF_SolicitudSuficiencia_Estatus");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_SolicitudSuficiencia_FechaCreacion");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.GastoNoProgramable)
+                .HasMaxLength(3)
+                .IsUnicode(false);
+            entity.Property(e => e.Justificacion).HasMaxLength(1000);
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.SolicitudSuficiencia)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficiencia_Empresa");
+
+            entity.HasOne(d => d.FkidRequisicionOrcoNavigation).WithMany(p => p.SolicitudSuficiencia)
+                .HasForeignKey(d => d.FkidRequisicionOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficiencia_Requisicion");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.SolicitudSuficienciumUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SolicitudSuficiencia_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.SolicitudSuficienciumUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_SolicitudSuficiencia_UsuarioModificacion");
         });
 
         modelBuilder.Entity<SubEje>(entity =>
@@ -4628,6 +4917,78 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.UltimoInv).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<VwAutorizacionSuficienciaDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_AutorizacionSuficienciaDetalle", "PRES");
+
+            entity.Property(e => e.Abril).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Agosto).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.Diciembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.Enero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FkidAutorizacionSuficienciaPres).HasColumnName("FKIdAutorizacionSuficiencia_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidRequisicionDetalleOrco).HasColumnName("FKIdRequisicionDetalle_ORCO");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidSolicitudSuficienciaDetallePres).HasColumnName("FKIdSolicitudSuficienciaDetalle_PRES");
+            entity.Property(e => e.FkidSolicitudSuficienciaPres).HasColumnName("FKIdSolicitudSuficiencia_PRES");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.Julio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(268);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidAutorizacionSuficienciaDetalle).HasColumnName("PKIdAutorizacionSuficienciaDetalle");
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+            entity.Property(e => e.Septiembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.TipoBienClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.Total).HasColumnType("decimal(31, 4)");
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwAutorizacionSuficiencium>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_AutorizacionSuficiencia", "PRES");
+
+            entity.Property(e => e.AutorizadoPorNom).HasColumnName("AutorizadoPor_NOM");
+            entity.Property(e => e.AutorizadoPorNombre)
+                .IsRequired()
+                .HasMaxLength(152);
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidSolicitudSuficienciaPres).HasColumnName("FKIdSolicitudSuficiencia_PRES");
+            entity.Property(e => e.GastoNoProgramable)
+                .HasMaxLength(3)
+                .IsUnicode(false);
+            entity.Property(e => e.Justificacion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PkidAutorizacionSuficiencia).HasColumnName("PKIdAutorizacionSuficiencia");
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<VwBien>(entity =>
         {
             entity
@@ -4866,8 +5227,8 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidContenedorCotOrco).HasColumnName("FKIdContenedorCot_ORCO");
             entity.Property(e => e.FkidContenedorMultiCotOrco).HasColumnName("FKIdContenedorMultiCot_ORCO");
             entity.Property(e => e.FkidCotizacionOrco).HasColumnName("FKIdCotizacion_ORCO");
-            entity.Property(e => e.FkidDetalleRequisicionOrco).HasColumnName("FKIdDetalleRequisicion_ORCO");
             entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionDetalleOrco).HasColumnName("FKIdRequisicionDetalle_ORCO");
             entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
             entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
             entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
@@ -6030,6 +6391,36 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TipoGastoDescripcion).HasMaxLength(200);
         });
 
+        modelBuilder.Entity<VwRequisicionDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_RequisicionDetalle", "ORCO");
+
+            entity.Property(e => e.BienClaveNombre)
+                .IsRequired()
+                .HasMaxLength(1403);
+            entity.Property(e => e.Cabms)
+                .HasMaxLength(50)
+                .HasColumnName("CABMS");
+            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.ExistenciaMaxima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ExistenciaMinima).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FechaRequisicion).HasColumnType("datetime");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.Identificador).HasMaxLength(50);
+            entity.Property(e => e.Observaciones).IsRequired();
+            entity.Property(e => e.PkidRequisicionDetalle).HasColumnName("PKIdRequisicionDetalle");
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+            entity.Property(e => e.TipoBienCodigoClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<VwRequisicionPartidum>(entity =>
         {
             entity
@@ -6049,6 +6440,70 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PartidaClave).HasMaxLength(10);
             entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
             entity.Property(e => e.PkidRequisicionPartida).HasColumnName("PKIdRequisicionPartida");
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+            entity.Property(e => e.RequisicionImporte).HasColumnType("decimal(20, 4)");
+        });
+
+        modelBuilder.Entity<VwSolicitudSuficienciaDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_SolicitudSuficienciaDetalle", "PRES");
+
+            entity.Property(e => e.Abril).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Agosto).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Cantidad).HasColumnType("numeric(8, 2)");
+            entity.Property(e => e.Diciembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.Enero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidRequisicionDetalleOrco).HasColumnName("FKIdRequisicionDetalle_ORCO");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidSolicitudSuficienciaPres).HasColumnName("FKIdSolicitudSuficiencia_PRES");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.FkidUnidadesAlma).HasColumnName("FKIdUnidades_ALMA");
+            entity.Property(e => e.Julio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(268);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidSolicitudSuficienciaDetalle).HasColumnName("PKIdSolicitudSuficienciaDetalle");
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+            entity.Property(e => e.Septiembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.TipoBienClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.Total).HasColumnType("decimal(31, 4)");
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwSolicitudSuficiencium>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_SolicitudSuficiencia", "PRES");
+
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.FechaRequisicion).HasColumnType("datetime");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.GastoNoProgramable)
+                .HasMaxLength(3)
+                .IsUnicode(false);
+            entity.Property(e => e.Justificacion).HasMaxLength(1000);
+            entity.Property(e => e.PkidSolicitudSuficiencia).HasColumnName("PKIdSolicitudSuficiencia");
             entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
             entity.Property(e => e.RequisicionImporte).HasColumnType("decimal(20, 4)");
         });

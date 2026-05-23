@@ -51,6 +51,14 @@ public partial class Usuario
 
     public virtual ICollection<AspNetUser> AspNetUsers { get; set; } = new List<AspNetUser>();
 
+    public virtual ICollection<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalleUsuarioCreacionNavigations { get; set; } = new List<AutorizacionSuficienciaDetalle>();
+
+    public virtual ICollection<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalleUsuarioModificacionNavigations { get; set; } = new List<AutorizacionSuficienciaDetalle>();
+
+    public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficienciumUsuarioCreacionNavigations { get; set; } = new List<AutorizacionSuficiencium>();
+
+    public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficienciumUsuarioModificacionNavigations { get; set; } = new List<AutorizacionSuficiencium>();
+
     public virtual ICollection<Bien> BienUsuarioCreacionNavigations { get; set; } = new List<Bien>();
 
     public virtual ICollection<Bien> BienUsuarioModificacionNavigations { get; set; } = new List<Bien>();
@@ -102,10 +110,6 @@ public partial class Usuario
     public virtual ICollection<DestinoGasto> DestinoGastoUsuarioCreacionNavigations { get; set; } = new List<DestinoGasto>();
 
     public virtual ICollection<DestinoGasto> DestinoGastoUsuarioModificacionNavigations { get; set; } = new List<DestinoGasto>();
-
-    public virtual ICollection<DetalleRequisicion> DetalleRequisicionUsuarioCreacionNavigations { get; set; } = new List<DetalleRequisicion>();
-
-    public virtual ICollection<DetalleRequisicion> DetalleRequisicionUsuarioModificacionNavigations { get; set; } = new List<DetalleRequisicion>();
 
     public virtual ICollection<DigitoIdentificador> DigitoIdentificadorUsuarioCreacionNavigations { get; set; } = new List<DigitoIdentificador>();
 
@@ -303,6 +307,10 @@ public partial class Usuario
 
     public virtual ICollection<Ramo> RamoUsuarioModificacionNavigations { get; set; } = new List<Ramo>();
 
+    public virtual ICollection<RequisicionDetalle> RequisicionDetalleUsuarioCreacionNavigations { get; set; } = new List<RequisicionDetalle>();
+
+    public virtual ICollection<RequisicionDetalle> RequisicionDetalleUsuarioModificacionNavigations { get; set; } = new List<RequisicionDetalle>();
+
     public virtual ICollection<RequisicionPartidum> RequisicionPartidumUsuarioCreacionNavigations { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<RequisicionPartidum> RequisicionPartidumUsuarioModificacionNavigations { get; set; } = new List<RequisicionPartidum>();
@@ -322,6 +330,14 @@ public partial class Usuario
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacionUsuarioCreacionNavigations { get; set; } = new List<SolicitudCotizacion>();
 
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacionUsuarioModificacionNavigations { get; set; } = new List<SolicitudCotizacion>();
+
+    public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalleUsuarioCreacionNavigations { get; set; } = new List<SolicitudSuficienciaDetalle>();
+
+    public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalleUsuarioModificacionNavigations { get; set; } = new List<SolicitudSuficienciaDetalle>();
+
+    public virtual ICollection<SolicitudSuficiencium> SolicitudSuficienciumUsuarioCreacionNavigations { get; set; } = new List<SolicitudSuficiencium>();
+
+    public virtual ICollection<SolicitudSuficiencium> SolicitudSuficienciumUsuarioModificacionNavigations { get; set; } = new List<SolicitudSuficiencium>();
 
     public virtual ICollection<Sucursal> SucursalUsuarioCreacionNavigations { get; set; } = new List<Sucursal>();
 

@@ -2908,29 +2908,29 @@ CREATE TABLE ORCO.Requisicion (
 END
 GO
 
--- ORCO.DetalleRequisicion
-IF OBJECT_ID(N'ORCO.DetalleRequisicion', N'U') IS NULL
+-- ORCO.RequisicionDetalle
+IF OBJECT_ID(N'ORCO.RequisicionDetalle', N'U') IS NULL
 BEGIN
-CREATE TABLE ORCO.DetalleRequisicion (
-    PKIdDetalleRequisicion INT IDENTITY(1,1) NOT NULL,
+CREATE TABLE ORCO.RequisicionDetalle (
+    PKIdRequisicionDetalle INT IDENTITY(1,1) NOT NULL,
     FKIdEmpresa_SIS INT NOT NULL,
     FKIdRequisicion_ORCO INT NOT NULL,
     FKIdTipoBien_ALMA INT NOT NULL,
     FKIdUnidades_ALMA INT NULL,
     Cantidad NUMERIC(8,2) NOT NULL,
     Observaciones NVARCHAR(MAX) NOT NULL,
-    Activo BIT NOT NULL CONSTRAINT DF_DetalleRequisicion_Activo DEFAULT (1),
-    FechaCreacion DATETIME2 CONSTRAINT DF_DetalleRequisicion_FechaCreacion DEFAULT SYSDATETIME(),
+    Activo BIT NOT NULL CONSTRAINT DF_RequisicionDetalle_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_RequisicionDetalle_FechaCreacion DEFAULT SYSDATETIME(),
     UsuarioCreacion INT NOT NULL,
     FechaModificacion DATETIME2 NULL,
     UsuarioModificacion INT NULL,
-    CONSTRAINT PK_DetalleRequisicion PRIMARY KEY (PKIdDetalleRequisicion),
-    CONSTRAINT FK_DetalleRequisicion_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT FK_DetalleRequisicion_Requisicion FOREIGN KEY (FKIdRequisicion_ORCO) REFERENCES ORCO.Requisicion(PKIdRequisicion),
-    CONSTRAINT FK_DetalleRequisicion_TipoBien FOREIGN KEY (FKIdTipoBien_ALMA) REFERENCES ALMA.TipoBien(PKIdTipoBien),
-    CONSTRAINT FK_DetalleRequisicion_Unidades FOREIGN KEY (FKIdUnidades_ALMA) REFERENCES ALMA.Unidades(PKIdUnidades),
-    CONSTRAINT FK_DetalleRequisicion_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_DetalleRequisicion_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+    CONSTRAINT PK_RequisicionDetalle PRIMARY KEY (PKIdRequisicionDetalle),
+    CONSTRAINT FK_RequisicionDetalle_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_RequisicionDetalle_Requisicion FOREIGN KEY (FKIdRequisicion_ORCO) REFERENCES ORCO.Requisicion(PKIdRequisicion),
+    CONSTRAINT FK_RequisicionDetalle_TipoBien FOREIGN KEY (FKIdTipoBien_ALMA) REFERENCES ALMA.TipoBien(PKIdTipoBien),
+    CONSTRAINT FK_RequisicionDetalle_Unidades FOREIGN KEY (FKIdUnidades_ALMA) REFERENCES ALMA.Unidades(PKIdUnidades),
+    CONSTRAINT FK_RequisicionDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_RequisicionDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
 
 END
@@ -2991,7 +2991,7 @@ BEGIN
 CREATE TABLE ORCO.CotizacionDetalle (
     PKIdCotizacionDetalle INT IDENTITY(1,1) NOT NULL,
     FKIdCotizacion_ORCO INT NOT NULL,
-    FKIdDetalleRequisicion_ORCO INT NOT NULL,
+    FKIdRequisicionDetalle_ORCO INT NOT NULL,
     PrecioUnitario [dbo].[dmoney] NULL,
     Activo BIT NOT NULL CONSTRAINT DF_CotizacionDetalle_Activo DEFAULT (1),
     FechaCreacion DATETIME2 NOT NULL CONSTRAINT DF_CotizacionDetalle_FechaCreacion DEFAULT SYSDATETIME(),
@@ -3000,7 +3000,7 @@ CREATE TABLE ORCO.CotizacionDetalle (
     UsuarioModificacion INT NULL,
     CONSTRAINT PK_CotizacionDetalle PRIMARY KEY (PKIdCotizacionDetalle),
     CONSTRAINT FK_CotizacionDetalle_Cotizacion FOREIGN KEY (FKIdCotizacion_ORCO) REFERENCES ORCO.Cotizacion(PKIdCotizacion),
-    CONSTRAINT FK_CotizacionDetalle_DetalleRequisicion FOREIGN KEY (FKIdDetalleRequisicion_ORCO) REFERENCES ORCO.DetalleRequisicion(PKIdDetalleRequisicion),
+    CONSTRAINT FK_CotizacionDetalle_RequisicionDetalle FOREIGN KEY (FKIdRequisicionDetalle_ORCO) REFERENCES ORCO.RequisicionDetalle(PKIdRequisicionDetalle),
     CONSTRAINT FK_CotizacionDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_CotizacionDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
@@ -3015,9 +3015,9 @@ CREATE INDEX IX_CotizacionDetalle_Cotizacion ON ORCO.CotizacionDetalle(FKIdCotiz
 END
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CotizacionDetalle_DetalleRequisicion' AND object_id = OBJECT_ID(N'ORCO.CotizacionDetalle'))
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CotizacionDetalle_RequisicionDetalle' AND object_id = OBJECT_ID(N'ORCO.CotizacionDetalle'))
 BEGIN
-CREATE INDEX IX_CotizacionDetalle_DetalleRequisicion ON ORCO.CotizacionDetalle(FKIdDetalleRequisicion_ORCO);
+CREATE INDEX IX_CotizacionDetalle_RequisicionDetalle ON ORCO.CotizacionDetalle(FKIdRequisicionDetalle_ORCO);
 
 END
 GO
@@ -3044,6 +3044,219 @@ CREATE TABLE ORCO.RequisicionPartida (
     CONSTRAINT FK_RequisicionPartida_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
     CONSTRAINT FK_RequisicionPartida_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
 );
+
+END
+GO
+
+-- PRES.SolicitudSuficiencia
+IF OBJECT_ID(N'PRES.SolicitudSuficiencia', N'U') IS NULL
+BEGIN
+CREATE TABLE PRES.SolicitudSuficiencia (
+    PKIdSolicitudSuficiencia INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    FKIdRequisicion_ORCO INT NOT NULL,
+    FechaSolicitud DATE NOT NULL,
+    Justificacion NVARCHAR(1000) NULL,
+    GastoNoProgramable VARCHAR(3) NULL,
+    IdGastoNoProgramable INT NULL,
+    IdCompromisoNomina INT NULL,
+    Estatus INT NOT NULL CONSTRAINT DF_SolicitudSuficiencia_Estatus DEFAULT (1),
+    Activo BIT NOT NULL CONSTRAINT DF_SolicitudSuficiencia_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_SolicitudSuficiencia_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_SolicitudSuficiencia PRIMARY KEY (PKIdSolicitudSuficiencia),
+    CONSTRAINT FK_SolicitudSuficiencia_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_SolicitudSuficiencia_Requisicion FOREIGN KEY (FKIdRequisicion_ORCO) REFERENCES ORCO.Requisicion(PKIdRequisicion),
+    CONSTRAINT FK_SolicitudSuficiencia_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_SolicitudSuficiencia_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_SolicitudSuficiencia_Requisicion' AND object_id = OBJECT_ID(N'PRES.SolicitudSuficiencia'))
+BEGIN
+CREATE INDEX IX_SolicitudSuficiencia_Requisicion ON PRES.SolicitudSuficiencia(FKIdRequisicion_ORCO) WHERE Activo = 1;
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_SolicitudSuficiencia_Estatus' AND object_id = OBJECT_ID(N'PRES.SolicitudSuficiencia'))
+BEGIN
+CREATE INDEX IX_SolicitudSuficiencia_Estatus ON PRES.SolicitudSuficiencia(Estatus) WHERE Activo = 1;
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_SolicitudSuficiencia_Fecha' AND object_id = OBJECT_ID(N'PRES.SolicitudSuficiencia'))
+BEGIN
+CREATE INDEX IX_SolicitudSuficiencia_Fecha ON PRES.SolicitudSuficiencia(FechaSolicitud) WHERE Activo = 1;
+
+END
+GO
+
+-- PRES.SolicitudSuficienciaDetalle
+IF OBJECT_ID(N'PRES.SolicitudSuficienciaDetalle', N'U') IS NULL
+BEGIN
+CREATE TABLE PRES.SolicitudSuficienciaDetalle (
+    PKIdSolicitudSuficienciaDetalle INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    FKIdSolicitudSuficiencia_PRES INT NOT NULL,
+    FKIdRequisicionDetalle_ORCO INT NOT NULL,
+    FKIdPartida_CONTA INT NOT NULL,
+    Enero [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Ene DEFAULT (0),
+    Febrero [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Feb DEFAULT (0),
+    Marzo [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Mar DEFAULT (0),
+    Abril [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Abr DEFAULT (0),
+    Mayo [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_May DEFAULT (0),
+    Junio [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Jun DEFAULT (0),
+    Julio [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Jul DEFAULT (0),
+    Agosto [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Ago DEFAULT (0),
+    Septiembre [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Sep DEFAULT (0),
+    Octubre [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Oct DEFAULT (0),
+    Noviembre [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Nov DEFAULT (0),
+    Diciembre [dbo].[dmoney] NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Dic DEFAULT (0),
+    Total AS ISNULL(Enero, 0) + ISNULL(Febrero, 0) + ISNULL(Marzo, 0) + ISNULL(Abril, 0) +
+           ISNULL(Mayo, 0) + ISNULL(Junio, 0) + ISNULL(Julio, 0) + ISNULL(Agosto, 0) +
+           ISNULL(Septiembre, 0) + ISNULL(Octubre, 0) + ISNULL(Noviembre, 0) + ISNULL(Diciembre, 0),
+    Observaciones NVARCHAR(500) NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_SolicitudSuficienciaDetalle_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_SolicitudSuficienciaDetalle_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_SolicitudSuficienciaDetalle PRIMARY KEY (PKIdSolicitudSuficienciaDetalle),
+    CONSTRAINT FK_SolicitudSuficienciaDetalle_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_SolicitudSuficienciaDetalle_Solicitud FOREIGN KEY (FKIdSolicitudSuficiencia_PRES) REFERENCES PRES.SolicitudSuficiencia(PKIdSolicitudSuficiencia),
+    CONSTRAINT FK_SolicitudSuficienciaDetalle_RequisicionDetalle FOREIGN KEY (FKIdRequisicionDetalle_ORCO) REFERENCES ORCO.RequisicionDetalle(PKIdRequisicionDetalle),
+    CONSTRAINT FK_SolicitudSuficienciaDetalle_Partida FOREIGN KEY (FKIdPartida_CONTA) REFERENCES CONTA.Partida(PKIdPartida),
+    CONSTRAINT FK_SolicitudSuficienciaDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_SolicitudSuficienciaDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_SolicitudSuficienciaDetalle_Solicitud' AND object_id = OBJECT_ID(N'PRES.SolicitudSuficienciaDetalle'))
+BEGIN
+CREATE INDEX IX_SolicitudSuficienciaDetalle_Solicitud ON PRES.SolicitudSuficienciaDetalle(FKIdSolicitudSuficiencia_PRES) WHERE Activo = 1;
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_SolicitudSuficienciaDetalle_RequisicionDetalle' AND object_id = OBJECT_ID(N'PRES.SolicitudSuficienciaDetalle'))
+BEGIN
+CREATE INDEX IX_SolicitudSuficienciaDetalle_RequisicionDetalle ON PRES.SolicitudSuficienciaDetalle(FKIdRequisicionDetalle_ORCO) WHERE Activo = 1;
+
+END
+GO
+
+-- PRES.AutorizacionSuficiencia
+IF OBJECT_ID(N'PRES.AutorizacionSuficiencia', N'U') IS NULL
+BEGIN
+CREATE TABLE PRES.AutorizacionSuficiencia (
+    PKIdAutorizacionSuficiencia INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    FKIdSolicitudSuficiencia_PRES INT NOT NULL,
+    FechaAutorizacion DATE NOT NULL,
+    Justificacion NVARCHAR(250) NOT NULL,
+    GastoNoProgramable VARCHAR(3) NULL,
+    IdGastoNoProgramable INT NULL,
+    IdCompromisoNomina INT NULL,
+    AutorizadoPor_NOM INT NOT NULL,
+    Observaciones NVARCHAR(500) NULL,
+    Estatus INT NOT NULL CONSTRAINT DF_AutorizacionSuficiencia_Estatus DEFAULT (1),
+    Activo BIT NOT NULL CONSTRAINT DF_AutorizacionSuficiencia_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_AutorizacionSuficiencia_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_AutorizacionSuficiencia PRIMARY KEY (PKIdAutorizacionSuficiencia),
+    CONSTRAINT FK_AutorizacionSuficiencia_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_AutorizacionSuficiencia_Solicitud FOREIGN KEY (FKIdSolicitudSuficiencia_PRES) REFERENCES PRES.SolicitudSuficiencia(PKIdSolicitudSuficiencia),
+    CONSTRAINT FK_AutorizacionSuficiencia_AutorizadoPor FOREIGN KEY (AutorizadoPor_NOM) REFERENCES NOM.Persona(PKIdPersona),
+    CONSTRAINT FK_AutorizacionSuficiencia_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_AutorizacionSuficiencia_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_AutorizacionSuficiencia_Solicitud' AND object_id = OBJECT_ID(N'PRES.AutorizacionSuficiencia'))
+BEGIN
+CREATE INDEX IX_AutorizacionSuficiencia_Solicitud ON PRES.AutorizacionSuficiencia(FKIdSolicitudSuficiencia_PRES) WHERE Activo = 1;
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_AutorizacionSuficiencia_Estatus' AND object_id = OBJECT_ID(N'PRES.AutorizacionSuficiencia'))
+BEGIN
+CREATE INDEX IX_AutorizacionSuficiencia_Estatus ON PRES.AutorizacionSuficiencia(Estatus) WHERE Activo = 1;
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_AutorizacionSuficiencia_Fecha' AND object_id = OBJECT_ID(N'PRES.AutorizacionSuficiencia'))
+BEGIN
+CREATE INDEX IX_AutorizacionSuficiencia_Fecha ON PRES.AutorizacionSuficiencia(FechaAutorizacion) WHERE Activo = 1;
+
+END
+GO
+
+-- PRES.AutorizacionSuficienciaDetalle
+IF OBJECT_ID(N'PRES.AutorizacionSuficienciaDetalle', N'U') IS NULL
+BEGIN
+CREATE TABLE PRES.AutorizacionSuficienciaDetalle (
+    PKIdAutorizacionSuficienciaDetalle INT IDENTITY(1,1) NOT NULL,
+    FKIdEmpresa_SIS INT NOT NULL,
+    FKIdAutorizacionSuficiencia_PRES INT NOT NULL,
+    FKIdSolicitudSuficienciaDetalle_PRES INT NOT NULL,
+    FKIdPartida_CONTA INT NOT NULL,
+    Enero [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Ene DEFAULT (0),
+    Febrero [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Feb DEFAULT (0),
+    Marzo [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Mar DEFAULT (0),
+    Abril [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Abr DEFAULT (0),
+    Mayo [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_May DEFAULT (0),
+    Junio [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Jun DEFAULT (0),
+    Julio [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Jul DEFAULT (0),
+    Agosto [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Ago DEFAULT (0),
+    Septiembre [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Sep DEFAULT (0),
+    Octubre [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Oct DEFAULT (0),
+    Noviembre [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Nov DEFAULT (0),
+    Diciembre [dbo].[dmoney] NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Dic DEFAULT (0),
+    Total AS ISNULL(Enero, 0) + ISNULL(Febrero, 0) + ISNULL(Marzo, 0) + ISNULL(Abril, 0) +
+           ISNULL(Mayo, 0) + ISNULL(Junio, 0) + ISNULL(Julio, 0) + ISNULL(Agosto, 0) +
+           ISNULL(Septiembre, 0) + ISNULL(Octubre, 0) + ISNULL(Noviembre, 0) + ISNULL(Diciembre, 0),
+    Observaciones NVARCHAR(500) NULL,
+    Activo BIT NOT NULL CONSTRAINT DF_AutorizacionSuficienciaDetalle_Activo DEFAULT (1),
+    FechaCreacion DATETIME2 CONSTRAINT DF_AutorizacionSuficienciaDetalle_FechaCreacion DEFAULT SYSDATETIME(),
+    UsuarioCreacion INT NOT NULL,
+    FechaModificacion DATETIME2 NULL,
+    UsuarioModificacion INT NULL,
+    CONSTRAINT PK_AutorizacionSuficienciaDetalle PRIMARY KEY (PKIdAutorizacionSuficienciaDetalle),
+    CONSTRAINT FK_AutorizacionSuficienciaDetalle_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+    CONSTRAINT FK_AutorizacionSuficienciaDetalle_Autorizacion FOREIGN KEY (FKIdAutorizacionSuficiencia_PRES) REFERENCES PRES.AutorizacionSuficiencia(PKIdAutorizacionSuficiencia),
+    CONSTRAINT FK_AutorizacionSuficienciaDetalle_SolicitudDetalle FOREIGN KEY (FKIdSolicitudSuficienciaDetalle_PRES) REFERENCES PRES.SolicitudSuficienciaDetalle(PKIdSolicitudSuficienciaDetalle),
+    CONSTRAINT FK_AutorizacionSuficienciaDetalle_Partida FOREIGN KEY (FKIdPartida_CONTA) REFERENCES CONTA.Partida(PKIdPartida),
+    CONSTRAINT FK_AutorizacionSuficienciaDetalle_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
+    CONSTRAINT FK_AutorizacionSuficienciaDetalle_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario)
+);
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_AutorizacionSuficienciaDetalle_Autorizacion' AND object_id = OBJECT_ID(N'PRES.AutorizacionSuficienciaDetalle'))
+BEGIN
+CREATE INDEX IX_AutorizacionSuficienciaDetalle_Autorizacion ON PRES.AutorizacionSuficienciaDetalle(FKIdAutorizacionSuficiencia_PRES) WHERE Activo = 1;
+
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_AutorizacionSuficienciaDetalle_SolicitudDetalle' AND object_id = OBJECT_ID(N'PRES.AutorizacionSuficienciaDetalle'))
+BEGIN
+CREATE INDEX IX_AutorizacionSuficienciaDetalle_SolicitudDetalle ON PRES.AutorizacionSuficienciaDetalle(FKIdSolicitudSuficienciaDetalle_PRES) WHERE Activo = 1;
 
 END
 GO

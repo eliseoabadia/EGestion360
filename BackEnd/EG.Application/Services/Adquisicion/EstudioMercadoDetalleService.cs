@@ -40,13 +40,44 @@ namespace EG.Application.Services.Adquisicion
         public override async Task<PagedResult<EstudioMercadoDetalleResponse>> CreateAsync(EstudioMercadoDetalleResponse response, int usuarioActual)
         {
             var validation = await NormalizeAndValidateAsync(response, null);
-            return validation ?? await base.CreateAsync(response, usuarioActual);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            try
+            {
+                var spResult = await ExecuteDetalleAsync(4, null, response, usuarioActual);
+                var id = spResult.GetId() ?? 0;
+                var result = await GetByIdAsync(id);
+                result.Message = spResult.Mensaje;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return ValidationFailure($"Error al crear detalle de estudio de mercado: {ex.Message}");
+            }
         }
 
         public override async Task<PagedResult<EstudioMercadoDetalleResponse>> UpdateAsync(int id, EstudioMercadoDetalleResponse response, int usuarioActual)
         {
             var validation = await NormalizeAndValidateAsync(response, id);
-            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            try
+            {
+                var spResult = await ExecuteDetalleAsync(5, id, response, usuarioActual);
+                var result = await GetByIdAsync(id);
+                result.Message = spResult.Mensaje;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return ValidationFailure($"Error al actualizar detalle de estudio de mercado: {ex.Message}");
+            }
         }
 
         public override async Task<PagedResult<EstudioMercadoDetalleResponse>> GetAllPaginadoAsync(PagedRequest request)
@@ -64,31 +95,17 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var detalle = await _context.EstudioMercadoDetalles
-                    .FirstOrDefaultAsync(x => x.PkidEstudioMercadoDetalle == id && x.Activo);
-
-                if (detalle == null)
-                {
-                    return new PagedResult<bool>
-                    {
-                        Success = false,
-                        Message = $"Detalle de estudio de mercado con ID {id} no encontrado",
-                        Code = "NOT_FOUND",
-                        Data = false,
-                        TotalCount = 0
-                    };
-                }
-
-                detalle.Activo = false;
-                detalle.UsuarioModificacion = usuarioActual;
-                detalle.FechaModificacion = DateTime.Now;
-
-                await _context.SaveChangesAsync();
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoEstudioMercado]",
+                    StoredProcedureExecutor.Param("@Action", 6),
+                    StoredProcedureExecutor.Param("@PKIdEstudioMercadoDetalle", id),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
                 return new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Detalle de estudio de mercado eliminado correctamente",
+                    Message = spResult.Mensaje,
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -486,9 +503,6 @@ namespace EG.Application.Services.Adquisicion
                     .Select(x => PairKey(x.FkidTipoBienAlma, x.FkidProveedorSis!.Value))
                     .ToHashSet();
                 var batchKeys = new HashSet<string>();
-                var now = DateTime.Now;
-                var entities = new List<EstudioMercadoDetalle>();
-
                 foreach (var item in validItems)
                 {
                     var detalle = detalles[item.FkidPaaasdetalleOrco];
@@ -504,31 +518,27 @@ namespace EG.Application.Services.Adquisicion
                     {
                         return ValidationFailure("No se puede repetir el mismo tipo de bien con el mismo proveedor.");
                     }
-
-                    entities.Add(new EstudioMercadoDetalle
-                    {
-                        FkidEmpresaSis = estudio.FkidEmpresaSis,
-                        FkidEstudioMercadoOrco = request.FkidEstudioMercadoOrco,
-                        FkidPaaasdetalleOrco = detalle.PkidPaaasdetalle,
-                        FkidTipoBienAlma = detalle.FkidTipoBienAlma,
-                        FkidProveedorSis = providerId,
-                        CostoUnitario = item.CostoUnitario,
-                        Cantidad = detalle.Cantidad,
-                        Observaciones = string.IsNullOrWhiteSpace(item.Observaciones)
-                            ? detalle.Observaciones
-                            : item.Observaciones.Trim(),
-                        Activo = true,
-                        FechaCreacion = now,
-                        UsuarioCreacion = usuarioActual
-                    });
                 }
 
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-                await _context.EstudioMercadoDetalles.AddRangeAsync(entities);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                var beforeIds = await _context.EstudioMercadoDetalles
+                    .AsNoTracking()
+                    .Where(x => x.FkidEstudioMercadoOrco == request.FkidEstudioMercadoOrco)
+                    .Select(x => x.PkidEstudioMercadoDetalle)
+                    .ToListAsync();
 
-                var createdIds = entities.Select(x => x.PkidEstudioMercadoDetalle).ToList();
+                await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoEstudioMercado]",
+                    StoredProcedureExecutor.Param("@Action", 10),
+                    StoredProcedureExecutor.Param("@PKIdEstudioMercado", request.FkidEstudioMercadoOrco),
+                    StoredProcedureExecutor.JsonParam("@ItemsJson", validItems),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+
+                var createdIds = await _context.EstudioMercadoDetalles
+                    .AsNoTracking()
+                    .Where(x => x.FkidEstudioMercadoOrco == request.FkidEstudioMercadoOrco && !beforeIds.Contains(x.PkidEstudioMercadoDetalle))
+                    .Select(x => x.PkidEstudioMercadoDetalle)
+                    .ToListAsync();
                 var created = await _context.VwEstudioMercadoDetalles
                     .AsNoTracking()
                     .Where(x => createdIds.Contains(x.PkidEstudioMercadoDetalle))
@@ -639,131 +649,31 @@ namespace EG.Application.Services.Adquisicion
                     return CotizacionSolicitudValidationFailure("Uno o mas proveedores no existen o estan inactivos.");
                 }
 
-                var now = DateTime.Now;
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-
-                var existingDetalles = await _context.EstudioMercadoDetalles
-                    .Where(x =>
-                        x.Activo &&
-                        x.FkidEstudioMercadoOrco == estudio.PkidEstudioMercado &&
-                        paaasDetalleIds.Contains(x.FkidPaaasdetalleOrco))
-                    .ToListAsync();
-
-                var detalleByPaaas = existingDetalles
-                    .GroupBy(x => x.FkidPaaasdetalleOrco)
-                    .ToDictionary(x => x.Key, x => x.First());
-                foreach (var item in validItems)
-                {
-                    if (detalleByPaaas.ContainsKey(item.FkidPaaasdetalleOrco))
-                    {
-                        continue;
-                    }
-
-                    var detalle = detalles[item.FkidPaaasdetalleOrco];
-                    var entity = new EstudioMercadoDetalle
-                    {
-                        FkidEmpresaSis = estudio.FkidEmpresaSis,
-                        FkidEstudioMercadoOrco = estudio.PkidEstudioMercado,
-                        FkidPaaasdetalleOrco = detalle.PkidPaaasdetalle,
-                        FkidTipoBienAlma = detalle.FkidTipoBienAlma,
-                        Cantidad = detalle.Cantidad,
-                        Observaciones = string.IsNullOrWhiteSpace(item.Observaciones)
-                            ? detalle.Observaciones
-                            : item.Observaciones.Trim(),
-                        Activo = true,
-                        FechaCreacion = now,
-                        UsuarioCreacion = usuarioActual
-                    };
-
-                    await _context.EstudioMercadoDetalles.AddAsync(entity);
-                    detalleByPaaas[item.FkidPaaasdetalleOrco] = entity;
-                }
-
-                await _context.SaveChangesAsync();
-
-                var existingSolicitudes = await _context.SolicitudCotizacions
-                    .Where(x =>
-                        x.Activo &&
-                        x.FkidEstudioMercadoOrco == estudio.PkidEstudioMercado &&
-                        proveedorIds.Contains(x.FkidProveedorSis))
-                    .ToListAsync();
-
-                var solicitudByProvider = existingSolicitudes
-                    .GroupBy(x => x.FkidProveedorSis)
-                    .ToDictionary(x => x.Key, x => x.First());
-                foreach (var proveedorId in proveedorIds)
-                {
-                    if (solicitudByProvider.ContainsKey(proveedorId))
-                    {
-                        continue;
-                    }
-
-                    var solicitud = new SolicitudCotizacion
-                    {
-                        FkidEmpresaSis = estudio.FkidEmpresaSis,
-                        FkidEstudioMercadoOrco = estudio.PkidEstudioMercado,
-                        FkidProveedorSis = proveedorId,
-                        FechaSolicitud = now,
-                        FechaCompromisoEntrega = request.FechaCompromisoEntrega,
-                        Comentarios = string.IsNullOrWhiteSpace(request.Comentarios) ? null : request.Comentarios.Trim(),
-                        Estatus = 1,
-                        Activo = true,
-                        FechaCreacion = now,
-                        UsuarioCreacion = usuarioActual
-                    };
-
-                    await _context.SolicitudCotizacions.AddAsync(solicitud);
-                    solicitudByProvider[proveedorId] = solicitud;
-                }
-
-                await _context.SaveChangesAsync();
-
-                var solicitudIds = solicitudByProvider.Values.Select(x => x.PkidSolicitudCotizacion).ToList();
-                var estudioDetalleIds = detalleByPaaas.Values.Select(x => x.PkidEstudioMercadoDetalle).ToList();
-                var existingCotizaciones = await _context.EstudioMercadoDetalleCostos
-                    .Where(x =>
-                        x.Activo &&
-                        solicitudIds.Contains(x.FkidSolicitudCotizacionOrco) &&
-                        estudioDetalleIds.Contains(x.FkidEstudioMercadoDetalleOrco))
-                    .Select(x => new { x.FkidSolicitudCotizacionOrco, x.FkidEstudioMercadoDetalleOrco })
-                    .ToListAsync();
-
-                var existingKeys = existingCotizaciones
-                    .Select(x => CotizacionKey(x.FkidSolicitudCotizacionOrco, x.FkidEstudioMercadoDetalleOrco))
-                    .ToHashSet();
-
-                foreach (var solicitud in solicitudByProvider.Values)
-                {
-                    foreach (var detalle in detalleByPaaas.Values)
-                    {
-                        var key = CotizacionKey(solicitud.PkidSolicitudCotizacion, detalle.PkidEstudioMercadoDetalle);
-                        if (existingKeys.Contains(key))
-                        {
-                            continue;
-                        }
-
-                        await _context.EstudioMercadoDetalleCostos.AddAsync(new EstudioMercadoDetalleCosto
-                        {
-                            FkidEmpresaSis = estudio.FkidEmpresaSis,
-                            FkidSolicitudCotizacionOrco = solicitud.PkidSolicitudCotizacion,
-                            FkidEstudioMercadoDetalleOrco = detalle.PkidEstudioMercadoDetalle,
-                            Activo = true,
-                            FechaCreacion = now,
-                            UsuarioCreacion = usuarioActual
-                        });
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoEstudioMercado]",
+                    StoredProcedureExecutor.Param("@Action", 20),
+                    StoredProcedureExecutor.Param("@PKIdEstudioMercado", estudio.PkidEstudioMercado),
+                    StoredProcedureExecutor.Param("@FechaCompromisoEntrega", request.FechaCompromisoEntrega),
+                    StoredProcedureExecutor.Param("@Comentarios", request.Comentarios),
+                    StoredProcedureExecutor.JsonParam("@ItemsJson", validItems),
+                    StoredProcedureExecutor.JsonParam("@ProveedorIdsJson", proveedorIds),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
                 var result = await GetSolicitudesCotizacionAsync(estudio.PkidEstudioMercado);
                 if (request.EnviarCorreo)
                 {
+                    var solicitudByProvider = await _context.SolicitudCotizacions
+                        .Where(x => x.Activo && x.FkidEstudioMercadoOrco == estudio.PkidEstudioMercado && proveedorIds.Contains(x.FkidProveedorSis))
+                        .ToListAsync();
+                    var detalleByPaaas = await _context.EstudioMercadoDetalles
+                        .Where(x => x.Activo && x.FkidEstudioMercadoOrco == estudio.PkidEstudioMercado && paaasDetalleIds.Contains(x.FkidPaaasdetalleOrco))
+                        .ToListAsync();
+
                     var emailSummary = await SendSolicitudCotizacionEmailsAsync(
                         estudio,
-                        solicitudByProvider.Values.ToList(),
-                        detalleByPaaas.Values.ToList());
+                        solicitudByProvider,
+                        detalleByPaaas);
 
                     result.Message = BuildEmailSummaryMessage(emailSummary, "Solicitudes de cotizacion generadas");
                 }
@@ -1089,34 +999,13 @@ namespace EG.Application.Services.Adquisicion
                     return CotizacionRecepcionValidationFailure("Una o mas cotizaciones no existen o no pertenecen al estudio seleccionado.");
                 }
 
-                var now = DateTime.Now;
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-
-                foreach (var item in validItems)
-                {
-                    var cotizacion = cotizaciones[item.PkidEstudioMercadoDetalleCosto];
-                    cotizacion.PrecioUnitario = item.PrecioUnitario;
-                    cotizacion.TiempoEntregaDias = item.PrecioUnitario.HasValue ? item.TiempoEntregaDias : null;
-                    cotizacion.Condiciones = item.PrecioUnitario.HasValue && !string.IsNullOrWhiteSpace(item.Condiciones)
-                        ? item.Condiciones.Trim()
-                        : null;
-                    cotizacion.FechaRespuesta = item.PrecioUnitario.HasValue
-                        ? cotizacion.FechaRespuesta ?? now
-                        : null;
-                    cotizacion.UsuarioModificacion = usuarioActual;
-                    cotizacion.FechaModificacion = now;
-                }
-
-                await UpdateSolicitudStatusesAsync(
-                    cotizaciones.Values
-                        .Select(x => x.FkidSolicitudCotizacionOrco)
-                        .Distinct()
-                        .ToList(),
-                    usuarioActual,
-                    now);
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoEstudioMercado]",
+                    StoredProcedureExecutor.Param("@Action", 30),
+                    StoredProcedureExecutor.Param("@PKIdEstudioMercado", request.FkidEstudioMercadoOrco),
+                    StoredProcedureExecutor.JsonParam("@ItemsJson", validItems),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
                 return await GetRecepcionCotizacionesAsync(request.FkidEstudioMercadoOrco, null);
             }
@@ -1496,6 +1385,27 @@ namespace EG.Application.Services.Adquisicion
             Code = "VALIDATION",
             TotalCount = 0
         };
+
+        private Task<StoredProcedureResult> ExecuteDetalleAsync(
+            int action,
+            int? id,
+            EstudioMercadoDetalleResponse response,
+            int usuarioActual)
+        {
+            return StoredProcedureExecutor.ExecuteResultAsync(
+                _context,
+                "[ORCO].[SP_MantenimientoEstudioMercado]",
+                StoredProcedureExecutor.Param("@Action", action),
+                StoredProcedureExecutor.Param("@PKIdEstudioMercado", response.FkidEstudioMercadoOrco),
+                StoredProcedureExecutor.Param("@PKIdEstudioMercadoDetalle", id),
+                StoredProcedureExecutor.Param("@FKIdPAAASDetalle_ORCO", response.FkidPaaasdetalleOrco),
+                StoredProcedureExecutor.Param("@FKIdTipoBien_ALMA", response.FkidTipoBienAlma),
+                StoredProcedureExecutor.Param("@Cantidad", response.Cantidad),
+                StoredProcedureExecutor.Param("@Observaciones", response.Observaciones),
+                StoredProcedureExecutor.Param("@FKIdProveedor_SIS", response.FkidProveedorSis),
+                StoredProcedureExecutor.Param("@CostoUnitario", response.CostoUnitario),
+                StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+        }
 
         private static bool TryGetIntFilter(PagedRequest request, string key, out int value)
         {

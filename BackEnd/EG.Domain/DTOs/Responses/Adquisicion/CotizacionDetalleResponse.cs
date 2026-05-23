@@ -11,7 +11,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string ProveedorNombre { get; set; } = string.Empty;
         public string ProveedorClave { get; set; } = string.Empty;
         public string ProveedorRfc { get; set; } = string.Empty;
-        public int FkidDetalleRequisicionOrco { get; set; }
+        public int FkidRequisicionDetalleOrco { get; set; }
         public int FkidTipoBienAlma { get; set; }
         public string TipoBienClave { get; set; } = string.Empty;
         public string TipoBienDescripcion { get; set; } = string.Empty;

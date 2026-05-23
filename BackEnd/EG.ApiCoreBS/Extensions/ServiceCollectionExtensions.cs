@@ -77,7 +77,9 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ICotizacionDetalleAppService, CotizacionDetalleAppService>();
             services.AddScoped<IRequisicionAppService, RequisicionAppService>();
             services.AddScoped<IRequisicionPartidaAppService, RequisicionPartidaAppService>();
-            services.AddScoped<IDetalleRequisicionAppService, DetalleRequisicionAppService>();
+            services.AddScoped<IRequisicionDetalleAppService, RequisicionDetalleAppService>();
+            services.AddScoped<ISolicitudSuficienciaAppService, SolicitudSuficienciaAppService>();
+            services.AddScoped<ISolicitudSuficienciaDetalleAppService, SolicitudSuficienciaDetalleAppService>();
             services.AddScoped<ITipoContratoAppService, TipoContratoAppService>();
             services.AddScoped<ITipoDocumentoAppService, TipoDocumentoAppService>();
             services.AddScoped<ITipoGarantiaAppService, TipoGarantiaAppService>();

@@ -11,13 +11,13 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class DetalleRequisicionController : ControllerBase
+    public class RequisicionDetalleController : ControllerBase
     {
-        private readonly IDetalleRequisicionAppService _appService;
+        private readonly IRequisicionDetalleAppService _appService;
         private readonly IUserContextService _userContext;
 
-        public DetalleRequisicionController(
-            IDetalleRequisicionAppService appService,
+        public RequisicionDetalleController(
+            IRequisicionDetalleAppService appService,
             IUserContextService userContext)
         {
             _appService = appService;
@@ -25,14 +25,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<DetalleRequisicionResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> GetAll()
         {
             var result = await _appService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PagedResult<DetalleRequisicionResponse>>> GetById(int id)
+        public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> GetById(int id)
         {
             var result = await _appService.GetByIdAsync(id);
             if (!result.Success)
@@ -44,7 +44,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagedResult<DetalleRequisicionResponse>>> Create([FromBody] DetalleRequisicionResponse response)
+        public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> Create([FromBody] RequisicionDetalleResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
             if (!result.Success)
@@ -52,11 +52,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
                 return BadRequest(result);
             }
 
-            return CreatedAtAction(nameof(GetById), new { id = response.PkidDetalleRequisicion }, result);
+            return CreatedAtAction(nameof(GetById), new { id = response.PkidRequisicionDetalle }, result);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<DetalleRequisicionResponse>>> Update(int id, [FromBody] DetalleRequisicionResponse response)
+        public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> Update(int id, [FromBody] RequisicionDetalleResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
             if (!result.Success)
@@ -90,14 +90,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<DetalleRequisicionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _appService.GetAllPaginadoAsync(request);
             return Ok(result);
         }
 
         [HttpPost("buscar")]
-        public async Task<ActionResult<PagedResult<DetalleRequisicionResponse>>> Buscar([FromBody] BusquedaRequest request)
+        public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest
             {

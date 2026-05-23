@@ -1,0 +1,598 @@
+@using System.Globalization
+@using System.Net.Http.Json
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Requests.Adquisicion
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<SolicitudSuficienciaResponse> Service
+@inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<RequisicionDetalleResponse> RequisicionDetalleService
+@inject IGenericCrudService<CotizacionDetalleResponse> CotizacionDetalleService
+@inject AnioPresupuestalStateService AnioStateService
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="SolicitudSuficienciaResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                CanConfirm="@CanConfirmDialog"
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="SolicitudSuficienciaResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2" Class="solicitud-dialog">
+            <MudItem xs="12" md="8">
+                <PagedAutocomplete Value="@_selectedRequisicion"
+                                   ValueChanged="OnRequisicionChanged"
+                                   Label="Requisicion"
+                                   Required="true"
+                                   RequiredError="La requisicion es requerida"
+                                   Disabled="@IsRequisicionLocked"
+                                   LoadPage="LoadRequisicionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Value="_fechaSolicitud"
+                               Label="Fecha solicitud"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha de solicitud es requerida" />
+            </MudItem>
+
+            @if (!Id.HasValue)
+            {
+                <MudItem xs="12" md="4">
+                    <MudNumericField T="decimal"
+                                     Value="@_porcentajeAjuste"
+                                     ValueChanged="OnPorcentajeChanged"
+                                     Label="Porcentaje ajuste"
+                                     Variant="Variant.Outlined"
+                                     Format="0.00"
+                                     Culture="@NumberCulture"
+                                     Min="0m"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="%" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                        <MudSelectItem Value="1">Borrador</MudSelectItem>
+                        <MudSelectItem Value="2">Enviada</MudSelectItem>
+                        <MudSelectItem Value="3">Autorizada</MudSelectItem>
+                        <MudSelectItem Value="4">Rechazada</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.GastoNoProgramable"
+                              Label="Gasto no programable"
+                              Variant="Variant.Outlined"
+                              MaxLength="3" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField T="int?"
+                                 @bind-Value="item.IdGastoNoProgramable"
+                                 Label="Id gasto no programable"
+                                 Variant="Variant.Outlined"
+                                 Min="0" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField T="int?"
+                                 @bind-Value="item.IdCompromisoNomina"
+                                 Label="Id compromiso nomina"
+                                 Variant="Variant.Outlined"
+                                 Min="0" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="item.Justificacion"
+                              Label="Justificacion"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+
+            @if (!Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <div class="preview-panel">
+                        <div class="preview-header">
+                            <div>
+                                <MudText Typo="Typo.subtitle1">Precalculo por cotizaciones</MudText>
+                                <MudText Typo="Typo.caption">@PreviewSubtitle</MudText>
+                            </div>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Refresh"
+                                       Disabled="@(_selectedRequisicion == null || _previewLoading)"
+                                       OnClick="LoadPreviewAsync">
+                                Actualizar
+                            </MudButton>
+                        </div>
+
+                        @if (_previewLoading)
+                        {
+                            <div class="preview-loading">
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                <MudText Typo="Typo.body2">Calculando...</MudText>
+                            </div>
+                        }
+                        else if (_selectedRequisicion == null)
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">Selecciona una requisicion para validar sus bienes cotizados.</MudAlert>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(_previewMessage))
+                        {
+                            <MudAlert Severity="@(_previewOk ? Severity.Success : Severity.Warning)" Variant="Variant.Outlined">@_previewMessage</MudAlert>
+                        }
+
+                        @if (_previewItems.Any())
+                        {
+                            <div class="preview-metrics">
+                                <div>
+                                    <span>Bienes</span>
+                                    <strong>@_totalBienes.ToString("N0", NumberCulture)</strong>
+                                </div>
+                                <div>
+                                    <span>Cotizados</span>
+                                    <strong>@_totalCotizados.ToString("N0", NumberCulture)</strong>
+                                </div>
+                                <div>
+                                    <span>Mes</span>
+                                    <strong>@_mesPreview</strong>
+                                </div>
+                                <div>
+                                    <span>Total estimado</span>
+                                    <strong>@Money(_previewTotal)</strong>
+                                </div>
+                            </div>
+
+                            <MudTable Items="_previewItems.Take(8)" Dense="true" Hover="true" Elevation="0" Class="preview-table">
+                                <HeaderContent>
+                                    <MudTh>Bien</MudTh>
+                                    <MudTh>Cantidad</MudTh>
+                                    <MudTh>Cotizaciones</MudTh>
+                                    <MudTh>Promedio</MudTh>
+                                    <MudTh>Ajustado</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>
+                                        <MudText Typo="Typo.body2" Class="preview-main">@context.Bien</MudText>
+                                    </MudTd>
+                                    <MudTd>@Quantity(context.Cantidad)</MudTd>
+                                    <MudTd>
+                                        <MudChip T="string" Color="@(context.Cotizaciones > 0 ? Color.Success : Color.Warning)" Size="Size.Small">
+                                            @context.Cotizaciones.ToString("N0", NumberCulture)
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd>@Money(context.Promedio)</MudTd>
+                                    <MudTd><strong>@Money(context.Ajustado)</strong></MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </div>
+                </MudItem>
+            }
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+<style>
+    .solicitud-dialog .preview-panel {
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 32%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        padding: 10px;
+        background: color-mix(in srgb, var(--eg-primary) 7%, var(--mud-palette-surface));
+    }
+
+    .solicitud-dialog .preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .solicitud-dialog .preview-loading {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+    }
+
+    .solicitud-dialog .preview-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 8px 0;
+    }
+
+    .solicitud-dialog .preview-metrics > div {
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: var(--mud-palette-surface);
+    }
+
+    .solicitud-dialog .preview-metrics span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        text-transform: uppercase;
+    }
+
+    .solicitud-dialog .preview-metrics strong,
+    .solicitud-dialog .preview-main {
+        font-weight: 700;
+    }
+
+    .solicitud-dialog .preview-table {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    @@media (max-width: 760px) {
+        .solicitud-dialog .preview-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .solicitud-dialog .preview-metrics {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string RequisicionNombre { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<SolicitudSuficienciaResponse> form = null!;
+    private SolicitudSuficienciaResponse item = new()
+    {
+        Activo = true,
+        FechaSolicitud = DateOnly.FromDateTime(DateTime.Today),
+        Estatus = 1
+    };
+
+    private DateTime? _fechaSolicitud = DateTime.Today;
+    private LookupItem? _selectedRequisicion;
+    private RequisicionResponse? _requisicion;
+    private decimal _porcentajeAjuste;
+    private bool _previewLoading;
+    private bool _previewOk;
+    private string _previewMessage = string.Empty;
+    private string _mesPreview = "-";
+    private int _totalBienes;
+    private int _totalCotizados;
+    private decimal _previewTotal;
+    private List<PreviewItem> _previewItems = new();
+
+    private string dialogTitle => Id.HasValue ? "Editar Solicitud Suficiencia" : "Generar Solicitud Suficiencia";
+    private string actionText => Id.HasValue ? "Actualizar" : "Generar";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Generando...";
+    private bool IsRequisicionLocked => Id.HasValue || RequisicionId > 0;
+    private bool CanConfirmDialog => Id.HasValue || _previewOk;
+    private string PreviewSubtitle => _requisicion == null
+        ? "La solicitud tomara el mes de la fecha de requisicion."
+        : $"Mes {_mesPreview}; promedio de cotizaciones capturadas mas {_porcentajeAjuste.ToString("0.00", NumberCulture)}%.";
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else if (RequisicionId > 0)
+        {
+            _selectedRequisicion = new LookupItem
+            {
+                Id = RequisicionId,
+                Text = TextOrDefault(RequisicionNombre, RequisicionId)
+            };
+
+            await LoadRequisicionDataAsync(RequisicionId);
+            await LoadPreviewAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaSolicitud = item.FechaSolicitud.ToDateTime(TimeOnly.MinValue);
+                _selectedRequisicion = new LookupItem
+                {
+                    Id = item.FkidRequisicionOrco,
+                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                };
+                await LoadRequisicionDataAsync(item.FkidRequisicionOrco);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnRequisicionChanged(LookupItem? value)
+    {
+        _selectedRequisicion = value;
+        _previewItems.Clear();
+        _previewMessage = string.Empty;
+        _previewOk = false;
+
+        if (value == null)
+        {
+            _requisicion = null;
+            return;
+        }
+
+        await LoadRequisicionDataAsync(value.Id);
+        await LoadPreviewAsync();
+    }
+
+    private async Task LoadRequisicionDataAsync(int requisicionId)
+    {
+        var response = await RequisicionService.GetByIdAsync(requisicionId);
+        _requisicion = response?.Success == true ? response.Data : null;
+        _mesPreview = _requisicion == null
+            ? "-"
+            : DateCulture.DateTimeFormat.GetMonthName(_requisicion.FechaRequisicion.Month);
+    }
+
+    private async Task LoadPreviewAsync()
+    {
+        if (_selectedRequisicion == null)
+        {
+            return;
+        }
+
+        _previewLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var requisicionId = _selectedRequisicion.Id;
+            var detallesResponse = await RequisicionDetalleService.GetAllPaginadoAsync(
+                1,
+                int.MaxValue,
+                string.Empty,
+                "TipoBienCodigoClave",
+                SortDirection.Ascending,
+                new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+
+            var cotizacionesResponse = await CotizacionDetalleService.GetAllPaginadoAsync(
+                1,
+                int.MaxValue,
+                string.Empty,
+                "TipoBienClave",
+                SortDirection.Ascending,
+                new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+
+            var detalles = detallesResponse?.Items?.Where(x => x.Activo).ToList() ?? new List<RequisicionDetalleResponse>();
+            var cotizaciones = cotizacionesResponse?.Items?
+                .Where(x => x.Activo && x.PrecioUnitario.GetValueOrDefault() > 0m)
+                .GroupBy(x => x.FkidRequisicionDetalleOrco)
+                .ToDictionary(x => x.Key, x => x.ToList()) ?? new Dictionary<int, List<CotizacionDetalleResponse>>();
+
+            _previewItems = detalles.Select(detalle =>
+            {
+                cotizaciones.TryGetValue(detalle.PkidRequisicionDetalle, out var quoteRows);
+                quoteRows ??= new List<CotizacionDetalleResponse>();
+
+                var promedio = quoteRows.Any()
+                    ? quoteRows.Average(x => x.PrecioUnitario.GetValueOrDefault() * detalle.Cantidad)
+                    : 0m;
+                var ajustado = Math.Round(promedio * (1m + (_porcentajeAjuste / 100m)), 4, MidpointRounding.AwayFromZero);
+
+                return new PreviewItem
+                {
+                    Bien = TextOrDefault(detalle.BienClaveNombre, detalle.PkidRequisicionDetalle),
+                    Cantidad = detalle.Cantidad,
+                    Cotizaciones = quoteRows.Count,
+                    Promedio = promedio,
+                    Ajustado = ajustado
+                };
+            }).ToList();
+
+            _totalBienes = _previewItems.Count;
+            _totalCotizados = _previewItems.Count(x => x.Cotizaciones > 0);
+            _previewTotal = _previewItems.Sum(x => x.Ajustado);
+            _previewOk = _totalBienes > 0 && _totalCotizados == _totalBienes;
+            _previewMessage = _previewOk
+                ? "La requisicion tiene montos cotizados para todos sus bienes."
+                : _totalBienes == 0
+                    ? "La requisicion no tiene bienes registrados."
+                    : "Faltan bienes con monto cotizado; no se puede generar la solicitud.";
+        }
+        catch (Exception ex)
+        {
+            _previewOk = false;
+            _previewMessage = $"Error al calcular la vista previa: {ex.Message}";
+        }
+        finally
+        {
+            _previewLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private Task OnPorcentajeChanged(decimal value)
+    {
+        _porcentajeAjuste = value;
+        RecalculatePreview();
+        return Task.CompletedTask;
+    }
+
+    private void RecalculatePreview()
+    {
+        foreach (var preview in _previewItems)
+        {
+            preview.Ajustado = Math.Round(preview.Promedio * (1m + (_porcentajeAjuste / 100m)), 4, MidpointRounding.AwayFromZero);
+        }
+
+        _previewTotal = _previewItems.Sum(x => x.Ajustado);
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedRequisicion == null)
+        {
+            Snackbar.Add("Debe seleccionar una requisicion.", Severity.Warning);
+            return;
+        }
+
+        if (!_fechaSolicitud.HasValue)
+        {
+            Snackbar.Add("Debe capturar la fecha de solicitud.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            if (Id.HasValue)
+            {
+                item.FkidRequisicionOrco = _selectedRequisicion.Id;
+                item.FechaSolicitud = DateOnly.FromDateTime(_fechaSolicitud.Value);
+                item.Justificacion ??= string.Empty;
+                item.GastoNoProgramable = string.IsNullOrWhiteSpace(item.GastoNoProgramable) ? null : item.GastoNoProgramable;
+
+                var response = await Service.UpdateAsync(item, Id.Value);
+                if (response?.Success == true)
+                {
+                    Snackbar.Add("Solicitud de suficiencia actualizada correctamente.", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return;
+                }
+
+                Snackbar.Add(response?.Message ?? "Error al guardar la solicitud.", Severity.Error);
+                return;
+            }
+
+            if (!_previewOk)
+            {
+                Snackbar.Add("La requisicion debe tener todos sus bienes cotizados.", Severity.Warning);
+                return;
+            }
+
+            var request = new SolicitudSuficienciaGenerarRequest
+            {
+                FkidRequisicionOrco = _selectedRequisicion.Id,
+                FechaSolicitud = DateOnly.FromDateTime(_fechaSolicitud.Value),
+                Justificacion = item.Justificacion ?? string.Empty,
+                PorcentajeAjuste = _porcentajeAjuste,
+                GastoNoProgramable = string.IsNullOrWhiteSpace(item.GastoNoProgramable) ? null : item.GastoNoProgramable,
+                IdGastoNoProgramable = item.IdGastoNoProgramable,
+                IdCompromisoNomina = item.IdCompromisoNomina
+            };
+
+            var apiResponse = await Http.PostAsJsonAsync("api/SolicitudSuficiencia/generar-desde-requisicion", request);
+            var result = await apiResponse.Content.ReadFromJsonAsync<ApiResponse<SolicitudSuficienciaResponse>>();
+
+            if (apiResponse.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Solicitud de suficiencia generada correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Error al generar la solicitud de suficiencia.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadRequisicionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var filters = GetAnioFilter();
+        var response = await RequisicionService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            "Descripcion",
+            SortDirection.Ascending,
+            filters);
+
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidRequisicion,
+            Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private Dictionary<string, object>? GetAnioFilter()
+    {
+        return AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value }
+            : null;
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static string Money(decimal value) =>
+        $"${value.ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal value) =>
+        value.ToString("0.00", NumberCulture);
+
+    private sealed class PreviewItem
+    {
+        public string Bien { get; set; } = string.Empty;
+        public decimal Cantidad { get; set; }
+        public int Cotizaciones { get; set; }
+        public decimal Promedio { get; set; }
+        public decimal Ajustado { get; set; }
+    }
+}

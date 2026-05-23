@@ -27,7 +27,7 @@ namespace EG.Application.Services.Adquisicion
             CotizacionDetalleResponse response,
             int usuarioActual)
         {
-            if (ExistsDuplicate(response.FkidCotizacionOrco, response.FkidDetalleRequisicionOrco))
+            if (ExistsDuplicate(response.FkidCotizacionOrco, response.FkidRequisicionDetalleOrco))
             {
                 return DuplicateResult("El bien seleccionado ya esta agregado en esta cotizacion.");
             }
@@ -40,7 +40,7 @@ namespace EG.Application.Services.Adquisicion
             CotizacionDetalleResponse response,
             int usuarioActual)
         {
-            if (ExistsDuplicate(response.FkidCotizacionOrco, response.FkidDetalleRequisicionOrco, id))
+            if (ExistsDuplicate(response.FkidCotizacionOrco, response.FkidRequisicionDetalleOrco, id))
             {
                 return DuplicateResult("Ya existe otro renglon activo con el mismo bien en esta cotizacion.");
             }
@@ -48,12 +48,12 @@ namespace EG.Application.Services.Adquisicion
             return await base.UpdateAsync(id, response, usuarioActual);
         }
 
-        private bool ExistsDuplicate(int cotizacionId, int detalleRequisicionId, int? excludeId = null)
+        private bool ExistsDuplicate(int cotizacionId, int requisicionDetalleId, int? excludeId = null)
         {
             return _service.GetQueryWithIncludes()
                 .Any(x =>
                     x.FkidCotizacionOrco == cotizacionId &&
-                    x.FkidDetalleRequisicionOrco == detalleRequisicionId &&
+                    x.FkidRequisicionDetalleOrco == requisicionDetalleId &&
                     (!excludeId.HasValue || x.PkidCotizacionDetalle != excludeId.Value));
         }
 

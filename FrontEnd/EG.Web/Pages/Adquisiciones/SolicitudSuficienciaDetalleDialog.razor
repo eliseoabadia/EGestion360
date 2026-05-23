@@ -1,0 +1,187 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<SolicitudSuficienciaDetalleResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="SolicitudSuficienciaDetalleResponse"
+                Title="Editar Detalle Solicitud Suficiencia"
+                MaxWidth="MaxWidth.Large"
+                ActionText="Actualizar"
+                ProcessingText="Actualizando..."
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="SolicitudSuficienciaDetalleResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="Calendario mensual">
+
+        <MudGrid GutterSize="2" Class="solicitud-detalle-dialog">
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Requisicion</MudText>
+                <MudText Typo="Typo.body2" Class="read-value">@TextOrDash(item.RequisicionDescripcion)</MudText>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Partida</MudText>
+                <MudText Typo="Typo.body2" Class="read-value">@TextOrDash(item.PartidaClaveNombre)</MudText>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">Bien</MudText>
+                <MudText Typo="Typo.body2" Class="read-value">@TextOrDash(item.TipoBienDescripcion)</MudText>
+            </MudItem>
+
+            <MudItem xs="12">
+                <div class="months-panel">
+                    <div class="months-header">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Distribucion mensual</MudText>
+                            <MudText Typo="Typo.caption">El total se recalcula con los importes capturados.</MudText>
+                        </div>
+                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
+                    </div>
+
+                    <MudGrid GutterSize="1">
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Adornment="Adornment.Start" AdornmentText="$" /></MudItem>
+                    </MudGrid>
+                </div>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="500" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+<style>
+    .solicitud-detalle-dialog .read-value {
+        font-weight: 700;
+    }
+
+    .solicitud-detalle-dialog .months-panel {
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 32%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        padding: 10px;
+        background: color-mix(in srgb, var(--eg-primary) 7%, var(--mud-palette-surface));
+    }
+
+    .solicitud-detalle-dialog .months-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    @@media (max-width: 760px) {
+        .solicitud-detalle-dialog .months-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<SolicitudSuficienciaDetalleResponse> form = null!;
+    private SolicitudSuficienciaDetalleResponse item = new() { Activo = true };
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private decimal TotalMeses => item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!Id.HasValue)
+        {
+            Snackbar.Add("No se encontro el detalle a actualizar.", Severity.Warning);
+            return;
+        }
+
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Revisa la informacion capturada.", Severity.Warning);
+            return;
+        }
+
+        item.Total = TotalMeses;
+
+        try
+        {
+            var response = await Service.UpdateAsync(item, Id.Value);
+            if (response?.Success == true)
+            {
+                Snackbar.Add("Detalle actualizado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al actualizar el detalle.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Money(decimal value) =>
+        $"${value.ToString("0.00", NumberCulture)}";
+}

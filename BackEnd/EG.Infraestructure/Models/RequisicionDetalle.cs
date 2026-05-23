@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class DetalleRequisicion
+public partial class RequisicionDetalle
 {
-    public int PkidDetalleRequisicion { get; set; }
+    public int PkidRequisicionDetalle { get; set; }
 
     public int FkidEmpresaSis { get; set; }
 
@@ -40,6 +40,8 @@ public partial class DetalleRequisicion
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 
     public virtual Unidade FkidUnidadesAlmaNavigation { get; set; }
+
+    public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalles { get; set; } = new List<SolicitudSuficienciaDetalle>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

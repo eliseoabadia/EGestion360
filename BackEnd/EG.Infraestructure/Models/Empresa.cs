@@ -33,11 +33,13 @@ public partial class Empresa
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; } = new List<AutorizacionSuficiencium>();
+
+    public virtual ICollection<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalles { get; set; } = new List<AutorizacionSuficienciaDetalle>();
+
     public virtual ICollection<CuentaContable> CuentaContables { get; set; } = new List<CuentaContable>();
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
-
-    public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
 
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
 
@@ -53,11 +55,17 @@ public partial class Empresa
 
     public virtual ICollection<Paaaspartidum> Paaaspartida { get; set; } = new List<Paaaspartidum>();
 
+    public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
+
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
+
+    public virtual ICollection<SolicitudSuficiencium> SolicitudSuficiencia { get; set; } = new List<SolicitudSuficiencium>();
+
+    public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalles { get; set; } = new List<SolicitudSuficienciaDetalle>();
 
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 

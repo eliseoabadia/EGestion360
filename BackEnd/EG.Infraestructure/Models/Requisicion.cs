@@ -83,8 +83,6 @@ public partial class Requisicion
 
     public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
 
-    public virtual ICollection<DetalleRequisicion> DetalleRequisicions { get; set; } = new List<DetalleRequisicion>();
-
     public virtual Anio FkidAnioSisNavigation { get; set; }
 
     public virtual Area FkidAreaSisNavigation { get; set; }
@@ -125,7 +123,11 @@ public partial class Requisicion
 
     public virtual TipoGasto FkidTipoGastoPresNavigation { get; set; }
 
+    public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
+
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
+
+    public virtual ICollection<SolicitudSuficiencium> SolicitudSuficiencia { get; set; } = new List<SolicitudSuficiencium>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

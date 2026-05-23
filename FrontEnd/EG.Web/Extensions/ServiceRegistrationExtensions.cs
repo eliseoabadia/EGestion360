@@ -67,7 +67,9 @@ public static class ApiServiceExtensions
         RegisterCrud<CotizacionDetalleResponse>(services, "api/CotizacionDetalle");
         RegisterCrud<RequisicionResponse>(services, "api/Requisicion");
         RegisterCrud<RequisicionPartidaResponse>(services, "api/RequisicionPartida");
-        RegisterCrud<DetalleRequisicionResponse>(services, "api/DetalleRequisicion");
+        RegisterCrud<RequisicionDetalleResponse>(services, "api/RequisicionDetalle");
+        RegisterCrud<SolicitudSuficienciaResponse>(services, "api/SolicitudSuficiencia");
+        RegisterCrud<SolicitudSuficienciaDetalleResponse>(services, "api/SolicitudSuficienciaDetalle");
 
         RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");
         RegisterCrud<GrupoBienResponse>(services, "api/GrupoBien");

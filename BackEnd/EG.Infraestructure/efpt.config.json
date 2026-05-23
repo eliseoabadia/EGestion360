@@ -191,10 +191,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[ORCO].[DetalleRequisicion]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[ORCO].[EstatusRequisicion]",
          "ObjectType": 0
       },
@@ -243,6 +239,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[RequisicionDetalle]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[RequisicionPartida]",
          "ObjectType": 0
       },
@@ -260,6 +260,14 @@
       },
       {
          "Name": "[ORCO].[TipoGarantia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[AutorizacionSuficiencia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[AutorizacionSuficienciaDetalle]",
          "ObjectType": 0
       },
       {
@@ -336,6 +344,14 @@
       },
       {
          "Name": "[PRES].[SF]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[SolicitudSuficiencia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[SolicitudSuficienciaDetalle]",
          "ObjectType": 0
       },
       {
@@ -627,7 +643,19 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_RequisicionDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ORCO].[Vw_RequisicionPartida]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_AutorizacionSuficiencia]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_AutorizacionSuficienciaDetalle]",
          "ObjectType": 3
       },
       {
@@ -640,6 +668,14 @@
       },
       {
          "Name": "[PRES].[Vw_Programa]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_SolicitudSuficiencia]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_SolicitudSuficienciaDetalle]",
          "ObjectType": 3
       },
       {
@@ -716,6 +752,26 @@
       },
       {
          "Name": "[dbo].[spConfiguracionDeRolYClaims]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoCotizacion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoEstudioMercado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoPAAAS]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoRequisicion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_MantenimientoSolicitudSuficiencia]",
          "ObjectType": 1
       },
       {

@@ -32,54 +32,31 @@ namespace EG.Application.Services.Adquisicion
         {
             Normalize(response);
             var validation = Validate(response);
-            return validation ?? base.CreateAsync(response, usuarioActual);
+            return validation ?? SaveWithStoredProcedureAsync(1, null, response, usuarioActual);
         }
 
         public override Task<PagedResult<EstudioMercadoResponse>> UpdateAsync(int id, EstudioMercadoResponse response, int usuarioActual)
         {
             Normalize(response);
             var validation = Validate(response);
-            return validation ?? base.UpdateAsync(id, response, usuarioActual);
+            return validation ?? SaveWithStoredProcedureAsync(2, id, response, usuarioActual);
         }
 
         public async Task<PagedResult<bool>> DeleteAsync(int id, int usuarioActual)
         {
             try
             {
-                var estudio = await _context.EstudioMercados
-                    .Include(x => x.EstudioMercadoDetalles)
-                    .FirstOrDefaultAsync(x => x.PkidEstudioMercado == id && x.Activo);
-
-                if (estudio == null)
-                {
-                    return new PagedResult<bool>
-                    {
-                        Success = false,
-                        Message = $"Estudio de mercado con ID {id} no encontrado",
-                        Code = "NOT_FOUND",
-                        Data = false,
-                        TotalCount = 0
-                    };
-                }
-
-                var now = DateTime.Now;
-                estudio.Activo = false;
-                estudio.UsuarioModificacion = usuarioActual;
-                estudio.FechaModificacion = now;
-
-                foreach (var detalle in estudio.EstudioMercadoDetalles.Where(x => x.Activo))
-                {
-                    detalle.Activo = false;
-                    detalle.UsuarioModificacion = usuarioActual;
-                    detalle.FechaModificacion = now;
-                }
-
-                await _context.SaveChangesAsync();
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoEstudioMercado]",
+                    StoredProcedureExecutor.Param("@Action", 3),
+                    StoredProcedureExecutor.Param("@PKIdEstudioMercado", id),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
 
                 return new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Estudio de mercado eliminado correctamente",
+                    Message = spResult.Mensaje,
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -146,5 +123,46 @@ namespace EG.Application.Services.Adquisicion
             Code = "VALIDATION",
             TotalCount = 0
         };
+
+        private async Task<PagedResult<EstudioMercadoResponse>> SaveWithStoredProcedureAsync(
+            int action,
+            int? id,
+            EstudioMercadoResponse response,
+            int usuarioActual)
+        {
+            try
+            {
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    "[ORCO].[SP_MantenimientoEstudioMercado]",
+                    StoredProcedureExecutor.Param("@Action", action),
+                    StoredProcedureExecutor.Param("@PKIdEstudioMercado", id),
+                    StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
+                    StoredProcedureExecutor.Param("@FKIdAnio_SIS", response.FkidAnioSis),
+                    StoredProcedureExecutor.Param("@Nombre", response.Nombre),
+                    StoredProcedureExecutor.Param("@Descripcion", response.Descripcion),
+                    StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud),
+                    StoredProcedureExecutor.Param("@FechaCierre", response.FechaCierre),
+                    StoredProcedureExecutor.Param("@FKIdResponsable_NOM", response.FkidResponsableNom),
+                    StoredProcedureExecutor.Param("@Estatus", response.Estatus),
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+
+                var savedId = id ?? spResult.GetId() ?? 0;
+                response.PkidEstudioMercado = savedId;
+                var result = await GetByIdAsync(savedId);
+                result.Message = spResult.Mensaje;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<EstudioMercadoResponse>
+                {
+                    Success = false,
+                    Message = $"Error al guardar estudio de mercado: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
+        }
     }
 }

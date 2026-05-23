@@ -25,7 +25,7 @@ public partial class VwCotizacionDetalle
 
     public string ProveedorRfc { get; set; }
 
-    public int FkidDetalleRequisicionOrco { get; set; }
+    public int FkidRequisicionDetalleOrco { get; set; }
 
     public int FkidTipoBienAlma { get; set; }
 
