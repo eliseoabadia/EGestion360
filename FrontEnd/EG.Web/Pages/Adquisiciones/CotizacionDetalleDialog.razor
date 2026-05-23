@@ -202,6 +202,12 @@
             return;
         }
 
+        if (await ExistsDuplicateDetalleAsync(_selectedDetalle.Id))
+        {
+            Snackbar.Add("Ese bien ya esta agregado en esta cotizacion.", Severity.Warning);
+            return;
+        }
+
         item.FkidCotizacionOrco = CotizacionId;
         item.FkidDetalleRequisicionOrco = _selectedDetalle.Id;
 
@@ -246,6 +252,30 @@
             Id = x.PkidDetalleRequisicion,
             Text = $"{x.TipoBienCodigoClave} - {x.TipoBienDescripcion}"
         }), response?.TotalCount);
+    }
+
+    private async Task<bool> ExistsDuplicateDetalleAsync(int detalleRequisicionId)
+    {
+        var filters = new Dictionary<string, object>
+        {
+            ["FkidCotizacionOrco"] = CotizacionId,
+            ["FkidDetalleRequisicionOrco"] = detalleRequisicionId
+        };
+
+        if (Id.HasValue)
+        {
+            filters["PkidCotizacionDetalle__ne"] = Id.Value;
+        }
+
+        var response = await Service.GetAllPaginadoAsync(
+            1,
+            1,
+            "",
+            "PkidCotizacionDetalle",
+            SortDirection.Ascending,
+            filters);
+
+        return response?.TotalCount > 0;
     }
 
     private void RecalculateImporte()

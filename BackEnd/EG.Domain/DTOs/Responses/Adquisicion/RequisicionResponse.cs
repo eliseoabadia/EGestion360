@@ -71,5 +71,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string PsupervisoCompleto { get; set; } = string.Empty;
         public string PautorizoCompleto { get; set; } = string.Empty;
         public string ClaveNombre { get; set; } = string.Empty;
+        public int CotizacionesActivas { get; set; }
+        public bool BloqueadaPorCotizacion => CotizacionesActivas > 0;
     }
 }

@@ -10,6 +10,7 @@
 @inject IGenericCrudService<RequisicionResponse> RequisicionService
 @inject IGenericCrudService<ProveedorResponse> ProveedorService
 @inject AnioPresupuestalStateService AnioStateService
+@inject HttpClient Http
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="CotizacionResponse"
@@ -32,6 +33,7 @@
                                    Label="Requisicion"
                                    Required="true"
                                    RequiredError="La requisicion es requerida"
+                                   Disabled="@IsRequisicionPreseleccionada"
                                    LoadPage="LoadRequisicionesPageAsync" />
             </MudItem>
 
@@ -43,6 +45,16 @@
                                    RequiredError="El proveedor es requerido"
                                    LoadPage="LoadProveedoresPageAsync" />
             </MudItem>
+
+            @if (!Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudSwitch T="bool"
+                               @bind-Value="_enviarCorreo"
+                               Label="Enviar solicitud por mail al crear"
+                               Color="Color.Primary" />
+                </MudItem>
+            }
 
             <MudItem xs="12" md="4">
                 <MudDatePicker @bind-Value="_fechaSolicitud"
@@ -64,18 +76,14 @@
                                Variant="Variant.Outlined" />
             </MudItem>
 
-            <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudSwitch T="bool" @bind-Value="item.Servicio" Label="Servicio" Color="Color.Primary" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="item.Entrega"
                               Label="Entrega"
                               Variant="Variant.Outlined"
                               MaxLength="100" />
             </MudItem>
 
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="item.Vigencia"
                               Label="Vigencia"
                               Variant="Variant.Outlined"
@@ -111,6 +119,8 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int AnioId { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string RequisicionNombre { get; set; } = string.Empty;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -128,10 +138,12 @@
     private DateTime? _fechaSolicitud = DateTime.Today;
     private LookupItem? _selectedRequisicion;
     private LookupItem? _selectedProveedor;
+    private bool _enviarCorreo;
 
     private string dialogTitle => Id.HasValue ? "Editar Cotizacion" : "Nueva Cotizacion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private bool IsRequisicionPreseleccionada => !Id.HasValue && RequisicionId > 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,6 +152,15 @@
         if (Id.HasValue)
         {
             await CargarDatosAsync();
+        }
+        else if (RequisicionId > 0)
+        {
+            item.FkidRequisicionOrco = RequisicionId;
+            _selectedRequisicion = new LookupItem
+            {
+                Id = RequisicionId,
+                Text = TextOrDefault(RequisicionNombre, RequisicionId)
+            };
         }
     }
 
@@ -227,7 +248,26 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(Id.HasValue ? "Cotizacion actualizada correctamente." : "Cotizacion creada correctamente.", Severity.Success);
+                if (!Id.HasValue && _enviarCorreo)
+                {
+                    var cotizacionId = response.Data != null && response.Data.PkidCotizacion > 0
+                        ? response.Data.PkidCotizacion
+                        : response.Items?.FirstOrDefault()?.PkidCotizacion ?? 0;
+
+                    if (cotizacionId > 0)
+                    {
+                        await SendCotizacionEmailAsync(cotizacionId);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Cotizacion creada, pero no se pudo identificar para enviar el correo.", Severity.Warning);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add(Id.HasValue ? "Cotizacion actualizada correctamente." : "Cotizacion creada correctamente.", Severity.Success);
+                }
+
                 MudDialog.Close(DialogResult.Ok(true));
                 return;
             }
@@ -237,6 +277,27 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task SendCotizacionEmailAsync(int cotizacionId)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/Cotizacion/{cotizacionId}/enviar-correo", null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CotizacionResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Solicitud enviada por correo.", Severity.Success);
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "Cotizacion creada, pero no se pudo enviar el correo.", Severity.Warning);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Cotizacion creada, pero fallo el envio de correo: {ex.Message}", Severity.Warning);
         }
     }
 

@@ -1,5 +1,6 @@
 using EG.Application.Interfaces.Adquisicion;
 using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.Interfaces;
@@ -76,6 +77,27 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         {
             var result = await _appService.GetAllPaginadoAsync(request);
             return Ok(result);
+        }
+
+        [HttpPost("{id}/enviar-correo")]
+        public async Task<ActionResult<PagedResult<CotizacionResponse>>> SendCotizacionEmail(int id)
+        {
+            var result = await _appService.SendCotizacionEmailAsync(id, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("recepcion/{cotizacionId}")]
+        public async Task<ActionResult<PagedResult<CotizacionDetalleResponse>>> GetRecepcionCotizacion(int cotizacionId)
+        {
+            var result = await _appService.GetRecepcionCotizacionAsync(cotizacionId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("recepcion")]
+        public async Task<ActionResult<PagedResult<CotizacionDetalleResponse>>> SaveRecepcionCotizacion([FromBody] CotizacionRecepcionRequest request)
+        {
+            var result = await _appService.SaveRecepcionCotizacionAsync(request, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost("buscar")]

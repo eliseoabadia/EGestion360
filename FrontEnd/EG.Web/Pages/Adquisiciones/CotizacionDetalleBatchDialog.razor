@@ -1,0 +1,650 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using MudBlazor
+
+@inject IGenericCrudService<CotizacionDetalleResponse> Service
+@inject IGenericCrudService<DetalleRequisicionResponse> DetalleRequisicionService
+@inject ISnackbar Snackbar
+
+<MudDialog DisableSidePadding="true" Class="cotizacion-batch-dialog">
+    <DialogContent>
+        <div class="batch-shell">
+            <div class="batch-header">
+                <div class="batch-title">
+                    <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Color="Color.Primary" />
+                    <div>
+                        <MudText Typo="Typo.h6">Captura de bienes cotizados</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(CotizacionNombre)</MudText>
+                    </div>
+                </div>
+                <MudSpacer />
+                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                    @_totalRequisitionItems.ToString("N0", NumberCulture) requisitados
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                    @_alreadyQuotedCount.ToString("N0", NumberCulture) cotizados
+                </MudChip>
+            </div>
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="batch-subtitle">
+                @TextOrDash(RequisicionNombre)
+            </MudText>
+
+            @if (_loading)
+            {
+                <div class="batch-loading">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                </div>
+            }
+            else
+            {
+                <MudDropContainer T="CotizacionDetalleDragItem"
+                                  Items="_items"
+                                  ItemsSelector="ItemBelongsToZone"
+                                  ItemDropped="OnItemDropped">
+                    <ChildContent>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="6">
+                                <section class="batch-zone">
+                                    <div class="zone-toolbar">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2">Disponibles</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@AvailableItems.Count().ToString("N0", NumberCulture) bienes</MudText>
+                                        </div>
+                                        <MudSpacer />
+                                        <MudTooltip Text="Marcar disponibles">
+                                            <MudIconButton Icon="@Icons.Material.Filled.SelectAll"
+                                                           Color="Color.Default"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!AvailableItems.Any())"
+                                                           OnClick="ToggleAvailableChecks" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Pasar marcados">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!AvailableItems.Any(x => x.Checked))"
+                                                           OnClick="MoveCheckedToCapture" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Pasar todos">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DoubleArrow"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!AvailableItems.Any())"
+                                                           OnClick="MoveAllToCapture" />
+                                        </MudTooltip>
+                                    </div>
+
+                                    <MudTextField T="string"
+                                                  Value="@_filter"
+                                                  ValueChanged="OnFilterChanged"
+                                                  Label="Filtrar bienes"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Immediate="true"
+                                                  Clearable="true"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.Search" />
+
+                                    <div class="zone-scroll">
+                                        <MudDropZone T="CotizacionDetalleDragItem"
+                                                     Identifier="@AvailableZone"
+                                                     Class="dropzone" />
+                                    </div>
+                                </section>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <section class="batch-zone">
+                                    <div class="zone-toolbar">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2">Captura</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@CaptureItems.Count().ToString("N0", NumberCulture) bienes</MudText>
+                                        </div>
+                                        <MudSpacer />
+                                        <MudTooltip Text="Regresar marcados">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                                                           Color="Color.Default"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!CaptureItems.Any(x => x.Checked))"
+                                                           OnClick="MoveCheckedToAvailable" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Limpiar captura">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ClearAll"
+                                                           Color="Color.Error"
+                                                           Size="Size.Small"
+                                                           Disabled="@(!CaptureItems.Any())"
+                                                           OnClick="ClearCapture" />
+                                        </MudTooltip>
+                                    </div>
+
+                                    <div class="zone-scroll capture-scroll">
+                                        <MudDropZone T="CotizacionDetalleDragItem"
+                                                     Identifier="@CaptureZone"
+                                                     Class="dropzone" />
+                                    </div>
+                                </section>
+                            </MudItem>
+                        </MudGrid>
+                    </ChildContent>
+                    <ItemRenderer>
+                        <div class="@CardClass(context)">
+                            <MudCheckBox T="bool"
+                                         Value="@context.Checked"
+                                         ValueChanged="@((bool value) => context.Checked = value)"
+                                         Dense="true"
+                                         Color="Color.Primary" />
+                            <div class="quote-card-copy">
+                                <div class="quote-card-head">
+                                    <div>
+                                        <MudText Typo="Typo.body2" Class="quote-card-title">@context.BienTexto</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Observaciones</MudText>
+                                    </div>
+                                    @if (context.Zona == CaptureZone)
+                                    {
+                                        <MudTooltip Text="Quitar de captura">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                           Color="Color.Error"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => RemoveFromCapture(context))" />
+                                        </MudTooltip>
+                                    }
+                                </div>
+                                <div class="quote-card-meta">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Outlined">
+                                        @Quantity(context.Cantidad) @context.UnidadMedida
+                                    </MudChip>
+                                    @if (context.Zona == CaptureZone)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                            @Money(context.Importe)
+                                        </MudChip>
+                                    }
+                                </div>
+                                @if (context.Zona == CaptureZone)
+                                {
+                                    <MudNumericField T="decimal?"
+                                                     Value="@context.PrecioUnitario"
+                                                     ValueChanged="@((decimal? value) => OnPrecioChanged(context, value))"
+                                                     Label="Precio unitario"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="0m"
+                                                     Format="0.00"
+                                                     Culture="@NumberCulture"
+                                                     Adornment="Adornment.Start"
+                                                     AdornmentText="@CurrencySymbol" />
+                                }
+                            </div>
+                        </div>
+                    </ItemRenderer>
+                </MudDropContainer>
+
+                <section class="batch-summary">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total captura</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="batch-total">@Money(TotalCapture)</MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@(MissingPrices == 0 ? Color.Success : Color.Warning)"
+                             Variant="Variant.Outlined">
+                        @MissingPrices.ToString("N0", NumberCulture) sin precio
+                    </MudChip>
+                </section>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   Disabled="@_saving"
+                   OnClick="Cancel">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   Disabled="@(!CanSave)"
+                   OnClick="SaveAsync">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Guardando...</span>
+            }
+            else
+            {
+                <span>Guardar cotizacion</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .cotizacion-batch-dialog .mud-dialog-content {
+        max-height: calc(100vh - 140px);
+        overflow: hidden;
+    }
+
+    .batch-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 520px;
+        padding: 16px;
+    }
+
+    .batch-header,
+    .batch-title,
+    .quote-card-head,
+    .quote-card-meta,
+    .batch-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .batch-title {
+        font-weight: 700;
+    }
+
+    .batch-subtitle {
+        margin-top: -6px;
+    }
+
+    .batch-loading {
+        display: grid;
+        min-height: 420px;
+        place-items: center;
+    }
+
+    .batch-zone {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        min-height: 440px;
+        overflow: hidden;
+    }
+
+    .zone-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 22%, var(--mud-palette-lines-default));
+        background: color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface));
+    }
+
+    .batch-zone .mud-input-control {
+        padding: 0 12px;
+    }
+
+    .zone-scroll {
+        height: 318px;
+        overflow-y: auto;
+        padding: 10px 12px 12px;
+    }
+
+    .capture-scroll {
+        height: 370px;
+    }
+
+    .dropzone {
+        min-height: 100%;
+        border: 1px dashed color-mix(in srgb, var(--eg-primary) 40%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
+        padding: 8px;
+    }
+
+    .dropzone.mud-drop-zone-drag-over {
+        background: color-mix(in srgb, var(--eg-primary) 12%, var(--mud-palette-surface));
+        border-color: var(--eg-primary);
+    }
+
+    .quote-card {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+        margin-bottom: 8px;
+    }
+
+    .quote-card-active {
+        border-color: color-mix(in srgb, var(--mud-palette-primary) 44%, var(--mud-palette-lines-default));
+    }
+
+    .quote-card-copy {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .quote-card-head {
+        align-items: flex-start;
+    }
+
+    .quote-card-head > div {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .quote-card-title {
+        color: var(--mud-palette-text-primary);
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .quote-card-meta {
+        flex-wrap: wrap;
+        margin: 6px 0;
+    }
+
+    .batch-summary {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        padding: 10px 12px;
+    }
+
+    .batch-total {
+        font-weight: 800;
+        color: var(--eg-primary-dark);
+    }
+
+    @@media (max-width: 760px) {
+        .batch-shell {
+            min-height: auto;
+        }
+
+        .batch-zone {
+            min-height: 360px;
+        }
+
+        .zone-scroll,
+        .capture-scroll {
+            height: 260px;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int CotizacionId { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string CotizacionNombre { get; set; } = string.Empty;
+    [Parameter] public string RequisicionNombre { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private const string AvailableZone = "available";
+    private const string CaptureZone = "capture";
+    private readonly List<CotizacionDetalleDragItem> _items = new();
+    private string _filter = string.Empty;
+    private bool _loading;
+    private bool _saving;
+    private int _alreadyQuotedCount;
+    private int _totalRequisitionItems;
+
+    private IEnumerable<CotizacionDetalleDragItem> AvailableItems => _items.Where(x => x.Zona == AvailableZone && MatchesFilter(x));
+    private IEnumerable<CotizacionDetalleDragItem> CaptureItems => _items.Where(x => x.Zona == CaptureZone);
+    private decimal TotalCapture => CaptureItems.Sum(x => x.Importe);
+    private int MissingPrices => CaptureItems.Count(x => x.PrecioUnitario.GetValueOrDefault() <= 0m);
+    private bool CanSave => !_saving && CaptureItems.Any() && MissingPrices == 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemsAsync();
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        if (CotizacionId <= 0 || RequisicionId <= 0)
+        {
+            return;
+        }
+
+        try
+        {
+            _loading = true;
+
+            var detallesResponse = await DetalleRequisicionService.GetAllPaginadoAsync(
+                1,
+                1000,
+                "",
+                "TipoBienCodigoClave",
+                SortDirection.Ascending,
+                new Dictionary<string, object> { ["FkidRequisicionOrco"] = RequisicionId });
+
+            var cotizadosResponse = await Service.GetAllPaginadoAsync(
+                1,
+                1000,
+                "",
+                "TipoBienClave",
+                SortDirection.Ascending,
+                new Dictionary<string, object> { ["FkidCotizacionOrco"] = CotizacionId });
+
+            var cotizados = cotizadosResponse?.Items?
+                .Select(x => x.FkidDetalleRequisicionOrco)
+                .ToHashSet() ?? new HashSet<int>();
+
+            _alreadyQuotedCount = cotizados.Count;
+            _totalRequisitionItems = detallesResponse?.TotalCount ?? detallesResponse?.Items?.Count ?? 0;
+            _items.Clear();
+
+            foreach (var detalle in detallesResponse?.Items ?? new List<DetalleRequisicionResponse>())
+            {
+                if (!cotizados.Contains(detalle.PkidDetalleRequisicion))
+                {
+                    _items.Add(new CotizacionDetalleDragItem(detalle));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar bienes requisitados: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool ItemBelongsToZone(CotizacionDetalleDragItem item, string zone) =>
+        item.Zona == zone && (zone != AvailableZone || MatchesFilter(item));
+
+    private bool MatchesFilter(CotizacionDetalleDragItem item)
+    {
+        if (string.IsNullOrWhiteSpace(_filter))
+        {
+            return true;
+        }
+
+        var filter = _filter.Trim();
+        return item.BienTexto.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+               item.UnidadMedida.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+               item.Observaciones.Contains(filter, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private Task OnItemDropped(MudItemDropInfo<CotizacionDetalleDragItem> dropInfo)
+    {
+        if (dropInfo.Item == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        dropInfo.Item.Zona = dropInfo.DropzoneIdentifier;
+        dropInfo.Item.Checked = false;
+        if (dropInfo.Item.Zona == AvailableZone)
+        {
+            dropInfo.Item.PrecioUnitario = null;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void ToggleAvailableChecks()
+    {
+        var items = AvailableItems.ToList();
+        var check = items.Any(x => !x.Checked);
+        foreach (var item in items)
+        {
+            item.Checked = check;
+        }
+    }
+
+    private void MoveCheckedToCapture() => MoveItems(AvailableItems.Where(x => x.Checked), CaptureZone);
+
+    private void MoveAllToCapture() => MoveItems(AvailableItems, CaptureZone);
+
+    private void MoveCheckedToAvailable() => MoveItems(CaptureItems.Where(x => x.Checked), AvailableZone);
+
+    private void ClearCapture() => MoveItems(CaptureItems, AvailableZone);
+
+    private void RemoveFromCapture(CotizacionDetalleDragItem item)
+    {
+        item.Zona = AvailableZone;
+        item.Checked = false;
+        item.PrecioUnitario = null;
+    }
+
+    private void MoveItems(IEnumerable<CotizacionDetalleDragItem> items, string zone)
+    {
+        foreach (var item in items.ToList())
+        {
+            item.Zona = zone;
+            item.Checked = false;
+            if (zone == AvailableZone)
+            {
+                item.PrecioUnitario = null;
+            }
+        }
+    }
+
+    private void OnFilterChanged(string value)
+    {
+        _filter = value ?? string.Empty;
+    }
+
+    private void OnPrecioChanged(CotizacionDetalleDragItem item, decimal? value)
+    {
+        item.PrecioUnitario = value;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_saving)
+        {
+            return;
+        }
+
+        var selected = CaptureItems.ToList();
+        if (!selected.Any())
+        {
+            Snackbar.Add("Selecciona al menos un bien para cotizar.", Severity.Warning);
+            return;
+        }
+
+        if (selected.Any(x => x.PrecioUnitario.GetValueOrDefault() <= 0m))
+        {
+            Snackbar.Add("Captura el precio unitario de todos los bienes seleccionados.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _saving = true;
+            var created = 0;
+            var skipped = 0;
+
+            foreach (var detail in selected)
+            {
+                var response = await Service.CreateAsync(new CotizacionDetalleResponse
+                {
+                    FkidCotizacionOrco = CotizacionId,
+                    FkidDetalleRequisicionOrco = detail.DetalleRequisicionId,
+                    PrecioUnitario = detail.PrecioUnitario,
+                    Activo = true
+                });
+
+                if (response?.Success == true)
+                {
+                    created++;
+                    continue;
+                }
+
+                if (string.Equals(response?.Code, "DUPLICATE", StringComparison.OrdinalIgnoreCase))
+                {
+                    skipped++;
+                    continue;
+                }
+
+                Snackbar.Add(response?.Message ?? "No se pudo guardar un bien cotizado.", Severity.Error);
+                return;
+            }
+
+            if (created > 0)
+            {
+                Snackbar.Add($"{created:N0} bienes cotizados guardados correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            if (skipped > 0)
+            {
+                Snackbar.Add("Los bienes seleccionados ya estaban agregados en esta cotizacion.", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar bienes cotizados: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string CardClass(CotizacionDetalleDragItem item) =>
+        item.Zona == CaptureZone ? "quote-card quote-card-active" : "quote-card";
+
+    private sealed class CotizacionDetalleDragItem
+    {
+        public CotizacionDetalleDragItem(DetalleRequisicionResponse detalle)
+        {
+            DetalleRequisicionId = detalle.PkidDetalleRequisicion;
+            TipoBienId = detalle.FkidTipoBienAlma;
+            BienTexto = $"{detalle.TipoBienCodigoClave} - {detalle.TipoBienDescripcion}".Trim(' ', '-');
+            Cantidad = detalle.Cantidad;
+            UnidadMedida = detalle.UnidadMedida ?? string.Empty;
+            Observaciones = detalle.Observaciones ?? string.Empty;
+        }
+
+        public int DetalleRequisicionId { get; }
+        public int TipoBienId { get; }
+        public string BienTexto { get; }
+        public decimal Cantidad { get; }
+        public string UnidadMedida { get; }
+        public string Observaciones { get; }
+        public string Zona { get; set; } = AvailableZone;
+        public bool Checked { get; set; }
+        public decimal? PrecioUnitario { get; set; }
+        public decimal Importe => Cantidad * PrecioUnitario.GetValueOrDefault();
+    }
+}

@@ -12,6 +12,7 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<CotizacionDetalleResponse> DetalleService
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject HttpClient Http
 @inject IJSRuntime JS
 @inherits BaseCrudPage<CotizacionResponse, CotizacionResponse>
 
@@ -154,12 +155,29 @@
                                        OnClick="@(() => EditItem(SelectedCotizacion.PkidCotizacion))"
                                        Class="ml-2" />
                     </MudTooltip>
-                    <MudTooltip Text="Agregar bien cotizado">
-                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
+                    <MudTooltip Text="Captura rapida de bienes">
+                        <MudIconButton Icon="@Icons.Material.Filled.PostAdd"
                                        Color="Color.Success"
                                        Size="Size.Small"
                                        Visible="@CanCreate"
                                        OnClick="AddDetalle"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Enviar solicitud por mail">
+                        <MudIconButton Icon="@Icons.Material.Filled.Email"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Disabled="@(_sendingCotizacionEmail || SelectedCotizacion.TotalDetalles <= 0)"
+                                       OnClick="SendCotizacionCorreo"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Recibir montos cotizados">
+                        <MudIconButton Icon="@Icons.Material.Filled.AttachMoney"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       Disabled="@(SelectedCotizacion.TotalDetalles <= 0)"
+                                       OnClick="OpenRecepcionCotizacion"
                                        Class="ml-1" />
                     </MudTooltip>
                     <MudTooltip Text="Actualizar">
@@ -219,6 +237,8 @@
                                   SearchPlaceholder="Buscar bien, clave o unidad..."
                                   ShowExportButton="false"
                                   ShowAddButton="@CanCreate"
+                                  AddButtonTooltip="Captura rapida de bienes"
+                                  AddButtonIcon="@Icons.Material.Filled.PostAdd"
                                   PageSize="10"
                                   ServerDataFunc="LoadDetallesServerData"
                                   SearchString="@detalleSearchString"
@@ -366,6 +386,7 @@
     private CotizacionResponse? SelectedCotizacion;
     private string detalleSearchString = string.Empty;
     private string _currencySymbol = "$";
+    private bool _sendingCotizacionEmail;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Cotizacion";
@@ -613,10 +634,71 @@
             ["CurrencySymbol"] = _currencySymbol
         };
 
-        var dialog = await DialogService.ShowAsync<CotizacionDetalleDialog>(
-            "Agregar Bien Cotizado",
+        var dialog = await DialogService.ShowAsync<CotizacionDetalleBatchDialog>(
+            "Captura de Bienes Cotizados",
             parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshSelectedAndDetails();
+        }
+    }
+
+    private async Task SendCotizacionCorreo()
+    {
+        if (SelectedCotizacion == null)
+        {
+            Snackbar.Add("Selecciona una cotizacion primero.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _sendingCotizacionEmail = true;
+            var response = await Http.PostAsync($"api/Cotizacion/{SelectedCotizacion.PkidCotizacion}/enviar-correo", null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CotizacionResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Solicitud enviada por correo.", Severity.Success);
+                await RefreshSelectedAndDetails();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudo enviar la solicitud por correo.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al enviar correo: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _sendingCotizacionEmail = false;
+        }
+    }
+
+    private async Task OpenRecepcionCotizacion()
+    {
+        if (SelectedCotizacion == null)
+        {
+            Snackbar.Add("Selecciona una cotizacion primero.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["CotizacionId"] = SelectedCotizacion.PkidCotizacion,
+            ["CotizacionNombre"] = SelectedCotizacion.ProveedorNombre,
+            ["RequisicionNombre"] = SelectedCotizacion.RequisicionDescripcion,
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var dialog = await DialogService.ShowAsync<CotizacionRecepcionDialog>(
+            "Recibir Montos Cotizados",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })

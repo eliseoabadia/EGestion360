@@ -1,0 +1,333 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Requests.Adquisicion
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Models
+@using MudBlazor
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog DisableSidePadding="true" Class="cotizacion-recepcion-dialog">
+    <DialogContent>
+        <div class="recepcion-shell">
+            <div class="recepcion-header">
+                <div class="recepcion-title">
+                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Primary" />
+                    <div>
+                        <MudText Typo="Typo.h6">Recepcion de montos cotizados</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(CotizacionNombre)</MudText>
+                    </div>
+                </div>
+                <MudSpacer />
+                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                    @_rows.Count.ToString("N0", NumberCulture) bienes
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@(_sinPrecio == 0 ? Color.Success : Color.Warning)" Variant="Variant.Outlined">
+                    @_sinPrecio.ToString("N0", NumberCulture) sin precio
+                </MudChip>
+            </div>
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="recepcion-subtitle">
+                @TextOrDash(RequisicionNombre)
+            </MudText>
+
+            @if (_loading)
+            {
+                <div class="recepcion-loading">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                </div>
+            }
+            else
+            {
+                <MudTable Items="FilteredRows"
+                          Dense="true"
+                          Hover="true"
+                          Elevation="0"
+                          FixedHeader="true"
+                          Height="420px"
+                          Class="recepcion-table">
+                    <ToolBarContent>
+                        <MudTextField T="string"
+                                      Value="@_filter"
+                                      ValueChanged="value => _filter = value ?? string.Empty"
+                                      Label="Filtrar bienes"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Clave</MudTh>
+                        <MudTh>Bien / Servicio</MudTh>
+                        <MudTh>Cantidad</MudTh>
+                        <MudTh>Unidad</MudTh>
+                        <MudTh>Precio unitario</MudTh>
+                        <MudTh>Importe</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                @TextOrDash(context.TipoBienClave)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>@TextOrDash(context.TipoBienDescripcion)</MudTd>
+                        <MudTd>@Quantity(context.Cantidad)</MudTd>
+                        <MudTd>@TextOrDash(context.UnidadMedida)</MudTd>
+                        <MudTd>
+                            <MudNumericField T="decimal?"
+                                             Value="@context.PrecioUnitario"
+                                             ValueChanged="@((decimal? value) => OnPrecioChanged(context, value))"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             Min="0m"
+                                             Format="0.00"
+                                             Culture="@NumberCulture"
+                                             Adornment="Adornment.Start"
+                                             AdornmentText="@CurrencySymbol" />
+                        </MudTd>
+                        <MudTd>
+                            <strong>@MoneyOrDash(context.Importe)</strong>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">No hay bienes para capturar.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+
+                <section class="recepcion-summary">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total recibido</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="recepcion-total">@Money(_total)</MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@(_invalidPrices == 0 ? Color.Success : Color.Error)" Variant="Variant.Outlined">
+                        @_invalidPrices.ToString("N0", NumberCulture) invalidos
+                    </MudChip>
+                </section>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   Disabled="@_saving"
+                   OnClick="Cancel">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   Disabled="@(!CanSave)"
+                   OnClick="SaveAsync">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Guardando...</span>
+            }
+            else
+            {
+                <span>Guardar montos</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .cotizacion-recepcion-dialog .mud-dialog-content {
+        max-height: calc(100vh - 140px);
+        overflow: hidden;
+    }
+
+    .recepcion-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 520px;
+        padding: 16px;
+    }
+
+    .recepcion-header,
+    .recepcion-title,
+    .recepcion-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .recepcion-subtitle {
+        margin-top: -6px;
+    }
+
+    .recepcion-loading {
+        display: grid;
+        min-height: 420px;
+        place-items: center;
+    }
+
+    .recepcion-table {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .recepcion-summary {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        padding: 10px 12px;
+    }
+
+    .recepcion-total {
+        font-weight: 800;
+        color: var(--eg-primary-dark);
+    }
+</style>
+
+@code {
+    [Parameter] public int CotizacionId { get; set; }
+    [Parameter] public string CotizacionNombre { get; set; } = string.Empty;
+    [Parameter] public string RequisicionNombre { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private readonly List<CotizacionRecepcionRow> _rows = new();
+    private string _filter = string.Empty;
+    private bool _loading;
+    private bool _saving;
+
+    private IEnumerable<CotizacionRecepcionRow> FilteredRows =>
+        string.IsNullOrWhiteSpace(_filter)
+            ? _rows
+            : _rows.Where(x =>
+                x.TipoBienClave.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+                x.TipoBienDescripcion.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+                x.UnidadMedida.Contains(_filter, StringComparison.OrdinalIgnoreCase));
+
+    private int _sinPrecio => _rows.Count(x => !x.PrecioUnitario.HasValue);
+    private int _invalidPrices => _rows.Count(x => x.PrecioUnitario.HasValue && x.PrecioUnitario.Value <= 0m);
+    private decimal _total => _rows.Sum(x => x.Importe.GetValueOrDefault());
+    private bool CanSave => !_loading && !_saving && _rows.Any() && _invalidPrices == 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRowsAsync();
+    }
+
+    private async Task LoadRowsAsync()
+    {
+        if (CotizacionId <= 0)
+        {
+            return;
+        }
+
+        try
+        {
+            _loading = true;
+            var response = await Http.GetFromJsonAsync<ApiResponse<CotizacionDetalleResponse>>($"api/Cotizacion/recepcion/{CotizacionId}");
+
+            _rows.Clear();
+            if (response?.Success == true)
+            {
+                _rows.AddRange((response.Items ?? new List<CotizacionDetalleResponse>())
+                    .Select(x => new CotizacionRecepcionRow(x)));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No se pudieron cargar los bienes cotizados.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar montos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OnPrecioChanged(CotizacionRecepcionRow row, decimal? value)
+    {
+        row.PrecioUnitario = value;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!CanSave)
+        {
+            return;
+        }
+
+        try
+        {
+            _saving = true;
+            var request = new CotizacionRecepcionRequest
+            {
+                FkidCotizacionOrco = CotizacionId,
+                Items = _rows.Select(x => new CotizacionRecepcionItemRequest
+                {
+                    PkidCotizacionDetalle = x.PkidCotizacionDetalle,
+                    PrecioUnitario = x.PrecioUnitario
+                }).ToList()
+            };
+
+            var response = await Http.PostAsJsonAsync("api/Cotizacion/recepcion", request);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CotizacionDetalleResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Montos cotizados guardados correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudieron guardar los montos.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar montos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private string MoneyOrDash(decimal? value) =>
+        value.HasValue ? Money(value.Value) : "-";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private sealed class CotizacionRecepcionRow
+    {
+        public CotizacionRecepcionRow(CotizacionDetalleResponse response)
+        {
+            PkidCotizacionDetalle = response.PkidCotizacionDetalle;
+            TipoBienClave = response.TipoBienClave ?? string.Empty;
+            TipoBienDescripcion = response.TipoBienDescripcion ?? string.Empty;
+            Cantidad = response.Cantidad;
+            UnidadMedida = response.UnidadMedida ?? string.Empty;
+            PrecioUnitario = response.PrecioUnitario;
+        }
+
+        public int PkidCotizacionDetalle { get; }
+        public string TipoBienClave { get; }
+        public string TipoBienDescripcion { get; }
+        public decimal Cantidad { get; }
+        public string UnidadMedida { get; }
+        public decimal? PrecioUnitario { get; set; }
+        public decimal? Importe => PrecioUnitario.HasValue ? PrecioUnitario.Value * Cantidad : null;
+    }
+}

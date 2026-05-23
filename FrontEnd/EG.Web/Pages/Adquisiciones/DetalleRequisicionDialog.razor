@@ -257,6 +257,12 @@
             return;
         }
 
+        if (await ExistsDuplicateTipoBienAsync(_selectedRequisicion.Id, _selectedTipoBien.Id))
+        {
+            Snackbar.Add("Ese bien ya esta agregado en esta requisicion.", Severity.Warning);
+            return;
+        }
+
         if (item.Cantidad <= 0)
         {
             Snackbar.Add("La cantidad debe ser mayor a cero.", Severity.Warning);
@@ -335,6 +341,30 @@
 
         var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "CodigoClave", SortDirection.Ascending, additionalFilters);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoBien, Text = $"{x.CodigoClave} - {x.TipoBienDescripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<bool> ExistsDuplicateTipoBienAsync(int requisicionId, int tipoBienId)
+    {
+        var filters = new Dictionary<string, object>
+        {
+            ["FkidRequisicionOrco"] = requisicionId,
+            ["FkidTipoBienAlma"] = tipoBienId
+        };
+
+        if (Id.HasValue)
+        {
+            filters["PkidDetalleRequisicion__ne"] = Id.Value;
+        }
+
+        var response = await Service.GetAllPaginadoAsync(
+            1,
+            1,
+            "",
+            "PkidDetalleRequisicion",
+            SortDirection.Ascending,
+            filters);
+
+        return response?.TotalCount > 0;
     }
 
     private async Task<ComboLookupResult> LoadUnidadesPageAsync(int page, int pageSize, string filter, CancellationToken ct)

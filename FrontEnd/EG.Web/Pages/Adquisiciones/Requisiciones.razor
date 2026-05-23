@@ -53,6 +53,7 @@
                             <MudTh><MudTableSortLabel SortLabel="Importe" T="RequisicionResponse">Importe</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Servicio" T="RequisicionResponse">Tipo</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Activo" T="RequisicionResponse">Activo</MudTableSortLabel></MudTh>
+                            <MudTh>Flujo</MudTh>
                         </Header>
 
                         <Row Context="item">
@@ -68,6 +69,7 @@
                                                    Visible="@CanUpdate"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
+                                                   Disabled="@IsLocked(item)"
                                                    OnClick="@(() => EditItem(item.PkidRequisicion))" />
                                 </MudTooltip>
                                 <MudTooltip Text="Eliminar">
@@ -75,7 +77,15 @@
                                                    Visible="@CanDelete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
+                                                   Disabled="@IsLocked(item)"
                                                    OnClick="@(() => DeleteItem(item.PkidRequisicion))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Generar cotizacion">
+                                    <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
+                                                   Visible="@CanCreate"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OpenCotizacionFromRequisicion(item))" />
                                 </MudTooltip>
                             </MudTd>
                             <MudTd>@item.PkidRequisicion</MudTd>
@@ -92,6 +102,14 @@
                             <MudTd>
                                 <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
                                     @(item.Activo ? "Si" : "No")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string"
+                                         Color="@(IsLocked(item) ? Color.Warning : Color.Success)"
+                                         Variant="Variant.Outlined"
+                                         Size="Size.Small">
+                                    @(IsLocked(item) ? $"En cotizacion ({item.CotizacionesActivas})" : "Libre")
                                 </MudChip>
                             </MudTd>
                         </Row>
@@ -115,11 +133,19 @@
                     <MudChip T="string" Size="Size.Small" Color="@(SelectedRequisicion.Activo ? Color.Success : Color.Error)">
                         @(SelectedRequisicion.Activo ? "Activo" : "Inactivo")
                     </MudChip>
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@(IsSelectedLocked ? Color.Warning : Color.Success)"
+                             Variant="Variant.Outlined"
+                             Class="ml-1">
+                        @(IsSelectedLocked ? $"En cotizacion ({SelectedRequisicion.CotizacionesActivas})" : "Libre")
+                    </MudChip>
                     <MudTooltip Text="Editar requisicion">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        Visible="@CanUpdate"
+                                       Disabled="@IsSelectedLocked"
                                        OnClick="@(() => EditItem(SelectedRequisicion.PkidRequisicion))"
                                        Class="ml-2" />
                     </MudTooltip>
@@ -128,6 +154,7 @@
                                        Color="Color.Success"
                                        Size="Size.Small"
                                        Visible="@CanCreate"
+                                       Disabled="@IsSelectedLocked"
                                        OnClick="AddPartida"
                                        Class="ml-1" />
                     </MudTooltip>
@@ -136,8 +163,16 @@
                                        Color="Color.Success"
                                        Size="Size.Small"
                                        Visible="@CanCreate"
-                                       Disabled="@(SelectedPartida == null)"
+                                       Disabled="@(SelectedPartida == null || IsSelectedLocked)"
                                        OnClick="AddDetalle"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Generar cotizacion">
+                        <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="@(() => OpenCotizacionFromRequisicion(SelectedRequisicion))"
                                        Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>
@@ -190,7 +225,7 @@
                                       Title="Partidas"
                                       SearchPlaceholder="Buscar partida..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@CanCreate"
+                                      ShowAddButton="@(CanCreate && !IsSelectedLocked)"
                                       PageSize="5"
                                       ServerDataFunc="LoadPartidasServerData"
                                       SearchString="@partidaSearchString"
@@ -216,6 +251,7 @@
                                                        Visible="@CanUpdate"
                                                        Color="Color.Primary"
                                                        Size="Size.Small"
+                                                       Disabled="@IsSelectedLocked"
                                                        OnClick="@(() => EditPartida(partida.PkidRequisicionPartida))" />
                                     </MudTooltip>
                                     <MudTooltip Text="Eliminar partida">
@@ -223,6 +259,7 @@
                                                        Visible="@CanDelete"
                                                        Color="Color.Error"
                                                        Size="Size.Small"
+                                                       Disabled="@IsSelectedLocked"
                                                        OnClick="@(() => DeletePartida(partida))" />
                                     </MudTooltip>
                                 </MudTd>
@@ -245,7 +282,7 @@
                                       Title="@DetalleTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && SelectedPartida != null)"
+                                      ShowAddButton="@(CanCreate && SelectedPartida != null && !IsSelectedLocked)"
                                       AddButtonTooltip="Agregar bien a la requisicion"
                                       AddButtonIcon="@Icons.Material.Filled.AddShoppingCart"
                                       PageSize="5"
@@ -268,6 +305,7 @@
                                                        Visible="@CanUpdate"
                                                        Color="Color.Primary"
                                                        Size="Size.Small"
+                                                       Disabled="@IsSelectedLocked"
                                                        OnClick="@(() => EditDetalle(detalle.PkidDetalleRequisicion))" />
                                     </MudTooltip>
                                     <MudTooltip Text="Eliminar detalle">
@@ -275,6 +313,7 @@
                                                        Visible="@CanDelete"
                                                        Color="Color.Error"
                                                        Size="Size.Small"
+                                                       Disabled="@IsSelectedLocked"
                                                        OnClick="@(() => DeleteDetalle(detalle))" />
                                     </MudTooltip>
                                 </MudTd>
@@ -302,6 +341,7 @@
     private string DetalleTableTitle => SelectedPartida == null
         ? "Detalle de Requisicion"
         : $"Detalle de Requisicion - {SelectedPartida.PartidaClave}";
+    private bool IsSelectedLocked => IsLocked(SelectedRequisicion);
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "requisicion";
@@ -396,6 +436,11 @@
             return;
         }
 
+        if (await IsRequisicionLockedAsync(id, "editarla"))
+        {
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             ["Id"] = id,
@@ -417,6 +462,22 @@
         {
             await RefreshSelectedRequisicion();
         }
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        if (await IsRequisicionLockedAsync(id, "eliminarla"))
+        {
+            return;
+        }
+
+        await base.DeleteItem(id);
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<RequisicionResponse> items)
@@ -642,6 +703,11 @@
             return;
         }
 
+        if (!CanModifySelectedRequisicion("agregar partidas"))
+        {
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             ["EmpresaId"] = SelectedRequisicion.FkidEmpresaSis,
@@ -677,6 +743,11 @@
             return;
         }
 
+        if (!CanModifySelectedRequisicion("editar partidas"))
+        {
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             ["Id"] = id,
@@ -697,6 +768,11 @@
 
     private async Task DeletePartida(RequisicionPartidaResponse partida)
     {
+        if (!CanModifySelectedRequisicion("eliminar partidas"))
+        {
+            return;
+        }
+
         var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar la partida {TextOrDash(partida.ClaveNombre)}?");
         if (!confirm)
         {
@@ -742,6 +818,11 @@
             return;
         }
 
+        if (!CanModifySelectedRequisicion("agregar bienes"))
+        {
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             ["EmpresaId"] = SelectedRequisicion.FkidEmpresaSis,
@@ -763,11 +844,81 @@
         }
     }
 
+    private async Task OpenCotizacionFromRequisicion(RequisicionResponse? requisicion)
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear cotizaciones", Severity.Warning);
+            return;
+        }
+
+        if (requisicion == null)
+        {
+            Snackbar.Add("Selecciona una requisicion primero.", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        if (!await RequisicionTieneBienesAsync(requisicion.PkidRequisicion))
+        {
+            Snackbar.Add("La requisicion debe tener al menos un bien para generar una cotizacion.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["AnioId"] = AnioStateService.AnioId!.Value,
+            ["RequisicionId"] = requisicion.PkidRequisicion,
+            ["RequisicionNombre"] = requisicion.Descripcion
+        };
+
+        var dialog = await DialogService.ShowAsync<CotizacionDialog>(
+            "Crear Cotizacion",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            if (SelectedRequisicion?.PkidRequisicion == requisicion.PkidRequisicion)
+            {
+                await RefreshSelectedRequisicion();
+            }
+            else if (table != null)
+            {
+                await table.ReloadData();
+            }
+        }
+    }
+
+    private async Task<bool> RequisicionTieneBienesAsync(int requisicionId)
+    {
+        var response = await DetalleService.GetAllPaginadoAsync(
+            1,
+            1,
+            "",
+            "PkidDetalleRequisicion",
+            SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+
+        return response?.TotalCount > 0;
+    }
+
     private async Task EditDetalle(int id)
     {
         if (!CanUpdate)
         {
             Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        if (!CanModifySelectedRequisicion("editar bienes"))
+        {
             return;
         }
 
@@ -795,6 +946,11 @@
 
     private async Task DeleteDetalle(DetalleRequisicionResponse detalle)
     {
+        if (!CanModifySelectedRequisicion("eliminar bienes"))
+        {
+            return;
+        }
+
         var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar el detalle {TextOrDash(detalle.TipoBienDescripcion)}?");
         if (!confirm)
         {
@@ -849,6 +1005,49 @@
 
     private bool IsSelectedPartida(RequisicionPartidaResponse partida) =>
         SelectedPartida?.PkidRequisicionPartida == partida.PkidRequisicionPartida;
+
+    private static bool IsLocked(RequisicionResponse? requisicion) =>
+        requisicion?.BloqueadaPorCotizacion == true;
+
+    private bool CanModifySelectedRequisicion(string action)
+    {
+        if (!IsSelectedLocked)
+        {
+            return true;
+        }
+
+        Snackbar.Add($"La requisicion esta en cotizacion. Liberala para {action}.", Severity.Warning);
+        return false;
+    }
+
+    private async Task<bool> IsRequisicionLockedAsync(int id, string action)
+    {
+        var requisicion = await GetRequisicionForLockAsync(id);
+        if (!IsLocked(requisicion))
+        {
+            return false;
+        }
+
+        Snackbar.Add($"La requisicion esta en cotizacion. Liberala para {action}.", Severity.Warning);
+        return true;
+    }
+
+    private async Task<RequisicionResponse?> GetRequisicionForLockAsync(int id)
+    {
+        if (SelectedRequisicion?.PkidRequisicion == id)
+        {
+            return SelectedRequisicion;
+        }
+
+        var current = Elements.FirstOrDefault(x => x.PkidRequisicion == id);
+        if (current != null)
+        {
+            return current;
+        }
+
+        var response = await Service.GetByIdAsync(id);
+        return response?.Success == true ? response.Data : null;
+    }
 
     public void Dispose()
     {

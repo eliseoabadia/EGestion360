@@ -11,8 +11,8 @@ namespace EG.Application.Services.Adquisicion
         where TDto : class
         where TResponse : class
     {
-        private readonly GenericService<TEntity, TDto, TResponse> _service;
-        private readonly GenericService<TView, TDto, TResponse> _serviceView;
+        protected readonly GenericService<TEntity, TDto, TResponse> _service;
+        protected readonly GenericService<TView, TDto, TResponse> _serviceView;
         private readonly string _idPropertyName;
         private readonly string _entityName;
         private readonly Action<TDto, int> _setId;
