@@ -62,7 +62,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Value="_fechaRequisicion"
+                <MudDatePicker @bind-Date="_fechaRequisicion"
                                Label="Fecha requisicion"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -115,7 +115,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Value="item.FechaOficio"
+                <MudDatePicker @bind-Date="item.FechaOficio"
                                Label="Fecha oficio"
                                Variant="Variant.Outlined" />
             </MudItem>
@@ -150,6 +150,7 @@
     {
         Activo = true,
         FechaRequisicion = DateTime.Today,
+        FechaOficio = DateTime.Today,
         FlFoto = string.Empty,
         Observaciones = string.Empty,
         Oficio = string.Empty

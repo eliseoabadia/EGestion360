@@ -22,13 +22,13 @@ internal class Program
         // Configurar MudBlazor con localizaci�n y Snackbar
         builder.Services.AddMudServices(config =>
         {
-            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
-            config.SnackbarConfiguration.PreventDuplicates = false;
-            config.SnackbarConfiguration.NewestOnTop = false;
+            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+            config.SnackbarConfiguration.PreventDuplicates = true;
+            config.SnackbarConfiguration.NewestOnTop = true;
             config.SnackbarConfiguration.ShowCloseIcon = true;
-            config.SnackbarConfiguration.VisibleStateDuration = 5000;
-            config.SnackbarConfiguration.HideTransitionDuration = 500;
-            config.SnackbarConfiguration.ShowTransitionDuration = 500;
+            config.SnackbarConfiguration.VisibleStateDuration = 6500;
+            config.SnackbarConfiguration.HideTransitionDuration = 350;
+            config.SnackbarConfiguration.ShowTransitionDuration = 350;
             config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
         });
 

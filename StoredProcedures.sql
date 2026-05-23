@@ -158,8 +158,45 @@ BEGIN
 
     DECLARE @tipo NVARCHAR(100);
     DECLARE @message NVARCHAR(4000);
+    DECLARE @Parameters NVARCHAR(4000) = '';
     DECLARE @errorMessage NVARCHAR(MAX);
-    DECLARE @today DATETIME = GETDATE();
+    DECLARE @today DATETIME2 = SYSDATETIME();
+
+    SET @message = CONCAT('Iniciando el SP [ALMA].[SP_MantenimientoTipoBien]', ' @PKIdTipoBien ', @PKIdTipoBien);
+    SET @Parameters = CONCAT(
+        'Action=', ISNULL(CONVERT(NVARCHAR(30), @Action), 'NULL'),
+        ', PKIdTipoBien=', ISNULL(CONVERT(NVARCHAR(30), @PKIdTipoBien), 'NULL'),
+        ', FKIdGrupoBien_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdGrupoBien_ALMA), 'NULL'),
+        ', FKIdNivel_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdNivel_ALMA), 'NULL'),
+        ', FKIdPartida_CONTA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdPartida_CONTA), 'NULL'),
+        ', FKIdCuentaContable_CONTA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdCuentaContable_CONTA), 'NULL'),
+        ', FKIdUnidades_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdUnidades_ALMA), 'NULL'),
+        ', CodigoClave=', ISNULL(@CodigoClave, 'NULL'),
+        ', Descripcion=', ISNULL(LEFT(@Descripcion, 300), 'NULL'),
+        ', Consecutivo=', ISNULL(CONVERT(NVARCHAR(30), @Consecutivo), 'NULL'),
+        ', CABMS=', ISNULL(@CABMS, 'NULL'),
+        ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'ALMA.SP_MantenimientoTipoBien',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'ALMA.SP_MantenimientoTipoBien',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+
+    SET @message = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -1071,8 +1108,46 @@ BEGIN
 
     DECLARE @tipo NVARCHAR(100);
     DECLARE @message NVARCHAR(4000);
+    DECLARE @Parameters NVARCHAR(4000) = '';
     DECLARE @errorMessage NVARCHAR(MAX);
-    DECLARE @today DATETIME = GETDATE();
+    DECLARE @today DATETIME2 = SYSDATETIME();
+
+    SET @message = CONCAT('Iniciando el SP [CONTA].[SP_MantenimientoPoliza]', ' @PKIdPoliza ', @PKIdPoliza);
+    SET @Parameters = CONCAT(
+        'Action=', ISNULL(CONVERT(NVARCHAR(30), @Action), 'NULL'),
+        ', PKIdPoliza=', ISNULL(CONVERT(NVARCHAR(30), @PKIdPoliza), 'NULL'),
+        ', FKIdAnio_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdAnio_SIS), 'NULL'),
+        ', FKIdMes_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdMes_SIS), 'NULL'),
+        ', FKIdTipoPoliza_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdTipoPoliza_SIS), 'NULL'),
+        ', NombrePoliza=', ISNULL(LEFT(@NombrePoliza, 300), 'NULL'),
+        ', FechaPoliza=', ISNULL(CONVERT(NVARCHAR(30), @FechaPoliza, 126), 'NULL'),
+        ', EstaBalanceado=', ISNULL(CONVERT(NVARCHAR(30), @EstaBalanceado), 'NULL'),
+        ', PermitirModificar=', ISNULL(CONVERT(NVARCHAR(30), @PermitirModificar), 'NULL'),
+        ', Autorizado=', ISNULL(CONVERT(NVARCHAR(30), @Autorizado), 'NULL'),
+        ', FechaSolicitud=', ISNULL(CONVERT(NVARCHAR(30), @FechaSolicitud, 126), 'NULL'),
+        ', FechaAutorizacion=', ISNULL(CONVERT(NVARCHAR(30), @FechaAutorizacion, 126), 'NULL'),
+        ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'CONTA.SP_MantenimientoPoliza',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'CONTA.SP_MantenimientoPoliza',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+
+    SET @message = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -1311,9 +1386,48 @@ BEGIN
 
     DECLARE @tipo NVARCHAR(20) = 'OK';
     DECLARE @message NVARCHAR(4000) = '';
+    DECLARE @Parameters NVARCHAR(4000) = '';
     DECLARE @liga NVARCHAR(100) = '';
     DECLARE @today DATETIME2 = SYSDATETIME();
     DECLARE @Id INT = NULL;
+
+    SET @message = CONCAT('Iniciando el SP [ORCO].[SP_MantenimientoPAAAS]', ' @PKIdPAAAS ', @PKIdPAAAS);
+    SET @Parameters = CONCAT(
+        'Action=', ISNULL(CONVERT(NVARCHAR(30), @Action), 'NULL'),
+        ', PKIdPAAAS=', ISNULL(CONVERT(NVARCHAR(30), @PKIdPAAAS), 'NULL'),
+        ', PKIdPAAASPartida=', ISNULL(CONVERT(NVARCHAR(30), @PKIdPAAASPartida), 'NULL'),
+        ', PKIdPAAASDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdPAAASDetalle), 'NULL'),
+        ', FKIdEmpresa_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdEmpresa_SIS), 'NULL'),
+        ', FKIdAnio_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdAnio_SIS), 'NULL'),
+        ', FKIdArea_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdArea_SIS), 'NULL'),
+        ', FKIdPersona_NOM=', ISNULL(CONVERT(NVARCHAR(30), @FKIdPersona_NOM), 'NULL'),
+        ', Descripcion=', ISNULL(LEFT(@Descripcion, 300), 'NULL'),
+        ', Fecha=', ISNULL(CONVERT(NVARCHAR(30), @Fecha, 126), 'NULL'),
+        ', FKIdPartida_CONTA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdPartida_CONTA), 'NULL'),
+        ', FKIdTipoBien_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdTipoBien_ALMA), 'NULL'),
+        ', Cantidad=', ISNULL(CONVERT(NVARCHAR(30), @Cantidad), 'NULL'),
+        ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'ORCO.SP_MantenimientoPAAAS',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'ORCO.SP_MantenimientoPAAAS',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+
+    SET @message = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -1544,7 +1658,48 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [ORCO].[SP_MantenimientoEstudioMercado]', ' @PKIdEstudioMercado ', @PKIdEstudioMercado);
+    SET @Parameters = CONCAT(
+        'Action=', ISNULL(CONVERT(NVARCHAR(30), @Action), 'NULL'),
+        ', PKIdEstudioMercado=', ISNULL(CONVERT(NVARCHAR(30), @PKIdEstudioMercado), 'NULL'),
+        ', PKIdEstudioMercadoDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdEstudioMercadoDetalle), 'NULL'),
+        ', FKIdEmpresa_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdEmpresa_SIS), 'NULL'),
+        ', FKIdAnio_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdAnio_SIS), 'NULL'),
+        ', Nombre=', ISNULL(LEFT(@Nombre, 300), 'NULL'),
+        ', FechaSolicitud=', ISNULL(CONVERT(NVARCHAR(30), @FechaSolicitud, 126), 'NULL'),
+        ', FechaCierre=', ISNULL(CONVERT(NVARCHAR(30), @FechaCierre, 126), 'NULL'),
+        ', FKIdResponsable_NOM=', ISNULL(CONVERT(NVARCHAR(30), @FKIdResponsable_NOM), 'NULL'),
+        ', Estatus=', ISNULL(CONVERT(NVARCHAR(30), @Estatus), 'NULL'),
+        ', FKIdPAAASDetalle_ORCO=', ISNULL(CONVERT(NVARCHAR(30), @FKIdPAAASDetalle_ORCO), 'NULL'),
+        ', FKIdTipoBien_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdTipoBien_ALMA), 'NULL'),
+        ', Cantidad=', ISNULL(CONVERT(NVARCHAR(30), @Cantidad), 'NULL'),
+        ', FKIdProveedor_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdProveedor_SIS), 'NULL'),
+        ', CostoUnitario=', ISNULL(CONVERT(NVARCHAR(30), @CostoUnitario), 'NULL'),
+        ', FechaCompromisoEntrega=', ISNULL(CONVERT(NVARCHAR(30), @FechaCompromisoEntrega, 126), 'NULL'),
+        ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'ORCO.SP_MantenimientoEstudioMercado',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'ORCO.SP_MantenimientoEstudioMercado',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+
+    SET @message = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -1953,8 +2108,44 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
     DECLARE @Seeded INT = 0;
+
+    SET @message = CONCAT('Iniciando el SP [ORCO].[SP_MantenimientoCotizacion]', ' @PKIdCotizacion ', @PKIdCotizacion);
+    SET @Parameters = CONCAT(
+        'Action=', ISNULL(CONVERT(NVARCHAR(30), @Action), 'NULL'),
+        ', PKIdCotizacion=', ISNULL(CONVERT(NVARCHAR(30), @PKIdCotizacion), 'NULL'),
+        ', FKIdRequisicion_ORCO=', ISNULL(CONVERT(NVARCHAR(30), @FKIdRequisicion_ORCO), 'NULL'),
+        ', FKIdProveedor_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdProveedor_SIS), 'NULL'),
+        ', FechaSolicitud=', ISNULL(CONVERT(NVARCHAR(30), @FechaSolicitud, 126), 'NULL'),
+        ', FechaProveedorCotiza=', ISNULL(CONVERT(NVARCHAR(30), @FechaProveedorCotiza, 126), 'NULL'),
+        ', FechaProveedorCompromiso=', ISNULL(CONVERT(NVARCHAR(30), @FechaProveedorCompromiso, 126), 'NULL'),
+        ', Servicio=', ISNULL(CONVERT(NVARCHAR(30), @Servicio), 'NULL'),
+        ', FKIdAnio_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdAnio_SIS), 'NULL'),
+        ', FKIdContenedorCot_ORCO=', ISNULL(CONVERT(NVARCHAR(30), @FKIdContenedorCot_ORCO), 'NULL'),
+        ', FKIdContenedorMultiCot_ORCO=', ISNULL(CONVERT(NVARCHAR(30), @FKIdContenedorMultiCot_ORCO), 'NULL'),
+        ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'ORCO.SP_MantenimientoCotizacion',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'ORCO.SP_MantenimientoCotizacion',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+
+    SET @message = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -2139,8 +2330,31 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '' , @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
 
+    SET @message = CONCAT('Iniciando el SP [PRES].[SP_MantenimientoSolicitudSuficiencia]', ' @Estatus ' ,@Estatus)
+    SET @Parameters = CONCAT('Action=', @Action, ', PKIdSolicitudSuficiencia=', @PKIdSolicitudSuficiencia, ', FKIdRequisicion_ORCO=', @FKIdRequisicion_ORCO, ', FechaSolicitud=', ISNULL(CONVERT(NVARCHAR(30), @FechaSolicitud, 126), 'NULL'), ', Justificacion=', ISNULL(@Justificacion, 'NULL'), ', GastoNoProgramable=', ISNULL(@GastoNoProgramable, 'NULL'), ', IdGastoNoProgramable=', ISNULL(CONVERT(NVARCHAR(30), @IdGastoNoProgramable), 'NULL'), ', IdCompromisoNomina=', ISNULL(CONVERT(NVARCHAR(30), @IdCompromisoNomina), 'NULL'), ', Estatus=', ISNULL(CONVERT(NVARCHAR(30), @Estatus), 'NULL'), ', PorcentajeAjuste=', CONVERT(NVARCHAR(30), @PorcentajeAjuste))
+    EXEC [SIS].[WriteSystemLog] 
+	    @FK_IdOrigenLogMessage__SIS  = 1
+	    ,@Date = @today
+	    ,@_Type = 1
+	    ,@ProgName = 'PRES.SP_MantenimientoSolicitudSuficiencia'
+	    ,@EmployeeNo = @IdUser
+	    ,@Category  = NULL
+	    ,@IPClient  = NULL
+	    ,@HostName  = NULL
+	    ,@Thread    = NULL 
+	    ,@Level = 'INFO' 
+	    ,@Logger  =NULL 
+	    ,@Message = @message
+	    ,@Exception  = null
+	    ,@Context   = null
+	    ,@MethodName = 'PRES.SP_MantenimientoSolicitudSuficiencia'
+	    ,@Parameters = @Parameters
+        ,@ExecutionTime = '0'
+
+
+        SET @message = ''
     BEGIN TRY
         BEGIN TRANSACTION;
 
@@ -2362,7 +2576,52 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [ORCO].[SP_MantenimientoRequisicion]', ' @PKIdRequisicion ', @PKIdRequisicion);
+    SET @Parameters = CONCAT(
+        'Action=', ISNULL(CONVERT(NVARCHAR(30), @Action), 'NULL'),
+        ', PKIdRequisicion=', ISNULL(CONVERT(NVARCHAR(30), @PKIdRequisicion), 'NULL'),
+        ', PKIdRequisicionDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdRequisicionDetalle), 'NULL'),
+        ', FKIdEmpresa_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdEmpresa_SIS), 'NULL'),
+        ', FKIdPersona_NOM=', ISNULL(CONVERT(NVARCHAR(30), @FKIdPersona_NOM), 'NULL'),
+        ', FKIdArea_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdArea_SIS), 'NULL'),
+        ', Descripcion=', ISNULL(LEFT(@Descripcion, 300), 'NULL'),
+        ', FechaRequisicion=', ISNULL(CONVERT(NVARCHAR(30), @FechaRequisicion, 126), 'NULL'),
+        ', Servicio=', ISNULL(CONVERT(NVARCHAR(30), @Servicio), 'NULL'),
+        ', FKIdProyecto_ORCO=', ISNULL(CONVERT(NVARCHAR(30), @FKIdProyecto_ORCO), 'NULL'),
+        ', FKIdPrograma_PRES=', ISNULL(CONVERT(NVARCHAR(30), @FKIdPrograma_PRES), 'NULL'),
+        ', Importe=', ISNULL(CONVERT(NVARCHAR(30), @Importe), 'NULL'),
+        ', FKIdFuenteFinanciamiento_PRES=', ISNULL(CONVERT(NVARCHAR(30), @FKIdFuenteFinanciamiento_PRES), 'NULL'),
+        ', FKIdAnio_SIS=', ISNULL(CONVERT(NVARCHAR(30), @FKIdAnio_SIS), 'NULL'),
+        ', Oficio=', ISNULL(@Oficio, 'NULL'),
+        ', FechaOficio=', ISNULL(CONVERT(NVARCHAR(30), @FechaOficio, 126), 'NULL'),
+        ', CompraDirecta=', ISNULL(CONVERT(NVARCHAR(30), @CompraDirecta), 'NULL'),
+        ', FKIdTipoBien_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdTipoBien_ALMA), 'NULL'),
+        ', FKIdUnidades_ALMA=', ISNULL(CONVERT(NVARCHAR(30), @FKIdUnidades_ALMA), 'NULL'),
+        ', Cantidad=', ISNULL(CONVERT(NVARCHAR(30), @Cantidad), 'NULL'),
+        ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'ORCO.SP_MantenimientoRequisicion',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'ORCO.SP_MantenimientoRequisicion',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+
+    SET @message = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;

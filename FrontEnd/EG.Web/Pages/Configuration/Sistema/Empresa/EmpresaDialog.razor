@@ -72,7 +72,7 @@
 
             <!-- Fila 4: Fecha de Apertura y Oficina Principal -->
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Value="fechaApertura"
+                <MudDatePicker @bind-Date="fechaApertura"
                                Label="Fecha de Apertura"
                                Variant="Variant.Outlined"
                                For="@(() => fechaApertura)" />
@@ -125,7 +125,7 @@
     // private IList<IdiomaResponse> idiomas = new List<IdiomaResponse>();
 
     private int? estadoSeleccionado;
-    private DateTime? fechaApertura;
+    private DateTime? fechaApertura = DateTime.Today;
 
     private string dialogTitle => Id.HasValue ? "Editar Empresa" : "Nueva Empresa";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -184,6 +184,10 @@
                     fechaApertura = new DateTime(empresa.FechaApertura.Value.Year,
                                                   empresa.FechaApertura.Value.Month,
                                                   empresa.FechaApertura.Value.Day);
+                }
+                else
+                {
+                    fechaApertura = null;
                 }
             }
             else

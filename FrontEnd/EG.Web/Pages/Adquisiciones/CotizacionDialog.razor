@@ -57,7 +57,7 @@
             }
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Value="_fechaSolicitud"
+                <MudDatePicker @bind-Date="_fechaSolicitud"
                                Label="Fecha solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -65,13 +65,13 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Value="item.FechaProveedorCotiza"
+                <MudDatePicker @bind-Date="item.FechaProveedorCotiza"
                                Label="Fecha cotizacion proveedor"
                                Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Value="item.FechaProveedorCompromiso"
+                <MudDatePicker @bind-Date="item.FechaProveedorCompromiso"
                                Label="Fecha compromiso proveedor"
                                Variant="Variant.Outlined" />
             </MudItem>
@@ -129,6 +129,8 @@
     {
         Activo = true,
         FechaSolicitud = DateTime.Today,
+        FechaProveedorCotiza = DateTime.Today,
+        FechaProveedorCompromiso = DateTime.Today,
         FlDocumento = string.Empty,
         Entrega = string.Empty,
         Vigencia = string.Empty,

@@ -28,7 +28,7 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Value="_fechaSolicitud"
+                <MudDatePicker @bind-Date="_fechaSolicitud"
                                Label="Fecha de solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -76,7 +76,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Value="_fechaCierre"
+                <MudDatePicker @bind-Date="_fechaCierre"
                                Label="Fecha de cierre"
                                Variant="Variant.Outlined"
                                Clearable="true" />
@@ -107,7 +107,7 @@
         Estatus = 1
     };
     private DateTime? _fechaSolicitud = DateTime.Today;
-    private DateTime? _fechaCierre;
+    private DateTime? _fechaCierre = DateTime.Today;
     private LookupItem? _selectedResponsable;
 
     private string dialogTitle => Id.HasValue ? "Editar Investigacion de Mercado" : "Nueva Investigacion de Mercado";

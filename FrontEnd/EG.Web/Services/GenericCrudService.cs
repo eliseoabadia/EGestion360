@@ -153,15 +153,26 @@ namespace EG.Web.Services
             if (!IsClientSide())
                 return new ApiResponse<TResponse>();
 
-            var response = await DeleteAsync<ApiResponse<TResponse>>(
+            var response = await DeleteAsync<ApiResponse<bool>>(
                 $"{_endpoint}/{id}",
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>
+            if (response == null)
             {
-                Success = false,
-                Message = "Error al eliminar",
-                Code = "ERROR"
+                return new ApiResponse<TResponse>
+                {
+                    Success = false,
+                    Message = "Error al eliminar",
+                    Code = "ERROR"
+                };
+            }
+
+            return new ApiResponse<TResponse>
+            {
+                Success = response.Success,
+                Message = response.Message,
+                Code = response.Code,
+                TotalCount = response.TotalCount
             };
         }
 

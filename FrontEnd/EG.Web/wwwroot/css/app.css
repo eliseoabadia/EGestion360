@@ -181,6 +181,89 @@ body,
     transform: scale(1.04);
 }
 
+.mud-snackbar-location-top-right {
+    top: 76px !important;
+    right: 24px !important;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.mud-snackbar {
+    min-width: 380px !important;
+    max-width: min(560px, calc(100vw - 32px)) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.24) !important;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-white) 26%, transparent);
+    overflow: hidden;
+}
+
+.mud-snackbar::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: color-mix(in srgb, var(--mud-palette-white) 70%, transparent);
+}
+
+.mud-snackbar .mud-snackbar-content-message {
+    font-size: 1.04rem;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: 0;
+    padding: 2px 4px;
+}
+
+.mud-snackbar .mud-snackbar-icon {
+    font-size: 1.7rem !important;
+    margin-inline-start: 4px;
+}
+
+.mud-snackbar .mud-snackbar-close-button {
+    margin-inline-end: 2px;
+}
+
+.mud-snackbar-success,
+.mud-snackbar.mud-alert-filled-success,
+.mud-snackbar .mud-alert-filled-success {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-success) 92%, #0f172a), var(--mud-palette-success-darken)) !important;
+}
+
+.mud-snackbar-error,
+.mud-snackbar.mud-alert-filled-error,
+.mud-snackbar .mud-alert-filled-error {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-error) 92%, #0f172a), var(--mud-palette-error-darken)) !important;
+}
+
+.mud-snackbar-warning,
+.mud-snackbar.mud-alert-filled-warning,
+.mud-snackbar .mud-alert-filled-warning {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-warning) 92%, #7c2d12), var(--mud-palette-warning-darken)) !important;
+}
+
+.mud-snackbar-info,
+.mud-snackbar.mud-alert-filled-info,
+.mud-snackbar .mud-alert-filled-info {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-info) 92%, #0f172a), var(--mud-palette-info-darken)) !important;
+}
+
+@media (max-width: 640px) {
+    .mud-snackbar-location-top-right {
+        top: 64px !important;
+        right: 12px !important;
+        left: 12px !important;
+        align-items: stretch;
+    }
+
+    .mud-snackbar {
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    .mud-snackbar .mud-snackbar-content-message {
+        font-size: 0.98rem;
+    }
+}
+
 @media (max-height: 760px) {
     .mud-dialog .mud-dialog-title {
         min-height: 40px;
