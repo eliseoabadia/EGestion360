@@ -37,6 +37,24 @@ public partial class Empresa
 
     public virtual ICollection<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalles { get; set; } = new List<AutorizacionSuficienciaDetalle>();
 
+    public virtual ICollection<Banco> Bancos { get; set; } = new List<Banco>();
+
+    public virtual ICollection<ChequePartida> ChequePartida { get; set; } = new List<ChequePartida>();
+
+    public virtual ICollection<Cheque> Cheques { get; set; } = new List<Cheque>();
+
+    public virtual ICollection<Clcdetalle> Clcdetalles { get; set; } = new List<Clcdetalle>();
+
+    public virtual ICollection<Clcfactura> Clcfacturas { get; set; } = new List<Clcfactura>();
+
+    public virtual ICollection<Clc> Clcs { get; set; } = new List<Clc>();
+
+    public virtual ICollection<ContratoDetalle> ContratoDetalles { get; set; } = new List<ContratoDetalle>();
+
+    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+
+    public virtual ICollection<CuentaBancarium> CuentaBancaria { get; set; } = new List<CuentaBancarium>();
+
     public virtual ICollection<CuentaContable> CuentaContables { get; set; } = new List<CuentaContable>();
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
@@ -48,6 +66,10 @@ public partial class Empresa
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
 
     public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
+
+    public virtual ICollection<FacturaDetalle> FacturaDetalles { get; set; } = new List<FacturaDetalle>();
+
+    public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 

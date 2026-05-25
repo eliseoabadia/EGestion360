@@ -1,0 +1,258 @@
+@page "/Presupuesto/Tesorería/CuentasXPagar/Factura_Pago"
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<FacturaResponse, FacturaResponse>
+
+@inject IGenericCrudService<FacturaDetalleResponse> DetalleService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+        @if (SelectedFactura == null)
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+                <PageHeader Title="Recepción de facturas y comprobantes de pago"
+                            Subtitle="Facturas recibidas por contrato, con captura parcial por partida"
+                            Icon="@Icons.Material.Filled.ReceiptLong"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="FacturaResponse" @ref="table" Title="Facturas"
+                                  SearchPlaceholder="Buscar factura, contrato, proveedor o poliza..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidFactura" T="FacturaResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="NumFactura" T="FacturaResponse">Factura</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="FacturaResponse">Contrato</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="FacturaResponse">Proveedor</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaEmision" T="FacturaResponse">Fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Total" T="FacturaResponse">Total</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="FacturaResponse">Estatus</MudTableSortLabel></MudTh>
+                            <MudTh>Activo</MudTh>
+                        </Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(item))" /></MudTooltip>
+                                <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanCreate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
+                                <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidFactura))" /></MudTooltip>
+                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
+                            </MudTd>
+                            <MudTd>@item.PkidFactura</MudTd>
+                            <MudTd>@TextOrDash(item.NumFactura)</MudTd>
+                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
+                            <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
+                            <MudTd>@item.FechaEmision.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@Money(item.Total)</MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@(item.Activo ? Color.Success : Color.Error)">@(item.Activo ? "Si" : "No")</MudChip></MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+                    <div class="ml-2">
+                        <MudText Typo="Typo.h6" Style="font-weight:700">@SelectedFactura.NumFactura</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedFactura.NumeroContrato - @SelectedFactura.ProveedorNombre</MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
+                    <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
+                    <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
+                </MudPaper>
+
+                <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6" md="2"><MudText Typo="Typo.caption">Subtotal</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedFactura.Subtotal ?? 0m)</MudText></MudItem>
+                        <MudItem xs="6" md="2"><MudText Typo="Typo.caption">IVA</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedFactura.Iva ?? 0m)</MudText></MudItem>
+                        <MudItem xs="6" md="2"><MudText Typo="Typo.caption">Retencion</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedFactura.Retencion ?? 0m)</MudText></MudItem>
+                        <MudItem xs="6" md="2"><MudText Typo="Typo.caption">Total</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedFactura.Total)</MudText></MudItem>
+                        <MudItem xs="12" md="4"><MudText Typo="Typo.caption">UUID</MudText><MudText Typo="Typo.body2">@TextOrDash(SelectedFactura.Uuid)</MudText></MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="FacturaDetalleResponse" @ref="detalleTable" Title="Partidas de factura"
+                                  SearchPlaceholder="Buscar partida..."
+                                  ServerDataFunc="LoadDetallesServerData"
+                                  SearchString="@detalleSearch"
+                                  SearchStringChanged="(s) => detalleSearch = s"
+                                  OnSearch="ReloadDetalles">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh>Partida</MudTh>
+                            <MudTh>Contrato</MudTh>
+                            <MudTh>Monto</MudTh>
+                            <MudTh>Observaciones</MudTh>
+                        </Header>
+                        <Row Context="detalle">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedFactura)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(detalle.PkidFacturaDetalle))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedFactura)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(detalle.PkidFacturaDetalle))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(detalle.PartidaClaveNombre)</MudTd>
+                            <MudTd>@TextOrDash(detalle.NumeroContrato)</MudTd>
+                            <MudTd>@Money(detalle.MontoAplicado)</MudTd>
+                            <MudTd>@TextOrDash(detalle.Observaciones)</MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<FacturaResponse> table = null!;
+    private GenericTable<FacturaDetalleResponse> detalleTable = null!;
+    private FacturaResponse? SelectedFactura;
+    private string detalleSearch = string.Empty;
+    private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "CuentasXPagar";
+    protected override string SubModuleName => "RecepcionFactura_ComprobantePago";
+    protected override Type CreateDialogType => typeof(FacturaDialog);
+    protected override Type EditDialogType => typeof(FacturaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<FacturaResponse>);
+    protected override string GetDefaultSortLabel() => "FechaEmision";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<FacturaResponse> items) =>
+        items.Select(x => new { x.PkidFactura, x.NumFactura, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaEmision.ToString("dd/MM/yyyy"), x.Total, x.EstatusDescripcion });
+
+    protected override async Task<string> GetItemNameForDelete(int id) => (await Service.GetByIdAsync(id))?.Data?.NumFactura ?? "la factura";
+    protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
+
+    private async Task SelectFactura(FacturaResponse item) { SelectedFactura = item; detalleSearch = string.Empty; await InvokeAsync(StateHasChanged); }
+    private async Task BackToTable() { SelectedFactura = null; if (table != null) await table.ReloadData(); }
+    private bool IsLocked(FacturaResponse item) => item.Estatus >= 3;
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+    private static Color StatusColor(int estatus) => estatus switch { 2 => Color.Info, 3 => Color.Success, 4 => Color.Error, _ => Color.Warning };
+
+    private Task<TableData<FacturaDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken) =>
+        LoadChildData(state, cancellationToken);
+
+    private async Task<TableData<FacturaDetalleResponse>> LoadChildData(TableState state, CancellationToken _)
+    {
+        if (SelectedFactura == null) return new() { Items = [], TotalItems = 0 };
+        var response = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "PartidaClave", state.SortDirection, new() { ["FkidFacturaPres"] = SelectedFactura.PkidFactura });
+        return new() { Items = response?.Items ?? [], TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task ReloadDetalles() { if (detalleTable != null) await detalleTable.ReloadData(); }
+    private async Task AddDetalle() => await OpenDetalleDialog(null);
+    private async Task EditDetalle(int id) => await OpenDetalleDialog(id);
+    private async Task OpenDetalleDialog(int? id)
+    {
+        if (SelectedFactura == null) return;
+        var parameters = new DialogParameters { ["Id"] = id, ["FacturaId"] = SelectedFactura.PkidFactura, ["FacturaNombre"] = SelectedFactura.NumFactura };
+        var dialog = await DialogService.ShowAsync<FacturaDetalleDialog>(id.HasValue ? "Editar partida" : "Nueva partida", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await ReloadDetalles();
+    }
+    private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
+
+    private async Task GenerateClc(FacturaResponse factura)
+    {
+        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidFacturaPres"] = factura.PkidFactura });
+        var details = detailsResponse?.Items?.ToList() ?? new List<FacturaDetalleResponse>();
+        if (details.Count == 0)
+        {
+            Snackbar.Add("La factura no tiene detalle para generar CLC.", Severity.Warning);
+            return;
+        }
+
+        var clc = new CLCResponse
+        {
+            FkidEmpresaSis = factura.FkidEmpresaSis,
+            FkidContratoPres = factura.FkidContratoPres,
+            FkidPolizaConta = factura.FkidPolizaConta,
+            NumClc = $"FAC-{factura.PkidFactura}",
+            FechaSolicitud = DateOnly.FromDateTime(DateTime.Today),
+            ImporteTotal = details.Sum(x => x.MontoAplicado),
+            Observaciones = $"Generada desde factura {factura.NumFactura}",
+            Estatus = 1,
+            Activo = true
+        };
+
+        var clcDetalles = details.Select(detail =>
+        {
+            var row = new CLCDetalleResponse
+            {
+                FkidEmpresaSis = detail.FkidEmpresaSis,
+                FkidContratoDetallePres = detail.FkidContratoDetallePres,
+                FkidContratoPres = detail.FkidContratoPres,
+                NumeroContrato = detail.NumeroContrato,
+                FkidPartidaConta = detail.FkidPartidaConta,
+                PartidaClave = detail.PartidaClave,
+                PartidaDescripcion = detail.PartidaDescripcion,
+                PartidaClaveNombre = detail.PartidaClaveNombre,
+                Observaciones = detail.Observaciones,
+                Activo = true
+            };
+            SetMonth(row, factura.FechaRecepcion?.Month ?? factura.FechaEmision.Month, detail.MontoAplicado);
+            return row;
+        }).ToList();
+
+        var clcFacturas = details.Select(detail => new CLCFacturaResponse
+        {
+            FkidEmpresaSis = detail.FkidEmpresaSis,
+            FkidFacturaPres = factura.PkidFactura,
+            NumFactura = factura.NumFactura,
+            FkidFacturaDetallePres = detail.PkidFacturaDetalle,
+            FkidPartidaConta = detail.FkidPartidaConta,
+            PartidaClave = detail.PartidaClave,
+            PartidaDescripcion = detail.PartidaDescripcion,
+            MontoAplicado = detail.MontoAplicado,
+            Observaciones = detail.Observaciones,
+            Activo = true
+        }).ToList();
+
+        var parameters = new DialogParameters
+        {
+            ["PrefillItem"] = clc,
+            ["PrefillDetalles"] = clcDetalles,
+            ["PrefillFacturas"] = clcFacturas
+        };
+
+        var dialog = await DialogService.ShowAsync<CLCDialog>("Provision del pago", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            factura.Estatus = Math.Max(factura.Estatus, 2);
+            await Service.UpdateAsync(factura, factura.PkidFactura);
+            await ReloadData();
+        }
+    }
+
+    private static void SetMonth(CLCDetalleResponse item, int month, decimal value)
+    {
+        switch (month)
+        {
+            case 1: item.Enero = value; break;
+            case 2: item.Febrero = value; break;
+            case 3: item.Marzo = value; break;
+            case 4: item.Abril = value; break;
+            case 5: item.Mayo = value; break;
+            case 6: item.Junio = value; break;
+            case 7: item.Julio = value; break;
+            case 8: item.Agosto = value; break;
+            case 9: item.Septiembre = value; break;
+            case 10: item.Octubre = value; break;
+            case 11: item.Noviembre = value; break;
+            default: item.Diciembre = value; break;
+        }
+    }
+}

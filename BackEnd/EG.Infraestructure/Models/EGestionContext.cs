@@ -37,6 +37,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; }
 
+    public virtual DbSet<Banco> Bancos { get; set; }
+
     public virtual DbSet<Bien> Biens { get; set; }
 
     public virtual DbSet<Capitulo> Capitulos { get; set; }
@@ -44,6 +46,16 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Capitulo1> Capitulos1 { get; set; }
 
     public virtual DbSet<CatTipoSucursal> CatTipoSucursals { get; set; }
+
+    public virtual DbSet<Cheque> Cheques { get; set; }
+
+    public virtual DbSet<ChequePartida> ChequePartidas { get; set; }
+
+    public virtual DbSet<Clc> Clcs { get; set; }
+
+    public virtual DbSet<Clcdetalle> Clcdetalles { get; set; }
+
+    public virtual DbSet<Clcfactura> Clcfacturas { get; set; }
 
     public virtual DbSet<Concepto> Conceptos { get; set; }
 
@@ -59,9 +71,15 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<ConteoHist> ConteoHists { get; set; }
 
+    public virtual DbSet<Contrato> Contratos { get; set; }
+
+    public virtual DbSet<ContratoDetalle> ContratoDetalles { get; set; }
+
     public virtual DbSet<Cotizacion> Cotizacions { get; set; }
 
     public virtual DbSet<CotizacionDetalle> CotizacionDetalles { get; set; }
+
+    public virtual DbSet<CuentaBancarium> CuentaBancaria { get; set; }
 
     public virtual DbSet<CuentaContable> CuentaContables { get; set; }
 
@@ -100,6 +118,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; }
 
     public virtual DbSet<EstudioMercadoDetalleCosto> EstudioMercadoDetalleCostos { get; set; }
+
+    public virtual DbSet<Factura> Facturas { get; set; }
+
+    public virtual DbSet<FacturaDetalle> FacturaDetalles { get; set; }
 
     public virtual DbSet<Familium> Familia { get; set; }
 
@@ -283,6 +305,16 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwBien> VwBiens { get; set; }
 
+    public virtual DbSet<VwCheque> VwCheques { get; set; }
+
+    public virtual DbSet<VwChequePartida> VwChequePartidas { get; set; }
+
+    public virtual DbSet<VwClc> VwClcs { get; set; }
+
+    public virtual DbSet<VwClcdetalle> VwClcdetalles { get; set; }
+
+    public virtual DbSet<VwClcfactura> VwClcfacturas { get; set; }
+
     public virtual DbSet<VwConcepto> VwConceptos { get; set; }
 
     public virtual DbSet<VwConteo> VwConteos { get; set; }
@@ -290,6 +322,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwConteoDetalle> VwConteoDetalles { get; set; }
 
     public virtual DbSet<VwConteoDetalleEscaneo> VwConteoDetalleEscaneos { get; set; }
+
+    public virtual DbSet<VwContrato> VwContratos { get; set; }
+
+    public virtual DbSet<VwContratoDetalle> VwContratoDetalles { get; set; }
 
     public virtual DbSet<VwCotizacion> VwCotizacions { get; set; }
 
@@ -312,6 +348,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwEstudioMercadoDetalle> VwEstudioMercadoDetalles { get; set; }
 
     public virtual DbSet<VwExistencia> VwExistencias { get; set; }
+
+    public virtual DbSet<VwFactura> VwFacturas { get; set; }
+
+    public virtual DbSet<VwFacturaDetalle> VwFacturaDetalles { get; set; }
 
     public virtual DbSet<VwFraccion> VwFraccions { get; set; }
 
@@ -527,7 +567,7 @@ public partial class EGestionContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Value)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(128);
 
             entity.HasOne(d => d.Claim).WithMany(p => p.AspNetClaimValues)
                 .HasForeignKey(d => d.ClaimId)
@@ -720,6 +760,43 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_AutorizacionSuficiencia_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<Banco>(entity =>
+        {
+            entity.HasKey(e => e.PkidBanco);
+
+            entity.ToTable("Banco", "SIS");
+
+            entity.HasIndex(e => e.Clave, "IX_Banco_Clave").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidEmpresaSis, "IX_Banco_Empresa").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidBanco).HasColumnName("PKIdBanco");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Banco_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Banco_FechaCreacion");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.NombreCorto).HasMaxLength(50);
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Bancos)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Banco_Empresa");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.BancoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Banco_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.BancoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Banco_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Bien>(entity =>
         {
             entity.HasKey(e => e.PkidBien);
@@ -881,6 +958,300 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Descripcion)
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Cheque>(entity =>
+        {
+            entity.HasKey(e => e.PkidCheque);
+
+            entity.ToTable("Cheque", "PRES");
+
+            entity.HasIndex(e => e.FkidClcPres, "IX_Cheque_CLC").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.NumeroCheque, "IX_Cheque_Numero").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidCheque).HasColumnName("PKIdCheque");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Cheque_Activo");
+            entity.Property(e => e.Concepto)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.Estatus).HasDefaultValue(1, "DF_Cheque_Estatus");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Cheque_FechaCreacion");
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidCuentaBancariaTes).HasColumnName("FKIdCuentaBancaria_TES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.ImporteTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumeroCheque)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidClcPresNavigation).WithMany(p => p.Cheques)
+                .HasForeignKey(d => d.FkidClcPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cheque_CLC");
+
+            entity.HasOne(d => d.FkidCuentaBancariaTesNavigation).WithMany(p => p.Cheques)
+                .HasForeignKey(d => d.FkidCuentaBancariaTes)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cheque_CuentaBancaria");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Cheques)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cheque_Empresa");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.Cheques)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cheque_Poliza");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ChequeUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Cheque_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ChequeUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Cheque_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<ChequePartida>(entity =>
+        {
+            entity.HasKey(e => e.PkidChequePartida);
+
+            entity.ToTable("ChequePartidas", "PRES");
+
+            entity.HasIndex(e => e.FkidClcdetallePres, "IX_ChequePartidas_CLCDetalle").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidChequePres, "IX_ChequePartidas_Cheque").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidChequePartida).HasColumnName("PKIdChequePartida");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ChequePartidas_Activo");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_ChequePartidas_FechaCreacion");
+            entity.Property(e => e.FkidChequePres).HasColumnName("FKIdCheque_PRES");
+            entity.Property(e => e.FkidClcdetallePres).HasColumnName("FKIdCLCDetalle_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.MontoPagado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidChequePresNavigation).WithMany(p => p.ChequePartida)
+                .HasForeignKey(d => d.FkidChequePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChequePartidas_Cheque");
+
+            entity.HasOne(d => d.FkidClcdetallePresNavigation).WithMany(p => p.ChequePartida)
+                .HasForeignKey(d => d.FkidClcdetallePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChequePartidas_CLCDetalle");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.ChequePartida)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChequePartidas_Empresa");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.ChequePartida)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChequePartidas_Partida");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ChequePartidaUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChequePartidas_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ChequePartidaUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_ChequePartidas_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Clc>(entity =>
+        {
+            entity.HasKey(e => e.PkidClc);
+
+            entity.ToTable("CLC", "PRES");
+
+            entity.HasIndex(e => e.FkidContratoPres, "IX_CLC_Contrato").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.NumClc, "IX_CLC_NumCLC").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidClc).HasColumnName("PKIdCLC");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_CLC_Activo");
+            entity.Property(e => e.Estatus).HasDefaultValue(1, "DF_CLC_Estatus");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_CLC_FechaCreacion");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.ImporteTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumClc)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("NumCLC");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidContratoPresNavigation).WithMany(p => p.Clcs)
+                .HasForeignKey(d => d.FkidContratoPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLC_Contrato");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Clcs)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLC_Empresa");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.Clcs)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLC_Poliza");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ClcUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLC_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ClcUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_CLC_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Clcdetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidClcdetalle);
+
+            entity.ToTable("CLCDetalle", "PRES");
+
+            entity.HasIndex(e => e.FkidClcPres, "IX_CLCDetalle_CLC").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidContratoDetallePres, "IX_CLCDetalle_ContratoDetalle").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidClcdetalle).HasColumnName("PKIdCLCDetalle");
+            entity.Property(e => e.Abril)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Abr")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_CLCDetalle_Activo");
+            entity.Property(e => e.Agosto)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Ago")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Diciembre)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Dic")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Enero)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Ene")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Feb")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_CLCDetalle_FechaCreacion");
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidContratoDetallePres).HasColumnName("FKIdContratoDetalle_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.Julio)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Jul")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Jun")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Mar")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo)
+                .HasDefaultValue(0m, "DF_CLCDetalle_May")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Nov")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Oct")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Septiembre)
+                .HasDefaultValue(0m, "DF_CLCDetalle_Sep")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total)
+                .HasComputedColumnSql("(((((((((((isnull([Enero],(0))+isnull([Febrero],(0)))+isnull([Marzo],(0)))+isnull([Abril],(0)))+isnull([Mayo],(0)))+isnull([Junio],(0)))+isnull([Julio],(0)))+isnull([Agosto],(0)))+isnull([Septiembre],(0)))+isnull([Octubre],(0)))+isnull([Noviembre],(0)))+isnull([Diciembre],(0)))", false)
+                .HasColumnType("decimal(31, 4)");
+
+            entity.HasOne(d => d.FkidClcPresNavigation).WithMany(p => p.Clcdetalles)
+                .HasForeignKey(d => d.FkidClcPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCDetalle_CLC");
+
+            entity.HasOne(d => d.FkidContratoDetallePresNavigation).WithMany(p => p.Clcdetalles)
+                .HasForeignKey(d => d.FkidContratoDetallePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCDetalle_ContratoDetalle");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Clcdetalles)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCDetalle_Empresa");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.Clcdetalles)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCDetalle_Partida");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ClcdetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ClcdetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_CLCDetalle_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Clcfactura>(entity =>
+        {
+            entity.HasKey(e => e.PkidClcfactura);
+
+            entity.ToTable("CLCFactura", "PRES");
+
+            entity.HasIndex(e => e.FkidClcPres, "IX_CLCFactura_CLC").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidFacturaPres, "IX_CLCFactura_Factura").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidClcfactura).HasColumnName("PKIdCLCFactura");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_CLCFactura_Activo");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_CLCFactura_FechaCreacion");
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidFacturaDetallePres).HasColumnName("FKIdFacturaDetalle_PRES");
+            entity.Property(e => e.FkidFacturaPres).HasColumnName("FKIdFactura_PRES");
+            entity.Property(e => e.MontoAplicado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidClcPresNavigation).WithMany(p => p.Clcfacturas)
+                .HasForeignKey(d => d.FkidClcPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCFactura_CLC");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Clcfacturas)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCFactura_Empresa");
+
+            entity.HasOne(d => d.FkidFacturaDetallePresNavigation).WithMany(p => p.Clcfacturas)
+                .HasForeignKey(d => d.FkidFacturaDetallePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCFactura_FacturaDetalle");
+
+            entity.HasOne(d => d.FkidFacturaPresNavigation).WithMany(p => p.Clcfacturas)
+                .HasForeignKey(d => d.FkidFacturaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCFactura_Factura");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ClcfacturaUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CLCFactura_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ClcfacturaUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_CLCFactura_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Concepto>(entity =>
@@ -1116,6 +1487,152 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TercerConteo).HasColumnType("decimal(18, 2)");
         });
 
+        modelBuilder.Entity<Contrato>(entity =>
+        {
+            entity.HasKey(e => e.PkidContrato);
+
+            entity.ToTable("Contrato", "PRES");
+
+            entity.HasIndex(e => e.FkidAutorizacionSuficienciaPres, "IX_Contrato_Autorizacion").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.Estatus, "IX_Contrato_Estatus").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidProveedorSis, "IX_Contrato_Proveedor").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidContrato).HasColumnName("PKIdContrato");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Contrato_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.Estatus).HasDefaultValue(1, "DF_Contrato_Estatus");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Contrato_FechaCreacion");
+            entity.Property(e => e.FkidAutorizacionSuficienciaPres).HasColumnName("FKIdAutorizacionSuficiencia_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.MontoTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PlazoEjecucion).HasMaxLength(100);
+
+            entity.HasOne(d => d.FkidAutorizacionSuficienciaPresNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidAutorizacionSuficienciaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contrato_AutorizacionSuficiencia");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contrato_Empresa");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .HasConstraintName("FK_Contrato_Poliza");
+
+            entity.HasOne(d => d.FkidProveedorSisNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidProveedorSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contrato_Proveedor");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ContratoUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contrato_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ContratoUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Contrato_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<ContratoDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidContratoDetalle);
+
+            entity.ToTable("ContratoDetalle", "PRES");
+
+            entity.HasIndex(e => e.FkidAutorizacionSuficienciaDetallePres, "IX_ContratoDetalle_AutorizacionDetalle").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidContratoPres, "IX_ContratoDetalle_Contrato").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidContratoDetalle).HasColumnName("PKIdContratoDetalle");
+            entity.Property(e => e.Abril)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Abr")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ContratoDetalle_Activo");
+            entity.Property(e => e.Agosto)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Ago")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Diciembre)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Dic")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Enero)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Ene")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Feb")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_ContratoDetalle_FechaCreacion");
+            entity.Property(e => e.FkidAutorizacionSuficienciaDetallePres).HasColumnName("FKIdAutorizacionSuficienciaDetalle_PRES");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.Julio)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Jul")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Jun")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Mar")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_May")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Nov")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Oct")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Septiembre)
+                .HasDefaultValue(0m, "DF_ContratoDetalle_Sep")
+                .HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total)
+                .HasComputedColumnSql("(((((((((((isnull([Enero],(0))+isnull([Febrero],(0)))+isnull([Marzo],(0)))+isnull([Abril],(0)))+isnull([Mayo],(0)))+isnull([Junio],(0)))+isnull([Julio],(0)))+isnull([Agosto],(0)))+isnull([Septiembre],(0)))+isnull([Octubre],(0)))+isnull([Noviembre],(0)))+isnull([Diciembre],(0)))", false)
+                .HasColumnType("decimal(31, 4)");
+
+            entity.HasOne(d => d.FkidAutorizacionSuficienciaDetallePresNavigation).WithMany(p => p.ContratoDetalles)
+                .HasForeignKey(d => d.FkidAutorizacionSuficienciaDetallePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ContratoDetalle_AutorizacionDetalle");
+
+            entity.HasOne(d => d.FkidContratoPresNavigation).WithMany(p => p.ContratoDetalles)
+                .HasForeignKey(d => d.FkidContratoPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ContratoDetalle_Contrato");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.ContratoDetalles)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ContratoDetalle_Empresa");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.ContratoDetalles)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ContratoDetalle_Partida");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ContratoDetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ContratoDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ContratoDetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_ContratoDetalle_UsuarioModificacion");
+        });
+
         modelBuilder.Entity<Cotizacion>(entity =>
         {
             entity.HasKey(e => e.PkidCotizacion);
@@ -1201,6 +1718,60 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.CotizacionDetalleUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_CotizacionDetalle_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<CuentaBancarium>(entity =>
+        {
+            entity.HasKey(e => e.PkidCuentaBancaria);
+
+            entity.ToTable("CuentaBancaria", "TES");
+
+            entity.HasIndex(e => e.FkidBancoSis, "IX_CuentaBancaria_Banco").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidEmpresaSis, "IX_CuentaBancaria_Empresa").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.NumeroCuenta, "IX_CuentaBancaria_NumeroCuenta").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidCuentaBancaria).HasColumnName("PKIdCuentaBancaria");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_CuentaBancaria_Activo");
+            entity.Property(e => e.Clabe)
+                .HasMaxLength(18)
+                .HasColumnName("CLABE");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_CuentaBancaria_FechaCreacion");
+            entity.Property(e => e.FkidBancoSis).HasColumnName("FKIdBanco_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidTipoMonedaTes).HasColumnName("FKIdTipoMoneda_TES");
+            entity.Property(e => e.NumeroCuenta)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.SaldoActual).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.SaldoInicial).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Titular)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.HasOne(d => d.FkidBancoSisNavigation).WithMany(p => p.CuentaBancaria)
+                .HasForeignKey(d => d.FkidBancoSis)
+                .HasConstraintName("FK_CuentaBancaria_Banco");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.CuentaBancaria)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CuentaBancaria_Empresa");
+
+            entity.HasOne(d => d.FkidTipoMonedaTesNavigation).WithMany(p => p.CuentaBancaria)
+                .HasForeignKey(d => d.FkidTipoMonedaTes)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CuentaBancaria_TipoMoneda");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.CuentaBancariumUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CuentaBancaria_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.CuentaBancariumUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_CuentaBancaria_UsuarioModificacion");
         });
 
         modelBuilder.Entity<CuentaContable>(entity =>
@@ -1925,6 +2496,115 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.EstudioMercadoDetalleCostoUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_EstudioMercadoDetalleCosto_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Factura>(entity =>
+        {
+            entity.HasKey(e => e.PkidFactura);
+
+            entity.ToTable("Factura", "PRES");
+
+            entity.HasIndex(e => e.FkidContratoPres, "IX_Factura_Contrato").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.NumFactura, "IX_Factura_NumFactura").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidFactura).HasColumnName("PKIdFactura");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Factura_Activo");
+            entity.Property(e => e.Estatus).HasDefaultValue(1, "DF_Factura_Estatus");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Factura_FechaCreacion");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FlDocto)
+                .HasMaxLength(1000)
+                .HasColumnName("FL_Docto");
+            entity.Property(e => e.Iva)
+                .HasColumnType("decimal(20, 4)")
+                .HasColumnName("IVA");
+            entity.Property(e => e.NumFactura)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.Retencion).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.SerieFactura).HasMaxLength(20);
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Uuid)
+                .HasMaxLength(36)
+                .HasColumnName("UUID");
+
+            entity.HasOne(d => d.FkidContratoPresNavigation).WithMany(p => p.Facturas)
+                .HasForeignKey(d => d.FkidContratoPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Factura_Contrato");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Facturas)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Factura_Empresa");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.Facturas)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Factura_Poliza");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.FacturaUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Factura_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.FacturaUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_Factura_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<FacturaDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidFacturaDetalle);
+
+            entity.ToTable("FacturaDetalle", "PRES");
+
+            entity.HasIndex(e => e.FkidContratoDetallePres, "IX_FacturaDetalle_ContratoDetalle").HasFilter("([Activo]=(1))");
+
+            entity.HasIndex(e => e.FkidFacturaPres, "IX_FacturaDetalle_Factura").HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidFacturaDetalle).HasColumnName("PKIdFacturaDetalle");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_FacturaDetalle_Activo");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_FacturaDetalle_FechaCreacion");
+            entity.Property(e => e.FkidContratoDetallePres).HasColumnName("FKIdContratoDetalle_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidFacturaPres).HasColumnName("FKIdFactura_PRES");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.MontoAplicado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.FkidContratoDetallePresNavigation).WithMany(p => p.FacturaDetalles)
+                .HasForeignKey(d => d.FkidContratoDetallePres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacturaDetalle_ContratoDetalle");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.FacturaDetalles)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacturaDetalle_Empresa");
+
+            entity.HasOne(d => d.FkidFacturaPresNavigation).WithMany(p => p.FacturaDetalles)
+                .HasForeignKey(d => d.FkidFacturaPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacturaDetalle_Factura");
+
+            entity.HasOne(d => d.FkidPartidaContaNavigation).WithMany(p => p.FacturaDetalles)
+                .HasForeignKey(d => d.FkidPartidaConta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacturaDetalle_Partida");
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.FacturaDetalleUsuarioCreacionNavigations)
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacturaDetalle_UsuarioCreacion");
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.FacturaDetalleUsuarioModificacionNavigations)
+                .HasForeignKey(d => d.UsuarioModificacion)
+                .HasConstraintName("FK_FacturaDetalle_UsuarioModificacion");
         });
 
         modelBuilder.Entity<Familium>(entity =>
@@ -5055,6 +5735,166 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ValorRescate).HasColumnType("decimal(20, 4)");
         });
 
+        modelBuilder.Entity<VwCheque>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Cheque", "PRES");
+
+            entity.Property(e => e.ClavePoliza).HasMaxLength(10);
+            entity.Property(e => e.Concepto)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidCuentaBancariaTes).HasColumnName("FKIdCuentaBancaria_TES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.ImporteTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumClc)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("NumCLC");
+            entity.Property(e => e.NumeroCheque)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PkidCheque).HasColumnName("PKIdCheque");
+        });
+
+        modelBuilder.Entity<VwChequePartida>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_ChequePartidas", "PRES");
+
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.FkidChequePres).HasColumnName("FKIdCheque_PRES");
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidClcdetallePres).HasColumnName("FKIdCLCDetalle_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.MontoPagado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumClc)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("NumCLC");
+            entity.Property(e => e.NumeroCheque)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(268);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidChequePartida).HasColumnName("PKIdChequePartida");
+        });
+
+        modelBuilder.Entity<VwClc>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_CLC", "PRES");
+
+            entity.Property(e => e.ClavePoliza).HasMaxLength(10);
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.ImporteTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumClc)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("NumCLC");
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PkidClc).HasColumnName("PKIdCLC");
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<VwClcdetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_CLCDetalle", "PRES");
+
+            entity.Property(e => e.Abril).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Agosto).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Diciembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.Enero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidContratoDetallePres).HasColumnName("FKIdContratoDetalle_PRES");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.Julio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumClc)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("NumCLC");
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(268);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidClcdetalle).HasColumnName("PKIdCLCDetalle");
+            entity.Property(e => e.Septiembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(31, 4)");
+        });
+
+        modelBuilder.Entity<VwClcfactura>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_CLCFactura", "PRES");
+
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.FkidClcPres).HasColumnName("FKIdCLC_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidFacturaDetallePres).HasColumnName("FKIdFacturaDetalle_PRES");
+            entity.Property(e => e.FkidFacturaPres).HasColumnName("FKIdFactura_PRES");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.MontoAplicado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumClc)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("NumCLC");
+            entity.Property(e => e.NumFactura)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidClcfactura).HasColumnName("PKIdCLCFactura");
+        });
+
         modelBuilder.Entity<VwConcepto>(entity =>
         {
             entity
@@ -5177,6 +6017,79 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PkidDetalleEscaneo).HasColumnName("PKIdDetalleEscaneo");
             entity.Property(e => e.TipoBienCodigoClave).HasMaxLength(200);
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+        });
+
+        modelBuilder.Entity<VwContrato>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Contrato", "PRES");
+
+            entity.Property(e => e.ClavePoliza).HasMaxLength(10);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidAutorizacionSuficienciaPres).HasColumnName("FKIdAutorizacionSuficiencia_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidSolicitudSuficienciaPres).HasColumnName("FKIdSolicitudSuficiencia_PRES");
+            entity.Property(e => e.MontoTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PkidContrato).HasColumnName("PKIdContrato");
+            entity.Property(e => e.PlazoEjecucion).HasMaxLength(100);
+            entity.Property(e => e.ProveedorClave).HasMaxLength(10);
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+            entity.Property(e => e.ProveedorRfc)
+                .HasMaxLength(50)
+                .HasColumnName("ProveedorRFC");
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<VwContratoDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_ContratoDetalle", "PRES");
+
+            entity.Property(e => e.Abril).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Agosto).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Diciembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.Enero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Febrero).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.FkidAutorizacionSuficienciaDetallePres).HasColumnName("FKIdAutorizacionSuficienciaDetalle_PRES");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.Julio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Junio).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Marzo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mayo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Noviembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(268);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidContratoDetalle).HasColumnName("PKIdContratoDetalle");
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+            entity.Property(e => e.Septiembre).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(31, 4)");
         });
 
         modelBuilder.Entity<VwCotizacion>(entity =>
@@ -5563,6 +6476,73 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Unidades)
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwFactura>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Factura", "PRES");
+
+            entity.Property(e => e.ClavePoliza).HasMaxLength(10);
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FlDocto)
+                .HasMaxLength(1000)
+                .HasColumnName("FL_Docto");
+            entity.Property(e => e.Iva)
+                .HasColumnType("decimal(20, 4)")
+                .HasColumnName("IVA");
+            entity.Property(e => e.NumFactura)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PkidFactura).HasColumnName("PKIdFactura");
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+            entity.Property(e => e.Retencion).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.SerieFactura).HasMaxLength(20);
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Uuid)
+                .HasMaxLength(36)
+                .HasColumnName("UUID");
+        });
+
+        modelBuilder.Entity<VwFacturaDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_FacturaDetalle", "PRES");
+
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.FkidContratoDetallePres).HasColumnName("FKIdContratoDetalle_PRES");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidFacturaPres).HasColumnName("FKIdFactura_PRES");
+            entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
+            entity.Property(e => e.MontoAplicado).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumFactura)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.PartidaClave).HasMaxLength(10);
+            entity.Property(e => e.PartidaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(268);
+            entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.PkidFacturaDetalle).HasColumnName("PKIdFacturaDetalle");
         });
 
         modelBuilder.Entity<VwFraccion>(entity =>

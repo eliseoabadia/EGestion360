@@ -1,0 +1,195 @@
+@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido"
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Presupuesto.Tesoreria.CuentasXPagar
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<ContratoResponse, ContratoResponse>
+
+@inject IGenericCrudService<ContratoDetalleResponse> DetalleService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+        @if (SelectedContrato == null)
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+                <PageHeader Title="Registro Comprometido"
+                            Subtitle="Contratos derivados de autorizaciones de suficiencia"
+                            Icon="@Icons.Material.Filled.AssignmentTurnedIn"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="ContratoResponse" @ref="table" Title="Contratos"
+                                  SearchPlaceholder="Buscar contrato, proveedor o requisición..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="ContratoResponse">Contrato</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="ContratoResponse">Proveedor</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaContrato" T="ContratoResponse">Fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="MontoTotal" T="ContratoResponse">Monto</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="ContratoResponse">Estatus</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanCreate" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidContrato))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidContrato))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
+                            <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
+                            <MudTd>@item.FechaContrato.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@Money(item.MontoTotal)</MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+                    <div class="ml-2">
+                        <MudText Typo="Typo.h6" Style="font-weight:700">@SelectedContrato.NumeroContrato</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedContrato.ProveedorNombre</MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudText Typo="Typo.subtitle2" Style="font-weight:700">@Money(SelectedContrato.MontoTotal)</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanCreate" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))" Class="ml-2" />
+                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedContrato)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
+                </MudPaper>
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="ContratoDetalleResponse" @ref="detalleTable" Title="Calendario por partida"
+                                  SearchPlaceholder="Buscar partida..."
+                                  ServerDataFunc="LoadDetalles"
+                                  SearchString="@detalleSearch"
+                                  SearchStringChanged="(s) => detalleSearch = s"
+                                  OnSearch="ReloadDetalles">
+                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></Header>
+                        <Row Context="d">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidContratoDetalle))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidContratoDetalle))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(d.PartidaClaveNombre)</MudTd>
+                            <MudTd>@Money(d.Total ?? 0m)</MudTd>
+                            <MudTd>@TextOrDash(d.Observaciones)</MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ContratoResponse> table = null!;
+    private GenericTable<ContratoDetalleResponse> detalleTable = null!;
+    private ContratoResponse? SelectedContrato;
+    private string detalleSearch = string.Empty;
+    private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "Presupuesto_Conprometido";
+    protected override string SubModuleName => "Registro_Comprometido";
+    protected override Type CreateDialogType => typeof(ContratoDialog);
+    protected override Type EditDialogType => typeof(ContratoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ContratoResponse>);
+    protected override string GetDefaultSortLabel() => "FechaContrato";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ContratoResponse> items) => items.Select(x => new { x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaContrato.ToString("dd/MM/yyyy"), x.MontoTotal, x.EstatusDescripcion });
+    protected override async Task<string> GetItemNameForDelete(int id) => (await Service.GetByIdAsync(id))?.Data?.NumeroContrato ?? "el contrato";
+    protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+    private static Color StatusColor(int e) => e switch { 2 => Color.Success, 3 => Color.Info, 4 => Color.Error, _ => Color.Warning };
+    private static bool IsLocked(ContratoResponse item) => item.Estatus >= 2;
+    private async Task SelectContrato(ContratoResponse item) { SelectedContrato = item; await InvokeAsync(StateHasChanged); }
+    private async Task BackToTable() { SelectedContrato = null; if (table != null) await table.ReloadData(); }
+    private async Task<TableData<ContratoDetalleResponse>> LoadDetalles(TableState state, CancellationToken _) {
+        if (SelectedContrato == null) return new() { Items = [], TotalItems = 0 };
+        var r = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "PartidaClave", state.SortDirection, new() { ["FkidContratoPres"] = SelectedContrato.PkidContrato });
+        return new() { Items = r?.Items ?? [], TotalItems = r?.TotalCount ?? 0 };
+    }
+    private async Task ReloadDetalles() { if (detalleTable != null) await detalleTable.ReloadData(); }
+    private async Task AddDetalle() => await OpenDetalle(null);
+    private async Task EditDetalle(int id) => await OpenDetalle(id);
+    private async Task OpenDetalle(int? id) {
+        if (SelectedContrato == null) return;
+        var p = new DialogParameters { ["Id"] = id, ["ContratoId"] = SelectedContrato.PkidContrato, ["ContratoNombre"] = SelectedContrato.NumeroContrato };
+        var d = await DialogService.ShowAsync<ContratoDetalleDialog>(id.HasValue ? "Editar partida" : "Nueva partida", p, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await d.Result) is { Canceled: false }) await ReloadDetalles();
+    }
+    private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
+
+    private async Task GenerateFactura(ContratoResponse contrato)
+    {
+        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidContratoPres"] = contrato.PkidContrato });
+        var details = detailsResponse?.Items?.ToList() ?? new List<ContratoDetalleResponse>();
+        if (details.Count == 0)
+        {
+            Snackbar.Add("El contrato no tiene detalle para generar factura.", Severity.Warning);
+            return;
+        }
+
+        var factura = new FacturaResponse
+        {
+            FkidEmpresaSis = contrato.FkidEmpresaSis,
+            FkidContratoPres = contrato.PkidContrato,
+            FkidPolizaConta = contrato.FkidPolizaConta ?? 0,
+            FechaEmision = DateOnly.FromDateTime(DateTime.Today),
+            FechaRecepcion = DateOnly.FromDateTime(DateTime.Today),
+            Subtotal = contrato.MontoTotal,
+            Total = contrato.MontoTotal,
+            Observaciones = $"Generada desde contrato {contrato.NumeroContrato}",
+            Estatus = 1,
+            Activo = true
+        };
+
+        var facturaDetalles = details.Select(detail => new FacturaDetalleResponse
+        {
+            FkidEmpresaSis = detail.FkidEmpresaSis,
+            FkidContratoDetallePres = detail.PkidContratoDetalle,
+            FkidContratoPres = contrato.PkidContrato,
+            NumeroContrato = contrato.NumeroContrato,
+            FkidPartidaConta = detail.FkidPartidaConta,
+            PartidaClave = detail.PartidaClave,
+            PartidaDescripcion = detail.PartidaDescripcion,
+            PartidaClaveNombre = detail.PartidaClaveNombre,
+            MontoAplicado = DetailTotal(detail),
+            Observaciones = detail.Observaciones,
+            Activo = true
+        }).ToList();
+
+        var parameters = new DialogParameters
+        {
+            ["PrefillItem"] = factura,
+            ["PrefillDetalles"] = facturaDetalles
+        };
+
+        var dialog = await DialogService.ShowAsync<FacturaDialog>("Recepcion de factura", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            contrato.Estatus = Math.Max(contrato.Estatus, 2);
+            await Service.UpdateAsync(contrato, contrato.PkidContrato);
+            await ReloadData();
+        }
+    }
+
+    private static decimal DetailTotal(ContratoDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+}

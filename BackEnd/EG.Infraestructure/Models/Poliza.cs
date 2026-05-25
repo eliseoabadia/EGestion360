@@ -43,7 +43,15 @@ public partial class Poliza
 
     public DateTime? FechaAutorizacion { get; set; }
 
+    public virtual ICollection<Cheque> Cheques { get; set; } = new List<Cheque>();
+
+    public virtual ICollection<Clc> Clcs { get; set; } = new List<Clc>();
+
+    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
+    public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
 
     public virtual Anio FkidAnioSisNavigation { get; set; }
 

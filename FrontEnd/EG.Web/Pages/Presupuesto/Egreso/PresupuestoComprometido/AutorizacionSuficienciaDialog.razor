@@ -1,0 +1,219 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.PresupuestoComprometido
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<AutorizacionSuficienciaResponse> Service
+@inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> DetalleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="AutorizacionSuficienciaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="AutorizacionSuficienciaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                    <MudSelectItem Value="1">Borrador</MudSelectItem>
+                    <MudSelectItem Value="2">Autorizada</MudSelectItem>
+                    <MudSelectItem Value="3">Cancelada</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.GastoNoProgramable" Label="Gasto no programable" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Required="true" Lines="3" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+
+        @if (!Id.HasValue && detalleItems.Count > 0)
+        {
+            <MudDivider Class="my-3" />
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Detalle que se generara al guardar</MudText>
+            <MudTable Items="@detalleItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
+                <HeaderContent>
+                    <MudTh>Partida</MudTh>
+                    <MudTh>Bien</MudTh>
+                    <MudTh>Cantidad</MudTh>
+                    <MudTh>Total</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
+                    <MudTd>@TextOrDash(context.TipoBienDescripcion)</MudTd>
+                    <MudTd>@Quantity(context.Cantidad)</MudTd>
+                    <MudTd><strong>@Money(DetailTotal(context))</strong></MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public AutorizacionSuficienciaResponse? PrefillItem { get; set; }
+    [Parameter] public IReadOnlyList<AutorizacionSuficienciaDetalleResponse>? PrefillDetalles { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<AutorizacionSuficienciaResponse> form = null!;
+    private AutorizacionSuficienciaResponse item = new() { Activo = true, Estatus = 1 };
+    private List<AutorizacionSuficienciaDetalleResponse> detalleItems = new();
+    private DateTime? fechaAutorizacion = DateTime.Today;
+
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+    private string Title => Id.HasValue ? "Editar autorizacion" : "Nueva autorizacion";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Guardar autorizacion";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            if (PrefillItem != null)
+            {
+                item = CloneHeader(PrefillItem);
+                fechaAutorizacion = item.FechaAutorizacion.ToDateTime(TimeOnly.MinValue);
+            }
+
+            detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<AutorizacionSuficienciaDetalleResponse>();
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Data != null)
+        {
+            item = response.Data;
+            fechaAutorizacion = item.FechaAutorizacion.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FechaAutorizacion = DateOnly.FromDateTime(fechaAutorizacion ?? DateTime.Today);
+        var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (result?.Success == true)
+        {
+            if (!Id.HasValue && detalleItems.Count > 0)
+            {
+                var authId = await ResolveCreatedId(result);
+                if (authId <= 0)
+                {
+                    Snackbar.Add("La autorizacion se creo, pero no se pudo recuperar su identificador para generar el detalle.", Severity.Error);
+                    return;
+                }
+
+                foreach (var detail in detalleItems)
+                {
+                    detail.FkidAutorizacionSuficienciaPres = authId;
+                    if (detail.FkidEmpresaSis == 0)
+                    {
+                        detail.FkidEmpresaSis = item.FkidEmpresaSis;
+                    }
+
+                    var detailResult = await DetalleService.CreateAsync(detail);
+                    if (detailResult?.Success != true)
+                    {
+                        Snackbar.Add(detailResult?.Message ?? "La autorizacion se creo, pero fallo al generar un detalle.", Severity.Error);
+                        return;
+                    }
+                }
+            }
+
+            Snackbar.Add(Id.HasValue ? "Autorizacion actualizada correctamente." : "Autorizacion y detalle guardados correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(result.Data ?? item));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar la autorizacion.", Severity.Error);
+    }
+
+    private async Task<int> ResolveCreatedId(EG.Web.Models.ApiResponse<AutorizacionSuficienciaResponse> result)
+    {
+        var createdId = result.Data?.PkidAutorizacionSuficiencia
+            ?? result.Items?.FirstOrDefault()?.PkidAutorizacionSuficiencia
+            ?? 0;
+
+        if (createdId > 0 || item.FkidSolicitudSuficienciaPres <= 0)
+        {
+            return createdId;
+        }
+
+        var created = await Service.GetAllPaginadoAsync(
+            1,
+            1,
+            string.Empty,
+            "PkidAutorizacionSuficiencia",
+            SortDirection.Descending,
+            new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = item.FkidSolicitudSuficienciaPres });
+
+        return created?.Items?.FirstOrDefault()?.PkidAutorizacionSuficiencia ?? 0;
+    }
+
+    private static AutorizacionSuficienciaResponse CloneHeader(AutorizacionSuficienciaResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidSolicitudSuficienciaPres = source.FkidSolicitudSuficienciaPres,
+        FkidRequisicionOrco = source.FkidRequisicionOrco,
+        FechaSolicitud = source.FechaSolicitud,
+        FechaAutorizacion = source.FechaAutorizacion,
+        Justificacion = source.Justificacion,
+        GastoNoProgramable = source.GastoNoProgramable,
+        IdGastoNoProgramable = source.IdGastoNoProgramable,
+        IdCompromisoNomina = source.IdCompromisoNomina,
+        AutorizadoPorNom = source.AutorizadoPorNom,
+        Observaciones = source.Observaciones,
+        Estatus = source.Estatus,
+        Activo = source.Activo
+    };
+
+    private static AutorizacionSuficienciaDetalleResponse CloneDetail(AutorizacionSuficienciaDetalleResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidSolicitudSuficienciaPres = source.FkidSolicitudSuficienciaPres,
+        FkidRequisicionOrco = source.FkidRequisicionOrco,
+        RequisicionDescripcion = source.RequisicionDescripcion,
+        FkidSolicitudSuficienciaDetallePres = source.FkidSolicitudSuficienciaDetallePres,
+        FkidRequisicionDetalleOrco = source.FkidRequisicionDetalleOrco,
+        FkidTipoBienAlma = source.FkidTipoBienAlma,
+        TipoBienClave = source.TipoBienClave,
+        TipoBienDescripcion = source.TipoBienDescripcion,
+        FkidUnidadesAlma = source.FkidUnidadesAlma,
+        UnidadMedida = source.UnidadMedida,
+        Cantidad = source.Cantidad,
+        FkidPartidaConta = source.FkidPartidaConta,
+        PartidaClave = source.PartidaClave,
+        PartidaDescripcion = source.PartidaDescripcion,
+        PartidaClaveNombre = source.PartidaClaveNombre,
+        Enero = source.Enero,
+        Febrero = source.Febrero,
+        Marzo = source.Marzo,
+        Abril = source.Abril,
+        Mayo = source.Mayo,
+        Junio = source.Junio,
+        Julio = source.Julio,
+        Agosto = source.Agosto,
+        Septiembre = source.Septiembre,
+        Octubre = source.Octubre,
+        Noviembre = source.Noviembre,
+        Diciembre = source.Diciembre,
+        Observaciones = source.Observaciones,
+        Activo = source.Activo
+    };
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => $"${value.ToString("0.00", Culture)}";
+    private static string Quantity(decimal? value) => (value ?? 0m).ToString("0.00", Culture);
+    private static decimal DetailTotal(AutorizacionSuficienciaDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+}

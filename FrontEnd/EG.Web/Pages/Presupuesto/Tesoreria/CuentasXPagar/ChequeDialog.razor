@@ -1,0 +1,182 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<ChequeResponse> Service
+@inject IGenericCrudService<ChequePartidaResponse> PartidaService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="ChequeResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="ChequeResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidClcPres" Label="CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidCuentaBancariaTes" Label="Cuenta bancaria" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField @bind-Value="item.NumeroCheque" Label="Cheque / transferencia" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Concepto" Label="Concepto" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField T="decimal" @bind-Value="item.ImporteTotal" Label="Importe total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                    <MudSelectItem Value="1">Registrado</MudSelectItem>
+                    <MudSelectItem Value="2">Entregado</MudSelectItem>
+                    <MudSelectItem Value="3">Cobrado</MudSelectItem>
+                    <MudSelectItem Value="4">Cancelado</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+
+        @if (!Id.HasValue && partidaItems.Count > 0)
+        {
+            <MudDivider Class="my-3" />
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Partidas pagadas que se generaran</MudText>
+            <MudTable Items="@partidaItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
+                <HeaderContent><MudTh>Partida</MudTh><MudTh>Monto</MudTh><MudTh>Observaciones</MudTh></HeaderContent>
+                <RowTemplate>
+                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
+                    <MudTd><strong>@Money(context.MontoPagado)</strong></MudTd>
+                    <MudTd>@TextOrDash(context.Observaciones)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public ChequeResponse? PrefillItem { get; set; }
+    [Parameter] public IReadOnlyList<ChequePartidaResponse>? PrefillPartidas { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+    private BaseEntityForm<ChequeResponse> form = null!;
+    private ChequeResponse item = new() { Activo = true, Estatus = 1 };
+    private List<ChequePartidaResponse> partidaItems = new();
+    private DateTime? fechaEmision = DateTime.Today;
+    private string Title => Id.HasValue ? "Editar cheque o transferencia" : "Nuevo cheque o transferencia";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Guardar pago";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            if (PrefillItem != null)
+            {
+                item = CloneHeader(PrefillItem);
+                fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+            }
+
+            partidaItems = PrefillPartidas?.Select(ClonePartida).ToList() ?? new List<ChequePartidaResponse>();
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Data != null)
+        {
+            item = response.Data;
+            fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FechaEmision = DateOnly.FromDateTime(fechaEmision ?? DateTime.Today);
+        if (item.ImporteTotal <= 0 && partidaItems.Count > 0)
+        {
+            item.ImporteTotal = partidaItems.Sum(x => x.MontoPagado);
+        }
+
+        var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (result?.Success == true)
+        {
+            if (!Id.HasValue && partidaItems.Count > 0)
+            {
+                var chequeId = await ResolveCreatedId(result);
+                if (chequeId <= 0)
+                {
+                    Snackbar.Add("El pago se creo, pero no se pudo recuperar su identificador para generar partidas.", Severity.Error);
+                    return;
+                }
+
+                foreach (var partida in partidaItems.Where(x => x.MontoPagado > 0))
+                {
+                    partida.FkidChequePres = chequeId;
+                    if (partida.FkidEmpresaSis == 0)
+                    {
+                        partida.FkidEmpresaSis = item.FkidEmpresaSis;
+                    }
+
+                    var partidaResult = await PartidaService.CreateAsync(partida);
+                    if (partidaResult?.Success != true)
+                    {
+                        Snackbar.Add(partidaResult?.Message ?? "El pago se creo, pero fallo al generar una partida.", Severity.Error);
+                        return;
+                    }
+                }
+            }
+
+            Snackbar.Add(Id.HasValue ? "Pago actualizado correctamente." : "Pago y partidas guardados correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(result.Data ?? item));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar.", Severity.Error);
+    }
+
+    private async Task<int> ResolveCreatedId(EG.Web.Models.ApiResponse<ChequeResponse> result)
+    {
+        var createdId = result.Data?.PkidCheque ?? result.Items?.FirstOrDefault()?.PkidCheque ?? 0;
+        if (createdId > 0 || item.FkidClcPres <= 0)
+        {
+            return createdId;
+        }
+
+        var created = await Service.GetAllPaginadoAsync(1, 1, string.Empty, "PkidCheque", SortDirection.Descending, new() { ["FkidClcPres"] = item.FkidClcPres });
+        return created?.Items?.FirstOrDefault()?.PkidCheque ?? 0;
+    }
+
+    private static ChequeResponse CloneHeader(ChequeResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidClcPres = source.FkidClcPres,
+        FkidContratoPres = source.FkidContratoPres,
+        FkidCuentaBancariaTes = source.FkidCuentaBancariaTes,
+        FkidPolizaConta = source.FkidPolizaConta,
+        FechaEmision = source.FechaEmision,
+        NumeroCheque = source.NumeroCheque,
+        Concepto = source.Concepto,
+        ImporteTotal = source.ImporteTotal,
+        Observaciones = source.Observaciones,
+        Estatus = source.Estatus,
+        Activo = source.Activo
+    };
+
+    private static ChequePartidaResponse ClonePartida(ChequePartidaResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidClcdetallePres = source.FkidClcdetallePres,
+        FkidClcPres = source.FkidClcPres,
+        NumClc = source.NumClc,
+        FkidPartidaConta = source.FkidPartidaConta,
+        PartidaClave = source.PartidaClave,
+        PartidaDescripcion = source.PartidaDescripcion,
+        PartidaClaveNombre = source.PartidaClaveNombre,
+        MontoPagado = source.MontoPagado,
+        Observaciones = source.Observaciones,
+        Activo = source.Activo
+    };
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => $"${value.ToString("0.00", Culture)}";
+}

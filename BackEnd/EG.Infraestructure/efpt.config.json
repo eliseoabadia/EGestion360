@@ -271,6 +271,34 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[Cheque]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[ChequePartidas]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[CLC]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[CLCDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[CLCFactura]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Contrato]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[ContratoDetalle]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[DestinoGasto]",
          "ObjectType": 0
       },
@@ -288,6 +316,14 @@
       },
       {
          "Name": "[PRES].[Eje]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[Factura]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[FacturaDetalle]",
          "ObjectType": 0
       },
       {
@@ -400,6 +436,10 @@
       },
       {
          "Name": "[SIS].[Area]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Banco]",
          "ObjectType": 0
       },
       {
@@ -516,6 +556,10 @@
       },
       {
          "Name": "[SIS].[UsuarioSucursal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[CuentaBancaria]",
          "ObjectType": 0
       },
       {
@@ -659,11 +703,47 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_Cheque]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_ChequePartidas]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_CLC]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_CLCDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_CLCFactura]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_Contrato]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_ContratoDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_EgresoAutorizado]",
          "ObjectType": 3
       },
       {
          "Name": "[PRES].[Vw_EgresoProyectado]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_Factura]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_FacturaDetalle]",
          "ObjectType": 3
       },
       {
@@ -768,6 +848,26 @@
       },
       {
          "Name": "[ORCO].[SP_MantenimientoRequisicion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_MantenimientoAutorizacionSuficiencia]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_MantenimientoCheque]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_MantenimientoCLC]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_MantenimientoContrato]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_MantenimientoFactura]",
          "ObjectType": 1
       },
       {

@@ -1,0 +1,199 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<FacturaResponse> Service
+@inject IGenericCrudService<FacturaDetalleResponse> DetalleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="FacturaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="FacturaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidContratoPres" Label="Contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.NumFactura" Label="Numero de factura" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.SerieFactura" Label="Serie" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaRecepcion" Label="Fecha recepcion" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Subtotal" Label="Subtotal" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Iva" Label="IVA" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Retencion" Label="Retencion" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.Total" Label="Total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.Uuid" Label="UUID" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                    <MudSelectItem Value="1">Registrada</MudSelectItem>
+                    <MudSelectItem Value="2">Validada</MudSelectItem>
+                    <MudSelectItem Value="3">Devengada</MudSelectItem>
+                    <MudSelectItem Value="4">Rechazada</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+
+        @if (!Id.HasValue && detalleItems.Count > 0)
+        {
+            <MudDivider Class="my-3" />
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Partidas de factura</MudText>
+            <MudTable Items="@detalleItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
+                <HeaderContent>
+                    <MudTh>Partida</MudTh>
+                    <MudTh>Monto aplicado</MudTh>
+                    <MudTh>Observaciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
+                    <MudTd><MudNumericField T="decimal" @bind-Value="context.MontoAplicado" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" Margin="Margin.Dense" /></MudTd>
+                    <MudTd>@TextOrDash(context.Observaciones)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public FacturaResponse? PrefillItem { get; set; }
+    [Parameter] public IReadOnlyList<FacturaDetalleResponse>? PrefillDetalles { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+    private BaseEntityForm<FacturaResponse> form = null!;
+    private FacturaResponse item = new() { Activo = true, Estatus = 1 };
+    private List<FacturaDetalleResponse> detalleItems = new();
+    private DateTime? fechaEmision = DateTime.Today;
+    private DateTime? fechaRecepcion = DateTime.Today;
+    private string Title => Id.HasValue ? "Editar factura" : "Nueva factura";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Guardar factura";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            if (PrefillItem != null)
+            {
+                item = CloneHeader(PrefillItem);
+                fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+                fechaRecepcion = item.FechaRecepcion?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
+            }
+
+            detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<FacturaDetalleResponse>();
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Data != null)
+        {
+            item = response.Data;
+            fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+            fechaRecepcion = item.FechaRecepcion?.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FechaEmision = DateOnly.FromDateTime(fechaEmision ?? DateTime.Today);
+        item.FechaRecepcion = fechaRecepcion.HasValue ? DateOnly.FromDateTime(fechaRecepcion.Value) : null;
+        if (item.Total <= 0)
+        {
+            item.Total = detalleItems.Count > 0
+                ? detalleItems.Sum(x => x.MontoAplicado)
+                : (item.Subtotal ?? 0m) + (item.Iva ?? 0m) - (item.Retencion ?? 0m);
+        }
+
+        var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (result?.Success == true)
+        {
+            if (!Id.HasValue && detalleItems.Count > 0)
+            {
+                var facturaId = await ResolveCreatedId(result);
+                if (facturaId <= 0)
+                {
+                    Snackbar.Add("La factura se creo, pero no se pudo recuperar su identificador para generar el detalle.", Severity.Error);
+                    return;
+                }
+
+                foreach (var detail in detalleItems.Where(x => x.MontoAplicado > 0))
+                {
+                    detail.FkidFacturaPres = facturaId;
+                    if (detail.FkidEmpresaSis == 0)
+                    {
+                        detail.FkidEmpresaSis = item.FkidEmpresaSis;
+                    }
+
+                    var detailResult = await DetalleService.CreateAsync(detail);
+                    if (detailResult?.Success != true)
+                    {
+                        Snackbar.Add(detailResult?.Message ?? "La factura se creo, pero fallo al generar un detalle.", Severity.Error);
+                        return;
+                    }
+                }
+            }
+
+            Snackbar.Add(Id.HasValue ? "Factura actualizada correctamente." : "Factura y detalle guardados correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(result.Data ?? item));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar la factura.", Severity.Error);
+    }
+
+    private async Task<int> ResolveCreatedId(EG.Web.Models.ApiResponse<FacturaResponse> result)
+    {
+        var createdId = result.Data?.PkidFactura ?? result.Items?.FirstOrDefault()?.PkidFactura ?? 0;
+        if (createdId > 0 || item.FkidContratoPres <= 0)
+        {
+            return createdId;
+        }
+
+        var created = await Service.GetAllPaginadoAsync(1, 1, string.Empty, "PkidFactura", SortDirection.Descending, new() { ["FkidContratoPres"] = item.FkidContratoPres });
+        return created?.Items?.FirstOrDefault()?.PkidFactura ?? 0;
+    }
+
+    private static FacturaResponse CloneHeader(FacturaResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidContratoPres = source.FkidContratoPres,
+        FkidPolizaConta = source.FkidPolizaConta,
+        NumFactura = source.NumFactura,
+        SerieFactura = source.SerieFactura,
+        FechaEmision = source.FechaEmision,
+        FechaRecepcion = source.FechaRecepcion,
+        Subtotal = source.Subtotal,
+        Iva = source.Iva,
+        Retencion = source.Retencion,
+        Total = source.Total,
+        Uuid = source.Uuid,
+        FlDocto = source.FlDocto,
+        Observaciones = source.Observaciones,
+        Estatus = source.Estatus,
+        Activo = source.Activo
+    };
+
+    private static FacturaDetalleResponse CloneDetail(FacturaDetalleResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidContratoDetallePres = source.FkidContratoDetallePres,
+        FkidContratoPres = source.FkidContratoPres,
+        NumeroContrato = source.NumeroContrato,
+        FkidPartidaConta = source.FkidPartidaConta,
+        PartidaClave = source.PartidaClave,
+        PartidaDescripcion = source.PartidaDescripcion,
+        PartidaClaveNombre = source.PartidaClaveNombre,
+        MontoAplicado = source.MontoAplicado,
+        Observaciones = source.Observaciones,
+        Activo = source.Activo
+    };
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

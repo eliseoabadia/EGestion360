@@ -59,6 +59,10 @@ public partial class Usuario
 
     public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficienciumUsuarioModificacionNavigations { get; set; } = new List<AutorizacionSuficiencium>();
 
+    public virtual ICollection<Banco> BancoUsuarioCreacionNavigations { get; set; } = new List<Banco>();
+
+    public virtual ICollection<Banco> BancoUsuarioModificacionNavigations { get; set; } = new List<Banco>();
+
     public virtual ICollection<Bien> BienUsuarioCreacionNavigations { get; set; } = new List<Bien>();
 
     public virtual ICollection<Bien> BienUsuarioModificacionNavigations { get; set; } = new List<Bien>();
@@ -70,6 +74,26 @@ public partial class Usuario
     public virtual ICollection<Capitulo> CapituloUsuarioCreacionNavigations { get; set; } = new List<Capitulo>();
 
     public virtual ICollection<Capitulo> CapituloUsuarioModificacionNavigations { get; set; } = new List<Capitulo>();
+
+    public virtual ICollection<ChequePartida> ChequePartidaUsuarioCreacionNavigations { get; set; } = new List<ChequePartida>();
+
+    public virtual ICollection<ChequePartida> ChequePartidaUsuarioModificacionNavigations { get; set; } = new List<ChequePartida>();
+
+    public virtual ICollection<Cheque> ChequeUsuarioCreacionNavigations { get; set; } = new List<Cheque>();
+
+    public virtual ICollection<Cheque> ChequeUsuarioModificacionNavigations { get; set; } = new List<Cheque>();
+
+    public virtual ICollection<Clc> ClcUsuarioCreacionNavigations { get; set; } = new List<Clc>();
+
+    public virtual ICollection<Clc> ClcUsuarioModificacionNavigations { get; set; } = new List<Clc>();
+
+    public virtual ICollection<Clcdetalle> ClcdetalleUsuarioCreacionNavigations { get; set; } = new List<Clcdetalle>();
+
+    public virtual ICollection<Clcdetalle> ClcdetalleUsuarioModificacionNavigations { get; set; } = new List<Clcdetalle>();
+
+    public virtual ICollection<Clcfactura> ClcfacturaUsuarioCreacionNavigations { get; set; } = new List<Clcfactura>();
+
+    public virtual ICollection<Clcfactura> ClcfacturaUsuarioModificacionNavigations { get; set; } = new List<Clcfactura>();
 
     public virtual ICollection<Concepto1> Concepto1UsuarioCreacionNavigations { get; set; } = new List<Concepto1>();
 
@@ -91,6 +115,14 @@ public partial class Usuario
 
     public virtual ICollection<Conteo> ConteoUsuarioModificacionNavigations { get; set; } = new List<Conteo>();
 
+    public virtual ICollection<ContratoDetalle> ContratoDetalleUsuarioCreacionNavigations { get; set; } = new List<ContratoDetalle>();
+
+    public virtual ICollection<ContratoDetalle> ContratoDetalleUsuarioModificacionNavigations { get; set; } = new List<ContratoDetalle>();
+
+    public virtual ICollection<Contrato> ContratoUsuarioCreacionNavigations { get; set; } = new List<Contrato>();
+
+    public virtual ICollection<Contrato> ContratoUsuarioModificacionNavigations { get; set; } = new List<Contrato>();
+
     public virtual ICollection<CotizacionDetalle> CotizacionDetalleUsuarioCreacionNavigations { get; set; } = new List<CotizacionDetalle>();
 
     public virtual ICollection<CotizacionDetalle> CotizacionDetalleUsuarioModificacionNavigations { get; set; } = new List<CotizacionDetalle>();
@@ -98,6 +130,10 @@ public partial class Usuario
     public virtual ICollection<Cotizacion> CotizacionUsuarioCreacionNavigations { get; set; } = new List<Cotizacion>();
 
     public virtual ICollection<Cotizacion> CotizacionUsuarioModificacionNavigations { get; set; } = new List<Cotizacion>();
+
+    public virtual ICollection<CuentaBancarium> CuentaBancariumUsuarioCreacionNavigations { get; set; } = new List<CuentaBancarium>();
+
+    public virtual ICollection<CuentaBancarium> CuentaBancariumUsuarioModificacionNavigations { get; set; } = new List<CuentaBancarium>();
 
     public virtual ICollection<CuentaContable> CuentaContableUsuarioCreacionNavigations { get; set; } = new List<CuentaContable>();
 
@@ -156,6 +192,14 @@ public partial class Usuario
     public virtual ICollection<EstudioMercado> EstudioMercadoUsuarioCreacionNavigations { get; set; } = new List<EstudioMercado>();
 
     public virtual ICollection<EstudioMercado> EstudioMercadoUsuarioModificacionNavigations { get; set; } = new List<EstudioMercado>();
+
+    public virtual ICollection<FacturaDetalle> FacturaDetalleUsuarioCreacionNavigations { get; set; } = new List<FacturaDetalle>();
+
+    public virtual ICollection<FacturaDetalle> FacturaDetalleUsuarioModificacionNavigations { get; set; } = new List<FacturaDetalle>();
+
+    public virtual ICollection<Factura> FacturaUsuarioCreacionNavigations { get; set; } = new List<Factura>();
+
+    public virtual ICollection<Factura> FacturaUsuarioModificacionNavigations { get; set; } = new List<Factura>();
 
     public virtual ICollection<Familium> FamiliumUsuarioCreacionNavigations { get; set; } = new List<Familium>();
 

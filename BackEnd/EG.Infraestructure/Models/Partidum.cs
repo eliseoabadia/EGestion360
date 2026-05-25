@@ -29,9 +29,17 @@ public partial class Partidum
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
+    public virtual ICollection<ChequePartida> ChequePartida { get; set; } = new List<ChequePartida>();
+
+    public virtual ICollection<Clcdetalle> Clcdetalles { get; set; } = new List<Clcdetalle>();
+
+    public virtual ICollection<ContratoDetalle> ContratoDetalles { get; set; } = new List<ContratoDetalle>();
+
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
     public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
+
+    public virtual ICollection<FacturaDetalle> FacturaDetalles { get; set; } = new List<FacturaDetalle>();
 
     public virtual Concepto FkidConceptoSisNavigation { get; set; }
 

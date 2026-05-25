@@ -1,0 +1,236 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<CLCResponse> Service
+@inject IGenericCrudService<CLCDetalleResponse> DetalleService
+@inject IGenericCrudService<CLCFacturaResponse> FacturaService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="CLCResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="CLCResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidContratoPres" Label="Contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudTextField @bind-Value="item.NumClc" Label="Numero CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaSolicitud" Label="Fecha solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.ImporteTotal" Label="Importe total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                    <MudSelectItem Value="1">Borrador</MudSelectItem>
+                    <MudSelectItem Value="2">Solicitada</MudSelectItem>
+                    <MudSelectItem Value="3">Autorizada</MudSelectItem>
+                    <MudSelectItem Value="4">Pagada</MudSelectItem>
+                    <MudSelectItem Value="5">Cancelada</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+
+        @if (!Id.HasValue && detalleItems.Count > 0)
+        {
+            <MudDivider Class="my-3" />
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Detalle presupuestal y facturas asociadas</MudText>
+            <MudTable Items="@detalleItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
+                <HeaderContent><MudTh>Partida</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></HeaderContent>
+                <RowTemplate>
+                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
+                    <MudTd><strong>@Money(DetailTotal(context))</strong></MudTd>
+                    <MudTd>@TextOrDash(context.Observaciones)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public CLCResponse? PrefillItem { get; set; }
+    [Parameter] public IReadOnlyList<CLCDetalleResponse>? PrefillDetalles { get; set; }
+    [Parameter] public IReadOnlyList<CLCFacturaResponse>? PrefillFacturas { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+    private BaseEntityForm<CLCResponse> form = null!;
+    private CLCResponse item = new() { Activo = true, Estatus = 1 };
+    private List<CLCDetalleResponse> detalleItems = new();
+    private List<CLCFacturaResponse> facturaItems = new();
+    private DateTime? fechaSolicitud = DateTime.Today;
+    private DateTime? fechaAutorizacion;
+    private string Title => Id.HasValue ? "Editar CLC" : "Nueva CLC";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Guardar CLC";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            if (PrefillItem != null)
+            {
+                item = CloneHeader(PrefillItem);
+                fechaSolicitud = item.FechaSolicitud.ToDateTime(TimeOnly.MinValue);
+                fechaAutorizacion = item.FechaAutorizacion?.ToDateTime(TimeOnly.MinValue);
+            }
+
+            detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<CLCDetalleResponse>();
+            facturaItems = PrefillFacturas?.Select(CloneFactura).ToList() ?? new List<CLCFacturaResponse>();
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Data != null)
+        {
+            item = response.Data;
+            fechaSolicitud = item.FechaSolicitud.ToDateTime(TimeOnly.MinValue);
+            fechaAutorizacion = item.FechaAutorizacion?.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FechaSolicitud = DateOnly.FromDateTime(fechaSolicitud ?? DateTime.Today);
+        item.FechaAutorizacion = fechaAutorizacion.HasValue ? DateOnly.FromDateTime(fechaAutorizacion.Value) : null;
+        if (item.ImporteTotal <= 0 && detalleItems.Count > 0)
+        {
+            item.ImporteTotal = detalleItems.Sum(DetailTotal);
+        }
+
+        var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (result?.Success == true)
+        {
+            if (!Id.HasValue && (detalleItems.Count > 0 || facturaItems.Count > 0))
+            {
+                var clcId = await ResolveCreatedId(result);
+                if (clcId <= 0)
+                {
+                    Snackbar.Add("La CLC se creo, pero no se pudo recuperar su identificador para generar el detalle.", Severity.Error);
+                    return;
+                }
+
+                foreach (var detail in detalleItems)
+                {
+                    detail.FkidClcPres = clcId;
+                    if (detail.FkidEmpresaSis == 0)
+                    {
+                        detail.FkidEmpresaSis = item.FkidEmpresaSis;
+                    }
+
+                    var detailResult = await DetalleService.CreateAsync(detail);
+                    if (detailResult?.Success != true)
+                    {
+                        Snackbar.Add(detailResult?.Message ?? "La CLC se creo, pero fallo al generar un detalle.", Severity.Error);
+                        return;
+                    }
+                }
+
+                foreach (var factura in facturaItems.Where(x => x.MontoAplicado > 0))
+                {
+                    factura.FkidClcPres = clcId;
+                    if (factura.FkidEmpresaSis == 0)
+                    {
+                        factura.FkidEmpresaSis = item.FkidEmpresaSis;
+                    }
+
+                    var facturaResult = await FacturaService.CreateAsync(factura);
+                    if (facturaResult?.Success != true)
+                    {
+                        Snackbar.Add(facturaResult?.Message ?? "La CLC se creo, pero fallo al relacionar una factura.", Severity.Error);
+                        return;
+                    }
+                }
+            }
+
+            Snackbar.Add(Id.HasValue ? "CLC actualizada correctamente." : "CLC, detalle y facturas guardados correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(result.Data ?? item));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar la CLC.", Severity.Error);
+    }
+
+    private async Task<int> ResolveCreatedId(EG.Web.Models.ApiResponse<CLCResponse> result)
+    {
+        var createdId = result.Data?.PkidClc ?? result.Items?.FirstOrDefault()?.PkidClc ?? 0;
+        if (createdId > 0 || item.FkidContratoPres <= 0)
+        {
+            return createdId;
+        }
+
+        var created = await Service.GetAllPaginadoAsync(1, 1, string.Empty, "PkidClc", SortDirection.Descending, new() { ["FkidContratoPres"] = item.FkidContratoPres });
+        return created?.Items?.FirstOrDefault()?.PkidClc ?? 0;
+    }
+
+    private static CLCResponse CloneHeader(CLCResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidContratoPres = source.FkidContratoPres,
+        FkidPolizaConta = source.FkidPolizaConta,
+        NumClc = source.NumClc,
+        FechaSolicitud = source.FechaSolicitud,
+        FechaAutorizacion = source.FechaAutorizacion,
+        ImporteTotal = source.ImporteTotal,
+        Observaciones = source.Observaciones,
+        Estatus = source.Estatus,
+        Activo = source.Activo
+    };
+
+    private static CLCDetalleResponse CloneDetail(CLCDetalleResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidContratoDetallePres = source.FkidContratoDetallePres,
+        FkidContratoPres = source.FkidContratoPres,
+        NumeroContrato = source.NumeroContrato,
+        FkidPartidaConta = source.FkidPartidaConta,
+        PartidaClave = source.PartidaClave,
+        PartidaDescripcion = source.PartidaDescripcion,
+        PartidaClaveNombre = source.PartidaClaveNombre,
+        Enero = source.Enero,
+        Febrero = source.Febrero,
+        Marzo = source.Marzo,
+        Abril = source.Abril,
+        Mayo = source.Mayo,
+        Junio = source.Junio,
+        Julio = source.Julio,
+        Agosto = source.Agosto,
+        Septiembre = source.Septiembre,
+        Octubre = source.Octubre,
+        Noviembre = source.Noviembre,
+        Diciembre = source.Diciembre,
+        Observaciones = source.Observaciones,
+        Activo = source.Activo
+    };
+
+    private static CLCFacturaResponse CloneFactura(CLCFacturaResponse source) => new()
+    {
+        FkidEmpresaSis = source.FkidEmpresaSis,
+        FkidFacturaPres = source.FkidFacturaPres,
+        NumFactura = source.NumFactura,
+        FkidFacturaDetallePres = source.FkidFacturaDetallePres,
+        FkidPartidaConta = source.FkidPartidaConta,
+        PartidaClave = source.PartidaClave,
+        PartidaDescripcion = source.PartidaDescripcion,
+        MontoAplicado = source.MontoAplicado,
+        Observaciones = source.Observaciones,
+        Activo = source.Activo
+    };
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => $"${value.ToString("0.00", Culture)}";
+    private static decimal DetailTotal(CLCDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+}

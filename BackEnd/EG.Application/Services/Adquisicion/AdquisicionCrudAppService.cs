@@ -1,4 +1,5 @@
 using System.Reflection;
+using EG.Application.Interfaces.Adquisicion;
 using Mapster;
 using EG.Business.Services;
 using EG.Common.GenericModel;
@@ -6,6 +7,7 @@ using EG.Common.GenericModel;
 namespace EG.Application.Services.Adquisicion
 {
     public abstract class AdquisicionCrudAppService<TEntity, TView, TDto, TResponse>
+        : IAdquisicionCrudAppService<TResponse>
         where TEntity : class
         where TView : class
         where TDto : class

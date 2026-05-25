@@ -55,6 +55,8 @@ public partial class AutorizacionSuficienciaDetalle
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<ContratoDetalle> ContratoDetalles { get; set; } = new List<ContratoDetalle>();
+
     public virtual AutorizacionSuficiencium FkidAutorizacionSuficienciaPresNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }

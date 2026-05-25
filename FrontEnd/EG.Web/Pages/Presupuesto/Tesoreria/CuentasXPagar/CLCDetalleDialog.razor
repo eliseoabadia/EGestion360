@@ -1,0 +1,82 @@
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<CLCDetalleResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="CLCDetalleResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="CLCDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ClcNombre</MudText></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidContratoDetallePres" Label="Detalle contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
+            @foreach (var month in MonthFields)
+            {
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal?" Value="GetMonth(month.Key)" ValueChanged="v => SetMonth(month.Key, v)" Label="@month.Value" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" />
+                </MudItem>
+            }
+            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int ClcId { get; set; }
+    [Parameter] public string ClcNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+    private static readonly IReadOnlyList<KeyValuePair<int, string>> MonthFields =
+    [
+        new(1, "Enero"), new(2, "Febrero"), new(3, "Marzo"), new(4, "Abril"),
+        new(5, "Mayo"), new(6, "Junio"), new(7, "Julio"), new(8, "Agosto"),
+        new(9, "Septiembre"), new(10, "Octubre"), new(11, "Noviembre"), new(12, "Diciembre")
+    ];
+    private BaseEntityForm<CLCDetalleResponse> form = null!;
+    private CLCDetalleResponse item = new() { Activo = true };
+    private string Title => Id.HasValue ? "Editar detalle CLC" : "Nuevo detalle CLC";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            item.FkidClcPres = ClcId;
+            return;
+        }
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Data != null)
+        {
+            item = response.Data;
+            ClcId = item.FkidClcPres;
+            ClcNombre = item.NumClc ?? ClcNombre;
+        }
+    }
+
+    private decimal? GetMonth(int month) => month switch { 1 => item.Enero, 2 => item.Febrero, 3 => item.Marzo, 4 => item.Abril, 5 => item.Mayo, 6 => item.Junio, 7 => item.Julio, 8 => item.Agosto, 9 => item.Septiembre, 10 => item.Octubre, 11 => item.Noviembre, _ => item.Diciembre };
+    private void SetMonth(int month, decimal? value) { switch (month) { case 1: item.Enero = value; break; case 2: item.Febrero = value; break; case 3: item.Marzo = value; break; case 4: item.Abril = value; break; case 5: item.Mayo = value; break; case 6: item.Junio = value; break; case 7: item.Julio = value; break; case 8: item.Agosto = value; break; case 9: item.Septiembre = value; break; case 10: item.Octubre = value; break; case 11: item.Noviembre = value; break; default: item.Diciembre = value; break; } }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+        item.FkidClcPres = ClcId;
+        var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (result?.Success == true)
+        {
+            Snackbar.Add("Detalle CLC guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+        Snackbar.Add(result?.Message ?? "No fue posible guardar el detalle.", Severity.Error);
+    }
+}

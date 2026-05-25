@@ -19,7 +19,9 @@ using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.Adquisicion;
 using EG.Application.Services.ConteoCiclico;
+using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
+using EG.Application.Services.PresupuestoComprometido;
 using EG.Application.Services.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Services.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Services.Configuracion.Catalogo.Patrimonio;
@@ -27,6 +29,8 @@ using EG.Business.Interfaces;
 using EG.Business.Services;
 using EG.Common.Util;
 using EG.Domain.Interfaces;
+using EG.Domain.DTOs.Responses.CuentasXPagar;
+using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Infraestructure.Models;
 using EG.Infrastructure;
 using System.Reflection;
@@ -83,6 +87,21 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoContratoAppService, TipoContratoAppService>();
             services.AddScoped<ITipoDocumentoAppService, TipoDocumentoAppService>();
             services.AddScoped<ITipoGarantiaAppService, TipoGarantiaAppService>();
+
+            // Application services - Presupuesto comprometido
+            services.AddScoped<IAdquisicionCrudAppService<AutorizacionSuficienciaResponse>, AutorizacionSuficienciaAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<AutorizacionSuficienciaDetalleResponse>, AutorizacionSuficienciaDetalleAppService>();
+
+            // Application services - Cuentas por pagar
+            services.AddScoped<IAdquisicionCrudAppService<ContratoResponse>, ContratoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<ContratoDetalleResponse>, ContratoDetalleAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<FacturaResponse>, FacturaAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<FacturaDetalleResponse>, FacturaDetalleAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<CLCResponse>, CLCAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<CLCDetalleResponse>, CLCDetalleAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<CLCFacturaResponse>, CLCFacturaAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<ChequeResponse>, ChequeAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<ChequePartidaResponse>, ChequePartidaAppService>();
 
             // Application services - Patrimonio
             services.AddScoped<IFamiliaService, FamiliaService>();

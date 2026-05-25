@@ -1,0 +1,241 @@
+@page "/Presupuesto/Tesorería/CuentasXPagar/Provision_Pago"
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<CLCResponse, CLCResponse>
+
+@inject IGenericCrudService<CLCDetalleResponse> DetalleService
+@inject IGenericCrudService<CLCFacturaResponse> FacturaService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+        @if (SelectedClc == null)
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+                <PageHeader Title="Provisión del pago"
+                            Subtitle="CLC, calendario presupuestal y facturas asociadas"
+                            Icon="@Icons.Material.Filled.RequestQuote"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="CLCResponse" @ref="table" Title="CLC"
+                                  SearchPlaceholder="Buscar CLC, contrato, proveedor o póliza..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="NumClc" T="CLCResponse">CLC</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="CLCResponse">Contrato</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="CLCResponse">Proveedor</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="CLCResponse">Solicitud</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ImporteTotal" T="CLCResponse">Importe</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="CLCResponse">Estatus</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanCreate" Disabled="@IsLocked(item)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidClc))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidClc))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.NumClc)</MudTd>
+                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
+                            <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
+                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@Money(item.ImporteTotal)</MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+                    <div class="ml-2">
+                        <MudText Typo="Typo.h6" Style="font-weight:700">@SelectedClc.NumClc</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedClc.NumeroContrato - @SelectedClc.ProveedorNombre</MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedClc.Estatus)">@TextOrDash(SelectedClc.EstatusDescripcion)</MudChip>
+                    <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))" Class="ml-2" />
+                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
+                    <MudIconButton Icon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura" Class="ml-1" />
+                </MudPaper>
+
+                <MudGrid Spacing="2" Style="min-height:0;flex-grow:1;overflow:hidden;">
+                    <MudItem xs="12" lg="7" Style="height:100%;overflow:hidden;">
+                        <GenericTable TItem="CLCDetalleResponse" @ref="detalleTable" Title="Detalle presupuestal"
+                                      SearchPlaceholder="Buscar partida..."
+                                      ServerDataFunc="LoadDetalles"
+                                      SearchString="@detalleSearch"
+                                      SearchStringChanged="(s) => detalleSearch = s"
+                                      OnSearch="ReloadDetalles">
+                            <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></Header>
+                            <Row Context="d">
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidClcdetalle))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidClcdetalle))" />
+                                </MudTd>
+                                <MudTd>@TextOrDash(d.PartidaClaveNombre)</MudTd>
+                                <MudTd>@Money(d.Total ?? 0m)</MudTd>
+                                <MudTd>@TextOrDash(d.Observaciones)</MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+                    <MudItem xs="12" lg="5" Style="height:100%;overflow:hidden;">
+                        <GenericTable TItem="CLCFacturaResponse" @ref="facturaTable" Title="Facturas en CLC"
+                                      SearchPlaceholder="Buscar factura..."
+                                      ServerDataFunc="LoadFacturas"
+                                      SearchString="@facturaSearch"
+                                      SearchStringChanged="(s) => facturaSearch = s"
+                                      OnSearch="ReloadFacturas">
+                            <Header><MudTh>Acciones</MudTh><MudTh>Factura</MudTh><MudTh>Partida</MudTh><MudTh>Monto</MudTh></Header>
+                            <Row Context="f">
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditFactura(f.PkidClcfactura))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteFactura(f.PkidClcfactura))" />
+                                </MudTd>
+                                <MudTd>@TextOrDash(f.NumFactura)</MudTd>
+                                <MudTd>@TextOrDash(f.PartidaClave)</MudTd>
+                                <MudTd>@Money(f.MontoAplicado)</MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+                </MudGrid>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<CLCResponse> table = null!;
+    private GenericTable<CLCDetalleResponse> detalleTable = null!;
+    private GenericTable<CLCFacturaResponse> facturaTable = null!;
+    private CLCResponse? SelectedClc;
+    private string detalleSearch = string.Empty;
+    private string facturaSearch = string.Empty;
+    private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "CuentasXPagar";
+    protected override string SubModuleName => "Provision_Pago";
+    protected override Type CreateDialogType => typeof(CLCDialog);
+    protected override Type EditDialogType => typeof(CLCDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<CLCResponse>);
+    protected override string GetDefaultSortLabel() => "FechaSolicitud";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<CLCResponse> items) => items.Select(x => new { x.NumClc, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaSolicitud.ToString("dd/MM/yyyy"), x.ImporteTotal, x.EstatusDescripcion });
+    protected override async Task<string> GetItemNameForDelete(int id) => (await Service.GetByIdAsync(id))?.Data?.NumClc ?? "la CLC";
+    protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+    private static Color StatusColor(int e) => e switch { 2 => Color.Info, 3 => Color.Success, 4 => Color.Success, 5 => Color.Error, _ => Color.Warning };
+    private static bool IsLocked(CLCResponse item) => item.Estatus >= 3;
+    private async Task SelectClc(CLCResponse item) { SelectedClc = item; await InvokeAsync(StateHasChanged); }
+    private async Task BackToTable() { SelectedClc = null; if (table != null) await table.ReloadData(); }
+
+    private async Task<TableData<CLCDetalleResponse>> LoadDetalles(TableState state, CancellationToken _) {
+        if (SelectedClc == null) return new() { Items = [], TotalItems = 0 };
+        var r = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "PartidaClave", state.SortDirection, new() { ["FkidClcPres"] = SelectedClc.PkidClc });
+        return new() { Items = r?.Items ?? [], TotalItems = r?.TotalCount ?? 0 };
+    }
+
+    private async Task<TableData<CLCFacturaResponse>> LoadFacturas(TableState state, CancellationToken _) {
+        if (SelectedClc == null) return new() { Items = [], TotalItems = 0 };
+        var r = await FacturaService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, facturaSearch, state.SortLabel ?? "NumFactura", state.SortDirection, new() { ["FkidClcPres"] = SelectedClc.PkidClc });
+        return new() { Items = r?.Items ?? [], TotalItems = r?.TotalCount ?? 0 };
+    }
+
+    private async Task ReloadDetalles() { if (detalleTable != null) await detalleTable.ReloadData(); }
+    private async Task ReloadFacturas() { if (facturaTable != null) await facturaTable.ReloadData(); }
+    private async Task AddDetalle() => await OpenDetalle(null);
+    private async Task EditDetalle(int id) => await OpenDetalle(id);
+    private async Task OpenDetalle(int? id) {
+        if (SelectedClc == null) return;
+        var p = new DialogParameters { ["Id"] = id, ["ClcId"] = SelectedClc.PkidClc, ["ClcNombre"] = SelectedClc.NumClc };
+        var d = await DialogService.ShowAsync<CLCDetalleDialog>(id.HasValue ? "Editar detalle" : "Nuevo detalle", p, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await d.Result) is { Canceled: false }) await ReloadDetalles();
+    }
+    private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
+    private async Task AddFactura() => await OpenFactura(null);
+    private async Task EditFactura(int id) => await OpenFactura(id);
+    private async Task OpenFactura(int? id) {
+        if (SelectedClc == null) return;
+        var p = new DialogParameters { ["Id"] = id, ["ClcId"] = SelectedClc.PkidClc, ["ClcNombre"] = SelectedClc.NumClc };
+        var d = await DialogService.ShowAsync<CLCFacturaDialog>(id.HasValue ? "Editar factura CLC" : "Nueva factura CLC", p, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if ((await d.Result) is { Canceled: false }) await ReloadFacturas();
+    }
+    private async Task DeleteFactura(int id) { await FacturaService.DeleteAsync(id); await ReloadFacturas(); }
+
+    private async Task GenerateCheque(CLCResponse clc)
+    {
+        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidClcPres"] = clc.PkidClc });
+        var details = detailsResponse?.Items?.ToList() ?? new List<CLCDetalleResponse>();
+        if (details.Count == 0)
+        {
+            Snackbar.Add("La CLC no tiene detalle para generar cheque o transferencia.", Severity.Warning);
+            return;
+        }
+
+        var cheque = new ChequeResponse
+        {
+            FkidEmpresaSis = clc.FkidEmpresaSis,
+            FkidClcPres = clc.PkidClc,
+            FkidContratoPres = clc.FkidContratoPres,
+            FkidPolizaConta = clc.FkidPolizaConta,
+            FechaEmision = DateOnly.FromDateTime(DateTime.Today),
+            NumeroCheque = $"CLC-{clc.PkidClc}",
+            Concepto = $"Pago de CLC {clc.NumClc}",
+            ImporteTotal = details.Sum(DetailTotal),
+            Observaciones = $"Generado desde CLC {clc.NumClc}",
+            Estatus = 1,
+            Activo = true
+        };
+
+        var partidas = details.Select(detail => new ChequePartidaResponse
+        {
+            FkidEmpresaSis = detail.FkidEmpresaSis,
+            FkidClcdetallePres = detail.PkidClcdetalle,
+            FkidClcPres = clc.PkidClc,
+            NumClc = clc.NumClc,
+            FkidPartidaConta = detail.FkidPartidaConta,
+            PartidaClave = detail.PartidaClave,
+            PartidaDescripcion = detail.PartidaDescripcion,
+            PartidaClaveNombre = detail.PartidaClaveNombre,
+            MontoPagado = DetailTotal(detail),
+            Observaciones = detail.Observaciones,
+            Activo = true
+        }).ToList();
+
+        var parameters = new DialogParameters
+        {
+            ["PrefillItem"] = cheque,
+            ["PrefillPartidas"] = partidas
+        };
+
+        var dialog = await DialogService.ShowAsync<ChequeDialog>("Elaboracion de cheque o transferencia", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            clc.Estatus = Math.Max(clc.Estatus, 3);
+            await Service.UpdateAsync(clc, clc.PkidClc);
+            await ReloadData();
+        }
+    }
+
+    private static decimal DetailTotal(CLCDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+}

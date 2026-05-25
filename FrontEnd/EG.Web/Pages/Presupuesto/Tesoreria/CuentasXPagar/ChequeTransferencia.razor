@@ -1,0 +1,124 @@
+@page "/Presupuesto/Tesorería/CuentasXPagar/Cheque_Transferencia"
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<ChequeResponse, ChequeResponse>
+
+@inject IGenericCrudService<ChequePartidaResponse> PartidaService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+        @if (SelectedCheque == null)
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+                <PageHeader Title="Elaboración de cheques o transferencias"
+                            Subtitle="Pago de CLC con distribucion por partida"
+                            Icon="@Icons.Material.Filled.Payments"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="ChequeResponse" @ref="table" Title="Cheques y transferencias"
+                                  SearchPlaceholder="Buscar cheque, CLC, contrato o poliza..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header><MudTh>Acciones</MudTh><MudTh>Numero</MudTh><MudTh>CLC</MudTh><MudTh>Contrato</MudTh><MudTh>Fecha</MudTh><MudTh>Importe</MudTh><MudTh>Estatus</MudTh></Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidCheque))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidCheque))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.NumeroCheque)</MudTd>
+                            <MudTd>@TextOrDash(item.NumClc)</MudTd>
+                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
+                            <MudTd>@item.FechaEmision.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@Money(item.ImporteTotal)</MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+                    <div class="ml-2"><MudText Typo="Typo.h6" Style="font-weight:700">@SelectedCheque.NumeroCheque</MudText><MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedCheque.NumClc - @SelectedCheque.Concepto</MudText></div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedCheque.Estatus)">@TextOrDash(SelectedCheque.EstatusDescripcion)</MudChip>
+                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedCheque)" Color="Color.Success" Size="Size.Small" OnClick="AddPartida" Class="ml-2" />
+                </MudPaper>
+                <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">
+                    <MudGrid><MudItem xs="4"><MudText Typo="Typo.caption">Importe</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedCheque.ImporteTotal)</MudText></MudItem><MudItem xs="8"><MudText Typo="Typo.caption">Poliza</MudText><MudText Typo="Typo.body2">@TextOrDash(SelectedCheque.ClavePoliza)</MudText></MudItem></MudGrid>
+                </MudPaper>
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="ChequePartidaResponse" @ref="partidaTable" Title="Partidas pagadas"
+                                  SearchPlaceholder="Buscar partida..."
+                                  ServerDataFunc="LoadPartidas"
+                                  SearchString="@partidaSearch"
+                                  SearchStringChanged="(s) => partidaSearch = s"
+                                  OnSearch="ReloadPartidas">
+                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>CLC</MudTh><MudTh>Monto</MudTh><MudTh>Observaciones</MudTh></Header>
+                        <Row Context="p">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedCheque)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditPartida(p.PkidChequePartida))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedCheque)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeletePartida(p.PkidChequePartida))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(p.PartidaClaveNombre)</MudTd>
+                            <MudTd>@TextOrDash(p.NumClc)</MudTd>
+                            <MudTd>@Money(p.MontoPagado)</MudTd>
+                            <MudTd>@TextOrDash(p.Observaciones)</MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ChequeResponse> table = null!;
+    private GenericTable<ChequePartidaResponse> partidaTable = null!;
+    private ChequeResponse? SelectedCheque;
+    private string partidaSearch = string.Empty;
+    private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "CuentasXPagar";
+    protected override string SubModuleName => "ElaboracionCheque_Transferencia";
+    protected override Type CreateDialogType => typeof(ChequeDialog);
+    protected override Type EditDialogType => typeof(ChequeDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ChequeResponse>);
+    protected override string GetDefaultSortLabel() => "FechaEmision";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ChequeResponse> items) => items.Select(x => new { x.NumeroCheque, x.NumClc, x.NumeroContrato, Fecha = x.FechaEmision.ToString("dd/MM/yyyy"), x.ImporteTotal, x.EstatusDescripcion });
+    protected override async Task<string> GetItemNameForDelete(int id) => (await Service.GetByIdAsync(id))?.Data?.NumeroCheque ?? "el cheque";
+    protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
+    private bool IsLocked(ChequeResponse item) => item.Estatus >= 2;
+    private async Task SelectCheque(ChequeResponse item) { SelectedCheque = item; await InvokeAsync(StateHasChanged); }
+    private async Task BackToTable() { SelectedCheque = null; if (table != null) await table.ReloadData(); }
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+    private static Color StatusColor(int e) => e switch { 2 => Color.Info, 3 => Color.Success, 4 => Color.Error, _ => Color.Warning };
+    private async Task<TableData<ChequePartidaResponse>> LoadPartidas(TableState state, CancellationToken _) {
+        if (SelectedCheque == null) return new() { Items = [], TotalItems = 0 };
+        var r = await PartidaService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, partidaSearch, state.SortLabel ?? "PartidaClave", state.SortDirection, new() { ["FkidChequePres"] = SelectedCheque.PkidCheque });
+        return new() { Items = r?.Items ?? [], TotalItems = r?.TotalCount ?? 0 };
+    }
+    private async Task ReloadPartidas() { if (partidaTable != null) await partidaTable.ReloadData(); }
+    private async Task AddPartida() => await OpenPartida(null);
+    private async Task EditPartida(int id) => await OpenPartida(id);
+    private async Task OpenPartida(int? id) {
+        if (SelectedCheque == null) return;
+        var p = new DialogParameters { ["Id"] = id, ["ChequeId"] = SelectedCheque.PkidCheque, ["ChequeNombre"] = SelectedCheque.NumeroCheque };
+        var d = await DialogService.ShowAsync<ChequePartidaDialog>(id.HasValue ? "Editar partida" : "Nueva partida", p, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if ((await d.Result) is { Canceled: false }) await ReloadPartidas();
+    }
+    private async Task DeletePartida(int id) { await PartidaService.DeleteAsync(id); await ReloadPartidas(); }
+}

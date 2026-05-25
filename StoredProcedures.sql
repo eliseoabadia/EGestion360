@@ -117,6 +117,1042 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE [PRES].[SP_MantenimientoAutorizacionSuficiencia] (
+    @Action INT,
+    @PKIdAutorizacionSuficiencia INT = NULL,
+    @PKIdAutorizacionSuficienciaDetalle INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdSolicitudSuficiencia_PRES INT = NULL,
+    @FechaAutorizacion DATE = NULL,
+    @Justificacion NVARCHAR(1000) = NULL,
+    @GastoNoProgramable VARCHAR(3) = NULL,
+    @IdGastoNoProgramable INT = NULL,
+    @IdCompromisoNomina INT = NULL,
+    @AutorizadoPor_NOM INT = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @Estatus INT = NULL,
+    @FKIdSolicitudSuficienciaDetalle_PRES INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @Enero DECIMAL(20,4) = NULL,
+    @Febrero DECIMAL(20,4) = NULL,
+    @Marzo DECIMAL(20,4) = NULL,
+    @Abril DECIMAL(20,4) = NULL,
+    @Mayo DECIMAL(20,4) = NULL,
+    @Junio DECIMAL(20,4) = NULL,
+    @Julio DECIMAL(20,4) = NULL,
+    @Agosto DECIMAL(20,4) = NULL,
+    @Septiembre DECIMAL(20,4) = NULL,
+    @Octubre DECIMAL(20,4) = NULL,
+    @Noviembre DECIMAL(20,4) = NULL,
+    @Diciembre DECIMAL(20,4) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [PRES].[SP_MantenimientoAutorizacionSuficiencia]', ' @Estatus ', @Estatus);
+    SET @Parameters = CONCAT(
+        'Action=', @Action,
+        ', PKIdAutorizacionSuficiencia=', ISNULL(CONVERT(NVARCHAR(30), @PKIdAutorizacionSuficiencia), 'NULL'),
+        ', PKIdAutorizacionSuficienciaDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdAutorizacionSuficienciaDetalle), 'NULL'),
+        ', FKIdSolicitudSuficiencia_PRES=', ISNULL(CONVERT(NVARCHAR(30), @FKIdSolicitudSuficiencia_PRES), 'NULL'),
+        ', FechaAutorizacion=', ISNULL(CONVERT(NVARCHAR(30), @FechaAutorizacion, 126), 'NULL'),
+        ', AutorizadoPor_NOM=', ISNULL(CONVERT(NVARCHAR(30), @AutorizadoPor_NOM), 'NULL'),
+        ', Estatus=', ISNULL(CONVERT(NVARCHAR(30), @Estatus), 'NULL')
+    );
+    EXEC [SIS].[WriteSystemLog]
+        @FK_IdOrigenLogMessage__SIS = 1,
+        @Date = @today,
+        @_Type = 1,
+        @ProgName = 'PRES.SP_MantenimientoAutorizacionSuficiencia',
+        @EmployeeNo = @IdUser,
+        @Category = NULL,
+        @IPClient = NULL,
+        @HostName = NULL,
+        @Thread = NULL,
+        @Level = 'INFO',
+        @Logger = NULL,
+        @Message = @message,
+        @Exception = NULL,
+        @Context = NULL,
+        @MethodName = 'PRES.SP_MantenimientoAutorizacionSuficiencia',
+        @Parameters = @Parameters,
+        @ExecutionTime = '0';
+    SET @message = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action IN (1, 2, 10)
+        BEGIN
+            IF @FKIdSolicitudSuficiencia_PRES IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.SolicitudSuficiencia WHERE PKIdSolicitudSuficiencia = @FKIdSolicitudSuficiencia_PRES AND Activo = 1)
+                THROW 51000, 'Solicitud de suficiencia no encontrada.', 1;
+            IF @AutorizadoPor_NOM IS NULL OR NOT EXISTS (SELECT 1 FROM NOM.Persona WHERE PKIdPersona = @AutorizadoPor_NOM AND Activo = 1)
+                THROW 51000, 'La persona autorizadora no existe o esta inactiva.', 1;
+        END
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO PRES.AutorizacionSuficiencia (
+                FKIdEmpresa_SIS, FKIdSolicitudSuficiencia_PRES, FechaAutorizacion, Justificacion,
+                GastoNoProgramable, IdGastoNoProgramable, IdCompromisoNomina, AutorizadoPor_NOM,
+                Observaciones, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, ss.FKIdEmpresa_SIS), ss.PKIdSolicitudSuficiencia, ISNULL(@FechaAutorizacion, CONVERT(DATE, GETDATE())),
+                   ISNULL(@Justificacion, ss.Justificacion), ISNULL(@GastoNoProgramable, ss.GastoNoProgramable),
+                   ISNULL(@IdGastoNoProgramable, ss.IdGastoNoProgramable), ISNULL(@IdCompromisoNomina, ss.IdCompromisoNomina),
+                   @AutorizadoPor_NOM, @Observaciones, ISNULL(NULLIF(@Estatus, 0), 1), 1, @today, @IdUser
+            FROM PRES.SolicitudSuficiencia ss
+            WHERE ss.PKIdSolicitudSuficiencia = @FKIdSolicitudSuficiencia_PRES;
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Autorizacion de suficiencia creada correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficiencia:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdAutorizacionSuficiencia IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.AutorizacionSuficiencia WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia AND Activo = 1)
+                THROW 51000, 'Autorizacion de suficiencia no encontrada.', 1;
+
+            UPDATE aus
+            SET FKIdEmpresa_SIS = ISNULL(@FKIdEmpresa_SIS, ss.FKIdEmpresa_SIS),
+                FKIdSolicitudSuficiencia_PRES = @FKIdSolicitudSuficiencia_PRES,
+                FechaAutorizacion = ISNULL(@FechaAutorizacion, aus.FechaAutorizacion),
+                Justificacion = ISNULL(@Justificacion, ss.Justificacion),
+                GastoNoProgramable = ISNULL(@GastoNoProgramable, ss.GastoNoProgramable),
+                IdGastoNoProgramable = ISNULL(@IdGastoNoProgramable, ss.IdGastoNoProgramable),
+                IdCompromisoNomina = ISNULL(@IdCompromisoNomina, ss.IdCompromisoNomina),
+                AutorizadoPor_NOM = @AutorizadoPor_NOM,
+                Observaciones = @Observaciones,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), aus.Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM PRES.AutorizacionSuficiencia aus
+            INNER JOIN PRES.SolicitudSuficiencia ss ON ss.PKIdSolicitudSuficiencia = @FKIdSolicitudSuficiencia_PRES
+            WHERE aus.PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia;
+
+            SET @Id = @PKIdAutorizacionSuficiencia;
+            SET @message = 'Autorizacion de suficiencia actualizada correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficiencia:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdAutorizacionSuficiencia IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.AutorizacionSuficiencia WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia AND Activo = 1)
+                THROW 51000, 'Autorizacion de suficiencia no encontrada.', 1;
+            IF EXISTS (SELECT 1 FROM PRES.Contrato WHERE FKIdAutorizacionSuficiencia_PRES = @PKIdAutorizacionSuficiencia AND Activo = 1)
+                THROW 51000, 'No se puede eliminar la autorizacion porque ya tiene contrato activo.', 1;
+
+            UPDATE PRES.AutorizacionSuficienciaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdAutorizacionSuficiencia_PRES = @PKIdAutorizacionSuficiencia AND Activo = 1;
+            UPDATE PRES.AutorizacionSuficiencia SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia;
+
+            SET @Id = @PKIdAutorizacionSuficiencia;
+            SET @message = 'Autorizacion de suficiencia eliminada correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficiencia:', @Id);
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT * FROM PRES.Vw_AutorizacionSuficiencia WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia;
+            SET @message = 'Autorizacion de suficiencia consultada correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficiencia:', @PKIdAutorizacionSuficiencia);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdAutorizacionSuficiencia IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.AutorizacionSuficiencia WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia AND Activo = 1)
+                THROW 51000, 'Autorizacion de suficiencia no encontrada.', 1;
+            IF @FKIdSolicitudSuficienciaDetalle_PRES IS NULL OR NOT EXISTS (
+                SELECT 1
+                FROM PRES.SolicitudSuficienciaDetalle ssd
+                INNER JOIN PRES.AutorizacionSuficiencia aus ON aus.PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia
+                WHERE ssd.PKIdSolicitudSuficienciaDetalle = @FKIdSolicitudSuficienciaDetalle_PRES
+                  AND ssd.FKIdSolicitudSuficiencia_PRES = aus.FKIdSolicitudSuficiencia_PRES
+                  AND ssd.Activo = 1
+            )
+                THROW 51000, 'Detalle de solicitud de suficiencia no encontrado o no pertenece a la autorizacion.', 1;
+
+            INSERT INTO PRES.AutorizacionSuficienciaDetalle (
+                FKIdEmpresa_SIS, FKIdAutorizacionSuficiencia_PRES, FKIdSolicitudSuficienciaDetalle_PRES, FKIdPartida_CONTA,
+                Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre,
+                Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, aus.FKIdEmpresa_SIS), @PKIdAutorizacionSuficiencia, @FKIdSolicitudSuficienciaDetalle_PRES, @FKIdPartida_CONTA,
+                   ISNULL(@Enero, 0), ISNULL(@Febrero, 0), ISNULL(@Marzo, 0), ISNULL(@Abril, 0), ISNULL(@Mayo, 0), ISNULL(@Junio, 0),
+                   ISNULL(@Julio, 0), ISNULL(@Agosto, 0), ISNULL(@Septiembre, 0), ISNULL(@Octubre, 0), ISNULL(@Noviembre, 0), ISNULL(@Diciembre, 0),
+                   @Observaciones, 1, @today, @IdUser
+            FROM PRES.AutorizacionSuficiencia aus
+            WHERE aus.PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia;
+
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Detalle de autorizacion de suficiencia creado correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficienciaDetalle:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdAutorizacionSuficienciaDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.AutorizacionSuficienciaDetalle WHERE PKIdAutorizacionSuficienciaDetalle = @PKIdAutorizacionSuficienciaDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de autorizacion de suficiencia no encontrado.', 1;
+            IF EXISTS (SELECT 1 FROM PRES.ContratoDetalle WHERE FKIdAutorizacionSuficienciaDetalle_PRES = @PKIdAutorizacionSuficienciaDetalle AND Activo = 1)
+                THROW 51000, 'No se puede modificar el detalle porque ya esta ligado a un contrato.', 1;
+
+            UPDATE PRES.AutorizacionSuficienciaDetalle
+            SET FKIdSolicitudSuficienciaDetalle_PRES = @FKIdSolicitudSuficienciaDetalle_PRES,
+                FKIdPartida_CONTA = @FKIdPartida_CONTA,
+                Enero = ISNULL(@Enero, 0), Febrero = ISNULL(@Febrero, 0), Marzo = ISNULL(@Marzo, 0), Abril = ISNULL(@Abril, 0),
+                Mayo = ISNULL(@Mayo, 0), Junio = ISNULL(@Junio, 0), Julio = ISNULL(@Julio, 0), Agosto = ISNULL(@Agosto, 0),
+                Septiembre = ISNULL(@Septiembre, 0), Octubre = ISNULL(@Octubre, 0), Noviembre = ISNULL(@Noviembre, 0), Diciembre = ISNULL(@Diciembre, 0),
+                Observaciones = @Observaciones,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdAutorizacionSuficienciaDetalle = @PKIdAutorizacionSuficienciaDetalle;
+
+            SET @Id = @PKIdAutorizacionSuficienciaDetalle;
+            SET @message = 'Detalle de autorizacion de suficiencia actualizado correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficienciaDetalle:', @Id);
+        END
+        ELSE IF @Action = 7
+        BEGIN
+            IF @PKIdAutorizacionSuficienciaDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.AutorizacionSuficienciaDetalle WHERE PKIdAutorizacionSuficienciaDetalle = @PKIdAutorizacionSuficienciaDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de autorizacion de suficiencia no encontrado.', 1;
+            IF EXISTS (SELECT 1 FROM PRES.ContratoDetalle WHERE FKIdAutorizacionSuficienciaDetalle_PRES = @PKIdAutorizacionSuficienciaDetalle AND Activo = 1)
+                THROW 51000, 'No se puede eliminar el detalle porque ya esta ligado a un contrato.', 1;
+
+            UPDATE PRES.AutorizacionSuficienciaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdAutorizacionSuficienciaDetalle = @PKIdAutorizacionSuficienciaDetalle;
+            SET @Id = @PKIdAutorizacionSuficienciaDetalle;
+            SET @message = 'Detalle de autorizacion de suficiencia eliminado correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficienciaDetalle:', @Id);
+        END
+        ELSE IF @Action = 8
+        BEGIN
+            SELECT * FROM PRES.Vw_AutorizacionSuficienciaDetalle WHERE PKIdAutorizacionSuficienciaDetalle = @PKIdAutorizacionSuficienciaDetalle;
+            SET @message = 'Detalle de autorizacion de suficiencia consultado correctamente.';
+            SET @liga = CONCAT('idAutorizacionSuficienciaDetalle:', @PKIdAutorizacionSuficienciaDetalle);
+        END
+        ELSE IF @Action = 10
+        BEGIN
+            IF EXISTS (SELECT 1 FROM PRES.AutorizacionSuficiencia WHERE FKIdSolicitudSuficiencia_PRES = @FKIdSolicitudSuficiencia_PRES AND Activo = 1)
+                THROW 51000, 'Ya existe una autorizacion de suficiencia activa para esta solicitud.', 1;
+            IF NOT EXISTS (SELECT 1 FROM PRES.SolicitudSuficienciaDetalle WHERE FKIdSolicitudSuficiencia_PRES = @FKIdSolicitudSuficiencia_PRES AND Activo = 1)
+                THROW 51000, 'La solicitud no tiene detalle para autorizar.', 1;
+
+            INSERT INTO PRES.AutorizacionSuficiencia (
+                FKIdEmpresa_SIS, FKIdSolicitudSuficiencia_PRES, FechaAutorizacion, Justificacion,
+                GastoNoProgramable, IdGastoNoProgramable, IdCompromisoNomina, AutorizadoPor_NOM,
+                Observaciones, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, ss.FKIdEmpresa_SIS), ss.PKIdSolicitudSuficiencia, ISNULL(@FechaAutorizacion, CONVERT(DATE, GETDATE())),
+                   ISNULL(@Justificacion, ss.Justificacion), ISNULL(@GastoNoProgramable, ss.GastoNoProgramable),
+                   ISNULL(@IdGastoNoProgramable, ss.IdGastoNoProgramable), ISNULL(@IdCompromisoNomina, ss.IdCompromisoNomina),
+                   @AutorizadoPor_NOM, ISNULL(@Observaciones, CONCAT('Autorizada desde solicitud ', ss.PKIdSolicitudSuficiencia)),
+                   ISNULL(NULLIF(@Estatus, 0), 2), 1, @today, @IdUser
+            FROM PRES.SolicitudSuficiencia ss
+            WHERE ss.PKIdSolicitudSuficiencia = @FKIdSolicitudSuficiencia_PRES;
+
+            SET @Id = SCOPE_IDENTITY();
+
+            INSERT INTO PRES.AutorizacionSuficienciaDetalle (
+                FKIdEmpresa_SIS, FKIdAutorizacionSuficiencia_PRES, FKIdSolicitudSuficienciaDetalle_PRES, FKIdPartida_CONTA,
+                Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre,
+                Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ssd.FKIdEmpresa_SIS, @Id, ssd.PKIdSolicitudSuficienciaDetalle, ssd.FKIdPartida_CONTA,
+                   ISNULL(ssd.Enero, 0), ISNULL(ssd.Febrero, 0), ISNULL(ssd.Marzo, 0), ISNULL(ssd.Abril, 0),
+                   ISNULL(ssd.Mayo, 0), ISNULL(ssd.Junio, 0), ISNULL(ssd.Julio, 0), ISNULL(ssd.Agosto, 0),
+                   ISNULL(ssd.Septiembre, 0), ISNULL(ssd.Octubre, 0), ISNULL(ssd.Noviembre, 0), ISNULL(ssd.Diciembre, 0),
+                   ssd.Observaciones, 1, @today, @IdUser
+            FROM PRES.SolicitudSuficienciaDetalle ssd
+            WHERE ssd.FKIdSolicitudSuficiencia_PRES = @FKIdSolicitudSuficiencia_PRES
+              AND ssd.Activo = 1;
+
+            UPDATE PRES.SolicitudSuficiencia
+            SET Estatus = 3,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdSolicitudSuficiencia = @FKIdSolicitudSuficiencia_PRES;
+
+            SET @message = 'Autorizacion de suficiencia generada correctamente desde solicitud.';
+            SET @liga = CONCAT('idAutorizacionSuficiencia:', @Id);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para autorizacion de suficiencia.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [PRES].[SP_MantenimientoContrato] (
+    @Action INT,
+    @PKIdContrato INT = NULL,
+    @PKIdContratoDetalle INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdAutorizacionSuficiencia_PRES INT = NULL,
+    @FKIdProveedor_SIS INT = NULL,
+    @FKIdPoliza_CONTA INT = NULL,
+    @NumeroContrato NVARCHAR(50) = NULL,
+    @Descripcion NVARCHAR(500) = NULL,
+    @FechaContrato DATE = NULL,
+    @FechaInicioVigencia DATE = NULL,
+    @FechaFinVigencia DATE = NULL,
+    @MontoTotal DECIMAL(20,4) = NULL,
+    @PlazoEjecucion NVARCHAR(100) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @Estatus INT = NULL,
+    @FKIdAutorizacionSuficienciaDetalle_PRES INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @Enero DECIMAL(20,4) = NULL,
+    @Febrero DECIMAL(20,4) = NULL,
+    @Marzo DECIMAL(20,4) = NULL,
+    @Abril DECIMAL(20,4) = NULL,
+    @Mayo DECIMAL(20,4) = NULL,
+    @Junio DECIMAL(20,4) = NULL,
+    @Julio DECIMAL(20,4) = NULL,
+    @Agosto DECIMAL(20,4) = NULL,
+    @Septiembre DECIMAL(20,4) = NULL,
+    @Octubre DECIMAL(20,4) = NULL,
+    @Noviembre DECIMAL(20,4) = NULL,
+    @Diciembre DECIMAL(20,4) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [PRES].[SP_MantenimientoContrato]', ' @PKIdContrato ', @PKIdContrato);
+    SET @Parameters = CONCAT('Action=', @Action, ', PKIdContrato=', ISNULL(CONVERT(NVARCHAR(30), @PKIdContrato), 'NULL'), ', PKIdContratoDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdContratoDetalle), 'NULL'), ', NumeroContrato=', ISNULL(@NumeroContrato, 'NULL'), ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL'));
+    EXEC [SIS].[WriteSystemLog] @FK_IdOrigenLogMessage__SIS = 1, @Date = @today, @_Type = 1, @ProgName = 'PRES.SP_MantenimientoContrato', @EmployeeNo = @IdUser, @Category = NULL, @IPClient = NULL, @HostName = NULL, @Thread = NULL, @Level = 'INFO', @Logger = NULL, @Message = @message, @Exception = NULL, @Context = NULL, @MethodName = 'PRES.SP_MantenimientoContrato', @Parameters = @Parameters, @ExecutionTime = '0';
+    SET @message = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            IF @FechaFinVigencia IS NOT NULL AND @FechaInicioVigencia IS NOT NULL AND @FechaFinVigencia < @FechaInicioVigencia
+                THROW 51000, 'La fecha fin de vigencia no puede ser anterior al inicio.', 1;
+
+            INSERT INTO PRES.Contrato (
+                FKIdEmpresa_SIS, FKIdAutorizacionSuficiencia_PRES, FKIdProveedor_SIS, FKIdPoliza_CONTA,
+                NumeroContrato, Descripcion, FechaContrato, FechaInicioVigencia, FechaFinVigencia,
+                MontoTotal, PlazoEjecucion, Observaciones, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdAutorizacionSuficiencia_PRES, @FKIdProveedor_SIS, @FKIdPoliza_CONTA,
+                @NumeroContrato, @Descripcion, ISNULL(@FechaContrato, CONVERT(DATE, GETDATE())), @FechaInicioVigencia, @FechaFinVigencia,
+                ISNULL(@MontoTotal, 0), @PlazoEjecucion, @Observaciones, ISNULL(NULLIF(@Estatus, 0), 1), 1, @today, @IdUser
+            );
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Contrato creado correctamente.';
+            SET @liga = CONCAT('idContrato:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdContrato IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Contrato WHERE PKIdContrato = @PKIdContrato AND Activo = 1)
+                THROW 51000, 'Contrato no encontrado.', 1;
+            IF @FechaFinVigencia IS NOT NULL AND @FechaInicioVigencia IS NOT NULL AND @FechaFinVigencia < @FechaInicioVigencia
+                THROW 51000, 'La fecha fin de vigencia no puede ser anterior al inicio.', 1;
+
+            UPDATE PRES.Contrato
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdAutorizacionSuficiencia_PRES = @FKIdAutorizacionSuficiencia_PRES,
+                FKIdProveedor_SIS = @FKIdProveedor_SIS,
+                FKIdPoliza_CONTA = @FKIdPoliza_CONTA,
+                NumeroContrato = @NumeroContrato,
+                Descripcion = @Descripcion,
+                FechaContrato = ISNULL(@FechaContrato, FechaContrato),
+                FechaInicioVigencia = @FechaInicioVigencia,
+                FechaFinVigencia = @FechaFinVigencia,
+                MontoTotal = ISNULL(@MontoTotal, 0),
+                PlazoEjecucion = @PlazoEjecucion,
+                Observaciones = @Observaciones,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdContrato = @PKIdContrato;
+            SET @Id = @PKIdContrato;
+            SET @message = 'Contrato actualizado correctamente.';
+            SET @liga = CONCAT('idContrato:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdContrato IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Contrato WHERE PKIdContrato = @PKIdContrato AND Activo = 1)
+                THROW 51000, 'Contrato no encontrado.', 1;
+            UPDATE PRES.ContratoDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdContrato_PRES = @PKIdContrato AND Activo = 1;
+            UPDATE PRES.Contrato SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdContrato = @PKIdContrato;
+            SET @Id = @PKIdContrato;
+            SET @message = 'Contrato eliminado correctamente.';
+            SET @liga = CONCAT('idContrato:', @Id);
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT * FROM PRES.Vw_Contrato WHERE PKIdContrato = @PKIdContrato;
+            SET @message = 'Contrato consultado correctamente.';
+            SET @liga = CONCAT('idContrato:', @PKIdContrato);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdContrato IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Contrato WHERE PKIdContrato = @PKIdContrato AND Activo = 1)
+                THROW 51000, 'Contrato no encontrado.', 1;
+
+            INSERT INTO PRES.ContratoDetalle (
+                FKIdEmpresa_SIS, FKIdContrato_PRES, FKIdAutorizacionSuficienciaDetalle_PRES, FKIdPartida_CONTA,
+                Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre,
+                Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, c.FKIdEmpresa_SIS), @PKIdContrato, @FKIdAutorizacionSuficienciaDetalle_PRES, @FKIdPartida_CONTA,
+                   ISNULL(@Enero,0), ISNULL(@Febrero,0), ISNULL(@Marzo,0), ISNULL(@Abril,0), ISNULL(@Mayo,0), ISNULL(@Junio,0),
+                   ISNULL(@Julio,0), ISNULL(@Agosto,0), ISNULL(@Septiembre,0), ISNULL(@Octubre,0), ISNULL(@Noviembre,0), ISNULL(@Diciembre,0),
+                   @Observaciones, 1, @today, @IdUser
+            FROM PRES.Contrato c
+            WHERE c.PKIdContrato = @PKIdContrato;
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Detalle de contrato creado correctamente.';
+            SET @liga = CONCAT('idContratoDetalle:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdContratoDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.ContratoDetalle WHERE PKIdContratoDetalle = @PKIdContratoDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de contrato no encontrado.', 1;
+
+            UPDATE PRES.ContratoDetalle
+            SET FKIdAutorizacionSuficienciaDetalle_PRES = @FKIdAutorizacionSuficienciaDetalle_PRES,
+                FKIdPartida_CONTA = @FKIdPartida_CONTA,
+                Enero = ISNULL(@Enero,0), Febrero = ISNULL(@Febrero,0), Marzo = ISNULL(@Marzo,0), Abril = ISNULL(@Abril,0),
+                Mayo = ISNULL(@Mayo,0), Junio = ISNULL(@Junio,0), Julio = ISNULL(@Julio,0), Agosto = ISNULL(@Agosto,0),
+                Septiembre = ISNULL(@Septiembre,0), Octubre = ISNULL(@Octubre,0), Noviembre = ISNULL(@Noviembre,0), Diciembre = ISNULL(@Diciembre,0),
+                Observaciones = @Observaciones,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdContratoDetalle = @PKIdContratoDetalle;
+            SET @Id = @PKIdContratoDetalle;
+            SET @message = 'Detalle de contrato actualizado correctamente.';
+            SET @liga = CONCAT('idContratoDetalle:', @Id);
+        END
+        ELSE IF @Action = 7
+        BEGIN
+            IF @PKIdContratoDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.ContratoDetalle WHERE PKIdContratoDetalle = @PKIdContratoDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de contrato no encontrado.', 1;
+            UPDATE PRES.ContratoDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdContratoDetalle = @PKIdContratoDetalle;
+            SET @Id = @PKIdContratoDetalle;
+            SET @message = 'Detalle de contrato eliminado correctamente.';
+            SET @liga = CONCAT('idContratoDetalle:', @Id);
+        END
+        ELSE IF @Action = 8
+        BEGIN
+            SELECT * FROM PRES.Vw_ContratoDetalle WHERE PKIdContratoDetalle = @PKIdContratoDetalle;
+            SET @message = 'Detalle de contrato consultado correctamente.';
+            SET @liga = CONCAT('idContratoDetalle:', @PKIdContratoDetalle);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para contrato.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [PRES].[SP_MantenimientoFactura] (
+    @Action INT,
+    @PKIdFactura INT = NULL,
+    @PKIdFacturaDetalle INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdContrato_PRES INT = NULL,
+    @FKIdPoliza_CONTA INT = NULL,
+    @NumFactura NVARCHAR(250) = NULL,
+    @SerieFactura NVARCHAR(20) = NULL,
+    @FechaEmision DATE = NULL,
+    @FechaRecepcion DATE = NULL,
+    @Subtotal DECIMAL(20,4) = NULL,
+    @IVA DECIMAL(20,4) = NULL,
+    @Retencion DECIMAL(20,4) = NULL,
+    @Total DECIMAL(20,4) = NULL,
+    @UUID NVARCHAR(36) = NULL,
+    @FL_Docto NVARCHAR(1000) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @Estatus INT = NULL,
+    @FKIdContratoDetalle_PRES INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @MontoAplicado DECIMAL(20,4) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [PRES].[SP_MantenimientoFactura]', ' @PKIdFactura ', @PKIdFactura);
+    SET @Parameters = CONCAT('Action=', @Action, ', PKIdFactura=', ISNULL(CONVERT(NVARCHAR(30), @PKIdFactura), 'NULL'), ', PKIdFacturaDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdFacturaDetalle), 'NULL'), ', NumFactura=', ISNULL(@NumFactura, 'NULL'), ', Total=', ISNULL(CONVERT(NVARCHAR(30), @Total), 'NULL'), ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL'));
+    EXEC [SIS].[WriteSystemLog] @FK_IdOrigenLogMessage__SIS = 1, @Date = @today, @_Type = 1, @ProgName = 'PRES.SP_MantenimientoFactura', @EmployeeNo = @IdUser, @Category = NULL, @IPClient = NULL, @HostName = NULL, @Thread = NULL, @Level = 'INFO', @Logger = NULL, @Message = @message, @Exception = NULL, @Context = NULL, @MethodName = 'PRES.SP_MantenimientoFactura', @Parameters = @Parameters, @ExecutionTime = '0';
+    SET @message = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            IF @Total IS NULL
+                SET @Total = ISNULL(@Subtotal, 0) + ISNULL(@IVA, 0) - ISNULL(@Retencion, 0);
+
+            INSERT INTO PRES.Factura (
+                FKIdEmpresa_SIS, FKIdContrato_PRES, FKIdPoliza_CONTA, NumFactura, SerieFactura,
+                FechaEmision, FechaRecepcion, Subtotal, IVA, Retencion, Total, UUID, FL_Docto,
+                Observaciones, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdContrato_PRES, @FKIdPoliza_CONTA, @NumFactura, @SerieFactura,
+                ISNULL(@FechaEmision, CONVERT(DATE, GETDATE())), @FechaRecepcion, ISNULL(@Subtotal, 0),
+                ISNULL(@IVA, 0), ISNULL(@Retencion, 0), @Total, @UUID, @FL_Docto,
+                @Observaciones, ISNULL(NULLIF(@Estatus, 0), 1), 1, @today, @IdUser
+            );
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Factura creada correctamente.';
+            SET @liga = CONCAT('idFactura:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdFactura IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Factura WHERE PKIdFactura = @PKIdFactura AND Activo = 1)
+                THROW 51000, 'Factura no encontrada.', 1;
+            IF @Total IS NULL
+                SET @Total = ISNULL(@Subtotal, 0) + ISNULL(@IVA, 0) - ISNULL(@Retencion, 0);
+
+            UPDATE PRES.Factura
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdContrato_PRES = @FKIdContrato_PRES,
+                FKIdPoliza_CONTA = @FKIdPoliza_CONTA,
+                NumFactura = @NumFactura,
+                SerieFactura = @SerieFactura,
+                FechaEmision = ISNULL(@FechaEmision, FechaEmision),
+                FechaRecepcion = @FechaRecepcion,
+                Subtotal = ISNULL(@Subtotal, 0),
+                IVA = ISNULL(@IVA, 0),
+                Retencion = ISNULL(@Retencion, 0),
+                Total = @Total,
+                UUID = @UUID,
+                FL_Docto = @FL_Docto,
+                Observaciones = @Observaciones,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdFactura = @PKIdFactura;
+            SET @Id = @PKIdFactura;
+            SET @message = 'Factura actualizada correctamente.';
+            SET @liga = CONCAT('idFactura:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdFactura IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Factura WHERE PKIdFactura = @PKIdFactura AND Activo = 1)
+                THROW 51000, 'Factura no encontrada.', 1;
+            UPDATE PRES.FacturaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdFactura_PRES = @PKIdFactura AND Activo = 1;
+            UPDATE PRES.Factura SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdFactura = @PKIdFactura;
+            SET @Id = @PKIdFactura;
+            SET @message = 'Factura eliminada correctamente.';
+            SET @liga = CONCAT('idFactura:', @Id);
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT * FROM PRES.Vw_Factura WHERE PKIdFactura = @PKIdFactura;
+            SET @message = 'Factura consultada correctamente.';
+            SET @liga = CONCAT('idFactura:', @PKIdFactura);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdFactura IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Factura WHERE PKIdFactura = @PKIdFactura AND Activo = 1)
+                THROW 51000, 'Factura no encontrada.', 1;
+            IF @FKIdContratoDetalle_PRES IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.ContratoDetalle WHERE PKIdContratoDetalle = @FKIdContratoDetalle_PRES AND Activo = 1)
+                THROW 51000, 'Detalle de contrato no encontrado.', 1;
+            IF ISNULL(@MontoAplicado, 0) <= 0
+                THROW 51000, 'El monto aplicado debe ser mayor a cero.', 1;
+
+            INSERT INTO PRES.FacturaDetalle (
+                FKIdEmpresa_SIS, FKIdFactura_PRES, FKIdContratoDetalle_PRES, FKIdPartida_CONTA,
+                MontoAplicado, Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, f.FKIdEmpresa_SIS), @PKIdFactura, @FKIdContratoDetalle_PRES,
+                   ISNULL(@FKIdPartida_CONTA, cd.FKIdPartida_CONTA), @MontoAplicado, @Observaciones, 1, @today, @IdUser
+            FROM PRES.Factura f
+            INNER JOIN PRES.ContratoDetalle cd ON cd.PKIdContratoDetalle = @FKIdContratoDetalle_PRES
+            WHERE f.PKIdFactura = @PKIdFactura;
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Detalle de factura creado correctamente.';
+            SET @liga = CONCAT('idFacturaDetalle:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdFacturaDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.FacturaDetalle WHERE PKIdFacturaDetalle = @PKIdFacturaDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de factura no encontrado.', 1;
+            IF ISNULL(@MontoAplicado, 0) <= 0
+                THROW 51000, 'El monto aplicado debe ser mayor a cero.', 1;
+
+            UPDATE fd
+            SET FKIdContratoDetalle_PRES = @FKIdContratoDetalle_PRES,
+                FKIdPartida_CONTA = ISNULL(@FKIdPartida_CONTA, cd.FKIdPartida_CONTA),
+                MontoAplicado = @MontoAplicado,
+                Observaciones = @Observaciones,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM PRES.FacturaDetalle fd
+            INNER JOIN PRES.ContratoDetalle cd ON cd.PKIdContratoDetalle = @FKIdContratoDetalle_PRES AND cd.Activo = 1
+            WHERE fd.PKIdFacturaDetalle = @PKIdFacturaDetalle;
+            SET @Id = @PKIdFacturaDetalle;
+            SET @message = 'Detalle de factura actualizado correctamente.';
+            SET @liga = CONCAT('idFacturaDetalle:', @Id);
+        END
+        ELSE IF @Action = 7
+        BEGIN
+            IF @PKIdFacturaDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.FacturaDetalle WHERE PKIdFacturaDetalle = @PKIdFacturaDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de factura no encontrado.', 1;
+            UPDATE PRES.FacturaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdFacturaDetalle = @PKIdFacturaDetalle;
+            SET @Id = @PKIdFacturaDetalle;
+            SET @message = 'Detalle de factura eliminado correctamente.';
+            SET @liga = CONCAT('idFacturaDetalle:', @Id);
+        END
+        ELSE IF @Action = 8
+        BEGIN
+            SELECT * FROM PRES.Vw_FacturaDetalle WHERE PKIdFacturaDetalle = @PKIdFacturaDetalle;
+            SET @message = 'Detalle de factura consultado correctamente.';
+            SET @liga = CONCAT('idFacturaDetalle:', @PKIdFacturaDetalle);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para factura.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [PRES].[SP_MantenimientoCLC] (
+    @Action INT,
+    @PKIdCLC INT = NULL,
+    @PKIdCLCDetalle INT = NULL,
+    @PKIdCLCFactura INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdContrato_PRES INT = NULL,
+    @FKIdPoliza_CONTA INT = NULL,
+    @NumCLC NVARCHAR(20) = NULL,
+    @FechaSolicitud DATE = NULL,
+    @FechaAutorizacion DATE = NULL,
+    @ImporteTotal DECIMAL(20,4) = NULL,
+    @Observaciones NVARCHAR(500) = NULL,
+    @Estatus INT = NULL,
+    @FKIdContratoDetalle_PRES INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @Enero DECIMAL(20,4) = NULL,
+    @Febrero DECIMAL(20,4) = NULL,
+    @Marzo DECIMAL(20,4) = NULL,
+    @Abril DECIMAL(20,4) = NULL,
+    @Mayo DECIMAL(20,4) = NULL,
+    @Junio DECIMAL(20,4) = NULL,
+    @Julio DECIMAL(20,4) = NULL,
+    @Agosto DECIMAL(20,4) = NULL,
+    @Septiembre DECIMAL(20,4) = NULL,
+    @Octubre DECIMAL(20,4) = NULL,
+    @Noviembre DECIMAL(20,4) = NULL,
+    @Diciembre DECIMAL(20,4) = NULL,
+    @FKIdFactura_PRES INT = NULL,
+    @FKIdFacturaDetalle_PRES INT = NULL,
+    @MontoAplicado DECIMAL(20,4) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [PRES].[SP_MantenimientoCLC]', ' @PKIdCLC ', @PKIdCLC);
+    SET @Parameters = CONCAT('Action=', @Action, ', PKIdCLC=', ISNULL(CONVERT(NVARCHAR(30), @PKIdCLC), 'NULL'), ', PKIdCLCDetalle=', ISNULL(CONVERT(NVARCHAR(30), @PKIdCLCDetalle), 'NULL'), ', PKIdCLCFactura=', ISNULL(CONVERT(NVARCHAR(30), @PKIdCLCFactura), 'NULL'), ', NumCLC=', ISNULL(@NumCLC, 'NULL'), ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL'));
+    EXEC [SIS].[WriteSystemLog] @FK_IdOrigenLogMessage__SIS = 1, @Date = @today, @_Type = 1, @ProgName = 'PRES.SP_MantenimientoCLC', @EmployeeNo = @IdUser, @Category = NULL, @IPClient = NULL, @HostName = NULL, @Thread = NULL, @Level = 'INFO', @Logger = NULL, @Message = @message, @Exception = NULL, @Context = NULL, @MethodName = 'PRES.SP_MantenimientoCLC', @Parameters = @Parameters, @ExecutionTime = '0';
+    SET @message = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO PRES.CLC (
+                FKIdEmpresa_SIS, FKIdContrato_PRES, FKIdPoliza_CONTA, NumCLC, FechaSolicitud,
+                FechaAutorizacion, ImporteTotal, Observaciones, Estatus, Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdContrato_PRES, @FKIdPoliza_CONTA, @NumCLC, ISNULL(@FechaSolicitud, CONVERT(DATE, GETDATE())),
+                @FechaAutorizacion, ISNULL(@ImporteTotal, 0), @Observaciones, ISNULL(NULLIF(@Estatus, 0), 1), 1, @today, @IdUser
+            );
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'CLC creada correctamente.';
+            SET @liga = CONCAT('idCLC:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdCLC IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLC WHERE PKIdCLC = @PKIdCLC AND Activo = 1)
+                THROW 51000, 'CLC no encontrada.', 1;
+
+            UPDATE PRES.CLC
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdContrato_PRES = @FKIdContrato_PRES,
+                FKIdPoliza_CONTA = @FKIdPoliza_CONTA,
+                NumCLC = @NumCLC,
+                FechaSolicitud = ISNULL(@FechaSolicitud, FechaSolicitud),
+                FechaAutorizacion = @FechaAutorizacion,
+                ImporteTotal = ISNULL(@ImporteTotal, 0),
+                Observaciones = @Observaciones,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdCLC = @PKIdCLC;
+            SET @Id = @PKIdCLC;
+            SET @message = 'CLC actualizada correctamente.';
+            SET @liga = CONCAT('idCLC:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdCLC IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLC WHERE PKIdCLC = @PKIdCLC AND Activo = 1)
+                THROW 51000, 'CLC no encontrada.', 1;
+            UPDATE PRES.CLCFactura SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCLC_PRES = @PKIdCLC AND Activo = 1;
+            UPDATE PRES.CLCDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCLC_PRES = @PKIdCLC AND Activo = 1;
+            UPDATE PRES.CLC SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCLC = @PKIdCLC;
+            SET @Id = @PKIdCLC;
+            SET @message = 'CLC eliminada correctamente.';
+            SET @liga = CONCAT('idCLC:', @Id);
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT * FROM PRES.Vw_CLC WHERE PKIdCLC = @PKIdCLC;
+            SET @message = 'CLC consultada correctamente.';
+            SET @liga = CONCAT('idCLC:', @PKIdCLC);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdCLC IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLC WHERE PKIdCLC = @PKIdCLC AND Activo = 1)
+                THROW 51000, 'CLC no encontrada.', 1;
+            IF @FKIdContratoDetalle_PRES IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.ContratoDetalle WHERE PKIdContratoDetalle = @FKIdContratoDetalle_PRES AND Activo = 1)
+                THROW 51000, 'Detalle de contrato no encontrado.', 1;
+
+            INSERT INTO PRES.CLCDetalle (
+                FKIdEmpresa_SIS, FKIdCLC_PRES, FKIdContratoDetalle_PRES, FKIdPartida_CONTA,
+                Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre,
+                Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, clc.FKIdEmpresa_SIS), @PKIdCLC, @FKIdContratoDetalle_PRES,
+                   ISNULL(@FKIdPartida_CONTA, cd.FKIdPartida_CONTA), ISNULL(@Enero,0), ISNULL(@Febrero,0), ISNULL(@Marzo,0),
+                   ISNULL(@Abril,0), ISNULL(@Mayo,0), ISNULL(@Junio,0), ISNULL(@Julio,0), ISNULL(@Agosto,0),
+                   ISNULL(@Septiembre,0), ISNULL(@Octubre,0), ISNULL(@Noviembre,0), ISNULL(@Diciembre,0),
+                   @Observaciones, 1, @today, @IdUser
+            FROM PRES.CLC clc
+            INNER JOIN PRES.ContratoDetalle cd ON cd.PKIdContratoDetalle = @FKIdContratoDetalle_PRES
+            WHERE clc.PKIdCLC = @PKIdCLC;
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Detalle de CLC creado correctamente.';
+            SET @liga = CONCAT('idCLCDetalle:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdCLCDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLCDetalle WHERE PKIdCLCDetalle = @PKIdCLCDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de CLC no encontrado.', 1;
+
+            UPDATE cd
+            SET FKIdContratoDetalle_PRES = @FKIdContratoDetalle_PRES,
+                FKIdPartida_CONTA = ISNULL(@FKIdPartida_CONTA, ctd.FKIdPartida_CONTA),
+                Enero = ISNULL(@Enero,0), Febrero = ISNULL(@Febrero,0), Marzo = ISNULL(@Marzo,0), Abril = ISNULL(@Abril,0),
+                Mayo = ISNULL(@Mayo,0), Junio = ISNULL(@Junio,0), Julio = ISNULL(@Julio,0), Agosto = ISNULL(@Agosto,0),
+                Septiembre = ISNULL(@Septiembre,0), Octubre = ISNULL(@Octubre,0), Noviembre = ISNULL(@Noviembre,0), Diciembre = ISNULL(@Diciembre,0),
+                Observaciones = @Observaciones,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM PRES.CLCDetalle cd
+            INNER JOIN PRES.ContratoDetalle ctd ON ctd.PKIdContratoDetalle = @FKIdContratoDetalle_PRES AND ctd.Activo = 1
+            WHERE cd.PKIdCLCDetalle = @PKIdCLCDetalle;
+            SET @Id = @PKIdCLCDetalle;
+            SET @message = 'Detalle de CLC actualizado correctamente.';
+            SET @liga = CONCAT('idCLCDetalle:', @Id);
+        END
+        ELSE IF @Action = 7
+        BEGIN
+            IF @PKIdCLCDetalle IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLCDetalle WHERE PKIdCLCDetalle = @PKIdCLCDetalle AND Activo = 1)
+                THROW 51000, 'Detalle de CLC no encontrado.', 1;
+            UPDATE PRES.CLCDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCLCDetalle = @PKIdCLCDetalle;
+            SET @Id = @PKIdCLCDetalle;
+            SET @message = 'Detalle de CLC eliminado correctamente.';
+            SET @liga = CONCAT('idCLCDetalle:', @Id);
+        END
+        ELSE IF @Action = 8
+        BEGIN
+            SELECT * FROM PRES.Vw_CLCDetalle WHERE PKIdCLCDetalle = @PKIdCLCDetalle;
+            SET @message = 'Detalle de CLC consultado correctamente.';
+            SET @liga = CONCAT('idCLCDetalle:', @PKIdCLCDetalle);
+        END
+        ELSE IF @Action = 9
+        BEGIN
+            IF @PKIdCLC IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLC WHERE PKIdCLC = @PKIdCLC AND Activo = 1)
+                THROW 51000, 'CLC no encontrada.', 1;
+            IF @FKIdFacturaDetalle_PRES IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.FacturaDetalle WHERE PKIdFacturaDetalle = @FKIdFacturaDetalle_PRES AND Activo = 1)
+                THROW 51000, 'Detalle de factura no encontrado.', 1;
+            IF ISNULL(@MontoAplicado, 0) <= 0
+                THROW 51000, 'El monto aplicado debe ser mayor a cero.', 1;
+
+            INSERT INTO PRES.CLCFactura (
+                FKIdEmpresa_SIS, FKIdCLC_PRES, FKIdFactura_PRES, FKIdFacturaDetalle_PRES,
+                MontoAplicado, Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, clc.FKIdEmpresa_SIS), @PKIdCLC, ISNULL(@FKIdFactura_PRES, fd.FKIdFactura_PRES),
+                   @FKIdFacturaDetalle_PRES, @MontoAplicado, @Observaciones, 1, @today, @IdUser
+            FROM PRES.CLC clc
+            INNER JOIN PRES.FacturaDetalle fd ON fd.PKIdFacturaDetalle = @FKIdFacturaDetalle_PRES
+            WHERE clc.PKIdCLC = @PKIdCLC;
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Factura de CLC creada correctamente.';
+            SET @liga = CONCAT('idCLCFactura:', @Id);
+        END
+        ELSE IF @Action = 10
+        BEGIN
+            IF @PKIdCLCFactura IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLCFactura WHERE PKIdCLCFactura = @PKIdCLCFactura AND Activo = 1)
+                THROW 51000, 'Factura de CLC no encontrada.', 1;
+            IF ISNULL(@MontoAplicado, 0) <= 0
+                THROW 51000, 'El monto aplicado debe ser mayor a cero.', 1;
+
+            UPDATE cf
+            SET FKIdFactura_PRES = ISNULL(@FKIdFactura_PRES, fd.FKIdFactura_PRES),
+                FKIdFacturaDetalle_PRES = @FKIdFacturaDetalle_PRES,
+                MontoAplicado = @MontoAplicado,
+                Observaciones = @Observaciones,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM PRES.CLCFactura cf
+            INNER JOIN PRES.FacturaDetalle fd ON fd.PKIdFacturaDetalle = @FKIdFacturaDetalle_PRES AND fd.Activo = 1
+            WHERE cf.PKIdCLCFactura = @PKIdCLCFactura;
+            SET @Id = @PKIdCLCFactura;
+            SET @message = 'Factura de CLC actualizada correctamente.';
+            SET @liga = CONCAT('idCLCFactura:', @Id);
+        END
+        ELSE IF @Action = 11
+        BEGIN
+            IF @PKIdCLCFactura IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLCFactura WHERE PKIdCLCFactura = @PKIdCLCFactura AND Activo = 1)
+                THROW 51000, 'Factura de CLC no encontrada.', 1;
+            UPDATE PRES.CLCFactura SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCLCFactura = @PKIdCLCFactura;
+            SET @Id = @PKIdCLCFactura;
+            SET @message = 'Factura de CLC eliminada correctamente.';
+            SET @liga = CONCAT('idCLCFactura:', @Id);
+        END
+        ELSE IF @Action = 12
+        BEGIN
+            SELECT * FROM PRES.Vw_CLCFactura WHERE PKIdCLCFactura = @PKIdCLCFactura;
+            SET @message = 'Factura de CLC consultada correctamente.';
+            SET @liga = CONCAT('idCLCFactura:', @PKIdCLCFactura);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para CLC.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE [PRES].[SP_MantenimientoCheque] (
+    @Action INT,
+    @PKIdCheque INT = NULL,
+    @PKIdChequePartida INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdCLC_PRES INT = NULL,
+    @FKIdCuentaBancaria_TES INT = NULL,
+    @FKIdPoliza_CONTA INT = NULL,
+    @FechaEmision DATE = NULL,
+    @NumeroCheque NVARCHAR(50) = NULL,
+    @Concepto NVARCHAR(150) = NULL,
+    @ImporteTotal DECIMAL(20,4) = NULL,
+    @Observaciones NVARCHAR(500) = NULL,
+    @Estatus INT = NULL,
+    @FKIdCLCDetalle_PRES INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @MontoPagado DECIMAL(20,4) = NULL,
+    @IdUser INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @tipo NVARCHAR(20) = 'OK', @message NVARCHAR(4000) = '', @Parameters NVARCHAR(4000) = '', @liga NVARCHAR(100) = '', @today DATETIME2 = SYSDATETIME(), @Id INT;
+
+    SET @message = CONCAT('Iniciando el SP [PRES].[SP_MantenimientoCheque]', ' @PKIdCheque ', @PKIdCheque);
+    SET @Parameters = CONCAT('Action=', @Action, ', PKIdCheque=', ISNULL(CONVERT(NVARCHAR(30), @PKIdCheque), 'NULL'), ', PKIdChequePartida=', ISNULL(CONVERT(NVARCHAR(30), @PKIdChequePartida), 'NULL'), ', NumeroCheque=', ISNULL(@NumeroCheque, 'NULL'), ', IdUser=', ISNULL(CONVERT(NVARCHAR(30), @IdUser), 'NULL'));
+    EXEC [SIS].[WriteSystemLog] @FK_IdOrigenLogMessage__SIS = 1, @Date = @today, @_Type = 1, @ProgName = 'PRES.SP_MantenimientoCheque', @EmployeeNo = @IdUser, @Category = NULL, @IPClient = NULL, @HostName = NULL, @Thread = NULL, @Level = 'INFO', @Logger = NULL, @Message = @message, @Exception = NULL, @Context = NULL, @MethodName = 'PRES.SP_MantenimientoCheque', @Parameters = @Parameters, @ExecutionTime = '0';
+    SET @message = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO PRES.Cheque (
+                FKIdEmpresa_SIS, FKIdCLC_PRES, FKIdCuentaBancaria_TES, FKIdPoliza_CONTA,
+                FechaEmision, NumeroCheque, Concepto, ImporteTotal, Observaciones, Estatus,
+                Activo, FechaCreacion, UsuarioCreacion
+            )
+            VALUES (
+                @FKIdEmpresa_SIS, @FKIdCLC_PRES, @FKIdCuentaBancaria_TES, @FKIdPoliza_CONTA,
+                ISNULL(@FechaEmision, CONVERT(DATE, GETDATE())), @NumeroCheque, @Concepto, ISNULL(@ImporteTotal, 0),
+                @Observaciones, ISNULL(NULLIF(@Estatus, 0), 1), 1, @today, @IdUser
+            );
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Cheque creado correctamente.';
+            SET @liga = CONCAT('idCheque:', @Id);
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF @PKIdCheque IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Cheque WHERE PKIdCheque = @PKIdCheque AND Activo = 1)
+                THROW 51000, 'Cheque no encontrado.', 1;
+
+            UPDATE PRES.Cheque
+            SET FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdCLC_PRES = @FKIdCLC_PRES,
+                FKIdCuentaBancaria_TES = @FKIdCuentaBancaria_TES,
+                FKIdPoliza_CONTA = @FKIdPoliza_CONTA,
+                FechaEmision = ISNULL(@FechaEmision, FechaEmision),
+                NumeroCheque = @NumeroCheque,
+                Concepto = @Concepto,
+                ImporteTotal = ISNULL(@ImporteTotal, 0),
+                Observaciones = @Observaciones,
+                Estatus = ISNULL(NULLIF(@Estatus, 0), Estatus),
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            WHERE PKIdCheque = @PKIdCheque;
+            SET @Id = @PKIdCheque;
+            SET @message = 'Cheque actualizado correctamente.';
+            SET @liga = CONCAT('idCheque:', @Id);
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            IF @PKIdCheque IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Cheque WHERE PKIdCheque = @PKIdCheque AND Activo = 1)
+                THROW 51000, 'Cheque no encontrado.', 1;
+            UPDATE PRES.ChequePartidas SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCheque_PRES = @PKIdCheque AND Activo = 1;
+            UPDATE PRES.Cheque SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCheque = @PKIdCheque;
+            SET @Id = @PKIdCheque;
+            SET @message = 'Cheque eliminado correctamente.';
+            SET @liga = CONCAT('idCheque:', @Id);
+        END
+        ELSE IF @Action = 4
+        BEGIN
+            SELECT * FROM PRES.Vw_Cheque WHERE PKIdCheque = @PKIdCheque;
+            SET @message = 'Cheque consultado correctamente.';
+            SET @liga = CONCAT('idCheque:', @PKIdCheque);
+        END
+        ELSE IF @Action = 5
+        BEGIN
+            IF @PKIdCheque IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Cheque WHERE PKIdCheque = @PKIdCheque AND Activo = 1)
+                THROW 51000, 'Cheque no encontrado.', 1;
+            IF @FKIdCLCDetalle_PRES IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLCDetalle WHERE PKIdCLCDetalle = @FKIdCLCDetalle_PRES AND Activo = 1)
+                THROW 51000, 'Detalle de CLC no encontrado.', 1;
+            IF ISNULL(@MontoPagado, 0) <= 0
+                THROW 51000, 'El monto pagado debe ser mayor a cero.', 1;
+
+            INSERT INTO PRES.ChequePartidas (
+                FKIdEmpresa_SIS, FKIdCheque_PRES, FKIdCLCDetalle_PRES, FKIdPartida_CONTA,
+                MontoPagado, Observaciones, Activo, FechaCreacion, UsuarioCreacion
+            )
+            SELECT ISNULL(@FKIdEmpresa_SIS, ch.FKIdEmpresa_SIS), @PKIdCheque, @FKIdCLCDetalle_PRES,
+                   ISNULL(@FKIdPartida_CONTA, cd.FKIdPartida_CONTA), @MontoPagado, @Observaciones, 1, @today, @IdUser
+            FROM PRES.Cheque ch
+            INNER JOIN PRES.CLCDetalle cd ON cd.PKIdCLCDetalle = @FKIdCLCDetalle_PRES
+            WHERE ch.PKIdCheque = @PKIdCheque;
+            SET @Id = SCOPE_IDENTITY();
+            SET @message = 'Partida de cheque creada correctamente.';
+            SET @liga = CONCAT('idChequePartida:', @Id);
+        END
+        ELSE IF @Action = 6
+        BEGIN
+            IF @PKIdChequePartida IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.ChequePartidas WHERE PKIdChequePartida = @PKIdChequePartida AND Activo = 1)
+                THROW 51000, 'Partida de cheque no encontrada.', 1;
+            IF ISNULL(@MontoPagado, 0) <= 0
+                THROW 51000, 'El monto pagado debe ser mayor a cero.', 1;
+
+            UPDATE cp
+            SET FKIdCLCDetalle_PRES = @FKIdCLCDetalle_PRES,
+                FKIdPartida_CONTA = ISNULL(@FKIdPartida_CONTA, cd.FKIdPartida_CONTA),
+                MontoPagado = @MontoPagado,
+                Observaciones = @Observaciones,
+                FechaModificacion = @today,
+                UsuarioModificacion = @IdUser
+            FROM PRES.ChequePartidas cp
+            INNER JOIN PRES.CLCDetalle cd ON cd.PKIdCLCDetalle = @FKIdCLCDetalle_PRES AND cd.Activo = 1
+            WHERE cp.PKIdChequePartida = @PKIdChequePartida;
+            SET @Id = @PKIdChequePartida;
+            SET @message = 'Partida de cheque actualizada correctamente.';
+            SET @liga = CONCAT('idChequePartida:', @Id);
+        END
+        ELSE IF @Action = 7
+        BEGIN
+            IF @PKIdChequePartida IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.ChequePartidas WHERE PKIdChequePartida = @PKIdChequePartida AND Activo = 1)
+                THROW 51000, 'Partida de cheque no encontrada.', 1;
+            UPDATE PRES.ChequePartidas SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdChequePartida = @PKIdChequePartida;
+            SET @Id = @PKIdChequePartida;
+            SET @message = 'Partida de cheque eliminada correctamente.';
+            SET @liga = CONCAT('idChequePartida:', @Id);
+        END
+        ELSE IF @Action = 8
+        BEGIN
+            SELECT * FROM PRES.Vw_ChequePartidas WHERE PKIdChequePartida = @PKIdChequePartida;
+            SET @message = 'Partida de cheque consultada correctamente.';
+            SET @liga = CONCAT('idChequePartida:', @PKIdChequePartida);
+        END
+        ELSE
+            THROW 51000, 'Accion no valida para cheque.', 1;
+
+        COMMIT TRANSACTION;
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, @liga AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @tipo = 'ERROR';
+        SET @message = CONCAT(ISNULL(PROGRAM_NAME(), ''), CHAR(10), 'Error: ', ERROR_MESSAGE(), CHAR(10), 'Linea: ', ERROR_LINE());
+        SELECT (SELECT @tipo AS tipo, @message AS mensaje, '' AS liga FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS ResultJson;
+        RETURN -1;
+    END CATCH
+END
+GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

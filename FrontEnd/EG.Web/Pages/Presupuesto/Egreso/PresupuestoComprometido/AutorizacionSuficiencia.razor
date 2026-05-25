@@ -1,0 +1,218 @@
+@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia"
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Domain.DTOs.Responses.PresupuestoComprometido
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<AutorizacionSuficienciaResponse, AutorizacionSuficienciaResponse>
+
+@inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> DetalleService
+@inject IGenericCrudService<ContratoResponse> ContratoService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+        @if (SelectedAutorizacion == null)
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+                <PageHeader Title="Autorización Suficiencia"
+                            Subtitle="Autorización presupuestal desde solicitudes de suficiencia"
+                            Icon="@Icons.Material.Filled.Verified"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="AutorizacionSuficienciaResponse" @ref="table" Title="Autorizaciones"
+                                  SearchPlaceholder="Buscar requisición, solicitud o autorizado por..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidAutorizacionSuficiencia" T="AutorizacionSuficienciaResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="AutorizacionSuficienciaResponse">Requisición</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="AutorizacionSuficienciaResponse">Autorización</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="AutorizadoPorNombre" T="AutorizacionSuficienciaResponse">Autorizó</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="AutorizacionSuficienciaResponse">Estatus</MudTableSortLabel></MudTh>
+                            <MudTh>Activo</MudTh>
+                        </Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectAutorizacion(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanCreate" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidAutorizacionSuficiencia))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidAutorizacionSuficiencia))" />
+                            </MudTd>
+                            <MudTd>@item.PkidAutorizacionSuficiencia</MudTd>
+                            <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
+                            <MudTd>@item.FechaAutorizacion.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@TextOrDash(item.AutorizadoPorNombre)</MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
+                            <MudTd><MudChip T="string" Size="Size.Small" Color="@(item.Activo ? Color.Success : Color.Error)">@(item.Activo ? "Sí" : "No")</MudChip></MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+                    <div class="ml-2">
+                        <MudText Typo="Typo.h6" Style="font-weight:700">Autorización @SelectedAutorizacion.PkidAutorizacionSuficiencia</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedAutorizacion.RequisicionDescripcion</MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedAutorizacion.Estatus)">@TextOrDash(SelectedAutorizacion.EstatusDescripcion)</MudChip>
+                    <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanCreate" Disabled="@(SelectedAutorizacion.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(SelectedAutorizacion))" Class="ml-2" />
+                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedAutorizacion)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
+                </MudPaper>
+
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="AutorizacionSuficienciaDetalleResponse" @ref="detalleTable" Title="Detalle autorizado"
+                                  SearchPlaceholder="Buscar partida o bien..."
+                                  ServerDataFunc="LoadDetalles"
+                                  SearchString="@detalleSearch"
+                                  SearchStringChanged="(s) => detalleSearch = s"
+                                  OnSearch="ReloadDetalles">
+                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Bien</MudTh><MudTh>Cantidad</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></Header>
+                        <Row Context="d">
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedAutorizacion)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidAutorizacionSuficienciaDetalle))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedAutorizacion)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidAutorizacionSuficienciaDetalle))" />
+                            </MudTd>
+                            <MudTd>@TextOrDash(d.PartidaClaveNombre)</MudTd>
+                            <MudTd>@TextOrDash(d.TipoBienDescripcion)</MudTd>
+                            <MudTd>@((d.Cantidad ?? 0m).ToString("0.00", Culture))</MudTd>
+                            <MudTd>@Money(d.Total ?? 0m)</MudTd>
+                            <MudTd>@TextOrDash(d.Observaciones)</MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<AutorizacionSuficienciaResponse> table = null!;
+    private GenericTable<AutorizacionSuficienciaDetalleResponse> detalleTable = null!;
+    private AutorizacionSuficienciaResponse? SelectedAutorizacion;
+    private string detalleSearch = string.Empty;
+    private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "Presupuesto_Conprometido";
+    protected override string SubModuleName => "Autorizacion_Suficiencia";
+    protected override Type CreateDialogType => typeof(AutorizacionSuficienciaDialog);
+    protected override Type EditDialogType => typeof(AutorizacionSuficienciaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<AutorizacionSuficienciaResponse>);
+    protected override string GetDefaultSortLabel() => "FechaAutorizacion";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<AutorizacionSuficienciaResponse> items) => items.Select(x => new { x.PkidAutorizacionSuficiencia, x.RequisicionDescripcion, Fecha = x.FechaAutorizacion.ToString("dd/MM/yyyy"), x.AutorizadoPorNombre, x.EstatusDescripcion });
+    protected override async Task<string> GetItemNameForDelete(int id) => $"la autorización {(await Service.GetByIdAsync(id))?.Data?.PkidAutorizacionSuficiencia}";
+    protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+    private static Color StatusColor(int e) => e switch { 2 => Color.Success, 3 => Color.Error, _ => Color.Warning };
+    private static bool IsLocked(AutorizacionSuficienciaResponse item) => item.Estatus >= 2;
+    private async Task SelectAutorizacion(AutorizacionSuficienciaResponse item) { SelectedAutorizacion = item; await InvokeAsync(StateHasChanged); }
+    private async Task BackToTable() { SelectedAutorizacion = null; if (table != null) await table.ReloadData(); }
+    private async Task<TableData<AutorizacionSuficienciaDetalleResponse>> LoadDetalles(TableState state, CancellationToken _) {
+        if (SelectedAutorizacion == null) return new() { Items = [], TotalItems = 0 };
+        var r = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "PartidaClave", state.SortDirection, new() { ["FkidAutorizacionSuficienciaPres"] = SelectedAutorizacion.PkidAutorizacionSuficiencia });
+        return new() { Items = r?.Items ?? [], TotalItems = r?.TotalCount ?? 0 };
+    }
+    private async Task ReloadDetalles() { if (detalleTable != null) await detalleTable.ReloadData(); }
+    private async Task AddDetalle() => await OpenDetalle(null);
+    private async Task EditDetalle(int id) => await OpenDetalle(id);
+    private async Task OpenDetalle(int? id) {
+        if (SelectedAutorizacion == null) return;
+        var p = new DialogParameters { ["Id"] = id, ["AutorizacionId"] = SelectedAutorizacion.PkidAutorizacionSuficiencia, ["AutorizacionNombre"] = $"Autorización {SelectedAutorizacion.PkidAutorizacionSuficiencia}" };
+        var d = await DialogService.ShowAsync<AutorizacionSuficienciaDetalleDialog>(id.HasValue ? "Editar detalle" : "Nuevo detalle", p, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await d.Result) is { Canceled: false }) await ReloadDetalles();
+    }
+    private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
+
+    private async Task GenerateContrato(AutorizacionSuficienciaResponse autorizacion)
+    {
+        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidAutorizacionSuficienciaPres"] = autorizacion.PkidAutorizacionSuficiencia });
+        var details = detailsResponse?.Items?.ToList() ?? new List<AutorizacionSuficienciaDetalleResponse>();
+        if (details.Count == 0)
+        {
+            Snackbar.Add("La autorizacion no tiene detalle para generar contrato.", Severity.Warning);
+            return;
+        }
+
+        var existing = await ContratoService.GetAllPaginadoAsync(1, 1, string.Empty, "PkidContrato", SortDirection.Ascending, new() { ["FkidAutorizacionSuficienciaPres"] = autorizacion.PkidAutorizacionSuficiencia });
+        if (existing?.Items?.Any() == true)
+        {
+            Snackbar.Add("Ya existe un contrato para esta autorizacion.", Severity.Warning);
+            return;
+        }
+
+        var contrato = new ContratoResponse
+        {
+            FkidEmpresaSis = autorizacion.FkidEmpresaSis,
+            FkidAutorizacionSuficienciaPres = autorizacion.PkidAutorizacionSuficiencia,
+            FkidSolicitudSuficienciaPres = autorizacion.FkidSolicitudSuficienciaPres,
+            FkidRequisicionOrco = autorizacion.FkidRequisicionOrco,
+            NumeroContrato = $"AUT-{autorizacion.PkidAutorizacionSuficiencia}",
+            Descripcion = autorizacion.RequisicionDescripcion ?? $"Contrato de autorizacion {autorizacion.PkidAutorizacionSuficiencia}",
+            FechaContrato = DateOnly.FromDateTime(DateTime.Today),
+            MontoTotal = details.Sum(DetailTotal),
+            Observaciones = $"Generado desde autorizacion {autorizacion.PkidAutorizacionSuficiencia}",
+            Estatus = 1,
+            Activo = true
+        };
+
+        var contratoDetalles = details.Select(detail => new ContratoDetalleResponse
+        {
+            FkidEmpresaSis = detail.FkidEmpresaSis,
+            FkidAutorizacionSuficienciaDetallePres = detail.PkidAutorizacionSuficienciaDetalle,
+            FkidPartidaConta = detail.FkidPartidaConta,
+            PartidaClave = detail.PartidaClave,
+            PartidaDescripcion = detail.PartidaDescripcion,
+            PartidaClaveNombre = detail.PartidaClaveNombre,
+            Enero = detail.Enero,
+            Febrero = detail.Febrero,
+            Marzo = detail.Marzo,
+            Abril = detail.Abril,
+            Mayo = detail.Mayo,
+            Junio = detail.Junio,
+            Julio = detail.Julio,
+            Agosto = detail.Agosto,
+            Septiembre = detail.Septiembre,
+            Octubre = detail.Octubre,
+            Noviembre = detail.Noviembre,
+            Diciembre = detail.Diciembre,
+            Observaciones = detail.Observaciones,
+            Activo = true
+        }).ToList();
+
+        var parameters = new DialogParameters
+        {
+            ["PrefillItem"] = contrato,
+            ["PrefillDetalles"] = contratoDetalles
+        };
+
+        var dialog = await DialogService.ShowAsync<ContratoDialog>("Registrar comprometido", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            autorizacion.Estatus = 2;
+            await Service.UpdateAsync(autorizacion, autorizacion.PkidAutorizacionSuficiencia);
+            await ReloadData();
+        }
+    }
+
+    private static decimal DetailTotal(AutorizacionSuficienciaDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+}

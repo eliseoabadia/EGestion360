@@ -1,0 +1,67 @@
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<ChequePartidaResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="ChequePartidaResponse" Title="@Title" MaxWidth="MaxWidth.Small" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="ChequePartidaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ChequeNombre</MudText></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField T="int" @bind-Value="item.FkidClcdetallePres" Label="Detalle CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField T="decimal" @bind-Value="item.MontoPagado" Label="Monto pagado" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int ChequeId { get; set; }
+    [Parameter] public string ChequeNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
+    private BaseEntityForm<ChequePartidaResponse> form = null!;
+    private ChequePartidaResponse item = new() { Activo = true };
+    private string Title => Id.HasValue ? "Editar partida de cheque" : "Nueva partida de cheque";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            item.FkidChequePres = ChequeId;
+            return;
+        }
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Data != null)
+        {
+            item = response.Data;
+            ChequeId = item.FkidChequePres;
+            ChequeNombre = item.NumeroCheque ?? ChequeNombre;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+        item.FkidChequePres = ChequeId;
+        var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (result?.Success == true)
+        {
+            Snackbar.Add("Partida guardada correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+        Snackbar.Add(result?.Message ?? "No fue posible guardar la partida.", Severity.Error);
+    }
+}

@@ -530,15 +530,27 @@ VALUES
 
 
 (2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Programa_Anual_Adquisiciones', 'ADQPAA01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
-(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Requisicion', 'ADQREQ01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
-(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Cotizacion', 'ADQCOT01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
-(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'SolicitudSuficiencia', 'ADQSUF01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Requisicion', 'ADQREQ01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Cotizacion', 'ADQCOT01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'SolicitudSuficiencia', 'ADQSUF01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Egreso', 'PREEGRE01', 'Presupuesto', 'view,view-menu', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion', 'PREEGRE02', 'Egreso', 'view,view-menu', 0),
-(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Anteproyecto_Egresos', 'EGREPLA01', 'Planeacion', 'view,view-menu,delete,new,update', 0),
-(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Investigacion_Mercado', 'EGREPLA02', 'Planeacion', 'view,view-menu,delete,new,update', 0),
-(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Autorizado', 'PREEGRE03', 'Presupuesto', 'view,view-menu,delete,new,update', 0),
+(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Anteproyecto_Egresos', 'EGREPLA01', 'Planeacion', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Investigacion_Mercado', 'EGREPLA02', 'Planeacion', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Autorizado', 'PREEGRE03', 'Presupuesto', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Comprometido', 'PREEPC02', 'Egreso', 'view,view-menu', 0),
+(2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Suficiencia', 'PREEPC03', 'Presupuesto_Comprometido', 'view,view-menu,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Autorizacion_Suficiencia', 'PREEPC04', 'Presupuesto_Comprometido', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Registro_Comprometido', 'PREEPC05', 'Presupuesto_Comprometido', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+
+
+(2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Tesoreria', 'PREETES01', 'Presupuesto', 'view,view-menu', 0),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'CuentasXPagar', 'PREETES01', 'Tesoreria', 'view,view-menu', 0),
+(2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'RecepcionFactura_ComprobantePago', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'Provision_Pago', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'ElaboracionCheque_Transferencia', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+
 
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'perfil', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -568,12 +580,17 @@ VALUES
 CREATE TABLE dbo.AspNetClaimValues (
     Id INT IDENTITY NOT NULL,
     ClaimId INT,
-    Value NVARCHAR(50) NOT NULL,
+    Value NVARCHAR(128) NOT NULL,
     Created DATETIME NOT NULL CONSTRAINT CONSTRAINT_DF_AspNetClaimValues_Created DEFAULT GETDATE(),
     CONSTRAINT CONSTRAINT_PK_AspNetClaimValues PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT CONSTRAINT_FK_AspNetClaimValues_Claim FOREIGN KEY (ClaimId) REFERENCES dbo.AspNetClaims(Id)
 );
 GO
+
+--ALTER TABLE dbo.AspNetClaimValues
+--ALTER COLUMN Value NVARCHAR(128) NOT NULL;
+--GO
+
 
 
 SELECT 'EXEC spConfiguracionDeRolYClaims ''' + [Group] + ''', ''' + [SubGroup] + ''', ''10000'', ''' + [Values] + ''';'
@@ -653,14 +670,23 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_PagoSF', '10000', 'view,view
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Programa_Anual_Adquisiciones', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Investigacion_Mercado', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Investigacion_Mercado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Comprometido', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficiencia', '10000', 'view,view-menu,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Autorizacion_Suficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Registro_Comprometido', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Tesoreria', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXPagar', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'RecepcionFactura_ComprobantePago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'ElaboracionCheque_Transferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -850,11 +876,22 @@ USING (VALUES
     (301, N'Presupuesto Autorizado', 1, 300, N'Presupuesto Autorizado', N'/Presupuesto/Egreso/Presupuesto_Autorizado', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
     (302, N'Investigación de Mercado', 1, 300, N'Investigación de Mercado', N'/Presupuesto/Egreso/Investigacion_Mercado', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
     (311, N'Anteproyecto de Egresos', 1, 310, N'Anteproyecto de Egresos', N'/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
+    (312, N'Presupuesto Comprometido', 1, 300, N'Presupuesto Comprometido', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()), 
+    (313, N'Solicitud Suficiencia', 1, 300, N'Solicitud Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (314, N'Autorizacion Suficiencia', 1, 300, N'Autorizacion Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (315, N'Registro Comprometido', 1, 300, N'Registro Comprometido', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
+
+    (350, N'Tesorería', 1, 2, N'Tesorería', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
+    (351, N'Cuentas por Pagar', 1, 350, N'Cuentas por Pagar', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
+    (352, N'Recepción de Facturas y Comprobantes de Pago', 1, 351, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesorería/CuentasXPagar/Factura_Pago', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
+    (353, N'Provisión del Pago', 1, 351, N'Provisión del Pago', N'/Presupuesto/Tesorería/CuentasXPagar/Provision_Pago', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
+    (354, N'Elaboración de Cheques o Transferencias', 1, 351, N'Elaboración de Cheques o Transferencias', N'/Presupuesto/Tesorería/CuentasXPagar/Cheque_Transferencia', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
+
 
     (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
-    (401, N'Requisicion', 2, 4, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
-    (402, N'Cotización', 2, 4, N'Cotización', N'/Adquisiciones/Cotizacion', N'RiListCheck2', 1, 'ESP', 6, 1, GETDATE()),
-    (403, N'Solicitud Suficiencia', 2, 4, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'RiListCheck2', 1, 'ESP', 7, 1, GETDATE()),
+    (401, N'Requisicion', 2, 400, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
+    (402, N'Cotización', 2, 400, N'Cotización', N'/Adquisiciones/Cotizacion', N'RiListCheck2', 1, 'ESP', 6, 1, GETDATE()),
+    (403, N'Solicitud Suficiencia', 2, 400, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'RiListCheck2', 1, 'ESP', 7, 1, GETDATE()),
 
 
 

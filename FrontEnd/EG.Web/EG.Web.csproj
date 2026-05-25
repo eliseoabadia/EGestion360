@@ -36,7 +36,9 @@
     <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
     <Folder Include="Pages\ConteoCiclico\" />
     <Folder Include="Pages\Contabilidad\" />
+    <Folder Include="Pages\Presupuesto\Egreso\PresupuestoComprometido\" />
     <Folder Include="Pages\Presupuesto\Egreso\Planeacion\" />
+    <Folder Include="Pages\Presupuesto\Tesoreria\CuentasXPagar\" />
     <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 

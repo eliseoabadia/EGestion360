@@ -2785,5 +2785,302 @@ LEFT JOIN CONTA.Partida part ON ausd.FKIdPartida_CONTA = part.PKIdPartida AND pa
 WHERE ausd.Activo = 1;
 GO
 
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_Contrato] AS
+SELECT
+    c.PKIdContrato,
+    c.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    c.FKIdAutorizacionSuficiencia_PRES,
+    aus.FKIdSolicitudSuficiencia_PRES,
+    ss.FKIdRequisicion_ORCO,
+    req.Descripcion AS RequisicionDescripcion,
+    c.FKIdProveedor_SIS,
+    prov.Clave AS ProveedorClave,
+    prov.Nombre AS ProveedorNombre,
+    prov.Rfc AS ProveedorRFC,
+    c.FKIdPoliza_CONTA,
+    pol.ClavePoliza,
+    c.NumeroContrato,
+    c.Descripcion,
+    c.FechaContrato,
+    c.FechaInicioVigencia,
+    c.FechaFinVigencia,
+    c.MontoTotal,
+    c.PlazoEjecucion,
+    c.Observaciones,
+    c.Estatus,
+    CASE c.Estatus WHEN 1 THEN 'Borrador' WHEN 2 THEN 'Vigente' WHEN 3 THEN 'Concluido' WHEN 4 THEN 'Cancelado' ELSE 'Sin definir' END AS EstatusDescripcion,
+    c.Activo,
+    c.FechaCreacion,
+    c.UsuarioCreacion,
+    c.FechaModificacion,
+    c.UsuarioModificacion
+FROM PRES.Contrato c
+INNER JOIN PRES.AutorizacionSuficiencia aus ON c.FKIdAutorizacionSuficiencia_PRES = aus.PKIdAutorizacionSuficiencia AND aus.Activo = 1
+LEFT JOIN PRES.SolicitudSuficiencia ss ON aus.FKIdSolicitudSuficiencia_PRES = ss.PKIdSolicitudSuficiencia AND ss.Activo = 1
+LEFT JOIN ORCO.Requisicion req ON ss.FKIdRequisicion_ORCO = req.PKIdRequisicion AND req.Activo = 1
+LEFT JOIN SIS.Empresa emp ON c.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
+LEFT JOIN CONTA.Poliza pol ON c.FKIdPoliza_CONTA = pol.PKIdPoliza AND pol.Activo = 1
+WHERE c.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_ContratoDetalle] AS
+SELECT
+    cd.PKIdContratoDetalle,
+    cd.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    cd.FKIdContrato_PRES,
+    c.NumeroContrato,
+    c.FKIdProveedor_SIS,
+    prov.Nombre AS ProveedorNombre,
+    cd.FKIdAutorizacionSuficienciaDetalle_PRES,
+    cd.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS PartidaClaveNombre,
+    cd.Enero, cd.Febrero, cd.Marzo, cd.Abril, cd.Mayo, cd.Junio,
+    cd.Julio, cd.Agosto, cd.Septiembre, cd.Octubre, cd.Noviembre, cd.Diciembre,
+    cd.Total,
+    cd.Observaciones,
+    cd.Activo,
+    cd.FechaCreacion,
+    cd.UsuarioCreacion,
+    cd.FechaModificacion,
+    cd.UsuarioModificacion
+FROM PRES.ContratoDetalle cd
+INNER JOIN PRES.Contrato c ON cd.FKIdContrato_PRES = c.PKIdContrato AND c.Activo = 1
+LEFT JOIN SIS.Empresa emp ON cd.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
+LEFT JOIN CONTA.Partida part ON cd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE cd.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_Factura] AS
+SELECT
+    f.PKIdFactura,
+    f.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    f.FKIdContrato_PRES,
+    c.NumeroContrato,
+    c.FKIdProveedor_SIS,
+    prov.Nombre AS ProveedorNombre,
+    f.FKIdPoliza_CONTA,
+    pol.ClavePoliza,
+    f.NumFactura,
+    f.SerieFactura,
+    f.FechaEmision,
+    f.FechaRecepcion,
+    f.Subtotal,
+    f.IVA,
+    f.Retencion,
+    f.Total,
+    f.UUID,
+    f.FL_Docto,
+    f.Observaciones,
+    f.Estatus,
+    CASE f.Estatus WHEN 1 THEN 'Registrada' WHEN 2 THEN 'Validada' WHEN 3 THEN 'Devengada' WHEN 4 THEN 'Rechazada' ELSE 'Sin definir' END AS EstatusDescripcion,
+    f.Activo,
+    f.FechaCreacion,
+    f.UsuarioCreacion,
+    f.FechaModificacion,
+    f.UsuarioModificacion
+FROM PRES.Factura f
+INNER JOIN PRES.Contrato c ON f.FKIdContrato_PRES = c.PKIdContrato AND c.Activo = 1
+LEFT JOIN SIS.Empresa emp ON f.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
+LEFT JOIN CONTA.Poliza pol ON f.FKIdPoliza_CONTA = pol.PKIdPoliza AND pol.Activo = 1
+WHERE f.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_FacturaDetalle] AS
+SELECT
+    fd.PKIdFacturaDetalle,
+    fd.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    fd.FKIdFactura_PRES,
+    f.NumFactura,
+    fd.FKIdContratoDetalle_PRES,
+    cd.FKIdContrato_PRES,
+    c.NumeroContrato,
+    fd.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS PartidaClaveNombre,
+    fd.MontoAplicado,
+    fd.Observaciones,
+    fd.Activo,
+    fd.FechaCreacion,
+    fd.UsuarioCreacion,
+    fd.FechaModificacion,
+    fd.UsuarioModificacion
+FROM PRES.FacturaDetalle fd
+INNER JOIN PRES.Factura f ON fd.FKIdFactura_PRES = f.PKIdFactura AND f.Activo = 1
+INNER JOIN PRES.ContratoDetalle cd ON fd.FKIdContratoDetalle_PRES = cd.PKIdContratoDetalle AND cd.Activo = 1
+INNER JOIN PRES.Contrato c ON cd.FKIdContrato_PRES = c.PKIdContrato AND c.Activo = 1
+LEFT JOIN SIS.Empresa emp ON fd.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN CONTA.Partida part ON fd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE fd.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_CLC] AS
+SELECT
+    clc.PKIdCLC,
+    clc.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    clc.FKIdContrato_PRES,
+    c.NumeroContrato,
+    c.FKIdProveedor_SIS,
+    prov.Nombre AS ProveedorNombre,
+    clc.FKIdPoliza_CONTA,
+    pol.ClavePoliza,
+    clc.NumCLC,
+    clc.FechaSolicitud,
+    clc.FechaAutorizacion,
+    clc.ImporteTotal,
+    clc.Observaciones,
+    clc.Estatus,
+    CASE clc.Estatus WHEN 1 THEN 'Borrador' WHEN 2 THEN 'Solicitada' WHEN 3 THEN 'Autorizada' WHEN 4 THEN 'Pagada' WHEN 5 THEN 'Cancelada' ELSE 'Sin definir' END AS EstatusDescripcion,
+    clc.Activo,
+    clc.FechaCreacion,
+    clc.UsuarioCreacion,
+    clc.FechaModificacion,
+    clc.UsuarioModificacion
+FROM PRES.CLC clc
+INNER JOIN PRES.Contrato c ON clc.FKIdContrato_PRES = c.PKIdContrato AND c.Activo = 1
+LEFT JOIN SIS.Empresa emp ON clc.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND prov.Activo = 1
+LEFT JOIN CONTA.Poliza pol ON clc.FKIdPoliza_CONTA = pol.PKIdPoliza AND pol.Activo = 1
+WHERE clc.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_CLCDetalle] AS
+SELECT
+    cd.PKIdCLCDetalle,
+    cd.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    cd.FKIdCLC_PRES,
+    clc.NumCLC,
+    cd.FKIdContratoDetalle_PRES,
+    ctd.FKIdContrato_PRES,
+    c.NumeroContrato,
+    cd.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS PartidaClaveNombre,
+    cd.Enero, cd.Febrero, cd.Marzo, cd.Abril, cd.Mayo, cd.Junio,
+    cd.Julio, cd.Agosto, cd.Septiembre, cd.Octubre, cd.Noviembre, cd.Diciembre,
+    cd.Total,
+    cd.Observaciones,
+    cd.Activo,
+    cd.FechaCreacion,
+    cd.UsuarioCreacion,
+    cd.FechaModificacion,
+    cd.UsuarioModificacion
+FROM PRES.CLCDetalle cd
+INNER JOIN PRES.CLC clc ON cd.FKIdCLC_PRES = clc.PKIdCLC AND clc.Activo = 1
+INNER JOIN PRES.ContratoDetalle ctd ON cd.FKIdContratoDetalle_PRES = ctd.PKIdContratoDetalle AND ctd.Activo = 1
+INNER JOIN PRES.Contrato c ON ctd.FKIdContrato_PRES = c.PKIdContrato AND c.Activo = 1
+LEFT JOIN SIS.Empresa emp ON cd.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN CONTA.Partida part ON cd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE cd.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_CLCFactura] AS
+SELECT
+    cf.PKIdCLCFactura,
+    cf.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    cf.FKIdCLC_PRES,
+    clc.NumCLC,
+    cf.FKIdFactura_PRES,
+    f.NumFactura,
+    cf.FKIdFacturaDetalle_PRES,
+    fd.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    cf.MontoAplicado,
+    cf.Observaciones,
+    cf.Activo,
+    cf.FechaCreacion,
+    cf.UsuarioCreacion,
+    cf.FechaModificacion,
+    cf.UsuarioModificacion
+FROM PRES.CLCFactura cf
+INNER JOIN PRES.CLC clc ON cf.FKIdCLC_PRES = clc.PKIdCLC AND clc.Activo = 1
+INNER JOIN PRES.Factura f ON cf.FKIdFactura_PRES = f.PKIdFactura AND f.Activo = 1
+INNER JOIN PRES.FacturaDetalle fd ON cf.FKIdFacturaDetalle_PRES = fd.PKIdFacturaDetalle AND fd.Activo = 1
+LEFT JOIN SIS.Empresa emp ON cf.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN CONTA.Partida part ON fd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE cf.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_Cheque] AS
+SELECT
+    ch.PKIdCheque,
+    ch.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    ch.FKIdCLC_PRES,
+    clc.NumCLC,
+    clc.FKIdContrato_PRES,
+    c.NumeroContrato,
+    ch.FKIdCuentaBancaria_TES,
+    ch.FKIdPoliza_CONTA,
+    pol.ClavePoliza,
+    ch.FechaEmision,
+    ch.NumeroCheque,
+    ch.Concepto,
+    ch.ImporteTotal,
+    ch.Observaciones,
+    ch.Estatus,
+    CASE ch.Estatus WHEN 1 THEN 'Registrado' WHEN 2 THEN 'Entregado' WHEN 3 THEN 'Cobrado' WHEN 4 THEN 'Cancelado' ELSE 'Sin definir' END AS EstatusDescripcion,
+    ch.Activo,
+    ch.FechaCreacion,
+    ch.UsuarioCreacion,
+    ch.FechaModificacion,
+    ch.UsuarioModificacion
+FROM PRES.Cheque ch
+INNER JOIN PRES.CLC clc ON ch.FKIdCLC_PRES = clc.PKIdCLC AND clc.Activo = 1
+INNER JOIN PRES.Contrato c ON clc.FKIdContrato_PRES = c.PKIdContrato AND c.Activo = 1
+LEFT JOIN SIS.Empresa emp ON ch.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN CONTA.Poliza pol ON ch.FKIdPoliza_CONTA = pol.PKIdPoliza AND pol.Activo = 1
+WHERE ch.Activo = 1;
+GO
+
+CREATE OR ALTER VIEW [PRES].[Vw_ChequePartidas] AS
+SELECT
+    cp.PKIdChequePartida,
+    cp.FKIdEmpresa_SIS,
+    emp.Nombre AS EmpresaNombre,
+    cp.FKIdCheque_PRES,
+    ch.NumeroCheque,
+    cp.FKIdCLCDetalle_PRES,
+    clcd.FKIdCLC_PRES,
+    clc.NumCLC,
+    cp.FKIdPartida_CONTA,
+    part.Clave AS PartidaClave,
+    part.Descripcion AS PartidaDescripcion,
+    CONCAT(part.Clave, ' - ', part.Descripcion) AS PartidaClaveNombre,
+    cp.MontoPagado,
+    cp.Observaciones,
+    cp.Activo,
+    cp.FechaCreacion,
+    cp.UsuarioCreacion,
+    cp.FechaModificacion,
+    cp.UsuarioModificacion
+FROM PRES.ChequePartidas cp
+INNER JOIN PRES.Cheque ch ON cp.FKIdCheque_PRES = ch.PKIdCheque AND ch.Activo = 1
+INNER JOIN PRES.CLCDetalle clcd ON cp.FKIdCLCDetalle_PRES = clcd.PKIdCLCDetalle AND clcd.Activo = 1
+INNER JOIN PRES.CLC clc ON clcd.FKIdCLC_PRES = clc.PKIdCLC AND clc.Activo = 1
+LEFT JOIN SIS.Empresa emp ON cp.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
+LEFT JOIN CONTA.Partida part ON cp.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
+WHERE cp.Activo = 1;
+GO
+
 PRINT 'Vistas creadas exitosamente.';
 GO

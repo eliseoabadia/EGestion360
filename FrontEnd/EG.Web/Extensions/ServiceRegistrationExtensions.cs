@@ -3,8 +3,10 @@ using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
@@ -70,6 +72,8 @@ public static class ApiServiceExtensions
         RegisterCrud<RequisicionDetalleResponse>(services, "api/RequisicionDetalle");
         RegisterCrud<SolicitudSuficienciaResponse>(services, "api/SolicitudSuficiencia");
         RegisterCrud<SolicitudSuficienciaDetalleResponse>(services, "api/SolicitudSuficienciaDetalle");
+        RegisterCrud<AutorizacionSuficienciaResponse>(services, "api/AutorizacionSuficiencia");
+        RegisterCrud<AutorizacionSuficienciaDetalleResponse>(services, "api/AutorizacionSuficienciaDetalle");
 
         RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");
         RegisterCrud<GrupoBienResponse>(services, "api/GrupoBien");
@@ -103,6 +107,16 @@ public static class ApiServiceExtensions
         RegisterCrud<ConceptoResponse>(services, "api/Concepto");
         RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");
         RegisterCrud<ProgramaResponse>(services, "api/Programa");
+
+        RegisterCrud<ContratoResponse>(services, "api/Contrato");
+        RegisterCrud<ContratoDetalleResponse>(services, "api/ContratoDetalle");
+        RegisterCrud<FacturaResponse>(services, "api/Factura");
+        RegisterCrud<FacturaDetalleResponse>(services, "api/FacturaDetalle");
+        RegisterCrud<CLCResponse>(services, "api/CLC");
+        RegisterCrud<CLCDetalleResponse>(services, "api/CLCDetalle");
+        RegisterCrud<CLCFacturaResponse>(services, "api/CLCFactura");
+        RegisterCrud<ChequeResponse>(services, "api/Cheque");
+        RegisterCrud<ChequePartidaResponse>(services, "api/ChequePartida");
 
         return services;
     }

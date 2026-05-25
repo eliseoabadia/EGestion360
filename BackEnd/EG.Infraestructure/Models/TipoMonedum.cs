@@ -29,6 +29,8 @@ public partial class TipoMonedum
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<CuentaBancarium> CuentaBancaria { get; set; } = new List<CuentaBancarium>();
+
     public virtual Paise FkidPaisSisNavigation { get; set; }
 
     public virtual ICollection<TipoCambio> TipoCambios { get; set; } = new List<TipoCambio>();
