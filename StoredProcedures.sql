@@ -244,13 +244,21 @@ BEGIN
             IF @PKIdAutorizacionSuficiencia IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.AutorizacionSuficiencia WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia AND Activo = 1)
                 THROW 51000, 'Autorizacion de suficiencia no encontrada.', 1;
             IF EXISTS (SELECT 1 FROM PRES.Contrato WHERE FKIdAutorizacionSuficiencia_PRES = @PKIdAutorizacionSuficiencia AND Activo = 1)
-                THROW 51000, 'No se puede eliminar la autorizacion porque ya tiene contrato activo.', 1;
+                THROW 51000, 'No se puede eliminar la autorizacion porque ya tiene contrato activo. Elimine primero el registro comprometido.', 1;
+
+            DECLARE @FKIdSolicitudSuficienciaReactivar INT;
+            SELECT @FKIdSolicitudSuficienciaReactivar = FKIdSolicitudSuficiencia_PRES
+            FROM PRES.AutorizacionSuficiencia
+            WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia;
 
             UPDATE PRES.AutorizacionSuficienciaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdAutorizacionSuficiencia_PRES = @PKIdAutorizacionSuficiencia AND Activo = 1;
             UPDATE PRES.AutorizacionSuficiencia SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdAutorizacionSuficiencia = @PKIdAutorizacionSuficiencia;
+            UPDATE PRES.SolicitudSuficiencia
+            SET Estatus = 1, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdSolicitudSuficiencia = @FKIdSolicitudSuficienciaReactivar AND Activo = 1;
 
             SET @Id = @PKIdAutorizacionSuficiencia;
-            SET @message = 'Autorizacion de suficiencia eliminada correctamente.';
+            SET @message = 'Autorizacion de suficiencia eliminada correctamente. La solicitud regreso a la etapa anterior.';
             SET @liga = CONCAT('idAutorizacionSuficiencia:', @Id);
         END
         ELSE IF @Action = 4
@@ -490,10 +498,22 @@ BEGIN
         BEGIN
             IF @PKIdContrato IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Contrato WHERE PKIdContrato = @PKIdContrato AND Activo = 1)
                 THROW 51000, 'Contrato no encontrado.', 1;
+            IF EXISTS (SELECT 1 FROM PRES.Factura WHERE FKIdContrato_PRES = @PKIdContrato AND Activo = 1)
+                THROW 51000, 'No se puede eliminar el contrato porque ya tiene factura activa. Elimine primero la recepcion de factura.', 1;
+
+            DECLARE @FKIdAutorizacionReactivar INT;
+            SELECT @FKIdAutorizacionReactivar = FKIdAutorizacionSuficiencia_PRES
+            FROM PRES.Contrato
+            WHERE PKIdContrato = @PKIdContrato;
+
             UPDATE PRES.ContratoDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdContrato_PRES = @PKIdContrato AND Activo = 1;
             UPDATE PRES.Contrato SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdContrato = @PKIdContrato;
+            UPDATE PRES.AutorizacionSuficiencia
+            SET Estatus = 2, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdAutorizacionSuficiencia = @FKIdAutorizacionReactivar AND Activo = 1;
+
             SET @Id = @PKIdContrato;
-            SET @message = 'Contrato eliminado correctamente.';
+            SET @message = 'Contrato eliminado correctamente. La autorizacion regreso a la etapa anterior.';
             SET @liga = CONCAT('idContrato:', @Id);
         END
         ELSE IF @Action = 4
@@ -666,10 +686,27 @@ BEGIN
         BEGIN
             IF @PKIdFactura IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Factura WHERE PKIdFactura = @PKIdFactura AND Activo = 1)
                 THROW 51000, 'Factura no encontrada.', 1;
+            IF EXISTS (
+                SELECT 1
+                FROM PRES.CLCFactura cf
+                INNER JOIN PRES.CLC c ON c.PKIdCLC = cf.FKIdCLC_PRES AND c.Activo = 1
+                WHERE cf.FKIdFactura_PRES = @PKIdFactura AND cf.Activo = 1
+            )
+                THROW 51000, 'No se puede eliminar la factura porque ya tiene provision de pago activa. Elimine primero la CLC.', 1;
+
+            DECLARE @FKIdContratoReactivar INT;
+            SELECT @FKIdContratoReactivar = FKIdContrato_PRES
+            FROM PRES.Factura
+            WHERE PKIdFactura = @PKIdFactura;
+
             UPDATE PRES.FacturaDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdFactura_PRES = @PKIdFactura AND Activo = 1;
             UPDATE PRES.Factura SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdFactura = @PKIdFactura;
+            UPDATE PRES.Contrato
+            SET Estatus = 1, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdContrato = @FKIdContratoReactivar AND Activo = 1;
+
             SET @Id = @PKIdFactura;
-            SET @message = 'Factura eliminada correctamente.';
+            SET @message = 'Factura eliminada correctamente. El contrato regreso a la etapa anterior.';
             SET @liga = CONCAT('idFactura:', @Id);
         END
         ELSE IF @Action = 4
@@ -841,11 +878,26 @@ BEGIN
         BEGIN
             IF @PKIdCLC IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.CLC WHERE PKIdCLC = @PKIdCLC AND Activo = 1)
                 THROW 51000, 'CLC no encontrada.', 1;
+            IF EXISTS (SELECT 1 FROM PRES.Cheque WHERE FKIdCLC_PRES = @PKIdCLC AND Activo = 1)
+                THROW 51000, 'No se puede eliminar la CLC porque ya tiene cheque o transferencia activa. Elimine primero el cheque o transferencia.', 1;
+
+            DECLARE @FacturasReactivar TABLE (PKIdFactura INT PRIMARY KEY);
+            INSERT INTO @FacturasReactivar (PKIdFactura)
+            SELECT DISTINCT FKIdFactura_PRES
+            FROM PRES.CLCFactura
+            WHERE FKIdCLC_PRES = @PKIdCLC AND Activo = 1 AND FKIdFactura_PRES IS NOT NULL;
+
             UPDATE PRES.CLCFactura SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCLC_PRES = @PKIdCLC AND Activo = 1;
             UPDATE PRES.CLCDetalle SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCLC_PRES = @PKIdCLC AND Activo = 1;
             UPDATE PRES.CLC SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCLC = @PKIdCLC;
+            UPDATE f
+            SET Estatus = 1, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            FROM PRES.Factura f
+            INNER JOIN @FacturasReactivar fr ON fr.PKIdFactura = f.PKIdFactura
+            WHERE f.Activo = 1;
+
             SET @Id = @PKIdCLC;
-            SET @message = 'CLC eliminada correctamente.';
+            SET @message = 'CLC eliminada correctamente. La factura regreso a la etapa anterior.';
             SET @liga = CONCAT('idCLC:', @Id);
         END
         ELSE IF @Action = 4
@@ -1066,10 +1118,20 @@ BEGIN
         BEGIN
             IF @PKIdCheque IS NULL OR NOT EXISTS (SELECT 1 FROM PRES.Cheque WHERE PKIdCheque = @PKIdCheque AND Activo = 1)
                 THROW 51000, 'Cheque no encontrado.', 1;
+
+            DECLARE @FKIdCLCReactivar INT;
+            SELECT @FKIdCLCReactivar = FKIdCLC_PRES
+            FROM PRES.Cheque
+            WHERE PKIdCheque = @PKIdCheque;
+
             UPDATE PRES.ChequePartidas SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE FKIdCheque_PRES = @PKIdCheque AND Activo = 1;
             UPDATE PRES.Cheque SET Activo = 0, FechaModificacion = @today, UsuarioModificacion = @IdUser WHERE PKIdCheque = @PKIdCheque;
+            UPDATE PRES.CLC
+            SET Estatus = 1, FechaModificacion = @today, UsuarioModificacion = @IdUser
+            WHERE PKIdCLC = @FKIdCLCReactivar AND Activo = 1;
+
             SET @Id = @PKIdCheque;
-            SET @message = 'Cheque eliminado correctamente.';
+            SET @message = 'Cheque eliminado correctamente. La CLC regreso a la etapa anterior.';
             SET @liga = CONCAT('idCheque:', @Id);
         END
         ELSE IF @Action = 4

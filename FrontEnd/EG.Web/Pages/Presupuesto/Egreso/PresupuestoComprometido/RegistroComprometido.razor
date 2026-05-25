@@ -40,9 +40,9 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(item))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanCreate" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(item))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidContrato))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidContrato))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidContrato))" />
                             </MudTd>
                             <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
                             <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
@@ -65,7 +65,7 @@
                     </div>
                     <MudSpacer />
                     <MudText Typo="Typo.subtitle2" Style="font-weight:700">@Money(SelectedContrato.MontoTotal)</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanCreate" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))" Class="ml-2" />
+                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedContrato)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                 </MudPaper>
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
@@ -99,7 +99,7 @@
     private string detalleSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-    protected override string ModuleName => "Presupuesto_Conprometido";
+    protected override string ModuleName => "Presupuesto_Comprometido";
     protected override string SubModuleName => "Registro_Comprometido";
     protected override Type CreateDialogType => typeof(ContratoDialog);
     protected override Type EditDialogType => typeof(ContratoDialog);
@@ -133,6 +133,12 @@
 
     private async Task GenerateFactura(ContratoResponse contrato)
     {
+        if (!CanAuthorize)
+        {
+            Snackbar.Add("No tienes permiso para generar la recepción de factura.", Severity.Warning);
+            return;
+        }
+
         var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidContratoPres"] = contrato.PkidContrato });
         var details = detailsResponse?.Items?.ToList() ?? new List<ContratoDetalleResponse>();
         if (details.Count == 0)

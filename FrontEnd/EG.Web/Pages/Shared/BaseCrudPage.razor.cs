@@ -29,6 +29,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     protected bool CanUpdate { get; set; }
     protected bool CanDelete { get; set; }
     protected bool CanExport { get; set; }
+    protected bool CanAuthorize { get; set; }
 
     // Propiedades de tabla
     protected string SearchString { get; set; } = string.Empty;
@@ -76,8 +77,9 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             CanUpdate = AuthProvider.HasPermission(ModuleName, SubModuleName, "update");
             CanDelete = AuthProvider.HasPermission(ModuleName, SubModuleName, "delete");
             CanExport = AuthProvider.HasPermission(ModuleName, SubModuleName, "CanExportToExcel");
+            CanAuthorize = AuthProvider.HasPermission(ModuleName, SubModuleName, "authorize");
 
-            Console.WriteLine($"🔷 VerifyAccess: Create={CanCreate}, Update={CanUpdate}, Delete={CanDelete}, Export={CanExport}");
+            Console.WriteLine($"🔷 VerifyAccess: Create={CanCreate}, Update={CanUpdate}, Delete={CanDelete}, Export={CanExport}, Authorize={CanAuthorize}");
             HasAccess = true;
         }
         catch (Exception ex)

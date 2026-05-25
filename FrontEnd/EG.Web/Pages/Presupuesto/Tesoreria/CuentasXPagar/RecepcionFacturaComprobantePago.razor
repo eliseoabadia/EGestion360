@@ -43,9 +43,9 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(item))" /></MudTooltip>
-                                <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanCreate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
+                                <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
                                 <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidFactura))" /></MudTooltip>
-                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
+                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
                             </MudTd>
                             <MudTd>@item.PkidFactura</MudTd>
                             <MudTd>@TextOrDash(item.NumFactura)</MudTd>
@@ -71,7 +71,7 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
-                    <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
+                    <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
                     <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
                 </MudPaper>
 
@@ -167,6 +167,12 @@
 
     private async Task GenerateClc(FacturaResponse factura)
     {
+        if (!CanAuthorize)
+        {
+            Snackbar.Add("No tienes permiso para provisionar el pago.", Severity.Warning);
+            return;
+        }
+
         var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidFacturaPres"] = factura.PkidFactura });
         var details = detailsResponse?.Items?.ToList() ?? new List<FacturaDetalleResponse>();
         if (details.Count == 0)
