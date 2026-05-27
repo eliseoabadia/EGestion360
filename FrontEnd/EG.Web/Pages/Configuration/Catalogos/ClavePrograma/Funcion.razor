@@ -31,7 +31,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidFn" T="FnResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="FnResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FnResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="FnResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -54,11 +53,6 @@
                 <MudTd>@item.PkidFn</MudTd>
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -83,7 +77,6 @@
             ID = u.PkidFn,
             Clave = u.Clave,
             Descripcion = u.Descripcion ?? string.Empty,
-            Activo = u.Activo ? "Sí" : "No",
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             UsuarioCreacion = u.UsuarioCreacion
         });

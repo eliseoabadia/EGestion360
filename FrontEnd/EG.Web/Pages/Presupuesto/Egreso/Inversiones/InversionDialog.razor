@@ -1,0 +1,110 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<InversionResponse> Service
+@inject IGenericCrudService<InstrumentoResponse> InstrumentoService
+@inject IGenericCrudService<CuentaBancariaResponse> CuentaService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="InversionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="InversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_instrumento" ValueChanged="value => _instrumento = value" Label="Instrumento" Required="true" LoadPage="LoadInstrumentosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker Date="@_fechaInversion" DateChanged="OnFechaInversionChanged" Label="Fecha inversion" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private BaseEntityForm<InversionResponse> form = null!;
+    private InversionResponse item = new() { Activo = true, FechaInversion = DateOnly.FromDateTime(DateTime.Today) };
+    private LookupItem? _cuenta;
+    private LookupItem? _instrumento;
+    private DateTime? _fechaInversion = DateTime.Today;
+    private DateTime? _fechaVencimiento;
+
+    private string dialogTitle => Id.HasValue ? "Editar inversion" : "Nueva inversion";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue) return;
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _cuenta = new LookupItem { Id = item.FkidCuentaBancaria, Text = item.CuentaBan };
+            _instrumento = new LookupItem { Id = item.FkidInstrumento, Text = item.Instrumento };
+            _fechaInversion = item.FechaInversion.ToDateTime(TimeOnly.MinValue);
+            _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (_cuenta == null || _instrumento == null)
+        {
+            Snackbar.Add("Selecciona cuenta e instrumento.", Severity.Warning);
+            return;
+        }
+
+        item.FkidCuentaBancaria = _cuenta.Id;
+        item.FkidInstrumento = _instrumento.Id;
+        item.FechaInversion = _fechaInversion.HasValue ? DateOnly.FromDateTime(_fechaInversion.Value) : DateOnly.FromDateTime(DateTime.Today);
+        item.FechaVencimiento = _fechaVencimiento.HasValue ? DateOnly.FromDateTime(_fechaVencimiento.Value) : null;
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Registro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el registro.", Severity.Error);
+    }
+
+    private Task OnFechaInversionChanged(DateTime? value) { _fechaInversion = value; return Task.CompletedTask; }
+    private Task OnFechaVencimientoChanged(DateTime? value) { _fechaVencimiento = value; return Task.CompletedTask; }
+
+    private async Task<ComboLookupResult> LoadInstrumentosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await InstrumentoService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidInstrumento, Text = x.Nombre }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadCuentasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await CuentaService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroCuenta", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidCuentaBancaria, Text = $"{x.NumeroCuenta} - {x.BancoNombre}" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+}

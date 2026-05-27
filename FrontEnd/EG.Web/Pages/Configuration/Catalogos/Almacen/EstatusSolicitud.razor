@@ -29,7 +29,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidEstatusSolicitud" T="EstatusSolicitudResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EstatusSolicitudResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Color" T="EstatusSolicitudResponse">Color</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="EstatusSolicitudResponse">Activo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="EstatusSolicitudResponse">Fecha Creación</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="EstatusSolicitudResponse">Usuario Creación</MudTableSortLabel></MudTh>
             </Header>
@@ -53,7 +52,6 @@
                 <MudTd>@item.PkidEstatusSolicitud</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.Color</MudTd>
-                <MudTd>@item.Activo</MudTd>
                 <MudTd>@(item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "")</MudTd>
                 <MudTd>@item.UsuarioCreacion</MudTd>
             </Row>
@@ -80,7 +78,6 @@
             ID = u.PkidEstatusSolicitud,
             Descripcion = u.Descripcion ?? string.Empty,
             Color = u.Color ?? string.Empty,
-            Activo = u.Activo ? "Sí" : "No",
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             UsuarioCreacion = u.UsuarioCreacion
         });

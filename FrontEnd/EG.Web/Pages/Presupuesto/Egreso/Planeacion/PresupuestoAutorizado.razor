@@ -64,7 +64,6 @@
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoAutorizadoResponse">Descripcion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="EgresoAutorizadoResponse">Autorizacion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoAutorizadoResponse">Total</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="EgresoAutorizadoResponse">Activo</MudTableSortLabel></MudTh>
                 </Header>
 
                 <Row Context="item">
@@ -103,11 +102,6 @@
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd>
                     <MudTd>@(item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</MudTd>
                     <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
-                    <MudTd>
-                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                            @(item.Activo ? "Activo" : "Inactivo")
-                        </MudChip>
-                    </MudTd>
                 </Row>
             </GenericTable>
         </div>

@@ -1,0 +1,161 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<CuentaBancariaResponse> Service
+@inject IGenericCrudService<BancoResponse> BancoService
+@inject IGenericCrudService<TipoMonedaResponse> TipoMonedaService
+@inject IGenericCrudService<CuentaContableResponse> CuentaContableService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="CuentaBancariaResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
+    <BaseEntityForm TEntity="CuentaBancariaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedBanco" ValueChanged="value => _selectedBanco = value" Label="Banco" Required="true" LoadPage="LoadBancosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedMoneda" ValueChanged="value => _selectedMoneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" />
+            </MudItem>
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedCuentaContable" ValueChanged="value => _selectedCuentaContable = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasContablesPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.NumeroCuenta" Label="Numero de cuenta" Variant="Variant.Outlined" FullWidth="true" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Titular" Label="Titular" Variant="Variant.Outlined" FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudNumericField T="decimal" @bind-Value="item.SaldoInicial" Label="Saldo inicial" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudNumericField T="decimal" @bind-Value="item.SaldoActual" Label="Saldo actual" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker Date="@_fechaAperturaDate" DateChanged="OnFechaAperturaChanged" Label="Fecha de apertura" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private BaseEntityForm<CuentaBancariaResponse> form = null!;
+    private CuentaBancariaResponse item = new() { Activo = true };
+    private LookupItem? _selectedBanco;
+    private LookupItem? _selectedMoneda;
+    private LookupItem? _selectedCuentaContable;
+    private DateTime? _fechaAperturaDate;
+
+    private string dialogTitle => Id.HasValue ? "Editar cuenta bancaria" : "Nueva cuenta bancaria";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly System.Globalization.CultureInfo NumberCulture = System.Globalization.CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            await SetDefaultMonedaAsync();
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _selectedBanco = item.FkidBancoTes.HasValue
+                ? new LookupItem { Id = item.FkidBancoTes.Value, Text = string.IsNullOrWhiteSpace(item.BancoNombre) ? item.FkidBancoTes.Value.ToString() : item.BancoNombre }
+                : null;
+            _selectedMoneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = string.IsNullOrWhiteSpace(item.MonedaDescripcion) ? item.FkidTipoMonedaTes.ToString() : item.MonedaDescripcion };
+            _selectedCuentaContable = item.FkidCuentaContableSis.HasValue
+                ? new LookupItem
+                {
+                    Id = item.FkidCuentaContableSis.Value,
+                    Text = string.IsNullOrWhiteSpace(item.CuentaContable)
+                        ? item.FkidCuentaContableSis.Value.ToString()
+                        : $"{item.CuentaContable} - {item.CuentaContableDescripcion}"
+                }
+                : null;
+            _fechaAperturaDate = item.FechaApertura?.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (_selectedBanco == null || _selectedMoneda == null || _selectedCuentaContable == null)
+        {
+            Snackbar.Add("Selecciona banco, moneda y cuenta contable.", Severity.Warning);
+            return;
+        }
+
+        item.FkidBancoTes = _selectedBanco.Id;
+        item.FkidTipoMonedaTes = _selectedMoneda.Id;
+        item.FkidCuentaContableSis = _selectedCuentaContable.Id;
+        item.FechaApertura = _fechaAperturaDate.HasValue ? DateOnly.FromDateTime(_fechaAperturaDate.Value) : null;
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Registro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el registro.", Severity.Error);
+    }
+
+    private Task OnFechaAperturaChanged(DateTime? value)
+    {
+        _fechaAperturaDate = value;
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadBancosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await BancoService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidBanco, Text = $"{x.Clave} - {x.Nombre}" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadMonedasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoMonedaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoMoneda, Text = $"{x.CodigoIso4217} - {x.Descripcion}" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task SetDefaultMonedaAsync()
+    {
+        var response = await TipoMonedaService.GetAllPaginadoAsync(1, 1, "MXN", "CodigoIso4217", SortDirection.Ascending);
+        var moneda = response?.Items?.FirstOrDefault();
+        if (moneda == null) return;
+
+        item.FkidTipoMonedaTes = moneda.PkidTipoMoneda;
+        _selectedMoneda = new LookupItem
+        {
+            Id = moneda.PkidTipoMoneda,
+            Text = $"{moneda.CodigoIso4217} - {moneda.Descripcion}"
+        };
+    }
+
+    private async Task<ComboLookupResult> LoadCuentasContablesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await CuentaContableService.GetAllPaginadoAsync(page, pageSize, filter, "Cuenta", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidCuentaContable, Text = $"{x.Cuenta} - {x.Descripcion}" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+}

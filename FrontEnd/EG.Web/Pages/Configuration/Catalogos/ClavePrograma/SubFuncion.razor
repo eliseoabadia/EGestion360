@@ -33,7 +33,6 @@
                 <MudTh><MudTableSortLabel SortLabel="FuncionDescripcion" T="SubFuncionResponse">Función</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="SubFuncionClave" T="SubFuncionResponse">Clave SubFunción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="SubFuncionDescripcion" T="SubFuncionResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="SubFuncionResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -58,11 +57,6 @@
                 <MudTd>@item.FuncionDescripcion</MudTd>
                 <MudTd>@item.SubFuncionClave</MudTd>
                 <MudTd>@item.SubFuncionDescripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -89,7 +83,6 @@
             Funcion = u.FuncionDescripcion ?? string.Empty,
             ClaveSubFuncion = u.SubFuncionClave,
             SubFuncion = u.SubFuncionDescripcion ?? string.Empty,
-            Activo = u.Activo ? "Sí" : "No"
         });
     }
 

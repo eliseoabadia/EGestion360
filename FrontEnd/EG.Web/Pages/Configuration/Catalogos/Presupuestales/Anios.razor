@@ -31,7 +31,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidAnio" T="AniosResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="AniosResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="AniosResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="AniosResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -54,11 +53,6 @@
                 <MudTd>@item.PkidAnio</MudTd>
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -83,7 +77,6 @@
             ID = u.PkidAnio,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
-            Activo = u.Activo
         });
     }
 

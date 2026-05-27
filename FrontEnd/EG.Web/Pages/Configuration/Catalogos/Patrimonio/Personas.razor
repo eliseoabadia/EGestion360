@@ -34,7 +34,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Paterno" T="PersonaResponse">Paterno</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Materno" T="PersonaResponse">Materno</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Rfc" T="PersonaResponse">RFC</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="PersonaResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -60,11 +59,6 @@
                 <MudTd>@item.Paterno</MudTd>
                 <MudTd>@item.Materno</MudTd>
                 <MudTd>@item.Rfc</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -92,7 +86,6 @@
             Paterno = u.Paterno,
             Materno = u.Materno,
             RFC = u.Rfc,
-            Activo = u.Activo
         });
     }
 

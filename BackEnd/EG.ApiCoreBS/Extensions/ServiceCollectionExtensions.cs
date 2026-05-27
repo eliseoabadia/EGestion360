@@ -31,6 +31,7 @@ using EG.Common.Util;
 using EG.Domain.Interfaces;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
+using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Infraestructure.Models;
 using EG.Infrastructure;
 using System.Reflection;
@@ -154,6 +155,15 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoPagoService, TipoPagoService>();
             services.AddScoped<ITipoPagoSFService, TipoPagoSFService>();
             services.AddScoped<ITipoSolicitudCLCService, TipoSolicitudCLCService>();
+            services.AddScoped<IAdquisicionCrudAppService<BancoResponse>, BancoInversionService>();
+            services.AddScoped<IAdquisicionCrudAppService<CuentaBancariaResponse>, CuentaBancariaInversionService>();
+            services.AddScoped<IAdquisicionCrudAppService<IntermediarioFinancieroResponse>, IntermediarioFinancieroInversionService>();
+            services.AddScoped<IAdquisicionCrudAppService<InstrumentoResponse>, InstrumentoInversionService>();
+            services.AddScoped<IAdquisicionCrudAppService<InversionResponse>, InversionAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<InteresResponse>, InteresAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<RetiroResponse>, RetiroAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<TipoPlazoResponse>, TipoPlazoInversionService>();
+            services.AddScoped<IAdquisicionCrudAppService<TipoRetiroResponse>, TipoRetiroInversionService>();
 
             // Application services - Almacen
             services.AddScoped<IEstatusSolService, EstatusSolService>();

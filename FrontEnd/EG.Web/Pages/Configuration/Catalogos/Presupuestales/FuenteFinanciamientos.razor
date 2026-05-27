@@ -31,7 +31,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidFuenteFinanciamiento" T="FuenteFinanciamientoResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="FuenteFinanciamientoResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FuenteFinanciamientoResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="FuenteFinanciamientoResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -54,11 +53,6 @@
                 <MudTd>@item.PkidFuenteFinanciamiento</MudTd>
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -83,7 +77,6 @@
             ID = u.PkidFuenteFinanciamiento,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
-            Activo = u.Activo
         });
     }
 

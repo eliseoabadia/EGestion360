@@ -36,7 +36,6 @@
                 <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="RequisicionDetalleResponse">Bien</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Cantidad" T="RequisicionDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="RequisicionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="RequisicionDetalleResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -62,11 +61,6 @@
                 <MudTd>@TextOrDash(item.TipoBienDescripcion)</MudTd>
                 <MudTd>@Quantity(item.Cantidad)</MudTd>
                 <MudTd>@TextOrDash(item.UnidadMedida)</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Si" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -95,7 +89,6 @@
             item.Cantidad,
             Unidad = item.UnidadMedida,
             item.Observaciones,
-            Activo = item.Activo ? "Si" : "No",
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,

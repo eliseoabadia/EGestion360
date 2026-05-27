@@ -30,7 +30,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="MotivoEsResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="AplicaEntrada" T="MotivoEsResponse">Aplica Entrada</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="AplicaSalida" T="MotivoEsResponse">Aplica Salida</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="MotivoEsResponse">Activo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="MotivoEsResponse">Fecha Creación</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="MotivoEsResponse">Usuario Creación</MudTableSortLabel></MudTh>
             </Header>
@@ -55,7 +54,6 @@
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.AplicaEntrada</MudTd>
                 <MudTd>@item.AplicaSalida</MudTd>
-                <MudTd>@item.Activo</MudTd>
                 <MudTd>@(item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "")</MudTd>
                 <MudTd>@item.UsuarioCreacion</MudTd>
             </Row>
@@ -83,7 +81,6 @@
             Descripcion = u.Descripcion ?? string.Empty,
             AplicaEntrada = u.AplicaEntrada ? "Sí" : "No",
             AplicaSalida = u.AplicaSalida ? "Sí" : "No",
-            Activo = u.Activo ? "Sí" : "No",
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             UsuarioCreacion = u.UsuarioCreacion
         });

@@ -33,6 +33,8 @@ public partial class TipoMonedum
 
     public virtual Paise FkidPaisSisNavigation { get; set; }
 
+    public virtual ICollection<Instrumento> Instrumentos { get; set; } = new List<Instrumento>();
+
     public virtual ICollection<TipoCambio> TipoCambios { get; set; } = new List<TipoCambio>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

@@ -9,7 +9,9 @@ namespace EG.Business.Mapping.Tesoreria
     {
         public void Register(TypeAdapterConfig config){
             config.NewConfig<TipoMonedum, TipoMonedaDto>().TwoWays();
-            config.NewConfig<TipoMonedum, TipoMonedaResponse>().TwoWays();
+            config.NewConfig<TipoMonedum, TipoMonedaResponse>()
+                .Map(dest => dest.PaisNombre, src => src.FkidPaisSisNavigation != null ? src.FkidPaisSisNavigation.Nombre : string.Empty)
+                .TwoWays();
             config.NewConfig<TipoMonedaResponse, TipoMonedaDto>()
                 .Ignore(dest => dest.PkidTipoMoneda)
                 .IgnoreNullValues(true);

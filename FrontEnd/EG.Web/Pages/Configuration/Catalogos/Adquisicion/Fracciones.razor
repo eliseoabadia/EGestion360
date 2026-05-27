@@ -32,7 +32,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="FraccionResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FraccionResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="NombreArticulo" T="FraccionResponse">Artículo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="FraccionResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -56,11 +55,6 @@
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.NombreArticulo</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -86,7 +80,6 @@
             Clave = u.Clave,
             Descripcion = u.Descripcion,
             Articulo = u.NombreArticulo,
-            Activo = u.Activo
         });
     }
 

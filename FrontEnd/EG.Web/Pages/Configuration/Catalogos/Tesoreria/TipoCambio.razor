@@ -30,7 +30,6 @@
                 <MudTh><MudTableSortLabel SortLabel="MonedaDescripcion" T="TipoCambioResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Cantidad" T="TipoCambioResponse">Cantidad</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Fecha" T="TipoCambioResponse">Fecha</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoCambioResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -54,7 +53,6 @@
                 <MudTd>@item.MonedaDescripcion</MudTd>
                 <MudTd>@item.Cantidad.ToString("N4")</MudTd>
                 <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                <MudTd>@item.Activo</MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -81,7 +79,6 @@
             Descripcion = u.MonedaDescripcion ?? string.Empty,
             Cantidad = u.Cantidad,
             Fecha = u.Fecha.ToString("dd/MM/yyyy"),
-            Activo = u.Activo ? "Sí" : "No"
         });
     }
 

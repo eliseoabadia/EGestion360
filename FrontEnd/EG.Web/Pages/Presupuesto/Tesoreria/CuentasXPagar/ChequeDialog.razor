@@ -1,11 +1,15 @@
 @using System.Globalization
+@using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Domain.DTOs.Responses.Tesoreria
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using MudBlazor
 
 @inject IGenericCrudService<ChequeResponse> Service
 @inject IGenericCrudService<ChequePartidaResponse> PartidaService
+@inject IGenericCrudService<CuentaBancariaResponse> CuentaBancariaService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="ChequeResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
@@ -13,7 +17,7 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidClcPres" Label="CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidCuentaBancariaTes" Label="Cuenta bancaria" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Value="@cuentaBancaria" ValueChanged="value => cuentaBancaria = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasBancariasPageAsync" /></MudItem>
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudTextField @bind-Value="item.NumeroCheque" Label="Cheque / transferencia" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -56,6 +60,7 @@
     private BaseEntityForm<ChequeResponse> form = null!;
     private ChequeResponse item = new() { Activo = true, Estatus = 1 };
     private List<ChequePartidaResponse> partidaItems = new();
+    private LookupItem? cuentaBancaria;
     private DateTime? fechaEmision = DateTime.Today;
     private string Title => Id.HasValue ? "Editar cheque o transferencia" : "Nuevo cheque o transferencia";
     private string ActionText => Id.HasValue ? "Actualizar" : "Guardar pago";
@@ -69,6 +74,7 @@
             {
                 item = CloneHeader(PrefillItem);
                 fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+                SetCuentaBancariaLookup();
             }
 
             partidaItems = PrefillPartidas?.Select(ClonePartida).ToList() ?? new List<ChequePartidaResponse>();
@@ -80,6 +86,7 @@
         {
             item = response.Data;
             fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+            SetCuentaBancariaLookup();
         }
     }
 
@@ -91,6 +98,13 @@
             return;
         }
 
+        if (cuentaBancaria == null)
+        {
+            Snackbar.Add("Selecciona la cuenta bancaria.", Severity.Warning);
+            return;
+        }
+
+        item.FkidCuentaBancariaTes = cuentaBancaria.Id;
         item.FechaEmision = DateOnly.FromDateTime(fechaEmision ?? DateTime.Today);
         if (item.ImporteTotal <= 0 && partidaItems.Count > 0)
         {
@@ -176,6 +190,25 @@
         Observaciones = source.Observaciones,
         Activo = source.Activo
     };
+
+    private void SetCuentaBancariaLookup()
+    {
+        cuentaBancaria = item.FkidCuentaBancariaTes > 0
+            ? new LookupItem { Id = item.FkidCuentaBancariaTes, Text = item.FkidCuentaBancariaTes.ToString() }
+            : null;
+    }
+
+    private async Task<ComboLookupResult> LoadCuentasBancariasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await CuentaBancariaService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroCuenta", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidCuentaBancaria,
+            Text = $"{x.NumeroCuenta} - {x.BancoNombre}"
+        }).ToList() ?? new List<LookupItem>();
+
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
 
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => $"${value.ToString("0.00", Culture)}";

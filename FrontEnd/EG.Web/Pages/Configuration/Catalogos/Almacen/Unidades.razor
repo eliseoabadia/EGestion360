@@ -28,7 +28,6 @@
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidUnidades" T="UnidadeResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="UnidadeResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="UnidadeResponse">Activo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="UnidadeResponse">Fecha Creación</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="UnidadeResponse">Usuario Creación</MudTableSortLabel></MudTh>
             </Header>
@@ -51,7 +50,6 @@
                 </MudTd>
                 <MudTd>@item.PkidUnidades</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.Activo</MudTd>
                 <MudTd>@(item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "")</MudTd>
                 <MudTd>@item.UsuarioCreacion</MudTd>
             </Row>
@@ -77,7 +75,6 @@
         {
             ID = u.PkidUnidades,
             Descripcion = u.Descripcion ?? string.Empty,
-            Activo = u.Activo ? "Sí" : "No",
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             UsuarioCreacion = u.UsuarioCreacion
         });

@@ -550,6 +550,14 @@ VALUES
 (2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'RecepcionFactura_ComprobantePago', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'Provision_Pago', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'ElaboracionCheque_Transferencia', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Inversiones', 'PREEINV01', 'Tesoreria', 'view,view-menu', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Banco', 'TESINV01', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Cuenta_Bancaria', 'TESINV02', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Intermediarios_Financiero', 'TESINV03', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Instrumentos_Inversion', 'TESINV04', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Listado_Inversiones', 'TESINV05', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Plazos', 'TESINV05', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Retiro', 'TESINV06', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
@@ -687,6 +695,14 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXPagar', '10000', 'view,vi
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'RecepcionFactura_ComprobantePago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'ElaboracionCheque_Transferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Inversiones', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Banco', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Cuenta_Bancaria', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Intermediarios_Financiero', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Instrumentos_Inversion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Listado_Inversiones', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Tipo_Plazos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Tipo_Retiro', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -709,6 +725,7 @@ CREATE TABLE dbo.AspNetUsers (
 GO
 
 -- Insertar usuarios de prueba
+update [dbo].[AspNetUsers] set [PasswordHash] = 'UOxg2B7HCZwZZ/drSkwHrA==', [SecurityStamp] = 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87' where PkIdUsuario in (1,2,3);
 INSERT INTO [dbo].[AspNetUsers] (
     [Id], [Email], [EmailConfirmed], [PasswordHash], [SecurityStamp], [PhoneNumber],
     [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEndDateUtc], [LockoutEnabled],
@@ -721,6 +738,7 @@ VALUES
 
 -- Tabla AspNetUserRoles
 --drop table dbo.AspNetUserRoles
+update AspNetUserRoles set  UserId = '52BEDE02-1F81-41E2-A93E-8666AB0873CE'
 CREATE TABLE dbo.AspNetUserRoles (
     UserId NVARCHAR(128) NOT NULL,
     RoleId NVARCHAR(128) NOT NULL,
@@ -787,36 +805,36 @@ MERGE INTO SIS.Menu AS TARGET
 USING (VALUES
     -- Módulos principales (Tipo = 1: agrupador, Tipo = 2: hoja)
     (1, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaCog', 1, 'ESP', 1, 1, GETDATE()),
-    (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaChartBar', 1, 'ESP', 2, 1, GETDATE()),
+    (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaChartPie', 1, 'ESP', 2, 1, GETDATE()),
     (3, N'Contabilidad', 1, NULL, N'Contabilidad', N'/', N'FaTable', 1, 'ESP', 3, 1, GETDATE()),
-    (4, N'Adquisiciones', 1, NULL, N'Adquisiciones', N'/', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (4, N'Adquisiciones', 1, NULL, N'Adquisiciones', N'/', N'RiListCheck2', 1, 'ESP', 4, 1, GETDATE()),
     (5, N'Patrimonio', 1, NULL, N'Patrimonio', N'/', N'FaFolder', 1, 'ESP', 5, 1, GETDATE()),
     (6, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaFolderOpen', 1, 'ESP', 6, 1, GETDATE()),
     (7, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaChartLine', 1, 'ESP', 7, 1, GETDATE()),
     (8, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaInfo', 1, 'ESP', 8, 1, GETDATE()),
 
     -- Configuración -> Sistema
-    (50, N'Sistema', 1, 1, N'Sistema', N'/', N'FaCog', 1, 'ESP', 1, 1, GETDATE()),
-    (51, N'Usuario', 2, 50, N'Usuario', N'/configuracion/sistema/usuarios', N'FaUser', 1, 'ESP', 2, 1, GETDATE()),
+    (50, N'Sistema', 1, 1, N'Sistema', N'/', N'FaTools', 1, 'ESP', 1, 1, GETDATE()),
+    (51, N'Usuario', 2, 50, N'Usuario', N'/configuracion/sistema/usuarios', N'FaUserCircle', 1, 'ESP', 2, 1, GETDATE()),
     (52, N'Menú', 2, 50, N'Menú', N'/configuracion/sistema/menu', N'RiMenuLine', 1, 'ESP', 3, 1, GETDATE()),
-    (53, N'General', 2, 50, N'General', N'/configuracion/sistema/general', N'FaCog', 1, 'ESP', 4, 1, GETDATE()),
+    (53, N'General', 2, 50, N'General', N'/configuracion/sistema/general', N'FaGears', 1, 'ESP', 4, 1, GETDATE()),
     (54, N'Empresa', 2, 50, N'Empresa', N'/configuracion/sistema/empresa', N'FaHome', 1, 'ESP', 5, 1, GETDATE()),
-    (55, N'Departamento', 2, 50, N'Departamento', N'/configuracion/sistema/departamento', N'FaUsers', 1, 'ESP', 6, 1, GETDATE()),
+    (55, N'Departamento', 2, 50, N'Departamento', N'/configuracion/sistema/departamento', N'FaUserGroup', 1, 'ESP', 6, 1, GETDATE()),
 
     -- Configuración -> Catálogos presupuestales
-    (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'RiListCheck2', 1, 'ESP', 1, 1, GETDATE()),
-    (219, N'Programas Presupuestales', 1, 100, N'Programas Presupuestales.', N'/configuracion/presupuestales/programas-presupuesta', N'FaKey', 1, 'ESP', 1, 1, GETDATE()),
+    (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'FaChartBar', 1, 'ESP', 1, 1, GETDATE()),
+    (219, N'Programas Presupuestales', 1, 100, N'Programas Presupuestales.', N'/configuracion/presupuestales/programas-presupuesta', N'FaFolderOpen', 1, 'ESP', 1, 1, GETDATE()),
     (220, N'Clave del Programa', 1, 100, N'Clave del Programa', N'/configuracion/presupuestales/programa-presupuestal', N'FaKey', 1, 'ESP', 1, 1, GETDATE()),
     (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaRegUser', 1, 'ESP', 2, 1, GETDATE()),
     (222, N'Finalidad', 2, 220, N'Finalidad', N'/configuracion/presupuestales/clave-programa/finalidad', N'FaStar', 1, 'ESP', 3, 1, GETDATE()),
     (223, N'Función', 2, 220, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaGears', 1, 'ESP', 4, 1, GETDATE()),
-    (224, N'SubFunción', 2, 220, N'SubFunción', N'/configuracion/presupuestales/clave-programa/subfuncion', N'FaCog', 1, 'ESP', 5, 1, GETDATE()),
+    (224, N'SubFunción', 2, 220, N'SubFunción', N'/configuracion/presupuestales/clave-programa/subfuncion', N'FaTools', 1, 'ESP', 5, 1, GETDATE()),
     (225, N'Actividad Institucional', 2, 220, N'Actividad Institucional', N'/configuracion/presupuestales/clave-programa/actividad-institucional', N'RiListCheck2', 1, 'ESP', 6, 1, GETDATE()),
-    (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/presupuestales/clave-programa/programa-presupuestal', N'FaCalendar', 1, 'ESP', 9, 1, GETDATE()),
+    (228, N'Programa Presupuestal', 2, 220, N'Programa Presupuestal', N'/configuracion/presupuestales/clave-programa/programa-presupuestal', N'FaDocument', 1, 'ESP', 9, 1, GETDATE()),
     (232, N'Años', 2, 220, N'Años', N'/configuracion/presupuestales/clave-programa/anios', N'FaCalendar', 1, 'ESP', 13, 1, GETDATE()),
     (233, N'Sector', 2, 220, N'Sector', N'/configuracion/presupuestales/clave-programa/sector', N'FaFolder', 1, 'ESP', 14, 1, GETDATE()),
     (235, N'Tipo Recurso', 2, 220, N'Tipo Recurso', N'/configuracion/presupuestales/clave-programa/tipo-recurso', N'FaTag', 1, 'ESP', 16, 1, GETDATE()),
-    (236, N'Fuente Financiamiento', 2, 220, N'Fuente Financiamiento', N'/configuracion/presupuestales/clave-programa/fuente-financiamiento', N'FaChartBar', 1, 'ESP', 17, 1, GETDATE()),
+    (236, N'Fuente Financiamiento', 2, 220, N'Fuente Financiamiento', N'/configuracion/presupuestales/clave-programa/fuente-financiamiento', N'FaChartPie', 1, 'ESP', 17, 1, GETDATE()),
     (237, N'PG', 2, 220, N'PG', N'/configuracion/presupuestales/clave-programa/pg', N'FaDocument', 1, 'ESP', 18, 1, GETDATE()),
     (238, N'Ramo', 2, 220, N'Ramo', N'/configuracion/presupuestales/clave-programa/ramo', N'FaFolderOpen', 1, 'ESP', 19, 1, GETDATE()),
     (239, N'Proyecto', 2, 220, N'Proyecto', N'/configuracion/presupuestales/clave-programa/proyecto', N'FaFolder', 1, 'ESP', 20, 1, GETDATE()),
@@ -826,13 +844,13 @@ USING (VALUES
     (241, N'Tipo Pólizas', 2, 240, N'Tipo Pólizas', N'/configuracion/contabilidad/tipo-polizas', N'FaDocument', 1, 'ESP', 2, 1, GETDATE()),
     (242, N'Tipo Detalles Pólizas', 2, 240, N'Tipo Detalles Pólizas', N'/configuracion/contabilidad/tipo-detalles-polizas', N'RiListCheck2', 1, 'ESP', 3, 1, GETDATE()),
     (243, N'Matriz Conversión', 2, 240, N'Matriz Conversión', N'/configuracion/contabilidad/matriz-conversion', N'FaGears', 1, 'ESP', 4, 1, GETDATE()),
-    (244, N'Matriz Conversión Ingresos', 2, 240, N'Matriz Conversión Ingresos', N'/configuracion/contabilidad/matriz-conversion-ingresos', N'FaGears', 1, 'ESP', 5, 1, GETDATE()),
-    (245, N'Partidas Presupuestales', 2, 240, N'Partidas Presupuestales', N'/configuracion/contabilidad/partidas-presupuestales', N'FaTag', 1, 'ESP', 6, 1, GETDATE()),
+    (244, N'Matriz Conversión Ingresos', 2, 240, N'Matriz Conversión Ingresos', N'/configuracion/contabilidad/matriz-conversion-ingresos', N'FaChartBar', 1, 'ESP', 5, 1, GETDATE()),
+    (245, N'Partidas Presupuestales', 2, 240, N'Partidas Presupuestales', N' /configuracion/contabilidad/partidas-presupuestales', N'FaTag', 1, 'ESP', 6, 1, GETDATE()),
     (246, N'Cuentas Contables', 2, 240, N'Cuentas Contables', N'/configuracion/contabilidad/cuentas-contables', N'FaFile', 1, 'ESP', 7, 1, GETDATE()),
-    (247, N'Formas Pago', 2, 240, N'Formas Pago', N'/configuracion/contabilidad/formas-pago', N'FaTag', 1, 'ESP', 8, 1, GETDATE()),
+    (247, N'Formas Pago', 2, 240, N'Formas Pago', N'/configuracion/contabilidad/formas-pago', N'FaSave', 1, 'ESP', 8, 1, GETDATE()),
 
     -- Configuración -> Adquisiciones
-    (250, N'Adquisiciones', 1, 1, N'Adquisiciones', N'/', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (250, N'Adquisiciones', 1, 1, N'Adquisiciones', N'/', N'RiListCheck2', 1, 'ESP', 3, 1, GETDATE()),
     (251, N'Modalidad', 2, 250, N'Modalidad', N'/configuracion/adquisiciones/modalidad', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
     (252, N'Tipo de Contrato', 2, 250, N'Tipo de Contrato', N'/configuracion/adquisiciones/tipo-contrato', N'FaDocument', 1, 'ESP', 5, 1, GETDATE()),
     (253, N'Tipo de Documentos', 2, 250, N'Tipo de Documentos', N'/configuracion/adquisiciones/tipo-documento', N'FaFile', 1, 'ESP', 6, 1, GETDATE()),
@@ -841,59 +859,63 @@ USING (VALUES
     (256, N'Estatus Requisición', 2, 250, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlag', 1, 'ESP', 9, 1, GETDATE()),
     (257, N'Proveedores', 2, 250, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaUsers', 1, 'ESP', 10, 1, GETDATE()),
     (258, N'Artículo', 2, 250, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaTag', 1, 'ESP', 11, 1, GETDATE()),
-    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'FaTag', 1, 'ESP', 12, 1, GETDATE()),
+    (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'RiListCheck2', 1, 'ESP', 12, 1, GETDATE()),
 
     -- Configuración -> Patrimonio
     (260, N'Patrimonio', 1, 1, N'Patrimonio', N'/', N'FaFolder', 1, 'ESP', 3, 1, GETDATE()),
-    (261, N'Familia', 2, 260, N'Familia', N'/configuracion/Patrimonio/Familia', N'FaUsers', 1, 'ESP', 1, 1, GETDATE()),
+    (261, N'Familia', 2, 260, N'Familia', N'/configuracion/Patrimonio/Familia', N'FaFolder', 1, 'ESP', 1, 1, GETDATE()),
     (262, N'Grupo Bien', 2, 260, N'Grupo Bien', N'/configuracion/Patrimonio/Grupo_Bien', N'FaFolderOpen', 1, 'ESP', 2, 1, GETDATE()),
-    (263, N'Bienes y Servicios', 2, 260, N'Bienes y Servicios', N'/configuracion/Patrimonio/Bienes_Servicios', N'FaFolderOpen', 1, 'ESP', 3, 1, GETDATE()),
-    (264, N'Tipo de Patrimonio', 2, 260, N'Tipo de Patrimonio', N'/configuracion/Patrimonio/Tipo_Patrimonio', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (263, N'Bienes y Servicios', 2, 260, N'Bienes y Servicios', N'/configuracion/Patrimonio/Bienes_Servicios', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (264, N'Tipo de Patrimonio', 2, 260, N'Tipo de Patrimonio', N'/configuracion/Patrimonio/Tipo_Patrimonio', N'FaFolder', 1, 'ESP', 4, 1, GETDATE()),
     (265, N'Tipo de Adquisición', 2, 260, N'Tipo de Adquisición', N'/configuracion/Patrimonio/Tipo_Adquisicion', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
-    (266, N'Marca', 2, 260, N'Marca', N'/configuracion/Patrimonio/Marca', N'FaTag', 1, 'ESP', 6, 1, GETDATE()),
+    (266, N'Marca', 2, 260, N'Marca', N'/configuracion/Patrimonio/Marca', N'FaStar', 1, 'ESP', 6, 1, GETDATE()),
     (267, N'Personas', 2, 260, N'Personas', N'/configuracion/Patrimonio/Personas', N'FaUsers', 1, 'ESP', 7, 1, GETDATE()),
 
     -- Configuración -> Almacén
     (270, N'Almacén', 1, 1, N'Almacén', N'/', N'FaFolderOpen', 1, 'ESP', 4, 1, GETDATE()),
-    (271, N'Motivo de Entradas Salidas', 2, 270, N'Motivo de Entradas Salidas', N'/configuracion/almacen/Motivo_Entradas_Salidas', N'FaGears', 1, 'ESP', 1, 1, GETDATE()),
+    (271, N'Motivo de Entradas Salidas', 2, 270, N'Motivo de Entradas Salidas', N'/configuracion/almacen/Motivo_Entradas_Salidas', N'FaTools', 1, 'ESP', 1, 1, GETDATE()),
     (272, N'Estatus Solicitud', 2, 270, N'Estatus Solicitud', N'/configuracion/almacen/Estatus_Solicitud', N'FaFlag', 1, 'ESP', 2, 1, GETDATE()),
-    (273, N'Unidades', 2, 270, N'Unidades', N'/configuracion/almacen/Unidades', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (273, N'Unidades', 2, 270, N'Unidades', N'/configuracion/almacen/Unidades', N'RiListCheck2', 1, 'ESP', 3, 1, GETDATE()),
     (274, N'Perido de Conteo', 2, 270, N'Perido de Conteo', N'/configuracion/almacen/Perido_Conteo', N'FaCalendar', 1, 'ESP', 4, 1, GETDATE()),
 
     -- Configuración -> Tesorería
-    (280, N'Tesoreria', 1, 1, N'Tesoreria', N'/', N'FaChartBar', 1, 'ESP', 5, 1, GETDATE()),
-    (281, N'Tipo de Cambio', 2, 280, N'Tipo de Cambio', N'/configuracion/tesoreria/Tipo_Cambio', N'FaGears', 1, 'ESP', 1, 1, GETDATE()),
-    (282, N'Tipo Inversion', 2, 280, N'Tipo Inversion', N'/configuracion/tesoreria/Tipo_Inversion', N'FaChartLine', 1, 'ESP', 2, 1, GETDATE()),
-    (283, N'Tipo Moneda', 2, 280, N'Tipo Moneda', N'/configuracion/tesoreria/Tipo_Moneda', N'FaStar', 1, 'ESP', 3, 1, GETDATE()),
-    (284, N'Tipo de Pago', 2, 280, N'Tipo de Pago', N'/configuracion/tesoreria/Tipo_Pago', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
-    (285, N'Tipo de Pago SF', 2, 280, N'Tipo de Pago SF', N'/configuracion/tesoreria/Tipo_PagoSF', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
-    (286, N'Tipo Solicitud CLC', 2, 280, N'Tipo Solicitud CLC', N'/configuracion/tesoreria/Tipo_Solicitud_CLC', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
+    (280, N'Tesoreria', 1, 1, N'Tesoreria', N'/', N'FaChartLine', 1, 'ESP', 5, 1, GETDATE()),
+    (281, N'Tipo de Cambio', 2, 280, N'Tipo de Cambio', N'/configuracion/tesoreria/Tipo_Cambio', N'FaChartLine', 1, 'ESP', 1, 1, GETDATE()),
+    (282, N'Tipo Inversion', 2, 280, N'Tipo Inversion', N'/configuracion/tesoreria/Tipo_Inversion', N'FaChartBar', 1, 'ESP', 2, 1, GETDATE()),
+    (283, N'Tipo Moneda', 2, 280, N'Tipo Moneda', N'/configuracion/tesoreria/Tipo_Moneda', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
+    (284, N'Tipo de Pago', 2, 280, N'Tipo de Pago', N'/configuracion/tesoreria/Tipo_Pago', N'FaDocument', 1, 'ESP', 4, 1, GETDATE()),
+    (285, N'Tipo de Pago SF', 2, 280, N'Tipo de Pago SF', N'/configuracion/tesoreria/Tipo_PagoSF', N'FaDocument', 1, 'ESP', 5, 1, GETDATE()),
+    (286, N'Tipo Solicitud CLC', 2, 280, N'Tipo Solicitud CLC', N'/configuracion/tesoreria/Tipo_Solicitud_CLC', N'FaFile', 1, 'ESP', 6, 1, GETDATE()),
     (287, N'Tipo Documento CLC', 2, 280, N'Tipo Documento CLC', N'/configuracion/tesoreria/Tipo_Documento_CLC', N'FaDocument', 1, 'ESP', 7, 1, GETDATE()),
 
+    (300, N'Egreso', 1, 2, N'Egreso', N'/', N'FaChartPie', 1, 'ESP', 1, 1, GETDATE()),
+    (310, N'Planeación', 1, 300, N'Planeación', N'/', N'FaCalendar', 1, 'ESP', 1, 1, GETDATE()),
+    (301, N'Presupuesto Autorizado', 1, 300, N'Presupuesto Autorizado', N'/Presupuesto/Egreso/Presupuesto_Autorizado', N'FaLock', 1, 'ESP', 2, 1, GETDATE()),
+    (302, N'Investigación de Mercado', 1, 300, N'Investigación de Mercado', N'/Presupuesto/Egreso/Investigacion_Mercado', N'FaSearch', 1, 'ESP', 2, 1, GETDATE()),
+    (311, N'Anteproyecto de Egresos', 1, 310, N'Anteproyecto de Egresos', N'/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos', N'FaDocument', 1, 'ESP', 2, 1, GETDATE()),
+    (312, N'Presupuesto Comprometido', 1, 300, N'Presupuesto Comprometido', N'/', N'FaLock', 1, 'ESP', 1, 1, GETDATE()), 
+    (313, N'Solicitud Suficiencia', 1, 300, N'Solicitud Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia', N'FaPlus', 1, 'ESP', 3, 1, GETDATE()),
+    (314, N'Autorizacion Suficiencia', 1, 300, N'Autorizacion Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia', N'FaFlag', 1, 'ESP', 4, 1, GETDATE()),
+    (315, N'Registro Comprometido', 1, 300, N'Registro Comprometido', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido', N'FaSave', 1, 'ESP', 5, 1, GETDATE()),
 
-    (300, N'Egreso', 1, 2, N'Egreso', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-    (310, N'Planeación', 1, 300, N'Planeación', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-    (301, N'Presupuesto Autorizado', 1, 300, N'Presupuesto Autorizado', N'/Presupuesto/Egreso/Presupuesto_Autorizado', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
-    (302, N'Investigación de Mercado', 1, 300, N'Investigación de Mercado', N'/Presupuesto/Egreso/Investigacion_Mercado', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
-    (311, N'Anteproyecto de Egresos', 1, 310, N'Anteproyecto de Egresos', N'/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos', N'FaTag', 1, 'ESP', 2, 1, GETDATE()),
-    (312, N'Presupuesto Comprometido', 1, 300, N'Presupuesto Comprometido', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()), 
-    (313, N'Solicitud Suficiencia', 1, 300, N'Solicitud Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia', N'FaTag', 1, 'ESP', 3, 1, GETDATE()),
-    (314, N'Autorizacion Suficiencia', 1, 300, N'Autorizacion Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
-    (315, N'Registro Comprometido', 1, 300, N'Registro Comprometido', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido', N'FaTag', 1, 'ESP', 5, 1, GETDATE()),
+    (350, N'Tesorería', 1, 2, N'Tesorería', N'/', N'FaChartLine', 1, 'ESP', 1, 1, GETDATE()),
+    (351, N'Cuentas por Pagar', 1, 350, N'Cuentas por Pagar', N'/', N'FaDocument', 1, 'ESP', 1, 1, GETDATE()),
+    (352, N'Recepción de Facturas y Comprobantes de Pago', 1, 351, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesorería/CuentasXPagar/Factura_Pago', N'FaFile', 1, 'ESP', 1, 1, GETDATE()),
+    (353, N'Provisión del Pago', 1, 351, N'Provisión del Pago', N'/Presupuesto/Tesorería/CuentasXPagar/Provision_Pago', N'FaClock', 1, 'ESP', 1, 1, GETDATE()),
+    (354, N'Elaboración de Cheques o Transferencias', 1, 351, N'Elaboración de Cheques o Transferencias', N'/Presupuesto/Tesorería/CuentasXPagar/Cheque_Transferencia', N'FaSave', 1, 'ESP', 1, 1, GETDATE()),
+    (370, N'Inversiones', 1, 350, N'Inversiones', N'/', N'FaChartBar', 1, 'ESP', 1, 1, GETDATE()),
+    (371, N'Banco', 1, 370, N'Banco', N'/Presupuesto/Tesorería/Inversiones/Banco', N'FaHome', 1, 'ESP', 1, 1, GETDATE()),
+    (372, N'Cuenta Bancaria', 1, 370, N'Cuenta Bancaria', N'/Presupuesto/Tesorería/Inversiones/Cuenta_Bancaria', N'FaFile', 1, 'ESP', 1, 1, GETDATE()),
+    (373, N'Intermediarios Financiero', 1, 370, N'Intermediarios Financiero', N'/Presupuesto/Tesorería/Inversiones/Intermediarios_Financiero', N'FaUsers', 1, 'ESP', 2, 1, GETDATE()),
+    (374, N'Instrumentos de Inversión', 1, 370, N'Instrumentos de Inversión', N'/Presupuesto/Tesorería/Inversiones/Instrumentos_Inversion', N'FaChartPie', 1, 'ESP', 3, 1, GETDATE()),
+    (375, N'Listado de Inversiones', 1, 370, N'Listado de Inversiones', N'/Presupuesto/Tesorería/Inversiones/Listado_Inversiones', N'RiListCheck2', 1, 'ESP', 4, 1, GETDATE()),
+    (376, N'Tipo de Plazos', 1, 370, N'Tipo de Plazos', N'/Presupuesto/Tesorería/Inversiones/Tipo_Plazos', N'FaClock', 1, 'ESP', 5, 1, GETDATE()),
+    (377, N'Tipo de Retiro', 1, 370, N'Tipo de Retiro', N'/Presupuesto/Tesorería/Inversiones/Tipo_Retiro', N'FaLockOpen', 1, 'ESP', 6, 1, GETDATE()),
 
-    (350, N'Tesorería', 1, 2, N'Tesorería', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-    (351, N'Cuentas por Pagar', 1, 350, N'Cuentas por Pagar', N'/', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-    (352, N'Recepción de Facturas y Comprobantes de Pago', 1, 351, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesorería/CuentasXPagar/Factura_Pago', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-    (353, N'Provisión del Pago', 1, 351, N'Provisión del Pago', N'/Presupuesto/Tesorería/CuentasXPagar/Provision_Pago', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-    (354, N'Elaboración de Cheques o Transferencias', 1, 351, N'Elaboración de Cheques o Transferencias', N'/Presupuesto/Tesorería/CuentasXPagar/Cheque_Transferencia', N'FaTag', 1, 'ESP', 1, 1, GETDATE()),
-
-
-    (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaTag', 1, 'ESP', 4, 1, GETDATE()),
+    (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaCalendar', 1, 'ESP', 4, 1, GETDATE()),
     (401, N'Requisicion', 2, 400, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
-    (402, N'Cotización', 2, 400, N'Cotización', N'/Adquisiciones/Cotizacion', N'RiListCheck2', 1, 'ESP', 6, 1, GETDATE()),
-    (403, N'Solicitud Suficiencia', 2, 400, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'RiListCheck2', 1, 'ESP', 7, 1, GETDATE()),
-
-
+    (402, N'Cotización', 2, 400, N'Cotización', N'/Adquisiciones/Cotizacion', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
+    (403, N'Solicitud Suficiencia', 2, 400, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
 
     (500, N'Pólizas', 1, 3, N'Pólizas', N'/Contabilidad/Polizas', N'FaDocument', 1, 'ESP', 4, 1, GETDATE())
 
@@ -942,7 +964,7 @@ WHEN NOT MATCHED BY TARGET THEN
     VALUES (SOURCE.FKIdMenu_SIS, SOURCE.RoleId, SOURCE.Activo, SOURCE.CreatedByOperatorId, SOURCE.CreatedDateTime)
 WHEN NOT MATCHED BY SOURCE THEN DELETE;
 GO
-
+[SIS].[Moneda][TES].[Moneda]
 -- =============================================
 -- TABLAS ADICIONALES (Perfil, Logs, Parámetros)
 -- =============================================

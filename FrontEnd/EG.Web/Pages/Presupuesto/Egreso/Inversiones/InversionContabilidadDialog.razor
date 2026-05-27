@@ -1,0 +1,161 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<PolizaDetalleResponse> Service
+@inject IGenericCrudService<PolizaResponse> PolizaService
+@inject IGenericCrudService<CuentaContableResponse> CuentaService
+@inject IGenericCrudService<TipoDetallePolizaResponse> TipoDetalleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="PolizaDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
+    <BaseEntityForm TEntity="PolizaDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12"><PagedAutocomplete Value="@_poliza" ValueChanged="value => _poliza = value" Label="Poliza" Required="true" LoadPage="LoadPolizasPageAsync" /></MudItem>
+            <MudItem xs="12"><PagedAutocomplete Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasPageAsync" /></MudItem>
+            <MudItem xs="12"><PagedAutocomplete Value="@_tipoDetalle" ValueChanged="value => _tipoDetalle = value" Label="Tipo detalle (opcional)" Clearable="true" LoadPage="LoadTiposDetallePageAsync" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Descripcion" Label="Concepto" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField T="decimal?" Value="@item.ImporteDebe" ValueChanged="OnDebeChanged" Label="Debe" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField T="decimal?" Value="@item.ImporteHaber" ValueChanged="OnHaberChanged" Label="Haber" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
+            </MudItem>
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12"><MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" /></MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int InversionId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<PolizaDetalleResponse> form = null!;
+    private PolizaDetalleResponse item = new() { Activo = true };
+    private LookupItem? _poliza;
+    private LookupItem? _cuenta;
+    private LookupItem? _tipoDetalle;
+
+    private string dialogTitle => Id.HasValue ? "Editar movimiento contable" : "Nuevo movimiento contable";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            item.FkidReferencia = InversionId;
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            item.FkidReferencia = InversionId;
+            _poliza = new LookupItem { Id = item.FkidPolizaConta, Text = $"{item.ClavePoliza} - {item.NombrePoliza}" };
+            _cuenta = new LookupItem { Id = item.FkidCuentaContableConta, Text = item.CuentaClaveNombre ?? item.FkidCuentaContableConta.ToString() };
+            _tipoDetalle = item.FkidTipoDetallePolizaSis.HasValue
+                ? new LookupItem { Id = item.FkidTipoDetallePolizaSis.Value, Text = item.TipoDetallePoliza ?? item.FkidTipoDetallePolizaSis.Value.ToString() }
+                : null;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (_poliza == null || _cuenta == null)
+        {
+            Snackbar.Add("Selecciona poliza y cuenta contable.", Severity.Warning);
+            return;
+        }
+
+        var debe = item.ImporteDebe ?? 0m;
+        var haber = item.ImporteHaber ?? 0m;
+        if (debe <= 0m && haber <= 0m)
+        {
+            Snackbar.Add("Captura un importe en debe o en haber.", Severity.Warning);
+            return;
+        }
+        if (debe > 0m && haber > 0m)
+        {
+            Snackbar.Add("No puedes capturar debe y haber al mismo tiempo.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPolizaConta = _poliza.Id;
+        item.FkidCuentaContableConta = _cuenta.Id;
+        item.FkidTipoDetallePolizaSis = _tipoDetalle?.Id;
+        item.FkidReferencia = InversionId;
+        item.ImporteDebe = debe == 0m ? null : debe;
+        item.ImporteHaber = haber == 0m ? null : haber;
+        item.Descripcion = string.IsNullOrWhiteSpace(item.Descripcion) ? null : item.Descripcion.Trim();
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Movimiento guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el movimiento.", Severity.Error);
+    }
+
+    private Task OnDebeChanged(decimal? value)
+    {
+        item.ImporteDebe = value;
+        if (value.GetValueOrDefault() > 0m) item.ImporteHaber = null;
+        return Task.CompletedTask;
+    }
+
+    private Task OnHaberChanged(decimal? value)
+    {
+        item.ImporteHaber = value;
+        if (value.GetValueOrDefault() > 0m) item.ImporteDebe = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadPolizasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "FechaPoliza", SortDirection.Descending);
+        var list = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidPoliza,
+            Text = $"{x.ClavePoliza} - {x.NombrePoliza}"
+        }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadCuentasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await CuentaService.GetAllPaginadoAsync(page, pageSize, filter, "Cuenta", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidCuentaContable,
+            Text = $"{x.Cuenta} - {x.Descripcion}"
+        }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadTiposDetallePageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoDetalleService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidTipoDetallePoliza,
+            Text = string.IsNullOrWhiteSpace(x.Clave) ? x.Descripcion : $"{x.Clave} - {x.Descripcion}"
+        }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+}

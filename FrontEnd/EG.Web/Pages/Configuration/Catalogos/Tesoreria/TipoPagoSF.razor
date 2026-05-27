@@ -21,7 +21,6 @@
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoPagoSf" T="TipoPagoSFResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPagoSFResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoPagoSFResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -42,7 +41,6 @@
                 </MudTd>
                 <MudTd>@item.PkidTipoPagoSf</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.Activo</MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -56,7 +54,7 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPagoSFResponse>);
     protected override string GetDefaultSortLabel() => "Descripcion";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPagoSFResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoPagoSf, Descripcion = u.Descripcion, Activo = u.Activo ? "Sí" : "No" });
+        items.Select(u => new { ID = u.PkidTipoPagoSf, Descripcion = u.Descripcion});
 
     protected override async Task ReloadData()
     {

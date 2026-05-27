@@ -60,7 +60,6 @@
                             <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="EstudioMercadoResponse">Solicitud</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="FechaCierre" T="EstudioMercadoResponse">Cierre</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Estatus" T="EstudioMercadoResponse">Estatus</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Activo" T="EstudioMercadoResponse">Activo</MudTableSortLabel></MudTh>
                         </Header>
 
                         <Row Context="item">
@@ -99,11 +98,6 @@
                             <MudTd>
                                 <MudChip T="string" Color="@StatusColor(item.Estatus)" Size="Size.Small">
                                     @StatusText(item.Estatus)
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                                    @(item.Activo ? "Activo" : "Inactivo")
                                 </MudChip>
                             </MudTd>
                         </Row>
@@ -503,7 +497,6 @@
             FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
             FechaCierre = item.FechaCierre?.ToString("dd/MM/yyyy") ?? string.Empty,
             Estatus = StatusText(item.Estatus),
-            Activo = item.Activo ? "Si" : "No",
             UsuarioCreacion = item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             UsuarioModificacion = item.UsuarioModificacion,

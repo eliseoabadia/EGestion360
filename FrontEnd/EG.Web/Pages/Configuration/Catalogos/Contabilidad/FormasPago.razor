@@ -32,7 +32,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Codigo" T="ContaTipoDoctoPagoResponse">Código</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Nombre" T="ContaTipoDoctoPagoResponse">Nombre</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ContaTipoDoctoPagoResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="ContaTipoDoctoPagoResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -56,11 +55,6 @@
                 <MudTd>@item.Codigo</MudTd>
                 <MudTd>@item.Nombre</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -86,7 +80,6 @@
             Código = u.Codigo,
             Nombre = u.Nombre,
             Descripción = u.Descripcion,
-            Activo = u.Activo
         });
     }
 

@@ -53,7 +53,6 @@
                             <MudTh><MudTableSortLabel SortLabel="FechaRequisicion" T="RequisicionResponse">Fecha</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Importe" T="RequisicionResponse">Importe</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Servicio" T="RequisicionResponse">Tipo</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Activo" T="RequisicionResponse">Activo</MudTableSortLabel></MudTh>
                             <MudTh>Flujo</MudTh>
                         </Header>
 
@@ -105,11 +104,6 @@
                             <MudTd>
                                 <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
                                     @(item.Servicio ? "Servicio" : "Bien")
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                                    @(item.Activo ? "Si" : "No")
                                 </MudChip>
                             </MudTd>
                             <MudTd>
@@ -507,7 +501,6 @@
             Fecha = item.FechaRequisicion.ToString("dd/MM/yyyy"),
             item.Importe,
             Tipo = item.Servicio ? "Servicio" : "Bien",
-            Activo = item.Activo ? "Si" : "No",
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,

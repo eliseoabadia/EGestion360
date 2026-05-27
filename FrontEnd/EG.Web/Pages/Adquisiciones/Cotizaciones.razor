@@ -66,7 +66,6 @@
                             <MudTh><MudTableSortLabel SortLabel="TotalDetalles" T="CotizacionResponse">Bienes</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="TotalCotizado" T="CotizacionResponse">Total</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Servicio" T="CotizacionResponse">Tipo</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Activo" T="CotizacionResponse">Activo</MudTableSortLabel></MudTh>
                         </Header>
 
                         <Row Context="item">
@@ -113,11 +112,6 @@
                             <MudTd>
                                 <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
                                     @(item.Servicio ? "Servicio" : "Bien")
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                                    @(item.Activo ? "Si" : "No")
                                 </MudChip>
                             </MudTd>
                         </Row>
@@ -254,7 +248,6 @@
                             <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="CotizacionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="PrecioUnitario" T="CotizacionDetalleResponse">Precio unitario</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Importe" T="CotizacionDetalleResponse">Importe</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Activo" T="CotizacionDetalleResponse">Activo</MudTableSortLabel></MudTh>
                         </Header>
                         <Row Context="detalle">
                             <MudTd Class="row-actions">
@@ -282,11 +275,6 @@
                             <MudTd>@TextOrDash(detalle.UnidadMedida)</MudTd>
                             <MudTd>@MoneyOrDash(detalle.PrecioUnitario)</MudTd>
                             <MudTd><strong>@MoneyOrDash(detalle.Importe)</strong></MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(detalle.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                                    @(detalle.Activo ? "Si" : "No")
-                                </MudChip>
-                            </MudTd>
                         </Row>
                     </GenericTable>
                 </div>
@@ -484,7 +472,6 @@
             item.Vigencia,
             item.Condiciones,
             item.Comentarios,
-            Activo = item.Activo ? "Si" : "No",
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,

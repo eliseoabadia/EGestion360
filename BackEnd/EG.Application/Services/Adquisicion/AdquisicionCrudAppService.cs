@@ -92,7 +92,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<TResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear {_entityName}: {ex.Message}",
+                    Message = $"Error al crear {_entityName}: {GetErrorMessage(ex)}",
                     Code = "ERROR",
                     TotalCount = 0
                 };
@@ -135,7 +135,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<TResponse>
                 {
                     Success = false,
-                    Message = $"Error al actualizar {_entityName}: {ex.Message}",
+                    Message = $"Error al actualizar {_entityName}: {GetErrorMessage(ex)}",
                     Code = "ERROR",
                     TotalCount = 0
                 };
@@ -236,6 +236,11 @@ namespace EG.Application.Services.Adquisicion
                 : Convert.ChangeType(value, targetType);
 
             property.SetValue(target, convertedValue);
+        }
+
+        private static string GetErrorMessage(Exception ex)
+        {
+            return ex.InnerException?.Message ?? ex.Message;
         }
     }
 }

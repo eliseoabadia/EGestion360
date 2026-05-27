@@ -7,7 +7,7 @@ namespace EG.Infraestructure.Models;
 
 public partial class VwDetalleRequisicion
 {
-    public int PkidDetalleRequisicion { get; set; }
+    public int PkidRequisicionDetalle { get; set; }
 
     public int FkidEmpresaSis { get; set; }
 

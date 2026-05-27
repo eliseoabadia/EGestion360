@@ -32,7 +32,6 @@
                 <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="EmpresaResponse">Nombre</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="EstadoNombre" T="EmpresaResponse">Entidad</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Rfc" T="EmpresaResponse">RFC</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EmpresaActivo" T="EmpresaResponse">Estado</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="empresa">
@@ -56,13 +55,6 @@
                 <MudTd>@empresa.EmpresaNombre</MudTd>
                 <MudTd>@empresa.EstadoNombre</MudTd>
                 <MudTd>@empresa.Rfc</MudTd>
-                <MudTd>
-                    <MudBadge Color="@(empresa.EmpresaActivo ? Color.Success : Color.Error)"
-                              Variant="Variant.Filled"
-                              Size="Size.Small">
-                        @(empresa.EmpresaActivo ? "Activo" : "Inactivo")
-                    </MudBadge>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -87,7 +79,6 @@
             ID = e.PkidEmpresa,
             Nombre = e.EmpresaNombre,
             RFC = e.Rfc,
-            Estado = e.EmpresaActivo ? "Activo" : "Inactivo"
         });
     }
 

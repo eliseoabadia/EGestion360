@@ -439,10 +439,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[SIS].[Banco]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[SIS].[Capitulo]",
          "ObjectType": 0
       },
@@ -559,11 +555,39 @@
          "ObjectType": 0
       },
       {
+         "Name": "[TES].[Banco]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[TES].[CuentaBancaria]",
          "ObjectType": 0
       },
       {
+         "Name": "[TES].[Instrumento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[Interes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[IntermediarioFinanciero]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[Inversion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[Retiro]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[TES].[TipoCambio]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoDoctoCLC]",
          "ObjectType": 0
       },
       {
@@ -580,6 +604,14 @@
       },
       {
          "Name": "[TES].[TipoPagoSF]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoPlazo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[TES].[TipoRetiro]",
          "ObjectType": 0
       },
       {
@@ -807,7 +839,47 @@
          "ObjectType": 3
       },
       {
+         "Name": "[TES].[Vw_Banco]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_Instrumento]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_IntermediarioFinanciero]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[VW_Inversiones]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[TES].[Vw_TipoCambio]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoInversion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoPago]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoPagoSF]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoPlazo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoRetiro]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[TES].[Vw_TipoSolicitudCLC]",
          "ObjectType": 3
       },
       {

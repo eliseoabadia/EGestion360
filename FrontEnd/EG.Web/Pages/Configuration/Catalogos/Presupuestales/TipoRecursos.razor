@@ -31,7 +31,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoRecurso" T="TipoRecursoResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoRecursoResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoRecursoResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoRecursoResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -54,11 +53,6 @@
                 <MudTd>@item.PkidTipoRecurso</MudTd>
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -83,7 +77,6 @@
             ID = u.PkidTipoRecurso,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
-            Activo = u.Activo
         });
     }
 

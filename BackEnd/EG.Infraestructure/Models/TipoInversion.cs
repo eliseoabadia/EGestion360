@@ -21,6 +21,8 @@ public partial class TipoInversion
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Instrumento> Instrumentos { get; set; } = new List<Instrumento>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

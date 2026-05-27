@@ -195,7 +195,6 @@
                     <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="Tipo" T="MenuItemsResponse">Tipo</MudTableSortLabel></MudTh>
                     <MudTh Style="width: 200px;"><MudTableSortLabel SortLabel="MenuPadre" T="MenuItemsResponse">Menú Padre</MudTableSortLabel></MudTh>
                     <MudTh Style="width: 100px;"><MudTableSortLabel SortLabel="Orden" T="MenuItemsResponse">Orden</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 120px;"><MudTableSortLabel SortLabel="Activo" T="MenuItemsResponse">Estado</MudTableSortLabel></MudTh>
                 </HeaderContent>
 
                 <RowTemplate>
@@ -248,13 +247,6 @@
                     <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
                     <MudTd DataLabel="Menú Padre">@(context.NombreMenuPadre ?? "-")</MudTd>
                     <MudTd DataLabel="Orden">@context.Orden</MudTd>
-                    <MudTd DataLabel="Estado">
-                        <MudBadge Color="@(context.Activo ? Color.Success : Color.Error)"
-                        Variant="Variant.Filled"
-                        Size="Size.Small">
-                            @(context.Activo ? "Activo" : "Inactivo")
-                        </MudBadge>
-                    </MudTd>
                 </RowTemplate>
 
                 <NoRecordsContent>

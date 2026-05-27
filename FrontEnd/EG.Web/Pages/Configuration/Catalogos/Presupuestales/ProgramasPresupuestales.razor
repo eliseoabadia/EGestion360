@@ -42,7 +42,6 @@
                 <MudTh><MudTableSortLabel SortLabel="SfclaveNombre" T="ProgramaResponse">SF</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="ActividadInstitucionalClaveNombre" T="ProgramaResponse">Actividad</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="AnioClave" T="ProgramaResponse">Anio</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProgramaResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -71,11 +70,6 @@
                 <MudTd>@TextOrDash(item.SfclaveNombre)</MudTd>
                 <MudTd>@TextOrDash(item.ActividadInstitucionalClaveNombre)</MudTd>
                 <MudTd>@(item.AnioClave?.ToString() ?? "-")</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Si" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>

@@ -65,7 +65,7 @@ public partial class EgresoProyectado
 
     public int? FkidPyPres { get; set; }
 
-    public virtual EgresoAutorizado EgresoAutorizado { get; set; }
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
     public virtual Area FkidAreaSisNavigation { get; set; }
 

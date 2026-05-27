@@ -10,15 +10,32 @@ using System.Text.Json;
 namespace EG.Business.Services
 {
     public class GenericService<TEntity, TDto, TResponse>(
-        IRepository<TEntity> repository)
+        IRepository<TEntity> repository,
+        IUserContextService? userContext = null)
         where TEntity : class
         where TDto : class
         where TResponse : class
     {
         protected readonly IRepository<TEntity> _repository = repository;
+        protected readonly IUserContextService? _userContext = userContext;
+
+        private static readonly string[] EmpresaPropertyCandidates =
+        [
+            "FkidEmpresaSis",
+            "FKIdEmpresaSIS",
+            "FKIdEmpresa_SIS",
+            "IdEmpresa",
+            "EmpresaId",
+            "PkidEmpresa",
+            "PKIdEmpresa",
+            "PkIdEmpresa"
+        ];
 
         // Propiedad para habilitar/deshabilitar filtro de Activo
         protected bool FilterByActivo { get; set; } = true;
+
+        // Propiedad para habilitar/deshabilitar filtro de empresa del usuario autenticado
+        protected bool FilterByEmpresa { get; set; } = true;
 
         // Propiedades para configurar includes din�micos
         protected List<Expression<Func<TEntity, object>>> _includes = new();
@@ -105,6 +122,11 @@ namespace EG.Business.Services
                 query = ApplyActivoFilter(query);
             }
 
+            if (FilterByEmpresa)
+            {
+                query = ApplyEmpresaFilter(query);
+            }
+
             if (whereCondition != null)
             {
                 var parametro = Expression.Parameter(typeof(TEntity), "e");
@@ -114,6 +136,110 @@ namespace EG.Business.Services
             }
 
             return query;
+        }
+
+        private IQueryable<TEntity> ApplyEmpresaFilter(IQueryable<TEntity> query)
+        {
+            var empresaId = _userContext?.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                return query;
+            }
+
+            var empresaProperty = GetEmpresaProperty(typeof(TEntity));
+            if (empresaProperty == null || !IsSupportedEmpresaProperty(empresaProperty.PropertyType))
+            {
+                return query;
+            }
+
+            var parameter = Expression.Parameter(typeof(TEntity), "e");
+            var propertyAccess = Expression.Property(parameter, empresaProperty);
+            var targetType = Nullable.GetUnderlyingType(empresaProperty.PropertyType) ?? empresaProperty.PropertyType;
+            var convertedEmpresaId = Convert.ChangeType(empresaId.Value, targetType, CultureInfo.InvariantCulture);
+            var constant = Expression.Constant(convertedEmpresaId, targetType);
+            Expression comparisonValue = empresaProperty.PropertyType == targetType
+                ? constant
+                : Expression.Convert(constant, empresaProperty.PropertyType);
+            var condition = Expression.Equal(propertyAccess, comparisonValue);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(condition, parameter);
+
+            return query.Where(lambda);
+        }
+
+        private static PropertyInfo? GetEmpresaProperty(Type type)
+        {
+            foreach (var candidate in EmpresaPropertyCandidates)
+            {
+                var property = type.GetProperty(
+                    candidate,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+                if (property != null)
+                {
+                    return property;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsSupportedEmpresaProperty(Type propertyType)
+        {
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            return targetType == typeof(int) || targetType == typeof(long) || targetType == typeof(short);
+        }
+
+        public virtual void ApplyCurrentEmpresaIfPresent(object? target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            var empresaId = _userContext?.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                return;
+            }
+
+            var empresaProperty = GetEmpresaProperty(target.GetType());
+            if (empresaProperty == null || !empresaProperty.CanWrite || !IsSupportedEmpresaProperty(empresaProperty.PropertyType))
+            {
+                return;
+            }
+
+            var targetType = Nullable.GetUnderlyingType(empresaProperty.PropertyType) ?? empresaProperty.PropertyType;
+            var convertedEmpresaId = Convert.ChangeType(empresaId.Value, targetType, CultureInfo.InvariantCulture);
+            empresaProperty.SetValue(target, convertedEmpresaId);
+        }
+
+        private bool BelongsToCurrentEmpresa(object? entity)
+        {
+            if (entity == null)
+            {
+                return false;
+            }
+
+            var empresaId = _userContext?.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                return true;
+            }
+
+            var empresaProperty = GetEmpresaProperty(entity.GetType());
+            if (empresaProperty == null || !IsSupportedEmpresaProperty(empresaProperty.PropertyType))
+            {
+                return true;
+            }
+
+            var value = empresaProperty.GetValue(entity);
+            if (value == null)
+            {
+                return false;
+            }
+
+            var entityEmpresaId = Convert.ToInt64(value, CultureInfo.InvariantCulture);
+            return entityEmpresaId == empresaId.Value;
         }
 
         private IQueryable<TEntity> ApplyActivoFilter(IQueryable<TEntity> query)
@@ -256,7 +382,9 @@ namespace EG.Business.Services
 
         public virtual async Task AddAsync(TDto dto)
         {
+            ApplyCurrentEmpresaIfPresent(dto);
             var entity = dto.Adapt<TEntity>();
+            ApplyCurrentEmpresaIfPresent(entity);
             await _repository.AddAsync(entity);
 
             // Mapear el ID de vuelta al DTO si es necesario
@@ -278,8 +406,12 @@ namespace EG.Business.Services
             var existing = await _repository.GetByIdAsync(id);
             if (existing == null)
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
+            if (!BelongsToCurrentEmpresa(existing))
+                throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
 
+            ApplyCurrentEmpresaIfPresent(dto);
             dto.Adapt(existing);
+            ApplyCurrentEmpresaIfPresent(existing);
             await _repository.UpdateAsync(existing);
         }
 
@@ -287,6 +419,8 @@ namespace EG.Business.Services
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
+                throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
+            if (!BelongsToCurrentEmpresa(entity))
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
 
             await _repository.SoftDeleteAsync(id);
@@ -583,7 +717,8 @@ namespace EG.Business.Services
     }
 
     public class GenericService<TEntity, TDto>(
-        IRepository<TEntity> repository) : GenericService<TEntity, TDto, TDto>(repository)
+        IRepository<TEntity> repository,
+        IUserContextService? userContext = null) : GenericService<TEntity, TDto, TDto>(repository, userContext)
         where TEntity : class
         where TDto : class
     {

@@ -32,7 +32,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EstatusRequisicionResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Color" T="EstatusRequisicionResponse">Color</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Orden" T="EstatusRequisicionResponse">Orden</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="EstatusRequisicionResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -60,11 +59,6 @@
                     </MudChip>
                 </MudTd>
                 <MudTd>@item.Orden</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -91,7 +85,6 @@
             Color = u.Color,
             Orden = u.Orden,
             Icono = u.Icono,
-            Activo = u.Activo
         });
     }
 

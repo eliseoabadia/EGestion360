@@ -33,7 +33,6 @@
                 <MudTh><MudTableSortLabel SortLabel="GrupoBienClave" T="GrupoBienResponse">Clave Grupo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="GrupoBienResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="ClaveCucop" T="GrupoBienResponse">CUCOP</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="GrupoBienResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -58,11 +57,6 @@
                 <MudTd>@item.GrupoBienClave</MudTd>
                 <MudTd>@item.GrupoBienDescripcion</MudTd>
                 <MudTd>@item.ClaveCucop</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -91,7 +85,6 @@
             GrupoBien = u.GrupoBienDescripcion ?? string.Empty,
             CUCOP = u.ClaveCucop ?? string.Empty,
             Medida = u.Medida ?? string.Empty,
-            Activo = u.Activo ? "Sí" : "No"
         });
     }
 

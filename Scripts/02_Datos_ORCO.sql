@@ -192,64 +192,6 @@ INSERT INTO [ORCO].[Articulo] ([PKIdArticulo], [Clave], [Descripcion], [Activo],
 SET IDENTITY_INSERT [ORCO].[Articulo] OFF;
 GO
 
-PRINT N'Insertando datos en [ORCO].[Cotizacion]';
-SET IDENTITY_INSERT [ORCO].[Cotizacion] ON;
-INSERT INTO [ORCO].[Cotizacion] ([PKIdCotizacion], [FKIdRequisicion_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaProveedorCotiza], [FechaProveedorCompromiso], [Comentarios], [Servicio], [FL_Documento], [Entrega], [Vigencia], [Condiciones], [FKIdAnio_SIS], [FKIdContenedorCot_ORCO], [FKIdContenedorMultiCot_ORCO], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1, CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), NULL, NULL, N'fgh', 0, N'', N'dffdg', N'2', N'fgh', 2026, NULL, NULL, 0, CONVERT(datetime2, '2026-05-22T08:25:26.9730903', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[Cotizacion] ([PKIdCotizacion], [FKIdRequisicion_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaProveedorCotiza], [FechaProveedorCompromiso], [Comentarios], [Servicio], [FL_Documento], [Entrega], [Vigencia], [Condiciones], [FKIdAnio_SIS], [FKIdContenedorCot_ORCO], [FKIdContenedorMultiCot_ORCO], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, 1, 1, CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), NULL, NULL, N'g', 0, N'', N'u', N'1', N'gfhf', 2026, NULL, NULL, 0, CONVERT(datetime2, '2026-05-22T16:49:43.0245013', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[Cotizacion] ([PKIdCotizacion], [FKIdRequisicion_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaProveedorCotiza], [FechaProveedorCompromiso], [Comentarios], [Servicio], [FL_Documento], [Entrega], [Vigencia], [Condiciones], [FKIdAnio_SIS], [FKIdContenedorCot_ORCO], [FKIdContenedorMultiCot_ORCO], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 1, 1, CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), NULL, NULL, N'sfd', 0, N'', N'sdf', N'1', N'sdf', 2026, NULL, NULL, 0, CONVERT(datetime2, '2026-05-22T18:07:18.8747415', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[Cotizacion] ([PKIdCotizacion], [FKIdRequisicion_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaProveedorCotiza], [FechaProveedorCompromiso], [Comentarios], [Servicio], [FL_Documento], [Entrega], [Vigencia], [Condiciones], [FKIdAnio_SIS], [FKIdContenedorCot_ORCO], [FKIdContenedorMultiCot_ORCO], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, 1, 1, CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), NULL, N'fgdfg', 0, N'', N'dfg', N'1', N'dfgd', 2026, NULL, NULL, 0, CONVERT(datetime2, '2026-05-22T18:55:38.1406227', 126), 1, CONVERT(datetime2, '2026-05-22T18:56:27.5677411', 126), 1);
-INSERT INTO [ORCO].[Cotizacion] ([PKIdCotizacion], [FKIdRequisicion_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaProveedorCotiza], [FechaProveedorCompromiso], [Comentarios], [Servicio], [FL_Documento], [Entrega], [Vigencia], [Condiciones], [FKIdAnio_SIS], [FKIdContenedorCot_ORCO], [FKIdContenedorMultiCot_ORCO], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, 1, 1, CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), NULL, N'sdf', 0, N'', N'sdf', N'1', N'sdf', 2026, NULL, NULL, 1, CONVERT(datetime2, '2026-05-22T19:38:02.2738678', 126), 1, CONVERT(datetime2, '2026-05-22T19:40:03.0211972', 126), 1);
-INSERT INTO [ORCO].[Cotizacion] ([PKIdCotizacion], [FKIdRequisicion_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaProveedorCotiza], [FechaProveedorCompromiso], [Comentarios], [Servicio], [FL_Documento], [Entrega], [Vigencia], [Condiciones], [FKIdAnio_SIS], [FKIdContenedorCot_ORCO], [FKIdContenedorMultiCot_ORCO], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, 1, 2, CONVERT(datetime2, '2026-05-22T00:00:00.0000000', 126), NULL, NULL, N'sdf', 0, N'', N'dfg', N'1', N'sdf', 2026, NULL, NULL, 1, CONVERT(datetime2, '2026-05-22T19:39:05.8240283', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[Cotizacion] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[CotizacionDetalle]';
-SET IDENTITY_INSERT [ORCO].[CotizacionDetalle] ON;
-INSERT INTO [ORCO].[CotizacionDetalle] ([PKIdCotizacionDetalle], [FKIdCotizacion_ORCO], [FKIdRequisicionDetalle_ORCO], [PrecioUnitario], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 3, N'500.0000', 1, CONVERT(datetime2, '2026-05-22T08:26:22.1818528', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[CotizacionDetalle] ([PKIdCotizacionDetalle], [FKIdCotizacion_ORCO], [FKIdRequisicionDetalle_ORCO], [PrecioUnitario], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, 3, 3, NULL, 1, CONVERT(datetime2, '2026-05-22T18:07:18.8747415', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[CotizacionDetalle] ([PKIdCotizacionDetalle], [FKIdCotizacion_ORCO], [FKIdRequisicionDetalle_ORCO], [PrecioUnitario], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 4, 3, N'50.6900', 1, CONVERT(datetime2, '2026-05-22T18:55:38.1406227', 126), 1, CONVERT(datetime2, '2026-05-22T18:56:27.5677411', 126), 1);
-INSERT INTO [ORCO].[CotizacionDetalle] ([PKIdCotizacionDetalle], [FKIdCotizacion_ORCO], [FKIdRequisicionDetalle_ORCO], [PrecioUnitario], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, 5, 3, N'50.9500', 1, CONVERT(datetime2, '2026-05-22T19:38:02.2738678', 126), 1, CONVERT(datetime2, '2026-05-22T19:40:03.0211972', 126), 1);
-INSERT INTO [ORCO].[CotizacionDetalle] ([PKIdCotizacionDetalle], [FKIdCotizacion_ORCO], [FKIdRequisicionDetalle_ORCO], [PrecioUnitario], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, 6, 3, NULL, 1, CONVERT(datetime2, '2026-05-22T19:39:05.8240283', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[CotizacionDetalle] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[EstatusRequisicion]';
-SET IDENTITY_INSERT [ORCO].[EstatusRequisicion] ON;
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, N'Borrador', N'#6c757d', 10, N'edit', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, N'Enviada', N'#007bff', 20, N'send', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, N'En Revisión', N'#ffc107', 30, N'search', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, N'Suficiencia', N'#17a2b8', 40, N'check-circle', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, N'Autorizada', N'#28a745', 50, N'check', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, N'Rechazada', N'#dc3545', 60, N'times', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstatusRequisicion] ([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (7, N'Cancelada', N'#6c757d', 70, N'ban', 1, CONVERT(datetime2, '2026-05-12T19:47:43.3633333', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[EstatusRequisicion] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[EstudioMercado]';
-SET IDENTITY_INSERT [ORCO].[EstudioMercado] ON;
-INSERT INTO [ORCO].[EstudioMercado] ([PKIdEstudioMercado], [FKIdEmpresa_SIS], [FKIdAnio_SIS], [Nombre], [Descripcion], [FechaSolicitud], [FechaCierre], [FKIdResponsable_NOM], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 2026, N'etr', N'etr', CONVERT(datetime2, '2026-05-20T00:00:00.0000000', 126), NULL, 3573, 2, 1, CONVERT(datetime2, '2026-05-20T16:12:46.4746463', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[EstudioMercado] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[EstudioMercadoDetalle]';
-SET IDENTITY_INSERT [ORCO].[EstudioMercadoDetalle] ON;
-INSERT INTO [ORCO].[EstudioMercadoDetalle] ([PKIdEstudioMercadoDetalle], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdPAAASDetalle_ORCO], [FKIdTipoBien_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdProveedor_SIS], [CostoUnitario]) VALUES (1, 1, 1, 1, 71, 2.00, N'asd', 0, CONVERT(datetime2, '2026-05-20T19:36:03.8186346', 126), 1, CONVERT(datetime2, '2026-05-21T09:27:09.5326593', 126), 1, 15, 500.0000);
-INSERT INTO [ORCO].[EstudioMercadoDetalle] ([PKIdEstudioMercadoDetalle], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdPAAASDetalle_ORCO], [FKIdTipoBien_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdProveedor_SIS], [CostoUnitario]) VALUES (2, 1, 1, 1, 71, 2.00, N'asd', 0, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, CONVERT(datetime2, '2026-05-21T09:30:05.0042274', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstudioMercadoDetalle] ([PKIdEstudioMercadoDetalle], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdPAAASDetalle_ORCO], [FKIdTipoBien_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdProveedor_SIS], [CostoUnitario]) VALUES (3, 1, 1, 1, 71, 2.00, N'asd', 1, CONVERT(datetime2, '2026-05-21T09:32:03.4571916', 126), 1, NULL, NULL, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[EstudioMercadoDetalle] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[EstudioMercadoDetalleCosto]';
-SET IDENTITY_INSERT [ORCO].[EstudioMercadoDetalleCosto] ON;
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1, 2, NULL, NULL, NULL, NULL, 1, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, 1, 2, 2, NULL, NULL, NULL, NULL, 1, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 1, 3, 2, NULL, NULL, NULL, NULL, 1, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, 1, 4, 3, N'500.0000', NULL, NULL, CONVERT(datetime2, '2026-05-21T12:28:22.2300000', 126), 1, CONVERT(datetime2, '2026-05-21T09:32:03.4571916', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, 1, 5, 3, N'490.0000', NULL, NULL, CONVERT(datetime2, '2026-05-21T12:45:17.9670000', 126), 1, CONVERT(datetime2, '2026-05-21T09:47:27.4006783', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, 1, 6, 3, N'500.0000', NULL, NULL, CONVERT(datetime2, '2026-05-21T12:45:17.9670000', 126), 1, CONVERT(datetime2, '2026-05-21T09:47:27.4006783', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-INSERT INTO [ORCO].[EstudioMercadoDetalleCosto] ([PKIdEstudioMercadoDetalleCosto], [FKIdEmpresa_SIS], [FKIdSolicitudCotizacion_ORCO], [FKIdEstudioMercadoDetalle_ORCO], [PrecioUnitario], [TiempoEntregaDias], [Condiciones], [FechaRespuesta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (7, 1, 7, 3, N'600.0000', NULL, NULL, CONVERT(datetime2, '2026-05-21T12:45:17.9670000', 126), 1, CONVERT(datetime2, '2026-05-21T09:47:27.4006783', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-SET IDENTITY_INSERT [ORCO].[EstudioMercadoDetalleCosto] OFF;
-GO
 
 PRINT N'Insertando datos en [ORCO].[Fraccion]';
 SET IDENTITY_INSERT [ORCO].[Fraccion] ON;
@@ -386,24 +328,6 @@ INSERT INTO [ORCO].[Modalidad] ([PKIdModalidad], [Descripcion], [Activo], [Fecha
 SET IDENTITY_INSERT [ORCO].[Modalidad] OFF;
 GO
 
-PRINT N'Insertando datos en [ORCO].[PAAAS]';
-SET IDENTITY_INSERT [ORCO].[PAAAS] ON;
-INSERT INTO [ORCO].[PAAAS] ([PKIdPAAAS], [FKIdEmpresa_SIS], [FKIdAnio_SIS], [FKIdArea_SIS], [FKIdPersona_NOM], [Descripcion], [Observaciones], [Fecha], [FKIdProyecto_ORCO], [FKIdPrograma_PRES], [FKIdFuenteFinanciamiento_PRES], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 2026, 2, 31, N'sdf', N'sdf', CONVERT(datetime2, '2026-05-14T00:00:00.0000000', 126), 1, 1182, 4, 1, CONVERT(datetime2, '2026-05-14T22:06:51.4178546', 126), 1, CONVERT(datetime2, '2026-05-15T18:50:54.4475614', 126), 1);
-SET IDENTITY_INSERT [ORCO].[PAAAS] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[PAAASDetalle]';
-SET IDENTITY_INSERT [ORCO].[PAAASDetalle] ON;
-INSERT INTO [ORCO].[PAAASDetalle] ([PKIdPAAASDetalle], [FKIdEmpresa_SIS], [FKIdPAAASPartida_ORCO], [FKIdTipoBien_ALMA], [FKIdUnidades_ALMA], [Cantidad], [Observaciones], [LugarEntrega], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 3, 71, 18, 2.00, N'asd', N'aqui', 1, CONVERT(datetime2, '2026-05-15T23:14:31.1525586', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[PAAASDetalle] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[PAAASPartida]';
-SET IDENTITY_INSERT [ORCO].[PAAASPartida] ON;
-INSERT INTO [ORCO].[PAAASPartida] ([PKIdPAAASPartida], [FKIdEmpresa_SIS], [FKIdPAAAS_ORCO], [FKIdPartida_CONTA], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 1, 1, 21101, N'oficina', 1, CONVERT(datetime2, '2026-05-15T23:13:59.0956594', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[PAAASPartida] ([PKIdPAAASPartida], [FKIdEmpresa_SIS], [FKIdPAAAS_ORCO], [FKIdPartida_CONTA], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, 1, 1, 51201, N'sadf', 1, CONVERT(datetime2, '2026-05-15T23:15:40.5092489', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[PAAASPartida] OFF;
-GO
 
 PRINT N'Insertando datos en [ORCO].[ProcedimientoContratacion]';
 SET IDENTITY_INSERT [ORCO].[ProcedimientoContratacion] ON;
@@ -428,46 +352,6 @@ INSERT INTO [ORCO].[ProcedimientoContratacion] ([PKIdProcedimientoContratacion],
 SET IDENTITY_INSERT [ORCO].[ProcedimientoContratacion] OFF;
 GO
 
-PRINT N'Insertando datos en [ORCO].[Proyecto]';
-SET IDENTITY_INSERT [ORCO].[Proyecto] ON;
-INSERT INTO [ORCO].[Proyecto] ([PKIdProyecto], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, N'test', 1, CONVERT(datetime2, '2026-05-13T16:01:57.0559670', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[Proyecto] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[Requisicion]';
-SET IDENTITY_INSERT [ORCO].[Requisicion] ON;
-INSERT INTO [ORCO].[Requisicion] ([PKIdRequisicion], [FKIdEmpresa_SIS], [FKIdPersona_NOM], [FKIdArea_SIS], [Descripcion], [Observaciones], [FechaRequisicion], [Servicio], [FL_FOTO], [FKIdProyecto_ORCO], [FechaRequiereInicio], [FechaRequiereFin], [FKIdPrograma_PRES], [Importe], [FKIdJefeAlmacen_NOM], [FKIdSuficiencia_PRES], [FKIdSuperviso_NOM], [FKIdAutorizo_NOM], [FKIdPSolicita_NOM], [FKIdPJefeAlmacen_NOM], [FKIdPSuficiencia_NOM], [FKIdPSuperviso_NOM], [FKIdPAutorizo_NOM], [FKIdFuenteFinanciamiento_PRES], [FKIdAnio_SIS], [FKIdTipoGasto_PRES], [FKIdDigitoIdentificador_PRES], [FKIdDestinoGasto_PRES], [FKIdEgresoAutorizado_PRES], [Oficio], [FechaOficio], [CompraDirecta], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1529, 2, N'sdf', N'sdf', CONVERT(datetime2, '2026-05-14T00:00:00.0000000', 126), 0, N'', 1, NULL, NULL, 1182, N'5.0000', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4, 2026, NULL, NULL, NULL, NULL, N'sdfsfd', NULL, NULL, 1, CONVERT(datetime2, '2026-05-14T22:06:26.9503607', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[Requisicion] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[RequisicionDetalle]';
-SET IDENTITY_INSERT [ORCO].[RequisicionDetalle] ON;
-INSERT INTO [ORCO].[RequisicionDetalle] ([PKIdRequisicionDetalle], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdTipoBien_ALMA], [FKIdUnidades_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1, 487, 3, 1.00, N'fgh', 0, CONVERT(datetime2, '2026-05-14T22:41:59.6717878', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[RequisicionDetalle] ([PKIdRequisicionDetalle], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdTipoBien_ALMA], [FKIdUnidades_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, 1, 1, 624, 5, 1.00, N'drt', 0, CONVERT(datetime2, '2026-05-14T23:13:56.1401646', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[RequisicionDetalle] ([PKIdRequisicionDetalle], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdTipoBien_ALMA], [FKIdUnidades_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 1, 1, 491, 18, 1.00, N'sdf', 1, CONVERT(datetime2, '2026-05-21T20:17:45.8613719', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[RequisicionDetalle] ([PKIdRequisicionDetalle], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdTipoBien_ALMA], [FKIdUnidades_ALMA], [Cantidad], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, 1, 1, 491, 18, 1.00, N'sdf', 0, CONVERT(datetime2, '2026-05-21T20:18:08.5056662', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [ORCO].[RequisicionDetalle] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[RequisicionPartida]';
-SET IDENTITY_INSERT [ORCO].[RequisicionPartida] ON;
-INSERT INTO [ORCO].[RequisicionPartida] ([PKIdRequisicionPartida], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdPartida_CONTA], [Monto], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1, 12101, N'6.0000', N'fgh', 0, CONVERT(datetime2, '2026-05-14T22:42:20.6501243', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[RequisicionPartida] ([PKIdRequisicionPartida], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdPartida_CONTA], [Monto], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, 1, 1, 21101, N'50000.0000', N'asd', 1, CONVERT(datetime2, '2026-05-15T20:05:51.2866567', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[RequisicionPartida] ([PKIdRequisicionPartida], [FKIdEmpresa_SIS], [FKIdRequisicion_ORCO], [FKIdPartida_CONTA], [Monto], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 1, 1, 12202, N'50.0000', N'fg', 0, CONVERT(datetime2, '2026-05-21T19:44:50.5829631', 126), 1, CONVERT(datetime2, '2026-05-21T20:17:20.3517295', 126), 1);
-SET IDENTITY_INSERT [ORCO].[RequisicionPartida] OFF;
-GO
-
-PRINT N'Insertando datos en [ORCO].[SolicitudCotizacion]';
-SET IDENTITY_INSERT [ORCO].[SolicitudCotizacion] ON;
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1, 3, CONVERT(datetime2, '2026-05-21T09:27:58.1630000', 126), NULL, NULL, NULL, 1, 1, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, 1, 1, 7, CONVERT(datetime2, '2026-05-21T09:27:58.1630000', 126), NULL, NULL, NULL, 1, 1, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, 1, 1, 82, CONVERT(datetime2, '2026-05-21T09:27:58.1630000', 126), NULL, NULL, NULL, 1, 1, CONVERT(datetime2, '2026-05-21T09:27:58.1633913', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, 1, 1, 1, CONVERT(datetime2, '2026-05-21T09:32:03.4570000', 126), NULL, NULL, NULL, 3, 1, CONVERT(datetime2, '2026-05-21T09:32:03.4571916', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, 1, 1, 4, CONVERT(datetime2, '2026-05-21T09:47:27.4000000', 126), NULL, NULL, NULL, 1, 1, CONVERT(datetime2, '2026-05-21T09:47:27.4006783', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, 1, 1, 48, CONVERT(datetime2, '2026-05-21T09:47:27.4000000', 126), NULL, NULL, NULL, 1, 1, CONVERT(datetime2, '2026-05-21T09:47:27.4006783', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-INSERT INTO [ORCO].[SolicitudCotizacion] ([PKIdSolicitudCotizacion], [FKIdEmpresa_SIS], [FKIdEstudioMercado_ORCO], [FKIdProveedor_SIS], [FechaSolicitud], [FechaCompromisoEntrega], [Comentarios], [FL_Documento], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (7, 1, 1, 2, CONVERT(datetime2, '2026-05-21T09:47:27.4000000', 126), NULL, NULL, NULL, 1, 1, CONVERT(datetime2, '2026-05-21T09:47:27.4006783', 126), 1, CONVERT(datetime2, '2026-05-21T12:45:17.9672695', 126), 1);
-SET IDENTITY_INSERT [ORCO].[SolicitudCotizacion] OFF;
-GO
 
 PRINT N'Insertando datos en [ORCO].[TipoContrato]';
 SET IDENTITY_INSERT [ORCO].[TipoContrato] ON;
@@ -478,9 +362,6 @@ INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], 
 INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, N'OTRO', 1, CONVERT(datetime2, '2012-03-15T14:31:54.3900000', 126), 1, NULL, NULL);
 INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, N'SERVICIOS PROFESIONALES ', 1, CONVERT(datetime2, '2013-12-05T14:59:46.4733333', 126), 1, NULL, NULL);
 INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (7, N'CONVENIO', 1, CONVERT(datetime2, '2013-12-09T10:17:01.2733333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (15, N'TEST15161651651651651651', 0, CONVERT(datetime2, '2025-06-05T20:14:37.9500000', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (16, N'1234567890123456789012345', 0, CONVERT(datetime2, '2025-06-05T20:16:34.6233333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoContrato] ([PKIdTipoContrato], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (17, N'WWWWWWWWWWWWWWWWWW', 0, CONVERT(datetime2, '2025-06-11T00:15:55.6366667', 126), 1, NULL, NULL);
 SET IDENTITY_INSERT [ORCO].[TipoContrato] OFF;
 GO
 
@@ -490,17 +371,6 @@ INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo]
 INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, N'CONTRATO / PEDIDO', 1, CONVERT(datetime2, '2012-03-14T20:16:34.6066667', 126), 1, NULL, NULL);
 INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, N'PEDIDO', 1, CONVERT(datetime2, '2012-03-14T20:16:52.9033333', 126), 1, NULL, NULL);
 INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, N'CONVENIO', 1, CONVERT(datetime2, '2014-10-30T10:38:45.3866667', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, N'MODIFICATORIO', 1, CONVERT(datetime2, '2014-10-30T10:44:31.1000000', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, N'cvbcv', 0, CONVERT(datetime2, '2025-01-28T22:29:17.6966667', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (9, N'', 0, CONVERT(datetime2, '2025-01-28T22:31:28.6466667', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (11, N'A', 0, CONVERT(datetime2, '2025-03-13T14:26:56.2433333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (12, N'Prueba', 0, CONVERT(datetime2, '2025-03-25T21:29:02.6266667', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (13, N'a', 0, CONVERT(datetime2, '2025-04-01T14:41:08.2933333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (16, N'ddddddddddddddddddd', 0, CONVERT(datetime2, '2025-06-10T01:07:35.8133333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (18, N'rgyhghgfdhtdr56fgfhfgh', 0, CONVERT(datetime2, '2025-06-10T01:25:57.0966667', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (19, N'222222222222222222222', 0, CONVERT(datetime2, '2025-06-10T23:42:24.6733333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (20, N'22222222222222', 0, CONVERT(datetime2, '2025-06-10T23:42:41.4100000', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoDocumento] ([PKIdTipoDocumento], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (21, N'v$#$$#$', 0, CONVERT(datetime2, '2025-06-21T01:08:52.2600000', 126), 1, NULL, NULL);
 SET IDENTITY_INSERT [ORCO].[TipoDocumento] OFF;
 GO
 
@@ -509,9 +379,6 @@ SET IDENTITY_INSERT [ORCO].[TipoGarantia] ON;
 INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, N'FIANZA', 0, CONVERT(datetime2, '2012-02-10T18:03:06.6433333', 126), 1, NULL, NULL);
 INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, N'NO APLICA', 1, CONVERT(datetime2, '2012-03-15T18:05:22.9200000', 126), 1, NULL, NULL);
 INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, N'CHEQUE DE CAJA O CERTIF.', 0, CONVERT(datetime2, '2012-03-15T20:30:17.9566667', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (4, N'e', 0, CONVERT(datetime2, '2025-04-01T14:57:24.2533333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (5, N'prueba', 0, CONVERT(datetime2, '2025-04-01T14:57:32.1033333', 126), 1, NULL, NULL);
-INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (6, N'limite de caracteres 25', 0, CONVERT(datetime2, '2025-05-12T12:42:42.7500000', 126), 1, NULL, NULL);
 SET IDENTITY_INSERT [ORCO].[TipoGarantia] OFF;
 GO
 

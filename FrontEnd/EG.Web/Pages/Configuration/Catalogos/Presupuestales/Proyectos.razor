@@ -30,7 +30,6 @@
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidProyecto" T="ProyectoResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProyectoResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProyectoResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -52,11 +51,6 @@
                 </MudTd>
                 <MudTd>@item.PkidProyecto</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -80,7 +74,6 @@
         {
             ID = u.PkidProyecto,
             Descripcion = u.Descripcion,
-            Activo = u.Activo
         });
     }
 

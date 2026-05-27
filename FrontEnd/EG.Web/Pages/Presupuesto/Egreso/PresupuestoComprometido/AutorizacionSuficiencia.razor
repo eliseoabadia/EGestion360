@@ -37,7 +37,6 @@
                             <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="AutorizacionSuficienciaResponse">Autorización</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="AutorizadoPorNombre" T="AutorizacionSuficienciaResponse">Autorizó</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Estatus" T="AutorizacionSuficienciaResponse">Estatus</MudTableSortLabel></MudTh>
-                            <MudTh>Activo</MudTh>
                         </Header>
                         <Row Context="item">
                             <MudTd>
@@ -51,7 +50,6 @@
                             <MudTd>@item.FechaAutorizacion.ToString("dd/MM/yyyy")</MudTd>
                             <MudTd>@TextOrDash(item.AutorizadoPorNombre)</MudTd>
                             <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@(item.Activo ? Color.Success : Color.Error)">@(item.Activo ? "Sí" : "No")</MudChip></MudTd>
                         </Row>
                     </GenericTable>
                 </div>
@@ -172,7 +170,6 @@
             MontoTotal = details.Sum(DetailTotal),
             Observaciones = $"Generado desde autorizacion {autorizacion.PkidAutorizacionSuficiencia}",
             Estatus = 1,
-            Activo = true
         };
 
         var contratoDetalles = details.Select(detail => new ContratoDetalleResponse
@@ -196,7 +193,6 @@
             Noviembre = detail.Noviembre,
             Diciembre = detail.Diciembre,
             Observaciones = detail.Observaciones,
-            Activo = true
         }).ToList();
 
         var parameters = new DialogParameters

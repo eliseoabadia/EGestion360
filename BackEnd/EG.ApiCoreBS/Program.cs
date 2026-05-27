@@ -1,4 +1,5 @@
 using EG.ApiCoreBS.Extensions;
+using EG.ApiCoreBS.Auth;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
 using EG.Domain.Settings;
@@ -6,6 +7,7 @@ using EG.Infrastructure;
 using EG.Logger;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -108,6 +110,9 @@ try
     });
 
     builder.Services.AddMemoryCache();
+    builder.Services.AddAuthorization();
+    builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+    builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
     builder.Services.AddOpenApi();
 
     var app = builder.Build();

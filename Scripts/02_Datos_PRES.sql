@@ -2,26 +2,7 @@
 SET NOCOUNT ON;
 GO
 
-PRINT N'Insertando datos en [PRES].[AutorizacionSuficiencia]';
-SET IDENTITY_INSERT [PRES].[AutorizacionSuficiencia] ON;
-INSERT INTO [PRES].[AutorizacionSuficiencia] ([PKIdAutorizacionSuficiencia], [FKIdEmpresa_SIS], [FKIdSolicitudSuficiencia_PRES], [FechaAutorizacion], [Justificacion], [GastoNoProgramable], [IdGastoNoProgramable], [IdCompromisoNomina], [AutorizadoPor_NOM], [Observaciones], [Estatus], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 2, CONVERT(date, '2026-05-25', 23), N'eaeeae', NULL, NULL, NULL, 31, N'Autorizada desde solicitud 2', 2, 1, CONVERT(datetime2, '2026-05-25T17:27:03.3259698', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [PRES].[AutorizacionSuficiencia] OFF;
-GO
 
-PRINT N'Insertando datos en [PRES].[AutorizacionSuficienciaDetalle]';
-SET IDENTITY_INSERT [PRES].[AutorizacionSuficienciaDetalle] ON;
-INSERT INTO [PRES].[AutorizacionSuficienciaDetalle] ([PKIdAutorizacionSuficienciaDetalle], [FKIdEmpresa_SIS], [FKIdAutorizacionSuficiencia_PRES], [FKIdSolicitudSuficienciaDetalle_PRES], [FKIdPartida_CONTA], [Enero], [Febrero], [Marzo], [Abril], [Mayo], [Junio], [Julio], [Agosto], [Septiembre], [Octubre], [Noviembre], [Diciembre], [Observaciones], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, 1, 1, 2, 21101, N'0.0000', N'0.0000', N'0.0000', N'0.0000', N'56.0450', N'0.0000', N'0.0000', N'0.0000', N'0.0000', N'0.0000', N'0.0000', N'0.0000', N'Promedio de 1 cotizacion(es) mas 10.00% de ajuste.', 1, CONVERT(datetime2, '2026-05-25T17:27:03.4383855', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [PRES].[AutorizacionSuficienciaDetalle] OFF;
-GO
-
-PRINT N'Insertando datos en [PRES].[DestinoGasto]';
-SET IDENTITY_INSERT [PRES].[DestinoGasto] ON;
-INSERT INTO [PRES].[DestinoGasto] ([PKIdDestinoGasto], [Clave], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, N'1', N'DestinoGasto 1', 1, CONVERT(datetime2, '2024-11-23T02:00:32.3766667', 126), 1, NULL, NULL);
-INSERT INTO [PRES].[DestinoGasto] ([PKIdDestinoGasto], [Clave], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (2, N'2', N'DestinoGasto 2', 1, CONVERT(datetime2, '2024-11-23T02:00:41.2633333', 126), 1, NULL, NULL);
-INSERT INTO [PRES].[DestinoGasto] ([PKIdDestinoGasto], [Clave], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (3, N'3', N'DestinoGasto 3', 1, CONVERT(datetime2, '2024-11-23T02:00:49.5766667', 126), 1, NULL, NULL);
-INSERT INTO [PRES].[DestinoGasto] ([PKIdDestinoGasto], [Clave], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1001, N'4', N'version 2025-02-14', 1, CONVERT(datetime2, '2024-02-14T00:00:00.0000000', 126), 1, NULL, NULL);
-SET IDENTITY_INSERT [PRES].[DestinoGasto] OFF;
-GO
 
 PRINT N'Insertando datos en [PRES].[DigitoIdentificador]';
 SET IDENTITY_INSERT [PRES].[DigitoIdentificador] ON;
@@ -31,20 +12,7 @@ INSERT INTO [PRES].[DigitoIdentificador] ([PKIdDigitoIdentificador], [Clave], [D
 SET IDENTITY_INSERT [PRES].[DigitoIdentificador] OFF;
 GO
 
-PRINT N'Insertando datos en [PRES].[EgresoAutorizado]';
-SET IDENTITY_INSERT [PRES].[EgresoAutorizado] ON;
-INSERT INTO [PRES].[EgresoAutorizado] ([PKIdEgresoAutorizado], [FKIdPrograma_PRES], [FKIdPartida_CONTA], [FKIdArea_SIS], [Descripcion], [Fecha], [FKIdPoliza_CONTA], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdEgresoProyectado_PRES], [Enero], [Febrero], [Marzo], [Abril], [Mayo], [Junio], [Julio], [Agosto], [Septiembre], [Octubre], [Noviembre], [Diciembre], [FechaAutorizacion], [UsuarioAutorizacion], [FKIdFuenteFinanciamiento_PRES], [FKIdTipoGasto_PRES], [FKIdDigitoIdentificador_PRES], [FKIdDestinoGasto_PRES], [FKIdPY_PRES]) VALUES (1, 1182, 12301, 200, N'ewr', CONVERT(date, '2026-05-18', 23), NULL, 0, CONVERT(datetime2, '2026-05-18T12:33:27.3199076', 126), 1, CONVERT(datetime2, '2026-05-18T12:46:06.6979629', 126), 1, 1, 0.00, 0.00, 0.00, 0.00, 50.30, 49.60, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, CONVERT(datetime2, '2026-05-18T12:33:27.3199076', 126), 1, 1, 1, 2, 1, 10025);
-INSERT INTO [PRES].[EgresoAutorizado] ([PKIdEgresoAutorizado], [FKIdPrograma_PRES], [FKIdPartida_CONTA], [FKIdArea_SIS], [Descripcion], [Fecha], [FKIdPoliza_CONTA], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdEgresoProyectado_PRES], [Enero], [Febrero], [Marzo], [Abril], [Mayo], [Junio], [Julio], [Agosto], [Septiembre], [Octubre], [Noviembre], [Diciembre], [FechaAutorizacion], [UsuarioAutorizacion], [FKIdFuenteFinanciamiento_PRES], [FKIdTipoGasto_PRES], [FKIdDigitoIdentificador_PRES], [FKIdDestinoGasto_PRES], [FKIdPY_PRES]) VALUES (2, 1182, 12301, 200, N'ewr', CONVERT(date, '2026-05-18', 23), NULL, 0, CONVERT(datetime2, '2026-05-18T12:46:15.7722788', 126), 1, CONVERT(datetime2, '2026-05-18T14:31:56.5417236', 126), 1, 1, 0.00, 0.00, 0.00, 0.00, 50.30, 49.60, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, CONVERT(datetime2, '2026-05-18T12:46:15.7722788', 126), 1, 1, 1, 2, 1, 10025);
-INSERT INTO [PRES].[EgresoAutorizado] ([PKIdEgresoAutorizado], [FKIdPrograma_PRES], [FKIdPartida_CONTA], [FKIdArea_SIS], [Descripcion], [Fecha], [FKIdPoliza_CONTA], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdEgresoProyectado_PRES], [Enero], [Febrero], [Marzo], [Abril], [Mayo], [Junio], [Julio], [Agosto], [Septiembre], [Octubre], [Noviembre], [Diciembre], [FechaAutorizacion], [UsuarioAutorizacion], [FKIdFuenteFinanciamiento_PRES], [FKIdTipoGasto_PRES], [FKIdDigitoIdentificador_PRES], [FKIdDestinoGasto_PRES], [FKIdPY_PRES]) VALUES (3, 1182, 12301, 200, N'ewr', CONVERT(date, '2026-05-18', 23), NULL, 0, CONVERT(datetime2, '2026-05-18T14:37:38.7328249', 126), 1, CONVERT(datetime2, '2026-05-18T14:52:46.1283859', 126), 1, 1, 0.00, 0.00, 0.00, 0.00, 50.30, 49.60, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, CONVERT(datetime2, '2026-05-18T14:37:38.7328249', 126), 1, 1, 1, 2, 1, 10025);
-INSERT INTO [PRES].[EgresoAutorizado] ([PKIdEgresoAutorizado], [FKIdPrograma_PRES], [FKIdPartida_CONTA], [FKIdArea_SIS], [Descripcion], [Fecha], [FKIdPoliza_CONTA], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdEgresoProyectado_PRES], [Enero], [Febrero], [Marzo], [Abril], [Mayo], [Junio], [Julio], [Agosto], [Septiembre], [Octubre], [Noviembre], [Diciembre], [FechaAutorizacion], [UsuarioAutorizacion], [FKIdFuenteFinanciamiento_PRES], [FKIdTipoGasto_PRES], [FKIdDigitoIdentificador_PRES], [FKIdDestinoGasto_PRES], [FKIdPY_PRES]) VALUES (4, 1182, 12301, 200, N'ewr', CONVERT(date, '2026-05-18', 23), NULL, 0, CONVERT(datetime2, '2026-05-18T14:54:27.9098442', 126), 1, CONVERT(datetime2, '2026-05-18T14:56:41.3056748', 126), 1, 1, 0.00, 0.00, 0.00, 0.00, 50.30, 49.60, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, CONVERT(datetime2, '2026-05-18T14:54:27.9098442', 126), 1, 1, 1, 2, 1, 10025);
-SET IDENTITY_INSERT [PRES].[EgresoAutorizado] OFF;
-GO
 
-PRINT N'Insertando datos en [PRES].[EgresoProyectado]';
-SET IDENTITY_INSERT [PRES].[EgresoProyectado] ON;
-INSERT INTO [PRES].[EgresoProyectado] ([PKIdEgresoProyectado], [FKIdPrograma_PRES], [FKIdPartida_CONTA], [FKIdArea_SIS], [Descripcion], [Fecha], [Enero], [Febrero], [Marzo], [Abril], [Mayo], [Junio], [Julio], [Agosto], [Septiembre], [Octubre], [Noviembre], [Diciembre], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion], [FKIdFuenteFinanciamiento_PRES], [FKIdTipoGasto_PRES], [FKIdDigitoIdentificador_PRES], [FKIdDestinoGasto_PRES], [FKIdPY_PRES]) VALUES (1, 1182, 12301, 200, N'ewr', CONVERT(date, '2026-05-18', 23), 0.00, 0.00, 0.00, 0.00, 50.30, 49.60, 0.00, 0.00, 0.00, 0.00, 0.00, 500.99, 1, CONVERT(datetime2, '2026-05-18T12:32:44.9662695', 126), 1, CONVERT(datetime2, '2026-05-18T14:57:15.9848113', 126), 1, 1, 1, 2, 1, 10025);
-SET IDENTITY_INSERT [PRES].[EgresoProyectado] OFF;
-GO
 
 PRINT N'Insertando datos en [PRES].[Eje]';
 SET IDENTITY_INSERT [PRES].[Eje] ON;

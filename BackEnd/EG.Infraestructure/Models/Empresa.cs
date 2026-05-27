@@ -71,6 +71,10 @@ public partial class Empresa
 
     public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
 
+    public virtual ICollection<Instrumento> Instrumentos { get; set; } = new List<Instrumento>();
+
+    public virtual ICollection<IntermediarioFinanciero> IntermediarioFinancieros { get; set; } = new List<IntermediarioFinanciero>();
+
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();

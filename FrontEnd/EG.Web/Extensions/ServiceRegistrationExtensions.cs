@@ -1,4 +1,5 @@
 using EG.Common.Helper;
+using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.DTOs.Responses.Contabilidad;
@@ -49,6 +50,16 @@ public static class ApiServiceExtensions
         RegisterCrud<TipoPagoSFResponse>(services, "api/TipoPagoSF");
         RegisterCrud<TipoSolicitudCLCResponse>(services, "api/TipoSolicitudCLC");
         RegisterCrud<TipoDoctoClcResponse>(services, "api/TipoDoctoClc");
+        RegisterCrud<BancoResponse>(services, "api/Banco");
+        RegisterCrud<CuentaBancariaResponse>(services, "api/CuentaBancaria");
+        RegisterCrud<IntermediarioFinancieroResponse>(services, "api/IntermediarioFinanciero");
+        RegisterCrud<InstrumentoResponse>(services, "api/Instrumento");
+        RegisterCrud<InversionResponse>(services, "api/Inversion");
+        RegisterCrud<InteresResponse>(services, "api/Interes");
+        RegisterCrud<RetiroResponse>(services, "api/Retiro");
+        RegisterCrud<TipoPlazoResponse>(services, "api/TipoPlazo");
+        RegisterCrud<TipoRetiroResponse>(services, "api/TipoRetiro");
+        RegisterCrud<PaiseDto>(services, "api/Paise");
 
         RegisterCrud<GfResponse>(services, "api/Gf");
         RegisterCrud<FnResponse>(services, "api/Fn");

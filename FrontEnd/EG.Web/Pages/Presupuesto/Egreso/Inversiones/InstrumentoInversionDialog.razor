@@ -1,0 +1,145 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<InstrumentoResponse> Service
+@inject IGenericCrudService<TipoInversionResponse> TipoInversionService
+@inject IGenericCrudService<IntermediarioFinancieroResponse> IntermediarioService
+@inject IGenericCrudService<TipoPlazoResponse> TipoPlazoService
+@inject IGenericCrudService<TipoMonedaResponse> MonedaService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="InstrumentoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
+    <BaseEntityForm TEntity="InstrumentoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12"><MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_tipoInversion" ValueChanged="value => _tipoInversion = value" Label="Tipo inversion" Required="true" LoadPage="LoadTiposInversionPageAsync" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_intermediario" ValueChanged="value => _intermediario = value" Label="Intermediario financiero" Required="true" LoadPage="LoadIntermediariosPageAsync" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_tipoPlazo" ValueChanged="value => _tipoPlazo = value" Label="Tipo plazo (opcional)" Clearable="true" LoadPage="LoadTiposPlazoPageAsync" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_moneda" ValueChanged="value => _moneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.TasaInteres" Label="Tasa interes (%)" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int?" @bind-Value="item.PlazoOriginal" Label="Plazo original (dias)" Variant="Variant.Outlined" Min="0" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaEmision" DateChanged="OnFechaEmisionChanged" Label="Fecha emision" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
+            <MudItem xs="12"><MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" /></MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<InstrumentoResponse> form = null!;
+    private InstrumentoResponse item = new() { Activo = true };
+    private LookupItem? _tipoInversion;
+    private LookupItem? _intermediario;
+    private LookupItem? _tipoPlazo;
+    private LookupItem? _moneda;
+    private DateTime? _fechaEmision;
+    private DateTime? _fechaVencimiento;
+
+    private string dialogTitle => Id.HasValue ? "Editar instrumento" : "Nuevo instrumento";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            await SetDefaultMonedaAsync();
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _tipoInversion = new LookupItem { Id = item.FkidTipoInversionTes, Text = item.TipoInversionDescripcion };
+            _intermediario = new LookupItem { Id = item.FkidIntermediarioFinancieroTes, Text = item.IntermediarioNombre };
+            _tipoPlazo = item.FkidTipoPlazoTes.HasValue ? new LookupItem { Id = item.FkidTipoPlazoTes.Value, Text = item.TipoPlazoDescripcion } : null;
+            _moneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = item.TipoMonedaDescripcion };
+            _fechaEmision = item.FechaEmision?.ToDateTime(TimeOnly.MinValue);
+            _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (_tipoInversion == null || _intermediario == null || _moneda == null)
+        {
+            Snackbar.Add("Completa tipo de inversion, intermediario y moneda.", Severity.Warning);
+            return;
+        }
+
+        item.FkidTipoInversionTes = _tipoInversion.Id;
+        item.FkidIntermediarioFinancieroTes = _intermediario.Id;
+        item.FkidTipoPlazoTes = _tipoPlazo?.Id;
+        item.FkidTipoMonedaTes = _moneda.Id;
+        item.FechaEmision = _fechaEmision.HasValue ? DateOnly.FromDateTime(_fechaEmision.Value) : null;
+        item.FechaVencimiento = _fechaVencimiento.HasValue ? DateOnly.FromDateTime(_fechaVencimiento.Value) : null;
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Registro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el registro.", Severity.Error);
+    }
+
+    private Task OnFechaEmisionChanged(DateTime? value) { _fechaEmision = value; return Task.CompletedTask; }
+    private Task OnFechaVencimientoChanged(DateTime? value) { _fechaVencimiento = value; return Task.CompletedTask; }
+
+    private async Task<ComboLookupResult> LoadTiposInversionPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoInversionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoInversion, Text = x.Descripcion }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadIntermediariosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await IntermediarioService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidIntermediarioFinanciero, Text = $"{x.Clave} - {x.Nombre}" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadTiposPlazoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoPlazoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoPlazo, Text = $"{x.Descripcion} ({x.Dias} dias)" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task<ComboLookupResult> LoadMonedasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await MonedaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoMoneda, Text = $"{x.CodigoIso4217} - {x.Descripcion}" }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private async Task SetDefaultMonedaAsync()
+    {
+        var response = await MonedaService.GetAllPaginadoAsync(1, 1, "MXN", "CodigoIso4217", SortDirection.Ascending);
+        var moneda = response?.Items?.FirstOrDefault();
+        if (moneda == null) return;
+
+        item.FkidTipoMonedaTes = moneda.PkidTipoMoneda;
+        _moneda = new LookupItem
+        {
+            Id = moneda.PkidTipoMoneda,
+            Text = $"{moneda.CodigoIso4217} - {moneda.Descripcion}"
+        };
+    }
+}

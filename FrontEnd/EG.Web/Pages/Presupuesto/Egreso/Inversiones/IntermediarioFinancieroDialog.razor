@@ -1,0 +1,49 @@
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<IntermediarioFinancieroResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="IntermediarioFinancieroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="IntermediarioFinancieroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
+        <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
+        <MudTextField @bind-Value="item.RazonSocial" Label="Razon social" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
+        <MudTextField @bind-Value="item.Rfc" Label="RFC" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private BaseEntityForm<IntermediarioFinancieroResponse> form = null!;
+    private IntermediarioFinancieroResponse item = new() { Activo = true };
+    private string dialogTitle => Id.HasValue ? "Editar intermediario" : "Nuevo intermediario";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue) return;
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null) item = response.Data;
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Registro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el registro.", Severity.Error);
+    }
+}

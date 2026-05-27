@@ -1,26 +1,33 @@
 @using MudBlazor
-@using EG.Web.Pages.Shared
-@using EG.Web.Contracts
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Requests.General
 @using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
 
 @inject IGenericCrudService<TipoMonedaResponse> Service
+@inject IGenericCrudService<PaiseDto> PaisService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="TipoMonedaResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoMonedaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.CodigoIso4217" Label="Código ISO 4217" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.CodigoIso4217)" />
-        <MudTextField @bind-Value="item.Simbolo" Label="Símbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Simbolo)" />
-        <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
+        <PagedAutocomplete Value="@_selectedPais" ValueChanged="value => _selectedPais = value" Label="Pais" Required="true" LoadItems="LoadPaisesAsync" />
+        <MudTextField @bind-Value="item.CodigoIso4217" Label="Codigo ISO 4217" Variant="Variant.Outlined" FullWidth="true" Class="mt-3 mb-3" Required="true" For="@(() => item.CodigoIso4217)" />
+        <MudTextField @bind-Value="item.Simbolo" Label="Simbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Simbolo)" />
+        <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
         <MudNumericField @bind-Value="item.Decimales" Label="Decimales" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Decimales)" />
         <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
+
 @code {
     [Parameter] public int? Id { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
     private BaseEntityForm<TipoMonedaResponse> form = null!;
     private TipoMonedaResponse item = new() { Activo = true, Decimales = 2 };
+    private LookupItem? _selectedPais;
     private string dialogTitle => Id.HasValue ? "Editar Moneda" : "Nueva Moneda";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
@@ -37,7 +44,14 @@
         {
             var response = await Service.GetByIdAsync(Id.Value);
             if (response?.Success == true && response.Data != null)
+            {
                 item = response.Data;
+                _selectedPais = new LookupItem
+                {
+                    Id = item.FkidPaisSis,
+                    Text = string.IsNullOrWhiteSpace(item.PaisNombre) ? item.FkidPaisSis.ToString() : item.PaisNombre
+                };
+            }
         }
         catch (Exception ex)
         {
@@ -49,6 +63,15 @@
     {
         try
         {
+            if (!await form.ValidateAsync()) return;
+            if (_selectedPais == null)
+            {
+                Snackbar.Add("Selecciona el pais de la moneda.", Severity.Warning);
+                return;
+            }
+
+            item.FkidPaisSis = _selectedPais.Id;
+
             bool success;
             if (Id.HasValue)
             {
@@ -75,5 +98,15 @@
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task<IEnumerable<LookupItem>> LoadPaisesAsync(CancellationToken ct)
+    {
+        var response = await PaisService.GetAllAsync();
+        return response?.Items?
+            .Where(x => !string.IsNullOrWhiteSpace(x.Nombre))
+            .OrderBy(x => x.Nombre)
+            .Select(x => new LookupItem { Id = x.PkidPais, Text = x.Nombre })
+            .ToList() ?? new List<LookupItem>();
     }
 }

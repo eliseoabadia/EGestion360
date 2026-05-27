@@ -35,7 +35,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="RequisicionPartidaResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="RequisicionPartidaResponse">Partida</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Monto" T="RequisicionPartidaResponse">Monto</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="RequisicionPartidaResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -60,11 +59,6 @@
                 <MudTd>@TextOrDash(item.PartidaClave)</MudTd>
                 <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
                 <MudTd>@MoneyOrDash(item.Monto)</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Si" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -92,7 +86,6 @@
             Partida = item.PartidaDescripcion,
             item.Monto,
             item.Observaciones,
-            Activo = item.Activo ? "Si" : "No",
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,

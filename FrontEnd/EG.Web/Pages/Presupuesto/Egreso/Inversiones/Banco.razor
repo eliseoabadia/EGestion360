@@ -1,0 +1,65 @@
+@page "/Presupuesto/Tesorería/Inversiones/Banco"
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<BancoResponse, BancoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Banco"
+                    Subtitle="Catalogo de bancos para inversiones"
+                    Icon="@Icons.Material.Filled.AccountBalance"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="BancoResponse"
+                      @ref="table"
+                      Title="Bancos"
+                      SearchPlaceholder="Buscar por clave o nombre..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidBanco" T="BancoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="BancoResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="BancoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreCorto" T="BancoResponse">Nombre corto</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidBanco))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidBanco))" />
+                </MudTd>
+                <MudTd>@item.PkidBanco</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Nombre</MudTd>
+                <MudTd>@item.NombreCorto</MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<BancoResponse> table = null!;
+    protected override string ModuleName => "Inversiones";
+    protected override string SubModuleName => "Banco";
+    protected override Type CreateDialogType => typeof(BancoDialog);
+    protected override Type EditDialogType => typeof(BancoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<BancoResponse>);
+    protected override string GetDefaultSortLabel() => "Clave";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<BancoResponse> items) =>
+        items.Select(x => new { x.PkidBanco, x.Clave, x.Nombre, x.NombreCorto});
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

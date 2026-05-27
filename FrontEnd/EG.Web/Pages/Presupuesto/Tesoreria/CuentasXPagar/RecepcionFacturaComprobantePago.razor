@@ -38,7 +38,6 @@
                             <MudTh><MudTableSortLabel SortLabel="FechaEmision" T="FacturaResponse">Fecha</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Total" T="FacturaResponse">Total</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Estatus" T="FacturaResponse">Estatus</MudTableSortLabel></MudTh>
-                            <MudTh>Activo</MudTh>
                         </Header>
                         <Row Context="item">
                             <MudTd>
@@ -54,7 +53,6 @@
                             <MudTd>@item.FechaEmision.ToString("dd/MM/yyyy")</MudTd>
                             <MudTd>@Money(item.Total)</MudTd>
                             <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@(item.Activo ? Color.Success : Color.Error)">@(item.Activo ? "Si" : "No")</MudChip></MudTd>
                         </Row>
                     </GenericTable>
                 </div>
@@ -191,7 +189,6 @@
             ImporteTotal = details.Sum(x => x.MontoAplicado),
             Observaciones = $"Generada desde factura {factura.NumFactura}",
             Estatus = 1,
-            Activo = true
         };
 
         var clcDetalles = details.Select(detail =>
@@ -207,7 +204,6 @@
                 PartidaDescripcion = detail.PartidaDescripcion,
                 PartidaClaveNombre = detail.PartidaClaveNombre,
                 Observaciones = detail.Observaciones,
-                Activo = true
             };
             SetMonth(row, factura.FechaRecepcion?.Month ?? factura.FechaEmision.Month, detail.MontoAplicado);
             return row;
@@ -224,7 +220,6 @@
             PartidaDescripcion = detail.PartidaDescripcion,
             MontoAplicado = detail.MontoAplicado,
             Observaciones = detail.Observaciones,
-            Activo = true
         }).ToList();
 
         var parameters = new DialogParameters

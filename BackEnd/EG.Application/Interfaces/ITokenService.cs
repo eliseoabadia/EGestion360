@@ -14,6 +14,7 @@ namespace EG.Application.Interfaces
             string userId,
             string userName,
             string email,
+            int? empresaId,
             DateTime? expiration,
             IList<spGetClaimsByUserResult> claims);
 
@@ -25,6 +26,7 @@ namespace EG.Application.Interfaces
             string userId,
             string userName,
             string email,
+            int? empresaId,
             IList<spGetClaimsByUserResult> claims,
             JwtSettings jwtSettings);
 

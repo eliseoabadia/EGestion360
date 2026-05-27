@@ -1,0 +1,81 @@
+@page "/Presupuesto/Tesorería/Inversiones/Instrumentos_Inversion"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<InstrumentoResponse, InstrumentoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Instrumentos de Inversion"
+                    Subtitle="Definicion de instrumentos financieros de inversion"
+                    Icon="@Icons.Material.Filled.PieChart"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="InstrumentoResponse"
+                      @ref="table"
+                      Title="Instrumentos"
+                      SearchPlaceholder="Buscar por nombre, tipo o intermediario..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidInstrumento" T="InstrumentoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="InstrumentoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoInversionDescripcion" T="InstrumentoResponse">Tipo inversion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="IntermediarioNombre" T="InstrumentoResponse">Intermediario</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoMonedaCodigo" T="InstrumentoResponse">Moneda</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TasaInteres" T="InstrumentoResponse">Tasa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="MontoMinimo" T="InstrumentoResponse">Monto minimo</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidInstrumento))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidInstrumento))" />
+                </MudTd>
+                <MudTd>@item.PkidInstrumento</MudTd>
+                <MudTd>@item.Nombre</MudTd>
+                <MudTd>@item.TipoInversionDescripcion</MudTd>
+                <MudTd>@item.IntermediarioNombre</MudTd>
+                <MudTd>@($"{item.TipoMonedaSimbolo} {item.TipoMonedaCodigo}")</MudTd>
+                <MudTd>@($"{(item.TasaInteres ?? 0m).ToString("0.00", NumberCulture)}%")</MudTd>
+                <MudTd>@Money(item.MontoMinimo ?? 0m, item.TipoMonedaSimbolo)</MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<InstrumentoResponse> table = null!;
+    protected override string ModuleName => "Inversiones";
+    protected override string SubModuleName => "Instrumentos_Inversion";
+    protected override Type CreateDialogType => typeof(InstrumentoInversionDialog);
+    protected override Type EditDialogType => typeof(InstrumentoInversionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<InstrumentoResponse>);
+    protected override string GetDefaultSortLabel() => "Nombre";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<InstrumentoResponse> items) =>
+        items.Select(x => new
+        {
+            x.PkidInstrumento,
+            x.Nombre,
+            x.TipoInversionDescripcion,
+            x.IntermediarioNombre,
+            Moneda = $"{x.TipoMonedaSimbolo} {x.TipoMonedaCodigo}",
+            Tasa = (x.TasaInteres ?? 0m).ToString("0.00", NumberCulture),
+            MontoMinimo = (x.MontoMinimo ?? 0m).ToString("0.00", NumberCulture),
+        });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null) await table.ReloadData();
+    }
+
+    private static string Money(decimal amount, string symbol) => $"{(string.IsNullOrWhiteSpace(symbol) ? "$" : symbol)}{amount.ToString("0.00", NumberCulture)}";
+}

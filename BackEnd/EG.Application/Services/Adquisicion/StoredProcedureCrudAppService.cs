@@ -55,6 +55,18 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                var existing = await GetByIdAsync(id);
+                if (!existing.Success)
+                {
+                    return new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"{_entityName} con ID {id} no encontrado",
+                        Code = "NOT_FOUND",
+                        TotalCount = 0
+                    };
+                }
+
                 await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
                     _storedProcedure,
@@ -92,6 +104,8 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                _service.ApplyCurrentEmpresaIfPresent(response);
+
                 var result = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
                     _storedProcedure,

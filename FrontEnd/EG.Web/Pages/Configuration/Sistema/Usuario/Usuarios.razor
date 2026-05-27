@@ -1,4 +1,4 @@
-﻿@page "/configuracion/sistema/usuarios"
+@page "/configuracion/sistema/usuarios"
 @using EG.Dommain.DTOs.Responses
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -43,7 +43,6 @@
                 <MudTh><MudTableSortLabel SortLabel="ClavePersona" T="UsuarioResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PayrollId" T="UsuarioResponse">Payroll ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="UsuarioActivo" T="UsuarioResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="usuario">
@@ -79,11 +78,6 @@
                 <MudTd>@usuario.ClavePersona</MudTd>
                 <MudTd>@usuario.PayrollId</MudTd>
                 <MudTd>@usuario.NombreEmpresa</MudTd>
-                <MudTd>
-                    <MudChip T="string" Size="Size.Small" Color="@(usuario.UsuarioActivo ? Color.Success : Color.Error)">
-                        @(usuario.UsuarioActivo ? "Si" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>

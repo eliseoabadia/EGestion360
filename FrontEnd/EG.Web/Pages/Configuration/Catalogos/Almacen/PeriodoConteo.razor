@@ -36,35 +36,9 @@
                 <MudTh><MudTableSortLabel SortLabel="TipoConteo" T="PeriodoConteoResponse">Tipo</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="PeriodoConteoResponse">Inicio</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="EstatusPeriodo" T="PeriodoConteoResponse">Estatus</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="PeriodoConteoResponse">Estado</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="periodo">
-                <MudTd>
-                    @if (periodo.RequiereAprobacionSupervisor && periodo.Activo)
-                    {
-                        <MudTooltip Text="Iniciar Conteo">
-                            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                           Color="Color.Success"
-                                           Size="Size.Small"
-                                           OnClick="@(() => IniciarConteo(periodo.PkidPeriodoConteo, periodo.Nombre))" />
-                        </MudTooltip>
-                    }
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(periodo.PkidPeriodoConteo))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(periodo.PkidPeriodoConteo))" />
-                    </MudTooltip>
-                </MudTd>
                 <MudTd>@periodo.PkidPeriodoConteo</MudTd>
                 <MudTd>@periodo.CodigoPeriodo</MudTd>
                 <MudTd>@periodo.Nombre</MudTd>
@@ -77,13 +51,6 @@
                              Size="Size.Small">
                         @periodo.EstatusPeriodo
                     </MudChip>
-                </MudTd>
-                <MudTd>
-                    <MudBadge Color="@(periodo.Activo == true ? Color.Success : Color.Error)"
-                              Variant="Variant.Filled"
-                              Size="Size.Small">
-                        @(periodo.Activo == true ? "Activo" : "Inactivo")
-                    </MudBadge>
                 </MudTd>
             </Row>
         </GenericTable>
@@ -119,7 +86,6 @@
             Total_Artículos = p.TotalArticulos ?? 0,
             Concluidos = p.ArticulosConcluidos ?? 0,
             Con_Diferencia = p.ArticulosConDiferencia ?? 0,
-            Estado = p.Activo ? "Activo" : "Inactivo"
         });
     }
 

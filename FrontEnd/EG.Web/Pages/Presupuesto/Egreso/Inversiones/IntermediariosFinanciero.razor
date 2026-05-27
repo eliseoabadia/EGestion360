@@ -1,0 +1,64 @@
+@page "/Presupuesto/Tesorería/Inversiones/Intermediarios_Financiero"
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<IntermediarioFinancieroResponse, IntermediarioFinancieroResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Intermediarios Financieros"
+                    Subtitle="Catalogo de intermediarios para instrumentos de inversion"
+                    Icon="@Icons.Material.Filled.Groups"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="IntermediarioFinancieroResponse"
+                      @ref="table"
+                      Title="Intermediarios financieros"
+                      SearchPlaceholder="Buscar por clave, nombre o RFC..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidIntermediarioFinanciero" T="IntermediarioFinancieroResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="IntermediarioFinancieroResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="IntermediarioFinancieroResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="RazonSocial" T="IntermediarioFinancieroResponse">Razon social</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Rfc" T="IntermediarioFinancieroResponse">RFC</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidIntermediarioFinanciero))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidIntermediarioFinanciero))" />
+                </MudTd>
+                <MudTd>@item.PkidIntermediarioFinanciero</MudTd>
+                <MudTd>@item.Clave</MudTd>
+                <MudTd>@item.Nombre</MudTd>
+                <MudTd>@item.RazonSocial</MudTd>
+                <MudTd>@item.Rfc</MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<IntermediarioFinancieroResponse> table = null!;
+    protected override string ModuleName => "Inversiones";
+    protected override string SubModuleName => "Intermediarios_Financiero";
+    protected override Type CreateDialogType => typeof(IntermediarioFinancieroDialog);
+    protected override Type EditDialogType => typeof(IntermediarioFinancieroDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<IntermediarioFinancieroResponse>);
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<IntermediarioFinancieroResponse> items) =>
+        items.Select(x => new { x.PkidIntermediarioFinanciero, x.Clave, x.Nombre, x.RazonSocial, x.Rfc});
+
+    protected override async Task ReloadData()
+    {
+        if (table != null) await table.ReloadData();
+    }
+}

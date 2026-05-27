@@ -71,6 +71,7 @@ var loginResponse = _tokenService.GenTokenkey(
     usuarioSP.PayrollID,
     usuarioSP.NombreUsuario,
     usuarioSP.Email,
+    usuarioSP.FkidEmpresaSis,
     claims,
     _jwtSettings.Value);
 

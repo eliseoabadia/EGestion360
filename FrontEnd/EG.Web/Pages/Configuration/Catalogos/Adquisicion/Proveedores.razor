@@ -34,7 +34,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Rfc" T="ProveedorResponse">RFC</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Email" T="ProveedorResponse">Email</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="MunicipioNombre" T="ProveedorResponse">Municipio</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProveedorResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -60,11 +59,6 @@
                 <MudTd>@item.Rfc</MudTd>
                 <MudTd>@item.Email</MudTd>
                 <MudTd>@item.MunicipioNombre</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -104,7 +98,6 @@
             Estado = u.EstadoNombre,
             Pais = u.PaisNombre,
             Notas = u.Notas,
-            Activo = u.Activo
         });
     }
 

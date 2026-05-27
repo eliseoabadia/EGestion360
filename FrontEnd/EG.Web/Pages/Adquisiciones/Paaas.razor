@@ -50,7 +50,6 @@
                     <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoDescripcion" T="PaaaResponse">Fuente Financiamiento</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="ResponsableCompleto" T="PaaaResponse">Responsable</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Fecha" T="PaaaResponse">Fecha</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="PaaaResponse">Estatus</MudTableSortLabel></MudTh>
                 </Header>
 
                 <Row Context="item">
@@ -85,11 +84,6 @@
                     <MudTd>@item.AreaNombre</MudTd>
                     <MudTd>@item.ResponsableCompleto</MudTd>
                     <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                    <MudTd>
-                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                            @(item.Activo ? "Activo" : "Inactivo")
-                        </MudChip>
-                    </MudTd>
                 </Row>
             </GenericTable>
                 </div>
@@ -580,7 +574,6 @@
             Proyecto = e.ProyectoDescripcion,
             Programa = e.ProgramaDescripcion,
             FuenteFinanciamiento = e.FuenteFinanciamientoDescripcion,
-            Activo = e.Activo ? "Activo" : "Inactivo"
         });
     }
 

@@ -1,0 +1,82 @@
+@page "/Presupuesto/Tesorería/Inversiones/Cuenta_Bancaria"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<CuentaBancariaResponse, CuentaBancariaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Cuenta Bancaria"
+                    Subtitle="Cuentas bancarias para operacion de inversiones"
+                    Icon="@Icons.Material.Filled.AccountBalanceWallet"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="CuentaBancariaResponse"
+                      @ref="table"
+                      Title="Cuentas bancarias"
+                      SearchPlaceholder="Buscar cuenta, banco o titular..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidCuentaBancaria" T="CuentaBancariaResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NumeroCuenta" T="CuentaBancariaResponse">Cuenta</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="BancoNombre" T="CuentaBancariaResponse">Banco</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CuentaContable" T="CuentaBancariaResponse">Cuenta contable</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Titular" T="CuentaBancariaResponse">Titular</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="MonedaDescripcion" T="CuentaBancariaResponse">Moneda</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SaldoActual" T="CuentaBancariaResponse">Saldo actual</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidCuentaBancaria))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidCuentaBancaria))" />
+                </MudTd>
+                <MudTd>@item.PkidCuentaBancaria</MudTd>
+                <MudTd>@item.NumeroCuenta</MudTd>
+                <MudTd>@item.BancoNombre</MudTd>
+                <MudTd>@(string.IsNullOrWhiteSpace(item.CuentaContable) ? "-" : $"{item.CuentaContable} - {item.CuentaContableDescripcion}")</MudTd>
+                <MudTd>@item.Titular</MudTd>
+                <MudTd>@($"{item.MonedaSimbolo} {item.MonedaDescripcion}")</MudTd>
+                <MudTd>@Money(item.SaldoActual, item.MonedaSimbolo)</MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<CuentaBancariaResponse> table = null!;
+    protected override string ModuleName => "Inversiones";
+    protected override string SubModuleName => "Cuenta_Bancaria";
+    protected override Type CreateDialogType => typeof(CuentaBancariaDialog);
+    protected override Type EditDialogType => typeof(CuentaBancariaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<CuentaBancariaResponse>);
+    protected override string GetDefaultSortLabel() => "NumeroCuenta";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<CuentaBancariaResponse> items) =>
+        items.Select(x => new
+        {
+            x.PkidCuentaBancaria,
+            x.NumeroCuenta,
+            x.BancoNombre,
+            CuentaContable = string.IsNullOrWhiteSpace(x.CuentaContable) ? string.Empty : $"{x.CuentaContable} - {x.CuentaContableDescripcion}",
+            x.Titular,
+            Moneda = $"{x.MonedaSimbolo} {x.MonedaDescripcion}",
+            SaldoInicial = x.SaldoInicial.ToString("0.00", NumberCulture),
+            SaldoActual = x.SaldoActual.ToString("0.00", NumberCulture),
+        });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null) await table.ReloadData();
+    }
+
+    private static string Money(decimal amount, string symbol) => $"{(string.IsNullOrWhiteSpace(symbol) ? "$" : symbol)}{amount.ToString("0.00", NumberCulture)}";
+}

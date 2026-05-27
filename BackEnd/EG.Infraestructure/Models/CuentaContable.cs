@@ -65,6 +65,8 @@ public partial class CuentaContable
 
     public int IsCuentaDetalle { get; set; }
 
+    public virtual ICollection<CuentaBancarium> CuentaBancaria { get; set; } = new List<CuentaBancarium>();
+
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual TipoCuentum FkidTipoCuentaContaNavigation { get; set; }

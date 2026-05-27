@@ -31,7 +31,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidDepartamento" T="DepartamentoResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="DepartamentoNombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="DepartamentoActivo" T="DepartamentoResponse">Estado</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="departamento">
@@ -54,13 +53,6 @@
                 <MudTd>@departamento.PkidDepartamento</MudTd>
                 <MudTd>@departamento.DepartamentoNombre</MudTd>
                 <MudTd>@departamento.EmpresaNombre</MudTd>
-                <MudTd>
-                    <MudBadge Color="@(departamento.DepartamentoActivo == true ? Color.Success : Color.Error)"
-                              Variant="Variant.Filled"
-                              Size="Size.Small">
-                        @(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")
-                    </MudBadge>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -87,7 +79,6 @@
             Descripcion = d.Descripcion ?? "",
             Empresa = d.EmpresaNombre,
             Nivel_Jerarquico = d.NivelJerarquico,
-            Estado = d.DepartamentoActivo ? "Activo" : "Inactivo",
             Fecha_Creacion = d.FechaCreacion?.ToString("dd/MM/yyyy") ?? "",
             Usuario_Creacion = d.UsuarioCreacionNombre
         });

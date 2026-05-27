@@ -12,7 +12,6 @@
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidTipoDocumento" T="TipoDocumentoResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoDocumentoResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoDocumentoResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -21,7 +20,6 @@
                 </MudTd>
                 <MudTd>@item.PkidTipoDocumento</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd><MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">@(item.Activo ? "Sí" : "No")</MudChip></MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -35,7 +33,7 @@
     protected override Type EditDialogType => typeof(TipoDocumentoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoDocumentoResponse>);
     protected override string GetDefaultSortLabel() => "Descripcion";
-    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDocumentoResponse> items) => items.Select(u => new { ID = u.PkidTipoDocumento, Descripcion = u.Descripcion, Activo = u.Activo });
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDocumentoResponse> items) => items.Select(u => new { ID = u.PkidTipoDocumento, Descripcion = u.Descripcion});
     protected override async Task<string> GetItemNameForDelete(int id) { var response = await Service.GetByIdAsync(id); return response?.Data?.Descripcion ?? "el tipo de documento"; }
     protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
 }

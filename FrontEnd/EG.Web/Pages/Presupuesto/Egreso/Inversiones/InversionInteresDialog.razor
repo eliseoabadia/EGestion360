@@ -1,0 +1,68 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<InteresResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="InteresResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="InteresResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" />
+        <MudDatePicker Date="@_fechaGeneracion" DateChanged="OnFechaChanged" Label="Fecha de generacion" Variant="Variant.Outlined" Class="mt-2" />
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int InversionId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private BaseEntityForm<InteresResponse> form = null!;
+    private InteresResponse item = new() { Activo = true, FechaGeneracion = DateOnly.FromDateTime(DateTime.Today) };
+    private DateTime? _fechaGeneracion = DateTime.Today;
+
+    private string dialogTitle => Id.HasValue ? "Editar interes" : "Nuevo interes";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            item.FkidInversion = InversionId;
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaGeneracion = item.FechaGeneracion.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        item.FkidInversion = InversionId;
+        item.FechaGeneracion = _fechaGeneracion.HasValue ? DateOnly.FromDateTime(_fechaGeneracion.Value) : DateOnly.FromDateTime(DateTime.Today);
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Interes guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+        Snackbar.Add(response?.Message ?? "No fue posible guardar.", Severity.Error);
+    }
+
+    private Task OnFechaChanged(DateTime? value)
+    {
+        _fechaGeneracion = value;
+        return Task.CompletedTask;
+    }
+}

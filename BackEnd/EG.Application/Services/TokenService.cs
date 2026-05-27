@@ -23,6 +23,7 @@ namespace EG.Application.Services
             string userId,
             string userName,
             string email,
+            int? empresaId,
             DateTime? expiration,
             IList<spGetClaimsByUserResult> _claims)
         {
@@ -33,6 +34,9 @@ namespace EG.Application.Services
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Name, userName ?? string.Empty),
                 new Claim(ClaimTypes.Email, email ?? string.Empty),
+                new Claim("empresaId", empresaId?.ToString() ?? string.Empty),
+                new Claim("EmpresaId", empresaId?.ToString() ?? string.Empty),
+                new Claim("FkidEmpresaSis", empresaId?.ToString() ?? string.Empty),
                 new Claim(ClaimTypes.Expiration, expiration?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? string.Empty)
             };
 
@@ -59,6 +63,7 @@ namespace EG.Application.Services
         string userId,
         string userName,
         string email,
+        int? empresaId,
         IList<spGetClaimsByUserResult> _claims,
         JwtSettings jwtSettings)
         {
@@ -75,7 +80,7 @@ namespace EG.Application.Services
                 var JWToken = new JwtSecurityToken(
                     issuer: jwtSettings.ValidIssuer,
                     audience: jwtSettings.ValidAudience,
-                    claims: GetClaims(userId, userName, email, new DateTimeOffset(expireTime).DateTime, _claims),
+                    claims: GetClaims(userId, userName, email, empresaId, new DateTimeOffset(expireTime).DateTime, _claims),
                     notBefore: DateTime.Now,
                     expires: new DateTimeOffset(expireTime).DateTime,
                     signingCredentials: new SigningCredentials(

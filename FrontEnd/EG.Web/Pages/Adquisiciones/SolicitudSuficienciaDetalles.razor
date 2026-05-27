@@ -37,7 +37,6 @@
                     <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="SolicitudSuficienciaDetalleResponse">Bien</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Cantidad" T="SolicitudSuficienciaDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Total" T="SolicitudSuficienciaDetalleResponse">Total</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="SolicitudSuficienciaDetalleResponse">Activo</MudTableSortLabel></MudTh>
                 </Header>
                 <Row Context="item">
                     <MudTd>
@@ -65,11 +64,6 @@
                     </MudTd>
                     <MudTd>@Quantity(item.Cantidad)</MudTd>
                     <MudTd><strong>@Money(DetalleTotal(item))</strong></MudTd>
-                    <MudTd>
-                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                            @(item.Activo ? "Si" : "No")
-                        </MudChip>
-                    </MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -113,7 +107,6 @@
             item.Diciembre,
             Total = DetalleTotal(item),
             item.Observaciones,
-            Activo = item.Activo ? "Si" : "No",
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,

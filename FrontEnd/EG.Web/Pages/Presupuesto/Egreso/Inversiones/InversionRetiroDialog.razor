@@ -1,0 +1,90 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<RetiroResponse> Service
+@inject IGenericCrudService<TipoRetiroResponse> TipoRetiroService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="RetiroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="RetiroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <PagedAutocomplete Value="@_tipoRetiro" ValueChanged="value => _tipoRetiro = value" Label="Tipo de retiro" Clearable="true" LoadPage="LoadTiposRetiroPageAsync" />
+        <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" Class="mt-2" />
+        <MudDatePicker Date="@_fechaRetiro" DateChanged="OnFechaChanged" Label="Fecha de retiro" Variant="Variant.Outlined" Class="mt-2" />
+        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int InversionId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private BaseEntityForm<RetiroResponse> form = null!;
+    private RetiroResponse item = new() { Activo = true, FechaRetiro = DateOnly.FromDateTime(DateTime.Today) };
+    private LookupItem? _tipoRetiro;
+    private DateTime? _fechaRetiro = DateTime.Today;
+
+    private string dialogTitle => Id.HasValue ? "Editar retiro" : "Nuevo retiro";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            item.FkidInversion = InversionId;
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaRetiro = item.FechaRetiro.ToDateTime(TimeOnly.MinValue);
+            _tipoRetiro = item.FkidTipoRetiroTes.HasValue
+                ? new LookupItem
+                {
+                    Id = item.FkidTipoRetiroTes.Value,
+                    Text = string.IsNullOrWhiteSpace(item.TipoRetiroDescripcion)
+                        ? item.FkidTipoRetiroTes.Value.ToString()
+                        : item.TipoRetiroDescripcion
+                }
+                : null;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        item.FkidInversion = InversionId;
+        item.FkidTipoRetiroTes = _tipoRetiro?.Id;
+        item.FechaRetiro = _fechaRetiro.HasValue ? DateOnly.FromDateTime(_fechaRetiro.Value) : DateOnly.FromDateTime(DateTime.Today);
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Retiro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+        Snackbar.Add(response?.Message ?? "No fue posible guardar.", Severity.Error);
+    }
+
+    private Task OnFechaChanged(DateTime? value)
+    {
+        _fechaRetiro = value;
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadTiposRetiroPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoRetiroService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoRetiro, Text = x.Descripcion }).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+}

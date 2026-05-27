@@ -11,7 +11,9 @@ public partial class CuentaBancarium
 
     public int FkidEmpresaSis { get; set; }
 
-    public int? FkidBancoSis { get; set; }
+    public int? FkidBancoTes { get; set; }
+
+    public int? FkidCuentaContableSis { get; set; }
 
     public int FkidTipoMonedaTes { get; set; }
 
@@ -39,11 +41,15 @@ public partial class CuentaBancarium
 
     public virtual ICollection<Cheque> Cheques { get; set; } = new List<Cheque>();
 
-    public virtual Banco FkidBancoSisNavigation { get; set; }
+    public virtual Banco FkidBancoTesNavigation { get; set; }
+
+    public virtual CuentaContable FkidCuentaContableSisNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual TipoMonedum FkidTipoMonedaTesNavigation { get; set; }
+
+    public virtual ICollection<Inversion> Inversions { get; set; } = new List<Inversion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

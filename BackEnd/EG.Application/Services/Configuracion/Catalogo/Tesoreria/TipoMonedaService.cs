@@ -21,14 +21,16 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
         public async Task<TipoMonedaResponse?> GetByIdAsync(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.QueryWithIncludes(
+                    x => x.PkidTipoMoneda == id,
+                    x => x.FkidPaisSisNavigation)
+                .FirstOrDefaultAsync();
             return entity == null ? null : entity.Adapt<TipoMonedaResponse>();
         }
 
         public async Task<TipoMonedaResponse> CreateAsync(TipoMonedaDto dto, int usuarioId)
         {
             var entity = dto.Adapt<TipoMonedum>();
-            entity.FkidPaisSis = 1;
             entity.FechaCreacion = DateTime.UtcNow;
             entity.UsuarioCreacion = usuarioId;
             await _repository.AddAsync(entity);
@@ -56,12 +58,19 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
         public async Task<PagedResult<TipoMonedaResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            var query = _repository.QueryWithIncludes(x => true);
+            await EnsurePesoMexicanoAsync();
+
+            var query = _repository.QueryWithIncludes(
+                x => x.Activo,
+                x => x.FkidPaisSisNavigation);
 
             if (!string.IsNullOrWhiteSpace(request.Filtro))
             {
                 var f = request.Filtro;
-                query = query.Where(e => e.CodigoIso4217.Contains(f) || e.Descripcion.Contains(f));
+                query = query.Where(e =>
+                    e.CodigoIso4217.Contains(f) ||
+                    e.Descripcion.Contains(f) ||
+                    (e.FkidPaisSisNavigation != null && e.FkidPaisSisNavigation.Nombre.Contains(f)));
             }
 
             if (!string.IsNullOrEmpty(request.SortLabel))
@@ -73,6 +82,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
                     "CodigoIso4217" => isAscending ? query.OrderBy(e => e.CodigoIso4217) : query.OrderByDescending(e => e.CodigoIso4217),
                     "Simbolo" => isAscending ? query.OrderBy(e => e.Simbolo) : query.OrderByDescending(e => e.Simbolo),
                     "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "PaisNombre" => isAscending ? query.OrderBy(e => e.FkidPaisSisNavigation!.Nombre) : query.OrderByDescending(e => e.FkidPaisSisNavigation!.Nombre),
                     "Decimales" => isAscending ? query.OrderBy(e => e.Decimales) : query.OrderByDescending(e => e.Decimales),
                     "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
                     _ => query.OrderBy(e => e.CodigoIso4217)
@@ -97,6 +107,39 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
                 Message = "OK",
                 Code = "SUCCESS"
             };
+        }
+
+        private async Task EnsurePesoMexicanoAsync()
+        {
+            var moneda = await _repository.QueryWithIncludes(
+                    x => x.CodigoIso4217 == "MXN",
+                    x => x.FkidPaisSisNavigation)
+                .FirstOrDefaultAsync();
+
+            if (moneda == null)
+            {
+                await _repository.AddAsync(new TipoMonedum
+                {
+                    FkidPaisSis = 1,
+                    Descripcion = "Peso Mexicano",
+                    CodigoIso4217 = "MXN",
+                    Simbolo = "$",
+                    Decimales = 2,
+                    Activo = true,
+                    FechaCreacion = DateTime.UtcNow,
+                    UsuarioCreacion = 1
+                });
+
+                return;
+            }
+
+            if (!moneda.Activo)
+            {
+                moneda.Activo = true;
+                moneda.FechaModificacion = DateTime.UtcNow;
+                moneda.UsuarioModificacion = 1;
+                await _repository.UpdateAsync(moneda);
+            }
         }
     }
 }

@@ -55,6 +55,9 @@ namespace EG.Business.Services
                 if (usuarioSP.PasswordHash != encryptedPassword)
                     return null; // Contraseña incorrecta
 
+                var usuario = await _repository.GetByIdAsync(usuarioSP.PkIdUsuario);
+                usuarioSP.FkidEmpresaSis = usuario?.FkidEmpresaSis;
+
                 return usuarioSP;
             }
             catch (Exception ex)

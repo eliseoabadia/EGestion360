@@ -31,7 +31,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidProcedimientoContratacion" T="ProcedimientoContratacionResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProcedimientoContratacionResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="FundamentoJuridico" T="ProcedimientoContratacionResponse">Fundamento Jurídico</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="ProcedimientoContratacionResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -54,11 +53,6 @@
                 <MudTd>@item.PkidProcedimientoContratacion</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd Style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.FundamentoJuridico</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Sí" : "No")
-                    </MudChip>
-                </MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -83,7 +77,6 @@
             ID = u.PkidProcedimientoContratacion,
             Descripcion = u.Descripcion,
             Fundamento_Juridico = u.FundamentoJuridico,
-            Activo = u.Activo
         });
     }
 

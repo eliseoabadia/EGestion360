@@ -23,7 +23,6 @@
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoDoctoClcResponse">Clave</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Nombre" T="TipoDoctoClcResponse">Nombre</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="TipoRecurso" T="TipoDoctoClcResponse">Tipo Recurso</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Activo" T="TipoDoctoClcResponse">Activo</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -46,7 +45,6 @@
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Nombre</MudTd>
                 <MudTd>@item.TipoRecurso</MudTd>
-                <MudTd>@item.Activo</MudTd>
             </Row>
         </GenericTable>
     </MudContainer>
@@ -60,7 +58,7 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoDoctoClcResponse>);
     protected override string GetDefaultSortLabel() => "Clave";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDoctoClcResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoDoctoClc, Clave = u.Clave, Nombre = u.Nombre, TipoRecurso = u.TipoRecurso, Activo = u.Activo ? "Sí" : "No" });
+        items.Select(u => new { ID = u.PkidTipoDoctoClc, Clave = u.Clave, Nombre = u.Nombre, TipoRecurso = u.TipoRecurso});
 
     protected override async Task ReloadData()
     {

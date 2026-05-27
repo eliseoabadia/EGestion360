@@ -173,7 +173,6 @@
                         <MudTh><MudTableSortLabel SortLabel="BienSerie" T="ConteoDetalleEscaneoResponse">Serie</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="ConteoDetalleEscaneoResponse">Tipo de Bien</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="FechaEscaneo" T="ConteoDetalleEscaneoResponse">Fecha Escaneo</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Activo" T="ConteoDetalleEscaneoResponse">Activo</MudTableSortLabel></MudTh>
                     </Header>
 
                     <Row Context="escaneo">
@@ -206,13 +205,6 @@
                             </div>
                         </MudTd>
                         <MudTd>@escaneo.FechaEscaneo.ToString("dd/MM/yyyy HH:mm")</MudTd>
-                        <MudTd>
-                            <MudBadge Color="@(escaneo.Activo ? Color.Success : Color.Error)"
-                                      Variant="Variant.Filled"
-                                      Size="Size.Small">
-                                @(escaneo.Activo ? "Activo" : "Inactivo")
-                            </MudBadge>
-                        </MudTd>
                     </Row>
                 </GenericTable>
             </MudTabPanel>
@@ -340,7 +332,6 @@
             Personas_Participantes = c.PersonasParticipantes,
             Fecha_Inicio = c.FechaInicio.ToString("dd/MM/yyyy"),
             Fecha_Fin = c.FechaFin?.ToString("dd/MM/yyyy") ?? "Sin definir",
-            Activo = c.Activo ? "Sí" : "No"
         });
     }
 
@@ -379,7 +370,6 @@
                 Tipo_Bien = e.TipoBienDescripcion ?? "",
                 Código_Tipo_Bien = e.TipoBienCodigoClave ?? "",
                 Fecha_Escaneo = e.FechaEscaneo.ToString("dd/MM/yyyy HH:mm"),
-                Activo = e.Activo ? "Sí" : "No"
             });
 
             using var ms = new MemoryStream();

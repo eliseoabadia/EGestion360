@@ -65,7 +65,6 @@
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoProyectadoResponse">Descripcion</MudTableSortLabel></MudTh>
                     <MudTh>Meses</MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoProyectadoResponse">Total</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="EgresoProyectadoResponse">Activo</MudTableSortLabel></MudTh>
                 </Header>
 
                 <Row Context="item">
@@ -126,15 +125,6 @@
                         </div>
                     </MudTd>
                     <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
-                    <MudTd>
-                        <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                            @(item.Activo ? "Activo" : "Inactivo")
-                        </MudChip>
-                        @if (item.EstaAutorizado)
-                        {
-                            <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="ml-1">Autorizado</MudChip>
-                        }
-                    </MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -651,7 +641,6 @@
             Noviembre = item.Noviembre,
             Diciembre = item.Diciembre,
             Total = item.Total,
-            Activo = true,
             FechaAutorizacion = DateTime.Now
         };
     }
