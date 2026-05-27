@@ -969,6 +969,10 @@
       {
          "Name": "[SIS].[WriteSystemLog]",
          "ObjectType": 1
+      },
+      {
+         "Name": "[TES].[SP_CalcularIntereses]",
+         "ObjectType": 1
       }
    ],
    "UiHint": null,

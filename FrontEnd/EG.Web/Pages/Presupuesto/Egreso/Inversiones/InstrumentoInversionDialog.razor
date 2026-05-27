@@ -21,9 +21,9 @@
             <MudItem xs="12" md="6"><PagedAutocomplete Value="@_intermediario" ValueChanged="value => _intermediario = value" Label="Intermediario financiero" Required="true" LoadPage="LoadIntermediariosPageAsync" /></MudItem>
             <MudItem xs="12" md="6"><PagedAutocomplete Value="@_tipoPlazo" ValueChanged="value => _tipoPlazo = value" Label="Tipo plazo (opcional)" Clearable="true" LoadPage="LoadTiposPlazoPageAsync" /></MudItem>
             <MudItem xs="12" md="6"><PagedAutocomplete Value="@_moneda" ValueChanged="value => _moneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.TasaInteres" Label="Tasa interes (%)" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.TasaInteres" Label="Tasa interes (%)" Variant="Variant.Outlined" Min="0m" Format="0.0000" Culture="@NumberCulture" FullWidth="true" /></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int?" @bind-Value="item.PlazoOriginal" Label="Plazo original (dias)" Variant="Variant.Outlined" Min="0" FullWidth="true" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Min="0m" Format="0.0000" Culture="@NumberCulture" FullWidth="true" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaEmision" DateChanged="OnFechaEmisionChanged" Label="Fecha emision" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
@@ -54,6 +54,7 @@
     {
         if (!Id.HasValue)
         {
+            SetDefaultDates();
             await SetDefaultMonedaAsync();
             return;
         }
@@ -66,8 +67,8 @@
             _intermediario = new LookupItem { Id = item.FkidIntermediarioFinancieroTes, Text = item.IntermediarioNombre };
             _tipoPlazo = item.FkidTipoPlazoTes.HasValue ? new LookupItem { Id = item.FkidTipoPlazoTes.Value, Text = item.TipoPlazoDescripcion } : null;
             _moneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = item.TipoMonedaDescripcion };
-            _fechaEmision = item.FechaEmision?.ToDateTime(TimeOnly.MinValue);
-            _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue);
+            _fechaEmision = item.FechaEmision?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
+            _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
         }
     }
 
@@ -77,6 +78,11 @@
         if (_tipoInversion == null || _intermediario == null || _moneda == null)
         {
             Snackbar.Add("Completa tipo de inversion, intermediario y moneda.", Severity.Warning);
+            return;
+        }
+        if (_fechaEmision.HasValue && _fechaVencimiento.HasValue && _fechaVencimiento.Value.Date <= _fechaEmision.Value.Date)
+        {
+            Snackbar.Add("La fecha de vencimiento debe ser mayor que la fecha de emision.", Severity.Warning);
             return;
         }
 
@@ -100,6 +106,12 @@
 
     private Task OnFechaEmisionChanged(DateTime? value) { _fechaEmision = value; return Task.CompletedTask; }
     private Task OnFechaVencimientoChanged(DateTime? value) { _fechaVencimiento = value; return Task.CompletedTask; }
+
+    private void SetDefaultDates()
+    {
+        _fechaEmision = DateTime.Today;
+        _fechaVencimiento = DateTime.Today;
+    }
 
     private async Task<ComboLookupResult> LoadTiposInversionPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {

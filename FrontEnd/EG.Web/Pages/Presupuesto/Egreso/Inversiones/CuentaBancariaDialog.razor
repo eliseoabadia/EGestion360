@@ -154,8 +154,14 @@
 
     private async Task<ComboLookupResult> LoadCuentasContablesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await CuentaContableService.GetAllPaginadoAsync(page, pageSize, filter, "Cuenta", SortDirection.Ascending);
-        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidCuentaContable, Text = $"{x.Cuenta} - {x.Descripcion}" }).ToList() ?? new List<LookupItem>();
+        var response = await CuentaContableService.GetAllPaginadoAsync(page, pageSize, filter, "ClaveOrd", SortDirection.Ascending);
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidCuentaContable, Text = CuentaContableText(x) }).ToList() ?? new List<LookupItem>();
         return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private static string CuentaContableText(CuentaContableResponse cuenta)
+    {
+        var clave = string.IsNullOrWhiteSpace(cuenta.ClaveOrd) ? cuenta.Cuenta : cuenta.ClaveOrd;
+        return string.IsNullOrWhiteSpace(clave) ? cuenta.Descripcion : $"{clave} - {cuenta.Descripcion}";
     }
 }

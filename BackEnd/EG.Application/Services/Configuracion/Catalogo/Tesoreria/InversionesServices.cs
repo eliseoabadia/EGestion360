@@ -135,13 +135,79 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
     public class InversionAppService(
         GenericService<Inversion, InversionDto, InversionResponse> service,
-        GenericService<VwInversione, InversionDto, InversionResponse> serviceView)
+        GenericService<VwInversione, InversionDto, InversionResponse> serviceView,
+        EGestionContext context)
         : AdquisicionCrudAppService<Inversion, VwInversione, InversionDto, InversionResponse>(
             service,
             serviceView,
             "PkidInversion",
             "Inversion",
-            (dto, id) => dto.PkidInversion = id);
+            (dto, id) => dto.PkidInversion = id)
+    {
+        public override async Task<PagedResult<InversionResponse>> CreateAsync(InversionResponse response, int usuarioActual)
+        {
+            try
+            {
+                var dto = response.Adapt<InversionDto>();
+                dto.UsuarioCreacion = usuarioActual;
+                dto.FechaCreacion = DateTime.Now;
+                dto.Activo = true;
+
+                await _service.AddAsync(dto);
+                await CalcularInteresesAsync(dto.PkidInversion, usuarioActual);
+
+                var created = await GetByIdAsync(dto.PkidInversion);
+                created.Message = "Inversion creada correctamente";
+                return created;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<InversionResponse>
+                {
+                    Success = false,
+                    Message = $"Error al crear Inversion: {GetErrorMessage(ex)}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
+        }
+
+        public override async Task<PagedResult<InversionResponse>> UpdateAsync(int id, InversionResponse response, int usuarioActual)
+        {
+            var result = await base.UpdateAsync(id, response, usuarioActual);
+            if (!result.Success)
+            {
+                return result;
+            }
+
+            try
+            {
+                await CalcularInteresesAsync(id, usuarioActual);
+                var updated = await GetByIdAsync(id);
+                updated.Message = "Inversion actualizada correctamente";
+                return updated;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<InversionResponse>
+                {
+                    Success = false,
+                    Message = $"La inversion se guardo, pero no fue posible calcular intereses: {GetErrorMessage(ex)}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
+        }
+
+        private async Task CalcularInteresesAsync(int inversionId, int usuarioActual) =>
+            await StoredProcedureExecutor.ExecuteResultAsync(
+                context,
+                "[TES].[SP_CalcularIntereses]",
+                StoredProcedureExecutor.Param("@PKIdInversion", inversionId),
+                StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+
+        private static string GetErrorMessage(Exception ex) => ex.InnerException?.Message ?? ex.Message;
+    }
 
     public class InteresAppService(
         GenericService<Intere, InteresDto, InteresResponse> service,

@@ -74,11 +74,21 @@
             Snackbar.Add("Selecciona cuenta e instrumento.", Severity.Warning);
             return;
         }
+        if (!_fechaVencimiento.HasValue)
+        {
+            Snackbar.Add("Captura la fecha de vencimiento para calcular intereses.", Severity.Warning);
+            return;
+        }
+        if (_fechaInversion.HasValue && _fechaVencimiento.Value.Date <= _fechaInversion.Value.Date)
+        {
+            Snackbar.Add("La fecha de vencimiento debe ser mayor que la fecha de inversion.", Severity.Warning);
+            return;
+        }
 
         item.FkidCuentaBancaria = _cuenta.Id;
         item.FkidInstrumento = _instrumento.Id;
         item.FechaInversion = _fechaInversion.HasValue ? DateOnly.FromDateTime(_fechaInversion.Value) : DateOnly.FromDateTime(DateTime.Today);
-        item.FechaVencimiento = _fechaVencimiento.HasValue ? DateOnly.FromDateTime(_fechaVencimiento.Value) : null;
+        item.FechaVencimiento = DateOnly.FromDateTime(_fechaVencimiento.Value);
 
         var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (response?.Success == true)

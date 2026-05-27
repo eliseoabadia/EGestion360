@@ -11,6 +11,7 @@ namespace EG.Domain.DTOs.Requests.Contabilidad
         public string SubCuenta { get; set; } = string.Empty;
         public string SubSubCuenta { get; set; } = string.Empty;
         public string SubSubSubCuenta { get; set; } = string.Empty;
+        public string ClaveOrd { get; set; } = string.Empty;
         public decimal Saldo { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public bool Activo { get; set; }

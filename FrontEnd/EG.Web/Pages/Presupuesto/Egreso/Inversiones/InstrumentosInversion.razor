@@ -43,7 +43,7 @@
                 <MudTd>@item.TipoInversionDescripcion</MudTd>
                 <MudTd>@item.IntermediarioNombre</MudTd>
                 <MudTd>@($"{item.TipoMonedaSimbolo} {item.TipoMonedaCodigo}")</MudTd>
-                <MudTd>@($"{(item.TasaInteres ?? 0m).ToString("0.00", NumberCulture)}%")</MudTd>
+                <MudTd>@($"{(item.TasaInteres ?? 0m).ToString("0.0000", NumberCulture)}%")</MudTd>
                 <MudTd>@Money(item.MontoMinimo ?? 0m, item.TipoMonedaSimbolo)</MudTd>
             </Row>
         </GenericTable>
@@ -68,8 +68,8 @@
             x.TipoInversionDescripcion,
             x.IntermediarioNombre,
             Moneda = $"{x.TipoMonedaSimbolo} {x.TipoMonedaCodigo}",
-            Tasa = (x.TasaInteres ?? 0m).ToString("0.00", NumberCulture),
-            MontoMinimo = (x.MontoMinimo ?? 0m).ToString("0.00", NumberCulture),
+            Tasa = (x.TasaInteres ?? 0m).ToString("0.0000", NumberCulture),
+            MontoMinimo = (x.MontoMinimo ?? 0m).ToString("0.0000", NumberCulture),
         });
 
     protected override async Task ReloadData()
@@ -77,5 +77,5 @@
         if (table != null) await table.ReloadData();
     }
 
-    private static string Money(decimal amount, string symbol) => $"{(string.IsNullOrWhiteSpace(symbol) ? "$" : symbol)}{amount.ToString("0.00", NumberCulture)}";
+    private static string Money(decimal amount, string symbol) => $"{(string.IsNullOrWhiteSpace(symbol) ? "$" : symbol)}{amount.ToString("0.0000", NumberCulture)}";
 }
