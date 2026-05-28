@@ -108,44 +108,92 @@
                         <div><div class="board-eyebrow">Flujo presupuestal y contable</div><div class="board-title">Movimientos ligados a la poliza</div></div>
                         <div class="board-totals"><span>Debe <strong>@Money(DebeTotal)</strong></span><span>Haber <strong>@Money(HaberTotal)</strong></span><span class="@(IsSelectedBalanced ? "balance-ok" : "balance-warn")">@BalanceText</span></div>
                     </div>
-                    <div class="board-grid">
-                        <section class="board-panel">
-                            <div class="board-panel-header"><span>Movimientos</span><strong>@Money(Math.Abs(_detalles.Sum(x => x.Total ?? 0m)))</strong></div>
-                            <div class="board-scroll">
-                                <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
-                                    <Header><MudTh>Acciones</MudTh><MudTh>Tipo</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
-                                    <Row Context="d">
-                                        <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
-                                        <MudTd>@TextOrDash(d.TipoMovimientoDescripcion)</MudTd>
-                                        <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
-                                        <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                                        <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
-                                    </Row>
-                                </GenericTable>
-                            </div>
-                        </section>
-                        <section class="board-panel board-panel-conta">
-                            <div class="board-panel-header"><span>Poliza</span><strong>@TextOrDash(Selected.ClavePoliza)</strong></div>
-                            <div class="board-scroll">
-                                <table class="board-table">
-                                    <thead><tr><th>Cuenta</th><th>Descripcion</th><th>Debe</th><th>Haber</th></tr></thead>
-                                    <tbody>
-                                        @if (_poliza.Count == 0)
-                                        {
-                                            <tr><td colspan="4" class="board-empty">Sin movimientos contables</td></tr>
-                                        }
-                                        else
-                                        {
-                                            @foreach (var item in _poliza)
+                    @if (IsCompensada)
+                    {
+                        <div class="board-grid board-grid-compensada">
+                            <section class="board-panel board-panel-aumento">
+                                <div class="board-panel-header">
+                                    <span>Ampliaciones</span>
+                                    <strong>@Money(AmpliacionesTotal)</strong>
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Success" OnClick="@(() => AddDetalle(1))" />
+                                </div>
+                                <div class="board-scroll">
+                                    <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="aumentosTable" Title="Ampliaciones" ServerDataFunc="LoadAumentosData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
+                                        <Row Context="d">
+                                            <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle, 1))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
+                                            <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
+                                            <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                                            <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
+                                        </Row>
+                                    </GenericTable>
+                                </div>
+                            </section>
+                            <section class="board-panel board-panel-reduccion">
+                                <div class="board-panel-header">
+                                    <span>Reducciones</span>
+                                    <strong>@Money(ReduccionesTotal)</strong>
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Warning" OnClick="@(() => AddDetalle(2))" />
+                                </div>
+                                <div class="board-scroll">
+                                    <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="reduccionesTable" Title="Reducciones" ServerDataFunc="LoadReduccionesData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
+                                        <Row Context="d">
+                                            <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle, 2))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
+                                            <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
+                                            <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                                            <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
+                                        </Row>
+                                    </GenericTable>
+                                </div>
+                            </section>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="board-grid">
+                            <section class="board-panel">
+                                <div class="board-panel-header">
+                                    <span>Movimientos</span>
+                                    <strong>@Money(Math.Abs(_detalles.Sum(x => x.Total ?? 0m)))</strong>
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Success" OnClick="@(() => AddDetalle(DefaultMovimientoId))" />
+                                </div>
+                                <div class="board-scroll">
+                                    <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                        <Header><MudTh>Acciones</MudTh><MudTh>Tipo</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
+                                        <Row Context="d">
+                                            <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle, DefaultMovimientoId))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
+                                            <MudTd>@TextOrDash(d.TipoMovimientoDescripcion)</MudTd>
+                                            <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
+                                            <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                                            <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
+                                        </Row>
+                                    </GenericTable>
+                                </div>
+                            </section>
+                            <section class="board-panel board-panel-conta">
+                                <div class="board-panel-header"><span>Poliza</span><strong>@TextOrDash(Selected.ClavePoliza)</strong></div>
+                                <div class="board-scroll">
+                                    <table class="board-table">
+                                        <thead><tr><th>Cuenta</th><th>Descripcion</th><th>Debe</th><th>Haber</th></tr></thead>
+                                        <tbody>
+                                            @if (_poliza.Count == 0)
                                             {
-                                                <tr><td>@TextOrDash(item.CuentaClaveNombre ?? item.CuentaClave)</td><td>@TextOrDash(item.Descripcion)</td><td>@Money(item.ImporteDebe ?? 0m)</td><td>@Money(item.ImporteHaber ?? 0m)</td></tr>
+                                                <tr><td colspan="4" class="board-empty">Sin movimientos contables</td></tr>
                                             }
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
-                    </div>
+                                            else
+                                            {
+                                                @foreach (var item in _poliza)
+                                                {
+                                                    <tr><td>@TextOrDash(item.CuentaClaveNombre ?? item.CuentaClave)</td><td>@TextOrDash(item.Descripcion)</td><td>@Money(item.ImporteDebe ?? 0m)</td><td>@Money(item.ImporteHaber ?? 0m)</td></tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                    }
                 </MudPaper>
             </div>
         }
@@ -179,8 +227,11 @@
     .board-totals .balance-ok { border-color: rgba(101,228,189,.45); color: #65e4bd; font-weight: 800; }
     .board-totals .balance-warn { border-color: rgba(255,200,97,.45); color: #ffc861; font-weight: 800; }
     .board-grid { display: grid; flex: 1 1 auto; gap: 10px; grid-template-columns: minmax(440px,1.2fr) minmax(360px,.8fr); min-height: 0; padding: 10px; }
+    .board-grid-compensada { grid-template-columns: minmax(420px,1fr) minmax(420px,1fr); }
     .board-panel { border: 1px solid rgba(91,157,255,.20); border-radius: 8px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .board-panel-conta { border-color: rgba(101,228,189,.28); }
+    .board-panel-aumento { border-color: rgba(101,228,189,.34); }
+    .board-panel-reduccion { border-color: rgba(255,200,97,.34); }
     .board-panel-header { align-items: center; background: rgba(8,17,31,.68); display: flex; justify-content: space-between; padding: 9px 12px; }
     .board-table { border-collapse: collapse; font-size: .78rem; width: 100%; }
     .board-table th { background: rgba(47,124,255,.10); color: #4b8cff; padding: 9px 10px; position: sticky; text-align: left; top: 0; }
@@ -200,6 +251,8 @@
 
     private GenericTable<EgreAdecuacionResponse> table = null!;
     private GenericTable<EgreAdecuacionDetalleResponse>? detalleTable;
+    private GenericTable<EgreAdecuacionDetalleResponse>? aumentosTable;
+    private GenericTable<EgreAdecuacionDetalleResponse>? reduccionesTable;
     private EgreAdecuacionResponse? Selected;
     private bool SelectedLocked;
     private string detalleSearch = string.Empty;
@@ -226,6 +279,7 @@
     private bool CanSendSelected => Selected != null && CanSendRequest(Selected, IsSelectedBalanced);
     private bool CanAuthorizeSelected => Selected != null && CanAuthorizeItem(Selected, IsSelectedBalanced);
     private string BalanceText => _poliza.Count == 0 ? "Sin movimientos contables" : IsSelectedBalanced ? "Balanceada" : $"Diferencia {Money(Math.Abs(DebeTotal - HaberTotal))}";
+    private bool IsCompensada => TipoAdecuacionId == 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -294,9 +348,18 @@
     }
 
     private async Task<TableData<EgreAdecuacionDetalleResponse>> LoadDetalleData(TableState state, CancellationToken token)
+        => await LoadDetalleDataByMovement(state, DefaultMovimientoId);
+
+    private async Task<TableData<EgreAdecuacionDetalleResponse>> LoadAumentosData(TableState state, CancellationToken token)
+        => await LoadDetalleDataByMovement(state, 1);
+
+    private async Task<TableData<EgreAdecuacionDetalleResponse>> LoadReduccionesData(TableState state, CancellationToken token)
+        => await LoadDetalleDataByMovement(state, 2);
+
+    private async Task<TableData<EgreAdecuacionDetalleResponse>> LoadDetalleDataByMovement(TableState state, int tipoMovimiento)
     {
         if (Selected == null) return new TableData<EgreAdecuacionDetalleResponse> { Items = [], TotalItems = 0 };
-        var response = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "Fecha", state.SortDirection, new() { ["FkidEgreAdecuacionPres"] = Selected.PkidEgreAdecuacion });
+        var response = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "Fecha", state.SortDirection, new() { ["FkidEgreAdecuacionPres"] = Selected.PkidEgreAdecuacion, ["FkidTipoMovimientoPres"] = tipoMovimiento });
         var items = response?.Items?.ToList() ?? [];
         return new TableData<EgreAdecuacionDetalleResponse> { Items = items, TotalItems = response?.TotalCount ?? 0 };
     }
@@ -310,6 +373,8 @@
         _poliza = conta?.Items?.ToList() ?? [];
         BalanceCache[Selected.PkidEgreAdecuacion] = (DebeTotal, HaberTotal, _poliza.Count);
         if (detalleTable != null) await detalleTable.ReloadData();
+        if (aumentosTable != null) await aumentosTable.ReloadData();
+        if (reduccionesTable != null) await reduccionesTable.ReloadData();
         StateHasChanged();
     }
 
@@ -334,7 +399,7 @@
     }
 
     private async Task AddDetalle(int tipoMovimiento) => await OpenDetalle(null, tipoMovimiento);
-    private async Task EditDetalle(int id) => await OpenDetalle(id, DefaultMovimientoId);
+    private async Task EditDetalle(int id, int tipoMovimiento) => await OpenDetalle(id, tipoMovimiento);
 
     private async Task OpenDetalle(int? id, int tipoMovimiento)
     {
@@ -366,7 +431,12 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<EgreAdecuacionResponse> items) => items.Select(x => new { x.Clave, x.TipoAdecuacionDescripcion, x.EstatusAdecuacionDescripcion, x.Justificacion, Fecha = x.Fecha.ToString("dd/MM/yyyy"), x.ClavePoliza, x.Autorizado, x.Activo, x.UsuarioCreacion, x.FechaCreacion, x.UsuarioModificacion, x.FechaModificacion });
     protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
-    private Task ReloadDetalle() => detalleTable?.ReloadData() ?? Task.CompletedTask;
+    private async Task ReloadDetalle()
+    {
+        if (detalleTable != null) await detalleTable.ReloadData();
+        if (aumentosTable != null) await aumentosTable.ReloadData();
+        if (reduccionesTable != null) await reduccionesTable.ReloadData();
+    }
     private bool IsLocked(EgreAdecuacionResponse item) => item.Autorizado == true;
     private static bool IsRequestSent(EgreAdecuacionResponse item) => item.FkidAccionAdecuacionMasterPres == 2;
     private bool IsBalanced(EgreAdecuacionResponse item) => BalanceCache.TryGetValue(item.PkidEgreAdecuacion, out var balance) && balance.Count > 0 && balance.Debe == balance.Haber;
