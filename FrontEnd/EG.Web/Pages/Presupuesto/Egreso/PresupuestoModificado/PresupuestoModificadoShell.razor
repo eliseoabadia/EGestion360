@@ -1,0 +1,408 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
+@using EG.Dommain.DTOs.Responses
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@implements IDisposable
+@inherits BaseCrudPage<EgreAdecuacionResponse, EgreAdecuacionResponse>
+
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<EgreAdecuacionDetalleResponse> DetalleService
+@inject IGenericCrudService<PolizaDetalleResponse> PolizaDetalleService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject HttpClient Http
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column mod-page" MaxWidth="MaxWidth.False">
+        @if (Selected == null)
+        {
+            <PageHeader Title="@Title"
+                        Subtitle="@Subtitle"
+                        Icon="@Icons.Material.Filled.AccountBalance"
+                        CanCreate="@CanCreate"
+                        OnCreate="CreateItem"
+                        OnRefresh="() => table.ReloadData()" />
+
+            <div class="mod-summary">
+                <div><span>Total</span><strong>@Money(Elements.Sum(x => DetailTotalCache.GetValueOrDefault(x.PkidEgreAdecuacion)))</strong></div>
+                <div><span>Balanceadas</span><strong>@Elements.Count(IsBalanced).ToString("N0")</strong></div>
+                <div><span>Registros</span><strong>@TotalCount.ToString("N0")</strong></div>
+            </div>
+
+            <div class="mod-table-wrap">
+                <GenericTable TItem="EgreAdecuacionResponse"
+                              @ref="table"
+                              Title="@Title"
+                              SearchPlaceholder="Buscar clave, justificacion o poliza..."
+                              ShowExportButton="@CanExport"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="(s) => SearchString = s"
+                              OnSearch="OnSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Clave" T="EgreAdecuacionResponse">Clave</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Fecha" T="EgreAdecuacionResponse">Fecha</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Justificacion" T="EgreAdecuacionResponse">Justificacion</MudTableSortLabel></MudTh>
+                        <MudTh>Poliza</MudTh>
+                        <MudTh>Flujo</MudTh>
+                        <MudTh>Estado</MudTh>
+                    </Header>
+                    <Row Context="item">
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(item))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(item))" Title="@RequestTooltip(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(item, "enviar-solicitud"))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(item))" Title="@AuthorizeTooltip(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(item, "autorizar"))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidEgreAdecuacion))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidEgreAdecuacion))" />
+                        </MudTd>
+                        <MudTd><strong>@TextOrDash(item.Clave)</strong><br /><span>@TextOrDash(item.TipoAdecuacionDescripcion)</span></MudTd>
+                        <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd>@TextOrDash(item.Justificacion)</MudTd>
+                        <MudTd>@TextOrDash(item.ClavePoliza)</MudTd>
+                        <MudTd>@Money(DetailTotalCache.GetValueOrDefault(item.PkidEgreAdecuacion))</MudTd>
+                        <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item)">@StatusText(item)</MudChip></MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        }
+        else
+        {
+            <div class="mod-detail">
+                <MudPaper Elevation="0" Class="mod-hero">
+                    <div class="mod-hero-main">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="BackToList" Class="mod-back" />
+                        <div>
+                            <div class="mod-eyebrow"><MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Small" /> Presupuesto modificado</div>
+                            <MudText Typo="Typo.h5" Class="mod-title">@TextOrDash(Selected.Clave)</MudText>
+                            <MudText Typo="Typo.body2" Class="mod-subtitle">@TextOrDash(Selected.Justificacion)</MudText>
+                        </div>
+                    </div>
+                    <div class="mod-actions">
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(Selected)">@StatusText(Selected)</MudChip>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" Disabled="@(Selected == null || !CanSendSelected)" OnClick="@(() => Workflow(Selected!, "enviar-solicitud"))">Solicitar autorizacion</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(Selected == null || !CanAuthorizeSelected)" OnClick="@(() => Workflow(Selected!, "autorizar"))">Autorizar</MudButton>
+                        @if (CanCreate)
+                        {
+                            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.AddCircleOutline" Disabled="@(SelectedLocked || (!AllowBothMovements && DefaultMovimientoId != 1))" OnClick="@(() => AddDetalle(1))">Ampliacion</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.RemoveCircleOutline" Disabled="@(SelectedLocked || (!AllowBothMovements && DefaultMovimientoId != 2))" OnClick="@(() => AddDetalle(2))">Reduccion</MudButton>
+                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="RefreshSelected" Class="mod-back" />
+                    </div>
+                </MudPaper>
+
+                <MudGrid Spacing="2" Class="mod-kpis">
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="mod-kpi"><span>Ampliaciones</span><strong class="positive">@Money(AmpliacionesTotal)</strong><small>Entradas presupuestales</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="mod-kpi"><span>Reducciones</span><strong class="warning">@Money(ReduccionesTotal)</strong><small>Salidas presupuestales</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="mod-kpi mod-kpi-primary"><span>Neto</span><strong>@Money(NetoTotal)</strong><small>Ampliaciones - reducciones</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="mod-kpi"><span>Poliza</span><strong>@TextOrDash(Selected.ClavePoliza)</strong><small>@BalanceText</small></MudPaper></MudItem>
+                </MudGrid>
+
+                <MudPaper Elevation="0" Class="mod-board">
+                    <div class="board-toolbar">
+                        <div><div class="board-eyebrow">Flujo presupuestal y contable</div><div class="board-title">Movimientos ligados a la poliza</div></div>
+                        <div class="board-totals"><span>Debe <strong>@Money(DebeTotal)</strong></span><span>Haber <strong>@Money(HaberTotal)</strong></span><span class="@(IsSelectedBalanced ? "balance-ok" : "balance-warn")">@BalanceText</span></div>
+                    </div>
+                    <div class="board-grid">
+                        <section class="board-panel">
+                            <div class="board-panel-header"><span>Movimientos</span><strong>@Money(Math.Abs(_detalles.Sum(x => x.Total ?? 0m)))</strong></div>
+                            <div class="board-scroll">
+                                <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                    <Header><MudTh>Acciones</MudTh><MudTh>Tipo</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
+                                    <Row Context="d">
+                                        <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
+                                        <MudTd>@TextOrDash(d.TipoMovimientoDescripcion)</MudTd>
+                                        <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
+                                        <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                                        <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
+                                    </Row>
+                                </GenericTable>
+                            </div>
+                        </section>
+                        <section class="board-panel board-panel-conta">
+                            <div class="board-panel-header"><span>Poliza</span><strong>@TextOrDash(Selected.ClavePoliza)</strong></div>
+                            <div class="board-scroll">
+                                <table class="board-table">
+                                    <thead><tr><th>Cuenta</th><th>Descripcion</th><th>Debe</th><th>Haber</th></tr></thead>
+                                    <tbody>
+                                        @if (_poliza.Count == 0)
+                                        {
+                                            <tr><td colspan="4" class="board-empty">Sin movimientos contables</td></tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var item in _poliza)
+                                            {
+                                                <tr><td>@TextOrDash(item.CuentaClaveNombre ?? item.CuentaClave)</td><td>@TextOrDash(item.Descripcion)</td><td>@Money(item.ImporteDebe ?? 0m)</td><td>@Money(item.ImporteHaber ?? 0m)</td></tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </MudPaper>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .mod-page { height: calc(100vh - 146px); max-height: calc(100vh - 146px); min-height: 0; overflow: hidden; }
+    .mod-table-wrap, .mod-detail, .board-scroll { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+    .mod-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 8px 0 12px; }
+    .mod-summary > div, .mod-kpi { background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; padding: 10px 12px; }
+    .mod-summary span, .mod-kpi span, .mod-kpi small { color: var(--mud-palette-text-secondary); display: block; font-size: .72rem; text-transform: uppercase; }
+    .mod-summary strong, .mod-kpi strong { display: block; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mod-detail { display: flex; flex-direction: column; gap: 12px; }
+    .mod-hero { align-items: center; background: linear-gradient(135deg, rgba(35,116,255,.20), rgba(12,26,48,.96) 42%, rgba(14,23,39,.98)); border: 1px solid rgba(91,157,255,.32); border-radius: 8px; color: #f8fbff; display: flex; justify-content: space-between; padding: 16px; }
+    .mod-hero-main, .mod-actions { align-items: center; display: flex; gap: 12px; min-width: 0; }
+    .mod-actions { flex-wrap: wrap; justify-content: flex-end; }
+    .mod-back { background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18); color: #dce9ff; }
+    .mod-eyebrow { align-items: center; color: #74e4c8; display: flex; font-size: .72rem; font-weight: 800; gap: 7px; text-transform: uppercase; }
+    .mod-title { color: #fff; font-weight: 800; line-height: 1.1; }
+    .mod-subtitle { color: rgba(232,240,255,.78); white-space: pre-wrap; }
+    .mod-kpis { flex-shrink: 0; }
+    .mod-kpi-primary { border-color: rgba(91,157,255,.45); }
+    .positive { color: #65e4bd; } .warning { color: #ffc861; }
+    .mod-board { background: rgba(9,18,32,.96); border: 1px solid rgba(91,157,255,.22); border-radius: 8px; color: #dbe8ff; display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow: hidden; }
+    .board-toolbar { align-items: center; border-bottom: 1px solid rgba(91,157,255,.20); display: flex; justify-content: space-between; padding: 10px 12px; }
+    .board-eyebrow { color: #74e4c8; font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+    .board-title { color: #fff; font-weight: 800; }
+    .board-totals { display: flex; gap: 8px; }
+    .board-totals span { background: rgba(255,255,255,.055); border: 1px solid rgba(148,163,184,.18); border-radius: 6px; padding: 6px 10px; }
+    .board-totals .balance-ok { border-color: rgba(101,228,189,.45); color: #65e4bd; font-weight: 800; }
+    .board-totals .balance-warn { border-color: rgba(255,200,97,.45); color: #ffc861; font-weight: 800; }
+    .board-grid { display: grid; flex: 1 1 auto; gap: 10px; grid-template-columns: minmax(440px,1.2fr) minmax(360px,.8fr); min-height: 0; padding: 10px; }
+    .board-panel { border: 1px solid rgba(91,157,255,.20); border-radius: 8px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .board-panel-conta { border-color: rgba(101,228,189,.28); }
+    .board-panel-header { align-items: center; background: rgba(8,17,31,.68); display: flex; justify-content: space-between; padding: 9px 12px; }
+    .board-table { border-collapse: collapse; font-size: .78rem; width: 100%; }
+    .board-table th { background: rgba(47,124,255,.10); color: #4b8cff; padding: 9px 10px; position: sticky; text-align: left; top: 0; }
+    .board-table td { border-bottom: 1px solid rgba(148,163,184,.12); padding: 7px 10px; }
+    .board-empty { color: rgba(226,236,255,.48); font-weight: 700; padding: 18px 12px !important; text-align: center; }
+    .money-cell { font-weight: 850; white-space: nowrap; }
+    @@media (max-width: 960px) { .mod-summary, .board-grid { grid-template-columns: 1fr; } .mod-hero { align-items: flex-start; flex-direction: column; } }
+</style>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Presupuesto modificado";
+    [Parameter] public string Subtitle { get; set; } = "";
+    [Parameter] public string SubModuleNameValue { get; set; } = "";
+    [Parameter] public int TipoAdecuacionId { get; set; }
+    [Parameter] public int DefaultMovimientoId { get; set; }
+    [Parameter] public bool AllowBothMovements { get; set; }
+
+    private GenericTable<EgreAdecuacionResponse> table = null!;
+    private GenericTable<EgreAdecuacionDetalleResponse>? detalleTable;
+    private EgreAdecuacionResponse? Selected;
+    private bool SelectedLocked;
+    private string detalleSearch = string.Empty;
+    private string _currencySymbol = "$";
+    private readonly Dictionary<int, decimal> DetailTotalCache = new();
+    private readonly Dictionary<int, (decimal Debe, decimal Haber, int Count)> BalanceCache = new();
+    private List<EgreAdecuacionDetalleResponse> _detalles = new();
+    private List<PolizaDetalleResponse> _poliza = new();
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "Presupuesto_Modificado";
+    protected override string SubModuleName => SubModuleNameValue;
+    protected override Type CreateDialogType => typeof(PresupuestoModificadoDialog);
+    protected override Type EditDialogType => typeof(PresupuestoModificadoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EgreAdecuacionResponse>);
+    protected override string GetDefaultSortLabel() => "Fecha";
+
+    private decimal AmpliacionesTotal => _detalles.Where(x => x.FkidTipoMovimientoPres == 1).Sum(x => Math.Abs(x.Total ?? 0m));
+    private decimal ReduccionesTotal => _detalles.Where(x => x.FkidTipoMovimientoPres == 2).Sum(x => Math.Abs(x.Total ?? 0m));
+    private decimal NetoTotal => AmpliacionesTotal - ReduccionesTotal;
+    private decimal DebeTotal => _poliza.Sum(x => x.ImporteDebe ?? 0m);
+    private decimal HaberTotal => _poliza.Sum(x => x.ImporteHaber ?? 0m);
+    private bool IsSelectedBalanced => _poliza.Count > 0 && DebeTotal == HaberTotal;
+    private bool CanSendSelected => Selected != null && CanSendRequest(Selected, IsSelectedBalanced);
+    private bool CanAuthorizeSelected => Selected != null && CanAuthorizeItem(Selected, IsSelectedBalanced);
+    private string BalanceText => _poliza.Count == 0 ? "Sin movimientos contables" : IsSelectedBalanced ? "Balanceada" : $"Diferencia {Money(Math.Abs(DebeTotal - HaberTotal))}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        await LoadCurrencyAsync();
+    }
+
+    protected override async Task<TableData<EgreAdecuacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (!AnioStateService.AnioId.HasValue)
+            return new TableData<EgreAdecuacionResponse> { Items = [], TotalItems = 0 };
+
+        var response = await Service.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, SearchString, state.SortLabel ?? GetDefaultSortLabel(), state.SortDirection,
+            new() { ["FkidAnioSis"] = AnioStateService.AnioId.Value, ["FkidTipoAdecuacionPres"] = TipoAdecuacionId });
+
+        Elements = response?.Items?.ToList() ?? [];
+        TotalCount = response?.TotalCount ?? 0;
+        await LoadTotalsAsync(Elements);
+        return new TableData<EgreAdecuacionResponse> { Items = Elements, TotalItems = TotalCount };
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!AnioStateService.AnioId.HasValue) { Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning); return; }
+        var parameters = DialogParams(null);
+        var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {Title}", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await ReloadData();
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        var item = Elements.FirstOrDefault(x => x.PkidEgreAdecuacion == id);
+        if (item?.Autorizado == true) { Snackbar.Add("La adecuacion autorizada no puede editarse.", Severity.Warning); return; }
+        var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {Title}", DialogParams(id), new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await ReloadData();
+    }
+
+    private DialogParameters DialogParams(int? id) => new()
+    {
+        ["Id"] = id,
+        ["TipoAdecuacionId"] = TipoAdecuacionId,
+        ["AnioId"] = AnioStateService.AnioId ?? 0
+    };
+
+    private async Task SelectItem(EgreAdecuacionResponse item)
+    {
+        Selected = item;
+        await RefreshSelected();
+    }
+
+    private async Task BackToList()
+    {
+        Selected = null;
+        await ReloadData();
+    }
+
+    private async Task RefreshSelected()
+    {
+        if (Selected == null) return;
+        var refreshed = await Service.GetByIdAsync(Selected.PkidEgreAdecuacion);
+        if (refreshed?.Success == true && refreshed.Data != null) Selected = refreshed.Data;
+        SelectedLocked = Selected?.Autorizado == true;
+        await LoadBoardsAsync();
+    }
+
+    private async Task<TableData<EgreAdecuacionDetalleResponse>> LoadDetalleData(TableState state, CancellationToken token)
+    {
+        if (Selected == null) return new TableData<EgreAdecuacionDetalleResponse> { Items = [], TotalItems = 0 };
+        var response = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "Fecha", state.SortDirection, new() { ["FkidEgreAdecuacionPres"] = Selected.PkidEgreAdecuacion });
+        var items = response?.Items?.ToList() ?? [];
+        return new TableData<EgreAdecuacionDetalleResponse> { Items = items, TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task LoadBoardsAsync()
+    {
+        if (Selected == null) return;
+        var det = await DetalleService.GetAllPaginadoAsync(1, 300, detalleSearch, "Fecha", SortDirection.Descending, new() { ["FkidEgreAdecuacionPres"] = Selected.PkidEgreAdecuacion });
+        _detalles = det?.Items?.ToList() ?? [];
+        var conta = await PolizaDetalleService.GetAllPaginadoAsync(1, 300, "", "PkidPolizaDetalle", SortDirection.Descending, new() { ["FkidPolizaConta"] = Selected.FkidPolizaConta ?? 0 });
+        _poliza = conta?.Items?.ToList() ?? [];
+        BalanceCache[Selected.PkidEgreAdecuacion] = (DebeTotal, HaberTotal, _poliza.Count);
+        if (detalleTable != null) await detalleTable.ReloadData();
+        StateHasChanged();
+    }
+
+    private async Task LoadTotalsAsync(IEnumerable<EgreAdecuacionResponse> items)
+    {
+        foreach (var item in items)
+        {
+            var response = await DetalleService.GetAllPaginadoAsync(1, 200, "", "Fecha", SortDirection.Descending, new() { ["FkidEgreAdecuacionPres"] = item.PkidEgreAdecuacion });
+            DetailTotalCache[item.PkidEgreAdecuacion] = response?.Items?.Sum(x => Math.Abs(x.Total ?? 0m)) ?? 0m;
+
+            if (item.FkidPolizaConta.HasValue)
+            {
+                var poliza = await PolizaDetalleService.GetAllPaginadoAsync(1, 300, "", "PkidPolizaDetalle", SortDirection.Descending, new() { ["FkidPolizaConta"] = item.FkidPolizaConta.Value });
+                var movimientos = poliza?.Items?.ToList() ?? [];
+                BalanceCache[item.PkidEgreAdecuacion] = (movimientos.Sum(x => x.ImporteDebe ?? 0m), movimientos.Sum(x => x.ImporteHaber ?? 0m), movimientos.Count);
+            }
+            else
+            {
+                BalanceCache[item.PkidEgreAdecuacion] = (0m, 0m, 0);
+            }
+        }
+    }
+
+    private async Task AddDetalle(int tipoMovimiento) => await OpenDetalle(null, tipoMovimiento);
+    private async Task EditDetalle(int id) => await OpenDetalle(id, DefaultMovimientoId);
+
+    private async Task OpenDetalle(int? id, int tipoMovimiento)
+    {
+        if (Selected == null || SelectedLocked) return;
+        var dialog = await DialogService.ShowAsync<PresupuestoModificadoDetalleDialog>(id.HasValue ? "Editar movimiento" : "Nuevo movimiento",
+            new DialogParameters { ["Id"] = id, ["AdecuacionId"] = Selected.PkidEgreAdecuacion, ["TipoMovimientoId"] = tipoMovimiento, ["AnioId"] = AnioStateService.AnioId ?? 0, ["CurrencySymbol"] = _currencySymbol },
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await RefreshSelected();
+    }
+
+    private async Task DeleteDetalle(int id)
+    {
+        if (SelectedLocked) return;
+        var result = await DetalleService.DeleteAsync(id);
+        Snackbar.Add(result?.Message ?? "Movimiento eliminado.", result?.Success == true ? Severity.Success : Severity.Error);
+        await RefreshSelected();
+    }
+
+    private async Task Workflow(EgreAdecuacionResponse item, string action)
+    {
+        var response = await Http.PostAsync($"api/EgreAdecuacion/{item.PkidEgreAdecuacion}/{action}", null);
+        var result = await response.Content.ReadFromJsonAsync<EG.Web.Models.ApiResponse<EgreAdecuacionResponse>>();
+        Snackbar.Add(result?.Message ?? (response.IsSuccessStatusCode ? "Proceso realizado." : "No fue posible procesar."), response.IsSuccessStatusCode ? Severity.Success : Severity.Error);
+        if (Selected != null)
+            await RefreshSelected();
+        else
+            await ReloadData();
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EgreAdecuacionResponse> items) => items.Select(x => new { x.Clave, x.TipoAdecuacionDescripcion, x.EstatusAdecuacionDescripcion, x.Justificacion, Fecha = x.Fecha.ToString("dd/MM/yyyy"), x.ClavePoliza, x.Autorizado, x.Activo, x.UsuarioCreacion, x.FechaCreacion, x.UsuarioModificacion, x.FechaModificacion });
+    protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
+    private Task ReloadDetalle() => detalleTable?.ReloadData() ?? Task.CompletedTask;
+    private bool IsLocked(EgreAdecuacionResponse item) => item.Autorizado == true;
+    private static bool IsRequestSent(EgreAdecuacionResponse item) => item.FkidAccionAdecuacionMasterPres == 2;
+    private bool IsBalanced(EgreAdecuacionResponse item) => BalanceCache.TryGetValue(item.PkidEgreAdecuacion, out var balance) && balance.Count > 0 && balance.Debe == balance.Haber;
+    private bool CanSendRequest(EgreAdecuacionResponse item) => CanSendRequest(item, IsBalanced(item));
+    private static bool CanSendRequest(EgreAdecuacionResponse item, bool balanced) => !IsLockedStatic(item) && balanced && !IsRequestSent(item);
+    private bool CanAuthorizeItem(EgreAdecuacionResponse item) => CanAuthorizeItem(item, IsBalanced(item));
+    private bool CanAuthorizeItem(EgreAdecuacionResponse item, bool balanced) => CanAuthorize && !IsLocked(item) && balanced && IsRequestSent(item);
+    private string RequestTooltip(EgreAdecuacionResponse item) => IsLocked(item) ? "La modificacion ya esta autorizada" : IsRequestSent(item) ? "La solicitud ya fue enviada" : IsBalanced(item) ? "Enviar solicitud de autorizacion" : BalanceTooltip(item);
+    private string AuthorizeTooltip(EgreAdecuacionResponse item) => !CanAuthorize ? "No tienes permiso para autorizar" : IsLocked(item) ? "La modificacion ya esta autorizada" : !IsRequestSent(item) ? "Primero envia la solicitud de autorizacion" : IsBalanced(item) ? "Autorizar modificacion" : BalanceTooltip(item);
+    private string BalanceTooltip(EgreAdecuacionResponse item)
+    {
+        if (!BalanceCache.TryGetValue(item.PkidEgreAdecuacion, out var balance) || balance.Count == 0)
+            return "La poliza no tiene movimientos contables";
+
+        return $"La poliza no esta balanceada. Debe {Money(balance.Debe)}, Haber {Money(balance.Haber)}";
+    }
+    private static bool IsLockedStatic(EgreAdecuacionResponse item) => item.Autorizado == true;
+    private static string StatusText(EgreAdecuacionResponse item) => item.Autorizado == true ? "Autorizada" : item.FkidAccionAdecuacionMasterPres == 2 ? "Solicitud enviada" : string.IsNullOrWhiteSpace(item.AccionAdecuacion) ? "En captura" : item.AccionAdecuacion;
+    private static Color StatusColor(EgreAdecuacionResponse item) => item.Autorizado == true ? Color.Success : item.FkidAccionAdecuacionMasterPres == 2 ? Color.Info : Color.Warning;
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+    private string Money(decimal amount) => $"{_currencySymbol}{amount.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId))
+            {
+                var user = await UsuarioService.GetByIdAsync(userId);
+                _currencySymbol = string.IsNullOrWhiteSpace(user?.Data?.SimboloMonedaBase) ? "$" : user.Data.SimboloMonedaBase;
+            }
+        }
+        catch { }
+    }
+
+    public void Dispose() => AnioStateService.OnAnioChanged -= OnAnioChanged;
+}

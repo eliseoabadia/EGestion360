@@ -263,6 +263,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[AccionAdecuacionMaster]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[AutorizacionSuficiencia]",
          "ObjectType": 0
       },
@@ -307,6 +311,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[EgreAdecuacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[EgreAdecuacionDetalle]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[EgresoAutorizado]",
          "ObjectType": 0
       },
@@ -316,6 +328,10 @@
       },
       {
          "Name": "[PRES].[Eje]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[EstatusAdecuacion]",
          "ObjectType": 0
       },
       {
@@ -411,7 +427,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[TipoAdecuacion]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[TipoGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[TipoMovimiento]",
          "ObjectType": 0
       },
       {
@@ -763,7 +787,19 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_EgresoAdecuacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_EgresoAdecuacionDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_EgresoAutorizado]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[VW_EgresoDisponible]",
          "ObjectType": 3
       },
       {
@@ -895,7 +931,15 @@
          "ObjectType": 1
       },
       {
+         "Name": "[CONTA].[SP_CREATE_DetallePolizaWOM]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[CONTA].[SP_MantenimientoPoliza]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SP_UPDATE_PolizaBalanceada]",
          "ObjectType": 1
       },
       {
@@ -923,6 +967,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[PRES].[sp_MantenimientoAdecuacionDisminucion]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[PRES].[SP_MantenimientoAutorizacionSuficiencia]",
          "ObjectType": 1
       },
@@ -936,6 +984,10 @@
       },
       {
          "Name": "[PRES].[SP_MantenimientoContrato]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[sp_MantenimientoEgresoAdecuacion]",
          "ObjectType": 1
       },
       {

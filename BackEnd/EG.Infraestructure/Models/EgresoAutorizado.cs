@@ -73,6 +73,8 @@ public partial class EgresoAutorizado
 
     public int? FkidPyPres { get; set; }
 
+    public virtual ICollection<EgreAdecuacionDetalle> EgreAdecuacionDetalles { get; set; } = new List<EgreAdecuacionDetalle>();
+
     public virtual Area FkidAreaSisNavigation { get; set; }
 
     public virtual DestinoGasto FkidDestinoGastoPresNavigation { get; set; }

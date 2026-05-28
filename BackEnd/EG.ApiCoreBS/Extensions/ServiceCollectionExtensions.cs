@@ -15,6 +15,7 @@ using EG.Application.Interfaces.Contabilidad;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Interfaces.Patrimonio;
+using EG.Application.Interfaces.PresupuestoModificado;
 using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.Adquisicion;
@@ -22,6 +23,7 @@ using EG.Application.Services.ConteoCiclico;
 using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
 using EG.Application.Services.PresupuestoComprometido;
+using EG.Application.Services.PresupuestoModificado;
 using EG.Application.Services.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Services.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Services.Configuracion.Catalogo.Patrimonio;
@@ -31,6 +33,7 @@ using EG.Common.Util;
 using EG.Domain.Interfaces;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
+using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Infraestructure.Models;
 using EG.Infrastructure;
@@ -92,6 +95,11 @@ namespace EG.ApiCoreBS.Extensions
             // Application services - Presupuesto comprometido
             services.AddScoped<IAdquisicionCrudAppService<AutorizacionSuficienciaResponse>, AutorizacionSuficienciaAppService>();
             services.AddScoped<IAdquisicionCrudAppService<AutorizacionSuficienciaDetalleResponse>, AutorizacionSuficienciaDetalleAppService>();
+
+            // Application services - Presupuesto modificado
+            services.AddScoped<IPresupuestoModificadoAppService, EgreAdecuacionAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<EgreAdecuacionResponse>>(sp => sp.GetRequiredService<IPresupuestoModificadoAppService>());
+            services.AddScoped<IAdquisicionCrudAppService<EgreAdecuacionDetalleResponse>, EgreAdecuacionDetalleAppService>();
 
             // Application services - Cuentas por pagar
             services.AddScoped<IAdquisicionCrudAppService<ContratoResponse>, ContratoAppService>();

@@ -198,6 +198,270 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<int> SP_CREATE_DetallePolizaWOMAsync(int? fKIdCuentaContable_CONTA, int? fKIdPoliza_CONTA, string descripcion, decimal? importeDebe, decimal? importeHaber, int? fKIdReferencia, int? fKIdTipoDetallePoliza_SIS, int? idUser, OutputParameter<string> error, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterError = new SqlParameter
+            {
+                ParameterName = "Error",
+                Size = -1,
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = error?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.NVarChar,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "FKIdCuentaContable_CONTA",
+                    Value = fKIdCuentaContable_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPoliza_CONTA",
+                    Value = fKIdPoliza_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = 500,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ImporteDebe",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = importeDebe ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ImporteHaber",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = importeHaber ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdReferencia",
+                    Value = fKIdReferencia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoDetallePoliza_SIS",
+                    Value = fKIdTipoDetallePoliza_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterError,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [CONTA].[SP_CREATE_DetallePolizaWOM] @FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA, @FKIdPoliza_CONTA = @FKIdPoliza_CONTA, @Descripcion = @Descripcion, @ImporteDebe = @ImporteDebe, @ImporteHaber = @ImporteHaber, @FKIdReferencia = @FKIdReferencia, @FKIdTipoDetallePoliza_SIS = @FKIdTipoDetallePoliza_SIS, @IdUser = @IdUser, @Error = @Error OUTPUT", sqlParameters, cancellationToken);
+
+            error?.SetValue(parameterError.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<sp_MantenimientoAdecuacionDisminucionResult>> sp_MantenimientoAdecuacionDisminucionAsync(int? action, int? pKIdEgreAdecuacionDetalle, int? fKIdEgresoAutorizado_PRES, string justificacion, DateTime? fecha, int? fKIdEgreAdecuacion_PRES, int? fKIdTipoMovimiento_PRES, decimal? enero, decimal? febrero, decimal? marzo, decimal? abril, decimal? mayo, decimal? junio, decimal? julio, decimal? agosto, decimal? septiembre, decimal? octubre, decimal? noviembre, decimal? diciembre, int? idC, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdEgreAdecuacionDetalle",
+                    Value = pKIdEgreAdecuacionDetalle ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEgresoAutorizado_PRES",
+                    Value = fKIdEgresoAutorizado_PRES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Justificacion",
+                    Size = 500,
+                    Value = justificacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fecha",
+                    Scale = 7,
+                    Value = fecha ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime2,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEgreAdecuacion_PRES",
+                    Value = fKIdEgreAdecuacion_PRES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoMovimiento_PRES",
+                    Value = fKIdTipoMovimiento_PRES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Enero",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = enero ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Febrero",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = febrero ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Marzo",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = marzo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Abril",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = abril ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mayo",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = mayo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Junio",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = junio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Julio",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = julio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Agosto",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = agosto ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Septiembre",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = septiembre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Octubre",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = octubre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Noviembre",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = noviembre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Diciembre",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = diciembre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdC",
+                    Value = idC ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<sp_MantenimientoAdecuacionDisminucionResult>("EXEC @returnValue = [PRES].[sp_MantenimientoAdecuacionDisminucion] @Action = @Action, @PKIdEgreAdecuacionDetalle = @PKIdEgreAdecuacionDetalle, @FKIdEgresoAutorizado_PRES = @FKIdEgresoAutorizado_PRES, @Justificacion = @Justificacion, @Fecha = @Fecha, @FKIdEgreAdecuacion_PRES = @FKIdEgreAdecuacion_PRES, @FKIdTipoMovimiento_PRES = @FKIdTipoMovimiento_PRES, @Enero = @Enero, @Febrero = @Febrero, @Marzo = @Marzo, @Abril = @Abril, @Mayo = @Mayo, @Junio = @Junio, @Julio = @Julio, @Agosto = @Agosto, @Septiembre = @Septiembre, @Octubre = @Octubre, @Noviembre = @Noviembre, @Diciembre = @Diciembre, @IdC = @IdC, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<SP_MantenimientoAutorizacionSuficienciaResult>> SP_MantenimientoAutorizacionSuficienciaAsync(int? action, int? pKIdAutorizacionSuficiencia, int? pKIdAutorizacionSuficienciaDetalle, int? fKIdEmpresa_SIS, int? fKIdSolicitudSuficiencia_PRES, DateOnly? fechaAutorizacion, string justificacion, string gastoNoProgramable, int? idGastoNoProgramable, int? idCompromisoNomina, int? autorizadoPor_NOM, string observaciones, int? estatus, int? fKIdSolicitudSuficienciaDetalle_PRES, int? fKIdPartida_CONTA, decimal? enero, decimal? febrero, decimal? marzo, decimal? abril, decimal? mayo, decimal? junio, decimal? julio, decimal? agosto, decimal? septiembre, decimal? octubre, decimal? noviembre, decimal? diciembre, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
@@ -1143,6 +1407,130 @@ namespace EG.Infraestructure.Models
             };
             var _ = await _context.SqlQueryAsync<SP_MantenimientoCotizacionResult>("EXEC @returnValue = [ORCO].[SP_MantenimientoCotizacion] @Action = @Action, @PKIdCotizacion = @PKIdCotizacion, @FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO, @FKIdProveedor_SIS = @FKIdProveedor_SIS, @FechaSolicitud = @FechaSolicitud, @FechaProveedorCotiza = @FechaProveedorCotiza, @FechaProveedorCompromiso = @FechaProveedorCompromiso, @Comentarios = @Comentarios, @Servicio = @Servicio, @FL_Documento = @FL_Documento, @Entrega = @Entrega, @Vigencia = @Vigencia, @Condiciones = @Condiciones, @FKIdAnio_SIS = @FKIdAnio_SIS, @FKIdContenedorCot_ORCO = @FKIdContenedorCot_ORCO, @FKIdContenedorMultiCot_ORCO = @FKIdContenedorMultiCot_ORCO, @ItemsJson = @ItemsJson, @IdUser = @IdUser", sqlParameters, cancellationToken);
 
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<sp_MantenimientoEgresoAdecuacionResult>> sp_MantenimientoEgresoAdecuacionAsync(int? action, int? pKIdEgreAdecuacion, bool? autorizado, int? idUser, int? idMenu, string alertMessage, int? fkIdPolizaConta, int? fkIdAnioSis, int? fkIdTipoAdecuacionPres, int? fkIdEstatusAdecuacionPres, string justificacion, DateTime? fecha, int? fkIdAccionAdecuacionMasterPres, DateTime? fechaSolicitud, DateTime? fechaAutorizacion, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdEgreAdecuacion",
+                    Value = pKIdEgreAdecuacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Autorizado",
+                    Value = autorizado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "idMenu",
+                    Value = idMenu ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "AlertMessage",
+                    Size = 248,
+                    Value = alertMessage ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterId,
+                new SqlParameter
+                {
+                    ParameterName = "FkIdPolizaConta",
+                    Value = fkIdPolizaConta ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkIdAnioSis",
+                    Value = fkIdAnioSis ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkIdTipoAdecuacionPres",
+                    Value = fkIdTipoAdecuacionPres ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkIdEstatusAdecuacionPres",
+                    Value = fkIdEstatusAdecuacionPres ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Justificacion",
+                    Size = -1,
+                    Value = justificacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fecha",
+                    Scale = 7,
+                    Value = fecha ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime2,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkIdAccionAdecuacionMasterPres",
+                    Value = fkIdAccionAdecuacionMasterPres ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaSolicitud",
+                    Scale = 7,
+                    Value = fechaSolicitud ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime2,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaAutorizacion",
+                    Scale = 7,
+                    Value = fechaAutorizacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime2,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<sp_MantenimientoEgresoAdecuacionResult>("EXEC @returnValue = [PRES].[sp_MantenimientoEgresoAdecuacion] @Action = @Action, @PKIdEgreAdecuacion = @PKIdEgreAdecuacion, @Autorizado = @Autorizado, @IdUser = @IdUser, @idMenu = @idMenu, @AlertMessage = @AlertMessage, @Id = @Id OUTPUT, @FkIdPolizaConta = @FkIdPolizaConta, @FkIdAnioSis = @FkIdAnioSis, @FkIdTipoAdecuacionPres = @FkIdTipoAdecuacionPres, @FkIdEstatusAdecuacionPres = @FkIdEstatusAdecuacionPres, @Justificacion = @Justificacion, @Fecha = @Fecha, @FkIdAccionAdecuacionMasterPres = @FkIdAccionAdecuacionMasterPres, @FechaSolicitud = @FechaSolicitud, @FechaAutorizacion = @FechaAutorizacion", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
 
             return _;
@@ -2351,6 +2739,48 @@ namespace EG.Infraestructure.Models
             };
             var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [dbo].[sp_RegistrarEntidad] @Grupo = @Grupo, @SubGrupo = @SubGrupo, @NombreMenu = @NombreMenu, @Ruta = @Ruta, @MenuPadreNombre = @MenuPadreNombre, @Icono = @Icono, @Orden = @Orden, @Descripcion = @Descripcion, @Codigo = @Codigo", sqlParameters, cancellationToken);
 
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<int> SP_UPDATE_PolizaBalanceadaAsync(int? pKIdPoliza, int? idUser, OutputParameter<string> error, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterError = new SqlParameter
+            {
+                ParameterName = "Error",
+                Size = -1,
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = error?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.NVarChar,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PKIdPoliza",
+                    Value = pKIdPoliza ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterError,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [CONTA].[SP_UPDATE_PolizaBalanceada] @PKIdPoliza = @PKIdPoliza, @IdUser = @IdUser, @Error = @Error OUTPUT", sqlParameters, cancellationToken);
+
+            error?.SetValue(parameterError.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
 
             return _;

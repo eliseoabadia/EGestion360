@@ -8,6 +8,7 @@ using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
+using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
@@ -85,6 +86,12 @@ public static class ApiServiceExtensions
         RegisterCrud<SolicitudSuficienciaDetalleResponse>(services, "api/SolicitudSuficienciaDetalle");
         RegisterCrud<AutorizacionSuficienciaResponse>(services, "api/AutorizacionSuficiencia");
         RegisterCrud<AutorizacionSuficienciaDetalleResponse>(services, "api/AutorizacionSuficienciaDetalle");
+        RegisterCrud<EgreAdecuacionResponse>(services, "api/EgreAdecuacion");
+        RegisterCrud<EgreAdecuacionDetalleResponse>(services, "api/EgreAdecuacionDetalle");
+        RegisterCrud<TipoAdecuacionResponse>(services, "api/TipoAdecuacion");
+        RegisterCrud<EstatusAdecuacionResponse>(services, "api/EstatusAdecuacion");
+        RegisterCrud<TipoMovimientoResponse>(services, "api/TipoMovimiento");
+        RegisterCrud<EgresoDisponibleResponse>(services, "api/EgresoDisponible");
 
         RegisterCrud<ContaTipoDoctoPagoResponse>(services, "api/ContaTipoDoctoPago");
         RegisterCrud<GrupoBienResponse>(services, "api/GrupoBien");

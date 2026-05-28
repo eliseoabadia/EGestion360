@@ -1,0 +1,187 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<EgreAdecuacionDetalleResponse> Service
+@inject IGenericCrudService<EgresoDisponibleResponse> DisponibleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EgreAdecuacionDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="EgreAdecuacionDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_egreso" ValueChanged="OnEgresoChanged" Label="Egreso autorizado disponible" Required="true" LoadPage="LoadEgresosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Date="@_fecha" DateChanged="value => _fecha = value" Label="Fecha" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField T="string" Value="@TipoTexto" Label="Tipo de movimiento" Variant="Variant.Outlined" ReadOnly="true" /></MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              @bind-Value="item.Justificacion"
+                              Label="Justificacion"
+                              Variant="Variant.Outlined"
+                              Lines="4"
+                              HelperText="Acepta texto largo y saltos de linea." />
+            </MudItem>
+            @foreach (var month in MonthFields)
+            {
+                <MudItem xs="6" sm="4" md="2">
+                    <MudNumericField T="decimal?" Value="@GetMonth(month.Index)" ValueChanged="value => SetMonth(month.Index, value)" Label="@month.Label" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" />
+                </MudItem>
+            }
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Dense="true">Total capturado: <strong>@Money(CapturedTotal)</strong> Disponible seleccionado: <strong>@Money(_selectedDisponible?.Total ?? 0m)</strong></MudAlert>
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int AdecuacionId { get; set; }
+    [Parameter] public int TipoMovimientoId { get; set; }
+    [Parameter] public int AnioId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<EgreAdecuacionDetalleResponse> form = null!;
+    private EgreAdecuacionDetalleResponse item = new() { Activo = true, Fecha = DateOnly.FromDateTime(DateTime.Today) };
+    private LookupItem? _egreso;
+    private EgresoDisponibleResponse? _selectedDisponible;
+    private DateTime? _fecha = DateTime.Today;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly (int Index, string Label)[] MonthFields = [(1, "Ene"), (2, "Feb"), (3, "Mar"), (4, "Abr"), (5, "May"), (6, "Jun"), (7, "Jul"), (8, "Ago"), (9, "Sep"), (10, "Oct"), (11, "Nov"), (12, "Dic")];
+
+    private string dialogTitle => Id.HasValue ? "Editar movimiento" : "Nuevo movimiento";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string TipoTexto => TipoMovimientoId == 1 ? "Ampliacion" : "Reduccion";
+    private decimal CapturedTotal => MonthFields.Sum(x => GetMonth(x.Index) ?? 0m);
+    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        item.FkidEgreAdecuacionPres = AdecuacionId;
+        item.FkidTipoMovimientoPres = TipoMovimientoId;
+
+        if (!Id.HasValue) return;
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+            if (item.FkidEgresoAutorizadoPres.HasValue)
+            {
+                _egreso = new LookupItem { Id = item.FkidEgresoAutorizadoPres.Value, Text = item.EgresoAutorizadoDescripcion ?? item.FkidEgresoAutorizadoPres.Value.ToString() };
+                await LoadDisponibleById(item.FkidEgresoAutorizadoPres.Value);
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (_egreso == null)
+        {
+            Snackbar.Add("Selecciona un egreso autorizado.", Severity.Warning);
+            return;
+        }
+        if (CapturedTotal <= 0)
+        {
+            Snackbar.Add("Solicita un importe para al menos un mes.", Severity.Warning);
+            return;
+        }
+        if (HasPreviousMonthAmounts())
+        {
+            Snackbar.Add("Los meses anteriores al mes seleccionado no deben tener valor.", Severity.Warning);
+            return;
+        }
+        if (TipoMovimientoId == 2 && _selectedDisponible?.Total.HasValue == true && CapturedTotal > _selectedDisponible.Total.Value)
+        {
+            Snackbar.Add("La reduccion no puede ser mayor que el presupuesto disponible.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEgresoAutorizadoPres = _egreso.Id;
+        item.FkidEgreAdecuacionPres = AdecuacionId;
+        item.FkidTipoMovimientoPres = TipoMovimientoId;
+        item.Fecha = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
+
+        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Movimiento guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar.", Severity.Error);
+    }
+
+    private async Task OnEgresoChanged(LookupItem? value)
+    {
+        _egreso = value;
+        _selectedDisponible = null;
+        if (value != null) await LoadDisponibleById(value.Id);
+    }
+
+    private async Task LoadDisponibleById(int id)
+    {
+        var response = await DisponibleService.GetByIdAsync(id);
+        if (response?.Success == true) _selectedDisponible = response.Data;
+    }
+
+    private async Task<ComboLookupResult> LoadEgresosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await DisponibleService.GetAllPaginadoAsync(page, pageSize, filter, "DescripcionRequisicion", SortDirection.Ascending, new() { ["FkidAnioSis"] = AnioId });
+        var list = response?.Items?.Select(x => new LookupItem { Id = x.PkidEgresoAutorizado, Text = $"{x.DescripcionRequisicion} ({Money(x.Total ?? 0m)})" }).ToList() ?? [];
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private bool HasPreviousMonthAmounts()
+    {
+        var month = (_fecha ?? DateTime.Today).Month;
+        return MonthFields.Where(x => x.Index < month).Any(x => (GetMonth(x.Index) ?? 0m) > 0m);
+    }
+
+    private decimal? GetMonth(int index) => index switch
+    {
+        1 => item.Enero,
+        2 => item.Febrero,
+        3 => item.Marzo,
+        4 => item.Abril,
+        5 => item.Mayo,
+        6 => item.Junio,
+        7 => item.Julio,
+        8 => item.Agosto,
+        9 => item.Septiembre,
+        10 => item.Octubre,
+        11 => item.Noviembre,
+        12 => item.Diciembre,
+        _ => null
+    };
+
+    private void SetMonth(int index, decimal? value)
+    {
+        value ??= 0m;
+        switch (index)
+        {
+            case 1: item.Enero = value; break;
+            case 2: item.Febrero = value; break;
+            case 3: item.Marzo = value; break;
+            case 4: item.Abril = value; break;
+            case 5: item.Mayo = value; break;
+            case 6: item.Junio = value; break;
+            case 7: item.Julio = value; break;
+            case 8: item.Agosto = value; break;
+            case 9: item.Septiembre = value; break;
+            case 10: item.Octubre = value; break;
+            case 11: item.Noviembre = value; break;
+            case 12: item.Diciembre = value; break;
+        }
+    }
+}

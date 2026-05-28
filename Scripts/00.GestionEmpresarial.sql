@@ -537,7 +537,10 @@ VALUES
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Egreso', 'PREEGRE01', 'Presupuesto', 'view,view-menu', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion', 'PREEGRE02', 'Egreso', 'view,view-menu', 0),
 (2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Anteproyecto_Egresos', 'EGREPLA01', 'Planeacion', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
-(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Investigacion_Mercado', 'EGREPLA02', 'Planeacion', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Modificado', 'EGREMOD01', 'Planeacion', 'view,view-menu', 0),
+(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Adecuaciones_Compensadas', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Ampliaciones', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Reducciones', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,CanExportToExcel,authorize', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Autorizado', 'PREEGRE03', 'Presupuesto', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Comprometido', 'PREEPC02', 'Egreso', 'view,view-menu', 0),
 (2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Suficiencia', 'PREEPC03', 'Presupuesto_Comprometido', 'view,view-menu,CanExportToExcel,authorize', 0),
@@ -684,7 +687,10 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Investigacion_Mercado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Presupuesto_Modificado', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Ampliaciones', '10000', 'view,view-menu,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reducciones', '10000', 'view,view-menu,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Comprometido', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficiencia', '10000', 'view,view-menu,CanExportToExcel,authorize';
@@ -890,13 +896,16 @@ USING (VALUES
 
     (300, N'Egreso', 1, 2, N'Egreso', N'/', N'FaChartPie', 1, 'ESP', 1, 1, GETDATE()),
     (310, N'Planeación', 1, 300, N'Planeación', N'/', N'FaCalendar', 1, 'ESP', 1, 1, GETDATE()),
-    (301, N'Presupuesto Autorizado', 1, 300, N'Presupuesto Autorizado', N'/Presupuesto/Egreso/Presupuesto_Autorizado', N'FaLock', 1, 'ESP', 2, 1, GETDATE()),
-    (302, N'Investigación de Mercado', 1, 300, N'Investigación de Mercado', N'/Presupuesto/Egreso/Investigacion_Mercado', N'FaSearch', 1, 'ESP', 2, 1, GETDATE()),
+     (301, N'Presupuesto Autorizado', 1, 300, N'Presupuesto Autorizado', N'/Presupuesto/Egreso/Presupuesto_Autorizado', N'FaLock', 1, 'ESP', 2, 1, GETDATE()),
+    (330, N'Presupuesto Modificado', 1, 300, N'Presupuesto Modificado', N'/', N'FaSearch', 1, 'ESP', 2, 1, GETDATE()),
+     (331, N'Adecuaciones Compensadas', 1, 330, N'Adecuaciones Compensadas', N'/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones_Compensadas', N'FaDocument', 1, 'ESP', 2, 1, GETDATE()),
+     (332, N'Adecuaciones', 1, 330, N'Adecuaciones', N'/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones', N'FaDocument', 1, 'ESP', 3, 1, GETDATE()),
+     (333, N'Reducciones', 1, 330, N'Reducciones', N'/Presupuesto/Egreso/Presupesto_Modificado/Reducciones', N'FaDocument', 1, 'ESP', 4, 1, GETDATE()),
     (311, N'Anteproyecto de Egresos', 1, 310, N'Anteproyecto de Egresos', N'/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos', N'FaDocument', 1, 'ESP', 2, 1, GETDATE()),
     (312, N'Presupuesto Comprometido', 1, 300, N'Presupuesto Comprometido', N'/', N'FaLock', 1, 'ESP', 1, 1, GETDATE()), 
-    (313, N'Solicitud Suficiencia', 1, 300, N'Solicitud Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia', N'FaPlus', 1, 'ESP', 3, 1, GETDATE()),
-    (314, N'Autorizacion Suficiencia', 1, 300, N'Autorizacion Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia', N'FaFlag', 1, 'ESP', 4, 1, GETDATE()),
-    (315, N'Registro Comprometido', 1, 300, N'Registro Comprometido', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido', N'FaSave', 1, 'ESP', 5, 1, GETDATE()),
+     (313, N'Solicitud Suficiencia', 1, 300, N'Solicitud Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia', N'FaPlus', 1, 'ESP', 3, 1, GETDATE()),
+     (314, N'Autorizacion Suficiencia', 1, 300, N'Autorizacion Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia', N'FaFlag', 1, 'ESP', 4, 1, GETDATE()),
+     (315, N'Registro Comprometido', 1, 300, N'Registro Comprometido', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido', N'FaSave', 1, 'ESP', 5, 1, GETDATE()),
 
     (350, N'Tesorería', 1, 2, N'Tesorería', N'/', N'FaChartLine', 1, 'ESP', 1, 1, GETDATE()),
     (351, N'Cuentas por Pagar', 1, 350, N'Cuentas por Pagar', N'/', N'FaDocument', 1, 'ESP', 1, 1, GETDATE()),
@@ -964,7 +973,8 @@ WHEN NOT MATCHED BY TARGET THEN
     VALUES (SOURCE.FKIdMenu_SIS, SOURCE.RoleId, SOURCE.Activo, SOURCE.CreatedByOperatorId, SOURCE.CreatedDateTime)
 WHEN NOT MATCHED BY SOURCE THEN DELETE;
 GO
-[SIS].[Moneda][TES].[Moneda]
+
+
 -- =============================================
 -- TABLAS ADICIONALES (Perfil, Logs, Parámetros)
 -- =============================================
