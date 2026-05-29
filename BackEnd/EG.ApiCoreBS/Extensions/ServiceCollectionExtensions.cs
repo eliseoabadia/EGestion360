@@ -68,6 +68,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAspNetRolesAppService, AspNetRolesAppService>();
             services.AddScoped<IAreaAppService, AreaAppService>();
             services.AddScoped<IDashboardAppService, DashboardAppService>();
+            services.AddScoped<INotificacionAppService, NotificacionAppService>();
             services.AddScoped<IUserProfileAppService, UserProfileAppService>();
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
 

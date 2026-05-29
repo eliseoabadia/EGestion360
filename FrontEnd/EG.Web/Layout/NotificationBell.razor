@@ -1,0 +1,122 @@
+@implements IDisposable
+@inject INotificacionService NotificationService
+@inject IDialogService DialogService
+
+<MudTooltip Text="@TooltipText">
+    <MudBadge Content="@BadgeText"
+              Visible="@(_pendientes > 0)"
+              Color="Color.Error"
+              Overlap="true"
+              Class="notification-badge">
+        <MudIconButton Icon="@BellIcon"
+                       Color="Color.Inherit"
+                       Class="@BellClass"
+                       OnClick="OpenNotifications"
+                       aria-label="Abrir notificaciones" />
+    </MudBadge>
+</MudTooltip>
+
+@code {
+    private int _pendientes;
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource? _timerCts;
+
+    private string BadgeText => _pendientes > 99 ? "99+" : _pendientes.ToString();
+    private string BellIcon => _pendientes > 0 ? Icons.Material.Filled.NotificationsActive : Icons.Material.Filled.NotificationsNone;
+    private string BellClass => _pendientes > 0 ? "notification-bell has-notifications" : "notification-bell";
+    private string TooltipText => _pendientes == 0 ? "Sin notificaciones pendientes" : $"{_pendientes} notificación(es) pendiente(s)";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSummaryAsync();
+        _timerCts = new CancellationTokenSource();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+        _ = RefreshLoopAsync(_timerCts.Token);
+    }
+
+    private async Task OpenNotifications()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await DialogService.ShowAsync<NotificationCenterDialog>(string.Empty, options);
+        await dialog.Result;
+        await LoadSummaryAsync();
+    }
+
+    private async Task RefreshLoopAsync(CancellationToken token)
+    {
+        try
+        {
+            while (_timer != null && await _timer.WaitForNextTickAsync(token))
+            {
+                await LoadSummaryAsync();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        var result = await NotificationService.GetResumenAsync();
+        _pendientes = result.Success ? result.Data?.Pendientes ?? 0 : 0;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _timerCts?.Cancel();
+        _timerCts?.Dispose();
+        _timer?.Dispose();
+    }
+}
+
+<style>
+    .notification-bell {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--mud-palette-appbar-text) 7%, transparent);
+        border: 1px solid color-mix(in srgb, var(--eg-accent) 34%, transparent);
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .notification-bell:hover {
+        background: var(--eg-primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .notification-bell.has-notifications {
+        color: var(--eg-accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--eg-accent) 12%, transparent);
+    }
+
+    .notification-bell.has-notifications::after {
+        content: "";
+        position: absolute;
+        inset: 5px;
+        border-radius: 50%;
+        border: 1px solid color-mix(in srgb, var(--eg-accent) 40%, transparent);
+        animation: notification-pulse 1.8s ease-out infinite;
+        pointer-events: none;
+    }
+
+    .notification-badge .mud-badge {
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.66rem;
+        border: 2px solid var(--mud-palette-appbar-background);
+    }
+
+    @@keyframes notification-pulse {
+        0% { opacity: 0.9; transform: scale(0.82); }
+        100% { opacity: 0; transform: scale(1.32); }
+    }
+</style>

@@ -179,6 +179,16 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Nivel> Nivels { get; set; }
 
+    public virtual DbSet<Notificacion> Notificacions { get; set; }
+
+    public virtual DbSet<NotificacionDestino> NotificacionDestinos { get; set; }
+
+    public virtual DbSet<NotificacionEstado> NotificacionEstados { get; set; }
+
+    public virtual DbSet<NotificacionRegla> NotificacionReglas { get; set; }
+
+    public virtual DbSet<NotificacionTipo> NotificacionTipos { get; set; }
+
     public virtual DbSet<Origen> Origens { get; set; }
 
     public virtual DbSet<OrigenLogMessage> OrigenLogMessages { get; set; }
@@ -405,6 +415,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwMenu> VwMenus { get; set; }
 
+    public virtual DbSet<VwNotificacionUsuario> VwNotificacionUsuarios { get; set; }
+
     public virtual DbSet<VwPaaa> VwPaaas { get; set; }
 
     public virtual DbSet<VwPaaasdetalle> VwPaaasdetalles { get; set; }
@@ -458,6 +470,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwTipoSolicitudClc> VwTipoSolicitudClcs { get; set; }
 
     public virtual DbSet<VwUsuarioEmpresa> VwUsuarioEmpresas { get; set; }
+
+    public virtual DbSet<VwUsuarioPerfilNotificacion> VwUsuarioPerfilNotificacions { get; set; }
 
     public virtual DbSet<VwUsuarioPersonaArea> VwUsuarioPersonaAreas { get; set; }
 
@@ -2029,7 +2043,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Junio)
                 .HasDefaultValue(0m, "DF_EgreAdecuacionDetalle_Junio")
                 .HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Justificacion).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Justificacion).HasMaxLength(250);
             entity.Property(e => e.Marzo)
                 .HasDefaultValue(0m, "DF_EgreAdecuacionDetalle_Marzo")
                 .HasColumnType("decimal(20, 4)");
@@ -3497,6 +3511,162 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.NivelUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_Nivel_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Notificacion>(entity =>
+        {
+            entity.HasKey(e => e.PkIdNotificacion).HasName("PK__Notifica__C4DE1487A33A9F52");
+
+            entity.ToTable("Notificacion", "SIS");
+
+            entity.HasIndex(e => new { e.Modulo, e.SubModulo, e.Evento, e.FkIdEntidad }, "IX_Notificacion_ModuloEvento");
+
+            entity.Property(e => e.PkIdNotificacion).HasColumnName("Pk_IdNotificacion");
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtLive)
+                .HasDefaultValue(true)
+                .HasColumnName("CT_LIVE");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.Entidad).HasMaxLength(150);
+            entity.Property(e => e.Evento)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.FkIdEntidad).HasColumnName("Fk_IdEntidad");
+            entity.Property(e => e.FkIdNotificacionTipo).HasColumnName("Fk_IdNotificacionTipo");
+            entity.Property(e => e.FkIdUsuarioOrigen).HasColumnName("Fk_IdUsuarioOrigen");
+            entity.Property(e => e.Mensaje).IsRequired();
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.Titulo)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.Url).HasMaxLength(1000);
+
+            entity.HasOne(d => d.FkIdNotificacionTipoNavigation).WithMany(p => p.Notificacions)
+                .HasForeignKey(d => d.FkIdNotificacionTipo)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Notificacion_Tipo");
+        });
+
+        modelBuilder.Entity<NotificacionDestino>(entity =>
+        {
+            entity.HasKey(e => e.PkIdNotificacionDestino).HasName("PK__Notifica__3741935BF94B83DF");
+
+            entity.ToTable("NotificacionDestino", "SIS");
+
+            entity.HasIndex(e => e.FkIdNotificacion, "IX_NotificacionDestino_Notificacion");
+
+            entity.HasIndex(e => new { e.FkIdUsuarioDestino, e.FkIdNotificacionEstado, e.CtLive }, "IX_NotificacionDestino_UsuarioEstado");
+
+            entity.Property(e => e.PkIdNotificacionDestino).HasColumnName("Pk_IdNotificacionDestino");
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtLive)
+                .HasDefaultValue(true)
+                .HasColumnName("CT_LIVE");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.FechaAtendido).HasPrecision(0);
+            entity.Property(e => e.FechaLeido).HasPrecision(0);
+            entity.Property(e => e.FkIdNotificacion).HasColumnName("Fk_IdNotificacion");
+            entity.Property(e => e.FkIdNotificacionEstado)
+                .HasDefaultValue(1)
+                .HasColumnName("Fk_IdNotificacionEstado");
+            entity.Property(e => e.FkIdUsuarioDestino).HasColumnName("Fk_IdUsuarioDestino");
+
+            entity.HasOne(d => d.FkIdNotificacionNavigation).WithMany(p => p.NotificacionDestinos)
+                .HasForeignKey(d => d.FkIdNotificacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_NotificacionDestino_Notificacion");
+
+            entity.HasOne(d => d.FkIdNotificacionEstadoNavigation).WithMany(p => p.NotificacionDestinos)
+                .HasForeignKey(d => d.FkIdNotificacionEstado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_NotificacionDestino_Estado");
+        });
+
+        modelBuilder.Entity<NotificacionEstado>(entity =>
+        {
+            entity.HasKey(e => e.PkIdNotificacionEstado).HasName("PK__Notifica__90095BB311E5894C");
+
+            entity.ToTable("NotificacionEstado", "SIS");
+
+            entity.Property(e => e.PkIdNotificacionEstado)
+                .ValueGeneratedNever()
+                .HasColumnName("Pk_IdNotificacionEstado");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(80);
+        });
+
+        modelBuilder.Entity<NotificacionRegla>(entity =>
+        {
+            entity.HasKey(e => e.PkIdNotificacionRegla).HasName("PK__Notifica__C28A7778191B7192");
+
+            entity.ToTable("NotificacionRegla", "SIS");
+
+            entity.HasIndex(e => new { e.Modulo, e.SubModulo, e.Evento, e.TipoDestino, e.ClaveDestino }, "IX_NotificacionRegla_Evento").HasFilter("([CT_LIVE]=(1) AND [Activo]=(1))");
+
+            entity.Property(e => e.PkIdNotificacionRegla).HasColumnName("Pk_IdNotificacionRegla");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.ClaveDestino)
+                .IsRequired()
+                .HasMaxLength(150);
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtLive)
+                .HasDefaultValue(true)
+                .HasColumnName("CT_LIVE");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.Evento)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.TipoDestino)
+                .IsRequired()
+                .HasMaxLength(40);
+        });
+
+        modelBuilder.Entity<NotificacionTipo>(entity =>
+        {
+            entity.HasKey(e => e.PkIdNotificacionTipo).HasName("PK__Notifica__81A1FC0ECA91077B");
+
+            entity.ToTable("NotificacionTipo", "SIS");
+
+            entity.HasIndex(e => e.Clave, "UQ__Notifica__E8181E1184A89DCD").IsUnique();
+
+            entity.Property(e => e.PkIdNotificacionTipo).HasColumnName("Pk_IdNotificacionTipo");
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(80);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
         });
 
         modelBuilder.Entity<Origen>(entity =>
@@ -6677,7 +6847,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidEstatusAdecuacionPres).HasColumnName("FKIdEstatusAdecuacion_PRES");
             entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.FkidTipoAdecuacionPres).HasColumnName("FKIdTipoAdecuacion_PRES");
-            entity.Property(e => e.Justificacion).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Justificacion).HasMaxLength(250);
             entity.Property(e => e.PkidEgreAdecuacion).HasColumnName("PKIdEgreAdecuacion");
             entity.Property(e => e.TipoAdecuacionDescripcion).HasMaxLength(50);
         });
@@ -6702,7 +6872,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidTipoMovimientoPres).HasColumnName("FKIdTipoMovimiento_PRES");
             entity.Property(e => e.Julio).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Junio).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Justificacion).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Justificacion).HasMaxLength(250);
             entity.Property(e => e.Marzo).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Mayo).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Noviembre).HasColumnType("decimal(20, 4)");
@@ -7349,6 +7519,42 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(46)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VwNotificacionUsuario>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_NotificacionUsuario", "SIS");
+
+            entity.Property(e => e.Entidad).HasMaxLength(150);
+            entity.Property(e => e.Estado)
+                .IsRequired()
+                .HasMaxLength(80);
+            entity.Property(e => e.Evento)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.FechaAtendido).HasPrecision(0);
+            entity.Property(e => e.FechaLeido).HasPrecision(0);
+            entity.Property(e => e.FechaNotificacion).HasPrecision(0);
+            entity.Property(e => e.FkIdEntidad).HasColumnName("Fk_IdEntidad");
+            entity.Property(e => e.FkIdNotificacionEstado).HasColumnName("Fk_IdNotificacionEstado");
+            entity.Property(e => e.FkIdUsuarioDestino).HasColumnName("Fk_IdUsuarioDestino");
+            entity.Property(e => e.FkIdUsuarioOrigen).HasColumnName("Fk_IdUsuarioOrigen");
+            entity.Property(e => e.Mensaje).IsRequired();
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.PkIdNotificacion).HasColumnName("Pk_IdNotificacion");
+            entity.Property(e => e.PkIdNotificacionDestino).HasColumnName("Pk_IdNotificacionDestino");
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.Tipo)
+                .IsRequired()
+                .HasMaxLength(80);
+            entity.Property(e => e.Titulo)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.Url).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<VwPaaa>(entity =>
@@ -8538,6 +8744,18 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("TIPO_CONTRATACION");
             entity.Property(e => e.UsuarioFechaCreacionFormat).HasMaxLength(4000);
+        });
+
+        modelBuilder.Entity<VwUsuarioPerfilNotificacion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_UsuarioPerfilNotificacion", "SIS");
+
+            entity.Property(e => e.FkIdUsuario).HasColumnName("Fk_IdUsuario");
+            entity.Property(e => e.Perfil)
+                .IsRequired()
+                .HasMaxLength(256);
         });
 
         modelBuilder.Entity<VwUsuarioPersonaArea>(entity =>

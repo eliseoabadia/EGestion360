@@ -32,8 +32,6 @@ internal class Program
             config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
         });
 
-        builder.Services.AddLocalization();
-
         // Registrar HttpClient PRIMERO para que pueda ser resuelto por otros servicios
         var apiBaseUrl = builder.Configuration["ApiSetting:baseUrl"];
         if (string.IsNullOrWhiteSpace(apiBaseUrl))

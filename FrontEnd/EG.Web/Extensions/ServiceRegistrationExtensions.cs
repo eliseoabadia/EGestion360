@@ -136,6 +136,8 @@ public static class ApiServiceExtensions
         RegisterCrud<ChequeResponse>(services, "api/Cheque");
         RegisterCrud<ChequePartidaResponse>(services, "api/ChequePartida");
 
+        services.AddScoped<INotificacionService, NotificacionService>();
+
         return services;
     }
 

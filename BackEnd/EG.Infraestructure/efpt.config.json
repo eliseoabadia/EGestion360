@@ -515,6 +515,26 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Notificacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[NotificacionDestino]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[NotificacionEstado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[NotificacionRegla]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[NotificacionTipo]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[OrigenLogMessage]",
          "ObjectType": 0
       },
@@ -855,6 +875,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[SIS].[Vw_NotificacionUsuario]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[Vw_Proveedor]",
          "ObjectType": 3
       },
@@ -864,6 +888,10 @@
       },
       {
          "Name": "[SIS].[VW_UsuarioEmpresa]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Vw_UsuarioPerfilNotificacion]",
          "ObjectType": 3
       },
       {
@@ -1004,6 +1032,18 @@
       },
       {
          "Name": "[SIS].[LoginInformationEmployee]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionActualizarEstado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionCrear]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionCrearPorPerfil]",
          "ObjectType": 1
       },
       {

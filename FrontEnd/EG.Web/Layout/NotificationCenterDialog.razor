@@ -1,0 +1,589 @@
+@inject INotificacionService NotificationService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudDialog DisableSidePadding="true" Class="notification-center-dialog">
+    <TitleContent>
+        <div class="notification-titlebar">
+            <div class="notification-title-icon">
+                <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h6">Centro de notificaciones</MudText>
+                <MudText Typo="Typo.caption">Seguimiento de solicitudes, firmas y respuestas del sistema</MudText>
+            </div>
+            <MudSpacer />
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">
+                @_resumen.Pendientes pendientes
+            </MudChip>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="notification-shell">
+            <section class="notification-kpis">
+                <div class="notification-kpi">
+                    <span>Total</span>
+                    <strong>@_resumen.Total</strong>
+                </div>
+                <div class="notification-kpi accent">
+                    <span>Pendientes</span>
+                    <strong>@_resumen.Pendientes</strong>
+                </div>
+                <div class="notification-kpi">
+                    <span>Requieren acción</span>
+                    <strong>@_resumen.RequierenAccion</strong>
+                </div>
+                <div class="notification-kpi">
+                    <span>Atendidas</span>
+                    <strong>@_resumen.Atendidas</strong>
+                </div>
+            </section>
+
+            <div class="notification-toolbar">
+                <MudTextField T="string"
+                              @bind-Value="_filter"
+                              Placeholder="Buscar notificación..."
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              Class="notification-search" />
+                <MudSwitch T="bool"
+                           Value="_onlyPending"
+                           Color="Color.Primary"
+                           Label="Solo pendientes"
+                           ValueChanged="OnPendingChanged" />
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                               Color="Color.Primary"
+                               OnClick="LoadAsync" />
+            </div>
+
+            @if (_loading)
+            {
+                <div class="notification-loading">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    <MudText Typo="Typo.body2">Cargando notificaciones...</MudText>
+                </div>
+            }
+            else if (!FilteredItems.Any())
+            {
+                <div class="notification-empty">
+                    <MudIcon Icon="@Icons.Material.Filled.TaskAlt" />
+                    <MudText Typo="Typo.h6">No hay notificaciones por atender</MudText>
+                    <MudText Typo="Typo.body2">Cuando llegue una solicitud de firma, autorización o respuesta aparecerá aquí.</MudText>
+                </div>
+            }
+            else
+            {
+                <div class="notification-content">
+                    <div class="notification-list">
+                        @foreach (var item in FilteredItems)
+                        {
+                            <button type="button"
+                                    class="@GetCardClass(item)"
+                                    @onclick="@(() => Select(item))">
+                                <span class="notification-row-icon @GetIconTone(item)">
+                                    <MudIcon Icon="@GetIcon(item)" />
+                                </span>
+                                <span class="notification-row-body">
+                                    <span class="notification-row-top">
+                                        <strong>@item.Titulo</strong>
+                                        <small>@FormatDate(item.FechaNotificacion)</small>
+                                    </span>
+                                    <span class="notification-row-message">@item.Mensaje</span>
+                                    <span class="notification-row-meta">
+                                        <span>@item.Modulo</span>
+                                        @if (!string.IsNullOrWhiteSpace(item.Evento))
+                                        {
+                                            <span>@item.Evento</span>
+                                        }
+                                        <span class="notification-status">@item.Estado</span>
+                                    </span>
+                                </span>
+                            </button>
+                        }
+                    </div>
+
+                    <aside class="notification-detail">
+                        @if (_selected is null)
+                        {
+                            <div class="notification-detail-empty">
+                                <MudIcon Icon="@Icons.Material.Filled.TouchApp" />
+                                <MudText>Selecciona una notificación para revisar el detalle.</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="notification-detail-header">
+                                <div>
+                                    <MudText Typo="Typo.overline">@_selected.Tipo</MudText>
+                                    <MudText Typo="Typo.h6">@_selected.Titulo</MudText>
+                                </div>
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_selected)" Variant="Variant.Filled">
+                                    @_selected.Estado
+                                </MudChip>
+                            </div>
+
+                            <MudText Typo="Typo.body2" Class="notification-detail-message">@_selected.Mensaje</MudText>
+
+                            <div class="notification-detail-grid">
+                                <span>Módulo</span><strong>@_selected.Modulo</strong>
+                                <span>Evento</span><strong>@_selected.Evento</strong>
+                                <span>Fecha</span><strong>@_selected.FechaNotificacion.ToString("dd/MM/yyyy HH:mm")</strong>
+                                <span>Entidad</span><strong>@_selected.Entidad @_selected.FkidEntidad</strong>
+                            </div>
+
+                            <div class="notification-reply">
+                                <MudTextField T="string"
+                                              @bind-Value="_reply"
+                                              Label="Responder"
+                                              Lines="4"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Disabled="@(!_selected.FkidUsuarioOrigen.HasValue || _saving)" />
+                            </div>
+
+                            <div class="notification-actions">
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.MarkEmailRead"
+                                           Disabled="@(!_selected.EstaPendiente || _saving)"
+                                           OnClick="MarkSelectedRead">
+                                    Leída
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.DoneAll"
+                                           Disabled="@(_selected.EstaAtendida || _saving)"
+                                           OnClick="AttendSelected">
+                                    Atender
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Send"
+                                           Disabled="@(!_selected.FkidUsuarioOrigen.HasValue || string.IsNullOrWhiteSpace(_reply) || _saving)"
+                                           OnClick="ReplySelected">
+                                    Responder
+                                </MudButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                               Color="Color.Info"
+                                               Disabled="@string.IsNullOrWhiteSpace(_selected.Url)"
+                                               OnClick="OpenSelected" />
+                            </div>
+                        }
+                    </aside>
+                </div>
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private List<NotificacionUsuarioModel> _items = new();
+    private NotificacionUsuarioModel? _selected;
+    private NotificacionResumenModel _resumen = new();
+    private string _filter = string.Empty;
+    private string _reply = string.Empty;
+    private bool _onlyPending;
+    private bool _loading;
+    private bool _saving;
+
+    private IEnumerable<NotificacionUsuarioModel> FilteredItems =>
+        string.IsNullOrWhiteSpace(_filter)
+            ? _items
+            : _items.Where(x =>
+                Contains(x.Titulo, _filter) ||
+                Contains(x.Mensaje, _filter) ||
+                Contains(x.Modulo, _filter) ||
+                Contains(x.Evento, _filter));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try
+        {
+            var summaryTask = NotificationService.GetResumenAsync();
+            var itemsTask = NotificationService.GetMisNotificacionesAsync(50, _onlyPending);
+            await Task.WhenAll(summaryTask, itemsTask);
+
+            _resumen = summaryTask.Result.Success ? summaryTask.Result.Data ?? new NotificacionResumenModel() : new NotificacionResumenModel();
+            _items = itemsTask.Result.Success ? itemsTask.Result.Items.ToList() : new List<NotificacionUsuarioModel>();
+            _selected = _selected == null ? _items.FirstOrDefault() : _items.FirstOrDefault(x => x.PkidNotificacionDestino == _selected.PkidNotificacionDestino) ?? _items.FirstOrDefault();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnPendingChanged(bool value)
+    {
+        _onlyPending = value;
+        await LoadAsync();
+    }
+
+    private void Select(NotificacionUsuarioModel item)
+    {
+        _selected = item;
+        _reply = string.Empty;
+    }
+
+    private async Task MarkSelectedRead()
+    {
+        if (_selected == null) return;
+        await ExecuteAsync(() => NotificationService.MarcarLeidaAsync(_selected.PkidNotificacionDestino), "Notificación marcada como leída.");
+    }
+
+    private async Task AttendSelected()
+    {
+        if (_selected == null) return;
+        await ExecuteAsync(() => NotificationService.AtenderAsync(_selected.PkidNotificacionDestino), "Notificación atendida.");
+    }
+
+    private async Task ReplySelected()
+    {
+        if (_selected == null) return;
+        await ExecuteAsync(() => NotificationService.ResponderAsync(_selected.PkidNotificacionDestino, _reply), "Respuesta enviada.");
+        _reply = string.Empty;
+    }
+
+    private void OpenSelected()
+    {
+        if (!string.IsNullOrWhiteSpace(_selected?.Url))
+        {
+            NavigationManager.NavigateTo(_selected.Url);
+        }
+    }
+
+    private async Task ExecuteAsync(Func<Task<ApiResponse<bool>>> operation, string successMessage)
+    {
+        _saving = true;
+        try
+        {
+            var result = await operation();
+            if (result.Success)
+            {
+                Snackbar.Add(successMessage, Severity.Success);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.Add(result.Message, Severity.Error);
+            }
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private static bool Contains(string? value, string filter) =>
+        !string.IsNullOrWhiteSpace(value) && value.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetCardClass(NotificacionUsuarioModel item) =>
+        $"notification-card {(item.EstaPendiente ? "pending" : string.Empty)}";
+
+    private static string GetIcon(NotificacionUsuarioModel item) =>
+        item.Tipo?.Contains("FIRMA", StringComparison.OrdinalIgnoreCase) == true
+            ? Icons.Material.Filled.Draw
+            : item.Evento?.Contains("Respuesta", StringComparison.OrdinalIgnoreCase) == true
+                ? Icons.Material.Filled.Forum
+                : Icons.Material.Filled.Notifications;
+
+    private static string GetIconTone(NotificacionUsuarioModel item) =>
+        item.EstaPendiente ? "tone-warning" : item.EstaAtendida ? "tone-success" : "tone-info";
+
+    private static Color GetStatusColor(NotificacionUsuarioModel item) =>
+        item.FkidNotificacionEstado switch
+        {
+            1 => Color.Warning,
+            2 => Color.Info,
+            3 => Color.Success,
+            4 => Color.Default,
+            _ => Color.Default
+        };
+
+    private static string FormatDate(DateTime date)
+    {
+        var now = DateTime.Now;
+        if (date.Date == now.Date) return date.ToString("HH:mm");
+        if (date.Date == now.Date.AddDays(-1)) return "Ayer";
+        return date.ToString("dd/MM");
+    }
+}
+
+<style>
+    .notification-center-dialog .mud-dialog {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .notification-titlebar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 15%, var(--mud-palette-surface));
+        border-bottom: 1px solid var(--mud-palette-divider);
+    }
+
+    .notification-title-icon,
+    .notification-row-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        border-radius: 8px;
+    }
+
+    .notification-title-icon {
+        width: 42px;
+        height: 42px;
+        color: var(--mud-palette-primary);
+        background: color-mix(in srgb, var(--mud-palette-primary) 16%, transparent);
+    }
+
+    .notification-shell {
+        padding: 16px;
+        background: var(--mud-palette-background);
+    }
+
+    .notification-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .notification-kpi {
+        padding: 12px;
+        border: 1px solid var(--mud-palette-divider);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .notification-kpi span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+    }
+
+    .notification-kpi strong {
+        display: block;
+        margin-top: 4px;
+        color: var(--mud-palette-text-primary);
+        font-size: 1.25rem;
+    }
+
+    .notification-kpi.accent {
+        border-color: color-mix(in srgb, var(--mud-palette-warning) 60%, transparent);
+        background: color-mix(in srgb, var(--mud-palette-warning) 12%, var(--mud-palette-surface));
+    }
+
+    .notification-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .notification-search {
+        flex: 1;
+    }
+
+    .notification-content {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1.05fr);
+        gap: 14px;
+        min-height: 480px;
+    }
+
+    .notification-list,
+    .notification-detail {
+        border: 1px solid var(--mud-palette-divider);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .notification-list {
+        padding: 8px;
+        max-height: 520px;
+        overflow-y: auto;
+    }
+
+    .notification-card {
+        width: 100%;
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--mud-palette-text-primary);
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .notification-card:hover,
+    .notification-card.pending {
+        background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent);
+        border-color: color-mix(in srgb, var(--mud-palette-primary) 32%, transparent);
+    }
+
+    .notification-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .notification-row-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .tone-warning {
+        color: var(--mud-palette-warning);
+        background: color-mix(in srgb, var(--mud-palette-warning) 15%, transparent);
+    }
+
+    .tone-success {
+        color: var(--mud-palette-success);
+        background: color-mix(in srgb, var(--mud-palette-success) 15%, transparent);
+    }
+
+    .tone-info {
+        color: var(--mud-palette-info);
+        background: color-mix(in srgb, var(--mud-palette-info) 15%, transparent);
+    }
+
+    .notification-row-body,
+    .notification-row-top,
+    .notification-row-meta {
+        display: flex;
+        min-width: 0;
+    }
+
+    .notification-row-body {
+        flex: 1;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .notification-row-top {
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .notification-row-top strong,
+    .notification-row-message {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .notification-row-top small,
+    .notification-row-message,
+    .notification-row-meta {
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .notification-row-meta {
+        align-items: center;
+        gap: 8px;
+        font-size: 0.72rem;
+    }
+
+    .notification-status {
+        margin-left: auto;
+        color: var(--mud-palette-primary);
+        font-weight: 700;
+    }
+
+    .notification-detail {
+        padding: 18px;
+        min-height: 100%;
+    }
+
+    .notification-detail-header,
+    .notification-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notification-detail-header {
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .notification-detail-message {
+        padding: 14px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 7%, transparent);
+        white-space: pre-wrap;
+    }
+
+    .notification-detail-grid {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 8px 14px;
+        margin: 16px 0;
+        font-size: 0.85rem;
+    }
+
+    .notification-detail-grid span {
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .notification-detail-grid strong {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .notification-reply {
+        margin: 16px 0;
+    }
+
+    .notification-actions {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .notification-loading,
+    .notification-empty,
+    .notification-detail-empty {
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--mud-palette-text-secondary);
+        text-align: center;
+    }
+
+    .notification-empty .mud-icon-root,
+    .notification-detail-empty .mud-icon-root {
+        font-size: 3rem;
+        color: var(--mud-palette-primary);
+    }
+
+    @@media (max-width: 900px) {
+        .notification-kpis,
+        .notification-content {
+            grid-template-columns: 1fr;
+        }
+
+        .notification-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+    }
+</style>
