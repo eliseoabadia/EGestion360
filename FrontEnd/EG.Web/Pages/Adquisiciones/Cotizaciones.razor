@@ -4,6 +4,7 @@
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Services
 @using EG.Web.Shared
 @using MiniExcelLibs
@@ -76,6 +77,12 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectCotizacion(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Adquisiciones"
+                                                       SubModulo="Cotizacion"
+                                                       Controlador="Cotizacion"
+                                                       EntidadId="@item.PkidCotizacion"
+                                                       RegistroTitulo="@($"{TextOrDash(item.ProveedorNombre)} - Cotizacion {item.PkidCotizacion}")"
+                                                       RegistroDescripcion="@TextOrDash(item.RequisicionDescripcion)" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -149,6 +156,12 @@
                                        OnClick="@(() => EditItem(SelectedCotizacion.PkidCotizacion))"
                                        Class="ml-2" />
                     </MudTooltip>
+                    <DocumentSupportButton Modulo="Adquisiciones"
+                                           SubModulo="Cotizacion"
+                                           Controlador="Cotizacion"
+                                           EntidadId="@SelectedCotizacion.PkidCotizacion"
+                                           RegistroTitulo="@($"{TextOrDash(SelectedCotizacion.ProveedorNombre)} - Cotizacion {SelectedCotizacion.PkidCotizacion}")"
+                                           RegistroDescripcion="@TextOrDash(SelectedCotizacion.RequisicionDescripcion)" />
                     <MudTooltip Text="Captura rapida de bienes">
                         <MudIconButton Icon="@Icons.Material.Filled.PostAdd"
                                        Color="Color.Success"

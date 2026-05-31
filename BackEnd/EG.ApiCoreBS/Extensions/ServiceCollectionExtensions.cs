@@ -16,6 +16,7 @@ using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Application.Interfaces.PresupuestoModificado;
+using EG.Application.Interfaces.SoporteDocumental;
 using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.Adquisicion;
@@ -24,6 +25,7 @@ using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
 using EG.Application.Services.PresupuestoComprometido;
 using EG.Application.Services.PresupuestoModificado;
+using EG.Application.Services.SoporteDocumental;
 using EG.Application.Services.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Services.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Services.Configuracion.Catalogo.Patrimonio;
@@ -71,6 +73,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INotificacionAppService, NotificacionAppService>();
             services.AddScoped<IUserProfileAppService, UserProfileAppService>();
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
+            services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();
 
             // Application services - Adquisicion
             services.AddScoped<IPaaaAppService, PaaaAppService>();

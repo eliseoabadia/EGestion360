@@ -5,6 +5,7 @@
 @using EG.Dommain.DTOs.Responses
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @inherits BaseCrudPage<InversionResponse, InversionResponse>
 
@@ -54,6 +55,12 @@
                                 <MudTooltip Text="Ver detalle">
                                     <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectInversion(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Inversiones"
+                                                       SubModulo="Listado_Inversiones"
+                                                       Controlador="Inversion"
+                                                       EntidadId="@item.PkidInversion"
+                                                       RegistroTitulo="@TextOrDash(item.Instrumento)"
+                                                       RegistroDescripcion="@TextOrDash(item.CuentaBan)" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -119,6 +126,12 @@
                         <MudChip T="string" Size="Size.Small" Class="investment-status-chip" Color="@(SelectedLocked ? Color.Success : Color.Warning)">
                             @(SelectedLocked ? "Autorizada" : "Pendiente de autorizacion")
                         </MudChip>
+                        <DocumentSupportButton Modulo="Inversiones"
+                                               SubModulo="Listado_Inversiones"
+                                               Controlador="Inversion"
+                                               EntidadId="@SelectedInversion.PkidInversion"
+                                               RegistroTitulo="@TextOrDash(SelectedInversion.Instrumento)"
+                                               RegistroDescripcion="@TextOrDash(SelectedInversion.CuentaBan)" />
 
                         @if (CanCreate)
                         {

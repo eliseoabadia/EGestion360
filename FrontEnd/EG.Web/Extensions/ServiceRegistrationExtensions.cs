@@ -13,8 +13,10 @@ using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts;
+using EG.Web.Contracts.SoporteDocumental;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
+using EG.Web.Services.SoporteDocumental;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Extensions;
@@ -137,6 +139,7 @@ public static class ApiServiceExtensions
         RegisterCrud<ChequePartidaResponse>(services, "api/ChequePartida");
 
         services.AddScoped<INotificacionService, NotificacionService>();
+        services.AddScoped<IDocumentSupportService, DocumentSupportService>();
 
         return services;
     }

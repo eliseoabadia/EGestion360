@@ -2940,6 +2940,255 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<int> sp_NotificacionFirmaRealizadaAsync(int? fk_IdUsuarioFirmante, int? fk_IdUsuarioSolicitante, long? pk_IdDocumento, string titulo, string mensaje, string url, string jsonData, int? idUser, OutputParameter<long?> idNotificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterIdNotificacion = new SqlParameter
+            {
+                ParameterName = "IdNotificacion",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = idNotificacion?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.BigInt,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdUsuarioFirmante",
+                    Value = fk_IdUsuarioFirmante ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdUsuarioSolicitante",
+                    Value = fk_IdUsuarioSolicitante ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Pk_IdDocumento",
+                    Value = pk_IdDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Titulo",
+                    Size = 500,
+                    Value = titulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = -1,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Url",
+                    Size = 2000,
+                    Value = url ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "JsonData",
+                    Size = -1,
+                    Value = jsonData ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterIdNotificacion,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [SIS].[sp_NotificacionFirmaRealizada] @Fk_IdUsuarioFirmante = @Fk_IdUsuarioFirmante, @Fk_IdUsuarioSolicitante = @Fk_IdUsuarioSolicitante, @Pk_IdDocumento = @Pk_IdDocumento, @Titulo = @Titulo, @Mensaje = @Mensaje, @Url = @Url, @JsonData = @JsonData, @IdUser = @IdUser, @IdNotificacion = @IdNotificacion OUTPUT", sqlParameters, cancellationToken);
+
+            idNotificacion?.SetValue(parameterIdNotificacion.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<sp_NotificacionMarcarTodasLeidasResult>> sp_NotificacionMarcarTodasLeidasAsync(int? fk_IdUsuario, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdUsuario",
+                    Value = fk_IdUsuario ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<sp_NotificacionMarcarTodasLeidasResult>("EXEC @returnValue = [SIS].[sp_NotificacionMarcarTodasLeidas] @Fk_IdUsuario = @Fk_IdUsuario, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<sp_NotificacionResponderResult>> sp_NotificacionResponderAsync(long? pk_IdNotificacionDestino, int? fk_IdUsuarioResponde, string mensaje, int? idUser, OutputParameter<long?> idNotificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterIdNotificacion = new SqlParameter
+            {
+                ParameterName = "IdNotificacion",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = idNotificacion?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.BigInt,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Pk_IdNotificacionDestino",
+                    Value = pk_IdNotificacionDestino ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdUsuarioResponde",
+                    Value = fk_IdUsuarioResponde ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = -1,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterIdNotificacion,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<sp_NotificacionResponderResult>("EXEC @returnValue = [SIS].[sp_NotificacionResponder] @Pk_IdNotificacionDestino = @Pk_IdNotificacionDestino, @Fk_IdUsuarioResponde = @Fk_IdUsuarioResponde, @Mensaje = @Mensaje, @IdUser = @IdUser, @IdNotificacion = @IdNotificacion OUTPUT", sqlParameters, cancellationToken);
+
+            idNotificacion?.SetValue(parameterIdNotificacion.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<int> sp_NotificacionSolicitudFirmaAsync(int? fk_IdUsuarioOrigen, long? pk_IdDocumento, string perfilDestino, string titulo, string mensaje, string url, string jsonData, int? idUser, OutputParameter<long?> idNotificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterIdNotificacion = new SqlParameter
+            {
+                ParameterName = "IdNotificacion",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = idNotificacion?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.BigInt,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdUsuarioOrigen",
+                    Value = fk_IdUsuarioOrigen ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Pk_IdDocumento",
+                    Value = pk_IdDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PerfilDestino",
+                    Size = 300,
+                    Value = perfilDestino ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Titulo",
+                    Size = 500,
+                    Value = titulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = -1,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Url",
+                    Size = 2000,
+                    Value = url ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "JsonData",
+                    Size = -1,
+                    Value = jsonData ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterIdNotificacion,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [SIS].[sp_NotificacionSolicitudFirma] @Fk_IdUsuarioOrigen = @Fk_IdUsuarioOrigen, @Pk_IdDocumento = @Pk_IdDocumento, @PerfilDestino = @PerfilDestino, @Titulo = @Titulo, @Mensaje = @Mensaje, @Url = @Url, @JsonData = @JsonData, @IdUser = @IdUser, @IdNotificacion = @IdNotificacion OUTPUT", sqlParameters, cancellationToken);
+
+            idNotificacion?.SetValue(parameterIdNotificacion.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<int> sp_RegistrarEntidadAsync(string grupo, string subGrupo, string nombreMenu, string ruta, string menuPadreNombre, string icono, int? orden, string descripcion, string codigo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
@@ -3165,6 +3414,445 @@ namespace EG.Infraestructure.Models
                 parameterreturnValue,
             };
             var _ = await _context.SqlQueryAsync<spConfiguracionDeRolYClaimsResult>("EXEC @returnValue = [dbo].[spConfiguracionDeRolYClaims] @group = @group, @subgroup = @subgroup, @code = @code, @values = @values, @description = @description, @rolName = @rolName", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoAnotacionCrearResult>> spDocumentoAnotacionCrearAsync(long? fkidDocumento, string tipoAnotacion, string comentario, string textoSeleccionado, int? pagina, decimal? posicionX, decimal? posicionY, decimal? ancho, decimal? alto, string color, int? idUser, OutputParameter<long?> pkidDocumentoAnotacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterPkidDocumentoAnotacion = new SqlParameter
+            {
+                ParameterName = "PkidDocumentoAnotacion",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = pkidDocumentoAnotacion?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.BigInt,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "FkidDocumento",
+                    Value = fkidDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoAnotacion",
+                    Size = 60,
+                    Value = tipoAnotacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Comentario",
+                    Size = -1,
+                    Value = comentario ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TextoSeleccionado",
+                    Size = -1,
+                    Value = textoSeleccionado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Pagina",
+                    Value = pagina ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PosicionX",
+                    Precision = 9,
+                    Scale = 6,
+                    Value = posicionX ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PosicionY",
+                    Precision = 9,
+                    Scale = 6,
+                    Value = posicionY ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Ancho",
+                    Precision = 9,
+                    Scale = 6,
+                    Value = ancho ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Alto",
+                    Precision = 9,
+                    Scale = 6,
+                    Value = alto ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Color",
+                    Size = 40,
+                    Value = color ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterPkidDocumentoAnotacion,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoAnotacionCrearResult>("EXEC @returnValue = [SIS].[spDocumentoAnotacionCrear] @FkidDocumento = @FkidDocumento, @TipoAnotacion = @TipoAnotacion, @Comentario = @Comentario, @TextoSeleccionado = @TextoSeleccionado, @Pagina = @Pagina, @PosicionX = @PosicionX, @PosicionY = @PosicionY, @Ancho = @Ancho, @Alto = @Alto, @Color = @Color, @IdUser = @IdUser, @PkidDocumentoAnotacion = @PkidDocumentoAnotacion OUTPUT", sqlParameters, cancellationToken);
+
+            pkidDocumentoAnotacion?.SetValue(parameterPkidDocumentoAnotacion.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoAnotacionEliminarResult>> spDocumentoAnotacionEliminarAsync(long? pkidDocumentoAnotacion, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PkidDocumentoAnotacion",
+                    Value = pkidDocumentoAnotacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoAnotacionEliminarResult>("EXEC @returnValue = [SIS].[spDocumentoAnotacionEliminar] @PkidDocumentoAnotacion = @PkidDocumentoAnotacion, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoAnotacionObtenerResult>> spDocumentoAnotacionObtenerAsync(long? fkidDocumento, bool? incluirInactivos, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "FkidDocumento",
+                    Value = fkidDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IncluirInactivos",
+                    Value = incluirInactivos ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoAnotacionObtenerResult>("EXEC @returnValue = [SIS].[spDocumentoAnotacionObtener] @FkidDocumento = @FkidDocumento, @IncluirInactivos = @IncluirInactivos", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoEliminarResult>> spDocumentoEliminarAsync(long? pkidDocumento, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PkidDocumento",
+                    Value = pkidDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoEliminarResult>("EXEC @returnValue = [SIS].[spDocumentoEliminar] @PkidDocumento = @PkidDocumento, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoGuardarResult>> spDocumentoGuardarAsync(string modulo, string subModulo, string controlador, string servicio, long? entidadId, int? fkidEmpresaSis, string titulo, string descripcion, string nombreOriginal, string nombreAlmacenado, string extension, string tipoMime, long? tamanoBytes, string modoAlmacenamiento, byte[] contenidoArchivo, string rutaRelativa, int? idUser, OutputParameter<long?> pkidDocumento, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterPkidDocumento = new SqlParameter
+            {
+                ParameterName = "PkidDocumento",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = pkidDocumento?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.BigInt,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                parameterPkidDocumento,
+                new SqlParameter
+                {
+                    ParameterName = "Modulo",
+                    Size = 240,
+                    Value = modulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SubModulo",
+                    Size = 240,
+                    Value = subModulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Controlador",
+                    Size = 320,
+                    Value = controlador ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Servicio",
+                    Size = 320,
+                    Value = servicio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EntidadId",
+                    Value = entidadId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkidEmpresaSis",
+                    Value = fkidEmpresaSis ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Titulo",
+                    Size = 500,
+                    Value = titulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = -1,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombreOriginal",
+                    Size = 520,
+                    Value = nombreOriginal ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombreAlmacenado",
+                    Size = 520,
+                    Value = nombreAlmacenado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Extension",
+                    Size = 32,
+                    Value = extension ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoMime",
+                    Size = 240,
+                    Value = tipoMime ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TamanoBytes",
+                    Value = tamanoBytes ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ModoAlmacenamiento",
+                    Size = 40,
+                    Value = modoAlmacenamiento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ContenidoArchivo",
+                    Size = -1,
+                    Value = contenidoArchivo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarBinary,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "RutaRelativa",
+                    Size = 1400,
+                    Value = rutaRelativa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoGuardarResult>("EXEC @returnValue = [SIS].[spDocumentoGuardar] @PkidDocumento = @PkidDocumento OUTPUT, @Modulo = @Modulo, @SubModulo = @SubModulo, @Controlador = @Controlador, @Servicio = @Servicio, @EntidadId = @EntidadId, @FkidEmpresaSis = @FkidEmpresaSis, @Titulo = @Titulo, @Descripcion = @Descripcion, @NombreOriginal = @NombreOriginal, @NombreAlmacenado = @NombreAlmacenado, @Extension = @Extension, @TipoMime = @TipoMime, @TamanoBytes = @TamanoBytes, @ModoAlmacenamiento = @ModoAlmacenamiento, @ContenidoArchivo = @ContenidoArchivo, @RutaRelativa = @RutaRelativa, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
+            pkidDocumento?.SetValue(parameterPkidDocumento.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoObtenerContenidoResult>> spDocumentoObtenerContenidoAsync(long? pkidDocumento, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PkidDocumento",
+                    Value = pkidDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoObtenerContenidoResult>("EXEC @returnValue = [SIS].[spDocumentoObtenerContenido] @PkidDocumento = @PkidDocumento", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spDocumentoObtenerPorEntidadResult>> spDocumentoObtenerPorEntidadAsync(string modulo, string subModulo, string controlador, string servicio, long? entidadId, int? fkidEmpresaSis, bool? incluirInactivos, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Modulo",
+                    Size = 240,
+                    Value = modulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SubModulo",
+                    Size = 240,
+                    Value = subModulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Controlador",
+                    Size = 320,
+                    Value = controlador ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Servicio",
+                    Size = 320,
+                    Value = servicio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EntidadId",
+                    Value = entidadId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FkidEmpresaSis",
+                    Value = fkidEmpresaSis ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IncluirInactivos",
+                    Value = incluirInactivos ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spDocumentoObtenerPorEntidadResult>("EXEC @returnValue = [SIS].[spDocumentoObtenerPorEntidad] @Modulo = @Modulo, @SubModulo = @SubModulo, @Controlador = @Controlador, @Servicio = @Servicio, @EntidadId = @EntidadId, @FkidEmpresaSis = @FkidEmpresaSis, @IncluirInactivos = @IncluirInactivos", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

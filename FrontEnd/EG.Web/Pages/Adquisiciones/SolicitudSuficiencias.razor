@@ -2,6 +2,7 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<SolicitudSuficienciaResponse, SolicitudSuficienciaResponse>
@@ -65,6 +66,13 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectSolicitud(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Adquisiciones"
+                                                       SubModulo="Solicitud_Suficiencia"
+                                                       Controlador="SolicitudSuficiencia"
+                                                       EntidadId="@item.PkidSolicitudSuficiencia"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@($"Solicitud {item.PkidSolicitudSuficiencia}")"
+                                                       RegistroDescripcion="@TextOrDash(item.RequisicionDescripcion)" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -129,6 +137,13 @@
                                        OnClick="@(() => EditItem(SelectedSolicitud.PkidSolicitudSuficiencia))"
                                        Class="ml-2" />
                     </MudTooltip>
+                    <DocumentSupportButton Modulo="Adquisiciones"
+                                           SubModulo="Solicitud_Suficiencia"
+                                           Controlador="SolicitudSuficiencia"
+                                           EntidadId="@SelectedSolicitud.PkidSolicitudSuficiencia"
+                                           FkidEmpresaSis="@SelectedSolicitud.FkidEmpresaSis"
+                                           RegistroTitulo="@($"Solicitud {SelectedSolicitud.PkidSolicitudSuficiencia}")"
+                                           RegistroDescripcion="@TextOrDash(SelectedSolicitud.RequisicionDescripcion)" />
                     <MudTooltip Text="Actualizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"

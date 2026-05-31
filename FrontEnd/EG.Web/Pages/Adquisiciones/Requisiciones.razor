@@ -4,6 +4,7 @@
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using EG.Web.Services
 @using MiniExcelLibs
@@ -64,6 +65,13 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectRequisicion(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Adquisiciones"
+                                                       SubModulo="Requisicion"
+                                                       Controlador="Requisicion"
+                                                       EntidadId="@item.PkidRequisicion"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@item.Descripcion"
+                                                       RegistroDescripcion="@($"Requisicion {item.PkidRequisicion} | {TextOrDash(item.AreaNombre)}")" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -151,6 +159,13 @@
                                        OnClick="@(() => EditItem(SelectedRequisicion.PkidRequisicion))"
                                        Class="ml-2" />
                     </MudTooltip>
+                    <DocumentSupportButton Modulo="Adquisiciones"
+                                           SubModulo="Requisicion"
+                                           Controlador="Requisicion"
+                                           EntidadId="@SelectedRequisicion.PkidRequisicion"
+                                           FkidEmpresaSis="@SelectedRequisicion.FkidEmpresaSis"
+                                           RegistroTitulo="@SelectedRequisicion.Descripcion"
+                                           RegistroDescripcion="@($"Requisicion {SelectedRequisicion.PkidRequisicion} | {TextOrDash(SelectedRequisicion.AreaNombre)}")" />
                     <MudTooltip Text="Agregar partida">
                         <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
                                        Color="Color.Success"

@@ -2,6 +2,7 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using EG.Web.Services
 @using EG.Web.Models
@@ -60,6 +61,13 @@
                                            Size="Size.Small"
                                            OnClick="@(() => SelectPaaa(item))" />
                         </MudTooltip>
+                        <DocumentSupportButton Modulo="Adquisiciones"
+                                               SubModulo="Programa_Anual_Adquisiciones"
+                                               Controlador="Paaa"
+                                               EntidadId="@item.PkidPaaas"
+                                               FkidEmpresaSis="@item.FkidEmpresaSis"
+                                               RegistroTitulo="@item.Descripcion"
+                                               RegistroDescripcion="@($"PAAA {item.PkidPaaas} · {item.AreaNombre}")" />
                         <MudTooltip Text="Editar">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Visible="@CanUpdate"
@@ -120,6 +128,13 @@
                         </div>
 
                         <div class="paaa-header-actions">
+                            <DocumentSupportButton Modulo="Adquisiciones"
+                                                   SubModulo="Programa_Anual_Adquisiciones"
+                                                   Controlador="Paaa"
+                                                   EntidadId="@SelectedPaaa.PkidPaaas"
+                                                   FkidEmpresaSis="@SelectedPaaa.FkidEmpresaSis"
+                                                   RegistroTitulo="@SelectedPaaa.Descripcion"
+                                                   RegistroDescripcion="@($"Programa anual {SelectedPaaa.PkidPaaas} · {SelectedPaaa.AreaNombre}")" />
                             <MudTooltip Text="Editar programa">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Primary"

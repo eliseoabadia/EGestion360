@@ -6,6 +6,7 @@
 @using EG.Web.Auth
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<SolicitudSuficienciaResponse, SolicitudSuficienciaResponse>
@@ -60,6 +61,13 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectSolicitud(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                                                       SubModulo="Solicitud_Suficiencia"
+                                                       Controlador="SolicitudSuficiencia"
+                                                       EntidadId="@item.PkidSolicitudSuficiencia"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@($"Solicitud {item.PkidSolicitudSuficiencia}")"
+                                                       RegistroDescripcion="@TextOrDash(item.RequisicionDescripcion)" />
                                 <MudTooltip Text="Autorizar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Verified"
                                                    Visible="@CanAuthorize"
@@ -96,6 +104,13 @@
                     <MudSpacer />
                     <MudChip T="string" Color="@EstatusColor(SelectedSolicitud.Estatus)" Size="Size.Small">@TextOrDash(SelectedSolicitud.EstatusDescripcion)</MudChip>
                     <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="ml-1">@Money(TotalSeleccionado)</MudChip>
+                    <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                                           SubModulo="Solicitud_Suficiencia"
+                                           Controlador="SolicitudSuficiencia"
+                                           EntidadId="@SelectedSolicitud.PkidSolicitudSuficiencia"
+                                           FkidEmpresaSis="@SelectedSolicitud.FkidEmpresaSis"
+                                           RegistroTitulo="@($"Solicitud {SelectedSolicitud.PkidSolicitudSuficiencia}")"
+                                           RegistroDescripcion="@TextOrDash(SelectedSolicitud.RequisicionDescripcion)" />
                     <MudTooltip Text="Autorizar solicitud">
                         <MudIconButton Icon="@Icons.Material.Filled.Verified"
                                        Color="Color.Success"

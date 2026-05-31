@@ -479,6 +479,26 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Documento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[DocumentoAnotacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[DocumentoEvento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[DocumentoExtensionPermitida]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[DocumentoTipoAnotacion]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Empresa]",
          "ObjectType": 0
       },
@@ -863,6 +883,22 @@
          "ObjectType": 3
       },
       {
+         "Name": "[SIS].[Vw_DocumentoAnotacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Vw_DocumentoEntidad]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Vw_DocumentoResumenAnotacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Vw_DocumentoResumenEntidad]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[SIS].[VW_EmpresaDepartamanto]",
          "ObjectType": 3
       },
@@ -1044,6 +1080,50 @@
       },
       {
          "Name": "[SIS].[sp_NotificacionCrearPorPerfil]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionFirmaRealizada]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionMarcarTodasLeidas]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionResponder]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionSolicitudFirma]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoAnotacionCrear]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoAnotacionEliminar]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoAnotacionObtener]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoEliminar]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoGuardar]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoObtenerContenido]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[spDocumentoObtenerPorEntidad]",
          "ObjectType": 1
       },
       {

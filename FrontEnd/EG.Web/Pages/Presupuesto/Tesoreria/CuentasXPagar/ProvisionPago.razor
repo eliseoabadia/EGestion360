@@ -2,6 +2,7 @@
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<CLCResponse, CLCResponse>
@@ -41,6 +42,13 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(item))" />
+                                <DocumentSupportButton Modulo="CuentasXPagar"
+                                                       SubModulo="Provision_Pago"
+                                                       Controlador="CLC"
+                                                       EntidadId="@item.PkidClc"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.NumClc)"
+                                                       RegistroDescripcion="@($"{TextOrDash(item.NumeroContrato)} | {TextOrDash(item.ProveedorNombre)}")" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(item))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidClc))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidClc))" />
@@ -67,6 +75,13 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedClc.Estatus)">@TextOrDash(SelectedClc.EstatusDescripcion)</MudChip>
+                    <DocumentSupportButton Modulo="CuentasXPagar"
+                                           SubModulo="Provision_Pago"
+                                           Controlador="CLC"
+                                           EntidadId="@SelectedClc.PkidClc"
+                                           FkidEmpresaSis="@SelectedClc.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedClc.NumClc)"
+                                           RegistroDescripcion="@($"{TextOrDash(SelectedClc.NumeroContrato)} | {TextOrDash(SelectedClc.ProveedorNombre)}")" />
                     <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura" Class="ml-1" />

@@ -2,6 +2,7 @@
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<ChequeResponse, ChequeResponse>
@@ -32,6 +33,13 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(item))" />
+                                <DocumentSupportButton Modulo="CuentasXPagar"
+                                                       SubModulo="ElaboracionCheque_Transferencia"
+                                                       Controlador="Cheque"
+                                                       EntidadId="@item.PkidCheque"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.NumeroCheque)"
+                                                       RegistroDescripcion="@TextOrDash(item.Concepto)" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidCheque))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidCheque))" />
                             </MudTd>
@@ -54,6 +62,13 @@
                     <div class="ml-2"><MudText Typo="Typo.h6" Style="font-weight:700">@SelectedCheque.NumeroCheque</MudText><MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedCheque.NumClc - @SelectedCheque.Concepto</MudText></div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedCheque.Estatus)">@TextOrDash(SelectedCheque.EstatusDescripcion)</MudChip>
+                    <DocumentSupportButton Modulo="CuentasXPagar"
+                                           SubModulo="ElaboracionCheque_Transferencia"
+                                           Controlador="Cheque"
+                                           EntidadId="@SelectedCheque.PkidCheque"
+                                           FkidEmpresaSis="@SelectedCheque.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedCheque.NumeroCheque)"
+                                           RegistroDescripcion="@TextOrDash(SelectedCheque.Concepto)" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedCheque)" Color="Color.Success" Size="Size.Small" OnClick="AddPartida" Class="ml-2" />
                 </MudPaper>
                 <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">

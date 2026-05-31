@@ -2,6 +2,7 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using EG.Web.Contracts
 @inherits BaseCrudPage<ConteoResponse, ConteoResponse>
@@ -61,6 +62,12 @@
                                                Size="Size.Small"
                                                OnClick="@(() => AbrirScanner(conteo))" />
                             </MudTooltip>
+                            <DocumentSupportButton Modulo="conteociclico"
+                                                   SubModulo="mis-periodos"
+                                                   Controlador="Conteo"
+                                                   EntidadId="@conteo.PkidConteo"
+                                                   RegistroTitulo="@conteo.Descripcion"
+                                                   RegistroDescripcion="@($"Periodo {conteo.NombrePeriodo}")" />
                             <MudTooltip Text="Editar">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Visible="@CanUpdate"

@@ -1,0 +1,121 @@
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using EG.Common.Helper;
+using EG.Web.Contracts.SoporteDocumental;
+using EG.Web.Models;
+using EG.Web.Models.SoporteDocumental;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
+
+namespace EG.Web.Services.SoporteDocumental
+{
+    public class DocumentSupportService(
+        IConfiguration configuration,
+        HttpClient httpClient,
+        IJSRuntime jsRuntime,
+        ApplicationInstance application)
+        : BaseService(httpClient, jsRuntime, application, configuration), IDocumentSupportService
+    {
+        private const long MaxClientFileSize = 50 * 1024 * 1024;
+        private const string Endpoint = "api/SoporteDocumental";
+
+        public async Task<ApiResponse<DocumentoResponse>> GetDocumentsAsync(DocumentoEntidadRequest request)
+            => await PostAsync<ApiResponse<DocumentoResponse>>($"{Endpoint}/entidad", request, useBaseUrl: false)
+                ?? new ApiResponse<DocumentoResponse>();
+
+        public async Task<ApiResponse<DocumentoResumenResponse>> GetSummaryAsync(DocumentoEntidadRequest request)
+            => await PostAsync<ApiResponse<DocumentoResumenResponse>>($"{Endpoint}/resumen", request, useBaseUrl: false)
+                ?? new ApiResponse<DocumentoResumenResponse>();
+
+        public async Task<ApiResponse<DocumentoResponse>> UploadAsync(DocumentoEntidadRequest request, IBrowserFile file, string? title, string? description)
+        {
+            try
+            {
+                var httpRequest = await CreateAuthenticatedRequestAsync(HttpMethod.Post, $"{_baseUrl}{Endpoint}/upload");
+                using var form = new MultipartFormDataContent();
+                AddString(form, "Modulo", request.Modulo);
+                AddString(form, "SubModulo", request.SubModulo);
+                AddString(form, "Controlador", request.Controlador);
+                AddString(form, "Servicio", request.Servicio);
+                AddString(form, "EntidadId", request.EntidadId.ToString());
+                AddString(form, "FkidEmpresaSis", request.FkidEmpresaSis?.ToString());
+                AddString(form, "Titulo", title);
+                AddString(form, "Descripcion", description);
+
+                var fileContent = new StreamContent(file.OpenReadStream(MaxClientFileSize));
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                form.Add(fileContent, "File", file.Name);
+                httpRequest.Content = form;
+
+                var response = await _httpClient.SendAsync(httpRequest);
+                var body = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ApiResponse<DocumentoResponse>>(body, _jsonOptions)
+                    ?? new ApiResponse<DocumentoResponse>();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    result.Success = false;
+                    if (string.IsNullOrWhiteSpace(result.Message))
+                        result.Message = body;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<DocumentoResponse> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<DocumentoDownloadResult> DownloadAsync(long documentId)
+        {
+            try
+            {
+                var request = await CreateAuthenticatedRequestAsync(HttpMethod.Get, $"{_baseUrl}{Endpoint}/{documentId}/download");
+                var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                    return new DocumentoDownloadResult { Success = false, Message = await response.Content.ReadAsStringAsync() };
+
+                var content = await response.Content.ReadAsByteArrayAsync();
+                var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                    ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                    ?? $"documento_{documentId}";
+
+                return new DocumentoDownloadResult
+                {
+                    Success = true,
+                    Content = content,
+                    FileName = fileName,
+                    ContentType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new DocumentoDownloadResult { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ApiResponse<bool>> DeleteAsync(long documentId)
+            => await DeleteAsync<ApiResponse<bool>>($"{Endpoint}/{documentId}", useBaseUrl: false)
+                ?? new ApiResponse<bool>();
+
+        public async Task<ApiResponse<DocumentoAnotacionResponse>> GetAnnotationsAsync(long documentId)
+            => await GetAsync<ApiResponse<DocumentoAnotacionResponse>>($"{Endpoint}/{documentId}/anotaciones", useBaseUrl: false)
+                ?? new ApiResponse<DocumentoAnotacionResponse>();
+
+        public async Task<ApiResponse<DocumentoAnotacionResponse>> CreateAnnotationAsync(DocumentoAnotacionCrearRequest request)
+            => await PostAsync<ApiResponse<DocumentoAnotacionResponse>>($"{Endpoint}/anotaciones", request, useBaseUrl: false)
+                ?? new ApiResponse<DocumentoAnotacionResponse>();
+
+        public async Task<ApiResponse<bool>> DeleteAnnotationAsync(long annotationId)
+            => await DeleteAsync<ApiResponse<bool>>($"{Endpoint}/anotaciones/{annotationId}", useBaseUrl: false)
+                ?? new ApiResponse<bool>();
+
+        private static void AddString(MultipartFormDataContent form, string name, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+                form.Add(new StringContent(value, Encoding.UTF8), name);
+        }
+    }
+}

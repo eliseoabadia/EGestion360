@@ -2,6 +2,7 @@
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<FacturaResponse, FacturaResponse>
@@ -42,6 +43,13 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(item))" /></MudTooltip>
+                                <DocumentSupportButton Modulo="CuentasXPagar"
+                                                       SubModulo="RecepcionFactura_ComprobantePago"
+                                                       Controlador="Factura"
+                                                       EntidadId="@item.PkidFactura"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.NumFactura)"
+                                                       RegistroDescripcion="@($"{TextOrDash(item.NumeroContrato)} | {TextOrDash(item.ProveedorNombre)}")" />
                                 <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
                                 <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidFactura))" /></MudTooltip>
                                 <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
@@ -69,6 +77,13 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
+                    <DocumentSupportButton Modulo="CuentasXPagar"
+                                           SubModulo="RecepcionFactura_ComprobantePago"
+                                           Controlador="Factura"
+                                           EntidadId="@SelectedFactura.PkidFactura"
+                                           FkidEmpresaSis="@SelectedFactura.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedFactura.NumFactura)"
+                                           RegistroDescripcion="@($"{TextOrDash(SelectedFactura.NumeroContrato)} | {TextOrDash(SelectedFactura.ProveedorNombre)}")" />
                     <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
                     <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
                 </MudPaper>

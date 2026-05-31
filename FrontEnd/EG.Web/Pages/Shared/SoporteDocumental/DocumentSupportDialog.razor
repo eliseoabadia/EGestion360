@@ -1,0 +1,484 @@
+@using EG.Web.Contracts.SoporteDocumental
+@using EG.Web.Models.SoporteDocumental
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using System.Globalization
+@inject IDocumentSupportService DocumentService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<MudDialog Class="document-support-dialog">
+    <TitleContent>
+        <div class="doc-titlebar">
+            <MudIcon Icon="@Icons.Material.Filled.FolderCopy" Class="doc-title-icon" />
+            <div class="doc-title-copy">
+                <MudText Typo="Typo.h6" Class="doc-title">Soporte documental</MudText>
+                <MudText Typo="Typo.caption" Class="doc-subtitle">@RegistroTitulo</MudText>
+            </div>
+            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@Documents.Count documento(s)</MudChip>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="doc-workspace">
+            <aside class="doc-sidebar">
+                <InputFile id="@InputId" OnChange="UploadFiles" multiple class="doc-file-input" />
+                <label for="@InputId" class="doc-dropzone">
+                    <MudIcon Icon="@Icons.Material.Filled.CloudUpload" />
+                    <span>Arrastra o selecciona PDF e imagenes</span>
+                    <small>PDF, PNG, JPG, WEBP</small>
+                </label>
+
+                <MudTextField @bind-Value="_search"
+                              Placeholder="Buscar documento..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              Margin="Margin.Dense"
+                              Class="doc-search" />
+
+                <div class="doc-list">
+                    @if (_loading)
+                    {
+                        <div class="doc-empty"><MudProgressCircular Indeterminate="true" Size="Size.Small" /> Cargando expediente...</div>
+                    }
+                    else if (!FilteredDocuments.Any())
+                    {
+                        <div class="doc-empty">
+                            <MudIcon Icon="@Icons.Material.Filled.Description" />
+                            <span>No hay documentos para este registro.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var document in FilteredDocuments)
+                        {
+                            <button type="button"
+                                    class="doc-item @(SelectedDocument?.PkidDocumento == document.PkidDocumento ? "is-selected" : "")"
+                                    @onclick="() => SelectDocument(document)">
+                                <MudIcon Icon="@(document.EsPdf ? Icons.Material.Filled.PictureAsPdf : Icons.Material.Filled.Image)" />
+                                <span>
+                                    <strong>@document.NombreOriginal</strong>
+                                    <small>@FormatSize(document.TamanoBytes) · @document.CT_CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+                                </span>
+                            </button>
+                        }
+                    }
+                </div>
+            </aside>
+
+            <section class="doc-preview-panel">
+                <div class="doc-preview-header">
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Class="doc-selected-name">@(SelectedDocument?.NombreOriginal ?? "Selecciona un documento")</MudText>
+                        <MudText Typo="Typo.caption" Class="doc-selected-meta">@SelectedMeta</MudText>
+                    </div>
+                    <div class="doc-actions">
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Info"
+                                   StartIcon="@Icons.Material.Filled.Highlight"
+                                   Disabled="@(SelectedDocument == null)"
+                                   OnClick="ToggleHighlightMode">
+                            @(_highlightMode ? "Cancelar resaltado" : "Resaltar")
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Download"
+                                   Disabled="@(SelectedDocument == null)"
+                                   OnClick="DownloadSelected">
+                            Descargar
+                        </MudButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Disabled="@(SelectedDocument == null)"
+                                       OnClick="DeleteSelected" />
+                    </div>
+                </div>
+
+                <div class="doc-preview-surface @(_highlightMode ? "highlight-mode" : "")"
+                     @ref="_previewSurface"
+                     @onclick="CreateHighlight">
+                    @if (SelectedDocument == null)
+                    {
+                        <div class="doc-preview-empty">
+                            <MudIcon Icon="@Icons.Material.Filled.Article" />
+                            <span>El expediente documental aparecera aqui.</span>
+                        </div>
+                    }
+                    else if (_previewLoading)
+                    {
+                        <div class="doc-preview-empty">
+                            <MudProgressCircular Indeterminate="true" />
+                            <span>Preparando vista previa...</span>
+                        </div>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(_previewUrl) && SelectedDocument.EsPdf)
+                    {
+                        <iframe src="@_previewUrl" title="@SelectedDocument.NombreOriginal"></iframe>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(_previewUrl) && SelectedDocument.EsImagen)
+                    {
+                        <img src="@_previewUrl" alt="@SelectedDocument.NombreOriginal" />
+                    }
+                    else
+                    {
+                        <div class="doc-preview-empty">
+                            <MudIcon Icon="@Icons.Material.Filled.VisibilityOff" />
+                            <span>No hay vista previa disponible.</span>
+                        </div>
+                    }
+
+                    @foreach (var mark in HighlightAnnotations)
+                    {
+                        <div class="doc-highlight"
+                             title="@mark.Comentario"
+                             style="@HighlightStyle(mark)">
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <aside class="doc-notes">
+                <MudText Typo="Typo.subtitle2" Class="doc-panel-title">Anotaciones</MudText>
+                <MudTextField @bind-Value="_comment"
+                              Placeholder="Agregar comentario..."
+                              Lines="4"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+                <MudButton FullWidth="true"
+                           Variant="Variant.Filled"
+                           Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.AddComment"
+                           Disabled="@(SelectedDocument == null || string.IsNullOrWhiteSpace(_comment))"
+                           OnClick="CreateComment">
+                    Agregar comentario
+                </MudButton>
+
+                <div class="doc-note-list">
+                    @if (!Annotations.Any())
+                    {
+                        <div class="doc-empty compact">Sin anotaciones.</div>
+                    }
+                    else
+                    {
+                        @foreach (var annotation in Annotations.OrderByDescending(x => x.CT_CreatedDate))
+                        {
+                            <div class="doc-note">
+                                <div class="doc-note-head">
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="@(annotation.TipoAnotacion == "RESALTADO" ? Color.Warning : Color.Info)">
+                                        @annotation.TipoAnotacion
+                                    </MudChip>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                   Size="Size.Small"
+                                                   Color="Color.Default"
+                                                   OnClick="() => DeleteAnnotation(annotation)" />
+                                </div>
+                                <p>@(annotation.Comentario ?? annotation.TextoSeleccionado ?? "Resaltado")</p>
+                                <small>@annotation.CT_CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        }
+                    }
+                </div>
+            </aside>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .document-support-dialog .mud-dialog-content { padding: 0 20px 16px; }
+    .doc-titlebar { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .doc-title-icon { color: var(--mud-palette-info); }
+    .doc-title-copy { min-width: 0; flex: 1; }
+    .doc-title { font-weight: 800; line-height: 1.15; }
+    .doc-subtitle { display: block; color: var(--mud-palette-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .doc-workspace { display: grid; grid-template-columns: minmax(260px, 320px) minmax(420px, 1fr) minmax(250px, 310px); gap: 14px; min-height: 620px; }
+    .doc-sidebar, .doc-preview-panel, .doc-notes { border: 1px solid color-mix(in srgb, var(--mud-palette-info) 20%, var(--mud-palette-lines-default)); background: var(--mud-palette-surface); border-radius: 8px; min-width: 0; }
+    .doc-sidebar, .doc-notes { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .doc-file-input { display: none; }
+    .doc-dropzone { border: 1px dashed color-mix(in srgb, var(--mud-palette-info) 55%, var(--mud-palette-lines-default)); border-radius: 8px; padding: 18px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: var(--mud-palette-info); background: color-mix(in srgb, var(--mud-palette-info) 7%, transparent); text-align: center; }
+    .doc-dropzone span { font-weight: 750; color: var(--mud-palette-text-primary); }
+    .doc-dropzone small { color: var(--mud-palette-text-secondary); }
+    .doc-list, .doc-note-list { overflow: auto; min-height: 0; }
+    .doc-list { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .doc-item { width: 100%; border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; padding: 10px; background: transparent; color: var(--mud-palette-text-primary); display: flex; gap: 10px; align-items: flex-start; text-align: left; }
+    .doc-item:hover, .doc-item.is-selected { border-color: var(--mud-palette-info); background: color-mix(in srgb, var(--mud-palette-info) 10%, transparent); }
+    .doc-item strong, .doc-item small { display: block; }
+    .doc-item strong { font-size: .86rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .doc-item small { color: var(--mud-palette-text-secondary); margin-top: 3px; }
+    .doc-preview-panel { display: flex; flex-direction: column; overflow: hidden; }
+    .doc-preview-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--mud-palette-lines-default); }
+    .doc-selected-name { font-weight: 800; line-height: 1.2; }
+    .doc-selected-meta { color: var(--mud-palette-text-secondary); }
+    .doc-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .doc-preview-surface { position: relative; flex: 1; min-height: 0; background: color-mix(in srgb, var(--mud-palette-dark) 5%, var(--mud-palette-surface)); overflow: hidden; }
+    .doc-preview-surface iframe, .doc-preview-surface img { width: 100%; height: 100%; border: 0; object-fit: contain; display: block; }
+    .doc-preview-surface.highlight-mode::after { content: "Haz click en el documento para agregar un resaltado"; position: absolute; left: 14px; top: 14px; background: color-mix(in srgb, var(--mud-palette-warning) 88%, black); color: white; border-radius: 6px; padding: 6px 10px; font-weight: 750; z-index: 4; }
+    .doc-preview-surface.highlight-mode iframe, .doc-preview-surface.highlight-mode img { pointer-events: none; }
+    .doc-preview-empty, .doc-empty { min-height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: var(--mud-palette-text-secondary); text-align: center; }
+    .doc-empty.compact { min-height: 64px; }
+    .doc-highlight { position: absolute; border: 2px solid color-mix(in srgb, var(--mud-palette-warning) 85%, white); background: rgba(255, 224, 102, .32); border-radius: 4px; z-index: 3; pointer-events: none; }
+    .doc-panel-title { font-weight: 800; color: var(--mud-palette-info); }
+    .doc-note-list { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .doc-note { border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; padding: 10px; background: color-mix(in srgb, var(--mud-palette-info) 5%, transparent); }
+    .doc-note-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .doc-note p { margin: 8px 0 4px; color: var(--mud-palette-text-primary); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .doc-note small { color: var(--mud-palette-text-secondary); }
+    @@media (max-width: 1200px) { .doc-workspace { grid-template-columns: 300px 1fr; } .doc-notes { grid-column: 1 / -1; min-height: 220px; } }
+    @@media (max-width: 760px) { .doc-workspace { grid-template-columns: 1fr; min-height: auto; } .doc-preview-panel { min-height: 460px; } .doc-preview-header { flex-direction: column; align-items: stretch; } }
+</style>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter, EditorRequired] public string Modulo { get; set; } = string.Empty;
+    [Parameter] public string? SubModulo { get; set; }
+    [Parameter] public string? Controlador { get; set; }
+    [Parameter] public string? Servicio { get; set; }
+    [Parameter, EditorRequired] public long EntidadId { get; set; }
+    [Parameter] public int? FkidEmpresaSis { get; set; }
+    [Parameter] public string RegistroTitulo { get; set; } = "Registro";
+    [Parameter] public string RegistroDescripcion { get; set; } = string.Empty;
+
+    private readonly string InputId = $"doc-upload-{Guid.NewGuid():N}";
+    private List<DocumentoResponse> Documents { get; set; } = [];
+    private List<DocumentoAnotacionResponse> Annotations { get; set; } = [];
+    private DocumentoResponse? SelectedDocument { get; set; }
+    private ElementReference _previewSurface;
+    private string _search = string.Empty;
+    private string _comment = string.Empty;
+    private string? _previewUrl;
+    private bool _loading;
+    private bool _previewLoading;
+    private bool _highlightMode;
+
+    private IEnumerable<DocumentoResponse> FilteredDocuments => string.IsNullOrWhiteSpace(_search)
+        ? Documents
+        : Documents.Where(x => x.NombreOriginal.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            || (x.Titulo?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (x.Descripcion?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    private IEnumerable<DocumentoAnotacionResponse> HighlightAnnotations => Annotations
+        .Where(x => x.TipoAnotacion == "RESALTADO" && x.PosicionX.HasValue && x.PosicionY.HasValue);
+
+    private string SelectedMeta => SelectedDocument == null
+        ? RegistroDescripcion
+        : $"{SelectedDocument.Extension.ToUpperInvariant()} · {FormatSize(SelectedDocument.TamanoBytes)} · {SelectedDocument.CT_CreatedDate:dd/MM/yyyy HH:mm}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDocuments();
+    }
+
+    private DocumentoEntidadRequest BuildRequest() => new()
+    {
+        Modulo = Modulo,
+        SubModulo = SubModulo,
+        Controlador = Controlador,
+        Servicio = Servicio,
+        EntidadId = EntidadId,
+        FkidEmpresaSis = FkidEmpresaSis
+    };
+
+    private async Task LoadDocuments()
+    {
+        _loading = true;
+        try
+        {
+            var response = await DocumentService.GetDocumentsAsync(BuildRequest());
+            Documents = response?.Items?.ToList() ?? [];
+            if (SelectedDocument == null && Documents.Count > 0)
+                await SelectDocument(Documents[0]);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SelectDocument(DocumentoResponse document)
+    {
+        SelectedDocument = document;
+        _highlightMode = false;
+        await LoadPreview();
+        await LoadAnnotations();
+    }
+
+    private async Task LoadPreview()
+    {
+        _previewUrl = null;
+        if (SelectedDocument == null)
+            return;
+
+        _previewLoading = true;
+        try
+        {
+            var download = await DocumentService.DownloadAsync(SelectedDocument.PkidDocumento);
+            if (!download.Success)
+            {
+                Snackbar.Add(download.Message, Severity.Error);
+                return;
+            }
+
+            _previewUrl = $"data:{download.ContentType};base64,{Convert.ToBase64String(download.Content)}";
+        }
+        finally
+        {
+            _previewLoading = false;
+        }
+    }
+
+    private async Task LoadAnnotations()
+    {
+        if (SelectedDocument == null)
+        {
+            Annotations = [];
+            return;
+        }
+
+        var response = await DocumentService.GetAnnotationsAsync(SelectedDocument.PkidDocumento);
+        Annotations = response?.Items?.ToList() ?? [];
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs args)
+    {
+        foreach (var file in args.GetMultipleFiles())
+        {
+            var response = await DocumentService.UploadAsync(BuildRequest(), file, Path.GetFileNameWithoutExtension(file.Name), null);
+            if (response?.Success == true)
+                Snackbar.Add($"Documento agregado: {file.Name}", Severity.Success);
+            else
+                Snackbar.Add(response?.Message ?? $"No se pudo subir {file.Name}", Severity.Error);
+        }
+
+        await LoadDocuments();
+    }
+
+    private async Task DownloadSelected()
+    {
+        if (SelectedDocument == null)
+            return;
+
+        var download = await DocumentService.DownloadAsync(SelectedDocument.PkidDocumento);
+        if (!download.Success)
+        {
+            Snackbar.Add(download.Message, Severity.Error);
+            return;
+        }
+
+        await JS.InvokeVoidAsync("downloadFile", Convert.ToBase64String(download.Content), download.FileName, download.ContentType);
+    }
+
+    private async Task DeleteSelected()
+    {
+        if (SelectedDocument == null)
+            return;
+
+        var response = await DocumentService.DeleteAsync(SelectedDocument.PkidDocumento);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Documento eliminado.", Severity.Success);
+            SelectedDocument = null;
+            _previewUrl = null;
+            Annotations = [];
+            await LoadDocuments();
+        }
+        else
+        {
+            Snackbar.Add(response?.Message ?? "No se pudo eliminar el documento.", Severity.Error);
+        }
+    }
+
+    private async Task CreateComment()
+    {
+        if (SelectedDocument == null || string.IsNullOrWhiteSpace(_comment))
+            return;
+
+        var response = await DocumentService.CreateAnnotationAsync(new DocumentoAnotacionCrearRequest
+        {
+            FkidDocumento = SelectedDocument.PkidDocumento,
+            TipoAnotacion = "COMENTARIO",
+            Comentario = _comment.Trim()
+        });
+
+        if (response?.Success == true)
+        {
+            _comment = string.Empty;
+            await LoadAnnotations();
+        }
+        else
+        {
+            Snackbar.Add(response?.Message ?? "No se pudo agregar el comentario.", Severity.Error);
+        }
+    }
+
+    private void ToggleHighlightMode()
+    {
+        _highlightMode = !_highlightMode;
+    }
+
+    private async Task CreateHighlight(MouseEventArgs args)
+    {
+        if (!_highlightMode || SelectedDocument == null)
+            return;
+
+        var point = await JS.InvokeAsync<RelativePoint>("documentSupport.getRelativePoint", _previewSurface, args.ClientX, args.ClientY);
+        var response = await DocumentService.CreateAnnotationAsync(new DocumentoAnotacionCrearRequest
+        {
+            FkidDocumento = SelectedDocument.PkidDocumento,
+            TipoAnotacion = "RESALTADO",
+            Comentario = string.IsNullOrWhiteSpace(_comment) ? "Resaltado" : _comment.Trim(),
+            Pagina = 1,
+            PosicionX = Math.Clamp(point.X - 0.06m, 0m, 1m),
+            PosicionY = Math.Clamp(point.Y - 0.018m, 0m, 1m),
+            Ancho = 0.12m,
+            Alto = 0.036m,
+            Color = "#FFE066"
+        });
+
+        if (response?.Success == true)
+        {
+            _comment = string.Empty;
+            _highlightMode = false;
+            await LoadAnnotations();
+        }
+        else
+        {
+            Snackbar.Add(response?.Message ?? "No se pudo agregar el resaltado.", Severity.Error);
+        }
+    }
+
+    private async Task DeleteAnnotation(DocumentoAnotacionResponse annotation)
+    {
+        var response = await DocumentService.DeleteAnnotationAsync(annotation.PkidDocumentoAnotacion);
+        if (response?.Success == true)
+            await LoadAnnotations();
+        else
+            Snackbar.Add(response?.Message ?? "No se pudo eliminar la anotacion.", Severity.Error);
+    }
+
+    private static string HighlightStyle(DocumentoAnotacionResponse mark)
+        => string.Create(CultureInfo.InvariantCulture,
+            $"left:{mark.PosicionX ?? 0m:0.####%};top:{mark.PosicionY ?? 0m:0.####%};width:{mark.Ancho ?? 0.12m:0.####%};height:{mark.Alto ?? 0.036m:0.####%};");
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes >= 1024 * 1024)
+            return $"{bytes / 1024m / 1024m:N1} MB";
+        if (bytes >= 1024)
+            return $"{bytes / 1024m:N1} KB";
+        return $"{bytes:N0} B";
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+
+    private sealed class RelativePoint
+    {
+        public decimal X { get; set; }
+        public decimal Y { get; set; }
+    }
+}

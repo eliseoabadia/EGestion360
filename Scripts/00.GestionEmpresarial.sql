@@ -922,9 +922,9 @@ USING (VALUES
     (377, N'Tipo de Retiro', 1, 370, N'Tipo de Retiro', N'/Presupuesto/Tesorería/Inversiones/Tipo_Retiro', N'FaLockOpen', 1, 'ESP', 6, 1, GETDATE()),
 
     (400, N'Programa Anual', 1, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaCalendar', 1, 'ESP', 4, 1, GETDATE()),
-    (401, N'Requisicion', 2, 400, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
-    (402, N'Cotización', 2, 400, N'Cotización', N'/Adquisiciones/Cotizacion', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
-    (403, N'Solicitud Suficiencia', 2, 400, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
+    (401, N'Requisicion', 2, 4, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
+    (402, N'Cotización', 2, 4, N'Cotización', N'/Adquisiciones/Cotizacion', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
+    (403, N'Solicitud Suficiencia', 2, 4, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
 
     (500, N'Pólizas', 1, 3, N'Pólizas', N'/Contabilidad/Polizas', N'FaDocument', 1, 'ESP', 4, 1, GETDATE())
 

@@ -3,6 +3,7 @@
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using EG.Web.Services
 @using MudBlazor
@@ -70,6 +71,13 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectEstudio(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Planeacion"
+                                                       SubModulo="Investigacion_Mercado"
+                                                       Controlador="EstudioMercado"
+                                                       EntidadId="@item.PkidEstudioMercado"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.Nombre)"
+                                                       RegistroDescripcion="@TextOrDash(item.Descripcion)" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -132,6 +140,13 @@
                                        OnClick="@(() => EditItem(SelectedEstudio.PkidEstudioMercado))"
                                        Class="ml-2" />
                     </MudTooltip>
+                    <DocumentSupportButton Modulo="Planeacion"
+                                           SubModulo="Investigacion_Mercado"
+                                           Controlador="EstudioMercado"
+                                           EntidadId="@SelectedEstudio.PkidEstudioMercado"
+                                           FkidEmpresaSis="@SelectedEstudio.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedEstudio.Nombre)"
+                                           RegistroDescripcion="@TextOrDash(SelectedEstudio.Descripcion)" />
                     <MudTooltip Text="Agregar bienes desde PAAAS">
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
                                        Color="Color.Success"

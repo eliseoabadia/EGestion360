@@ -1,0 +1,83 @@
+@using EG.Web.Contracts.SoporteDocumental
+@using EG.Web.Models.SoporteDocumental
+@using MudBlazor
+@inject IDocumentSupportService DocumentService
+@inject IDialogService DialogService
+
+<MudTooltip Text="@TooltipText">
+    <MudBadge Content="@_count"
+              Color="Color.Info"
+              Overlap="true"
+              Visible="@(_count > 0)"
+              Class="document-support-badge">
+        <MudIconButton Icon="@Icons.Material.Filled.AttachFile"
+                       Color="@(_count > 0 ? Color.Info : Color.Default)"
+                       Size="@Size"
+                       Disabled="@Disabled"
+                       OnClick="OpenDialog"
+                       Class="document-support-button" />
+    </MudBadge>
+</MudTooltip>
+
+@code {
+    [Parameter, EditorRequired] public string Modulo { get; set; } = string.Empty;
+    [Parameter] public string? SubModulo { get; set; }
+    [Parameter] public string? Controlador { get; set; }
+    [Parameter] public string? Servicio { get; set; }
+    [Parameter, EditorRequired] public long EntidadId { get; set; }
+    [Parameter] public int? FkidEmpresaSis { get; set; }
+    [Parameter] public string RegistroTitulo { get; set; } = "Registro";
+    [Parameter] public string RegistroDescripcion { get; set; } = string.Empty;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public Size Size { get; set; } = Size.Small;
+
+    private int _count;
+    private string TooltipText => _count == 0 ? "Agregar soporte documental" : $"Soporte documental ({_count})";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadSummary();
+    }
+
+    private DocumentoEntidadRequest BuildRequest() => new()
+    {
+        Modulo = Modulo,
+        SubModulo = SubModulo,
+        Controlador = Controlador,
+        Servicio = Servicio,
+        EntidadId = EntidadId,
+        FkidEmpresaSis = FkidEmpresaSis
+    };
+
+    private async Task LoadSummary()
+    {
+        if (EntidadId <= 0 || string.IsNullOrWhiteSpace(Modulo))
+            return;
+
+        var response = await DocumentService.GetSummaryAsync(BuildRequest());
+        _count = response?.Data?.TotalDocumentos ?? response?.Items?.FirstOrDefault()?.TotalDocumentos ?? 0;
+    }
+
+    private async Task OpenDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(DocumentSupportDialog.Modulo)] = Modulo,
+            [nameof(DocumentSupportDialog.SubModulo)] = SubModulo,
+            [nameof(DocumentSupportDialog.Controlador)] = Controlador,
+            [nameof(DocumentSupportDialog.Servicio)] = Servicio,
+            [nameof(DocumentSupportDialog.EntidadId)] = EntidadId,
+            [nameof(DocumentSupportDialog.FkidEmpresaSis)] = FkidEmpresaSis,
+            [nameof(DocumentSupportDialog.RegistroTitulo)] = RegistroTitulo,
+            [nameof(DocumentSupportDialog.RegistroDescripcion)] = RegistroDescripcion
+        };
+
+        var dialog = await DialogService.ShowAsync<DocumentSupportDialog>(
+            "Soporte documental",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        await dialog.Result;
+        await LoadSummary();
+    }
+}

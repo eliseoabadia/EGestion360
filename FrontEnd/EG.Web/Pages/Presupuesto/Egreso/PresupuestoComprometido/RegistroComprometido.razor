@@ -3,6 +3,7 @@
 @using EG.Web.Contracts
 @using EG.Web.Pages.Presupuesto.Tesoreria.CuentasXPagar
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<ContratoResponse, ContratoResponse>
@@ -40,6 +41,13 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(item))" />
+                                <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                                                       SubModulo="Registro_Comprometido"
+                                                       Controlador="Contrato"
+                                                       EntidadId="@item.PkidContrato"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.NumeroContrato)"
+                                                       RegistroDescripcion="@TextOrDash(item.Descripcion)" />
                                 <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(item))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidContrato))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidContrato))" />
@@ -65,6 +73,13 @@
                     </div>
                     <MudSpacer />
                     <MudText Typo="Typo.subtitle2" Style="font-weight:700">@Money(SelectedContrato.MontoTotal)</MudText>
+                    <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                                           SubModulo="Registro_Comprometido"
+                                           Controlador="Contrato"
+                                           EntidadId="@SelectedContrato.PkidContrato"
+                                           FkidEmpresaSis="@SelectedContrato.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedContrato.NumeroContrato)"
+                                           RegistroDescripcion="@TextOrDash(SelectedContrato.Descripcion)" />
                     <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedContrato)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                 </MudPaper>

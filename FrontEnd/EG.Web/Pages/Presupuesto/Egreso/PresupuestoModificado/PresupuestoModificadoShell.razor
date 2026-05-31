@@ -5,6 +5,7 @@
 @using EG.Dommain.DTOs.Responses
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Services
 @using EG.Web.Shared
 @implements IDisposable
@@ -58,6 +59,12 @@
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(item))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(item))" Title="@RequestTooltip(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(item, "enviar-solicitud"))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(item))" Title="@AuthorizeTooltip(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(item, "autorizar"))" />
+                            <DocumentSupportButton Modulo="Presupuesto_Modificado"
+                                                   SubModulo="@SubModuleNameValue"
+                                                   Controlador="EgreAdecuacion"
+                                                   EntidadId="@item.PkidEgreAdecuacion"
+                                                   RegistroTitulo="@TextOrDash(item.Clave)"
+                                                   RegistroDescripcion="@TextOrDash(item.Justificacion)" />
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidEgreAdecuacion))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidEgreAdecuacion))" />
                         </MudTd>
@@ -85,6 +92,12 @@
                     </div>
                     <div class="mod-actions">
                         <MudChip T="string" Size="Size.Small" Color="@StatusColor(Selected)">@StatusText(Selected)</MudChip>
+                        <DocumentSupportButton Modulo="Presupuesto_Modificado"
+                                               SubModulo="@SubModuleNameValue"
+                                               Controlador="EgreAdecuacion"
+                                               EntidadId="@Selected.PkidEgreAdecuacion"
+                                               RegistroTitulo="@TextOrDash(Selected.Clave)"
+                                               RegistroDescripcion="@TextOrDash(Selected.Justificacion)" />
                         <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" Disabled="@(Selected == null || !CanSendSelected)" OnClick="@(() => Workflow(Selected!, "enviar-solicitud"))">Solicitar autorizacion</MudButton>
                         <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(Selected == null || !CanAuthorizeSelected)" OnClick="@(() => Workflow(Selected!, "autorizar"))">Autorizar</MudButton>
                         @if (CanCreate)

@@ -91,6 +91,16 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<DigitoIdentificador> DigitoIdentificadors { get; set; }
 
+    public virtual DbSet<Documento> Documentos { get; set; }
+
+    public virtual DbSet<DocumentoAnotacion> DocumentoAnotacions { get; set; }
+
+    public virtual DbSet<DocumentoEvento> DocumentoEventos { get; set; }
+
+    public virtual DbSet<DocumentoExtensionPermitidum> DocumentoExtensionPermitida { get; set; }
+
+    public virtual DbSet<DocumentoTipoAnotacion> DocumentoTipoAnotacions { get; set; }
+
     public virtual DbSet<EgreAdecuacion> EgreAdecuacions { get; set; }
 
     public virtual DbSet<EgreAdecuacionDetalle> EgreAdecuacionDetalles { get; set; }
@@ -374,6 +384,14 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwCuenta> VwCuentas { get; set; }
 
     public virtual DbSet<VwDetalleRequisicion> VwDetalleRequisicions { get; set; }
+
+    public virtual DbSet<VwDocumentoAnotacion> VwDocumentoAnotacions { get; set; }
+
+    public virtual DbSet<VwDocumentoEntidad> VwDocumentoEntidads { get; set; }
+
+    public virtual DbSet<VwDocumentoResumenAnotacion> VwDocumentoResumenAnotacions { get; set; }
+
+    public virtual DbSet<VwDocumentoResumenEntidad> VwDocumentoResumenEntidads { get; set; }
 
     public virtual DbSet<VwEgresoAdecuacion> VwEgresoAdecuacions { get; set; }
 
@@ -1970,6 +1988,167 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.DigitoIdentificadorUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_DigitoIdentificador_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<Documento>(entity =>
+        {
+            entity.HasKey(e => e.PkidDocumento).HasName("PK__Document__F6FE159DD4142EAC");
+
+            entity.ToTable("Documento", "SIS");
+
+            entity.HasIndex(e => new { e.Modulo, e.SubModulo, e.Controlador, e.Servicio, e.EntidadId, e.FkidEmpresaSis, e.Activo }, "IX_Documento_Entidad");
+
+            entity.HasIndex(e => e.CtCreatedDate, "IX_Documento_Fecha").IsDescending();
+
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Documento_Activo");
+            entity.Property(e => e.Controlador).HasMaxLength(160);
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_Documento_CreatedDate")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.Extension)
+                .IsRequired()
+                .HasMaxLength(16);
+            entity.Property(e => e.HashSha256).HasMaxLength(32);
+            entity.Property(e => e.ModoAlmacenamiento)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.NombreAlmacenado)
+                .IsRequired()
+                .HasMaxLength(260);
+            entity.Property(e => e.NombreOriginal)
+                .IsRequired()
+                .HasMaxLength(260);
+            entity.Property(e => e.RowVersion)
+                .IsRequired()
+                .IsRowVersion()
+                .IsConcurrencyToken();
+            entity.Property(e => e.RutaRelativa).HasMaxLength(700);
+            entity.Property(e => e.Servicio).HasMaxLength(160);
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.TipoMime)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.Titulo).HasMaxLength(250);
+            entity.Property(e => e.VersionDocumento).HasDefaultValue(1, "DF_Documento_Version");
+        });
+
+        modelBuilder.Entity<DocumentoAnotacion>(entity =>
+        {
+            entity.HasKey(e => e.PkidDocumentoAnotacion).HasName("PK__Document__3F4C0AC06E908D55");
+
+            entity.ToTable("DocumentoAnotacion", "SIS", tb => tb.HasTrigger("trDocumentoAnotacion_NoEditar"));
+
+            entity.HasIndex(e => new { e.FkidDocumento, e.Activo, e.CtCreatedDate }, "IX_DocumentoAnotacion_Documento").IsDescending(false, false, true);
+
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_DocumentoAnotacion_Activo");
+            entity.Property(e => e.Alto).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Ancho).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Color)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasDefaultValue("#FFE066", "DF_DocumentoAnotacion_Color");
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_DocumentoAnotacion_CreatedDate")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.PosicionX).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.PosicionY).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.RowVersion)
+                .IsRequired()
+                .IsRowVersion()
+                .IsConcurrencyToken();
+
+            entity.HasOne(d => d.FkidDocumentoNavigation).WithMany(p => p.DocumentoAnotacions)
+                .HasForeignKey(d => d.FkidDocumento)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DocumentoAnotacion_Documento");
+
+            entity.HasOne(d => d.FkidDocumentoTipoAnotacionNavigation).WithMany(p => p.DocumentoAnotacions)
+                .HasForeignKey(d => d.FkidDocumentoTipoAnotacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DocumentoAnotacion_Tipo");
+        });
+
+        modelBuilder.Entity<DocumentoEvento>(entity =>
+        {
+            entity.HasKey(e => e.PkidDocumentoEvento).HasName("PK__Document__CCABDED747D5EFD1");
+
+            entity.ToTable("DocumentoEvento", "SIS");
+
+            entity.HasIndex(e => new { e.FkidDocumento, e.CtCreatedDate }, "IX_DocumentoEvento_Documento").IsDescending(false, true);
+
+            entity.Property(e => e.Comentario).HasMaxLength(500);
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_DocumentoEvento_CreatedDate")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.Evento)
+                .IsRequired()
+                .HasMaxLength(40);
+
+            entity.HasOne(d => d.FkidDocumentoNavigation).WithMany(p => p.DocumentoEventos)
+                .HasForeignKey(d => d.FkidDocumento)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DocumentoEvento_Documento");
+        });
+
+        modelBuilder.Entity<DocumentoExtensionPermitidum>(entity =>
+        {
+            entity.HasKey(e => e.PkidDocumentoExtensionPermitida).HasName("PK__Document__93C2CD58C16F4811");
+
+            entity.ToTable("DocumentoExtensionPermitida", "SIS");
+
+            entity.HasIndex(e => e.Extension, "UX_DocumentoExtensionPermitida_Extension").IsUnique();
+
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_DocumentoExtensionPermitida_Activo");
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_DocumentoExtensionPermitida_CreatedDate")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.Extension)
+                .IsRequired()
+                .HasMaxLength(16);
+            entity.Property(e => e.TipoMime)
+                .IsRequired()
+                .HasMaxLength(120);
+        });
+
+        modelBuilder.Entity<DocumentoTipoAnotacion>(entity =>
+        {
+            entity.HasKey(e => e.PkidDocumentoTipoAnotacion).HasName("PK__Document__D28FD9AAED98051C");
+
+            entity.ToTable("DocumentoTipoAnotacion", "SIS");
+
+            entity.HasIndex(e => e.Clave, "UX_DocumentoTipoAnotacion_Clave").IsUnique();
+
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_DocumentoTipoAnotacion_Activo");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_DocumentoTipoAnotacion_CreatedDate")
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(120);
         });
 
         modelBuilder.Entity<EgreAdecuacion>(entity =>
@@ -6823,6 +7002,108 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TipoBienCodigoClave).HasMaxLength(200);
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
             entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwDocumentoAnotacion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_DocumentoAnotacion", "SIS");
+
+            entity.Property(e => e.Alto).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Ancho).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Color)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Controlador).HasMaxLength(160);
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.PosicionX).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.PosicionY).HasColumnType("decimal(9, 6)");
+            entity.Property(e => e.Servicio).HasMaxLength(160);
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.TipoAnotacion)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.TipoAnotacionDescripcion)
+                .IsRequired()
+                .HasMaxLength(120);
+        });
+
+        modelBuilder.Entity<VwDocumentoEntidad>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_DocumentoEntidad", "SIS");
+
+            entity.Property(e => e.Controlador).HasMaxLength(160);
+            entity.Property(e => e.CtCreatedBy).HasColumnName("CT_CreatedBy");
+            entity.Property(e => e.CtCreatedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_CreatedDate");
+            entity.Property(e => e.CtModifiedBy).HasColumnName("CT_ModifiedBy");
+            entity.Property(e => e.CtModifiedDate)
+                .HasPrecision(0)
+                .HasColumnName("CT_ModifiedDate");
+            entity.Property(e => e.Extension)
+                .IsRequired()
+                .HasMaxLength(16);
+            entity.Property(e => e.HashSha256Hex)
+                .HasMaxLength(64)
+                .IsUnicode(false);
+            entity.Property(e => e.ModoAlmacenamiento)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.NombreAlmacenado)
+                .IsRequired()
+                .HasMaxLength(260);
+            entity.Property(e => e.NombreOriginal)
+                .IsRequired()
+                .HasMaxLength(260);
+            entity.Property(e => e.PkidDocumento).ValueGeneratedOnAdd();
+            entity.Property(e => e.RutaRelativa).HasMaxLength(700);
+            entity.Property(e => e.Servicio).HasMaxLength(160);
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.TipoMime)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.Titulo).HasMaxLength(250);
+        });
+
+        modelBuilder.Entity<VwDocumentoResumenAnotacion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_DocumentoResumenAnotacion", "SIS");
+
+            entity.Property(e => e.UltimaAnotacion).HasPrecision(0);
+        });
+
+        modelBuilder.Entity<VwDocumentoResumenEntidad>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_DocumentoResumenEntidad", "SIS");
+
+            entity.Property(e => e.Controlador).HasMaxLength(160);
+            entity.Property(e => e.Modulo)
+                .IsRequired()
+                .HasMaxLength(120);
+            entity.Property(e => e.Servicio).HasMaxLength(160);
+            entity.Property(e => e.SubModulo).HasMaxLength(120);
+            entity.Property(e => e.UltimaFechaDocumento).HasPrecision(0);
         });
 
         modelBuilder.Entity<VwEgresoAdecuacion>(entity =>

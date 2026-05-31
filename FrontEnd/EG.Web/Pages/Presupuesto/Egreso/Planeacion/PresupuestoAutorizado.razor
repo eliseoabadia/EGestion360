@@ -5,6 +5,7 @@
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Services
 @using EG.Web.Shared
 @using MiniExcelLibs
@@ -75,6 +76,12 @@
                                            Size="Size.Small"
                                            OnClick="@(() => EditItem(item.PkidEgresoAutorizado))" />
                         </MudTooltip>
+                        <DocumentSupportButton Modulo="Egreso"
+                                               SubModulo="Presupuesto_Autorizado"
+                                               Controlador="EgresoAutorizado"
+                                               EntidadId="@item.PkidEgresoAutorizado"
+                                               RegistroTitulo="@TextOrDash(item.ProgramaClaveNombre ?? item.ProgramaClave)"
+                                               RegistroDescripcion="@TextOrDash(item.Descripcion)" />
                         <MudTooltip Text="@(item.FkidEgresoProyectadoPres.HasValue ? "Regresar a proyectado" : "Eliminar")">
                             <MudIconButton Icon="@(item.FkidEgresoProyectadoPres.HasValue ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Delete)"
                                            Visible="@CanDelete"

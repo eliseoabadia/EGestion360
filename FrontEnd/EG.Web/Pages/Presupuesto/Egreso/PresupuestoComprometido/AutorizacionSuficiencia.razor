@@ -3,6 +3,7 @@
 @using EG.Domain.DTOs.Responses.PresupuestoComprometido
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<AutorizacionSuficienciaResponse, AutorizacionSuficienciaResponse>
@@ -41,6 +42,13 @@
                         <Row Context="item">
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectAutorizacion(item))" />
+                                <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                                                       SubModulo="Autorizacion_Suficiencia"
+                                                       Controlador="AutorizacionSuficiencia"
+                                                       EntidadId="@item.PkidAutorizacionSuficiencia"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@($"Autorizacion {item.PkidAutorizacionSuficiencia}")"
+                                                       RegistroDescripcion="@TextOrDash(item.RequisicionDescripcion)" />
                                 <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanAuthorize" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(item))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidAutorizacionSuficiencia))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidAutorizacionSuficiencia))" />
@@ -66,6 +74,13 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedAutorizacion.Estatus)">@TextOrDash(SelectedAutorizacion.EstatusDescripcion)</MudChip>
+                    <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                                           SubModulo="Autorizacion_Suficiencia"
+                                           Controlador="AutorizacionSuficiencia"
+                                           EntidadId="@SelectedAutorizacion.PkidAutorizacionSuficiencia"
+                                           FkidEmpresaSis="@SelectedAutorizacion.FkidEmpresaSis"
+                                           RegistroTitulo="@($"Autorizacion {SelectedAutorizacion.PkidAutorizacionSuficiencia}")"
+                                           RegistroDescripcion="@TextOrDash(SelectedAutorizacion.RequisicionDescripcion)" />
                     <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanAuthorize" Disabled="@(SelectedAutorizacion.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(SelectedAutorizacion))" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedAutorizacion)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                 </MudPaper>

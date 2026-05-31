@@ -6,6 +6,7 @@
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<PolizaResponse, PolizaResponse>
@@ -62,6 +63,12 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectPoliza(item))" />
                                 </MudTooltip>
+                                <DocumentSupportButton Modulo="Contabilidad"
+                                                       SubModulo="Polizas"
+                                                       Controlador="Poliza"
+                                                       EntidadId="@item.PkidPoliza"
+                                                       RegistroTitulo="@TextOrDash(item.ClavePoliza)"
+                                                       RegistroDescripcion="@TextOrDash(item.NombrePoliza)" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -130,6 +137,12 @@
                     <MudChip T="string" Size="Size.Small" Color="@(SelectedPoliza.Autorizado == true ? Color.Success : Color.Default)" Class="ml-1">
                         @(SelectedPoliza.Autorizado == true ? "Autorizada" : "Sin autorizar")
                     </MudChip>
+                    <DocumentSupportButton Modulo="Contabilidad"
+                                           SubModulo="Polizas"
+                                           Controlador="Poliza"
+                                           EntidadId="@SelectedPoliza.PkidPoliza"
+                                           RegistroTitulo="@TextOrDash(SelectedPoliza.ClavePoliza)"
+                                           RegistroDescripcion="@TextOrDash(SelectedPoliza.NombrePoliza)" />
                     <MudTooltip Text="Editar póliza">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
