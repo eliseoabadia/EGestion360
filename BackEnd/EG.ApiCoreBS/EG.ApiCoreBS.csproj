@@ -8,6 +8,7 @@
 
   <ItemGroup>
 	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+	  <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="24.1.5" />
 	  <PackageReference Include="log4net" Version="3.3.1" />
 	  <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
@@ -26,6 +27,10 @@
 
 	<ItemGroup>
 	  <Folder Include="Controllers\Catalogos\Tesoreria\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Reporting\ExportedXml\**\*.repx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>

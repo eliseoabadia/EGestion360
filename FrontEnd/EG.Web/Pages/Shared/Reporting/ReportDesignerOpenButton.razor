@@ -1,0 +1,48 @@
+@using MudBlazor
+@inject NavigationManager Navigation
+
+@if (Visible)
+{
+    <MudTooltip Text="@Tooltip">
+        <MudIconButton Icon="@Icon"
+                       Color="@Color"
+                       Size="@Size"
+                       Disabled="@Disabled"
+                       OnClick="OpenDesigner" />
+    </MudTooltip>
+}
+
+@code {
+    [Parameter, EditorRequired] public string ReportName { get; set; } = string.Empty;
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string Tooltip { get; set; } = "Editar reporte";
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.DesignServices;
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+    [Parameter] public Size Size { get; set; } = Size.Small;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Visible { get; set; } = true;
+
+    private void OpenDesigner()
+    {
+        if (string.IsNullOrWhiteSpace(ReportName))
+        {
+            return;
+        }
+
+        var routeParameters = new Dictionary<string, string?>
+        {
+            ["name"] = ReportName,
+            ["title"] = Title ?? ReportName
+        };
+
+        Navigation.NavigateTo($"/Reporting/Designer?{BuildQuery(routeParameters)}");
+    }
+
+    private static string BuildQuery(IReadOnlyDictionary<string, string?> values)
+    {
+        return string.Join("&",
+            values
+                .Where(value => !string.IsNullOrWhiteSpace(value.Key) && !string.IsNullOrWhiteSpace(value.Value))
+                .Select(value => $"{Uri.EscapeDataString(value.Key)}={Uri.EscapeDataString(value.Value!)}"));
+    }
+}

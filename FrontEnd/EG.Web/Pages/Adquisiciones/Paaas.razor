@@ -61,6 +61,17 @@
                                            Size="Size.Small"
                                            OnClick="@(() => SelectPaaa(item))" />
                         </MudTooltip>
+                        <ReportOpenButton ReportName=""
+                                          EntityId="@item.PkidPaaas"
+                                          Title="@($"Reporte PAAA {item.PkidPaaas}")"
+                                          Tooltip="Ver reporte PAAAS"
+                                          Color="Color.Secondary"
+                                          Visible="@CanView" />
+                        <ReportDesignerOpenButton ReportName=""
+                                                  Title="Disenador reporte PAAAS"
+                                                  Tooltip="Editar diseno del reporte PAAAS"
+                                                  Color="Color.Primary"
+                                                  Visible="@CanUpdate" />
                         <DocumentSupportButton Modulo="Adquisiciones"
                                                SubModulo="Programa_Anual_Adquisiciones"
                                                Controlador="Paaa"
@@ -135,6 +146,17 @@
                                                    FkidEmpresaSis="@SelectedPaaa.FkidEmpresaSis"
                                                    RegistroTitulo="@SelectedPaaa.Descripcion"
                                                    RegistroDescripcion="@($"Programa anual {SelectedPaaa.PkidPaaas} · {SelectedPaaa.AreaNombre}")" />
+                            <ReportOpenButton ReportName=""
+                                              EntityId="@SelectedPaaa.PkidPaaas"
+                                              Title="@($"Reporte PAAA {SelectedPaaa.PkidPaaas}")"
+                                              Tooltip="Ver reporte PAAAS"
+                                              Color="Color.Secondary"
+                                              Visible="@CanView" />
+                            <ReportDesignerOpenButton ReportName=""
+                                                      Title="Disenador reporte PAAAS"
+                                                      Tooltip="Editar diseno del reporte PAAAS"
+                                                      Color="Color.Primary"
+                                                      Visible="@CanUpdate" />
                             <MudTooltip Text="Editar programa">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Primary"

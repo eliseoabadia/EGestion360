@@ -6,6 +6,7 @@
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.Reporting
 @using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
@@ -69,6 +70,17 @@
                                                        EntidadId="@item.PkidPoliza"
                                                        RegistroTitulo="@TextOrDash(item.ClavePoliza)"
                                                        RegistroDescripcion="@TextOrDash(item.NombrePoliza)" />
+                                <ReportOpenButton ReportName="@PolizaReportName"
+                                                  EntityId="@item.PkidPoliza"
+                                                  Title="@($"Reporte poliza {item.ClavePoliza}")"
+                                                  Tooltip="Ver reporte de poliza"
+                                                  Color="Color.Secondary"
+                                                  Visible="@CanView" />
+                                <ReportDesignerOpenButton ReportName="@PolizaReportName"
+                                                          Title="Disenador reporte poliza"
+                                                          Tooltip="Editar diseno del reporte de poliza"
+                                                          Color="Color.Primary"
+                                                          Visible="@CanUpdate" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -143,6 +155,17 @@
                                            EntidadId="@SelectedPoliza.PkidPoliza"
                                            RegistroTitulo="@TextOrDash(SelectedPoliza.ClavePoliza)"
                                            RegistroDescripcion="@TextOrDash(SelectedPoliza.NombrePoliza)" />
+                    <ReportOpenButton ReportName="@PolizaReportName"
+                                      EntityId="@SelectedPoliza.PkidPoliza"
+                                      Title="@($"Reporte poliza {SelectedPoliza.ClavePoliza}")"
+                                      Tooltip="Ver reporte de poliza"
+                                      Color="Color.Secondary"
+                                      Visible="@CanView" />
+                    <ReportDesignerOpenButton ReportName="@PolizaReportName"
+                                              Title="Disenador reporte poliza"
+                                              Tooltip="Editar diseno del reporte de poliza"
+                                              Color="Color.Primary"
+                                              Visible="@CanUpdate" />
                     <MudTooltip Text="Editar póliza">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
@@ -280,6 +303,7 @@
     private PolizaResponse? SelectedPoliza;
     private string detalleSearchString = string.Empty;
     private string _currencySymbol = "$";
+    private const string PolizaReportName = "Report_Polizas";
 
     protected override string ModuleName => "Contabilidad";
     protected override string SubModuleName => "Polizas";

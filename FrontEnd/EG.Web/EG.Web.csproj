@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazorise.Snackbar" Version="2.1.1" />
+    <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.8" PrivateAssets="all" />

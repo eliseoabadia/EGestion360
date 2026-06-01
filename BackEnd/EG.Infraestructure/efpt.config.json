@@ -1003,6 +1003,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[CONTA].[SP_ReportePoliza]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[CONTA].[SP_UPDATE_PolizaBalanceada]",
          "ObjectType": 1
       },
@@ -1028,6 +1032,10 @@
       },
       {
          "Name": "[ORCO].[SP_MantenimientoRequisicion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_ReportePAAAS]",
          "ObjectType": 1
       },
       {

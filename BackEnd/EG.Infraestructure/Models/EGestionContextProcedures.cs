@@ -3271,6 +3271,58 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_ReportePAAASResult>> SP_ReportePAAASAsync(int? pKIdPAAAS, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PKIdPAAAS",
+                    Value = pKIdPAAAS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_ReportePAAASResult>("EXEC @returnValue = [ORCO].[SP_ReportePAAAS] @PKIdPAAAS = @PKIdPAAAS", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_ReportePolizaResult>> SP_ReportePolizaAsync(int? pKIdPoliza, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PKIdPoliza",
+                    Value = pKIdPoliza ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_ReportePolizaResult>("EXEC @returnValue = [CONTA].[SP_ReportePoliza] @PKIdPoliza = @PKIdPoliza", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<int> SP_UPDATE_PolizaBalanceadaAsync(int? pKIdPoliza, int? idUser, OutputParameter<string> error, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterError = new SqlParameter

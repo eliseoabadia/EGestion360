@@ -1,10 +1,15 @@
 using EG.ApiCoreBS.Extensions;
 using EG.ApiCoreBS.Auth;
+using EG.ApiCoreBS.Reporting;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
 using EG.Domain.Settings;
 using EG.Infrastructure;
 using EG.Logger;
+using DevExpress.AspNetCore;
+using DevExpress.AspNetCore.Reporting;
+using DevExpress.XtraReports.Services;
+using DevExpress.XtraReports.Web.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -53,6 +58,22 @@ try
     builder.Services.AddLoggerGRP(builder.Configuration);
     builder.Services.AddDbContextGRP(builder.Configuration);
     builder.Services.AddApplicationServices(typeof(Program).Assembly);
+    builder.Services.AddDevExpressControls();
+    builder.Services.ConfigureReportingServices(configurator =>
+    {
+        configurator.ConfigureReportDesigner(designer =>
+        {
+            designer.RegisterDataSourceWizardConfigFileConnectionStringsProvider();
+        });
+    });
+    builder.Services.AddScoped<IReportProvider, GenericReportProvider>();
+    builder.Services.AddSingleton<ReportConnectionConfigurator>();
+    builder.Services.AddSingleton<StoredProcedureReportRegistry>();
+    builder.Services.AddSingleton<StoredProcedureReportFactory>();
+    builder.Services.AddSingleton<ReportLogoConfigurator>();
+    builder.Services.AddSingleton<InMemoryReportStorageWebExtension>();
+    builder.Services.AddSingleton<ReportStorageWebExtension>(serviceProvider =>
+        serviceProvider.GetRequiredService<InMemoryReportStorageWebExtension>());
 
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
@@ -126,6 +147,7 @@ try
 
     //app.UseHttpsRedirection();
     app.UseCors("AllowFrontend");
+    app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();

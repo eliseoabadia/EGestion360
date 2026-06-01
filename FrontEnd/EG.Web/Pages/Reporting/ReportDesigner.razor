@@ -1,0 +1,104 @@
+@page "/Reporting/Designer"
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-3 reporting-designer-page">
+    <MudPaper Elevation="1" Class="reporting-designer-toolbar">
+        <div class="reporting-designer-title">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           OnClick="GoBack" />
+            <MudText Typo="Typo.h6">@DesignerTitle</MudText>
+        </div>
+        <MudText Typo="Typo.caption" Color="Color.Tertiary">@Name</MudText>
+    </MudPaper>
+
+    @if (string.IsNullOrWhiteSpace(Name))
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mt-3">
+            No se recibio el nombre del reporte.
+        </MudAlert>
+    }
+    else
+    {
+        <div class="reporting-designer-shell">
+            <DxWasmReportDesigner ReportName="@Name" Height="calc(100vh - 108px)">
+                <DxWasmReportDesignerRequestOptions Host="@ApiHost" GetDesignerModelAction="DXXRD/GetReportDesignerModel" />
+                <DxReportDesignerModelSettings AllowMDI="true" />
+                <DxReportDesignerWizardSettings EnableSqlDataSource="true"
+                                                EnableJsonDataSource="false"
+                                                EnableObjectDataSource="false" />
+                <DxReportDesignerDataSourceSettings AllowAddDataSource="true"
+                                                    AllowEditDataSource="true"
+                                                    AllowRemoveDataSource="true" />
+            </DxWasmReportDesigner>
+        </div>
+    }
+</MudContainer>
+
+<style>
+    .reporting-designer-page {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .reporting-designer-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+    }
+
+    .reporting-designer-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .reporting-designer-shell {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        border: 1px solid var(--mud-palette-lines-default);
+    }
+</style>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "name")]
+    public string? Name { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "title")]
+    public string? Title { get; set; }
+
+    private string DesignerTitle => string.IsNullOrWhiteSpace(Title) ? "Disenador de reporte" : Title;
+
+    private string ApiHost => ResolveApiHost();
+
+    private async Task GoBack()
+    {
+        await JS.InvokeVoidAsync("history.back");
+    }
+
+    private string ResolveApiHost()
+    {
+        var configured = Configuration.GetSection("ApiSetting:baseUrl").Value;
+        var baseUri = Navigation.BaseUri?.ToString() ?? "/";
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return baseUri;
+        }
+
+        return Uri.TryCreate(configured, UriKind.Absolute, out var absolute)
+            ? absolute.ToString()
+            : new Uri(new Uri(baseUri), configured).ToString();
+    }
+}

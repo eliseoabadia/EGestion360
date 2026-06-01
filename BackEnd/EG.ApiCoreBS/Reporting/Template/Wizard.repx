@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1, Version=24.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="TemplateWizard" DisplayName="Template - Wizard DevExpress" Margins="40, 40, 40, 40" PageWidth="850" PageHeight="1100" Version="24.1" RequestParameters="false">
+  <Bands>
+    <Item1 Ref="2" ControlType="TopMarginBand" />
+    <Item2 Ref="3" ControlType="ReportHeaderBand" HeightF="84">
+      <Controls>
+        <Item1 Ref="4" ControlType="XRLabel" Text="Template - Wizard DevExpress" TextAlignment="MiddleLeft" SizeF="770,32" LocationFloat="0,8" Font="Arial, 18pt, style=Bold" ForeColor="255,22,91,170" />
+        <Item2 Ref="5" ControlType="XRLabel" Text="Usa el asistente de DevExpress para agregar un SqlDataSource o Stored Procedure." TextAlignment="MiddleLeft" SizeF="770,22" LocationFloat="0,44" Font="Arial, 9pt" ForeColor="255,90,90,90" />
+      </Controls>
+    </Item2>
+    <Item3 Ref="6" ControlType="DetailBand" HeightF="52">
+      <Controls>
+        <Item1 Ref="7" ControlType="XRLabel" Text="Arrastra campos aqui despues de configurar el origen de datos." TextAlignment="MiddleLeft" SizeF="770,24" LocationFloat="0,8" Font="Arial, 9pt" ForeColor="255,120,120,120" Borders="Bottom" BorderColor="255,220,220,220" Padding="4,4,0,0,96" />
+      </Controls>
+    </Item3>
+    <Item4 Ref="8" ControlType="PageFooterBand" HeightF="30">
+      <Controls>
+        <Item1 Ref="9" ControlType="XRPageInfo" TextAlignment="MiddleRight" SizeF="770,24" LocationFloat="0,0" Font="Arial, 8pt" />
+      </Controls>
+    </Item4>
+    <Item5 Ref="10" ControlType="BottomMarginBand" />
+  </Bands>
+</XtraReportsLayoutSerializer>
