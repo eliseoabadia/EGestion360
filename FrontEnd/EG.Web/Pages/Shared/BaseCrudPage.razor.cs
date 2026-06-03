@@ -69,7 +69,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 HasAccess = false;
                 StateHasChanged();
                 await Task.Delay(2000);
-                NavigationManager.NavigateTo("/", forceLoad: true);
+                NavigationManager.NavigateTo("/", replace: true);
                 return;
             }
 
@@ -87,7 +87,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             Console.WriteLine($"❌ VerifyAccess: {ex.Message}");
             Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
             await Task.Delay(1000);
-            NavigationManager.NavigateTo("/", forceLoad: true);
+            NavigationManager.NavigateTo("/", replace: true);
         }
         finally
         {

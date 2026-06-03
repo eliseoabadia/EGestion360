@@ -1,0 +1,143 @@
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Routing
+@using System.Threading
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@if (_showGate)
+{
+    <SessionStatus Title="@_title" Message="@_message" ShowSpinner="@_showSpinner" />
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private CancellationTokenSource? _monitorCts;
+    private bool _disposed;
+    private bool _redirecting;
+    private bool _showGate = true;
+    private bool _showSpinner = true;
+    private long _validationVersion;
+    private string _title = "Validando sesion";
+    private string _message = "Estamos comprobando tus credenciales en segundo plano.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged += HandleAuthenticationStateChanged;
+
+        _monitorCts = new CancellationTokenSource();
+        _ = MonitorSessionAsync(_monitorCts.Token);
+
+        await ValidateCurrentRouteAsync(showChecking: true);
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _redirecting = false;
+        _ = ValidateCurrentRouteAsync(showChecking: false);
+    }
+
+    private void HandleAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        _ = ValidateCurrentRouteAsync(showChecking: false);
+    }
+
+    private async Task MonitorSessionAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(20));
+            while (!_disposed && await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await InvokeAsync(() => ValidateCurrentRouteAsync(showChecking: false));
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal during component disposal.
+        }
+    }
+
+    private async Task ValidateCurrentRouteAsync(bool showChecking)
+    {
+        var version = Interlocked.Increment(ref _validationVersion);
+        var path = GetCurrentPath();
+
+        if (IsPublicPath(path))
+        {
+            _showGate = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (showChecking)
+        {
+            _title = "Validando sesion";
+            _message = "Estamos comprobando tus credenciales en segundo plano.";
+            _showSpinner = true;
+            _showGate = true;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (_disposed || version != _validationVersion)
+        {
+            return;
+        }
+
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            _showGate = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        _title = "Sesion no activa";
+        _message = "Por seguridad te llevaremos al inicio de sesion.";
+        _showSpinner = true;
+        _showGate = true;
+        await InvokeAsync(StateHasChanged);
+
+        if (_redirecting)
+        {
+            return;
+        }
+
+        _redirecting = true;
+        await Task.Delay(900);
+
+        if (!_disposed && !IsPublicPath(GetCurrentPath()))
+        {
+            var returnUrl = Uri.EscapeDataString(path);
+            NavigationManager.NavigateTo($"/login?returnUrl={returnUrl}", replace: true);
+        }
+    }
+
+    private string GetCurrentPath()
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        return string.IsNullOrWhiteSpace(relativePath)
+            ? "/"
+            : "/" + relativePath;
+    }
+
+    private static bool IsPublicPath(string path)
+    {
+        return path.StartsWith("/login", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/account/login", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged -= HandleAuthenticationStateChanged;
+        _monitorCts?.Cancel();
+        _monitorCts?.Dispose();
+    }
+}

@@ -10,6 +10,7 @@ namespace EG.Web.Services
         private string _searchTerm = string.Empty;
         private List<MenuItem> _originalItems = new();
         private List<MenuItem> _filteredItems = new();
+        private int? _loadedUserId;
 
         public event EventHandler? StateChanged;
         public event EventHandler? SearchChanged;
@@ -42,6 +43,24 @@ namespace EG.Web.Services
             }
 
             StateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Initialize(int userId, List<MenuItem> items)
+        {
+            _loadedUserId = userId;
+            Initialize(items);
+        }
+
+        public bool TryGetItems(int userId, out List<MenuItem> items)
+        {
+            if (_loadedUserId == userId && _originalItems.Any())
+            {
+                items = _originalItems;
+                return true;
+            }
+
+            items = new List<MenuItem>();
+            return false;
         }
 
         public bool GetExpandedState(long pkId) =>

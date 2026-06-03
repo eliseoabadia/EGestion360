@@ -1,0 +1,17 @@
+<div class="session-gate" role="status" aria-live="polite">
+    <section class="session-gate-card">
+        <div class="session-gate-brand">EGestion<span>360</span></div>
+        @if (ShowSpinner)
+        {
+            <div class="session-gate-loader" aria-hidden="true"></div>
+        }
+        <h1>@Title</h1>
+        <p>@Message</p>
+    </section>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Validando sesion";
+    [Parameter] public string Message { get; set; } = "Estamos comprobando tus credenciales en segundo plano.";
+    [Parameter] public bool ShowSpinner { get; set; } = true;
+}

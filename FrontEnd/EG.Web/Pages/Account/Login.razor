@@ -487,7 +487,7 @@
                     if (selectedSucursal != null)
                     {
                         Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Info);
-                        NavigationManager.NavigateTo("/", forceLoad: true);
+                        NavigationManager.NavigateTo("/", replace: true);
                     }
                 }
                 else if (sucursalesUsuario.Items.Count == 1)
@@ -498,7 +498,7 @@
                         sucursalesUsuario.Items[0].IdEmpresaPersona,
                         sucursalesUsuario.Items[0].NombreEmpresa);
                     Snackbar.Add("Bienvenido.", Severity.Success);
-                    NavigationManager.NavigateTo("/", forceLoad: true);
+                    NavigationManager.NavigateTo("/", replace: true);
                 }
                 else
                 {

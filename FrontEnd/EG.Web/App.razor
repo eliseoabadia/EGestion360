@@ -1,16 +1,28 @@
-﻿<CascadingAuthenticationState>
-
-    
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
+<CascadingAuthenticationState>
+    <SessionGuard>
+        <Router AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <Authorizing>
+                        <SessionStatus Title="Validando permisos"
+                                       Message="Estamos preparando tu acceso en segundo plano." />
+                    </Authorizing>
+                    <NotAuthorized>
+                        <SessionStatus Title="Acceso no autorizado"
+                                       Message="Tu usuario no tiene permiso para abrir esta seccion."
+                                       ShowSpinner="false" />
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <PageTitle>Pagina no encontrada</PageTitle>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <SessionStatus Title="Pagina no encontrada"
+                                   Message="La direccion solicitada no existe o ya no esta disponible."
+                                   ShowSpinner="false" />
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </SessionGuard>
 </CascadingAuthenticationState>

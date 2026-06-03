@@ -334,7 +334,7 @@
                        StateHasChanged();
                        // Redirigir al home después de un pequeño delay
                        Task.Delay(2000);
-                       NavigationManager.NavigateTo("/", forceLoad: true);
+                       NavigationManager.NavigateTo("/", replace: true);
                        return;
                    }
 
@@ -352,7 +352,7 @@
                {
                    Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
                    Task.Delay(1000);
-                   NavigationManager.NavigateTo("/", forceLoad: true);
+                   NavigationManager.NavigateTo("/", replace: true);
                }
                loading = false;
            });

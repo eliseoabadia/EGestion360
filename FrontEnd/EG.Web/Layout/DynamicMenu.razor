@@ -10,6 +10,7 @@
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
 @inject HttpClient Http
+@inject MenuStateService MenuStateService
 
 <AuthorizeView>
     <Authorized>
@@ -240,7 +241,7 @@
             if (string.IsNullOrWhiteSpace(rawToken))
             {
                 Console.WriteLine("Redirect: no token");
-                NavigationManager.NavigateTo("/login", forceLoad: true);
+                NavigationManager.NavigateTo("/login", replace: true);
                 return;
             }
 
@@ -259,7 +260,16 @@
             if (_userId == 0)
             {
                 Console.WriteLine("Redirect: userId is 0");
-                NavigationManager.NavigateTo("/login", forceLoad: true);
+                NavigationManager.NavigateTo("/login", replace: true);
+                return;
+            }
+
+            if (MenuStateService.TryGetItems(_userId, out var cachedItems))
+            {
+                Items = cachedItems;
+                InitializeExpandedStates();
+                _currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
+                CollapseSameLevelGroups();
                 return;
             }
 
@@ -270,12 +280,13 @@
             {
                 Console.WriteLine($"First menu item: PkidMenu={result.Items[0].PkidMenu}, Nombre={result.Items[0].Nombre}");
                 Items = result.Items;
+                MenuStateService.Initialize(_userId, Items);
                 InitializeExpandedStates();
             }
             else
             {
                 Console.WriteLine("Redirect: menu items empty or null");
-                NavigationManager.NavigateTo("/login", forceLoad: true);
+                NavigationManager.NavigateTo("/login", replace: true);
             }
         }
         catch (Exception ex)

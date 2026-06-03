@@ -15,6 +15,8 @@ namespace EG.Web.Auth
         private readonly HttpClient _httpClient;
         private static readonly string TOKEN_KEY = "authToken";
         private static readonly string DB_CLAIMS_KEY = "dbPermissionClaims";
+        private static readonly string USER_ID_KEY = "userId";
+        private static readonly string USER_NAME_KEY = "userName";
         private static readonly AuthenticationState ANONYMOUS = new(new ClaimsPrincipal(new ClaimsIdentity()));
 
         // Almacén de permisos: Group -> SubGroup -> HashSet<Action>
@@ -30,13 +32,26 @@ namespace EG.Web.Auth
         {
             var token = await _js.GetFromLocalStorage(TOKEN_KEY);
             if (string.IsNullOrWhiteSpace(token))
+            {
                 return ANONYMOUS;
+            }
 
             var normalizedToken = NormalizeToken(token);
+            if (string.IsNullOrWhiteSpace(normalizedToken))
+            {
+                await ClearStoredSessionAsync();
+                return ANONYMOUS;
+            }
+
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", normalizedToken);
 
             // 1. Obtener claims del JWT
             var jwtClaims = ParseClaimsFromJwt(normalizedToken);
+            if (jwtClaims.Count == 0 || IsTokenExpired(jwtClaims))
+            {
+                await ClearStoredSessionAsync();
+                return ANONYMOUS;
+            }
 
             // 2. Limpiar y cargar permisos desde el JWT (si trae Group/SubGroup/Values)
             _permissions.Clear();
@@ -71,10 +86,7 @@ namespace EG.Web.Auth
 
         public async Task LogoutAsync()
         {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            await _js.RemoveItem(TOKEN_KEY);
-            await _js.RemoveItem(DB_CLAIMS_KEY);  // Limpiar también permisos de BD
-            _permissions.Clear();
+            await ClearStoredSessionAsync();
             NotifyAuthenticationStateChanged(Task.FromResult(ANONYMOUS));
         }
 
@@ -204,6 +216,30 @@ namespace EG.Web.Auth
             {
                 return new List<Claim>();
             }
+        }
+
+        private static bool IsTokenExpired(IEnumerable<Claim> claims)
+        {
+            var expClaim = claims.FirstOrDefault(claim =>
+                string.Equals(claim.Type, "exp", StringComparison.OrdinalIgnoreCase));
+
+            if (expClaim == null || !long.TryParse(expClaim.Value, out var unixSeconds))
+            {
+                return false;
+            }
+
+            var expiration = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
+            return expiration <= DateTimeOffset.UtcNow.AddSeconds(30);
+        }
+
+        private async Task ClearStoredSessionAsync()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            await _js.RemoveItem(TOKEN_KEY);
+            await _js.RemoveItem(DB_CLAIMS_KEY);
+            await _js.RemoveItem(USER_ID_KEY);
+            await _js.RemoveItem(USER_NAME_KEY);
+            _permissions.Clear();
         }
 
         private static byte[] ParseBase64WithoutPadding(string base64)

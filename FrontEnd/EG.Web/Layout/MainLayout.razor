@@ -8,6 +8,7 @@
 @inject IGenericCrudService<AniosResponse> AnioService
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <link href="/css/menu-overlays.css" rel="stylesheet" />
 
@@ -180,15 +181,16 @@
         ApplyThemeFromState();
         ThemeStateService.OnThemeChanged += OnThemeChanged;
 
-        await CargarUsuarioAsync();
-        await SucursalStateService.InitializeAsync();
-
-        if (!esPaginaLogin)
+        if (esPaginaLogin)
         {
-            await AnioStateService.InitializeAsync();
-            await LoadAniosAsync();
+            await LoadVersionAsync();
+            return;
         }
 
+        await CargarUsuarioAsync();
+        await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+        await LoadAniosAsync();
         await LoadVersionAsync();
         SucursalStateService.OnSucursalChanged += OnSucursalChanged;
     }
@@ -271,8 +273,12 @@ await ApplyMenuThemeClass();
 
     private async Task Logout()
     {
-        NavigationManager.NavigateTo("/login", forceLoad: true);
-        await Task.CompletedTask;
+        if (AuthenticationStateProvider is AuthenticationProviderJWT authProvider)
+        {
+            await authProvider.LogoutAsync();
+        }
+
+        NavigationManager.NavigateTo("/login", replace: true);
     }
 
     private async Task SelectThemeOption(AppThemeOption option)

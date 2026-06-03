@@ -24,11 +24,14 @@
 </head>
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="app-boot-shell">
+            <section class="app-boot-card" role="status" aria-live="polite">
+                <div class="app-boot-brand">EGestion<span>360</span></div>
+                <div class="app-boot-loader" aria-hidden="true"></div>
+                <h1>Preparando tu espacio de trabajo</h1>
+                <p>Estamos cargando la plataforma y validando los recursos necesarios en segundo plano.</p>
+            </section>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

@@ -296,7 +296,7 @@
         {
             Snackbar.Add("No tienes permisos para consultar solicitudes de suficiencia.", Severity.Warning);
             await Task.Delay(1200);
-            NavigationManager.NavigateTo("/", forceLoad: true);
+            NavigationManager.NavigateTo("/", replace: true);
         }
 
         Loading = false;

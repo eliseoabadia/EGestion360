@@ -276,7 +276,7 @@
                 _isInitialized = true;
                 StateHasChanged();
                 Task.Delay(2000);
-                NavigationManager.NavigateTo("/", forceLoad: true);
+                NavigationManager.NavigateTo("/", replace: true);
                 return;
             }
 
@@ -293,7 +293,7 @@
             Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
             _isInitialized = true;
             StateHasChanged();
-            NavigationManager.NavigateTo("/", forceLoad: true);
+            NavigationManager.NavigateTo("/", replace: true);
         }
     }
 
@@ -311,7 +311,7 @@
 
                 if (string.IsNullOrWhiteSpace(rawToken))
                 {
-                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    NavigationManager.NavigateTo("/login", replace: true);
                     return;
                 }
 
@@ -348,7 +348,7 @@
 
                 if (_userId == 0)
                 {
-                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                    NavigationManager.NavigateTo("/login", replace: true);
                     return;
                 }
 
