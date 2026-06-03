@@ -38,7 +38,7 @@
     <Folder Include="Models\DTO\Configuration\" />
     <Folder Include="Pages\Configuration\Catalogos\Adquisicion\" />
     <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
-    <Folder Include="Pages\ConteoCiclico\" />
+    <Folder Include="Pages\Patrimonio\" />
     <Folder Include="Pages\Contabilidad\" />
     <Folder Include="Pages\Presupuesto\Egreso\PresupuestoModificado\" />
     <Folder Include="Pages\Presupuesto\Egreso\PresupuestoComprometido\" />

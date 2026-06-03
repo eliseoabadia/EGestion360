@@ -382,3 +382,31 @@ INSERT INTO [ORCO].[TipoGarantia] ([PKIdTipoGarantia], [Descripcion], [Activo], 
 SET IDENTITY_INSERT [ORCO].[TipoGarantia] OFF;
 GO
 
+
+-- Insertar estatus de orden de compra con IDs específicos
+SET IDENTITY_INSERT ORCO.EstatusOrdenCompra ON;
+GO
+
+-- Eliminar registros existentes con esos IDs (opcional, para evitar duplicados)
+-- DELETE FROM ORCO.EstatusOrdenCompra WHERE PK_IdEstatusOrdenCompra IN (1,2,3,4,5);
+-- GO
+
+INSERT INTO ORCO.EstatusOrdenCompra (
+    PK_IdEstatusOrdenCompra,
+    Descripcion,
+    Color,
+    CT_CreatedBy,
+    CT_CreatedDate,
+    CT_ModifiedBy,
+    CT_ModifiedDate,
+    CT_LIVE
+)
+VALUES
+    (1, N'INICIAL', N'#FFD6D6', 1, GETDATE(), NULL, NULL, 1),
+    (2, N'POR SURTIR', N'#FFD6D6', 1, GETDATE(), NULL, NULL, 1),
+    (3, N'SURTIDO PARCIAL', N'#FFF8CC', 1, GETDATE(), NULL, NULL, 1),
+    (4, N'SURTIDO TOTAL', N'#DFF6DD', 1, GETDATE(), NULL, NULL, 1),
+    (5, N'CERRADO', N'#DFF6DD', 1, GETDATE(), NULL, NULL, 1);
+GO
+
+SET IDENTITY_INSERT ORCO.EstatusOrdenCompra OFF;

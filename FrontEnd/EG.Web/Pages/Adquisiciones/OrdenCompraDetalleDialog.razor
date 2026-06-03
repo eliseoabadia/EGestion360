@@ -1,0 +1,318 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<OrdenCompraDetalleResponse> Service
+@inject IGenericCrudService<RequisicionDetalleResponse> RequisicionDetalleService
+@inject IGenericCrudService<CotizacionDetalleResponse> CotizacionDetalleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="OrdenCompraDetalleResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando detalle..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="OrdenCompraDetalleResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Dense="true" Variant="Variant.Outlined">
+                    Puedes seleccionar un bien cotizado para traer cantidad, unidad y precio. Si no hay cotizacion, selecciona el bien de requisicion y captura el precio.
+                </MudAlert>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedCotizacionDetalle"
+                                   ValueChanged="OnCotizacionDetalleChanged"
+                                   Label="Bien cotizado"
+                                   Clearable="true"
+                                   LoadPage="LoadCotizacionDetallesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedRequisicionDetalle"
+                                   ValueChanged="OnRequisicionDetalleChanged"
+                                   Label="Bien de requisicion"
+                                   Required="@(_selectedCotizacionDetalle == null)"
+                                   RequiredError="Selecciona un bien"
+                                   Clearable="true"
+                                   LoadPage="LoadRequisicionDetallesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Value="@SelectedBienText"
+                              Label="Bien / Servicio"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudTextField Value="@item.UnidadMedida"
+                              Label="Unidad"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudTextField Value="@item.TipoBienCodigoClave"
+                              Label="Clave"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField @bind-Value="item.CantidadSolicitada"
+                                 Label="Cantidad"
+                                 Variant="Variant.Outlined"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Min="0m"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField @bind-Value="item.CantidadRecibida"
+                                 Label="Recibido"
+                                 Variant="Variant.Outlined"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField @bind-Value="item.PrecioUnitario"
+                                 Label="Precio unitario"
+                                 Variant="Variant.Outlined"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="$"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField @bind-Value="item.Iva"
+                                 Label="IVA"
+                                 Variant="Variant.Outlined"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="$"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int OrdenCompraId { get; set; }
+    [Parameter] public int RequisicionId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<OrdenCompraDetalleResponse> form = null!;
+    private OrdenCompraDetalleResponse item = new()
+    {
+        Activo = true,
+        CantidadSolicitada = 1m,
+        CantidadRecibida = 0m,
+        PrecioUnitario = 0m,
+        Iva = 0m,
+        Observaciones = string.Empty
+    };
+
+    private LookupItem? _selectedCotizacionDetalle;
+    private LookupItem? _selectedRequisicionDetalle;
+
+    private string dialogTitle => Id.HasValue ? "Editar Detalle OC" : "Nuevo Detalle OC";
+    private string actionText => Id.HasValue ? "Actualizar" : "Agregar";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Agregando...";
+    private string SelectedBienText => string.IsNullOrWhiteSpace(item.BienClaveNombre)
+        ? TextOrDash(item.TipoBienDescripcion)
+        : item.BienClaveNombre;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else
+        {
+            item.FkidOrdenCompraOrco = OrdenCompraId;
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _selectedRequisicionDetalle = item.FkidRequisicionDetalleOrco.HasValue
+                    ? new LookupItem { Id = item.FkidRequisicionDetalleOrco.Value, Text = SelectedBienText }
+                    : null;
+                _selectedCotizacionDetalle = item.FkidCotizacionDetalleOrco.HasValue
+                    ? new LookupItem { Id = item.FkidCotizacionDetalleOrco.Value, Text = SelectedBienText }
+                    : null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar detalle: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FkidOrdenCompraOrco = OrdenCompraId > 0 ? OrdenCompraId : item.FkidOrdenCompraOrco;
+        item.FkidRequisicionDetalleOrco = _selectedRequisicionDetalle?.Id ?? item.FkidRequisicionDetalleOrco;
+        item.FkidCotizacionDetalleOrco = _selectedCotizacionDetalle?.Id;
+        item.Observaciones ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Detalle actualizado correctamente" : "Detalle agregado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el detalle", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnCotizacionDetalleChanged(LookupItem? value)
+    {
+        _selectedCotizacionDetalle = value;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await CotizacionDetalleService.GetByIdAsync(value.Id);
+        var detalle = response?.Data;
+        if (detalle == null)
+        {
+            return;
+        }
+
+        item.FkidCotizacionDetalleOrco = detalle.PkidCotizacionDetalle;
+        item.FkidRequisicionDetalleOrco = detalle.FkidRequisicionDetalleOrco;
+        item.FkidTipoBienAlma = detalle.FkidTipoBienAlma;
+        item.FkidUnidadesAlma = detalle.FkidUnidadesAlma ?? 0;
+        item.TipoBienCodigoClave = detalle.TipoBienClave;
+        item.TipoBienDescripcion = detalle.TipoBienDescripcion;
+        item.BienClaveNombre = $"{detalle.TipoBienClave} - {detalle.TipoBienDescripcion}".Trim(' ', '-');
+        item.UnidadMedida = detalle.UnidadMedida;
+        item.CantidadSolicitada = detalle.Cantidad;
+        item.PrecioUnitario = detalle.PrecioUnitario ?? item.PrecioUnitario;
+        _selectedRequisicionDetalle = new LookupItem { Id = detalle.FkidRequisicionDetalleOrco, Text = item.BienClaveNombre };
+    }
+
+    private async Task OnRequisicionDetalleChanged(LookupItem? value)
+    {
+        _selectedRequisicionDetalle = value;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await RequisicionDetalleService.GetByIdAsync(value.Id);
+        var detalle = response?.Data;
+        if (detalle == null)
+        {
+            return;
+        }
+
+        item.FkidRequisicionDetalleOrco = detalle.PkidRequisicionDetalle;
+        item.FkidTipoBienAlma = detalle.FkidTipoBienAlma;
+        item.FkidUnidadesAlma = detalle.FkidUnidadesAlma ?? 0;
+        item.TipoBienCodigoClave = detalle.TipoBienCodigoClave;
+        item.TipoBienDescripcion = detalle.TipoBienDescripcion;
+        item.BienClaveNombre = $"{detalle.TipoBienCodigoClave} - {detalle.TipoBienDescripcion}".Trim(' ', '-');
+        item.UnidadMedida = detalle.UnidadMedida;
+        item.CantidadSolicitada = detalle.Cantidad;
+    }
+
+    private async Task<ComboLookupResult> LoadCotizacionDetallesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var filters = RequisicionId > 0
+            ? new Dictionary<string, object> { ["FkidRequisicionOrco"] = RequisicionId }
+            : null;
+
+        var response = await CotizacionDetalleService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidCotizacionDetalle,
+            Text = $"{x.TipoBienClave} - {x.TipoBienDescripcion} | {Money(x.PrecioUnitario)}"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadRequisicionDetallesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var filters = RequisicionId > 0
+            ? new Dictionary<string, object> { ["FkidRequisicionOrco"] = RequisicionId }
+            : null;
+
+        var response = await RequisicionDetalleService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidRequisicionDetalle,
+            Text = $"{x.TipoBienCodigoClave} - {x.TipoBienDescripcion} | Cant. {Quantity(x.Cantidad)}"
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Money(decimal? value) =>
+        value.HasValue ? $"${value.Value.ToString("0.00", NumberCulture)}" : "$0.00";
+
+    private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+}

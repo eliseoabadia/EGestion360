@@ -1,0 +1,192 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<OrdenCompraPartidaResponse> Service
+@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject IGenericCrudService<FuenteFinanciamientoResponse> FuenteService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="OrdenCompraPartidaResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando partida..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="OrdenCompraPartidaResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedPartida"
+                                   ValueChanged="value => _selectedPartida = value"
+                                   Label="Partida"
+                                   Required="true"
+                                   RequiredError="La partida es requerida"
+                                   LoadPage="LoadPartidasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedFuente"
+                                   ValueChanged="value => _selectedFuente = value"
+                                   Label="Fuente de financiamiento"
+                                   Clearable="true"
+                                   LoadPage="LoadFuentesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="item.Importe"
+                                 Label="Importe"
+                                 Variant="Variant.Outlined"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="$"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int OrdenCompraId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<OrdenCompraPartidaResponse> form = null!;
+    private OrdenCompraPartidaResponse item = new() { Activo = true, Observaciones = string.Empty };
+    private LookupItem? _selectedPartida;
+    private LookupItem? _selectedFuente;
+
+    private string dialogTitle => Id.HasValue ? "Editar Partida OC" : "Nueva Partida OC";
+    private string actionText => Id.HasValue ? "Actualizar" : "Agregar";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Agregando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else
+        {
+            item.FkidOrdenCompraOrco = OrdenCompraId;
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _selectedPartida = new LookupItem
+                {
+                    Id = item.FkidPartidaConta,
+                    Text = item.PartidaClaveNombre
+                };
+                if (item.FkidFuenteFinanciamientoPres.HasValue)
+                {
+                    _selectedFuente = new LookupItem
+                    {
+                        Id = item.FkidFuenteFinanciamientoPres.Value,
+                        Text = $"{item.FuenteFinanciamientoClave} - {item.FuenteFinanciamientoDescripcion}".Trim(' ', '-')
+                    };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar partida: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPartida == null)
+        {
+            Snackbar.Add("Debe seleccionar una partida.", Severity.Warning);
+            return;
+        }
+
+        item.FkidOrdenCompraOrco = OrdenCompraId > 0 ? OrdenCompraId : item.FkidOrdenCompraOrco;
+        item.FkidPartidaConta = _selectedPartida.Id;
+        item.FkidFuenteFinanciamientoPres = _selectedFuente?.Id;
+        item.Observaciones ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Partida actualizada correctamente" : "Partida agregada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar la partida", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidPartida,
+            Text = $"{x.Clave} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadFuentesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await FuenteService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidFuenteFinanciamiento,
+            Text = $"{x.Clave} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+}

@@ -1,0 +1,286 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<OrdenCompraResponse> Service
+@inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<ProveedorResponse> ProveedorService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="OrdenCompraResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando orden de compra..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="OrdenCompraResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.NumeroOrdenCompra"
+                                  Label="Numero"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.EstatusDescripcion"
+                                  Label="Estatus"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              MaxLength="500"
+                              RequiredError="La descripcion es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedRequisicion"
+                                   ValueChanged="value => _selectedRequisicion = value"
+                                   Label="Requisicion"
+                                   Required="true"
+                                   RequiredError="La requisicion es requerida"
+                                   LoadPage="LoadRequisicionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedProveedor"
+                                   ValueChanged="value => _selectedProveedor = value"
+                                   Label="Proveedor"
+                                   Required="true"
+                                   RequiredError="El proveedor es requerido"
+                                   LoadPage="LoadProveedoresPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="_fechaOrdenCompra"
+                               Label="Fecha OC"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="item.FechaRequerida"
+                               Label="Fecha requerida"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="item.FechaEntrega"
+                               Label="Fecha entrega"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="item.FechaVigencia"
+                               Label="Fecha vigencia"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.TipoCambio"
+                                 Label="Tipo de cambio"
+                                 Variant="Variant.Outlined"
+                                 Format="0.000000"
+                                 Culture="@NumberCulture"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudSwitch T="bool" @bind-Value="item.CompraDirecta" Label="Compra directa" Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<OrdenCompraResponse> form = null!;
+    private OrdenCompraResponse item = new()
+    {
+        Activo = true,
+        FechaOrdenCompra = DateTime.Today,
+        FkidEstatusOrdenCompraOrco = 1,
+        TipoCambio = 1m,
+        CompraDirecta = false,
+        Descripcion = string.Empty,
+        Observaciones = string.Empty,
+        MotivoCancelacion = string.Empty,
+        FlDocumento = string.Empty
+    };
+
+    private DateTime? _fechaOrdenCompra = DateTime.Today;
+    private LookupItem? _selectedRequisicion;
+    private LookupItem? _selectedProveedor;
+
+    private string dialogTitle => Id.HasValue ? "Editar Orden de Compra" : "Nueva Orden de Compra";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaOrdenCompra = item.FechaOrdenCompra;
+                _selectedRequisicion = new LookupItem
+                {
+                    Id = item.FkidRequisicionOrco,
+                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                };
+                _selectedProveedor = new LookupItem
+                {
+                    Id = item.FkidProveedorSis,
+                    Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre)
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedRequisicion == null)
+        {
+            Snackbar.Add("Debe seleccionar una requisicion.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedProveedor == null)
+        {
+            Snackbar.Add("Debe seleccionar un proveedor.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidRequisicionOrco = _selectedRequisicion.Id;
+        item.FkidProveedorSis = _selectedProveedor.Id;
+        item.FechaOrdenCompra = _fechaOrdenCompra ?? DateTime.Today;
+        item.FkidEstatusOrdenCompraOrco = item.FkidEstatusOrdenCompraOrco <= 0 ? 1 : item.FkidEstatusOrdenCompraOrco;
+        item.NumeroOrdenCompra ??= string.Empty;
+        item.Observaciones ??= string.Empty;
+        item.MotivoCancelacion ??= string.Empty;
+        item.FlDocumento ??= string.Empty;
+        item.TipoCambio ??= 1m;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Orden de compra actualizada correctamente" : "Orden de compra creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar la orden de compra", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadRequisicionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await RequisicionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidRequisicion,
+            Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidProveedor,
+            Text = BuildProveedorText(x.Clave, x.Nombre)
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildProveedorText(string? clave, string? nombre)
+    {
+        var prefix = string.IsNullOrWhiteSpace(clave) ? string.Empty : $"{clave} - ";
+        return $"{prefix}{nombre}".Trim();
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+}

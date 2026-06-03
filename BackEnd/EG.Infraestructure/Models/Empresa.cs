@@ -75,6 +75,8 @@ public partial class Empresa
 
     public virtual ICollection<IntermediarioFinanciero> IntermediarioFinancieros { get; set; } = new List<IntermediarioFinanciero>();
 
+    public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
+
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();

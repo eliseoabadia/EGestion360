@@ -1,0 +1,1015 @@
+@page "/Adquisiciones/Orden_Compra"
+@using System.Globalization
+@using System.Net.Http.Json
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
+@inject HttpClient Http
+@inherits BaseCrudPage<OrdenCompraResponse, OrdenCompraResponse>
+
+@inject IGenericCrudService<OrdenCompraDetalleResponse> DetalleService
+@inject IGenericCrudService<OrdenCompraPartidaResponse> PartidaService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column orden-compra-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedOrden == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Ordenes de Compra"
+                            Subtitle="Captura, revisa y autoriza ordenes de compra por proveedor"
+                            Icon="@Icons.Material.Filled.Article"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div class="summary-strip">
+                    <div>
+                        <span class="summary-label">Total visible</span>
+                        <strong>@Money(Elements.Sum(x => x.Total))</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Registros</span>
+                        <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Empresa</span>
+                        <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Autorizadas</span>
+                        <strong>@Elements.Count(x => x.EstaAutorizada).ToString("N0", NumberCulture)</strong>
+                    </div>
+                </div>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="OrdenCompraResponse"
+                                  @ref="table"
+                                  Title="Lista de ordenes de compra"
+                                  SearchPlaceholder="Buscar por numero, proveedor, requisicion o descripcion..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="NumeroOrdenCompra" T="OrdenCompraResponse">Numero</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="OrdenCompraResponse">Proveedor</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="OrdenCompraResponse">Requisicion</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaOrdenCompra" T="OrdenCompraResponse">Fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Total" T="OrdenCompraResponse">Total</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="OrdenCompraResponse">Estatus</MudTableSortLabel></MudTh>
+                            <MudTh>Hijos</MudTh>
+                        </Header>
+
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectOrden(item))" />
+                                </MudTooltip>
+                                <DocumentSupportButton Modulo="Adquisiciones"
+                                                       SubModulo="OrdenCompra"
+                                                       Controlador="OrdenCompra"
+                                                       EntidadId="@item.PkidOrdenCompra"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.NumeroOrdenCompra)"
+                                                       RegistroDescripcion="@($"{TextOrDash(item.ProveedorNombre)} | {TextOrDash(item.Descripcion)}")" />
+                                <MudTooltip Text="Autorizar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                                   Visible="@CanAuthorize"
+                                                   Disabled="@(!CanAuthorizeItem(item))"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => AutorizarOrden(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Disabled="@IsLocked(item)"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidOrdenCompra))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Disabled="@IsLocked(item)"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteItem(item.PkidOrdenCompra))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(item.NumeroOrdenCompra)</div>
+                                <span>@TextOrDash(item.Descripcion)</span>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(item.ProveedorNombre)</div>
+                                <span>@TextOrDash(item.ProveedorRfc)</span>
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
+                            <MudTd>@item.FechaOrdenCompra.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd><strong>@Money(item.Total)</strong></MudTd>
+                            <MudTd>
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Style="@GetStatusStyle(item)"
+                                         Variant="Variant.Filled">
+                                    @TextOrDash(item.EstatusDescripcion)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <span>@item.TotalDetalles detalles</span><br />
+                                <span>@item.TotalPartidas partidas</span>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                   Color="Color.Primary"
+                                   Size="Size.Medium"
+                                   OnClick="BackToTable"
+                                   Tooltip="Volver al listado" />
+                    <div class="selected-title ml-2">
+                        <MudText Typo="Typo.h6">@TextOrDash(SelectedOrden.NumeroOrdenCompra)</MudText>
+                        <span>@TextOrDash(SelectedOrden.ProveedorNombre)</span>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Style="@GetStatusStyle(SelectedOrden)">
+                        @TextOrDash(SelectedOrden.EstatusDescripcion)
+                    </MudChip>
+                    <MudTooltip Text="Autorizar orden">
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanAuthorize"
+                                       Disabled="@(!CanAuthorizeItem(SelectedOrden))"
+                                       OnClick="@(() => AutorizarOrden(SelectedOrden))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <MudTooltip Text="Editar orden">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       Disabled="@IsSelectedLocked"
+                                       OnClick="@(() => EditItem(SelectedOrden.PkidOrdenCompra))"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Agregar partida">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       Disabled="@IsSelectedLocked"
+                                       OnClick="AddPartida"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Agregar detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.AddShoppingCart"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       Disabled="@IsSelectedLocked"
+                                       OnClick="AddDetalle"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                </MudPaper>
+
+                <MudCard Elevation="1" Style="flex-shrink: 0;">
+                    <MudCardContent Style="padding: 8px 12px;">
+                        <MudGrid Spacing="1">
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Proveedor</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(SelectedOrden.ProveedorNombre)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Requisicion</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(SelectedOrden.RequisicionDescripcion)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha OC</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@SelectedOrden.FechaOrdenCompra.ToString("dd/MM/yyyy")</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Moneda</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@GetCurrencyText(SelectedOrden)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Total</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@Money(SelectedOrden.Total)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Subtotal</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@Money(SelectedOrden.Subtotal)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">IVA</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@Money(SelectedOrden.Iva)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Tipo cambio</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@Quantity(SelectedOrden.TipoCambio ?? 1m)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Observaciones</MudText>
+                                <MudText Typo="Typo.body2">@TextOrDash(SelectedOrden.Observaciones)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudAlert Severity="@(IsSelectedLocked ? Severity.Warning : Severity.Success)" Dense="true" Variant="Variant.Outlined">
+                                    @(IsSelectedLocked ? "Autorizada: la orden queda bloqueada para cambios." : "Inicial: puedes capturar partidas y detalles.")
+                                </MudAlert>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
+                    <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
+                        <GenericTable TItem="OrdenCompraDetalleResponse"
+                                      @ref="detalleTable"
+                                      Title="Detalles"
+                                      SearchPlaceholder="Buscar bien o servicio..."
+                                      ShowExportButton="false"
+                                      ShowAddButton="@(CanCreate && !IsSelectedLocked)"
+                                      PageSize="5"
+                                      ServerDataFunc="LoadDetallesServerData"
+                                      SearchString="@detalleSearchString"
+                                      SearchStringChanged="(s) => detalleSearchString = s"
+                                      OnSearch="ReloadDetalles"
+                                      OnAdd="AddDetalle">
+                            <Header>
+                                <MudTh>Acciones</MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="OrdenCompraDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="OrdenCompraDetalleResponse">Bien</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="CantidadSolicitada" T="OrdenCompraDetalleResponse">Cant.</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="PrecioUnitario" T="OrdenCompraDetalleResponse">Precio</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="TotalDetalle" T="OrdenCompraDetalleResponse">Total</MudTableSortLabel></MudTh>
+                            </Header>
+                            <Row Context="detalle">
+                                <MudTd>
+                                    <MudTooltip Text="Editar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Visible="@CanUpdate"
+                                                       Disabled="@IsSelectedLocked"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(() => EditDetalle(detalle.PkidOrdenCompraDetalle))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Visible="@CanDelete"
+                                                       Disabled="@IsSelectedLocked"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeleteDetalle(detalle))" />
+                                    </MudTooltip>
+                                </MudTd>
+                                <MudTd>@TextOrDash(detalle.TipoBienCodigoClave)</MudTd>
+                                <MudTd>
+                                    <div class="main-cell">@TextOrDash(detalle.TipoBienDescripcion)</div>
+                                    <span>@TextOrDash(detalle.UnidadMedida)</span>
+                                </MudTd>
+                                <MudTd>@Quantity(detalle.CantidadSolicitada)</MudTd>
+                                <MudTd>@Money(detalle.PrecioUnitario)</MudTd>
+                                <MudTd><strong>@Money(detalle.TotalDetalle ?? 0m)</strong></MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+
+                    <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
+                        <GenericTable TItem="OrdenCompraPartidaResponse"
+                                      @ref="partidaTable"
+                                      Title="Partidas presupuestales"
+                                      SearchPlaceholder="Buscar partida..."
+                                      ShowExportButton="false"
+                                      ShowAddButton="@(CanCreate && !IsSelectedLocked)"
+                                      PageSize="5"
+                                      ServerDataFunc="LoadPartidasServerData"
+                                      SearchString="@partidaSearchString"
+                                      SearchStringChanged="(s) => partidaSearchString = s"
+                                      OnSearch="ReloadPartidas"
+                                      OnAdd="AddPartida">
+                            <Header>
+                                <MudTh>Acciones</MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="OrdenCompraPartidaResponse">Partida</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="OrdenCompraPartidaResponse">Fuente</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="Importe" T="OrdenCompraPartidaResponse">Importe</MudTableSortLabel></MudTh>
+                            </Header>
+                            <Row Context="partida">
+                                <MudTd>
+                                    <MudTooltip Text="Editar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Visible="@CanUpdate"
+                                                       Disabled="@IsSelectedLocked"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(() => EditPartida(partida.PkidOrdenCompraPartida))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Visible="@CanDelete"
+                                                       Disabled="@IsSelectedLocked"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeletePartida(partida))" />
+                                    </MudTooltip>
+                                </MudTd>
+                                <MudTd>
+                                    <div class="main-cell">@TextOrDash(partida.PartidaClave)</div>
+                                    <span>@TextOrDash(partida.PartidaDescripcion)</span>
+                                </MudTd>
+                                <MudTd>
+                                    <div class="main-cell">@TextOrDash(partida.FuenteFinanciamientoClave)</div>
+                                    <span>@TextOrDash(partida.FuenteFinanciamientoDescripcion)</span>
+                                </MudTd>
+                                <MudTd><strong>@Money(partida.Importe)</strong></MudTd>
+                            </Row>
+                        </GenericTable>
+                    </MudItem>
+                </MudGrid>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .orden-compra-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .orden-compra-page .summary-strip > div {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .orden-compra-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .orden-compra-page .summary-strip strong,
+    .orden-compra-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .orden-compra-page td span,
+    .orden-compra-page .selected-title span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .orden-compra-page .selected-title {
+        min-width: 0;
+    }
+
+    .orden-compra-page .selected-title .mud-typography {
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    @@media (max-width: 960px) {
+        .orden-compra-page .summary-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<OrdenCompraResponse> table = null!;
+    private GenericTable<OrdenCompraDetalleResponse>? detalleTable;
+    private GenericTable<OrdenCompraPartidaResponse>? partidaTable;
+    private OrdenCompraResponse? SelectedOrden;
+    private string detalleSearchString = string.Empty;
+    private string partidaSearchString = string.Empty;
+
+    protected override string ModuleName => "Adquisiciones";
+    protected override string SubModuleName => "OrdenCompra";
+    protected override Type CreateDialogType => typeof(OrdenCompraDialog);
+    protected override Type EditDialogType => typeof(OrdenCompraDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<OrdenCompraResponse>);
+
+    private bool IsSelectedLocked => IsLocked(SelectedOrden);
+
+    protected override string GetDefaultSortLabel() => "FechaOrdenCompra";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+    }
+
+    protected override async Task<TableData<OrdenCompraResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<OrdenCompraResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar ordenes de compra: {ex.Message}", Severity.Error);
+            return new TableData<OrdenCompraResponse> { Items = new List<OrdenCompraResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear Orden de Compra",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        if (await IsOrdenLockedAsync(id, "editarla"))
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar Orden de Compra",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+            if (SelectedOrden?.PkidOrdenCompra == id)
+            {
+                await RefreshSelectedOrden();
+            }
+        }
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        if (await IsOrdenLockedAsync(id, "eliminarla"))
+        {
+            return;
+        }
+
+        await base.DeleteItem(id);
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.NumeroOrdenCompra ?? "la orden de compra";
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<OrdenCompraResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidOrdenCompra,
+            Numero = item.NumeroOrdenCompra,
+            item.Descripcion,
+            Requisicion = item.RequisicionDescripcion,
+            Proveedor = item.ProveedorNombre,
+            RFC = item.ProveedorRfc,
+            Fecha = item.FechaOrdenCompra.ToString("dd/MM/yyyy"),
+            item.Subtotal,
+            item.Iva,
+            item.Total,
+            Estatus = item.EstatusDescripcion,
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion.ToString("dd/MM/yyyy HH:mm"),
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            var excelData = MapToExcelData(response.Items);
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedOrden == null && table != null)
+        {
+            await table.ReloadData();
+            return;
+        }
+
+        await RefreshSelectedOrden();
+        await ReloadDetalles();
+        await ReloadPartidas();
+    }
+
+    private void SelectOrden(OrdenCompraResponse item)
+    {
+        detalleSearchString = string.Empty;
+        partidaSearchString = string.Empty;
+        SelectedOrden = item;
+        StateHasChanged();
+    }
+
+    private void BackToTable()
+    {
+        SelectedOrden = null;
+        detalleSearchString = string.Empty;
+        partidaSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task RefreshSelectedOrden()
+    {
+        if (SelectedOrden == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedOrden.PkidOrdenCompra);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedOrden = response.Data;
+        }
+    }
+
+    private async Task<TableData<OrdenCompraDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedOrden == null)
+        {
+            return new TableData<OrdenCompraDetalleResponse> { Items = new List<OrdenCompraDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "TipoBienCodigoClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = SelectedOrden.PkidOrdenCompra });
+
+        return new TableData<OrdenCompraDetalleResponse>
+        {
+            Items = response?.Items ?? new List<OrdenCompraDetalleResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task<TableData<OrdenCompraPartidaResponse>> LoadPartidasServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedOrden == null)
+        {
+            return new TableData<OrdenCompraPartidaResponse> { Items = new List<OrdenCompraPartidaResponse>(), TotalItems = 0 };
+        }
+
+        var response = await PartidaService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            partidaSearchString,
+            state.SortLabel ?? "PartidaClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = SelectedOrden.PkidOrdenCompra });
+
+        return new TableData<OrdenCompraPartidaResponse>
+        {
+            Items = response?.Items ?? new List<OrdenCompraPartidaResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task AddDetalle()
+    {
+        if (!CanModifySelectedOrden("agregar detalles"))
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["OrdenCompraId"] = SelectedOrden!.PkidOrdenCompra,
+            ["RequisicionId"] = SelectedOrden.FkidRequisicionOrco
+        };
+
+        var dialog = await DialogService.ShowAsync<OrdenCompraDetalleDialog>(
+            "Agregar Detalle",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+            await RefreshSelectedOrden();
+        }
+    }
+
+    private async Task EditDetalle(int id)
+    {
+        if (!CanModifySelectedOrden("editar detalles"))
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["OrdenCompraId"] = SelectedOrden!.PkidOrdenCompra,
+            ["RequisicionId"] = SelectedOrden.FkidRequisicionOrco
+        };
+
+        var dialog = await DialogService.ShowAsync<OrdenCompraDetalleDialog>(
+            "Editar Detalle",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadDetalles();
+            await RefreshSelectedOrden();
+        }
+    }
+
+    private async Task DeleteDetalle(OrdenCompraDetalleResponse detalle)
+    {
+        if (!CanModifySelectedOrden("eliminar detalles"))
+        {
+            return;
+        }
+
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar el detalle {TextOrDash(detalle.TipoBienDescripcion)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var response = await Http.DeleteAsync($"api/OrdenCompraDetalle/{detalle.PkidOrdenCompraDetalle}");
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+        if (response.IsSuccessStatusCode && result?.Success == true)
+        {
+            Snackbar.Add("Detalle eliminado correctamente", Severity.Success);
+            await ReloadDetalles();
+            await RefreshSelectedOrden();
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "Error al eliminar el detalle", Severity.Error);
+    }
+
+    private async Task AddPartida()
+    {
+        if (!CanModifySelectedOrden("agregar partidas"))
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["OrdenCompraId"] = SelectedOrden!.PkidOrdenCompra
+        };
+
+        var dialog = await DialogService.ShowAsync<OrdenCompraPartidaDialog>(
+            "Agregar Partida",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadPartidas();
+            await RefreshSelectedOrden();
+        }
+    }
+
+    private async Task EditPartida(int id)
+    {
+        if (!CanModifySelectedOrden("editar partidas"))
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["OrdenCompraId"] = SelectedOrden!.PkidOrdenCompra
+        };
+
+        var dialog = await DialogService.ShowAsync<OrdenCompraPartidaDialog>(
+            "Editar Partida",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadPartidas();
+            await RefreshSelectedOrden();
+        }
+    }
+
+    private async Task DeletePartida(OrdenCompraPartidaResponse partida)
+    {
+        if (!CanModifySelectedOrden("eliminar partidas"))
+        {
+            return;
+        }
+
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar la partida {TextOrDash(partida.PartidaClave)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var response = await Http.DeleteAsync($"api/OrdenCompraPartida/{partida.PkidOrdenCompraPartida}");
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+        if (response.IsSuccessStatusCode && result?.Success == true)
+        {
+            Snackbar.Add("Partida eliminada correctamente", Severity.Success);
+            await ReloadPartidas();
+            await RefreshSelectedOrden();
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "Error al eliminar la partida", Severity.Error);
+    }
+
+    private async Task AutorizarOrden(OrdenCompraResponse orden)
+    {
+        if (!CanAuthorize)
+        {
+            Snackbar.Add("No tienes permisos para autorizar", Severity.Warning);
+            return;
+        }
+
+        if (!CanAuthorizeItem(orden))
+        {
+            Snackbar.Add("La orden de compra no esta lista para autorizar.", Severity.Warning);
+            return;
+        }
+
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Autorizar la orden {TextOrDash(orden.NumeroOrdenCompra)}? Ya no podra editarse.");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var response = await Http.PostAsync($"api/OrdenCompra/{orden.PkidOrdenCompra}/autorizar", null);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<OrdenCompraResponse>>();
+
+        if (response.IsSuccessStatusCode && result?.Success == true)
+        {
+            Snackbar.Add("Orden de compra autorizada correctamente", Severity.Success);
+            await ReloadData();
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "Error al autorizar la orden de compra", Severity.Error);
+    }
+
+    private async Task ReloadDetalles()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private async Task ReloadPartidas()
+    {
+        if (partidaTable != null)
+        {
+            await partidaTable.ReloadData();
+        }
+    }
+
+    private bool CanAuthorizeItem(OrdenCompraResponse? orden) =>
+        orden != null && orden.FkidEstatusOrdenCompraOrco == 1 && orden.TotalDetalles > 0;
+
+    private static bool IsLocked(OrdenCompraResponse? orden) =>
+        orden?.PuedeModificar == false;
+
+    private bool CanModifySelectedOrden(string action)
+    {
+        if (SelectedOrden == null)
+        {
+            Snackbar.Add("Selecciona una orden de compra primero.", Severity.Warning);
+            return false;
+        }
+
+        if (!IsSelectedLocked)
+        {
+            return true;
+        }
+
+        Snackbar.Add($"La orden de compra ya fue autorizada. No se puede {action}.", Severity.Warning);
+        return false;
+    }
+
+    private async Task<bool> IsOrdenLockedAsync(int id, string action)
+    {
+        var orden = SelectedOrden?.PkidOrdenCompra == id
+            ? SelectedOrden
+            : Elements.FirstOrDefault(x => x.PkidOrdenCompra == id);
+
+        if (orden == null)
+        {
+            var response = await Service.GetByIdAsync(id);
+            orden = response?.Data;
+        }
+
+        if (!IsLocked(orden))
+        {
+            return false;
+        }
+
+        Snackbar.Add($"La orden de compra ya fue autorizada. No se puede {action}.", Severity.Warning);
+        return true;
+    }
+
+    private void OnEmpresaChanged(int empresaId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            BackToTable();
+            await ReloadData();
+        });
+    }
+
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(async () => await ReloadData());
+    }
+
+    private static string GetStatusStyle(OrdenCompraResponse item)
+    {
+        var color = string.IsNullOrWhiteSpace(item.EstatusColor) ? "#E7F0FF" : item.EstatusColor;
+        return $"background:{color}; color:#1f2937; font-weight:600;";
+    }
+
+    private static string GetCurrencyText(OrdenCompraResponse item)
+    {
+        if (string.IsNullOrWhiteSpace(item.MonedaNombre) && string.IsNullOrWhiteSpace(item.MonedaSimbolo))
+        {
+            return "-";
+        }
+
+        return $"{TextOrDash(item.MonedaNombre)} {TextOrDash(item.MonedaSimbolo)}".Trim();
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Money(decimal value) =>
+        $"${value.ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal value) =>
+        value.ToString("0.00", NumberCulture);
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
+}

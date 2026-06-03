@@ -441,11 +441,12 @@ VALUES
 (2, 'Ayuda', 'Ayuda', NULL, 'app://{0}/{1}', GETDATE(), 'Ayuda', 'HLP001', 'Ayuda', 'view,view-menu', 0),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Sistema', 'CONSIS01', 'Configuracion', 'view,view-menu', 0),
-(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Usuario', 'CONSIS02', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Menu', 'CONSIS03', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'General', 'CONSIS04', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Empresa', 'CONSIS05', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Departamento', 'CONSIS06', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'MiPerfil', 'CONSIS02', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Usuario', 'CONSIS03', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Menu', 'CONSIS04', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'General', 'CONSIS05', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Empresa', 'CONSIS06', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Departamento', 'CONSIS07', 'Sistema', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP01', 'Configuracion', 'view,view-menu', 0),
 --(2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Historico', 'CONCP02', 'Catalogos_presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -533,6 +534,7 @@ VALUES
 (2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Requisicion', 'ADQREQ01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Cotizacion', 'ADQCOT01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'SolicitudSuficiencia', 'ADQSUF01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Configuracion', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'OrdenCompra', 'ADQORD01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Egreso', 'PREEGRE01', 'Presupuesto', 'view,view-menu', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion', 'PREEGRE02', 'Egreso', 'view,view-menu', 0),
@@ -563,12 +565,16 @@ VALUES
 (2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Retiro', 'TESINV06', 'Inversiones', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'configuracion', 'AD0001', 'Configuración', 'view,view-menu', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'perfil', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'usuarios', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'empresas', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'departamentos', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'menus', 'AD0001', 'Administracion', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bienes', 'PATBIEN001', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Clasificacion_Bienes_Muebles', 'PATBIEN002', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bajas', 'PATBIEN003', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Calendario_Inventarios', 'PATBIEN004', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Inventarios', 'PATBIEN005', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Cedula_Diferencia', 'PATBIEN006', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardos', 'PATBIEN007', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Firma_Resguardos', 'PATBIEN008', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardo_Historico', 'PATBIEN008', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
 (2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0001', 'Número de conteo', 'view,view-menu', 0),
 (2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
@@ -581,26 +587,9 @@ VALUES
 (2, 'support', 'support', NULL, 'app://{0}/{1}', GETDATE(), 'support', 'SO0001', 'Soporte', 'view,view-menu', 0),
 (2, 'configuration', 'configuration', NULL, 'app://{0}/{1}', GETDATE(), 'configuration', 'CO0001', 'Configuracion', 'view,view-menu,delete,new,update', 0);
 
-INSERT INTO dbo.AspNetClaims (ClaimTypeId, Name, [Group], RoleId, TokenFormat, Created, SubGroup, Code, [Description], [Values], ReferenceId)
-VALUES 
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0002', 'Número de conteo', 'view,view-menu', 0);
 
 
--- Claim Values
-CREATE TABLE dbo.AspNetClaimValues (
-    Id INT IDENTITY NOT NULL,
-    ClaimId INT,
-    Value NVARCHAR(128) NOT NULL,
-    Created DATETIME NOT NULL CONSTRAINT CONSTRAINT_DF_AspNetClaimValues_Created DEFAULT GETDATE(),
-    CONSTRAINT CONSTRAINT_PK_AspNetClaimValues PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT CONSTRAINT_FK_AspNetClaimValues_Claim FOREIGN KEY (ClaimId) REFERENCES dbo.AspNetClaims(Id)
-);
-GO
 
---ALTER TABLE dbo.AspNetClaimValues
---ALTER COLUMN Value NVARCHAR(128) NOT NULL;
---GO
 
 
 
@@ -617,6 +606,7 @@ EXEC spConfiguracionDeRolYClaims 'Almacen', 'Almacen', '10000', 'view,view-menu'
 EXEC spConfiguracionDeRolYClaims 'Reportes CxC', 'Reportes CxC', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Ayuda', 'Ayuda', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Sistema', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Sistema', 'MiPerfil', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Usuario', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Menu', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'General', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -684,6 +674,7 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Programa_Anual_Adquisiciones'
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'OrdenCompra', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
@@ -709,6 +700,15 @@ EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Instrumentos_Inversion', '10000
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Listado_Inversiones', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Tipo_Plazos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Tipo_Retiro', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bienes', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Clasificacion_Bienes_Muebles', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bajas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Calendario_Inventarios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Inventarios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Cedula_Diferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Firma_Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardo_Historico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -925,8 +925,27 @@ USING (VALUES
     (401, N'Requisicion', 2, 4, N'Requisicion', N'/Adquisiciones/Requisicion', N'RiListCheck2', 1, 'ESP', 5, 1, GETDATE()),
     (402, N'Cotización', 2, 4, N'Cotización', N'/Adquisiciones/Cotizacion', N'FaDocument', 1, 'ESP', 6, 1, GETDATE()),
     (403, N'Solicitud Suficiencia', 2, 4, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
+    (404, N'Órden de Compra', 2, 4, N'Órden de Compra', N'/Adquisiciones/Orden_Compra', N'FaDocument', 1, 'ESP', 8, 1, GETDATE()),
 
-    (500, N'Pólizas', 1, 3, N'Pólizas', N'/Contabilidad/Polizas', N'FaDocument', 1, 'ESP', 4, 1, GETDATE())
+    (500, N'Pólizas', 1, 3, N'Pólizas', N'/Contabilidad/Polizas', N'FaDocument', 1, 'ESP', 4, 1, GETDATE()),
+
+
+    (601, N'Bienes', 1, 5, N'Bienes', N'/Patrimonio/Bienes', N'FaLock', 1, 'ESP', 2, 1, GETDATE()),
+    (602, N'Clasificación de Bienes Muebles', 1, 5, N'Bienes', N'/Patrimonio/Clasificacion_Bienes_Muebles', N'FaLock', 1, 'ESP', 3, 1, GETDATE()),
+    (603, N'Bajas', 1, 5, N'Bienes', N'/Patrimonio/Bajas', N'FaLock', 1, 'ESP', 4, 1, GETDATE()),
+    (604, N'Calendario de Inventarios', 1, 5, N'Bienes', N'/Patrimonio/Calendario_Inventarios', N'FaLock', 1, 'ESP', 5, 1, GETDATE()),
+    (605, N'Bienes', 1, 5, N'Inventarios', N'/Patrimonio/Inventarios', N'FaLock', 1, 'ESP', 6, 1, GETDATE()),
+    (606, N'Cédula de Diferencia', 1, 5, N'Bienes', N'/Patrimonio/Cedula_Diferencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
+    (607, N'Resguardos', 1, 5, N'Bienes', N'/Patrimonio/Resguardos', N'FaLock', 1, 'ESP', 8, 1, GETDATE()),
+    (608, N'Firma Resguardos', 1, 5, N'Bienes', N'/Patrimonio/Firma_Resguardos', N'FaLock', 1, 'ESP', 9, 1, GETDATE()),
+    (609, N'Resguardo Historico', 1, 5, N'Bienes', N'/Patrimonio/Resguardo_Historico', N'FaLock', 1, 'ESP', 10, 1, GETDATE())
+
+
+--EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Inventarios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Cedula_Diferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Firma_Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+--EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardo_Historico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)

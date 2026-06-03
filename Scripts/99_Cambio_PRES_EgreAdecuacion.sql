@@ -1204,3 +1204,145 @@ BEGIN
     END CATCH
 END
 GO
+
+
+USE [GestionEmpresarial];
+GO
+
+-- =============================================
+-- 1. Crear tabla EstatusOrdenCompra (si no existe)
+-- =============================================
+IF OBJECT_ID(N'ORCO.EstatusOrdenCompra', N'U') IS NULL
+BEGIN
+    CREATE TABLE ORCO.EstatusOrdenCompra (
+        PK_IdEstatusOrdenCompra INT IDENTITY(1,1) NOT NULL,
+        Descripcion NVARCHAR(50) NOT NULL,
+        Color NVARCHAR(8) NOT NULL,
+        CT_CreatedBy INT NOT NULL,
+        CT_CreatedDate DATETIME NOT NULL,
+        CT_ModifiedBy INT NULL,
+        CT_ModifiedDate DATETIME NULL,
+        CT_LIVE BIT NULL,
+        CONSTRAINT PK_EstatusOrdenCompra PRIMARY KEY CLUSTERED (PK_IdEstatusOrdenCompra)
+    );
+END
+GO
+
+-- =============================================
+-- 2. Crear tabla OrdenCompra
+-- =============================================
+IF OBJECT_ID(N'ORCO.OrdenCompra', N'U') IS NULL
+BEGIN
+    CREATE TABLE ORCO.OrdenCompra (
+        PKIdOrdenCompra INT IDENTITY(1,1) NOT NULL,
+        FKIdEmpresa_SIS INT NOT NULL,
+        FKIdRequisicion_ORCO INT NOT NULL,
+        FKIdProveedor_SIS INT NOT NULL,
+        FKIdPoliza_CONTA INT NULL,
+        FKIdEstatusOrdenCompra_ORCO INT NOT NULL,
+        NumeroOrdenCompra NVARCHAR(50) NOT NULL,
+        Descripcion NVARCHAR(500) NULL,
+        FechaOrdenCompra DATE NOT NULL,
+        FechaRequerida DATE NULL,
+        FechaEntrega DATE NULL,
+        FechaVigencia DATE NULL,
+        FechaCancelacion DATE NULL,
+        MotivoCancelacion NVARCHAR(MAX) NULL,
+        Subtotal DECIMAL(20,4) NOT NULL CONSTRAINT DF_OrdenCompra_Subtotal DEFAULT 0,
+        Iva DECIMAL(20,4) NOT NULL CONSTRAINT DF_OrdenCompra_Iva DEFAULT 0,
+        Total DECIMAL(20,4) NOT NULL CONSTRAINT DF_OrdenCompra_Total DEFAULT 0,
+        MonedaId INT NULL,
+        TipoCambio DECIMAL(18,6) NULL,
+        Observaciones NVARCHAR(MAX) NULL,
+        CompraDirecta BIT NOT NULL CONSTRAINT DF_OrdenCompra_CompraDirecta DEFAULT 0,
+        FL_Documento NVARCHAR(1000) NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_OrdenCompra_Activo DEFAULT 1,
+        FechaCreacion DATETIME2(7) NOT NULL CONSTRAINT DF_OrdenCompra_FechaCreacion DEFAULT SYSDATETIME(),
+        UsuarioCreacion INT NOT NULL,
+        FechaModificacion DATETIME2(7) NULL,
+        UsuarioModificacion INT NULL,
+        CONSTRAINT PK_OrdenCompra PRIMARY KEY CLUSTERED (PKIdOrdenCompra),
+        CONSTRAINT FK_OrdenCompra_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
+        CONSTRAINT FK_OrdenCompra_Requisicion FOREIGN KEY (FKIdRequisicion_ORCO) REFERENCES ORCO.Requisicion(PKIdRequisicion),
+        CONSTRAINT FK_OrdenCompra_Proveedor FOREIGN KEY (FKIdProveedor_SIS) REFERENCES SIS.Proveedor(PKIdProveedor),
+        CONSTRAINT FK_OrdenCompra_Poliza FOREIGN KEY (FKIdPoliza_CONTA) REFERENCES CONTA.Poliza(PKIdPoliza),
+        CONSTRAINT FK_OrdenCompra_Estatus FOREIGN KEY (FKIdEstatusOrdenCompra_ORCO) REFERENCES ORCO.EstatusOrdenCompra(PK_IdEstatusOrdenCompra),
+        CONSTRAINT UQ_OrdenCompra_Numero UNIQUE (NumeroOrdenCompra)
+    );
+END
+GO
+
+CREATE INDEX IX_OrdenCompra_Estatus ON ORCO.OrdenCompra (FKIdEstatusOrdenCompra_ORCO) WHERE Activo = 1;
+CREATE INDEX IX_OrdenCompra_Proveedor ON ORCO.OrdenCompra (FKIdProveedor_SIS) WHERE Activo = 1;
+CREATE INDEX IX_OrdenCompra_Fecha ON ORCO.OrdenCompra (FechaOrdenCompra) WHERE Activo = 1;
+CREATE INDEX IX_OrdenCompra_Requisicion ON ORCO.OrdenCompra (FKIdRequisicion_ORCO) WHERE Activo = 1;
+GO
+
+-- =============================================
+-- 3. Crear tabla OrdenCompraDetalle
+-- =============================================
+IF OBJECT_ID(N'ORCO.OrdenCompraDetalle', N'U') IS NULL
+BEGIN
+    CREATE TABLE ORCO.OrdenCompraDetalle (
+        PKIdOrdenCompraDetalle INT IDENTITY(1,1) NOT NULL,
+        FKIdOrdenCompra_ORCO INT NOT NULL,
+        FKIdRequisicionDetalle_ORCO INT NULL,
+        FKIdCotizacionDetalle_ORCO INT NULL,
+        FKIdTipoBien_ALMA INT NOT NULL,
+        FKIdUnidades_ALMA INT NOT NULL,
+        CantidadSolicitada DECIMAL(18,4) NOT NULL,
+        CantidadRecibida DECIMAL(18,4) NOT NULL CONSTRAINT DF_OrdenCompraDetalle_CantidadRecibida DEFAULT 0,
+        CantidadPendiente AS (CantidadSolicitada - CantidadRecibida),
+        PrecioUnitario DECIMAL(20,4) NOT NULL,
+        Importe AS (CantidadSolicitada * PrecioUnitario),
+        Iva DECIMAL(20,4) NOT NULL CONSTRAINT DF_OrdenCompraDetalle_Iva DEFAULT 0,
+        TotalDetalle AS ((CantidadSolicitada * PrecioUnitario) + Iva),
+        Observaciones NVARCHAR(MAX) NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_OrdenCompraDetalle_Activo DEFAULT 1,
+        FechaCreacion DATETIME2(7) NOT NULL CONSTRAINT DF_OrdenCompraDetalle_FechaCreacion DEFAULT SYSDATETIME(),
+        UsuarioCreacion INT NOT NULL,
+        FechaModificacion DATETIME2(7) NULL,
+        UsuarioModificacion INT NULL,
+        CONSTRAINT PK_OrdenCompraDetalle PRIMARY KEY CLUSTERED (PKIdOrdenCompraDetalle),
+        CONSTRAINT FK_OrdenCompraDetalle_OrdenCompra FOREIGN KEY (FKIdOrdenCompra_ORCO) REFERENCES ORCO.OrdenCompra(PKIdOrdenCompra),
+        CONSTRAINT FK_OrdenCompraDetalle_RequisicionDetalle FOREIGN KEY (FKIdRequisicionDetalle_ORCO) REFERENCES ORCO.RequisicionDetalle(PKIdRequisicionDetalle),
+        CONSTRAINT FK_OrdenCompraDetalle_CotizacionDetalle FOREIGN KEY (FKIdCotizacionDetalle_ORCO) REFERENCES ORCO.CotizacionDetalle(PKIdCotizacionDetalle),
+        CONSTRAINT FK_OrdenCompraDetalle_TipoBien FOREIGN KEY (FKIdTipoBien_ALMA) REFERENCES ALMA.TipoBien(PKIdTipoBien),
+        CONSTRAINT FK_OrdenCompraDetalle_Unidades FOREIGN KEY (FKIdUnidades_ALMA) REFERENCES ALMA.Unidades(PKIdUnidades)
+    );
+END
+GO
+
+CREATE INDEX IX_OrdenCompraDetalle_Orden ON ORCO.OrdenCompraDetalle (FKIdOrdenCompra_ORCO) WHERE Activo = 1;
+CREATE INDEX IX_OrdenCompraDetalle_TipoBien ON ORCO.OrdenCompraDetalle (FKIdTipoBien_ALMA) WHERE Activo = 1;
+CREATE INDEX IX_OrdenCompraDetalle_RequisicionDet ON ORCO.OrdenCompraDetalle (FKIdRequisicionDetalle_ORCO) WHERE Activo = 1;
+GO
+
+-- =============================================
+-- 4. Crear tabla OrdenCompraPartida
+-- =============================================
+IF OBJECT_ID(N'ORCO.OrdenCompraPartida', N'U') IS NULL
+BEGIN
+    CREATE TABLE ORCO.OrdenCompraPartida (
+        PKIdOrdenCompraPartida INT IDENTITY(1,1) NOT NULL,
+        FKIdOrdenCompra_ORCO INT NOT NULL,
+        FKIdPartida_CONTA INT NOT NULL,
+        FKIdFuenteFinanciamiento_PRES INT NULL,
+        Importe DECIMAL(20,4) NOT NULL,
+        Observaciones NVARCHAR(MAX) NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_OrdenCompraPartida_Activo DEFAULT 1,
+        FechaCreacion DATETIME2(7) NOT NULL CONSTRAINT DF_OrdenCompraPartida_FechaCreacion DEFAULT SYSDATETIME(),
+        UsuarioCreacion INT NOT NULL,
+        FechaModificacion DATETIME2(7) NULL,
+        UsuarioModificacion INT NULL,
+        CONSTRAINT PK_OrdenCompraPartida PRIMARY KEY CLUSTERED (PKIdOrdenCompraPartida),
+        CONSTRAINT FK_OrdenCompraPartida_OrdenCompra FOREIGN KEY (FKIdOrdenCompra_ORCO) REFERENCES ORCO.OrdenCompra(PKIdOrdenCompra),
+        CONSTRAINT FK_OrdenCompraPartida_Partida FOREIGN KEY (FKIdPartida_CONTA) REFERENCES CONTA.Partida(PKIdPartida),
+        CONSTRAINT FK_OrdenCompraPartida_Fuente FOREIGN KEY (FKIdFuenteFinanciamiento_PRES) REFERENCES PRES.FuenteFinanciamiento(PKIdFuenteFinanciamiento)
+    );
+END
+GO
+
+CREATE INDEX IX_OrdenCompraPartida_Orden ON ORCO.OrdenCompraPartida (FKIdOrdenCompra_ORCO) WHERE Activo = 1;
+CREATE INDEX IX_OrdenCompraPartida_Partida ON ORCO.OrdenCompraPartida (FKIdPartida_CONTA) WHERE Activo = 1;
+GO

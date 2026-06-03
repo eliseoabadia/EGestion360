@@ -1865,6 +1865,367 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_MantenimientoOrdenCompraResult>> SP_MantenimientoOrdenCompraAsync(int? action, int? pKIdOrdenCompra, int? fKIdEmpresa_SIS, int? fKIdRequisicion_ORCO, int? fKIdProveedor_SIS, int? fKIdPoliza_CONTA, int? fKIdEstatusOrdenCompra_ORCO, string numeroOrdenCompra, string descripcion, DateOnly? fechaOrdenCompra, DateOnly? fechaRequerida, DateOnly? fechaEntrega, DateOnly? fechaVigencia, DateOnly? fechaCancelacion, string motivoCancelacion, decimal? subtotal, decimal? iva, decimal? total, int? monedaId, decimal? tipoCambio, string observaciones, bool? compraDirecta, string fL_Documento, int? idUser, int? idAnio, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdOrdenCompra",
+                    Value = pKIdOrdenCompra ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEmpresa_SIS",
+                    Value = fKIdEmpresa_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdRequisicion_ORCO",
+                    Value = fKIdRequisicion_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdProveedor_SIS",
+                    Value = fKIdProveedor_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPoliza_CONTA",
+                    Value = fKIdPoliza_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEstatusOrdenCompra_ORCO",
+                    Value = fKIdEstatusOrdenCompra_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NumeroOrdenCompra",
+                    Size = 100,
+                    Value = numeroOrdenCompra ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = 1000,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaOrdenCompra",
+                    Value = fechaOrdenCompra ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaRequerida",
+                    Value = fechaRequerida ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaEntrega",
+                    Value = fechaEntrega ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaVigencia",
+                    Value = fechaVigencia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaCancelacion",
+                    Value = fechaCancelacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "MotivoCancelacion",
+                    Size = 2000,
+                    Value = motivoCancelacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Subtotal",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = subtotal ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Iva",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = iva ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Total",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = total ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "MonedaId",
+                    Value = monedaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoCambio",
+                    Precision = 20,
+                    Scale = 6,
+                    Value = tipoCambio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 2000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CompraDirecta",
+                    Value = compraDirecta ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FL_Documento",
+                    Size = -1,
+                    Value = fL_Documento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdAnio",
+                    Value = idAnio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoOrdenCompraResult>("EXEC @returnValue = [ORCO].[SP_MantenimientoOrdenCompra] @Action = @Action, @PKIdOrdenCompra = @PKIdOrdenCompra, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO, @FKIdProveedor_SIS = @FKIdProveedor_SIS, @FKIdPoliza_CONTA = @FKIdPoliza_CONTA, @FKIdEstatusOrdenCompra_ORCO = @FKIdEstatusOrdenCompra_ORCO, @NumeroOrdenCompra = @NumeroOrdenCompra, @Descripcion = @Descripcion, @FechaOrdenCompra = @FechaOrdenCompra, @FechaRequerida = @FechaRequerida, @FechaEntrega = @FechaEntrega, @FechaVigencia = @FechaVigencia, @FechaCancelacion = @FechaCancelacion, @MotivoCancelacion = @MotivoCancelacion, @Subtotal = @Subtotal, @Iva = @Iva, @Total = @Total, @MonedaId = @MonedaId, @TipoCambio = @TipoCambio, @Observaciones = @Observaciones, @CompraDirecta = @CompraDirecta, @FL_Documento = @FL_Documento, @IdUser = @IdUser, @IdAnio = @IdAnio", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoOrdenCompraDetalleResult>> SP_MantenimientoOrdenCompraDetalleAsync(int? action, int? pKIdOrdenCompraDetalle, int? fKIdOrdenCompra_ORCO, int? fKIdRequisicionDetalle_ORCO, int? fKIdCotizacionDetalle_ORCO, int? fKIdTipoBien_ALMA, int? fKIdUnidades_ALMA, decimal? cantidadSolicitada, decimal? cantidadRecibida, decimal? precioUnitario, decimal? iva, string observaciones, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdOrdenCompraDetalle",
+                    Value = pKIdOrdenCompraDetalle ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdOrdenCompra_ORCO",
+                    Value = fKIdOrdenCompra_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdRequisicionDetalle_ORCO",
+                    Value = fKIdRequisicionDetalle_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdCotizacionDetalle_ORCO",
+                    Value = fKIdCotizacionDetalle_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoBien_ALMA",
+                    Value = fKIdTipoBien_ALMA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdUnidades_ALMA",
+                    Value = fKIdUnidades_ALMA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CantidadSolicitada",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = cantidadSolicitada ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CantidadRecibida",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = cantidadRecibida ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PrecioUnitario",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = precioUnitario ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Iva",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = iva ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 2000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoOrdenCompraDetalleResult>("EXEC @returnValue = [ORCO].[SP_MantenimientoOrdenCompraDetalle] @Action = @Action, @PKIdOrdenCompraDetalle = @PKIdOrdenCompraDetalle, @FKIdOrdenCompra_ORCO = @FKIdOrdenCompra_ORCO, @FKIdRequisicionDetalle_ORCO = @FKIdRequisicionDetalle_ORCO, @FKIdCotizacionDetalle_ORCO = @FKIdCotizacionDetalle_ORCO, @FKIdTipoBien_ALMA = @FKIdTipoBien_ALMA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @CantidadSolicitada = @CantidadSolicitada, @CantidadRecibida = @CantidadRecibida, @PrecioUnitario = @PrecioUnitario, @Iva = @Iva, @Observaciones = @Observaciones, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoOrdenCompraPartidaResult>> SP_MantenimientoOrdenCompraPartidaAsync(int? action, int? pKIdOrdenCompraPartida, int? fKIdOrdenCompra_ORCO, int? fKIdPartida_CONTA, int? fKIdFuenteFinanciamiento_PRES, decimal? importe, string observaciones, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdOrdenCompraPartida",
+                    Value = pKIdOrdenCompraPartida ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdOrdenCompra_ORCO",
+                    Value = fKIdOrdenCompra_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPartida_CONTA",
+                    Value = fKIdPartida_CONTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdFuenteFinanciamiento_PRES",
+                    Value = fKIdFuenteFinanciamiento_PRES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Importe",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = importe ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 2000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoOrdenCompraPartidaResult>("EXEC @returnValue = [ORCO].[SP_MantenimientoOrdenCompraPartida] @Action = @Action, @PKIdOrdenCompraPartida = @PKIdOrdenCompraPartida, @FKIdOrdenCompra_ORCO = @FKIdOrdenCompra_ORCO, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdFuenteFinanciamiento_PRES = @FKIdFuenteFinanciamiento_PRES, @Importe = @Importe, @Observaciones = @Observaciones, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<SP_MantenimientoPAAASResult>> SP_MantenimientoPAAASAsync(int? action, int? pKIdPAAAS, int? pKIdPAAASPartida, int? pKIdPAAASDetalle, int? fKIdEmpresa_SIS, int? fKIdAnio_SIS, int? fKIdArea_SIS, int? fKIdPersona_NOM, string descripcion, string observaciones, DateTime? fecha, int? fKIdProyecto_ORCO, int? fKIdPrograma_PRES, int? fKIdFuenteFinanciamiento_PRES, int? fKIdPartida_CONTA, int? fKIdTipoBien_ALMA, int? fKIdUnidades_ALMA, decimal? cantidad, string lugarEntrega, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
