@@ -1,0 +1,125 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<ResguardoDetalleResponse> Service
+@inject IGenericCrudService<ResguardoResponse> ResguardoService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="ResguardoDetalleResponse"
+                Title="Asignar resguardo"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="Asignar"
+                ProcessingText="Asignando..."
+                LoadingMessage="Preparando asignacion..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="ResguardoDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="Asignacion de resguardo">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    @BienDescripcion
+                </MudAlert>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedResguardo"
+                                   ValueChanged="value => _selectedResguardo = value"
+                                   Label="Resguardo destino"
+                                   Required="true"
+                                   RequiredError="El resguardo es requerido"
+                                   LoadPage="LoadResguardosPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int BienId { get; set; }
+    [Parameter] public string BienDescripcion { get; set; } = string.Empty;
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<ResguardoDetalleResponse> form = null!;
+    private ResguardoDetalleResponse item = new()
+    {
+        ImprimeEtiqueta = true,
+        Activo = true
+    };
+    private LookupItem? _selectedResguardo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (BienId <= 0)
+        {
+            Snackbar.Add("No se encontro el bien seleccionado.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedResguardo == null)
+        {
+            Snackbar.Add("Debe seleccionar un resguardo.", Severity.Warning);
+            return;
+        }
+
+        item.FkidBienAlma = BienId;
+        item.FkidResguardoAlma = _selectedResguardo.Id;
+        item.Observaciones ??= string.Empty;
+        item.ImprimeEtiqueta = true;
+
+        var response = await Service.CreateAsync(item);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Bien asignado al resguardo correctamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al asignar resguardo", Severity.Error);
+    }
+
+    private async Task<ComboLookupResult> LoadResguardosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        var filters = empresaId.HasValue && empresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = empresaId.Value }
+            : null;
+
+        var response = await ResguardoService.GetAllPaginadoAsync(page, pageSize, filter, "Folio", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidResguardo,
+            Text = $"{x.Folio} - {x.PersonaNombre} ({x.TotalBienes ?? 0})"
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+}

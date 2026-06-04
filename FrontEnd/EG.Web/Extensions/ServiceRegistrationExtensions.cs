@@ -26,6 +26,7 @@ public static class ApiServiceExtensions
     public static IServiceCollection AddApiServices(this IServiceCollection services)
     {
         RegisterCrud<DepartamentoResponse>(services, "api/Departamento");
+        RegisterCrud<AreaResponse>(services, "api/Area");
         RegisterCrud<UsuarioResponse>(services, "api/Usuario");
         RegisterCrud<EstadoResponse>(services, "api/Estado");
         RegisterCrud<EmpresaResponse>(services, "api/Empresa");
@@ -107,6 +108,9 @@ public static class ApiServiceExtensions
         RegisterCrud<TipoAdquisicionResponse>(services, "api/TipoAdquisicion");
         RegisterCrud<MarcaResponse>(services, "api/Marca");
         RegisterCrud<PersonaResponse>(services, "api/Persona");
+        RegisterCrud<EG.Domain.DTOs.Responses.Patrimonio.BienResponse>(services, "api/Bien");
+        RegisterCrud<ResguardoResponse>(services, "api/Resguardo");
+        RegisterCrud<ResguardoDetalleResponse>(services, "api/ResguardoDetalle");
 
         RegisterCrud<MatrizConversionResponse>(services, "api/MatrizConversion");
         RegisterCrud<UnidadResponsableResponse>(services, "api/UnidadResponsable");

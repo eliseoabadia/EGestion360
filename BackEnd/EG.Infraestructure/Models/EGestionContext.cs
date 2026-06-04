@@ -257,6 +257,12 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<RequisicionPartidum> RequisicionPartida { get; set; }
 
+    public virtual DbSet<Resguardo> Resguardos { get; set; }
+
+    public virtual DbSet<ResguardoDetalle> ResguardoDetalles { get; set; }
+
+    public virtual DbSet<ResguardoMovimiento> ResguardoMovimientos { get; set; }
+
     public virtual DbSet<Resultado> Resultados { get; set; }
 
     public virtual DbSet<Retiro> Retiros { get; set; }
@@ -474,6 +480,10 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwRequisicionDetalle> VwRequisicionDetalles { get; set; }
 
     public virtual DbSet<VwRequisicionPartidum> VwRequisicionPartida { get; set; }
+
+    public virtual DbSet<VwResguardo> VwResguardos { get; set; }
+
+    public virtual DbSet<VwResguardoDetalle> VwResguardoDetalles { get; set; }
 
     public virtual DbSet<VwSolicitudSuficienciaDetalle> VwSolicitudSuficienciaDetalles { get; set; }
 
@@ -5155,6 +5165,113 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_RequisicionPartida_UsuarioModificacion");
         });
 
+        modelBuilder.Entity<Resguardo>(entity =>
+        {
+            entity.HasKey(e => e.PkidResguardo);
+
+            entity.ToTable("Resguardo", "ALMA");
+
+            entity.HasIndex(e => e.Folio, "UQ_Resguardo_Folio").IsUnique();
+
+            entity.Property(e => e.PkidResguardo).HasColumnName("PKIdResguardo");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Resguardo_Activo");
+            entity.Property(e => e.FechaCreacion)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_Resguardo_FechaCreacion");
+            entity.Property(e => e.FechaModificacion).HasPrecision(0);
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
+            entity.Property(e => e.Folio)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+
+            entity.HasOne(d => d.FkidAreaSisNavigation).WithMany(p => p.Resguardos)
+                .HasForeignKey(d => d.FkidAreaSis)
+                .HasConstraintName("FK_Resguardo_Area");
+
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Resguardos)
+                .HasForeignKey(d => d.FkidEmpresaSis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Resguardo_Empresa");
+
+            entity.HasOne(d => d.FkidPersonaNomNavigation).WithMany(p => p.Resguardos)
+                .HasForeignKey(d => d.FkidPersonaNom)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Resguardo_Persona");
+        });
+
+        modelBuilder.Entity<ResguardoDetalle>(entity =>
+        {
+            entity.HasKey(e => e.PkidResguardoDetalle);
+
+            entity.ToTable("ResguardoDetalle", "ALMA");
+
+            entity.HasIndex(e => e.FkidBienAlma, "UX_ResguardoDetalle_BienActivo")
+                .IsUnique()
+                .HasFilter("([Activo]=(1))");
+
+            entity.Property(e => e.PkidResguardoDetalle).HasColumnName("PKIdResguardoDetalle");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_ResguardoDetalle_Activo");
+            entity.Property(e => e.FechaAsignacion)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_ResguardoDetalle_FechaAsignacion");
+            entity.Property(e => e.FechaCreacion)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_ResguardoDetalle_FechaCreacion");
+            entity.Property(e => e.FechaLiberacion).HasPrecision(0);
+            entity.Property(e => e.FechaModificacion).HasPrecision(0);
+            entity.Property(e => e.FkidBienAlma).HasColumnName("FKIdBien_ALMA");
+            entity.Property(e => e.FkidEstadoBienAlma).HasColumnName("FKIdEstadoBien_ALMA");
+            entity.Property(e => e.FkidResguardoAlma).HasColumnName("FKIdResguardo_ALMA");
+            entity.Property(e => e.ImprimeEtiqueta).HasDefaultValue(true, "DF_ResguardoDetalle_ImprimeEtiqueta");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+
+            entity.HasOne(d => d.FkidBienAlmaNavigation).WithOne(p => p.ResguardoDetalle)
+                .HasForeignKey<ResguardoDetalle>(d => d.FkidBienAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ResguardoDetalle_Bien");
+
+            entity.HasOne(d => d.FkidEstadoBienAlmaNavigation).WithMany(p => p.ResguardoDetalles)
+                .HasForeignKey(d => d.FkidEstadoBienAlma)
+                .HasConstraintName("FK_ResguardoDetalle_EstadoBien");
+
+            entity.HasOne(d => d.FkidResguardoAlmaNavigation).WithMany(p => p.ResguardoDetalles)
+                .HasForeignKey(d => d.FkidResguardoAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ResguardoDetalle_Resguardo");
+        });
+
+        modelBuilder.Entity<ResguardoMovimiento>(entity =>
+        {
+            entity.HasKey(e => e.PkidResguardoMovimiento);
+
+            entity.ToTable("ResguardoMovimiento", "ALMA");
+
+            entity.Property(e => e.PkidResguardoMovimiento).HasColumnName("PKIdResguardoMovimiento");
+            entity.Property(e => e.FechaMovimiento)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysdatetime())", "DF_ResguardoMovimiento_Fecha");
+            entity.Property(e => e.FkidBienAlma).HasColumnName("FKIdBien_ALMA");
+            entity.Property(e => e.FkidResguardoDestinoAlma).HasColumnName("FKIdResguardoDestino_ALMA");
+            entity.Property(e => e.FkidResguardoDetalleAlma).HasColumnName("FKIdResguardoDetalle_ALMA");
+            entity.Property(e => e.FkidResguardoOrigenAlma).HasColumnName("FKIdResguardoOrigen_ALMA");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            entity.Property(e => e.TipoMovimiento)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.HasOne(d => d.FkidBienAlmaNavigation).WithMany(p => p.ResguardoMovimientos)
+                .HasForeignKey(d => d.FkidBienAlma)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ResguardoMovimiento_Bien");
+
+            entity.HasOne(d => d.FkidResguardoDetalleAlmaNavigation).WithMany(p => p.ResguardoMovimientos)
+                .HasForeignKey(d => d.FkidResguardoDetalleAlma)
+                .HasConstraintName("FK_ResguardoMovimiento_Detalle");
+        });
+
         modelBuilder.Entity<Resultado>(entity =>
         {
             entity.HasKey(e => e.PkidResultado);
@@ -8837,6 +8954,71 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PkidRequisicionPartida).HasColumnName("PKIdRequisicionPartida");
             entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
             entity.Property(e => e.RequisicionImporte).HasColumnType("decimal(20, 4)");
+        });
+
+        modelBuilder.Entity<VwResguardo>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Resguardo", "ALMA");
+
+            entity.Property(e => e.AreaClave).HasMaxLength(15);
+            entity.Property(e => e.AreaNombre).HasMaxLength(200);
+            entity.Property(e => e.EmpresaNombre)
+                .IsRequired()
+                .HasMaxLength(128);
+            entity.Property(e => e.FechaCreacion).HasPrecision(0);
+            entity.Property(e => e.FechaModificacion).HasPrecision(0);
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
+            entity.Property(e => e.Folio)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            entity.Property(e => e.PersonaClave)
+                .IsRequired()
+                .HasMaxLength(15);
+            entity.Property(e => e.PersonaNombre).HasMaxLength(152);
+            entity.Property(e => e.PkidResguardo).HasColumnName("PKIdResguardo");
+            entity.Property(e => e.ValorActualResguardado).HasColumnType("decimal(38, 4)");
+        });
+
+        modelBuilder.Entity<VwResguardoDetalle>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_ResguardoDetalle", "ALMA");
+
+            entity.Property(e => e.AreaNombre).HasMaxLength(200);
+            entity.Property(e => e.BienClave).HasMaxLength(50);
+            entity.Property(e => e.BienClaveAnterior).HasMaxLength(50);
+            entity.Property(e => e.BienDescripcion).HasMaxLength(1000);
+            entity.Property(e => e.Costo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.EstadoBienDescripcion).HasMaxLength(100);
+            entity.Property(e => e.Factura).HasMaxLength(50);
+            entity.Property(e => e.FechaAsignacion).HasPrecision(0);
+            entity.Property(e => e.FechaCreacion).HasPrecision(0);
+            entity.Property(e => e.FechaLiberacion).HasPrecision(0);
+            entity.Property(e => e.FechaModificacion).HasPrecision(0);
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidBienAlma).HasColumnName("FKIdBien_ALMA");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstadoBienAlma).HasColumnName("FKIdEstadoBien_ALMA");
+            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
+            entity.Property(e => e.FkidResguardoAlma).HasColumnName("FKIdResguardo_ALMA");
+            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
+            entity.Property(e => e.Folio)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.Modelo).HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            entity.Property(e => e.PersonaNombre).HasMaxLength(152);
+            entity.Property(e => e.PkidResguardoDetalle).HasColumnName("PKIdResguardoDetalle");
+            entity.Property(e => e.Serie).HasMaxLength(1000);
+            entity.Property(e => e.TipoBienCodigoClave).HasMaxLength(200);
+            entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
+            entity.Property(e => e.ValorActual).HasColumnType("decimal(20, 4)");
         });
 
         modelBuilder.Entity<VwSolicitudSuficienciaDetalle>(entity =>

@@ -57,6 +57,8 @@ public partial class Area
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
+    public virtual ICollection<Resguardo> Resguardos { get; set; } = new List<Resguardo>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

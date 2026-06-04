@@ -141,6 +141,10 @@ public partial class Bien
 
     public virtual TipoPatrimonio FkidTipoPatrimonioAlmaNavigation { get; set; }
 
+    public virtual ResguardoDetalle ResguardoDetalle { get; set; }
+
+    public virtual ICollection<ResguardoMovimiento> ResguardoMovimientos { get; set; } = new List<ResguardoMovimiento>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

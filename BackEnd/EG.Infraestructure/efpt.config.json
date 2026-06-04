@@ -83,6 +83,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[Resguardo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[ResguardoDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[ResguardoMovimiento]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[TipoAdquisicion]",
          "ObjectType": 0
       },
@@ -727,6 +739,14 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[Vw_Resguardo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_ResguardoDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[Vw_TipoBien]",
          "ObjectType": 3
       },
@@ -1012,6 +1032,18 @@
       },
       {
          "Name": "[ALMA].[SP_CargaInicialConteo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoBien]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoResguardo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoResguardoDetalle]",
          "ObjectType": 1
       },
       {

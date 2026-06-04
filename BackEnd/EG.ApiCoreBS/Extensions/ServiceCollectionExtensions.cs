@@ -29,6 +29,7 @@ using EG.Application.Services.SoporteDocumental;
 using EG.Application.Services.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Services.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Services.Configuracion.Catalogo.Patrimonio;
+using EG.Application.Services.Patrimonio;
 using EG.Business.Interfaces;
 using EG.Business.Services;
 using EG.Common.Util;
@@ -129,6 +130,9 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoAdquisicionService, TipoAdquisicionService>();
             services.AddScoped<ITipoBienService, TipoBienService>();
             services.AddScoped<ITipoPatrimonioService, TipoPatrimonioService>();
+            services.AddScoped<IBienAppService, BienAppService>();
+            services.AddScoped<IResguardoAppService, ResguardoAppService>();
+            services.AddScoped<IResguardoDetalleAppService, ResguardoDetalleAppService>();
 
             // Application services - Presupuestales
             services.AddScoped<IProgramaAppServices, ProgramaAppServices>();

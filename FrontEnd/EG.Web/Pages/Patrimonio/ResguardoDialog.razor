@@ -1,0 +1,181 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<ResguardoResponse> Service
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject IGenericCrudService<PersonaResponse> PersonaService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="ResguardoResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando resguardo..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="ResguardoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid Spacing="2">
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6" Class="d-flex align-center">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedPersona"
+                                   ValueChanged="value => _selectedPersona = value"
+                                   Label="Responsable"
+                                   Required="true"
+                                   RequiredError="El responsable es requerido"
+                                   LoadPage="LoadPersonasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area responsable"
+                                   Clearable="true"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <MudDatePicker @bind-Date="_fechaResguardo"
+                               Label="Fecha resguardo"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<ResguardoResponse> form = null!;
+    private ResguardoResponse item = new()
+    {
+        Activo = true,
+        FechaResguardo = DateTime.Today
+    };
+
+    private DateTime? _fechaResguardo = DateTime.Today;
+    private LookupItem? _selectedPersona;
+    private LookupItem? _selectedArea;
+
+    private string dialogTitle => Id.HasValue ? "Editar resguardo" : "Nuevo resguardo";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaResguardo = item.FechaResguardo;
+            _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = $"{item.PersonaClave} - {item.PersonaNombre}".Trim(' ', '-') };
+            _selectedArea = item.FkidAreaSis.HasValue ? new LookupItem { Id = item.FkidAreaSis.Value, Text = BuildClaveText(item.AreaClave, item.AreaNombre) } : null;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPersona == null)
+        {
+            Snackbar.Add("Debe seleccionar el responsable.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidPersonaNom = _selectedPersona.Id;
+        item.FkidAreaSis = _selectedArea?.Id;
+        item.FechaResguardo = _fechaResguardo ?? DateTime.Today;
+        item.Observaciones ??= string.Empty;
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(Id.HasValue ? "Resguardo actualizado correctamente" : "Resguardo creado correctamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al guardar resguardo", Severity.Error);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = BuildClaveText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PersonaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidPersona,
+            Text = $"{x.Clave} - {x.Nombre} {x.Paterno} {x.Materno}".Trim()
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        var prefix = string.IsNullOrWhiteSpace(clave) ? string.Empty : $"{clave} - ";
+        return $"{prefix}{descripcion}".Trim();
+    }
+}

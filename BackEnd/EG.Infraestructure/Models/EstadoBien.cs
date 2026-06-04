@@ -27,6 +27,8 @@ public partial class EstadoBien
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
+    public virtual ICollection<ResguardoDetalle> ResguardoDetalles { get; set; } = new List<ResguardoDetalle>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

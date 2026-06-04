@@ -18,6 +18,27 @@ namespace EG.ApiCoreBS.Controllers.General
             _appService = appService;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<PagedResult<AreaResponse>>> GetAll()
+        {
+            var result = await _appService.GetAllAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PagedResult<AreaResponse>>> GetById(int id)
+        {
+            var result = await _appService.GetByIdAsync(id);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<AreaResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        {
+            var result = await _appService.GetAllPaginadoAsync(request);
+            return Ok(result);
+        }
+
         [HttpGet("por-persona/{personaId}")]
         public async Task<ActionResult<PagedResult<AreaResponse>>> GetAreasByPersona(int personaId)
         {

@@ -1,0 +1,380 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<BienResponse> Service
+@inject IGenericCrudService<TipoBienResponse> TipoBienService
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject IGenericCrudService<ProveedorResponse> ProveedorService
+@inject IGenericCrudService<MarcaResponse> MarcaService
+@inject IGenericCrudService<TipoPatrimonioResponse> TipoPatrimonioService
+@inject IGenericCrudService<TipoAdquisicionResponse> TipoAdquisicionService
+@inject IGenericCrudService<ResguardoResponse> ResguardoService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="BienResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando bien..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="BienResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid Spacing="2" Class="bien-dialog-grid">
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.Clave" Label="Clave patrimonial" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.EstadoBienDescripcionCorta" Label="Estado" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="4" Class="d-flex align-center">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion del bien"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La descripcion es requerida"
+                              MaxLength="1000" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedTipoBien"
+                                   ValueChanged="value => _selectedTipoBien = value"
+                                   Label="Tipo de bien"
+                                   Required="true"
+                                   RequiredError="El tipo de bien es requerido"
+                                   LoadPage="LoadTiposBienPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area / ubicacion administrativa"
+                                   Clearable="true"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedMarca"
+                                   ValueChanged="value => _selectedMarca = value"
+                                   Label="Marca"
+                                   Clearable="true"
+                                   LoadPage="LoadMarcasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Modelo"
+                              Label="Modelo"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Serie"
+                              Label="Serie"
+                              Variant="Variant.Outlined"
+                              MaxLength="1000" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedProveedor"
+                                   ValueChanged="value => _selectedProveedor = value"
+                                   Label="Proveedor"
+                                   Clearable="true"
+                                   LoadPage="LoadProveedoresPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoPatrimonio"
+                                   ValueChanged="value => _selectedTipoPatrimonio = value"
+                                   Label="Tipo de patrimonio"
+                                   Clearable="true"
+                                   LoadPage="LoadTiposPatrimonioPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoAdquisicion"
+                                   ValueChanged="value => _selectedTipoAdquisicion = value"
+                                   Label="Tipo de adquisicion"
+                                   Clearable="true"
+                                   LoadPage="LoadTiposAdquisicionPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudTextField @bind-Value="item.Factura"
+                              Label="Factura"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="item.FechaAdq"
+                               Label="Fecha adquisicion"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField @bind-Value="item.ValorActual"
+                                 Label="Valor factura"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 RequiredError="El valor es requerido"
+                                 Culture="@NumberCulture"
+                                 Format="0.0000"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField @bind-Value="item.ValorRescate"
+                                 Label="Valor rescate"
+                                 Variant="Variant.Outlined"
+                                 Culture="@NumberCulture"
+                                 Format="0.0000"
+                                 Min="0m" />
+            </MudItem>
+
+            @if (!Id.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <PagedAutocomplete Value="@_selectedResguardo"
+                                       ValueChanged="value => _selectedResguardo = value"
+                                       Label="Resguardo inicial"
+                                       Clearable="true"
+                                       LoadPage="LoadResguardosPageAsync" />
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="@(Id.HasValue ? 6 : 3)" Class="d-flex align-center">
+                <MudSwitch T="bool"
+                           Value="@(item.Localizado ?? true)"
+                           ValueChanged="value => item.Localizado = value"
+                           Label="Localizado"
+                           Color="Color.Success" />
+            </MudItem>
+
+            <MudItem xs="12" md="@(Id.HasValue ? 6 : 3)" Class="d-flex align-center">
+                <MudSwitch T="bool"
+                           Value="@(item.EsContabilizado ?? false)"
+                           ValueChanged="value => item.EsContabilizado = value"
+                           Label="Contabilizado"
+                           Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Ubicacion"
+                              Label="Ubicacion fisica"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Referencia"
+                              Label="Referencia"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Notas"
+                              Label="Notas"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="250" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<BienResponse> form = null!;
+    private BienResponse item = new()
+    {
+        Activo = true,
+        FechaAdq = DateTime.Today,
+        Localizado = true,
+        EsContabilizado = false,
+        ValorActual = 0m,
+        VerificacionesDias = 0,
+        MantenimientoDias = 0
+    };
+
+    private LookupItem? _selectedTipoBien;
+    private LookupItem? _selectedArea;
+    private LookupItem? _selectedProveedor;
+    private LookupItem? _selectedMarca;
+    private LookupItem? _selectedTipoPatrimonio;
+    private LookupItem? _selectedTipoAdquisicion;
+    private LookupItem? _selectedResguardo;
+
+    private string dialogTitle => Id.HasValue ? "Editar bien patrimonial" : "Nuevo bien patrimonial";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _selectedTipoBien = new LookupItem { Id = item.FkidTipoBienAlma, Text = BuildTipoBienText(item.TipoBienCodigoClave, item.TipoBienDescripcion) };
+                _selectedArea = item.FkidAreaSis.HasValue ? new LookupItem { Id = item.FkidAreaSis.Value, Text = BuildAreaText(item.AreaClave, item.AreaNombre) } : null;
+                _selectedProveedor = item.FkidProveedorSis.HasValue ? new LookupItem { Id = item.FkidProveedorSis.Value, Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre) } : null;
+                _selectedMarca = item.FkidMarcaAlma.HasValue ? new LookupItem { Id = item.FkidMarcaAlma.Value, Text = TextOrDefault(item.MarcaDescripcion, item.FkidMarcaAlma.Value) } : null;
+                _selectedTipoPatrimonio = item.FkidTipoPatrimonioAlma.HasValue ? new LookupItem { Id = item.FkidTipoPatrimonioAlma.Value, Text = TextOrDefault(item.TipoPatrimonioDescripcion, item.FkidTipoPatrimonioAlma.Value) } : null;
+                _selectedTipoAdquisicion = item.FkidTipoAdqAlma.HasValue ? new LookupItem { Id = item.FkidTipoAdqAlma.Value, Text = BuildClaveText(item.TipoAdquisicionClave, item.TipoAdquisicionDescripcion) } : null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar bien: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedTipoBien == null)
+        {
+            Snackbar.Add("Debe seleccionar el tipo de bien.", Severity.Warning);
+            return;
+        }
+
+        if (item.ValorActual is null or <= 0)
+        {
+            Snackbar.Add("El valor factura debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        item.FkidTipoBienAlma = _selectedTipoBien.Id;
+        item.FkidAreaSis = _selectedArea?.Id;
+        item.FkidProveedorSis = _selectedProveedor?.Id;
+        item.FkidMarcaAlma = _selectedMarca?.Id;
+        item.FkidTipoPatrimonioAlma = _selectedTipoPatrimonio?.Id;
+        item.FkidTipoAdqAlma = _selectedTipoAdquisicion?.Id;
+        item.Resguardo = Id.HasValue ? item.Resguardo : _selectedResguardo?.Id;
+        item.Costo ??= item.ValorActual;
+        item.Modelo ??= string.Empty;
+        item.Serie ??= string.Empty;
+        item.Factura ??= string.Empty;
+        item.Referencia ??= string.Empty;
+        item.Notas ??= string.Empty;
+        item.Ubicacion ??= string.Empty;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Bien actualizado correctamente" : "Bien creado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar el bien", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadTiposBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoBien, Text = BuildTipoBienText(x.CodigoClave, x.TipoBienDescripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = BuildAreaText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidProveedor, Text = BuildProveedorText(x.Clave, x.Nombre) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadMarcasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await MarcaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidMarca, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposPatrimonioPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoPatrimonioService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoPatrimonio, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposAdquisicionPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoAdquisicionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoAdq, Text = BuildClaveText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadResguardosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var filters = EmpresaId > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = EmpresaId }
+            : null;
+        var response = await ResguardoService.GetAllPaginadoAsync(page, pageSize, filter, "Folio", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidResguardo, Text = $"{x.Folio} - {x.PersonaNombre}" }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildTipoBienText(string? clave, string? descripcion) => BuildClaveText(clave, descripcion);
+    private static string BuildAreaText(string? clave, string? descripcion) => BuildClaveText(clave, descripcion);
+    private static string BuildProveedorText(string? clave, string? nombre) => BuildClaveText(clave, nombre);
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        var prefix = string.IsNullOrWhiteSpace(clave) ? string.Empty : $"{clave} - ";
+        return $"{prefix}{descripcion}".Trim();
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString(CultureInfo.InvariantCulture) : text;
+}

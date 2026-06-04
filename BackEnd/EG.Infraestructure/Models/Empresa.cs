@@ -89,6 +89,8 @@ public partial class Empresa
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
+    public virtual ICollection<Resguardo> Resguardos { get; set; } = new List<Resguardo>();
+
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
 
     public virtual ICollection<SolicitudSuficiencium> SolicitudSuficiencia { get; set; } = new List<SolicitudSuficiencium>();

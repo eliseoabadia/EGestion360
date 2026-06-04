@@ -931,21 +931,16 @@ USING (VALUES
 
 
     (601, N'Bienes', 1, 5, N'Bienes', N'/Patrimonio/Bienes', N'FaLock', 1, 'ESP', 2, 1, GETDATE()),
-    (602, N'Clasificación de Bienes Muebles', 1, 5, N'Bienes', N'/Patrimonio/Clasificacion_Bienes_Muebles', N'FaLock', 1, 'ESP', 3, 1, GETDATE()),
-    (603, N'Bajas', 1, 5, N'Bienes', N'/Patrimonio/Bajas', N'FaLock', 1, 'ESP', 4, 1, GETDATE()),
-    (604, N'Calendario de Inventarios', 1, 5, N'Bienes', N'/Patrimonio/Calendario_Inventarios', N'FaLock', 1, 'ESP', 5, 1, GETDATE()),
-    (605, N'Bienes', 1, 5, N'Inventarios', N'/Patrimonio/Inventarios', N'FaLock', 1, 'ESP', 6, 1, GETDATE()),
-    (606, N'Cédula de Diferencia', 1, 5, N'Bienes', N'/Patrimonio/Cedula_Diferencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
-    (607, N'Resguardos', 1, 5, N'Bienes', N'/Patrimonio/Resguardos', N'FaLock', 1, 'ESP', 8, 1, GETDATE()),
-    (608, N'Firma Resguardos', 1, 5, N'Bienes', N'/Patrimonio/Firma_Resguardos', N'FaLock', 1, 'ESP', 9, 1, GETDATE()),
-    (609, N'Resguardo Historico', 1, 5, N'Bienes', N'/Patrimonio/Resguardo_Historico', N'FaLock', 1, 'ESP', 10, 1, GETDATE())
+    (602, N'Clasificación de Bienes Muebles', 1, 5, N'Clasificación de Bienes Muebles', N'/Patrimonio/Clasificacion_Bienes_Muebles', N'FaLock', 1, 'ESP', 3, 1, GETDATE()),
+    (603, N'Bajas', 1, 5, N'Bajas', N'/Patrimonio/Bajas', N'FaLock', 1, 'ESP', 4, 1, GETDATE()),
+    (604, N'Calendario de Inventarios', 1, 5, N'Calendario de Inventarios', N'/Patrimonio/Calendario_Inventarios', N'FaLock', 1, 'ESP', 5, 1, GETDATE()),
+    (605, N'Inventarios', 1, 5, N'Inventarios', N'/Patrimonio/Inventarios', N'FaLock', 1, 'ESP', 6, 1, GETDATE()),
+    (606, N'Cédula de Diferencia', 1, 5, N'Cédula de Diferencia', N'/Patrimonio/Cedula_Diferencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
+    (607, N'Resguardos', 1, 5, N'Resguardos', N'/Patrimonio/Resguardos', N'FaLock', 1, 'ESP', 8, 1, GETDATE()),
+    (608, N'Firma Resguardos', 1, 5, N'Firma Resguardos', N'/Patrimonio/Firma_Resguardos', N'FaLock', 1, 'ESP', 9, 1, GETDATE()),
+    (609, N'Resguardo Historico', 1, 5, N'Resguardo Historico', N'/Patrimonio/Resguardo_Historico', N'FaLock', 1, 'ESP', 10, 1, GETDATE())
 
 
---EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Inventarios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
---EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Cedula_Diferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
---EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
---EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Firma_Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
---EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardo_Historico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON (TARGET.PKIdMenu = SOURCE.PKIdMenu)
