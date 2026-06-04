@@ -410,7 +410,7 @@
     protected override Type EditDialogType => typeof(BienDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<BienResponse>);
 
-    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
 
     protected override string GetDefaultSortLabel() => "PkidBien";
 

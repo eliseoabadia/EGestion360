@@ -1,0 +1,558 @@
+@page "/Patrimonio/Firma_Resguardos"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<ResguardoResponse, ResguardoResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<ResguardoDetalleResponse> ResguardoDetalleService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column firma-resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedResguardo == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Firma Resguardos"
+                            Subtitle="Revision y formalizacion documental de resguardos"
+                            Icon="@Icons.Material.Filled.Draw"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div class="summary-strip">
+                    <div>
+                        <span class="summary-label">Valor visible</span>
+                        <strong>@Money(Elements.Sum(x => x.ValorActualResguardado ?? 0m))</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Resguardos visibles</span>
+                        <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Bienes visibles</span>
+                        <strong>@Elements.Sum(x => x.TotalBienes ?? 0).ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Empresa</span>
+                        <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+                    </div>
+                </div>
+
+                <MudAlert Severity="Severity.Info" Dense="true" Variant="Variant.Outlined" Class="mb-2">
+                    Adjunta el resguardo firmado desde soporte documental. La pantalla mantiene a la vista responsable, bienes y valor total.
+                </MudAlert>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="ResguardoResponse"
+                                  @ref="table"
+                                  Title="Resguardos para firma"
+                                  SearchPlaceholder="Buscar folio, responsable o area..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Folio" T="ResguardoResponse">Folio</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PersonaNombre" T="ResguardoResponse">Responsable</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="ResguardoResponse">Area</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaResguardo" T="ResguardoResponse">Fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TotalBienes" T="ResguardoResponse">Bienes</MudTableSortLabel></MudTh>
+                            <MudTh>Valor</MudTh>
+                            <MudTh>Firma</MudTh>
+                        </Header>
+
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Revisar para firma">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectResguardo(item))" />
+                                </MudTooltip>
+                                <DocumentSupportButton Modulo="Patrimonio"
+                                                       SubModulo="Firma_Resguardos"
+                                                       Controlador="Resguardo"
+                                                       EntidadId="@item.PkidResguardo"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.Folio)"
+                                                       RegistroDescripcion="@($"{TextOrDash(item.PersonaNombre)} | {TextOrDash(item.AreaNombre)}")" />
+                                <MudTooltip Text="Editar datos base">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidResguardo))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(item.Folio)</div>
+                                <span>@item.FechaCreacion.ToString("dd/MM/yyyy")</span>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(item.PersonaNombre)</div>
+                                <span>@TextOrDash(item.PersonaClave)</span>
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                            <MudTd>@item.FechaResguardo.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@(item.TotalBienes ?? 0)</MudTd>
+                            <MudTd><strong>@Money(item.ValorActualResguardado ?? 0m)</strong></MudTd>
+                            <MudTd>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                                    Documental
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                   Color="Color.Primary"
+                                   Size="Size.Medium"
+                                   OnClick="BackToTable"
+                                   Tooltip="Volver al listado" />
+                    <div class="selected-title ml-2">
+                        <MudText Typo="Typo.h6">@TextOrDash(SelectedResguardo.Folio)</MudText>
+                        <span>@TextOrDash(SelectedResguardo.PersonaNombre)</span>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                        Firma documental
+                    </MudChip>
+                    <MudTooltip Text="Editar resguardo">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="@(() => EditItem(SelectedResguardo.PkidResguardo))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <DocumentSupportButton Modulo="Patrimonio"
+                                           SubModulo="Firma_Resguardos"
+                                           Controlador="Resguardo"
+                                           EntidadId="@SelectedResguardo.PkidResguardo"
+                                           FkidEmpresaSis="@SelectedResguardo.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedResguardo.Folio)"
+                                           RegistroDescripcion="@($"{TextOrDash(SelectedResguardo.PersonaNombre)} | {TextOrDash(SelectedResguardo.AreaNombre)}")" />
+                </MudPaper>
+
+                <MudCard Elevation="1" Style="flex-shrink: 0;">
+                    <MudCardContent Style="padding: 10px 12px;">
+                        <MudGrid Spacing="1">
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Responsable</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 800;">@TextOrDash(SelectedResguardo.PersonaNombre)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Area</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(SelectedResguardo.AreaNombre)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@SelectedResguardo.FechaResguardo.ToString("dd/MM/yyyy")</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Bienes</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@(SelectedResguardo.TotalBienes ?? 0)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Valor total</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 800;">@Money(SelectedResguardo.ValorActualResguardado ?? 0m)</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <GenericTable TItem="ResguardoDetalleResponse"
+                              @ref="detalleTable"
+                              Title="Bienes a firmar"
+                              SearchPlaceholder="Buscar bien, clave o serie..."
+                              ShowExportButton="false"
+                              PageSize="8"
+                              ServerDataFunc="LoadDetalleServerData"
+                              SearchString="@detalleSearchString"
+                              SearchStringChanged="(s) => detalleSearchString = s"
+                              OnSearch="ReloadDetalle">
+                    <Header>
+                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="ResguardoDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="BienDescripcion" T="ResguardoDetalleResponse">Bien</MudTableSortLabel></MudTh>
+                        <MudTh>Modelo / Serie</MudTh>
+                        <MudTh>Factura</MudTh>
+                        <MudTh>Valor</MudTh>
+                    </Header>
+                    <Row Context="detalle">
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detalle.BienClave)</div>
+                            <span>@TextOrDash(detalle.BienClaveAnterior)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detalle.BienDescripcion)</div>
+                            <span>@TextOrDash(detalle.TipoBienDescripcion)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detalle.Modelo)</div>
+                            <span>@TextOrDash(detalle.Serie)</span>
+                        </MudTd>
+                        <MudTd>@TextOrDash(detalle.Factura)</MudTd>
+                        <MudTd><strong>@Money(detalle.ValorActual ?? 0m)</strong></MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .firma-resguardos-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .firma-resguardos-page .summary-strip > div {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .firma-resguardos-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .firma-resguardos-page .summary-strip strong,
+    .firma-resguardos-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .firma-resguardos-page td span,
+    .firma-resguardos-page .selected-title span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .firma-resguardos-page .selected-title {
+        min-width: 0;
+    }
+
+    .firma-resguardos-page .selected-title .mud-typography {
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    @@media (max-width: 960px) {
+        .firma-resguardos-page .summary-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<ResguardoResponse> table = null!;
+    private GenericTable<ResguardoDetalleResponse>? detalleTable;
+    private ResguardoResponse? SelectedResguardo;
+    private string detalleSearchString = string.Empty;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Firma_Resguardos";
+    protected override Type CreateDialogType => typeof(ResguardoDialog);
+    protected override Type EditDialogType => typeof(ResguardoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ResguardoResponse>);
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    protected override string GetDefaultSortLabel() => "FechaResguardo";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<ResguardoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<ResguardoResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar resguardos para firma: {ex.Message}", Severity.Error);
+            return new TableData<ResguardoResponse> { Items = new List<ResguardoResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear resguardo",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar resguardo",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+            if (SelectedResguardo?.PkidResguardo == id)
+            {
+                await RefreshSelectedResguardo();
+                await ReloadDetalle();
+            }
+        }
+    }
+
+    protected override Task<string> GetItemNameForDelete(int id) =>
+        Task.FromResult("el resguardo");
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ResguardoResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidResguardo,
+            item.Folio,
+            Responsable = item.PersonaNombre,
+            Area = item.AreaNombre,
+            Fecha = item.FechaResguardo.ToString("dd/MM/yyyy"),
+            Bienes = item.TotalBienes,
+            Valor = item.ValorActualResguardado,
+            Firma = "Documental"
+        });
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedResguardo == null && table != null)
+        {
+            await table.ReloadData();
+            return;
+        }
+
+        await RefreshSelectedResguardo();
+        await ReloadDetalle();
+    }
+
+    private void SelectResguardo(ResguardoResponse item)
+    {
+        SelectedResguardo = item;
+        detalleSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private void BackToTable()
+    {
+        SelectedResguardo = null;
+        detalleSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task RefreshSelectedResguardo()
+    {
+        if (SelectedResguardo == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedResguardo.PkidResguardo);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedResguardo = response.Data;
+        }
+    }
+
+    private async Task<TableData<ResguardoDetalleResponse>> LoadDetalleServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedResguardo == null)
+        {
+            return new TableData<ResguardoDetalleResponse> { Items = new List<ResguardoDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await ResguardoDetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "BienClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidResguardoAlma"] = SelectedResguardo.PkidResguardo });
+
+        return new TableData<ResguardoDetalleResponse>
+        {
+            Items = response?.Items ?? new List<ResguardoDetalleResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task ReloadDetalle()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private async void OnEmpresaChanged(int _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Money(decimal value) =>
+        value.ToString("C2", NumberCulture);
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+}

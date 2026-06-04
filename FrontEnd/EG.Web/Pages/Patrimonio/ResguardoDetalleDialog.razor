@@ -8,32 +8,48 @@
 
 @inject IGenericCrudService<ResguardoDetalleResponse> Service
 @inject IGenericCrudService<ResguardoResponse> ResguardoService
+@inject IGenericCrudService<BienResponse> BienService
 @inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="ResguardoDetalleResponse"
-                Title="Asignar resguardo"
+                Title="@dialogTitle"
                 MaxWidth="MaxWidth.Medium"
-                ActionText="Asignar"
+                ActionText="@actionText"
                 ProcessingText="Asignando..."
                 LoadingMessage="Preparando asignacion..."
                 OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="ResguardoDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="Asignacion de resguardo">
+    <BaseEntityForm TEntity="ResguardoDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
         <MudGrid Spacing="2">
             <MudItem xs="12">
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-                    @BienDescripcion
+                    @DialogContextText
                 </MudAlert>
             </MudItem>
 
-            <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedResguardo"
-                                   ValueChanged="value => _selectedResguardo = value"
-                                   Label="Resguardo destino"
-                                   Required="true"
-                                   RequiredError="El resguardo es requerido"
-                                   LoadPage="LoadResguardosPageAsync" />
-            </MudItem>
+            @if (BienId <= 0)
+            {
+                <MudItem xs="12">
+                    <PagedAutocomplete Value="@_selectedBien"
+                                       ValueChanged="value => _selectedBien = value"
+                                       Label="Bien disponible"
+                                       Required="true"
+                                       RequiredError="El bien es requerido"
+                                       LoadPage="LoadBienesPageAsync" />
+                </MudItem>
+            }
+
+            @if (ResguardoId <= 0)
+            {
+                <MudItem xs="12">
+                    <PagedAutocomplete Value="@_selectedResguardo"
+                                       ValueChanged="value => _selectedResguardo = value"
+                                       Label="Resguardo destino"
+                                       Required="true"
+                                       RequiredError="El resguardo es requerido"
+                                       LoadPage="LoadResguardosPageAsync" />
+                </MudItem>
+            }
 
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Observaciones"
@@ -49,6 +65,8 @@
 @code {
     [Parameter] public int BienId { get; set; }
     [Parameter] public string BienDescripcion { get; set; } = string.Empty;
+    [Parameter] public int ResguardoId { get; set; }
+    [Parameter] public string ResguardoDescripcion { get; set; } = string.Empty;
     [Parameter] public int EmpresaId { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
@@ -60,6 +78,14 @@
         Activo = true
     };
     private LookupItem? _selectedResguardo;
+    private LookupItem? _selectedBien;
+
+    private bool IsFromResguardo => ResguardoId > 0;
+    private string dialogTitle => IsFromResguardo ? "Agregar bien al resguardo" : "Asignar resguardo";
+    private string actionText => IsFromResguardo ? "Agregar bien" : "Asignar";
+    private string DialogContextText => IsFromResguardo
+        ? $"Resguardo destino: {TextOrDash(ResguardoDescripcion)}"
+        : TextOrDash(BienDescripcion);
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,20 +100,20 @@
             return;
         }
 
-        if (BienId <= 0)
+        if (BienId <= 0 && _selectedBien == null)
         {
-            Snackbar.Add("No se encontro el bien seleccionado.", Severity.Warning);
+            Snackbar.Add("Debe seleccionar el bien.", Severity.Warning);
             return;
         }
 
-        if (_selectedResguardo == null)
+        if (ResguardoId <= 0 && _selectedResguardo == null)
         {
             Snackbar.Add("Debe seleccionar un resguardo.", Severity.Warning);
             return;
         }
 
-        item.FkidBienAlma = BienId;
-        item.FkidResguardoAlma = _selectedResguardo.Id;
+        item.FkidBienAlma = BienId > 0 ? BienId : _selectedBien!.Id;
+        item.FkidResguardoAlma = ResguardoId > 0 ? ResguardoId : _selectedResguardo!.Id;
         item.Observaciones ??= string.Empty;
         item.ImprimeEtiqueta = true;
 
@@ -100,6 +126,17 @@
         }
 
         Snackbar.Add(response?.Message ?? "Error al asignar resguardo", Severity.Error);
+    }
+
+    private async Task<ComboLookupResult> LoadBienesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var filters = new Dictionary<string, object> { ["EstaResguardado"] = false };
+        var response = await BienService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidBien,
+            Text = BuildBienText(x)
+        }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadResguardosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -122,4 +159,13 @@
         var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
         return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
     }
+
+    private static string BuildBienText(BienResponse item)
+    {
+        var serie = string.IsNullOrWhiteSpace(item.Serie) ? string.Empty : $" | Serie {item.Serie}";
+        return $"{TextOrDash(item.Clave)} - {TextOrDash(item.Descripcion)}{serie}";
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
 }
