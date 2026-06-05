@@ -109,8 +109,16 @@ public static class ApiServiceExtensions
         RegisterCrud<MarcaResponse>(services, "api/Marca");
         RegisterCrud<PersonaResponse>(services, "api/Persona");
         RegisterCrud<EG.Domain.DTOs.Responses.Patrimonio.BienResponse>(services, "api/Bien");
+        RegisterCrud<BajaResponse>(services, "api/Baja");
+        RegisterCrud<TipoBajaResponse>(services, "api/TipoBaja");
+        RegisterCrud<EstatusBajaResponse>(services, "api/EstatusBaja");
+        RegisterCrud<BienDisponibleBajaResponse>(services, "api/BienDisponibleBaja");
         RegisterCrud<ResguardoResponse>(services, "api/Resguardo");
         RegisterCrud<ResguardoDetalleResponse>(services, "api/ResguardoDetalle");
+        RegisterCrud<CalendarioInventarioResponse>(services, "api/CalendarioInventario");
+        RegisterCrud<InventarioResponse>(services, "api/Inventario");
+        RegisterCrud<InventarioDetalleResponse>(services, "api/InventarioDetalle");
+        RegisterCrud<EstatusInventarioResponse>(services, "api/EstatusInventario");
 
         RegisterCrud<MatrizConversionResponse>(services, "api/MatrizConversion");
         RegisterCrud<UnidadResponsableResponse>(services, "api/UnidadResponsable");

@@ -41,13 +41,21 @@ public partial class Area
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
+
+    public virtual ICollection<Baja> Bajas { get; set; } = new List<Baja>();
+
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
+
+    public virtual ICollection<CalendarioInventario> CalendarioInventarios { get; set; } = new List<CalendarioInventario>();
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
     public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
 
     public virtual Area FkidAreaSisNavigation { get; set; }
+
+    public virtual ICollection<Inventario> Inventarios { get; set; } = new List<Inventario>();
 
     public virtual ICollection<Area> InverseFkidAreaSisNavigation { get; set; } = new List<Area>();
 
@@ -58,6 +66,10 @@ public partial class Area
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual ICollection<Resguardo> Resguardos { get; set; } = new List<Resguardo>();
+
+    public virtual ICollection<SolicitudSalidum> SolicitudSalidumFkidAreaEntregaSisNavigations { get; set; } = new List<SolicitudSalidum>();
+
+    public virtual ICollection<SolicitudSalidum> SolicitudSalidumFkidAreaSolicitaSisNavigations { get; set; } = new List<SolicitudSalidum>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

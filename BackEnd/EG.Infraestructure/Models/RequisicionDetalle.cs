@@ -41,8 +41,6 @@ public partial class RequisicionDetalle
 
     public virtual Unidade FkidUnidadesAlmaNavigation { get; set; }
 
-    public virtual ICollection<OrdenCompraDetalle> OrdenCompraDetalles { get; set; } = new List<OrdenCompraDetalle>();
-
     public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalles { get; set; } = new List<SolicitudSuficienciaDetalle>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

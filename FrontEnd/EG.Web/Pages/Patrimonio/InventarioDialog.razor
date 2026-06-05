@@ -1,0 +1,274 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<InventarioResponse> Service
+@inject IGenericCrudService<CalendarioInventarioResponse> CalendarioService
+@inject IGenericCrudService<EstatusInventarioResponse> EstatusService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="InventarioResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Preparando inventario..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="InventarioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid Spacing="2">
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus actual" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="4" Class="d-flex align-center">
+                    <MudSwitch T="bool" Value="@item.Autorizado" Label="Autorizado" Disabled="true" Color="Color.Success" />
+                </MudItem>
+            }
+
+            @if (CalendarId > 0)
+            {
+                <MudItem xs="12">
+                    <MudTextField Value="@CalendarDescription" Label="Calendario" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12">
+                    <PagedAutocomplete Value="@_selectedCalendario"
+                                       ValueChanged="OnCalendarioChanged"
+                                       Label="Calendario"
+                                       Required="true"
+                                       RequiredError="El calendario es requerido"
+                                       LoadPage="LoadCalendariosPageAsync" />
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedEstatus"
+                                   ValueChanged="value => _selectedEstatus = value"
+                                   Label="Estatus"
+                                   Required="true"
+                                   RequiredError="El estatus es requerido"
+                                   LoadPage="LoadEstatusPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="_fechaInventario"
+                               Label="Fecha inventario"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Responsable"
+                              Label="Responsable"
+                              Variant="Variant.Outlined"
+                              MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int CalendarId { get; set; }
+    [Parameter] public int? AreaId { get; set; }
+    [Parameter] public string CalendarDescription { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<InventarioResponse> form = null!;
+    private InventarioResponse item = new()
+    {
+        Activo = true,
+        FechaInventario = DateTime.Today,
+        Responsable = string.Empty,
+        Observaciones = string.Empty
+    };
+
+    private DateTime? _fechaInventario = DateTime.Today;
+    private LookupItem? _selectedCalendario;
+    private LookupItem? _selectedEstatus;
+
+    private string dialogTitle => Id.HasValue ? "Editar inventario" : "Nuevo inventario";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (CalendarId > 0)
+        {
+            item.FkidCalendarioInventarioAlma = CalendarId;
+            item.FkidAreaSis = AreaId;
+            _selectedCalendario = new LookupItem { Id = CalendarId, Text = CalendarDescription };
+            await LoadCalendarDefaultsAsync(CalendarId);
+        }
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else
+        {
+            await SetInitialStatusAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaInventario = item.FechaInventario == default ? DateTime.Today : item.FechaInventario;
+            _selectedCalendario = item.FkidCalendarioInventarioAlma.HasValue
+                ? new LookupItem { Id = item.FkidCalendarioInventarioAlma.Value, Text = BuildClaveText(item.CalendarioFolio, item.AreaNombre) }
+                : null;
+            _selectedEstatus = new LookupItem { Id = item.FkidEstatusInventarioAlma, Text = item.EstatusDescripcion };
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedCalendario == null)
+        {
+            Snackbar.Add("Debe seleccionar un calendario.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedEstatus == null)
+        {
+            Snackbar.Add("Debe seleccionar un estatus.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidCalendarioInventarioAlma = _selectedCalendario.Id;
+        item.FkidEstatusInventarioAlma = _selectedEstatus.Id;
+        item.FechaInventario = _fechaInventario?.Date ?? DateTime.Today;
+        item.Responsable ??= string.Empty;
+        item.Observaciones ??= string.Empty;
+
+        if (!item.FkidAreaSis.HasValue || item.FkidAreaSis.Value <= 0)
+        {
+            await LoadCalendarDefaultsAsync(_selectedCalendario.Id);
+        }
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(Id.HasValue ? "Inventario actualizado correctamente" : "Inventario creado correctamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al guardar inventario", Severity.Error);
+    }
+
+    private async Task OnCalendarioChanged(LookupItem? value)
+    {
+        _selectedCalendario = value;
+        if (value != null)
+        {
+            await LoadCalendarDefaultsAsync(value.Id);
+        }
+    }
+
+    private async Task LoadCalendarDefaultsAsync(int calendarioId)
+    {
+        var response = await CalendarioService.GetByIdAsync(calendarioId);
+        if (response?.Success == true && response.Data != null)
+        {
+            item.FkidEmpresaSis = response.Data.FkidEmpresaSis;
+            item.FkidAreaSis = response.Data.FkidAreaSis;
+        }
+    }
+
+    private async Task SetInitialStatusAsync()
+    {
+        var response = await EstatusService.GetAllPaginadoAsync(1, 50, "INICIAL", "Orden", SortDirection.Ascending);
+        var status = response?.Items?.FirstOrDefault(x => x.Descripcion.Equals("INICIAL", StringComparison.OrdinalIgnoreCase))
+            ?? response?.Items?.FirstOrDefault(x => !x.EsFinal)
+            ?? response?.Items?.FirstOrDefault();
+
+        if (status != null)
+        {
+            _selectedEstatus = new LookupItem { Id = status.PkidEstatusInventario, Text = status.Descripcion };
+            item.FkidEstatusInventarioAlma = status.PkidEstatusInventario;
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadCalendariosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        var filters = empresaId.HasValue && empresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = empresaId.Value }
+            : null;
+
+        var response = await CalendarioService.GetAllPaginadoAsync(page, pageSize, filter, "FechaInicio", SortDirection.Descending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidCalendarioInventario,
+            Text = $"{x.Folio} - {x.AreaNombre} ({x.Anio})"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadEstatusPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await EstatusService.GetAllPaginadoAsync(page, pageSize, filter, "Orden", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidEstatusInventario,
+            Text = x.Descripcion
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        var prefix = string.IsNullOrWhiteSpace(clave) ? string.Empty : $"{clave} - ";
+        return $"{prefix}{descripcion}".Trim();
+    }
+}

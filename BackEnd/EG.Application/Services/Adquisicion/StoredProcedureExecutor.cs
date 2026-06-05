@@ -3,6 +3,7 @@ using System.Text.Json;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EG.Application.Services.Adquisicion
 {
@@ -57,6 +58,12 @@ namespace EG.Application.Services.Adquisicion
             if (connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync();
+            }
+
+            var currentTransaction = context.Database.CurrentTransaction;
+            if (currentTransaction != null)
+            {
+                command.Transaction = currentTransaction.GetDbTransaction();
             }
 
             await using var reader = await command.ExecuteReaderAsync();

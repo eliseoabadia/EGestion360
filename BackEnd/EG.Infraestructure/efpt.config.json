@@ -19,7 +19,19 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[ALMA].[Almacen]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[Bajas]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[Bien]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[CalendarioInventario]",
          "ObjectType": 0
       },
       {
@@ -39,11 +51,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[DetalleSolicitudSalida]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[EstadoBien]",
          "ObjectType": 0
       },
       {
          "Name": "[ALMA].[EstatusArticuloConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[EstatusBaja]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[EstatusInventario]",
          "ObjectType": 0
       },
       {
@@ -55,11 +79,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[EstatusSolicitudSalida]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[Familia]",
          "ObjectType": 0
       },
       {
          "Name": "[ALMA].[GrupoBien]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[Inventario]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[InventarioDetalle]",
          "ObjectType": 0
       },
       {
@@ -95,7 +131,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[SolicitudSalida]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[TipoAdquisicion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[TipoBaja]",
          "ObjectType": 0
       },
       {
@@ -128,6 +172,10 @@
       },
       {
          "Name": "[CONTA].[CuentaContable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[CuentaEspecial]",
          "ObjectType": 0
       },
       {
@@ -183,6 +231,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[HIS].[Inventario_Hist]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[HIS].[InventarioDet_Hist]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[NOM].[Persona]",
          "ObjectType": 0
       },
@@ -200,10 +256,6 @@
       },
       {
          "Name": "[ORCO].[CotizacionDetalle]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[ORCO].[EstatusOrdenCompra]",
          "ObjectType": 0
       },
       {
@@ -228,18 +280,6 @@
       },
       {
          "Name": "[ORCO].[Modalidad]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[ORCO].[OrdenCompra]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[ORCO].[OrdenCompraDetalle]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[ORCO].[OrdenCompraPartida]",
          "ObjectType": 0
       },
       {
@@ -711,7 +751,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[Vw_Almacen]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_Bajas]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[vw_Bien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_BienesDisponiblesBaja]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_CalendarioInventarios]",
          "ObjectType": 3
       },
       {
@@ -727,6 +783,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[Vw_DetalleSolicitudSalida]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[VW_Existencias]",
          "ObjectType": 3
       },
@@ -735,15 +795,19 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[Vw_InventarioDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_Inventarios]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[VW_PeriodoConteo]",
          "ObjectType": 3
       },
       {
-         "Name": "[ALMA].[Vw_Resguardo]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ALMA].[Vw_ResguardoDetalle]",
+         "Name": "[ALMA].[Vw_SolicitudSalida]",
          "ObjectType": 3
       },
       {
@@ -796,18 +860,6 @@
       },
       {
          "Name": "[ORCO].[Vw_Fraccion]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ORCO].[Vw_OrdenCompra]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ORCO].[Vw_OrdenCompraDetalle]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[ORCO].[Vw_OrdenCompraPartida]",
          "ObjectType": 3
       },
       {
@@ -1035,19 +1087,39 @@
          "ObjectType": 1
       },
       {
-         "Name": "[ALMA].[SP_MantenimientoBien]",
+         "Name": "[ALMA].[SP_CREATE_PolizaSalidaPatrimonio]",
          "ObjectType": 1
       },
       {
-         "Name": "[ALMA].[SP_MantenimientoResguardo]",
+         "Name": "[ALMA].[SP_MantenimientoBajas]",
          "ObjectType": 1
       },
       {
-         "Name": "[ALMA].[SP_MantenimientoResguardoDetalle]",
+         "Name": "[ALMA].[SP_MantenimientoCalendarioInventario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoInventario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoInventarioDetalle]",
          "ObjectType": 1
       },
       {
          "Name": "[ALMA].[SP_MantenimientoTipoBien]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_ReporteBaja]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_ReporteInventario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_ReporteSolicitudSalida]",
          "ObjectType": 1
       },
       {
@@ -1084,18 +1156,6 @@
       },
       {
          "Name": "[ORCO].[SP_MantenimientoEstudioMercado]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[ORCO].[SP_MantenimientoOrdenCompra]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[ORCO].[SP_MantenimientoOrdenCompraDetalle]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[ORCO].[SP_MantenimientoOrdenCompraPartida]",
          "ObjectType": 1
       },
       {

@@ -1,0 +1,212 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<CalendarioInventarioResponse> Service
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="CalendarioInventarioResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Preparando calendario..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="CalendarioInventarioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Al crear un nuevo periodo por area, los inventarios activos de esa area se enviaran a historico.
+                </MudAlert>
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="@(Id.HasValue ? 8 : 12)">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area de inventario"
+                                   Required="true"
+                                   RequiredError="El area es requerida"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.Anio"
+                                 Label="Anio"
+                                 Variant="Variant.Outlined"
+                                 Min="2000"
+                                 Max="2100" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaInicio"
+                               Label="Fecha inicio"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha inicio es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaFin"
+                               Label="Fecha fin"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha fin es requerida" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La descripcion es requerida"
+                              MaxLength="300" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<CalendarioInventarioResponse> form = null!;
+    private CalendarioInventarioResponse item = new()
+    {
+        Activo = true,
+        Anio = DateTime.Today.Year,
+        FechaInicio = DateTime.Today,
+        FechaFin = DateTime.Today,
+        Descripcion = string.Empty,
+        Observaciones = string.Empty
+    };
+
+    private DateTime? _fechaInicio = DateTime.Today;
+    private DateTime? _fechaFin = DateTime.Today;
+    private LookupItem? _selectedArea;
+
+    private string dialogTitle => Id.HasValue ? "Editar calendario de inventario" : "Nuevo calendario de inventario";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear periodo";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaInicio = item.FechaInicio == default ? DateTime.Today : item.FechaInicio;
+            _fechaFin = item.FechaFin == default ? DateTime.Today : item.FechaFin;
+            _selectedArea = item.FkidAreaSis.HasValue
+                ? new LookupItem { Id = item.FkidAreaSis.Value, Text = TextOrId(item.AreaNombre, item.FkidAreaSis.Value) }
+                : null;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedArea == null)
+        {
+            Snackbar.Add("Debe seleccionar el area del inventario.", Severity.Warning);
+            return;
+        }
+
+        if (!_fechaInicio.HasValue || !_fechaFin.HasValue)
+        {
+            Snackbar.Add("Debe capturar fechas validas.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidAreaSis = _selectedArea.Id;
+        item.FechaInicio = _fechaInicio.Value.Date;
+        item.FechaFin = _fechaFin.Value.Date;
+        item.Anio = item.Anio <= 0 ? item.FechaInicio.Year : item.Anio;
+        item.Descripcion ??= string.Empty;
+        item.Observaciones ??= string.Empty;
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(Id.HasValue ? "Calendario actualizado correctamente" : "Calendario creado correctamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al guardar calendario", Severity.Error);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidArea,
+            Text = BuildClaveText(x.Clave, x.Descripcion)
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        var prefix = string.IsNullOrWhiteSpace(clave) ? string.Empty : $"{clave} - ";
+        return $"{prefix}{descripcion}".Trim();
+    }
+
+    private static string TextOrId(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+}

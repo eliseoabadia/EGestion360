@@ -23,9 +23,21 @@ public partial class ResguardoMovimiento
 
     public string Observaciones { get; set; }
 
+    public bool Activo { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
     public int UsuarioCreacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
 
     public virtual Bien FkidBienAlmaNavigation { get; set; }
 
+    public virtual Resguardo FkidResguardoDestinoAlmaNavigation { get; set; }
+
     public virtual ResguardoDetalle FkidResguardoDetalleAlmaNavigation { get; set; }
+
+    public virtual Resguardo FkidResguardoOrigenAlmaNavigation { get; set; }
 }

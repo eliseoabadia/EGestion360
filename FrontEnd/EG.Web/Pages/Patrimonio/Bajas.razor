@@ -1,0 +1,531 @@
+@page "/Patrimonio/Bajas"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<BajaResponse, BajaResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<EstatusBajaResponse> EstatusBajaService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column bajas-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <PageHeader Title="Bajas"
+                        Subtitle="Bajas patrimoniales con soporte documental y trazabilidad"
+                        Icon="@Icons.Material.Filled.RemoveCircleOutline"
+                        CanCreate="@CanCreate"
+                        OnCreate="CreateItem"
+                        OnRefresh="() => table.ReloadData()" />
+
+            <div class="summary-strip">
+                <div>
+                    <span class="summary-label">Valor visible</span>
+                    <strong>@Money(Elements.Sum(x => x.ValorActual ?? 0m))</strong>
+                </div>
+                <div>
+                    <span class="summary-label">Solicitudes</span>
+                    <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                </div>
+                <div>
+                    <span class="summary-label">En proceso</span>
+                    <strong>@Elements.Count(x => !IsFinal(x)).ToString("N0", NumberCulture)</strong>
+                </div>
+                <div>
+                    <span class="summary-label">Empresa</span>
+                    <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+                </div>
+            </div>
+
+            <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                <GenericTable TItem="BajaResponse"
+                              @ref="table"
+                              Title="Solicitudes de baja"
+                              SearchPlaceholder="Buscar por folio, bien, serie, factura, tipo o motivo..."
+                              ShowExportButton="@CanExport"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="(s) => SearchString = s"
+                              OnSearch="OnSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Folio" T="BajaResponse">Folio</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="BajaResponse">Bien</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="TipoBajaDescripcion" T="BajaResponse">Tipo</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="BajaResponse">Solicitud</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="BajaResponse">Estatus</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="ValorActual" T="BajaResponse">Valor</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Referencia" T="BajaResponse">Referencia</MudTableSortLabel></MudTh>
+                        <MudTh>Motivo</MudTh>
+                    </Header>
+
+                    <Row Context="item">
+                        <MudTd>
+                            <DocumentSupportButton Modulo="Patrimonio"
+                                                   SubModulo="Bajas"
+                                                   Controlador="Baja"
+                                                   EntidadId="@item.PkidBaja"
+                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                   RegistroTitulo="@TextOrDash(item.Folio)"
+                                                   RegistroDescripcion="@($"{TextOrDash(item.BienClave)} | {TextOrDash(item.BienDescripcion)}")" />
+                            <MudTooltip Text="Aplicar baja">
+                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                                               Visible="@CanUpdate"
+                                               Disabled="@IsFinal(item)"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="@(() => AplicarBaja(item))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Editar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Visible="@CanUpdate"
+                                               Disabled="@IsFinal(item)"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditItem(item.PkidBaja))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Visible="@CanDelete"
+                                               Disabled="@IsFinal(item)"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteItem(item.PkidBaja))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Folio)</div>
+                            <span>ID @item.PkidBaja</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.BienClave)</div>
+                            <span>@TextOrDash(item.BienDescripcion)</span>
+                            <span>@TextOrDash(item.Serie)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.TipoBajaDescripcion)</div>
+                            <span>@TextOrDash(item.EstadoDestino)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@item.FechaSolicitud.ToString("dd/MM/yyyy")</div>
+                            <span>@TextOrDash(item.AreaNombre)</span>
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Variant="Variant.Filled"
+                                     Style="@StatusStyle(item)">
+                                @TextOrDash(item.EstatusDescripcion)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd><strong>@Money(item.ValorActual ?? 0m)</strong></MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Referencia)</div>
+                            <span>@DateOrDash(item.FechaReferencia)</span>
+                            <span>@TextOrDash(item.Recibo)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="reason-cell">@TextOrDash(item.Motivo)</div>
+                            <span>@TextOrDash(item.Dictamen)</span>
+                            @if (!string.IsNullOrWhiteSpace(item.ClavePoliza))
+                            {
+                                <span>Poliza @item.ClavePoliza</span>
+                            }
+                        </MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .bajas-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .bajas-page .summary-strip > div {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .bajas-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .bajas-page .summary-strip strong,
+    .bajas-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .bajas-page td span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .bajas-page .reason-cell {
+        max-width: 340px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    @@media (max-width: 960px) {
+        .bajas-page .summary-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<BajaResponse> table = null!;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Bajas";
+    protected override Type CreateDialogType => typeof(BajaDialog);
+    protected override Type EditDialogType => typeof(BajaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<BajaResponse>);
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    protected override string GetDefaultSortLabel() => "FechaSolicitud";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<BajaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<BajaResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar bajas: {ex.Message}", Severity.Error);
+            return new TableData<BajaResponse> { Items = new List<BajaResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Nueva baja patrimonial",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var item = Elements.FirstOrDefault(x => x.PkidBaja == id);
+        if (item != null && IsFinal(item))
+        {
+            Snackbar.Add("Esta baja ya esta en estatus final y no puede editarse.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar baja patrimonial",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Folio ?? "la baja";
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<BajaResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidBaja,
+            item.Folio,
+            Bien = item.BienClave,
+            Descripcion = item.BienDescripcion,
+            item.Serie,
+            item.Factura,
+            Area = item.AreaNombre,
+            Tipo = item.TipoBajaDescripcion,
+            Estatus = item.EstatusDescripcion,
+            FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
+            FechaBaja = item.FechaBaja?.ToString("dd/MM/yyyy") ?? string.Empty,
+            item.Referencia,
+            FechaReferencia = item.FechaReferencia?.ToString("dd/MM/yyyy") ?? string.Empty,
+            item.Destinatario,
+            item.Recibo,
+            item.Cantidad,
+            Valor = item.ValorActual,
+            Poliza = item.ClavePoliza,
+            item.Motivo,
+            item.Dictamen,
+            item.Observaciones,
+            item.UsuarioCreacion,
+            item.FechaCreacion
+        });
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+            var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task AplicarBaja(BajaResponse item)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para aplicar bajas", Severity.Warning);
+            return;
+        }
+
+        if (IsFinal(item))
+        {
+            Snackbar.Add("La baja ya esta en estatus final.", Severity.Info);
+            return;
+        }
+
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Aplicar la baja {TextOrDash(item.Folio)} del bien {TextOrDash(item.BienClave)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var estatusAplicadaId = await GetEstatusAplicadaIdAsync();
+        if (estatusAplicadaId <= 0)
+        {
+            Snackbar.Add("No se encontro el estatus APLICADA.", Severity.Error);
+            return;
+        }
+
+        var update = Clone(item);
+        update.FkidEstatusBajaAlma = estatusAplicadaId;
+        update.FechaBaja = DateTime.Today;
+
+        var response = await Service.UpdateAsync(update, item.PkidBaja);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Baja aplicada correctamente", Severity.Success);
+            await ReloadData();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al aplicar la baja", Severity.Error);
+    }
+
+    private async Task<int> GetEstatusAplicadaIdAsync()
+    {
+        var response = await EstatusBajaService.GetAllPaginadoAsync(1, 50, "APLICADA", "Orden", SortDirection.Ascending);
+        var status = response?.Items?.FirstOrDefault(x => x.Descripcion.Equals("APLICADA", StringComparison.OrdinalIgnoreCase));
+        return status?.PkidEstatusBaja ?? 0;
+    }
+
+    private static BajaResponse Clone(BajaResponse item) => new()
+    {
+        PkidBaja = item.PkidBaja,
+        Folio = item.Folio,
+        FkidEmpresaSis = item.FkidEmpresaSis,
+        FkidAreaSis = item.FkidAreaSis,
+        FkidBienAlma = item.FkidBienAlma,
+        FkidTipoBajaAlma = item.FkidTipoBajaAlma,
+        FkidEstatusBajaAlma = item.FkidEstatusBajaAlma,
+        FkidEstadoBienAnteriorAlma = item.FkidEstadoBienAnteriorAlma,
+        FkidEstadoBienDestinoAlma = item.FkidEstadoBienDestinoAlma,
+        FechaSolicitud = item.FechaSolicitud,
+        FechaBaja = item.FechaBaja,
+        Referencia = item.Referencia,
+        FechaReferencia = item.FechaReferencia,
+        Destinatario = item.Destinatario,
+        Recibo = item.Recibo,
+        Cantidad = item.Cantidad,
+        Motivo = item.Motivo,
+        Dictamen = item.Dictamen,
+        Observaciones = item.Observaciones,
+        FkidPolizaConta = item.FkidPolizaConta,
+        SolicitadoPorNom = item.SolicitadoPorNom,
+        AutorizadoPorNom = item.AutorizadoPorNom,
+        Activo = item.Activo
+    };
+
+    private async void OnEmpresaChanged(int _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static bool IsFinal(BajaResponse item) =>
+        item.EsFinal ||
+        item.EstatusDescripcion.Equals("APLICADA", StringComparison.OrdinalIgnoreCase) ||
+        item.EstatusDescripcion.Equals("RECHAZADA", StringComparison.OrdinalIgnoreCase) ||
+        item.EstatusDescripcion.Equals("CANCELADA", StringComparison.OrdinalIgnoreCase);
+
+    private static string StatusStyle(BajaResponse item)
+    {
+        var color = string.IsNullOrWhiteSpace(item.EstatusColor) ? "#ECEFF1" : item.EstatusColor;
+        return $"background-color:{color}; color:#172033; font-weight:700;";
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Money(decimal value) =>
+        value.ToString("C2", NumberCulture);
+
+    private static string DateOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+}

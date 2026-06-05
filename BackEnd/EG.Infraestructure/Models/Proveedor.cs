@@ -91,7 +91,5 @@ public partial class Proveedor
 
     public virtual Paise FkidPaisSisNavigation { get; set; }
 
-    public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
-
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
 }

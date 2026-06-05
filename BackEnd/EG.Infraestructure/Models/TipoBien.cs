@@ -63,11 +63,15 @@ public partial class TipoBien
 
     public int? CantidadEquivalente { get; set; }
 
+    public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
+
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; } = new List<ConteoDetalleEscaneo>();
 
     public virtual ICollection<Conteo> Conteos { get; set; } = new List<Conteo>();
+
+    public virtual ICollection<DetalleSolicitudSalidum> DetalleSolicitudSalida { get; set; } = new List<DetalleSolicitudSalidum>();
 
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
 
@@ -82,8 +86,6 @@ public partial class TipoBien
     public virtual Unidade FkidUnidadesAlmaNavigation { get; set; }
 
     public virtual Unidade FkidUnidadesEquivalenteNavigation { get; set; }
-
-    public virtual ICollection<OrdenCompraDetalle> OrdenCompraDetalles { get; set; } = new List<OrdenCompraDetalle>();
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
 

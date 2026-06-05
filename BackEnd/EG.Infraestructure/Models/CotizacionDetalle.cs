@@ -29,8 +29,6 @@ public partial class CotizacionDetalle
 
     public virtual RequisicionDetalle FkidRequisicionDetalleOrcoNavigation { get; set; }
 
-    public virtual ICollection<OrdenCompraDetalle> OrdenCompraDetalles { get; set; } = new List<OrdenCompraDetalle>();
-
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

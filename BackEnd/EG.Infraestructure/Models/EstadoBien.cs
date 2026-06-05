@@ -25,9 +25,15 @@ public partial class EstadoBien
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Baja> BajaFkidEstadoBienAnteriorAlmaNavigations { get; set; } = new List<Baja>();
+
+    public virtual ICollection<Baja> BajaFkidEstadoBienDestinoAlmaNavigations { get; set; } = new List<Baja>();
+
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
     public virtual ICollection<ResguardoDetalle> ResguardoDetalles { get; set; } = new List<ResguardoDetalle>();
+
+    public virtual ICollection<TipoBaja> TipoBajas { get; set; } = new List<TipoBaja>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

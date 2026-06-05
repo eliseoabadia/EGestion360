@@ -1,0 +1,239 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<InventarioDetalleResponse> Service
+@inject IGenericCrudService<InventarioResponse> InventarioService
+@inject IGenericCrudService<BienResponse> BienService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="InventarioDetalleResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Preparando bien..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="InventarioDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid Spacing="2">
+            @if (InventarioId > 0)
+            {
+                <MudItem xs="12">
+                    <MudTextField Value="@InventarioDescripcion" Label="Inventario" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12">
+                    <PagedAutocomplete Value="@_selectedInventario"
+                                       ValueChanged="value => _selectedInventario = value"
+                                       Label="Inventario"
+                                       Required="true"
+                                       RequiredError="El inventario es requerido"
+                                       LoadPage="LoadInventariosPageAsync" />
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedBien"
+                                   ValueChanged="OnBienChanged"
+                                   Label="Bien"
+                                   Required="true"
+                                   RequiredError="El bien es requerido"
+                                   LoadPage="LoadBienesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.UbicacionSistema"
+                              Label="Ubicacion sistema"
+                              Variant="Variant.Outlined"
+                              MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.UbicacionFisica"
+                              Label="Ubicacion fisica"
+                              Variant="Variant.Outlined"
+                              MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12" md="6" Class="d-flex align-center">
+                <MudSwitch T="bool"
+                           @bind-Value="item.Localizado"
+                           Label="Localizado"
+                           Color="Color.Success" />
+            </MudItem>
+
+            <MudItem xs="12" md="6" Class="d-flex align-center">
+                <MudSwitch T="bool"
+                           @bind-Value="item.TieneDiferencia"
+                           Label="Tiene diferencia"
+                           Color="Color.Warning" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int InventarioId { get; set; }
+    [Parameter] public string InventarioDescripcion { get; set; } = string.Empty;
+    [Parameter] public int EmpresaId { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<InventarioDetalleResponse> form = null!;
+    private InventarioDetalleResponse item = new()
+    {
+        Activo = true,
+        Localizado = true,
+        TieneDiferencia = false,
+        Observaciones = string.Empty
+    };
+
+    private LookupItem? _selectedInventario;
+    private LookupItem? _selectedBien;
+
+    private string dialogTitle => Id.HasValue ? "Editar bien inventariado" : "Agregar bien al inventario";
+    private string actionText => Id.HasValue ? "Actualizar" : "Agregar bien";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Agregando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (InventarioId > 0)
+        {
+            item.FkidInventarioAlma = InventarioId;
+            _selectedInventario = new LookupItem { Id = InventarioId, Text = InventarioDescripcion };
+        }
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _selectedInventario = new LookupItem { Id = item.FkidInventarioAlma, Text = item.InventarioFolio };
+            _selectedBien = new LookupItem { Id = item.FkidBienAlma, Text = BuildBienText(item.BienClave, item.BienDescripcion, item.Serie) };
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedInventario == null)
+        {
+            Snackbar.Add("Debe seleccionar un inventario.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedBien == null)
+        {
+            Snackbar.Add("Debe seleccionar un bien.", Severity.Warning);
+            return;
+        }
+
+        item.FkidInventarioAlma = _selectedInventario.Id;
+        item.FkidBienAlma = _selectedBien.Id;
+        item.UbicacionSistema ??= string.Empty;
+        item.UbicacionFisica ??= item.UbicacionSistema;
+        item.Observaciones ??= string.Empty;
+        item.TieneDiferencia = item.TieneDiferencia ||
+            !item.Localizado ||
+            !string.Equals(item.UbicacionSistema?.Trim(), item.UbicacionFisica?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(Id.HasValue ? "Bien actualizado correctamente" : "Bien agregado al inventario", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al guardar el bien", Severity.Error);
+    }
+
+    private async Task OnBienChanged(LookupItem? value)
+    {
+        _selectedBien = value;
+        if (value == null || Id.HasValue)
+        {
+            return;
+        }
+
+        var response = await BienService.GetByIdAsync(value.Id);
+        if (response?.Success == true && response.Data != null)
+        {
+            item.UbicacionSistema = response.Data.Ubicacion ?? string.Empty;
+            item.UbicacionFisica = item.UbicacionSistema;
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadInventariosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        var filters = empresaId.HasValue && empresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = empresaId.Value, ["Autorizado"] = false }
+            : new Dictionary<string, object> { ["Autorizado"] = false };
+
+        var response = await InventarioService.GetAllPaginadoAsync(page, pageSize, filter, "FechaInventario", SortDirection.Descending, filters);
+        return ToComboResult(response?.Items?.Where(x => !x.EsFinal).Select(x => new LookupItem
+        {
+            Id = x.PkidInventario,
+            Text = $"{x.Folio} - {x.AreaNombre}"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadBienesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await BienService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidBien,
+            Text = BuildBienText(x.Clave, x.Descripcion, x.Serie)
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildBienText(string? clave, string? descripcion, string? serie)
+    {
+        var serieText = string.IsNullOrWhiteSpace(serie) ? string.Empty : $" | Serie {serie}";
+        return $"{TextOrDash(clave)} - {TextOrDash(descripcion)}{serieText}";
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

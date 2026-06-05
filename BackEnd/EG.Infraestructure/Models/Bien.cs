@@ -121,6 +121,8 @@ public partial class Bien
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual Baja Baja { get; set; }
+
     public virtual Area FkidAreaSisNavigation { get; set; }
 
     public virtual EstadoBien FkidEstadoBienAlmaNavigation { get; set; }
@@ -140,6 +142,8 @@ public partial class Bien
     public virtual TipoBien FkidTipoBienAlmaNavigation { get; set; }
 
     public virtual TipoPatrimonio FkidTipoPatrimonioAlmaNavigation { get; set; }
+
+    public virtual ICollection<InventarioDetalle> InventarioDetalles { get; set; } = new List<InventarioDetalle>();
 
     public virtual ResguardoDetalle ResguardoDetalle { get; set; }
 

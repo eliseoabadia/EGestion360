@@ -1,0 +1,329 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<BajaResponse> Service
+@inject IGenericCrudService<BienDisponibleBajaResponse> BienDisponibleService
+@inject IGenericCrudService<TipoBajaResponse> TipoBajaService
+@inject IGenericCrudService<EstatusBajaResponse> EstatusBajaService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="BajaResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Preparando baja..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="BajaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    @DialogContextText
+                </MudAlert>
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+            }
+
+            @if (BienId <= 0)
+            {
+                <MudItem xs="12">
+                    <PagedAutocomplete Value="@_selectedBien"
+                                       ValueChanged="value => _selectedBien = value"
+                                       Label="Bien a dar de baja"
+                                       Required="true"
+                                       RequiredError="El bien es requerido"
+                                       LoadPage="LoadBienesPageAsync" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12">
+                    <MudTextField Value="@BienDescripcion"
+                                  Label="Bien a dar de baja"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true" />
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_selectedTipoBaja"
+                                   ValueChanged="value => _selectedTipoBaja = value"
+                                   Label="Tipo de baja"
+                                   Required="true"
+                                   RequiredError="El tipo de baja es requerido"
+                                   LoadPage="LoadTiposBajaPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <MudDatePicker @bind-Date="_fechaSolicitud"
+                               Label="Fecha solicitud"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.Cantidad"
+                                 Label="Cantidad"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 Min="0.0001m" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Referencia"
+                              Label="Referencia"
+                              Variant="Variant.Outlined"
+                              MaxLength="200" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaReferencia"
+                               Label="Fecha referencia"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Destinatario"
+                              Label="Destinatario"
+                              Variant="Variant.Outlined"
+                              MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Recibo"
+                              Label="Recibo"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Motivo"
+                              Label="Motivo"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000"
+                              Required="true"
+                              RequiredError="El motivo es requerido" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Dictamen"
+                              Label="Dictamen / sustento"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="1000" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int BienId { get; set; }
+    [Parameter] public int? AreaId { get; set; }
+    [Parameter] public string BienDescripcion { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<BajaResponse> form = null!;
+    private BajaResponse item = new()
+    {
+        Activo = true,
+        FechaSolicitud = DateTime.Today,
+        Cantidad = 1m,
+        Motivo = string.Empty,
+        Dictamen = string.Empty,
+        Observaciones = string.Empty
+    };
+
+    private DateTime? _fechaSolicitud = DateTime.Today;
+    private DateTime? _fechaReferencia;
+    private LookupItem? _selectedBien;
+    private LookupItem? _selectedTipoBaja;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string dialogTitle => Id.HasValue ? "Editar baja patrimonial" : "Nueva baja patrimonial";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear solicitud";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string DialogContextText => BienId > 0
+        ? $"Bien precargado: {TextOrDash(BienDescripcion)}. Solo captura el motivo y el tipo de baja."
+        : "Selecciona un bien disponible y registra el motivo operativo de la baja.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaSolicitud = item.FechaSolicitud == default ? DateTime.Today : item.FechaSolicitud;
+            _fechaReferencia = item.FechaReferencia;
+            _selectedBien = new LookupItem
+            {
+                Id = item.FkidBienAlma,
+                Text = BuildBienText(item.BienClave, item.BienDescripcion, item.Serie)
+            };
+            _selectedTipoBaja = new LookupItem
+            {
+                Id = item.FkidTipoBajaAlma,
+                Text = BuildClaveText(item.TipoBajaClave, item.TipoBajaDescripcion)
+            };
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (BienId <= 0 && _selectedBien == null)
+        {
+            Snackbar.Add("Debe seleccionar el bien a dar de baja.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedTipoBaja == null)
+        {
+            Snackbar.Add("Debe seleccionar el tipo de baja.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidBienAlma = BienId > 0 ? BienId : _selectedBien!.Id;
+        item.FkidTipoBajaAlma = _selectedTipoBaja.Id;
+        item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;
+        item.FechaReferencia = _fechaReferencia;
+        item.FkidAreaSis = AreaId;
+        item.Cantidad ??= 1m;
+        item.Referencia ??= string.Empty;
+        item.Destinatario ??= string.Empty;
+        item.Recibo ??= string.Empty;
+        item.Motivo ??= string.Empty;
+        item.Dictamen ??= string.Empty;
+        item.Observaciones ??= string.Empty;
+        item.FkidEstatusBajaAlma = item.FkidEstatusBajaAlma <= 0
+            ? await GetEstatusInicialIdAsync()
+            : item.FkidEstatusBajaAlma;
+
+        var tipoBaja = await TipoBajaService.GetByIdAsync(_selectedTipoBaja.Id);
+        if (tipoBaja?.Success == true && tipoBaja.Data != null)
+        {
+            item.FkidEstadoBienDestinoAlma = tipoBaja.Data.FkidEstadoBienDestinoAlma;
+        }
+
+        if (item.FkidAreaSis == null)
+        {
+            var bien = await BienDisponibleService.GetByIdAsync(item.FkidBienAlma);
+            if (bien?.Success == true && bien.Data != null)
+            {
+                item.FkidAreaSis = bien.Data.FkidAreaSis;
+            }
+        }
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(Id.HasValue ? "Baja actualizada correctamente" : "Solicitud de baja creada correctamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al guardar la baja", Severity.Error);
+    }
+
+    private async Task<int> GetEstatusInicialIdAsync()
+    {
+        var response = await EstatusBajaService.GetAllPaginadoAsync(1, 50, "INICIAL", "Orden", SortDirection.Ascending);
+        var status = response?.Items?.FirstOrDefault(x => x.Descripcion.Equals("INICIAL", StringComparison.OrdinalIgnoreCase));
+        return status?.PkidEstatusBaja ?? 1;
+    }
+
+    private async Task<ComboLookupResult> LoadBienesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await BienDisponibleService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidBien,
+            Text = BuildBienText(x.Clave, x.Descripcion, x.Serie)
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposBajaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoBajaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidTipoBaja,
+            Text = BuildClaveText(x.Clave, x.Descripcion)
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildBienText(string? clave, string? descripcion, string? serie)
+    {
+        var serieText = string.IsNullOrWhiteSpace(serie) ? string.Empty : $" | Serie {serie}";
+        return $"{TextOrDash(clave)} - {TextOrDash(descripcion)}{serieText}";
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        var prefix = string.IsNullOrWhiteSpace(clave) ? string.Empty : $"{clave} - ";
+        return $"{prefix}{descripcion}".Trim();
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

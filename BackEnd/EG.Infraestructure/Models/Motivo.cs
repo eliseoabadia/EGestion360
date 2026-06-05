@@ -25,6 +25,8 @@ public partial class Motivo
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

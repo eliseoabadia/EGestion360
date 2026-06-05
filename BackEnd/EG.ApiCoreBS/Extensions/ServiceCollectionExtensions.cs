@@ -131,8 +131,16 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoBienService, TipoBienService>();
             services.AddScoped<ITipoPatrimonioService, TipoPatrimonioService>();
             services.AddScoped<IBienAppService, BienAppService>();
+            services.AddScoped<IBajaAppService, BajaAppService>();
+            services.AddScoped<ITipoBajaAppService, TipoBajaAppService>();
+            services.AddScoped<IEstatusBajaAppService, EstatusBajaAppService>();
+            services.AddScoped<IBienDisponibleBajaAppService, BienDisponibleBajaAppService>();
             services.AddScoped<IResguardoAppService, ResguardoAppService>();
             services.AddScoped<IResguardoDetalleAppService, ResguardoDetalleAppService>();
+            services.AddScoped<ICalendarioInventarioAppService, CalendarioInventarioAppService>();
+            services.AddScoped<IInventarioAppService, InventarioAppService>();
+            services.AddScoped<IInventarioDetalleAppService, InventarioDetalleAppService>();
+            services.AddScoped<IEstatusInventarioAppService, EstatusInventarioAppService>();
 
             // Application services - Presupuestales
             services.AddScoped<IProgramaAppServices, ProgramaAppServices>();

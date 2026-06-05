@@ -1,0 +1,423 @@
+@page "/Patrimonio/Calendario_Inventarios"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<CalendarioInventarioResponse, CalendarioInventarioResponse>
+
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column calendario-inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <PageHeader Title="Calendario de inventarios"
+                        Subtitle="Periodos por area con cierre historico automatico"
+                        Icon="@Icons.Material.Filled.EventNote"
+                        CanCreate="@CanCreate"
+                        OnCreate="CreateItem"
+                        OnRefresh="() => table.ReloadData()" />
+
+            <div class="summary-strip">
+                <div>
+                    <span class="summary-label">Periodos visibles</span>
+                    <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                </div>
+                <div>
+                    <span class="summary-label">Inventarios activos</span>
+                    <strong>@Elements.Sum(x => x.InventariosActivos).ToString("N0", NumberCulture)</strong>
+                </div>
+                <div>
+                    <span class="summary-label">Anio vigente</span>
+                    <strong>@DateTime.Today.Year</strong>
+                </div>
+                <div>
+                    <span class="summary-label">Empresa</span>
+                    <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+                </div>
+            </div>
+
+            <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                <GenericTable TItem="CalendarioInventarioResponse"
+                              @ref="table"
+                              Title="Periodos de inventario"
+                              SearchPlaceholder="Buscar por folio, area, anio o descripcion..."
+                              ShowExportButton="@CanExport"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="(s) => SearchString = s"
+                              OnSearch="OnSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Folio" T="CalendarioInventarioResponse">Folio</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Descripcion" T="CalendarioInventarioResponse">Descripcion</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="CalendarioInventarioResponse">Area</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Anio" T="CalendarioInventarioResponse">Anio</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="CalendarioInventarioResponse">Periodo</MudTableSortLabel></MudTh>
+                        <MudTh>Inventarios</MudTh>
+                        <MudTh>Observaciones</MudTh>
+                    </Header>
+
+                    <Row Context="item">
+                        <MudTd>
+                            <DocumentSupportButton Modulo="Patrimonio"
+                                                   SubModulo="Calendario_Inventarios"
+                                                   Controlador="CalendarioInventario"
+                                                   EntidadId="@item.PkidCalendarioInventario"
+                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                   RegistroTitulo="@TextOrDash(item.Folio)"
+                                                   RegistroDescripcion="@($"{TextOrDash(item.AreaNombre)} | {item.Anio}")" />
+                            <MudTooltip Text="Iniciar inventario">
+                                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAddCheck"
+                                               Visible="@CanCreate"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="@(() => OpenInventarioFromCalendario(item))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Editar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Visible="@CanUpdate"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditItem(item.PkidCalendarioInventario))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Visible="@CanDelete"
+                                               Disabled="@(item.InventariosActivos > 0)"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteItem(item.PkidCalendarioInventario))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Folio)</div>
+                            <span>ID @item.PkidCalendarioInventario</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Descripcion)</div>
+                            <span>@TextOrDash(item.EmpresaNombre)</span>
+                        </MudTd>
+                        <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                @item.Anio
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@item.FechaInicio.ToString("dd/MM/yyyy")</div>
+                            <span>al @item.FechaFin.ToString("dd/MM/yyyy")</span>
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@(item.InventariosActivos > 0 ? Color.Success : Color.Default)" Variant="Variant.Outlined">
+                                @item.InventariosActivos inventarios
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="notes-cell">@TextOrDash(item.Observaciones)</div>
+                        </MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .calendario-inventarios-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .calendario-inventarios-page .summary-strip > div {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .calendario-inventarios-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .calendario-inventarios-page .summary-strip strong,
+    .calendario-inventarios-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .calendario-inventarios-page td span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .calendario-inventarios-page .notes-cell {
+        max-width: 360px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    @@media (max-width: 960px) {
+        .calendario-inventarios-page .summary-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<CalendarioInventarioResponse> table = null!;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Calendario_Inventarios";
+    protected override Type CreateDialogType => typeof(CalendarioInventarioDialog);
+    protected override Type EditDialogType => typeof(CalendarioInventarioDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<CalendarioInventarioResponse>);
+
+    protected override string GetDefaultSortLabel() => "FechaInicio";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<CalendarioInventarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+
+            var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<CalendarioInventarioResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar calendarios: {ex.Message}", Severity.Error);
+            return new TableData<CalendarioInventarioResponse> { Items = new List<CalendarioInventarioResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Nuevo calendario de inventario",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar calendario de inventario",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    private async Task OpenInventarioFromCalendario(CalendarioInventarioResponse item)
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear inventarios", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = item.FkidEmpresaSis,
+            ["CalendarId"] = item.PkidCalendarioInventario,
+            ["AreaId"] = item.FkidAreaSis,
+            ["CalendarDescription"] = $"{TextOrDash(item.Folio)} - {TextOrDash(item.AreaNombre)} ({item.Anio})"
+        };
+
+        var dialog = await DialogService.ShowAsync<InventarioDialog>(
+            "Nuevo inventario",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Folio ?? "el calendario";
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<CalendarioInventarioResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidCalendarioInventario,
+            item.Folio,
+            item.Descripcion,
+            Empresa = item.EmpresaNombre,
+            Area = item.AreaNombre,
+            item.Anio,
+            FechaInicio = item.FechaInicio.ToString("dd/MM/yyyy"),
+            FechaFin = item.FechaFin.ToString("dd/MM/yyyy"),
+            item.InventariosActivos,
+            item.Observaciones,
+            item.UsuarioCreacion,
+            item.FechaCreacion
+        });
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+            var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async void OnEmpresaChanged(int _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+}

@@ -13,15 +13,13 @@ public partial class ResguardoDetalle
 
     public int FkidBienAlma { get; set; }
 
-    public int Consecutivo { get; set; }
+    public int? FkidEstadoBienAlma { get; set; }
 
     public DateTime FechaAsignacion { get; set; }
 
     public DateTime? FechaLiberacion { get; set; }
 
     public bool ImprimeEtiqueta { get; set; }
-
-    public int? FkidEstadoBienAlma { get; set; }
 
     public string Observaciones { get; set; }
 

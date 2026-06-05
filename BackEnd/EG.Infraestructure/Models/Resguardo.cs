@@ -9,15 +9,15 @@ public partial class Resguardo
 {
     public int PkidResguardo { get; set; }
 
-    public string Folio { get; set; }
-
     public int FkidEmpresaSis { get; set; }
 
     public int? FkidAreaSis { get; set; }
 
-    public int FkidPersonaNom { get; set; }
+    public string Responsable { get; set; }
 
-    public DateOnly FechaResguardo { get; set; }
+    public string Folio { get; set; }
+
+    public DateOnly Fecha { get; set; }
 
     public string Observaciones { get; set; }
 
@@ -35,7 +35,9 @@ public partial class Resguardo
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
-    public virtual Persona FkidPersonaNomNavigation { get; set; }
-
     public virtual ICollection<ResguardoDetalle> ResguardoDetalles { get; set; } = new List<ResguardoDetalle>();
+
+    public virtual ICollection<ResguardoMovimiento> ResguardoMovimientoFkidResguardoDestinoAlmaNavigations { get; set; } = new List<ResguardoMovimiento>();
+
+    public virtual ICollection<ResguardoMovimiento> ResguardoMovimientoFkidResguardoOrigenAlmaNavigations { get; set; } = new List<ResguardoMovimiento>();
 }

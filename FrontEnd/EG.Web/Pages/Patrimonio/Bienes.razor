@@ -107,6 +107,13 @@
                                                    Size="Size.Small"
                                                    OnClick="@(() => OpenAsignarResguardoDialog(item))" />
                                 </MudTooltip>
+                                <MudTooltip Text="Dar baja">
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline"
+                                                   Visible="@CanUpdate"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OpenBajaDialog(item))" />
+                                </MudTooltip>
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
@@ -192,6 +199,14 @@
                                        Visible="@CanUpdate"
                                        Disabled="@(SelectedBien.EstaResguardado != true)"
                                        OnClick="LiberarResguardo"
+                                       Class="ml-1" />
+                    </MudTooltip>
+                    <MudTooltip Text="Dar baja">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="@(() => OpenBajaDialog(SelectedBien))"
                                        Class="ml-1" />
                     </MudTooltip>
                     <MudTooltip Text="Editar bien">
@@ -688,6 +703,39 @@
 
         var dialog = await DialogService.ShowAsync<ResguardoDetalleDialog>(
             "Asignar resguardo",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    private async Task OpenBajaDialog(BienResponse? bien)
+    {
+        if (bien == null)
+        {
+            return;
+        }
+
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para iniciar bajas", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["BienId"] = bien.PkidBien,
+            ["BienDescripcion"] = $"{TextOrDash(bien.Clave)} - {TextOrDash(bien.Descripcion)}",
+            ["AreaId"] = bien.FkidAreaSis,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync<BajaDialog>(
+            "Dar de baja bien",
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 

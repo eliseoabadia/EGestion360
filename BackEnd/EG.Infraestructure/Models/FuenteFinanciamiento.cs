@@ -37,8 +37,6 @@ public partial class FuenteFinanciamiento
 
     public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
 
-    public virtual ICollection<OrdenCompraPartidum> OrdenCompraPartida { get; set; } = new List<OrdenCompraPartidum>();
-
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();

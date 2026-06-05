@@ -119,8 +119,6 @@ public partial class Persona
 
     public virtual ICollection<Requisicion> RequisicionFkidSupervisoNomNavigations { get; set; } = new List<Requisicion>();
 
-    public virtual ICollection<Resguardo> Resguardos { get; set; } = new List<Resguardo>();
-
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

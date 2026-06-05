@@ -33,11 +33,17 @@ public partial class Empresa
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
+
     public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; } = new List<AutorizacionSuficiencium>();
 
     public virtual ICollection<AutorizacionSuficienciaDetalle> AutorizacionSuficienciaDetalles { get; set; } = new List<AutorizacionSuficienciaDetalle>();
 
+    public virtual ICollection<Baja> Bajas { get; set; } = new List<Baja>();
+
     public virtual ICollection<Banco> Bancos { get; set; } = new List<Banco>();
+
+    public virtual ICollection<CalendarioInventario> CalendarioInventarios { get; set; } = new List<CalendarioInventario>();
 
     public virtual ICollection<ChequePartida> ChequePartida { get; set; } = new List<ChequePartida>();
 
@@ -75,7 +81,7 @@ public partial class Empresa
 
     public virtual ICollection<IntermediarioFinanciero> IntermediarioFinancieros { get; set; } = new List<IntermediarioFinanciero>();
 
-    public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
+    public virtual ICollection<Inventario> Inventarios { get; set; } = new List<Inventario>();
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
@@ -92,6 +98,8 @@ public partial class Empresa
     public virtual ICollection<Resguardo> Resguardos { get; set; } = new List<Resguardo>();
 
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
+
+    public virtual ICollection<SolicitudSalidum> SolicitudSalida { get; set; } = new List<SolicitudSalidum>();
 
     public virtual ICollection<SolicitudSuficiencium> SolicitudSuficiencia { get; set; } = new List<SolicitudSuficiencium>();
 

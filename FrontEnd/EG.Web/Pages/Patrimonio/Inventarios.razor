@@ -1,0 +1,853 @@
+@page "/Patrimonio/Inventarios"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<InventarioResponse, InventarioResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<InventarioDetalleResponse> DetalleService
+@inject IGenericCrudService<EstatusInventarioResponse> EstatusService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        @if (SelectedInventario == null)
+        {
+            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+                <PageHeader Title="Inventarios"
+                            Subtitle="Levantamiento patrimonial por periodo, area y bienes localizados"
+                            Icon="@Icons.Material.Filled.Inventory2"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div class="summary-strip">
+                    <div>
+                        <span class="summary-label">Inventarios visibles</span>
+                        <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Bienes visibles</span>
+                        <strong>@Elements.Sum(x => x.TotalBienes).ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Diferencias</span>
+                        <strong>@Elements.Sum(x => x.TotalDiferencias).ToString("N0", NumberCulture)</strong>
+                    </div>
+                    <div>
+                        <span class="summary-label">Empresa</span>
+                        <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+                    </div>
+                </div>
+
+                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                    <GenericTable TItem="InventarioResponse"
+                                  @ref="table"
+                                  Title="Inventarios patrimoniales"
+                                  SearchPlaceholder="Buscar por folio, calendario, area, responsable o estatus..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Folio" T="InventarioResponse">Folio</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="CalendarioFolio" T="InventarioResponse">Calendario</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="InventarioResponse">Area</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaInventario" T="InventarioResponse">Fecha</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Responsable" T="InventarioResponse">Responsable</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TotalBienes" T="InventarioResponse">Avance</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="InventarioResponse">Estatus</MudTableSortLabel></MudTh>
+                        </Header>
+
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver bienes">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectInventario(item))" />
+                                </MudTooltip>
+                                <DocumentSupportButton Modulo="Patrimonio"
+                                                       SubModulo="Inventarios"
+                                                       Controlador="Inventario"
+                                                       EntidadId="@item.PkidInventario"
+                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(item.Folio)"
+                                                       RegistroDescripcion="@($"{TextOrDash(item.AreaNombre)} | {TextOrDash(item.CalendarioFolio)}")" />
+                                <MudTooltip Text="Autorizar inventario">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                                   Visible="@CanAuthorizeInventory"
+                                                   Disabled="@IsLocked(item)"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => AutorizarInventario(item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Disabled="@IsLocked(item)"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditItem(item.PkidInventario))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Disabled="@IsLocked(item)"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteItem(item.PkidInventario))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(item.Folio)</div>
+                                <span>ID @item.PkidInventario</span>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(item.CalendarioFolio)</div>
+                                <span>@TextOrDash(item.EmpresaNombre)</span>
+                            </MudTd>
+                            <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                            <MudTd>@item.FechaInventario.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@TextOrDash(item.Responsable)</MudTd>
+                            <MudTd>
+                                <div class="main-cell">@item.TotalLocalizados/@item.TotalBienes</div>
+                                <span>@item.TotalDiferencias diferencias</span>
+                            </MudTd>
+                            <MudTd>
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Variant="Variant.Filled"
+                                         Style="@StatusStyle(item)">
+                                    @StatusText(item)
+                                </MudChip>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column" style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                   Color="Color.Primary"
+                                   Size="Size.Medium"
+                                   OnClick="BackToTable"
+                                   Tooltip="Volver al listado" />
+                    <div class="selected-title ml-2">
+                        <MudText Typo="Typo.h6">@TextOrDash(SelectedInventario.Folio)</MudText>
+                        <span>@TextOrDash(SelectedInventario.AreaNombre)</span>
+                    </div>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Style="@StatusStyle(SelectedInventario)">
+                        @StatusText(SelectedInventario)
+                    </MudChip>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.AddCircle"
+                               Disabled="@(!CanCreate || IsSelectedLocked)"
+                               OnClick="OpenAgregarBienDialog"
+                               Class="ml-2">
+                        Agregar bien
+                    </MudButton>
+                    <MudTooltip Text="Autorizar inventario">
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanAuthorizeInventory"
+                                       Disabled="@IsSelectedLocked"
+                                       OnClick="@(() => AutorizarInventario(SelectedInventario))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <MudTooltip Text="Editar inventario">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       Disabled="@IsSelectedLocked"
+                                       OnClick="@(() => EditItem(SelectedInventario.PkidInventario))"
+                                       Class="ml-2" />
+                    </MudTooltip>
+                    <DocumentSupportButton Modulo="Patrimonio"
+                                           SubModulo="Inventarios"
+                                           Controlador="Inventario"
+                                           EntidadId="@SelectedInventario.PkidInventario"
+                                           FkidEmpresaSis="@SelectedInventario.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(SelectedInventario.Folio)"
+                                           RegistroDescripcion="@($"{TextOrDash(SelectedInventario.AreaNombre)} | {TextOrDash(SelectedInventario.CalendarioFolio)}")" />
+                </MudPaper>
+
+                <MudCard Elevation="1" Style="flex-shrink: 0;">
+                    <MudCardContent Style="padding: 10px 12px;">
+                        <MudGrid Spacing="1">
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Calendario</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(SelectedInventario.CalendarioFolio)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Responsable</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(SelectedInventario.Responsable)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@SelectedInventario.FechaInventario.ToString("dd/MM/yyyy")</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Localizados</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@SelectedInventario.TotalLocalizados / @SelectedInventario.TotalBienes</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Diferencias</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 800;">@SelectedInventario.TotalDiferencias</MudText>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Observaciones</MudText>
+                                <MudText Typo="Typo.body2">@TextOrDash(SelectedInventario.Observaciones)</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <GenericTable TItem="InventarioDetalleResponse"
+                              @ref="detalleTable"
+                              Title="Bienes inventariados"
+                              SearchPlaceholder="Buscar bien, clave, serie o ubicacion..."
+                              ShowExportButton="false"
+                              ShowAddButton="@(CanCreate && !IsSelectedLocked)"
+                              AddButtonTooltip="Agregar bien"
+                              AddButtonIcon="@Icons.Material.Filled.AddCircle"
+                              PageSize="8"
+                              ServerDataFunc="LoadDetalleServerData"
+                              SearchString="@detalleSearchString"
+                              SearchStringChanged="(s) => detalleSearchString = s"
+                              OnSearch="ReloadDetalle"
+                              OnAdd="OpenAgregarBienDialog">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="InventarioDetalleResponse">Clave</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="BienDescripcion" T="InventarioDetalleResponse">Bien</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Serie" T="InventarioDetalleResponse">Serie</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="UbicacionSistema" T="InventarioDetalleResponse">Sistema</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="UbicacionFisica" T="InventarioDetalleResponse">Fisica</MudTableSortLabel></MudTh>
+                        <MudTh>Estado</MudTh>
+                        <MudTh>Valor</MudTh>
+                    </Header>
+                    <Row Context="detalle">
+                        <MudTd>
+                            <MudTooltip Text="Editar bien">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Visible="@CanUpdate"
+                                               Disabled="@IsSelectedLocked"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditDetalle(detalle.PkidInventarioDetalle))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar bien">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Visible="@CanDelete"
+                                               Disabled="@IsSelectedLocked"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteDetalle(detalle))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detalle.BienClave)</div>
+                            <span>@TextOrDash(detalle.ClaveBien)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detalle.BienDescripcion)</div>
+                            <span>@TextOrDash(detalle.Modelo)</span>
+                        </MudTd>
+                        <MudTd>@TextOrDash(detalle.Serie)</MudTd>
+                        <MudTd>@TextOrDash(detalle.UbicacionSistema)</MudTd>
+                        <MudTd>@TextOrDash(detalle.UbicacionFisica)</MudTd>
+                        <MudTd>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@(detalle.TieneDiferencia ? Color.Warning : Color.Success)"
+                                     Variant="Variant.Outlined">
+                                @(detalle.Localizado ? (detalle.TieneDiferencia ? "Diferencia" : "Correcto") : "No localizado")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd><strong>@Money(detalle.ValorActual ?? 0m)</strong></MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .inventarios-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .inventarios-page .summary-strip > div {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .inventarios-page .summary-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .inventarios-page .summary-strip strong,
+    .inventarios-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .inventarios-page td span,
+    .inventarios-page .selected-title span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .inventarios-page .selected-title {
+        min-width: 0;
+    }
+
+    .inventarios-page .selected-title .mud-typography {
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    @@media (max-width: 960px) {
+        .inventarios-page .summary-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<InventarioResponse> table = null!;
+    private GenericTable<InventarioDetalleResponse>? detalleTable;
+    private InventarioResponse? SelectedInventario;
+    private string detalleSearchString = string.Empty;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Inventarios";
+    protected override Type CreateDialogType => typeof(InventarioDialog);
+    protected override Type EditDialogType => typeof(InventarioDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<InventarioResponse>);
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private bool CanAuthorizeInventory => CanAuthorize || CanUpdate;
+    private bool IsSelectedLocked => IsLocked(SelectedInventario);
+
+    protected override string GetDefaultSortLabel() => "FechaInventario";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<InventarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+
+            var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<InventarioResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar inventarios: {ex.Message}", Severity.Error);
+            return new TableData<InventarioResponse> { Items = new List<InventarioResponse>(), TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Nuevo inventario",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var item = Elements.FirstOrDefault(x => x.PkidInventario == id) ?? SelectedInventario;
+        if (IsLocked(item))
+        {
+            Snackbar.Add("El inventario ya esta autorizado o en estatus final.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar inventario",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadData();
+            if (SelectedInventario?.PkidInventario == id)
+            {
+                await RefreshSelectedInventario();
+            }
+        }
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.Folio ?? "el inventario";
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<InventarioResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidInventario,
+            item.Folio,
+            Calendario = item.CalendarioFolio,
+            Empresa = item.EmpresaNombre,
+            Area = item.AreaNombre,
+            Estatus = item.EstatusDescripcion,
+            Fecha = item.FechaInventario.ToString("dd/MM/yyyy"),
+            item.Responsable,
+            item.TotalBienes,
+            item.TotalLocalizados,
+            item.TotalDiferencias,
+            item.Autorizado,
+            FechaAutorizacion = item.FechaAutorizacion?.ToString("dd/MM/yyyy") ?? string.Empty,
+            item.Observaciones,
+            item.UsuarioCreacion,
+            item.FechaCreacion
+        });
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+                : null;
+            var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (SelectedInventario == null && table != null)
+        {
+            await table.ReloadData();
+            return;
+        }
+
+        await RefreshSelectedInventario();
+        await ReloadDetalle();
+    }
+
+    private void SelectInventario(InventarioResponse item)
+    {
+        SelectedInventario = item;
+        detalleSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private void BackToTable()
+    {
+        SelectedInventario = null;
+        detalleSearchString = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task RefreshSelectedInventario()
+    {
+        if (SelectedInventario == null)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(SelectedInventario.PkidInventario);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedInventario = response.Data;
+        }
+    }
+
+    private async Task<TableData<InventarioDetalleResponse>> LoadDetalleServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedInventario == null)
+        {
+            return new TableData<InventarioDetalleResponse> { Items = new List<InventarioDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearchString,
+            state.SortLabel ?? "BienClave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidInventarioAlma"] = SelectedInventario.PkidInventario });
+
+        return new TableData<InventarioDetalleResponse>
+        {
+            Items = response?.Items ?? new List<InventarioDetalleResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task ReloadDetalle()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private async Task OpenAgregarBienDialog()
+    {
+        if (SelectedInventario == null)
+        {
+            Snackbar.Add("Selecciona un inventario primero.", Severity.Warning);
+            return;
+        }
+
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para agregar bienes.", Severity.Warning);
+            return;
+        }
+
+        if (IsSelectedLocked)
+        {
+            Snackbar.Add("El inventario ya esta autorizado o en estatus final.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["InventarioId"] = SelectedInventario.PkidInventario,
+            ["InventarioDescripcion"] = $"{TextOrDash(SelectedInventario.Folio)} - {TextOrDash(SelectedInventario.AreaNombre)}",
+            ["EmpresaId"] = SelectedInventario.FkidEmpresaSis
+        };
+
+        var dialog = await DialogService.ShowAsync<InventarioDetalleDialog>(
+            "Agregar bien al inventario",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshSelectedInventario();
+            await ReloadDetalle();
+        }
+    }
+
+    private async Task EditDetalle(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        if (IsSelectedLocked)
+        {
+            Snackbar.Add("El inventario ya esta autorizado o en estatus final.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["InventarioId"] = SelectedInventario?.PkidInventario ?? 0,
+            ["InventarioDescripcion"] = SelectedInventario == null
+                ? string.Empty
+                : $"{TextOrDash(SelectedInventario.Folio)} - {TextOrDash(SelectedInventario.AreaNombre)}",
+            ["EmpresaId"] = SelectedInventario?.FkidEmpresaSis ?? 0
+        };
+
+        var dialog = await DialogService.ShowAsync<InventarioDetalleDialog>(
+            "Editar bien inventariado",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshSelectedInventario();
+            await ReloadDetalle();
+        }
+    }
+
+    private async Task DeleteDetalle(InventarioDetalleResponse detalle)
+    {
+        if (!CanDelete)
+        {
+            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            return;
+        }
+
+        if (IsSelectedLocked)
+        {
+            Snackbar.Add("El inventario ya esta autorizado o en estatus final.", Severity.Warning);
+            return;
+        }
+
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar el bien {TextOrDash(detalle.BienClave)} del inventario?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var response = await DetalleService.DeleteAsync(detalle.PkidInventarioDetalle);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Bien eliminado del inventario", Severity.Success);
+            await RefreshSelectedInventario();
+            await ReloadDetalle();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al eliminar bien del inventario", Severity.Error);
+    }
+
+    private async Task AutorizarInventario(InventarioResponse? item)
+    {
+        if (item == null)
+        {
+            return;
+        }
+
+        if (!CanAuthorizeInventory)
+        {
+            Snackbar.Add("No tienes permisos para autorizar inventarios.", Severity.Warning);
+            return;
+        }
+
+        if (IsLocked(item))
+        {
+            Snackbar.Add("El inventario ya esta autorizado o en estatus final.", Severity.Info);
+            return;
+        }
+
+        if (item.TotalBienes <= 0)
+        {
+            Snackbar.Add("Agrega al menos un bien antes de autorizar.", Severity.Warning);
+            return;
+        }
+
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Autorizar el inventario {TextOrDash(item.Folio)}?");
+        if (!confirm)
+        {
+            return;
+        }
+
+        var finalStatusId = await GetFinalStatusIdAsync();
+        if (finalStatusId <= 0)
+        {
+            Snackbar.Add("No se encontro un estatus final de inventario.", Severity.Error);
+            return;
+        }
+
+        var update = Clone(item);
+        update.FkidEstatusInventarioAlma = finalStatusId;
+        update.Autorizado = true;
+
+        var response = await Service.UpdateAsync(update, item.PkidInventario);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Inventario autorizado correctamente", Severity.Success);
+            await ReloadData();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "Error al autorizar inventario", Severity.Error);
+    }
+
+    private async Task<int> GetFinalStatusIdAsync()
+    {
+        var response = await EstatusService.GetAllPaginadoAsync(1, 100, string.Empty, "Orden", SortDirection.Ascending);
+        var status = response?.Items?.FirstOrDefault(x => x.EsFinal)
+            ?? response?.Items?.FirstOrDefault(x => x.Descripcion.Contains("CERRADO", StringComparison.OrdinalIgnoreCase))
+            ?? response?.Items?.FirstOrDefault(x => x.Descripcion.Contains("AUTORIZADO", StringComparison.OrdinalIgnoreCase));
+        return status?.PkidEstatusInventario ?? 0;
+    }
+
+    private static InventarioResponse Clone(InventarioResponse item) => new()
+    {
+        PkidInventario = item.PkidInventario,
+        FkidEmpresaSis = item.FkidEmpresaSis,
+        FkidCalendarioInventarioAlma = item.FkidCalendarioInventarioAlma,
+        FkidAreaSis = item.FkidAreaSis,
+        FkidEstatusInventarioAlma = item.FkidEstatusInventarioAlma,
+        Folio = item.Folio,
+        FechaInventario = item.FechaInventario,
+        Responsable = item.Responsable,
+        Observaciones = item.Observaciones,
+        TotalBienes = item.TotalBienes,
+        TotalLocalizados = item.TotalLocalizados,
+        TotalDiferencias = item.TotalDiferencias,
+        Autorizado = item.Autorizado,
+        FechaAutorizacion = item.FechaAutorizacion,
+        UsuarioAutorizacion = item.UsuarioAutorizacion,
+        Activo = item.Activo,
+        FechaCreacion = item.FechaCreacion,
+        UsuarioCreacion = item.UsuarioCreacion,
+        FechaModificacion = item.FechaModificacion,
+        UsuarioModificacion = item.UsuarioModificacion
+    };
+
+    private async void OnEmpresaChanged(int _)
+    {
+        BackToTable();
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static bool IsLocked(InventarioResponse? item) =>
+        item?.Autorizado == true || item?.EsFinal == true;
+
+    private static string StatusText(InventarioResponse item) =>
+        item.Autorizado ? "AUTORIZADO" : TextOrDash(item.EstatusDescripcion);
+
+    private static string StatusStyle(InventarioResponse item)
+    {
+        var color = item.Autorizado ? "#DFF6DD" : (string.IsNullOrWhiteSpace(item.EstatusColor) ? "#ECEFF1" : item.EstatusColor);
+        return $"background-color:{color}; color:#172033; font-weight:700;";
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Money(decimal value) =>
+        $"${value.ToString("0.00", NumberCulture)}";
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+}
