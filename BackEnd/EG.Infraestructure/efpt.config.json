@@ -1087,6 +1087,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[ALMA].[SP_CREATE_PolizaSalidaAlmacen]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[ALMA].[SP_CREATE_PolizaSalidaPatrimonio]",
          "ObjectType": 1
       },

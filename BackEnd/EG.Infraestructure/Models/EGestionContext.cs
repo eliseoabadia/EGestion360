@@ -5707,6 +5707,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidAreaSolicitaSis).HasColumnName("FKIdAreaSolicita_SIS");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidEstatusSolicitudSalidaAlma).HasColumnName("FKIdEstatusSolicitudSalida_ALMA");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.Folio)
                 .IsRequired()
                 .HasMaxLength(30);
@@ -5731,6 +5732,10 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidEstatusSolicitudSalidaAlma)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_SolicitudSalida_Estatus");
+
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.SolicitudSalida)
+                .HasForeignKey(d => d.FkidPolizaConta)
+                .HasConstraintName("FK_SolicitudSalida_Poliza_CONTA");
         });
 
         modelBuilder.Entity<SolicitudSuficienciaDetalle>(entity =>

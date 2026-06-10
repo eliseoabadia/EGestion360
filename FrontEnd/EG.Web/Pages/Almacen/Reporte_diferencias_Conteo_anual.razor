@@ -1,0 +1,62 @@
+@page "/Almacen/Reporte_diferencias_Conteo_anual"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.ConteoCiclico
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<ConteoResponse, ConteoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Reporte diferencias de conteo anual"
+                    Subtitle="Diferencias anuales entre inventario teorico y conteo fisico"
+                    Icon="@Icons.Material.Filled.Assessment"
+                    CanCreate="false"
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="ConteoResponse"
+                      @ref="table"
+                      Title="Diferencias anuales"
+                      SearchPlaceholder="Buscar por periodo, bien o estado..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Periodo</MudTh>
+                <MudTh>Bien</MudTh>
+                <MudTh>Inventario</MudTh>
+                <MudTh>Contado</MudTh>
+                <MudTh>Diferencia</MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>@TextOrDash(item.NombrePeriodo)</MudTd>
+                <MudTd>@TextOrDash(item.DescripcionTipoBien)</MudTd>
+                <MudTd>@Qty(item.CantidadInventario)</MudTd>
+                <MudTd>@Qty(item.TotalCantidadContada)</MudTd>
+                <MudTd><strong>@Qty(item.TotalCantidadContada - item.CantidadInventario)</strong></MudTd>
+                <MudTd><MudChip T="string" Size="Size.Small" Color="@(HasDifference(item) ? Color.Warning : Color.Success)">@(HasDifference(item) ? "Diferencia" : "Cuadrado")</MudChip></MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ConteoResponse> table = null!;
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Reporte_diferencias_conteo_anual";
+    protected override Type CreateDialogType => typeof(AlmacenDialog);
+    protected override Type EditDialogType => typeof(AlmacenDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ConteoResponse>);
+    protected override string GetDefaultSortLabel() => "FechaInicio";
+    protected override Task ReloadData() => table.ReloadData();
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ConteoResponse> items) =>
+        items.Select(x => new { Periodo = x.NombrePeriodo, Bien = x.DescripcionTipoBien, x.CantidadInventario, x.TotalCantidadContada, Diferencia = x.TotalCantidadContada - x.CantidadInventario });
+    private static bool HasDifference(ConteoResponse item) => item.TotalCantidadContada != item.CantidadInventario;
+    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

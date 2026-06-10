@@ -517,7 +517,10 @@ VALUES
 (2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Estatus_Solicitud', 'CONALM0102', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Unidades', 'CONALM0103', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Conteo_Periodo', 'CONALM0104', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-
+(2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Familia', 'CONALM0105', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Bien', 'CONALM0106', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Bien', 'CONALM0107', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+(2, 'Configuracion', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Numero_Conteo', 'CONALM0108', 'Almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Tesoreria', 'CONTES01', 'Configuracion', 'view,view-menu', 0),
 (2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Cambio', 'CONTES02', 'CONTES01', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -577,17 +580,24 @@ VALUES
 (2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Firma_Resguardos', 'PATBIEN008', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 (2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardo_Historico', 'PATBIEN008', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'Almacén', 'view,view-menu', 0),
-(2, 'configuracion', 'configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'numero-conteo', 'AL0001', 'Número de conteo', 'view,view-menu', 0),
-(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
-(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'periodo', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'mis-periodos', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'almacen', 'AL0001', 'almacen', 'view,view-menu', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'familia', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'tipo-bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'almacen', 'almacen', NULL, 'app://{0}/{1}', GETDATE(), 'bien', 'AL0001', 'almacen', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'support', 'support', NULL, 'app://{0}/{1}', GETDATE(), 'support', 'SO0001', 'Soporte', 'view,view-menu', 0),
-(2, 'configuration', 'configuration', NULL, 'app://{0}/{1}', GETDATE(), 'configuration', 'CO0001', 'Configuracion', 'view,view-menu,delete,new,update', 0);
+
+
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Recepcion_Pedidos', 'AL0001', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Entradas_Ajuste', 'AL0002', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitudes_Salida', 'AL0003', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Suministros_Salida', 'AL0004', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Existencias_Registradas', 'AL0005', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'conteo_ciclico', 'AL0006', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_Conteo', 'AL0007', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'conteo_ciclico_anual', 'AL0008', 'Almacen', 'view,view-menu', 0),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_conteo_anual', 'AL0009', 'Almacen', 'view,view-menu', 0);
+
+--(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
+--(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'periodo', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+--(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'mis-periodos', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
+
+--(2, 'support', 'support', NULL, 'app://{0}/{1}', GETDATE(), 'support', 'SO0001', 'Soporte', 'view,view-menu', 0),
+--(2, 'configuration', 'configuration', NULL, 'app://{0}/{1}', GETDATE(), 'configuration', 'CO0001', 'Configuracion', 'view,view-menu,delete,new,update', 0);
 
 
 
@@ -664,6 +674,10 @@ EXEC spConfiguracionDeRolYClaims 'Almacen', 'Movimiento_Entrada_Salida', '10000'
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Estatus_Solicitud', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Unidades', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Conteo_Periodo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Familia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Tipo_Bien', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Bien', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Numero_Conteo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Tesoreria', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Cambio', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Inversion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -711,6 +725,15 @@ EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Cedula_Diferencia', '10000', 'vi
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Firma_Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardo_Historico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Recepcion_Pedidos', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Entradas_Ajuste', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Solicitudes_Salida', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Suministros_Salida', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Existencias_Registradas', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'conteo_ciclico', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_Conteo', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'conteo_ciclico_anual', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_conteo_anual', '10000', 'view,view-menu';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -885,6 +908,11 @@ USING (VALUES
     (272, N'Estatus Solicitud', 2, 270, N'Estatus Solicitud', N'/configuracion/almacen/Estatus_Solicitud', N'FaFlag', 1, 'ESP', 2, 1, GETDATE()),
     (273, N'Unidades', 2, 270, N'Unidades', N'/configuracion/almacen/Unidades', N'RiListCheck2', 1, 'ESP', 3, 1, GETDATE()),
     (274, N'Perido de Conteo', 2, 270, N'Perido de Conteo', N'/configuracion/almacen/Perido_Conteo', N'FaCalendar', 1, 'ESP', 4, 1, GETDATE()),
+    (275, N'Familia', 2, 270, N'Familia', N'/configuracion/almacen/Familia', N'FaCalendar', 1, 'ESP', 5, 1, GETDATE()),
+    (276, N'Tipo_Bien', 2, 270, N'Tipo_Bien', N'/configuracion/almacen/Tipo_Bien', N'FaCalendar', 1, 'ESP', 6, 1, GETDATE()),
+    (277, N'Bien', 2, 270, N'Bien', N'/configuracion/almacen/Bien', N'FaCalendar', 1, 'ESP', 7, 1, GETDATE()),
+    (278, N'Numero_Conteo', 2, 270, N'Numero_Conteo', N'/configuracion/almacen/Numero_Conteo', N'FaCalendar', 1, 'ESP', 8, 1, GETDATE()),
+
 
     -- Configuración -> Tesorería
     (280, N'Tesoreria', 1, 1, N'Tesoreria', N'/', N'FaChartLine', 1, 'ESP', 5, 1, GETDATE()),
@@ -940,7 +968,20 @@ USING (VALUES
     (606, N'Cédula de Diferencia', 1, 5, N'Cédula de Diferencia', N'/Patrimonio/Cedula_Diferencia', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
     (607, N'Resguardos', 1, 5, N'Resguardos', N'/Patrimonio/Resguardos', N'FaLock', 1, 'ESP', 8, 1, GETDATE()),
     (608, N'Firma Resguardos', 1, 5, N'Firma Resguardos', N'/Patrimonio/Firma_Resguardos', N'FaLock', 1, 'ESP', 9, 1, GETDATE()),
-    (609, N'Resguardo Historico', 1, 5, N'Resguardo Historico', N'/Patrimonio/Resguardo_Historico', N'FaLock', 1, 'ESP', 10, 1, GETDATE())
+    (609, N'Resguardo Historico', 1, 5, N'Resguardo Historico', N'/Patrimonio/Resguardo_Historico', N'FaLock', 1, 'ESP', 10, 1, GETDATE()),
+
+
+    -- Almacén
+    (700, N'Recepción de Pedidos', 1, 6, N'Recepción de Pedidos', N'/Almacen/Recepcion_Pedidos', N'FaLock', 1, 'ESP', 1, 1, GETDATE()),
+    (701, N'Entradas por Ajuste', 1, 6, N'Entradas por Ajuste', N'/Almacen/Entradas_Ajuste', N'FaLock', 1, 'ESP', 2, 1, GETDATE()),
+    (702, N'Solicitudes de Salida', 1, 6, N'Solicitudes de Salida', N'/Almacen/Solicitudes_Salida', N'FaLock', 1, 'ESP', 3, 1, GETDATE()),
+    (703, N'Suministros de Salida', 1, 6, N'Suministros de Salida', N'/Almacen/Suministros_Salida', N'FaLock', 1, 'ESP', 4, 1, GETDATE()),
+    (704, N'Existencias Registradas', 1, 6, N'Existencias Registradas', N'/Almacen/Existencias_Registradas', N'FaLock', 1, 'ESP', 5, 1, GETDATE()),
+    (705, N'Conteo Cíclico', 1, 6, N'Conteo Cíclico', N'/Almacen/Conteo_ciclico', N'FaLock', 1, 'ESP', 6, 1, GETDATE()),
+    (706, N'Reporte de Diferencias de Conteo', 1, 6, N'Reporte de Diferencias de Conteo', N'/Almacen/Reporte_diferencias_Conteo', N'FaLock', 1, 'ESP', 6, 1, GETDATE()),
+    (707, N'Conteo Cíclico Anual', 1, 6, N'Conteo Cíclico Anual', N'/Almacen/Conteo_ciclico_anual', N'FaLock', 1, 'ESP', 7, 1, GETDATE()),
+    (708, N'Reporte de Diferencias de Conteo Anual', 1, 6, N'Reporte de Diferencias de Conteo Anual', N'/Almacen/Reporte_diferencias_Conteo_anual', N'FaLock', 1, 'ESP', 8, 1, GETDATE())
+
 
 
 

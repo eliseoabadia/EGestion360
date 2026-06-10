@@ -1,0 +1,256 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<DetalleSolicitudSalidaResponse> Service
+@inject IGenericCrudService<AlmacenResponse> AlmacenService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="DetalleSolicitudSalidaResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                LoadingMessage="Preparando bien solicitado..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="DetalleSolicitudSalidaResponse" @ref="form" ShowHeader="false">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    @SolicitudDescripcion
+                </MudAlert>
+            </MudItem>
+
+            @if (ModoEntrega)
+            {
+                <MudItem xs="12">
+                    <MudTextField Value="@SelectedBienText"
+                                  Label="Existencia / bien"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12">
+                    <PagedAutocomplete Value="@_selectedAlmacen"
+                                       ValueChanged="OnAlmacenChanged"
+                                       Label="Existencia / bien"
+                                       Required="true"
+                                       RequiredError="La existencia es requerida"
+                                       LoadPage="LoadAlmacenPageAsync" />
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.CantidadSolicitada"
+                                 Label="Solicitada"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 Min="1m"
+                                 ReadOnly="@ModoEntrega"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.CantidadAutorizada"
+                                 Label="Autorizada"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 ReadOnly="@ModoEntrega"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.CantidadEntregada"
+                                 Label="Entregada"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Value="@SelectedBienText"
+                              Label="Bien"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Value="@CantidadDisponibleText"
+                              Label="Disponible registrado"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int SolicitudId { get; set; }
+    [Parameter] public string SolicitudDescripcion { get; set; } = "Solicitud de salida";
+    [Parameter] public bool ModoEntrega { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<DetalleSolicitudSalidaResponse> form = null!;
+    private DetalleSolicitudSalidaResponse item = new()
+    {
+        Activo = true,
+        CantidadSolicitada = 1m,
+        CantidadAutorizada = 1m,
+        CantidadEntregada = 0m,
+        Observaciones = string.Empty
+    };
+
+    private LookupItem? _selectedAlmacen;
+    private AlmacenResponse? _almacenSeleccionado;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string DialogTitle => ModoEntrega ? "Actualizar entrega" : Id.HasValue ? "Editar bien solicitado" : "Agregar bien a solicitud";
+    private string ActionText => ModoEntrega ? "Guardar entrega" : Id.HasValue ? "Actualizar" : "Agregar bien";
+    private string ProcessingText => ModoEntrega ? "Guardando entrega..." : Id.HasValue ? "Actualizando..." : "Agregando...";
+    private string SelectedBienText => _almacenSeleccionado == null
+        ? item.TipoBienDescripcion ?? string.Empty
+        : $"{_almacenSeleccionado.TipoBienClave} - {_almacenSeleccionado.TipoBienDescripcion}".Trim(' ', '-');
+    private string CantidadDisponibleText => _almacenSeleccionado == null
+        ? "-"
+        : _almacenSeleccionado.Cantidad.ToString("0.####", NumberCulture);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _selectedAlmacen = item.FkidAlmacenAlma.HasValue
+                ? new LookupItem { Id = item.FkidAlmacenAlma.Value, Text = BuildClaveText(item.AlmacenClave, item.TipoBienDescripcion) }
+                : null;
+            if (item.FkidAlmacenAlma.HasValue)
+            {
+                var almacen = await AlmacenService.GetByIdAsync(item.FkidAlmacenAlma.Value);
+                _almacenSeleccionado = almacen?.Data;
+            }
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (SolicitudId <= 0)
+        {
+            Snackbar.Add("Debe existir una solicitud seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (!ModoEntrega && _selectedAlmacen == null)
+        {
+            Snackbar.Add("Selecciona una existencia.", Severity.Warning);
+            return;
+        }
+
+        item.FkidSolicitudSalidaAlma = SolicitudId;
+        if (!ModoEntrega)
+        {
+            item.FkidAlmacenAlma = _selectedAlmacen!.Id;
+        }
+
+        if (_almacenSeleccionado != null)
+        {
+            item.FkidTipoBienAlma = _almacenSeleccionado.FkidTipoBienAlma;
+            item.FkidUnidadesAlma = _almacenSeleccionado.FkidUnidadesAlma;
+        }
+        item.CantidadAutorizada ??= item.CantidadSolicitada;
+        item.CantidadEntregada ??= 0m;
+        item.CantidadPendiente = Math.Max(0m, item.CantidadAutorizada.Value - item.CantidadEntregada.Value);
+        item.Observaciones ??= string.Empty;
+        item.Activo = true;
+
+        var result = ModoEntrega
+            ? Id.HasValue
+                ? await Service.PostActionAsync($"{Id.Value}/entrega", item)
+                : null
+            : Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+        if (result?.Success == true)
+        {
+            Snackbar.Add(result.Message ?? "Bien guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar el detalle.", Severity.Error);
+    }
+
+    private async Task OnAlmacenChanged(LookupItem? value)
+    {
+        _selectedAlmacen = value;
+        _almacenSeleccionado = null;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await AlmacenService.GetByIdAsync(value.Id);
+        if (response?.Success == true && response.Data != null)
+        {
+            _almacenSeleccionado = response.Data;
+            item.FkidTipoBienAlma = response.Data.FkidTipoBienAlma;
+            item.FkidUnidadesAlma = response.Data.FkidUnidadesAlma;
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadAlmacenPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AlmacenService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending,
+            new Dictionary<string, object> { ["AplicaAlmacen"] = true });
+        return ToComboResult(response?.Items?.Where(x => x.Cantidad > 0 && !x.EstaBloqueado).Select(x => new LookupItem
+        {
+            Id = x.PkidAlmacen,
+            Text = $"{x.Clave} - {x.TipoBienDescripcion} ({x.Cantidad.ToString("0.####", NumberCulture)})"
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        return $"{clave} - {descripcion}".Trim(' ', '-');
+    }
+}

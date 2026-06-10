@@ -240,8 +240,8 @@
             Console.WriteLine($"Token found: {!string.IsNullOrWhiteSpace(rawToken)}");
             if (string.IsNullOrWhiteSpace(rawToken))
             {
-                Console.WriteLine("Redirect: no token");
-                NavigationManager.NavigateTo("/login", replace: true);
+                Console.WriteLine("Menu no cargado: token aun no disponible.");
+                Items = new();
                 return;
             }
 
@@ -259,8 +259,8 @@
             Console.WriteLine($"UserId: {_userId}");
             if (_userId == 0)
             {
-                Console.WriteLine("Redirect: userId is 0");
-                NavigationManager.NavigateTo("/login", replace: true);
+                Console.WriteLine("Menu no cargado: userId aun no disponible.");
+                Items = new();
                 return;
             }
 
@@ -285,8 +285,8 @@
             }
             else
             {
-                Console.WriteLine("Redirect: menu items empty or null");
-                NavigationManager.NavigateTo("/login", replace: true);
+                Console.WriteLine("Menu no cargado: el servicio regreso una lista vacia.");
+                Items = new();
             }
         }
         catch (Exception ex)

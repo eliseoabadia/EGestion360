@@ -1,0 +1,356 @@
+@page "/Almacen/Suministros_Salida"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<SolicitudSalidaResponse, SolicitudSalidaResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<DetalleSolicitudSalidaResponse> DetalleService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column suministro-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Suministros de salida"
+                    Subtitle="Seguimiento de bienes entregados y pendientes por solicitud"
+                    Icon="@Icons.Material.Filled.LocalShipping"
+                    CanCreate="false"
+                    OnRefresh="RefreshAll" />
+
+        <div class="summary-strip">
+            <div><span>Solicitudes visibles</span><strong>@TotalCount.ToString("N0", NumberCulture)</strong></div>
+            <div><span>Pendiente visible</span><strong>@Qty(Elements.Sum(x => x.TotalPendiente))</strong></div>
+            <div><span>Entregado visible</span><strong>@Qty(Elements.Sum(x => x.TotalEntregado))</strong></div>
+            <div><span>Empresa</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong></div>
+        </div>
+
+        <div class="split-shell">
+            <div class="master-panel">
+                <GenericTable TItem="SolicitudSalidaResponse"
+                              @ref="table"
+                              Title="Solicitudes para suministro"
+                              SearchPlaceholder="Buscar por folio, solicitante o area..."
+                              ShowExportButton="@CanExport"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="(s) => SearchString = s"
+                              OnSearch="OnSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Folio" T="SolicitudSalidaResponse">Folio</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Solicitante" T="SolicitudSalidaResponse">Solicitante</MudTableSortLabel></MudTh>
+                        <MudTh>Areas</MudTh>
+                        <MudTh>Avance</MudTh>
+                        <MudTh>Estatus</MudTh>
+                    </Header>
+                    <Row Context="item">
+                        <MudTd>
+                            <MudTooltip Text="Ver detalle">
+                                <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => SelectSolicitud(item))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Folio)</div>
+                            <span>@item.FechaSolicitud.ToString("dd/MM/yyyy")</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Solicitante)</div>
+                            <span>@TextOrDash(item.Justificacion)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.AreaSolicitaNombre)</div>
+                            <span>Entrega: @TextOrDash(item.AreaEntregaNombre)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">Ent @Qty(item.TotalEntregado)</div>
+                            <span>Pend @Qty(item.TotalPendiente)</span>
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Style="@StatusStyle(item)">
+                                @TextOrDash(item.EstatusDescripcion)
+                            </MudChip>
+                            <span>@(item.Autorizado ? "Autorizada" : "Abierta")</span>
+                        </MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+
+            <div class="detail-panel">
+                <div class="detail-header">
+                    <div>
+                        <span>Bienes por suministrar</span>
+                        <strong>@(selectedSolicitud == null ? "Selecciona una solicitud" : selectedSolicitud.Folio)</strong>
+                    </div>
+                </div>
+                <GenericTable TItem="DetalleSolicitudSalidaResponse"
+                              @ref="detailTable"
+                              Title="Detalle de entrega"
+                              SearchPlaceholder="Buscar bien..."
+                              ShowExportButton="false"
+                              ServerDataFunc="LoadDetailData"
+                              ExportFunc="() => Task.CompletedTask"
+                              SearchString="@detailSearch"
+                              SearchStringChanged="(s) => detailSearch = s"
+                              OnSearch="OnDetailSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="DetalleSolicitudSalidaResponse">Bien</MudTableSortLabel></MudTh>
+                        <MudTh>Autorizada</MudTh>
+                        <MudTh>Entregada</MudTh>
+                        <MudTh>Pendiente</MudTh>
+                    </Header>
+                    <Row Context="detail">
+                        <MudTd>
+                            <MudTooltip Text="Actualizar entrega">
+                                <MudIconButton Icon="@Icons.Material.Filled.EditNote"
+                                               Visible="@CanUpdate"
+                                               Disabled="@(selectedSolicitud == null || !CanWork(selectedSolicitud))"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditarDetalle(detail))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detail.TipoBienDescripcion)</div>
+                            <span>@TextOrDash(detail.AlmacenClave)</span>
+                        </MudTd>
+                        <MudTd>@Qty(detail.CantidadAutorizada ?? 0m)</MudTd>
+                        <MudTd>@Qty(detail.CantidadEntregada ?? 0m)</MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@(detail.CantidadPendiente <= 0 ? Color.Success : Color.Warning)">
+                                @Qty(detail.CantidadPendiente)
+                            </MudChip>
+                        </MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .suministro-page .summary-strip,
+    .suministro-page .split-shell {
+        display: grid;
+        gap: 10px;
+    }
+
+    .suministro-page .summary-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin: 8px 0 12px;
+    }
+
+    .suministro-page .split-shell {
+        grid-template-columns: minmax(0, 1fr) minmax(420px, .8fr);
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .suministro-page .summary-strip > div,
+    .suministro-page .detail-header {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+    }
+
+    .suministro-page .master-panel,
+    .suministro-page .detail-panel {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .suministro-page .detail-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .suministro-page span,
+    .suministro-page td span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .suministro-page strong,
+    .suministro-page .main-cell {
+        font-weight: 700;
+    }
+</style>
+
+@code {
+    private GenericTable<SolicitudSalidaResponse> table = null!;
+    private GenericTable<DetalleSolicitudSalidaResponse> detailTable = null!;
+    private SolicitudSalidaResponse? selectedSolicitud;
+    private List<DetalleSolicitudSalidaResponse> detailElements = new();
+    private string detailSearch = string.Empty;
+    private int detailTotal;
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Suministros_Salida";
+    protected override Type CreateDialogType => typeof(SolicitudSalidaDialog);
+    protected override Type EditDialogType => typeof(SolicitudSalidaDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<SolicitudSalidaResponse>);
+    protected override string GetDefaultSortLabel() => "FechaSolicitud";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        await SucursalStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<SolicitudSalidaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        CurrentPage = Math.Max(1, state.Page + 1);
+        PageSize = state.PageSize;
+        SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+        SortDirection = state.SortDirection;
+        var filters = new Dictionary<string, object>();
+        if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
+        {
+            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+        }
+        if (AnioStateService.AnioClave.HasValue)
+        {
+            filters["Anio"] = AnioStateService.AnioClave.Value;
+        }
+        filters["Autorizado"] = true;
+
+        var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
+        Elements = response?.Items?.ToList() ?? new List<SolicitudSalidaResponse>();
+        TotalCount = response?.Success == true ? response.TotalCount : 0;
+        selectedSolicitud = selectedSolicitud != null && Elements.Any(x => x.PkidSolicitudSalida == selectedSolicitud.PkidSolicitudSalida)
+            ? selectedSolicitud
+            : Elements.FirstOrDefault();
+        return new TableData<SolicitudSalidaResponse> { Items = Elements, TotalItems = TotalCount };
+    }
+
+    private async Task<TableData<DetalleSolicitudSalidaResponse>> LoadDetailData(TableState state, CancellationToken cancellationToken)
+    {
+        if (selectedSolicitud == null)
+        {
+            return new TableData<DetalleSolicitudSalidaResponse> { Items = new List<DetalleSolicitudSalidaResponse>(), TotalItems = 0 };
+        }
+
+        var response = await DetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detailSearch,
+            state.SortLabel ?? "TipoBienDescripcion",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidSolicitudSalidaAlma"] = selectedSolicitud.PkidSolicitudSalida });
+        detailElements = response?.Items?.ToList() ?? new List<DetalleSolicitudSalidaResponse>();
+        detailTotal = response?.Success == true ? response.TotalCount : 0;
+        return new TableData<DetalleSolicitudSalidaResponse> { Items = detailElements, TotalItems = detailTotal };
+    }
+
+    private async Task SelectSolicitud(SolicitudSalidaResponse item)
+    {
+        selectedSolicitud = item;
+        await detailTable.ReloadData();
+    }
+
+    private async Task EditarDetalle(DetalleSolicitudSalidaResponse detail)
+    {
+        if (selectedSolicitud == null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = detail.PkidDetalleSolicitudSalida,
+            ["SolicitudId"] = detail.FkidSolicitudSalidaAlma,
+            ["SolicitudDescripcion"] = $"{selectedSolicitud.Folio} | {selectedSolicitud.Solicitante}",
+            ["ModoEntrega"] = true
+        };
+        var dialog = await DialogService.ShowAsync<DetalleSolicitudSalidaDialog>("Actualizar entrega", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshAll();
+        }
+    }
+
+    private async Task RefreshAll()
+    {
+        await table.ReloadData();
+        if (detailTable != null)
+        {
+            await detailTable.ReloadData();
+        }
+    }
+
+    private async Task OnDetailSearch()
+    {
+        await Task.Delay(250);
+        await detailTable.ReloadData();
+    }
+
+    protected override Task ReloadData() => RefreshAll();
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<SolicitudSalidaResponse> items)
+    {
+        return items.Select(x => new
+        {
+            x.Folio,
+            x.Solicitante,
+            AreaSolicita = x.AreaSolicitaNombre,
+            AreaEntrega = x.AreaEntregaNombre,
+            x.TotalSolicitado,
+            x.TotalAutorizado,
+            x.TotalEntregado,
+            x.TotalPendiente,
+            Estatus = x.EstatusDescripcion
+        });
+    }
+
+    private async void OnEmpresaChanged(int empresaId)
+    {
+        selectedSolicitud = null;
+        await RefreshAll();
+    }
+
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            selectedSolicitud = null;
+            await RefreshAll();
+        });
+    }
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+
+    private static bool CanWork(SolicitudSalidaResponse item) => item.Activo && item.Autorizado && !item.EsFinal;
+    private static string StatusStyle(SolicitudSalidaResponse item)
+    {
+        var color = string.IsNullOrWhiteSpace(item.EstatusColor) ? "#E8F1FF" : item.EstatusColor;
+        return $"background:{color}; color:#101828;";
+    }
+
+    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

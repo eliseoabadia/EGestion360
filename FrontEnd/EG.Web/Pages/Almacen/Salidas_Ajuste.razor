@@ -1,0 +1,283 @@
+@page "/Almacen/Salidas_Ajuste"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<AlmacenResponse, AlmacenResponse>
+
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column salida-ajuste-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Salidas por ajuste"
+                    Subtitle="Ajustes manuales de salida con trazabilidad documental y afectacion inmediata a existencias"
+                    Icon="@Icons.Material.Filled.Output"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <div class="summary-strip">
+            <div>
+                <span>Valor ajustado visible</span>
+                <strong>@Money(Elements.Sum(x => Math.Abs(x.Costo ?? 0m)))</strong>
+            </div>
+            <div>
+                <span>Unidades ajustadas</span>
+                <strong>@Qty(Elements.Sum(x => Math.Abs(x.Cantidad)))</strong>
+            </div>
+            <div>
+                <span>Registros</span>
+                <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+            </div>
+            <div>
+                <span>Empresa</span>
+                <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+            </div>
+        </div>
+
+        <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="AlmacenResponse"
+                          @ref="table"
+                          Title="Historial de salidas por ajuste"
+                          SearchPlaceholder="Buscar por clave, bien, referencia, lote o motivo..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Clave" T="AlmacenResponse">Clave</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="AlmacenResponse">Bien</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Cantidad" T="AlmacenResponse">Cantidad</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Costo" T="AlmacenResponse">Valor</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaEntrada" T="AlmacenResponse">Fecha</MudTableSortLabel></MudTh>
+                    <MudTh>Referencia</MudTh>
+                    <MudTh>Motivo</MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd>
+                        <DocumentSupportButton Modulo="Almacen"
+                                               SubModulo="Salidas_Ajuste"
+                                               Controlador="Almacen"
+                                               EntidadId="@item.PkidAlmacen"
+                                               FkidEmpresaSis="@item.FkidEmpresaSis"
+                                               RegistroTitulo="@TextOrDash(item.Clave)"
+                                               RegistroDescripcion="@TextOrDash(item.TipoBienDescripcion)" />
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.Clave)</div>
+                        <span>ID @item.PkidAlmacen</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(item.TipoBienClave)</span>
+                        <span>@TextOrDash(item.AreaNombre)</span>
+                    </MudTd>
+                    <MudTd>
+                        <strong>@Qty(Math.Abs(item.Cantidad))</strong>
+                        <span>@TextOrDash(item.UnidadDescripcion)</span>
+                    </MudTd>
+                    <MudTd>
+                        <strong>@Money(Math.Abs(item.Costo ?? 0m))</strong>
+                        <span>CU @Qty(item.CostoUnitario ?? 0m)</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@item.FechaEntrada.ToString("dd/MM/yyyy")</div>
+                        <span>@DateOrDash(item.FechaCaducidad)</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.Factura)</div>
+                        <span>@TextOrDash(item.Remision)</span>
+                        <span>@TextOrDash(item.Lote)</span>
+                    </MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error">Salida</MudChip>
+                        <span>@TextOrDash(item.MotivoDescripcion)</span>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .salida-ajuste-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .salida-ajuste-page .summary-strip > div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .salida-ajuste-page .summary-strip span,
+    .salida-ajuste-page td span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .salida-ajuste-page .summary-strip strong,
+    .salida-ajuste-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+</style>
+
+@code {
+    private GenericTable<AlmacenResponse> table = null!;
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Salidas_Ajuste";
+    protected override Type CreateDialogType => typeof(SalidaAjusteDialog);
+    protected override Type EditDialogType => typeof(SalidaAjusteDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<AlmacenResponse>);
+
+    protected override string GetDefaultSortLabel() => "FechaEntrada";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<AlmacenResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, BuildFilters());
+            Elements = response?.Items?.ToList() ?? new List<AlmacenResponse>();
+            TotalCount = response?.Success == true ? response.TotalCount : 0;
+
+            if (response?.Success != true && !string.IsNullOrWhiteSpace(response?.Message))
+            {
+                Snackbar.Add(response.Message, Severity.Error);
+            }
+
+            return new TableData<AlmacenResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var dialog = await DialogService.ShowAsync<SalidaAjusteDialog>("Nueva salida por ajuste",
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await table.ReloadData();
+        }
+    }
+
+    protected override Task ReloadData() => table.ReloadData();
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        try
+        {
+            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, SortLabel, SortDirection, BuildFilters());
+            var items = response?.Items?.ToList() ?? new List<AlmacenResponse>();
+            if (response?.Success != true || items.Count == 0)
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(items));
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"Salidas_Ajuste_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            Snackbar.Add($"Exportacion exitosa: {items.Count} registros", Severity.Success);
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<AlmacenResponse> items)
+    {
+        return items.Select(x => new
+        {
+            x.Clave,
+            Bien = x.TipoBienDescripcion,
+            Area = x.AreaNombre,
+            Cantidad = Math.Abs(x.Cantidad),
+            CostoUnitario = x.CostoUnitario,
+            Costo = Math.Abs(x.Costo ?? 0m),
+            Fecha = x.FechaEntrada.ToString("dd/MM/yyyy"),
+            Documento = x.Factura,
+            Referencia = x.Remision,
+            x.Lote,
+            Motivo = x.MotivoDescripcion
+        });
+    }
+
+    private Dictionary<string, object> BuildFilters()
+    {
+        var filters = new Dictionary<string, object> { ["TipoMovimiento"] = "SalidaAjuste" };
+        if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
+        {
+            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+        }
+
+        return filters;
+    }
+
+    private async void OnEmpresaChanged(int empresaId) => await table.ReloadData();
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+
+    private static string Money(decimal value) => value.ToString("$ #,##0.00 MXN", NumberCulture);
+    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string DateOrDash(DateTime? value) => value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
+}

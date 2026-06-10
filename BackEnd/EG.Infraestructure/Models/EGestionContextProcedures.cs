@@ -281,6 +281,57 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_CREATE_PolizaSalidaAlmacenResult>> SP_CREATE_PolizaSalidaAlmacenAsync(int? pKIdSolicitudSalida, int? idUser, OutputParameter<string> error, OutputParameter<int?> pKIdPoliza, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterError = new SqlParameter
+            {
+                ParameterName = "Error",
+                Size = -1,
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = error?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.NVarChar,
+            };
+            var parameterPKIdPoliza = new SqlParameter
+            {
+                ParameterName = "PKIdPoliza",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = pKIdPoliza?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PKIdSolicitudSalida",
+                    Value = pKIdSolicitudSalida ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterError,
+                parameterPKIdPoliza,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_CREATE_PolizaSalidaAlmacenResult>("EXEC @returnValue = [ALMA].[SP_CREATE_PolizaSalidaAlmacen] @PKIdSolicitudSalida = @PKIdSolicitudSalida, @IdUser = @IdUser, @Error = @Error OUTPUT, @PKIdPoliza = @PKIdPoliza OUTPUT", sqlParameters, cancellationToken);
+
+            error?.SetValue(parameterError.Value);
+            pKIdPoliza?.SetValue(parameterPKIdPoliza.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<int> SP_CREATE_PolizaSalidaPatrimonioAsync(int? pKIdBaja, OutputParameter<string> error, OutputParameter<int?> pKIdPoliza, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterError = new SqlParameter

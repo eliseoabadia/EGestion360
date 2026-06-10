@@ -61,6 +61,8 @@ public partial class Poliza
 
     public virtual ICollection<PolizaDetalle> PolizaDetalles { get; set; } = new List<PolizaDetalle>();
 
+    public virtual ICollection<SolicitudSalidum> SolicitudSalida { get; set; } = new List<SolicitudSalidum>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

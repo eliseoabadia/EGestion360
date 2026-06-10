@@ -1,0 +1,330 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<AlmacenResponse> Service
+@inject IGenericCrudService<TipoBienResponse> TipoBienService
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject IGenericCrudService<UnidadeResponse> UnidadService
+@inject IGenericCrudService<MotivoEsResponse> MotivoService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="AlmacenResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                LoadingMessage="Preparando movimiento..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="AlmacenResponse" @ref="form" ShowHeader="false">
+        <MudGrid Spacing="2">
+            @if (!string.IsNullOrWhiteSpace(ContextMessage))
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                        @ContextMessage
+                    </MudAlert>
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_selectedTipoBien"
+                                   ValueChanged="OnTipoBienChanged"
+                                   Label="Bien o servicio"
+                                   Required="true"
+                                   RequiredError="El bien es requerido"
+                                   Disabled="@TipoBienLocked"
+                                   LoadPage="LoadTipoBienPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area / ubicacion"
+                                   Clearable="true"
+                                   LoadPage="LoadAreaPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.Cantidad"
+                                 Label="Cantidad"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 Min="0.0001m"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.CostoUnitario"
+                                 Label="Costo unitario"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 Min="0m" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaEntrada"
+                               Label="Fecha de entrada"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedUnidad"
+                                   ValueChanged="value => _selectedUnidad = value"
+                                   Label="Unidad"
+                                   Clearable="true"
+                                   LoadPage="LoadUnidadPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedMotivo"
+                                   ValueChanged="value => _selectedMotivo = value"
+                                   Label="Motivo"
+                                   Clearable="true"
+                                   LoadPage="LoadMotivoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaCaducidad"
+                               Label="Caducidad"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Clave"
+                              Label="Clave"
+                              Variant="Variant.Outlined"
+                              HelperText="Se genera si se deja vacia"
+                              MaxLength="80" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Factura"
+                              Label="Factura"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Remision"
+                              Label="Remision"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Lote"
+                              Label="Lote"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudTextField Value="@TotalPreview"
+                              Label="Importe estimado"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int? OrdenDetalleId { get; set; }
+    [Parameter] public int? TipoBienId { get; set; }
+    [Parameter] public string TipoBienText { get; set; } = string.Empty;
+    [Parameter] public int? UnidadId { get; set; }
+    [Parameter] public string UnidadText { get; set; } = string.Empty;
+    [Parameter] public decimal? CantidadSugerida { get; set; }
+    [Parameter] public decimal? CostoSugerido { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<AlmacenResponse> form = null!;
+    private AlmacenResponse item = new()
+    {
+        Activo = true,
+        AplicaAlmacen = true,
+        FechaEntrada = DateTime.Today,
+        Cantidad = 1m
+    };
+
+    private LookupItem? _selectedTipoBien;
+    private LookupItem? _selectedArea;
+    private LookupItem? _selectedUnidad;
+    private LookupItem? _selectedMotivo;
+    private DateTime? _fechaEntrada = DateTime.Today;
+    private DateTime? _fechaCaducidad;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private bool TipoBienLocked => TipoBienId.HasValue && TipoBienId.Value > 0;
+    private string DialogTitle => Id.HasValue ? "Editar entrada de almacen" : "Nueva entrada de almacen";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Registrar entrada";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Registrando...";
+    private string ContextMessage => OrdenDetalleId.HasValue
+        ? "Entrada ligada a una orden de compra. Se conserva la referencia del detalle para trazabilidad."
+        : string.Empty;
+    private string TotalPreview => Money(item.Cantidad * (item.CostoUnitario ?? 0m));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else
+        {
+            item.Cantidad = CantidadSugerida.GetValueOrDefault(1m);
+            item.CostoUnitario = CostoSugerido;
+            item.FkidDetalleOrdenCompraOrco = OrdenDetalleId;
+            if (TipoBienId.HasValue)
+            {
+                _selectedTipoBien = new LookupItem { Id = TipoBienId.Value, Text = string.IsNullOrWhiteSpace(TipoBienText) ? TipoBienId.Value.ToString() : TipoBienText };
+                item.FkidTipoBienAlma = TipoBienId.Value;
+            }
+            if (UnidadId.HasValue)
+            {
+                _selectedUnidad = new LookupItem { Id = UnidadId.Value, Text = string.IsNullOrWhiteSpace(UnidadText) ? UnidadId.Value.ToString() : UnidadText };
+                item.FkidUnidadesAlma = UnidadId.Value;
+            }
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaEntrada = item.FechaEntrada == default ? DateTime.Today : item.FechaEntrada;
+            _fechaCaducidad = item.FechaCaducidad;
+            _selectedTipoBien = new LookupItem { Id = item.FkidTipoBienAlma, Text = BuildClaveText(item.TipoBienClave, item.TipoBienDescripcion) };
+            _selectedArea = item.FkidAreaSis.HasValue ? new LookupItem { Id = item.FkidAreaSis.Value, Text = item.AreaNombre } : null;
+            _selectedUnidad = item.FkidUnidadesAlma.HasValue ? new LookupItem { Id = item.FkidUnidadesAlma.Value, Text = item.UnidadDescripcion } : null;
+            _selectedMotivo = item.FkidMotivoEsAlma.HasValue ? new LookupItem { Id = item.FkidMotivoEsAlma.Value, Text = item.MotivoDescripcion } : null;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedTipoBien == null)
+        {
+            Snackbar.Add("Selecciona el bien o servicio.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidTipoBienAlma = _selectedTipoBien.Id;
+        item.FkidAreaSis = _selectedArea?.Id;
+        item.FkidUnidadesAlma = _selectedUnidad?.Id;
+        item.FkidMotivoEsAlma = _selectedMotivo?.Id;
+        item.FkidDetalleOrdenCompraOrco = OrdenDetalleId ?? item.FkidDetalleOrdenCompraOrco;
+        item.FechaEntrada = _fechaEntrada ?? DateTime.Today;
+        item.FechaCaducidad = _fechaCaducidad;
+        item.Costo = Math.Round(item.Cantidad * (item.CostoUnitario ?? 0m), 4);
+        item.Factura ??= string.Empty;
+        item.Remision ??= string.Empty;
+        item.Lote ??= string.Empty;
+        item.AplicaAlmacen = true;
+        item.Activo = true;
+
+        var result = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (result?.Success == true)
+        {
+            Snackbar.Add(result.Message ?? "Movimiento guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar el movimiento.", Severity.Error);
+    }
+
+    private async Task OnTipoBienChanged(LookupItem? value)
+    {
+        _selectedTipoBien = value;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await TipoBienService.GetByIdAsync(value.Id);
+        if (response?.Success == true && response.Data != null)
+        {
+            var tipo = response.Data;
+            if (tipo.FkidUnidadesAlma.HasValue)
+            {
+                _selectedUnidad = new LookupItem { Id = tipo.FkidUnidadesAlma.Value, Text = tipo.UnidadMedida };
+            }
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadTipoBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion");
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoBien, Text = BuildClaveText(x.CodigoClave, x.TipoBienDescripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = BuildClaveText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadUnidadPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await UnidadService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUnidades, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadMotivoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await MotivoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        var items = response?.Items?.Where(x => x.AplicaEntrada).Select(x => new LookupItem { Id = x.PkidMotivoEs, Text = x.Descripcion });
+        return ToComboResult(items, response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        return $"{clave} - {descripcion}".Trim(' ', '-');
+    }
+
+    private static string Money(decimal value) => value.ToString("$ #,##0.00 MXN", CultureInfo.GetCultureInfo("es-MX"));
+}

@@ -51,8 +51,7 @@ namespace EG.Web.Services
 
                 if (string.IsNullOrWhiteSpace(rawToken))
                 {
-                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", string.Empty);
-                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", string.Empty);
+                    Console.WriteLine("NavigateService.GetMenuAsync: token no disponible; se omite la carga del menu.");
                     return resultado;
                 }
 
@@ -96,9 +95,7 @@ namespace EG.Web.Services
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     // Si recibimos 401, limpiar estado cliente y devolver vacío para forzar re-login desde UI
-                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", string.Empty);
-                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", string.Empty);
-                    Console.WriteLine("NavigateService: Unauthorized (401) al obtener menú. Token eliminado localmente.");
+                    Console.WriteLine("NavigateService: Unauthorized (401) al obtener menu. SessionGuard administrara la sesion activa.");
                 }
                 else
                 {

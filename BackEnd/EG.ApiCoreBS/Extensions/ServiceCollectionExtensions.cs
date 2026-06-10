@@ -6,6 +6,7 @@ using EG.ApiCoreBS.Services.Contabilidad;
 using EG.Application.Interfaces;
 using EG.Application.Interfaces.Account;
 using EG.Application.Interfaces.Adquisicion;
+using EG.Application.Interfaces.Almacen;
 using EG.Application.Interfaces.ClavePrograma;
 using EG.Application.Interfaces.ConteoCiclico;
 using EG.Application.Interfaces.Configuracion.Catalogo.Almacen;
@@ -20,6 +21,7 @@ using EG.Application.Interfaces.SoporteDocumental;
 using EG.Application.Services;
 using EG.Application.Services.Account;
 using EG.Application.Services.Adquisicion;
+using EG.Application.Services.Almacen;
 using EG.Application.Services.ConteoCiclico;
 using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
@@ -196,6 +198,10 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IEstatusSolService, EstatusSolService>();
             services.AddScoped<IMotivoEsService, MotivoEsService>();
             services.AddScoped<IUnidadesService, UnidadesService>();
+            services.AddScoped<IAlmacenAppService, AlmacenAppService>();
+            services.AddScoped<ISolicitudSalidaAppService, SolicitudSalidaAppService>();
+            services.AddScoped<IDetalleSolicitudSalidaAppService, DetalleSolicitudSalidaAppService>();
+            services.AddScoped<IEstatusSolicitudSalidaAppService, EstatusSolicitudSalidaAppService>();
 
             // Business services
             services.AddHttpContextAccessor();

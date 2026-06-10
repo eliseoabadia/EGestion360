@@ -1,0 +1,209 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Domain.DTOs.Responses.General
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<SolicitudSalidaResponse> Service
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="SolicitudSalidaResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                LoadingMessage="Preparando solicitud..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="SolicitudSalidaResponse" @ref="form" ShowHeader="false">
+        <MudGrid Spacing="2">
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedAreaSolicita"
+                                   ValueChanged="value => _selectedAreaSolicita = value"
+                                   Label="Area solicitante"
+                                   Required="true"
+                                   RequiredError="El area solicitante es requerida"
+                                   LoadPage="LoadAreaPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedAreaEntrega"
+                                   ValueChanged="value => _selectedAreaEntrega = value"
+                                   Label="Area que entrega"
+                                   Required="true"
+                                   RequiredError="El area que entrega es requerida"
+                                   LoadPage="LoadAreaPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Solicitante"
+                              Label="Solicitante"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="El solicitante es requerido"
+                              MaxLength="250" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="_fechaSolicitud"
+                               Label="Solicitud"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="_fechaRequerida"
+                               Label="Requerida"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Justificacion"
+                              Label="Justificacion"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              Required="true"
+                              RequiredError="La justificacion es requerida"
+                              MaxLength="1000" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="1000" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<SolicitudSalidaResponse> form = null!;
+    private SolicitudSalidaResponse item = new()
+    {
+        Activo = true,
+        FechaSolicitud = DateTime.Today,
+        Solicitante = string.Empty,
+        Justificacion = string.Empty,
+        Observaciones = string.Empty
+    };
+
+    private LookupItem? _selectedAreaSolicita;
+    private LookupItem? _selectedAreaEntrega;
+    private DateTime? _fechaSolicitud = DateTime.Today;
+    private DateTime? _fechaRequerida;
+
+    private string DialogTitle => Id.HasValue ? "Editar solicitud de salida" : "Nueva solicitud de salida";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear solicitud";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        var response = await Service.GetByIdAsync(Id!.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fechaSolicitud = item.FechaSolicitud == default ? DateTime.Today : item.FechaSolicitud;
+            _fechaRequerida = item.FechaRequerida;
+            _selectedAreaSolicita = item.FkidAreaSolicitaSis.HasValue
+                ? new LookupItem { Id = item.FkidAreaSolicitaSis.Value, Text = item.AreaSolicitaNombre }
+                : null;
+            _selectedAreaEntrega = item.FkidAreaEntregaSis.HasValue
+                ? new LookupItem { Id = item.FkidAreaEntregaSis.Value, Text = item.AreaEntregaNombre }
+                : null;
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var empresaId = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+        if (!empresaId.HasValue || empresaId.Value <= 0)
+        {
+            Snackbar.Add("Debe existir una empresa seleccionada.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedAreaSolicita == null || _selectedAreaEntrega == null)
+        {
+            Snackbar.Add("Selecciona las areas de la solicitud.", Severity.Warning);
+            return;
+        }
+
+        item.FkidEmpresaSis = empresaId.Value;
+        item.FkidAreaSolicitaSis = _selectedAreaSolicita.Id;
+        item.FkidAreaEntregaSis = _selectedAreaEntrega.Id;
+        item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;
+        item.FechaRequerida = _fechaRequerida;
+        item.Solicitante ??= string.Empty;
+        item.Justificacion ??= string.Empty;
+        item.Observaciones ??= string.Empty;
+        item.Activo = true;
+
+        var result = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (result?.Success == true)
+        {
+            Snackbar.Add(result.Message ?? "Solicitud guardada correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible guardar la solicitud.", Severity.Error);
+    }
+
+    private async Task<ComboLookupResult> LoadAreaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = BuildClaveText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildClaveText(string? clave, string? descripcion)
+    {
+        return $"{clave} - {descripcion}".Trim(' ', '-');
+    }
+}

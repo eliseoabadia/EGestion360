@@ -176,6 +176,35 @@ namespace EG.Web.Services
             };
         }
 
+        public async Task<ApiResponse<TResponse>> PostActionAsync(string action, object? body = null)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<TResponse>();
+
+            var cleanAction = (action ?? string.Empty).Trim('/');
+            if (string.IsNullOrWhiteSpace(cleanAction))
+            {
+                return new ApiResponse<TResponse>
+                {
+                    Success = false,
+                    Message = "Accion no valida",
+                    Code = "INVALID_ACTION"
+                };
+            }
+
+            var response = await PostAsync<ApiResponse<TResponse>>(
+                $"{_endpoint}/{cleanAction}",
+                body ?? new { },
+                useBaseUrl: false);
+
+            return response ?? new ApiResponse<TResponse>
+            {
+                Success = false,
+                Message = "Error al ejecutar accion",
+                Code = "ERROR"
+            };
+        }
+
         public async Task<ApiResponse<TResponse>> IniciarConteoAsync(int periodoId)
         {
             if (!IsClientSide())

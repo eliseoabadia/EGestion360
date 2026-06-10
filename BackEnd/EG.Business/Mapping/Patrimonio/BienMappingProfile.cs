@@ -15,13 +15,13 @@ namespace EG.Business.Mapping.Patrimonio
             config.NewConfig<BienDto, Bien>().Ignore(dest => dest.PkidBien);
 
             config.NewConfig<Resguardo, ResguardoResponse>()
-                .Map(dest => dest.FechaResguardo, src => src.FechaResguardo.ToDateTime(TimeOnly.MinValue));
+                .Map(dest => dest.FechaResguardo, src => src.Fecha.ToDateTime(TimeOnly.MinValue));
             config.NewConfig<VwResguardo, ResguardoResponse>()
                 .Map(dest => dest.FechaResguardo, src => src.FechaResguardo.ToDateTime(TimeOnly.MinValue));
             config.NewConfig<ResguardoResponse, ResguardoDto>().IgnoreNullValues(true);
             config.NewConfig<ResguardoDto, Resguardo>()
                 .Ignore(dest => dest.PkidResguardo)
-                .Map(dest => dest.FechaResguardo, src => DateOnly.FromDateTime(src.FechaResguardo));
+                .Map(dest => dest.Fecha, src => DateOnly.FromDateTime(src.FechaResguardo));
 
             config.NewConfig<ResguardoDetalle, ResguardoDetalleResponse>();
             config.NewConfig<VwResguardoDetalle, ResguardoDetalleResponse>();

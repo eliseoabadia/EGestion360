@@ -1,0 +1,238 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<AlmacenResponse> AlmacenService
+@inject IGenericCrudService<MotivoEsResponse> MotivoService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="AlmacenResponse"
+                Title="Nueva salida por ajuste"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="Registrar salida"
+                ProcessingText="Registrando..."
+                LoadingMessage="Preparando salida..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="AlmacenResponse" @ref="form" ShowHeader="false">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Selecciona una existencia disponible. La salida descontara la existencia y dejara un movimiento historico de ajuste.
+                </MudAlert>
+            </MudItem>
+
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedAlmacen"
+                                   ValueChanged="OnAlmacenChanged"
+                                   Label="Existencia origen"
+                                   Required="true"
+                                   RequiredError="La existencia es requerida"
+                                   LoadPage="LoadAlmacenPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="item.Cantidad"
+                                 Label="Cantidad de salida"
+                                 Variant="Variant.Outlined"
+                                 Format="0.####"
+                                 Culture="@NumberCulture"
+                                 Min="0.0001m"
+                                 Required="true"
+                                 RequiredError="La cantidad es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaSalida"
+                               Label="Fecha de salida"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedMotivo"
+                                   ValueChanged="value => _selectedMotivo = value"
+                                   Label="Motivo"
+                                   Required="true"
+                                   RequiredError="El motivo es requerido"
+                                   LoadPage="LoadMotivoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField Value="@DisponibleText"
+                              Label="Disponible"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField Value="@CostoUnitarioText"
+                              Label="Costo unitario"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField Value="@ImporteText"
+                              Label="Importe estimado"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Factura"
+                              Label="Documento"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Remision"
+                              Label="Referencia"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Lote"
+                              Label="Lote"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<AlmacenResponse> form = null!;
+    private AlmacenResponse item = new()
+    {
+        Cantidad = 1m,
+        FechaEntrada = DateTime.Today,
+        Activo = true
+    };
+
+    private LookupItem? _selectedAlmacen;
+    private LookupItem? _selectedMotivo;
+    private AlmacenResponse? _almacenOrigen;
+    private DateTime? _fechaSalida = DateTime.Today;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string DisponibleText => _almacenOrigen == null ? "-" : Qty(_almacenOrigen.Cantidad);
+    private string CostoUnitarioText => _almacenOrigen == null ? "-" : Qty(_almacenOrigen.CostoUnitario ?? 0m);
+    private string ImporteText => Money(item.Cantidad * (_almacenOrigen?.CostoUnitario ?? item.CostoUnitario ?? 0m));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedAlmacen == null || _almacenOrigen == null)
+        {
+            Snackbar.Add("Selecciona una existencia origen.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedMotivo == null)
+        {
+            Snackbar.Add("Selecciona un motivo de salida.", Severity.Warning);
+            return;
+        }
+
+        if (item.Cantidad <= 0)
+        {
+            Snackbar.Add("La cantidad debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        if (item.Cantidad > _almacenOrigen.Cantidad)
+        {
+            Snackbar.Add($"La cantidad rebasa la existencia disponible ({Qty(_almacenOrigen.Cantidad)}).", Severity.Warning);
+            return;
+        }
+
+        item.FkidMotivoEsAlma = _selectedMotivo.Id;
+        item.FechaEntrada = _fechaSalida ?? DateTime.Today;
+        item.CostoUnitario = _almacenOrigen.CostoUnitario;
+        item.Costo = Math.Round(item.Cantidad * (_almacenOrigen.CostoUnitario ?? 0m), 4);
+        item.Factura ??= string.Empty;
+        item.Remision ??= string.Empty;
+        item.Lote ??= string.Empty;
+
+        var result = await AlmacenService.PostActionAsync($"{_selectedAlmacen.Id}/salida-ajuste", item);
+        if (result?.Success == true)
+        {
+            Snackbar.Add(result.Message ?? "Salida por ajuste registrada correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(result?.Message ?? "No fue posible registrar la salida por ajuste.", Severity.Error);
+    }
+
+    private async Task OnAlmacenChanged(LookupItem? value)
+    {
+        _selectedAlmacen = value;
+        _almacenOrigen = null;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await AlmacenService.GetByIdAsync(value.Id);
+        if (response?.Success == true && response.Data != null)
+        {
+            _almacenOrigen = response.Data;
+            item.CostoUnitario = _almacenOrigen.CostoUnitario;
+            item.Lote = _almacenOrigen.Lote;
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadAlmacenPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var filters = new Dictionary<string, object> { ["TipoMovimiento"] = "Existencia" };
+        if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
+        {
+            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+        }
+
+        var response = await AlmacenService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Where(x => x.Cantidad > 0 && !x.EstaBloqueado).Select(x => new LookupItem
+        {
+            Id = x.PkidAlmacen,
+            Text = $"{x.Clave} - {x.TipoBienDescripcion} ({Qty(x.Cantidad)})"
+        }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadMotivoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await MotivoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        var items = response?.Items?.Where(x => x.AplicaSalida).Select(x => new LookupItem { Id = x.PkidMotivoEs, Text = x.Descripcion });
+        return ToComboResult(items, response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string Qty(decimal value) => value.ToString("#,##0.####", NumberCulture);
+    private static string Money(decimal value) => value.ToString("$ #,##0.00 MXN", CultureInfo.GetCultureInfo("es-MX"));
+}

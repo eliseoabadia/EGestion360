@@ -1,0 +1,391 @@
+@page "/Almacen/Recepcion_Pedidos"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<OrdenCompraResponse, OrdenCompraResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenDetalleService
+@inject IGenericCrudService<AlmacenResponse> AlmacenService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column recepcion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Recepcion de pedidos"
+                    Subtitle="Recepcion contra orden de compra con entradas de almacen trazables"
+                    Icon="@Icons.Material.Filled.MoveToInbox"
+                    CanCreate="false"
+                    OnRefresh="RefreshAll" />
+
+        <div class="split-shell">
+            <div class="orders-panel">
+                <GenericTable TItem="OrdenCompraResponse"
+                              @ref="table"
+                              Title="Ordenes de compra"
+                              SearchPlaceholder="Buscar orden, proveedor o descripcion..."
+                              ShowExportButton="@CanExport"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="(s) => SearchString = s"
+                              OnSearch="OnSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="NumeroOrdenCompra" T="OrdenCompraResponse">Orden</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="OrdenCompraResponse">Proveedor</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="FechaOrdenCompra" T="OrdenCompraResponse">Fecha</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Total" T="OrdenCompraResponse">Total</MudTableSortLabel></MudTh>
+                        <MudTh>Estatus</MudTh>
+                    </Header>
+                    <Row Context="item">
+                        <MudTd>
+                            <DocumentSupportButton Modulo="Almacen"
+                                                   SubModulo="Recepcion_Pedidos"
+                                                   Controlador="OrdenCompra"
+                                                   EntidadId="@item.PkidOrdenCompra"
+                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                   RegistroTitulo="@TextOrDash(item.NumeroOrdenCompra)"
+                                                   RegistroDescripcion="@TextOrDash(item.ProveedorNombre)" />
+                            <MudTooltip Text="Ver detalle">
+                                <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => SelectOrden(item))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.NumeroOrdenCompra)</div>
+                            <span>@TextOrDash(item.Descripcion)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.ProveedorNombre)</div>
+                            <span>@TextOrDash(item.ProveedorRfc)</span>
+                        </MudTd>
+                        <MudTd>@item.FechaOrdenCompra.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd><strong>@Money(item.Total)</strong></MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Style="@StatusStyle(item)">
+                                @TextOrDash(item.EstatusDescripcion)
+                            </MudChip>
+                        </MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+
+            <div class="detail-panel">
+                <div class="detail-header">
+                    <div>
+                        <span>Orden seleccionada</span>
+                        <strong>@(selectedOrden == null ? "Selecciona una orden" : selectedOrden.NumeroOrdenCompra)</strong>
+                    </div>
+                </div>
+
+                <GenericTable TItem="OrdenCompraDetalleResponse"
+                              @ref="detalleTable"
+                              Title="Renglones por recibir"
+                              SearchPlaceholder="Buscar bien..."
+                              ShowExportButton="false"
+                              ServerDataFunc="LoadDetalleData"
+                              ExportFunc="() => Task.CompletedTask"
+                              SearchString="@detalleSearch"
+                              SearchStringChanged="(s) => detalleSearch = s"
+                              OnSearch="OnDetalleSearch">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="OrdenCompraDetalleResponse">Bien</MudTableSortLabel></MudTh>
+                        <MudTh>Solicitada</MudTh>
+                        <MudTh>Recibida</MudTh>
+                        <MudTh>Pendiente</MudTh>
+                        <MudTh>Precio</MudTh>
+                    </Header>
+                    <Row Context="detail">
+                        <MudTd>
+                            <MudTooltip Text="Registrar entrada">
+                                <MudIconButton Icon="@Icons.Material.Filled.AddBox"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               Disabled="@(detail.CantidadPendiente.GetValueOrDefault() <= 0)"
+                                               OnClick="@(() => RegistrarEntrada(detail))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Ver entradas">
+                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => SelectDetalle(detail))" />
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(detail.TipoBienDescripcion)</div>
+                            <span>@TextOrDash(detail.TipoBienCodigoClave)</span>
+                        </MudTd>
+                        <MudTd>@Qty(detail.CantidadSolicitada)</MudTd>
+                        <MudTd>@Qty(detail.CantidadRecibida)</MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@(detail.CantidadPendiente.GetValueOrDefault() <= 0 ? Color.Success : Color.Warning)">
+                                @Qty(detail.CantidadPendiente ?? 0m)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>@Money(detail.PrecioUnitario)</MudTd>
+                    </Row>
+                </GenericTable>
+
+                <GenericTable TItem="AlmacenResponse"
+                              @ref="entradasTable"
+                              Title="Entradas del renglon"
+                              SearchPlaceholder="Buscar entrada..."
+                              ShowExportButton="false"
+                              ServerDataFunc="LoadEntradasData"
+                              ExportFunc="() => Task.CompletedTask"
+                              SearchString="@entradasSearch"
+                              SearchStringChanged="(s) => entradasSearch = s"
+                              OnSearch="OnEntradasSearch">
+                    <Header>
+                        <MudTh>Clave</MudTh>
+                        <MudTh>Cantidad</MudTh>
+                        <MudTh>Costo</MudTh>
+                        <MudTh>Fecha</MudTh>
+                        <MudTh>Documento</MudTh>
+                    </Header>
+                    <Row Context="entry">
+                        <MudTd>@TextOrDash(entry.Clave)</MudTd>
+                        <MudTd>@Qty(entry.Cantidad)</MudTd>
+                        <MudTd>@Money(entry.Costo ?? 0m)</MudTd>
+                        <MudTd>@entry.FechaEntrada.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd>@TextOrDash(entry.Factura)</MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .recepcion-page .split-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(500px, .95fr);
+        gap: 12px;
+        min-height: 0;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .recepcion-page .orders-panel,
+    .recepcion-page .detail-panel {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .recepcion-page .detail-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .recepcion-page .detail-header {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+    }
+
+    .recepcion-page span,
+    .recepcion-page td span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .recepcion-page strong,
+    .recepcion-page .main-cell {
+        font-weight: 700;
+    }
+</style>
+
+@code {
+    private GenericTable<OrdenCompraResponse> table = null!;
+    private GenericTable<OrdenCompraDetalleResponse> detalleTable = null!;
+    private GenericTable<AlmacenResponse> entradasTable = null!;
+    private OrdenCompraResponse? selectedOrden;
+    private OrdenCompraDetalleResponse? selectedDetalle;
+    private string detalleSearch = string.Empty;
+    private string entradasSearch = string.Empty;
+    private List<OrdenCompraDetalleResponse> detalles = new();
+    private List<AlmacenResponse> entradas = new();
+    private int detalleTotal;
+    private int entradasTotal;
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Recepcion_Pedidos";
+    protected override Type CreateDialogType => typeof(AlmacenDialog);
+    protected override Type EditDialogType => typeof(AlmacenDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<OrdenCompraResponse>);
+
+    protected override string GetDefaultSortLabel() => "FechaOrdenCompra";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<OrdenCompraResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        CurrentPage = Math.Max(1, state.Page + 1);
+        PageSize = state.PageSize;
+        SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+        SortDirection = state.SortDirection;
+        var filters = new Dictionary<string, object>();
+        if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
+        {
+            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+        }
+
+        var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
+        Elements = response?.Items?.ToList() ?? new List<OrdenCompraResponse>();
+        TotalCount = response?.Success == true ? response.TotalCount : 0;
+        selectedOrden ??= Elements.FirstOrDefault();
+        return new TableData<OrdenCompraResponse> { Items = Elements, TotalItems = TotalCount };
+    }
+
+    private async Task<TableData<OrdenCompraDetalleResponse>> LoadDetalleData(TableState state, CancellationToken cancellationToken)
+    {
+        if (selectedOrden == null)
+        {
+            return new TableData<OrdenCompraDetalleResponse> { Items = new List<OrdenCompraDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await OrdenDetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearch,
+            state.SortLabel ?? "TipoBienDescripcion",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = selectedOrden.PkidOrdenCompra });
+        detalles = response?.Items?.ToList() ?? new List<OrdenCompraDetalleResponse>();
+        detalleTotal = response?.Success == true ? response.TotalCount : 0;
+        selectedDetalle ??= detalles.FirstOrDefault();
+        return new TableData<OrdenCompraDetalleResponse> { Items = detalles, TotalItems = detalleTotal };
+    }
+
+    private async Task<TableData<AlmacenResponse>> LoadEntradasData(TableState state, CancellationToken cancellationToken)
+    {
+        if (selectedDetalle == null)
+        {
+            return new TableData<AlmacenResponse> { Items = new List<AlmacenResponse>(), TotalItems = 0 };
+        }
+
+        var response = await AlmacenService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            entradasSearch,
+            "FechaEntrada",
+            SortDirection.Descending,
+            new Dictionary<string, object> { ["FkidDetalleOrdenCompraOrco"] = selectedDetalle.PkidOrdenCompraDetalle });
+        entradas = response?.Items?.ToList() ?? new List<AlmacenResponse>();
+        entradasTotal = response?.Success == true ? response.TotalCount : 0;
+        return new TableData<AlmacenResponse> { Items = entradas, TotalItems = entradasTotal };
+    }
+
+    private async Task SelectOrden(OrdenCompraResponse item)
+    {
+        selectedOrden = item;
+        selectedDetalle = null;
+        await detalleTable.ReloadData();
+        await entradasTable.ReloadData();
+    }
+
+    private async Task SelectDetalle(OrdenCompraDetalleResponse item)
+    {
+        selectedDetalle = item;
+        await entradasTable.ReloadData();
+    }
+
+    private async Task RegistrarEntrada(OrdenCompraDetalleResponse detail)
+    {
+        var pendiente = detail.CantidadPendiente.GetValueOrDefault();
+        var parameters = new DialogParameters
+        {
+            ["OrdenDetalleId"] = detail.PkidOrdenCompraDetalle,
+            ["TipoBienId"] = detail.FkidTipoBienAlma,
+            ["TipoBienText"] = BuildClaveText(detail.TipoBienCodigoClave, detail.TipoBienDescripcion),
+            ["UnidadId"] = detail.FkidUnidadesAlma,
+            ["UnidadText"] = detail.UnidadMedida,
+            ["CantidadSugerida"] = pendiente > 0 ? pendiente : detail.CantidadSolicitada,
+            ["CostoSugerido"] = detail.PrecioUnitario
+        };
+
+        var dialog = await DialogService.ShowAsync<AlmacenDialog>("Registrar entrada", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            selectedDetalle = detail;
+            await RefreshAll();
+        }
+    }
+
+    private async Task RefreshAll()
+    {
+        await table.ReloadData();
+        await detalleTable.ReloadData();
+        await entradasTable.ReloadData();
+    }
+
+    private async Task OnDetalleSearch()
+    {
+        await Task.Delay(250);
+        await detalleTable.ReloadData();
+    }
+
+    private async Task OnEntradasSearch()
+    {
+        await Task.Delay(250);
+        await entradasTable.ReloadData();
+    }
+
+    protected override Task ReloadData() => RefreshAll();
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<OrdenCompraResponse> items)
+    {
+        return items.Select(x => new
+        {
+            x.NumeroOrdenCompra,
+            Proveedor = x.ProveedorNombre,
+            Fecha = x.FechaOrdenCompra.ToString("dd/MM/yyyy"),
+            x.Subtotal,
+            x.Iva,
+            x.Total,
+            Estatus = x.EstatusDescripcion
+        });
+    }
+
+    private async void OnEmpresaChanged(int empresaId) => await RefreshAll();
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+
+    private static string StatusStyle(OrdenCompraResponse item)
+    {
+        var color = string.IsNullOrWhiteSpace(item.EstatusColor) ? "#E8F1FF" : item.EstatusColor;
+        return $"background:{color}; color:#101828;";
+    }
+
+    private static string Money(decimal value) => value.ToString("$ #,##0.00 MXN", NumberCulture);
+    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string BuildClaveText(string? clave, string? descripcion) => $"{clave} - {descripcion}".Trim(' ', '-');
+}

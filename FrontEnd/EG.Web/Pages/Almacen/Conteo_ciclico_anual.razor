@@ -1,0 +1,61 @@
+@page "/Almacen/Conteo_ciclico_anual"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.ConteoCiclico
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<ConteoResponse, ConteoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Conteo ciclico anual"
+                    Subtitle="Vista anual de conteos y avance de inventario"
+                    Icon="@Icons.Material.Filled.CalendarMonth"
+                    CanCreate="false"
+                    OnRefresh="() => table.ReloadData()" />
+        <GenericTable TItem="ConteoResponse"
+                      @ref="table"
+                      Title="Conteos anuales"
+                      SearchPlaceholder="Buscar por periodo, bien o estatus..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ConteoResponse">Descripcion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombrePeriodo" T="ConteoResponse">Periodo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="DescripcionTipoBien" T="ConteoResponse">Bien</MudTableSortLabel></MudTh>
+                <MudTh>Inventario</MudTh>
+                <MudTh>Contado</MudTh>
+                <MudTh>Estado</MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>@TextOrDash(item.Descripcion)</MudTd>
+                <MudTd>@TextOrDash(item.NombrePeriodo)</MudTd>
+                <MudTd>@TextOrDash(item.DescripcionTipoBien)</MudTd>
+                <MudTd>@Qty(item.CantidadInventario)</MudTd>
+                <MudTd>@Qty(item.TotalCantidadContada)</MudTd>
+                <MudTd><MudChip T="string" Size="Size.Small" Color="Color.Info">@TextOrDash(item.EstadoConteo)</MudChip></MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<ConteoResponse> table = null!;
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "conteo_ciclico_anual";
+    protected override Type CreateDialogType => typeof(AlmacenDialog);
+    protected override Type EditDialogType => typeof(AlmacenDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ConteoResponse>);
+    protected override string GetDefaultSortLabel() => "FechaInicio";
+    protected override Task ReloadData() => table.ReloadData();
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ConteoResponse> items) =>
+        items.Select(x => new { x.Descripcion, Periodo = x.NombrePeriodo, Bien = x.DescripcionTipoBien, x.CantidadInventario, x.TotalCantidadContada, x.EstadoConteo });
+    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

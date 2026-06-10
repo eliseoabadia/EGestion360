@@ -45,6 +45,8 @@ public partial class SolicitudSalidum
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidPolizaConta { get; set; }
+
     public virtual ICollection<DetalleSolicitudSalidum> DetalleSolicitudSalida { get; set; } = new List<DetalleSolicitudSalidum>();
 
     public virtual Area FkidAreaEntregaSisNavigation { get; set; }
@@ -54,4 +56,6 @@ public partial class SolicitudSalidum
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual EstatusSolicitudSalidum FkidEstatusSolicitudSalidaAlmaNavigation { get; set; }
+
+    public virtual Poliza FkidPolizaContaNavigation { get; set; }
 }

@@ -1,0 +1,209 @@
+@page "/Almacen/Existencias_Registradas"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Almacen
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<AlmacenResponse, AlmacenResponse>
+
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column almacen-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Existencias registradas"
+                    Subtitle="Consulta ejecutiva de saldos y valor disponible en almacen"
+                    Icon="@Icons.Material.Filled.Warehouse"
+                    CanCreate="false"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <div class="summary-strip">
+            <div>
+                <span>Valor visible</span>
+                <strong>@Money(Elements.Sum(x => x.Costo ?? 0m))</strong>
+            </div>
+            <div>
+                <span>Unidades</span>
+                <strong>@Qty(Elements.Sum(x => x.Cantidad))</strong>
+            </div>
+            <div>
+                <span>Registros</span>
+                <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+            </div>
+            <div>
+                <span>Empresa</span>
+                <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+            </div>
+        </div>
+
+        <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="AlmacenResponse"
+                          @ref="table"
+                          Title="Existencias"
+                          SearchPlaceholder="Buscar por clave, bien, area, factura o lote..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+                <Header>
+                    <MudTh><MudTableSortLabel SortLabel="Clave" T="AlmacenResponse">Clave</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="AlmacenResponse">Bien</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Cantidad" T="AlmacenResponse">Disponible</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Costo" T="AlmacenResponse">Valor</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaEntrada" T="AlmacenResponse">Ingreso</MudTableSortLabel></MudTh>
+                    <MudTh>Referencia</MudTh>
+                    <MudTh>Estado</MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.Clave)</div>
+                        <span>ID @item.PkidAlmacen</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(item.TipoBienClave)</span>
+                        <span>@TextOrDash(item.AreaNombre)</span>
+                    </MudTd>
+                    <MudTd>
+                        <strong>@Qty(item.Cantidad)</strong>
+                        <span>@TextOrDash(item.UnidadDescripcion)</span>
+                    </MudTd>
+                    <MudTd>
+                        <strong>@Money(item.Costo ?? 0m)</strong>
+                        <span>CU @Qty(item.CostoUnitario ?? 0m)</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@item.FechaEntrada.ToString("dd/MM/yyyy")</div>
+                        <span>@DateOrDash(item.FechaCaducidad)</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.Factura)</div>
+                        <span>@TextOrDash(item.Remision)</span>
+                        <span>@TextOrDash(item.Lote)</span>
+                    </MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small" Color="@(item.Cantidad > 0 ? Color.Success : Color.Error)">
+                            @(item.Cantidad > 0 ? "Disponible" : "Sin existencia")
+                        </MudChip>
+                        <span>@TextOrDash(item.MotivoDescripcion)</span>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .almacen-page .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .almacen-page .summary-strip > div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .almacen-page .summary-strip span,
+    .almacen-page td span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .almacen-page .summary-strip strong,
+    .almacen-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+</style>
+
+@code {
+    private GenericTable<AlmacenResponse> table = null!;
+    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Existencias_Registradas";
+    protected override Type CreateDialogType => typeof(AlmacenDialog);
+    protected override Type EditDialogType => typeof(AlmacenDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<AlmacenResponse>);
+
+    protected override string GetDefaultSortLabel() => "TipoBienDescripcion";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<AlmacenResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+            var filters = new Dictionary<string, object> { ["AplicaAlmacen"] = true };
+            if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
+            {
+                filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+            }
+
+            var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
+            Elements = response?.Items?.ToList() ?? new List<AlmacenResponse>();
+            TotalCount = response?.Success == true ? response.TotalCount : 0;
+            return new TableData<AlmacenResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    protected override Task ReloadData() => table.ReloadData();
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<AlmacenResponse> items)
+    {
+        return items.Select(x => new
+        {
+            x.Clave,
+            Bien = x.TipoBienDescripcion,
+            Area = x.AreaNombre,
+            x.Cantidad,
+            x.CostoUnitario,
+            x.Costo,
+            Fecha = x.FechaEntrada.ToString("dd/MM/yyyy"),
+            x.Factura,
+            x.Remision,
+            x.Lote
+        });
+    }
+
+    private async void OnEmpresaChanged(int empresaId) => await table.ReloadData();
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+
+    private static string Money(decimal value) => value.ToString("$ #,##0.00 MXN", NumberCulture);
+    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string DateOrDash(DateTime? value) => value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
+}
