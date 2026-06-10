@@ -172,6 +172,8 @@
     private List<AniosResponse> _anios = new();
     private int? _selectedAnioId;
     private bool _aniosLoading;
+    private bool _shellInitialized;
+    private bool _sucursalChangeSubscribed;
     private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
 
     protected override async Task OnInitializedAsync()
@@ -180,6 +182,7 @@
         await ThemeStateService.InitializeAsync();
         ApplyThemeFromState();
         ThemeStateService.OnThemeChanged += OnThemeChanged;
+        NavigationManager.LocationChanged += OnLocationChanged;
 
         if (esPaginaLogin)
         {
@@ -187,12 +190,45 @@
             return;
         }
 
+        await EnsureShellInitializedAsync();
+    }
+
+    private async Task EnsureShellInitializedAsync()
+    {
+        if (_shellInitialized || esPaginaLogin)
+            return;
+
         await CargarUsuarioAsync();
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
         await LoadAniosAsync();
         await LoadVersionAsync();
-        SucursalStateService.OnSucursalChanged += OnSucursalChanged;
+
+        if (!_sucursalChangeSubscribed)
+        {
+            SucursalStateService.OnSucursalChanged += OnSucursalChanged;
+            _sucursalChangeSubscribed = true;
+        }
+
+        _shellInitialized = true;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        if (e.Location.Contains("/login", StringComparison.OrdinalIgnoreCase))
+        {
+            _shellInitialized = false;
+            _anios.Clear();
+            _selectedAnioId = null;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            await EnsureShellInitializedAsync();
+            StateHasChanged();
+        });
     }
 
 protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -214,10 +250,19 @@ await ApplyMenuThemeClass();
         {
             _aniosLoading = true;
             var response = await AnioService.GetAllPaginadoAsync(1, 100, string.Empty, "Clave", SortDirection.Descending);
+            if (response?.Success != true || response.Items == null || response.Items.Count == 0)
+            {
+                Console.WriteLine($"LoadAniosAsync: GetAllPaginado no regreso anios. Success={response?.Success}, Message={response?.Message}");
+                response = await AnioService.GetAllAsync();
+            }
+
             _anios = response?.Items?.Where(x => x.Activo).OrderByDescending(x => x.Clave).ToList() ?? new List<AniosResponse>();
 
             if (!_anios.Any())
+            {
+                Console.WriteLine("LoadAniosAsync: no hay anios presupuestales activos para mostrar.");
                 return;
+            }
 
             var selected = _anios.FirstOrDefault(x => x.PkidAnio == AnioStateService.AnioId)
                 ?? _anios.FirstOrDefault(x => x.Clave == DateTime.Today.Year)
@@ -227,8 +272,9 @@ await ApplyMenuThemeClass();
             if (AnioStateService.AnioId != selected.PkidAnio)
                 await AnioStateService.SetAnioAsync(selected.PkidAnio, selected.Clave, selected.Descripcion);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"LoadAniosAsync: error al cargar anios presupuestales. {ex.Message}");
             _anios = new List<AniosResponse>();
         }
         finally
@@ -564,7 +610,11 @@ catch { }
     public void Dispose()
     {
         ThemeStateService.OnThemeChanged -= OnThemeChanged;
-        SucursalStateService.OnSucursalChanged -= OnSucursalChanged;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        if (_sucursalChangeSubscribed)
+        {
+            SucursalStateService.OnSucursalChanged -= OnSucursalChanged;
+        }
     }
 }
 

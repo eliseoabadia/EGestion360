@@ -75,7 +75,12 @@
         var dialog = await DialogService.ShowAsync<DocumentSupportDialog>(
             "Soporte documental",
             parameters,
-            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraLarge,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         await dialog.Result;
         await LoadSummary();

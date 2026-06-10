@@ -82,6 +82,7 @@ namespace EG.ApiCoreBS.Controllers.Account
         }
         
         [HttpGet("version")]
+        [AllowAnonymous]
         public IActionResult GetVersion()
         {
             var version = _configuration["ApplicationVersion"] ?? "1.0.0";

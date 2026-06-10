@@ -12,11 +12,14 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class AniosAppServices : IAniosAppServices
     {
         private readonly GenericService<Anio, AniosDto, AniosResponse> _service;
+        private readonly EGestionContext _context;
 
         public AniosAppServices(
-            GenericService<Anio, AniosDto, AniosResponse> service)
+            GenericService<Anio, AniosDto, AniosResponse> service,
+            EGestionContext context)
         {
             _service = service;
+            _context = context;
             ConfigureValidations();
         }
 
@@ -41,7 +44,18 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         public async Task<IEnumerable<AniosResponse>> GetAllAsync()
         {
-            return await _service.GetAllAsync();
+            return await _context.Anios
+                .AsNoTracking()
+                .OrderByDescending(x => x.Clave)
+                .Select(x => new AniosResponse
+                {
+                    PkidAnio = x.PkidAnio,
+                    Clave = x.Clave,
+                    Descripcion = string.Empty,
+                    Activo = x.Activo,
+                    FechaCreacion = x.FechaCreacion
+                })
+                .ToListAsync();
         }
 
         public async Task<AniosResponse> GetByIdAsync(int id)
@@ -53,19 +67,53 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             try
             {
-                var result = await _service.GetAllPaginadoAsync(pageRequest);
-                var items = result.Items.AsEnumerable();
+                pageRequest.Page = pageRequest.Page < 1 ? 1 : pageRequest.Page;
+                pageRequest.PageSize = pageRequest.PageSize < 1 ? 100 : pageRequest.PageSize;
+
+                var query = _context.Anios.AsNoTracking();
+
+                if (!string.IsNullOrWhiteSpace(pageRequest.Filtro))
+                {
+                    var filtro = pageRequest.Filtro.Trim();
+                    if (int.TryParse(filtro, out var clave))
+                    {
+                        query = query.Where(x => x.Clave == clave);
+                    }
+                }
+
+                var descending = string.Equals(pageRequest.SortDirection, "Descending", StringComparison.OrdinalIgnoreCase);
+                query = pageRequest.SortLabel?.ToLowerInvariant() switch
+                {
+                    "pkidanio" => descending ? query.OrderByDescending(x => x.PkidAnio) : query.OrderBy(x => x.PkidAnio),
+                    "activo" => descending ? query.OrderByDescending(x => x.Activo) : query.OrderBy(x => x.Activo),
+                    "fechacreacion" => descending ? query.OrderByDescending(x => x.FechaCreacion) : query.OrderBy(x => x.FechaCreacion),
+                    _ => descending ? query.OrderByDescending(x => x.Clave) : query.OrderBy(x => x.Clave)
+                };
+
+                var totalCount = await query.CountAsync();
+                var items = await query
+                    .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
+                    .Take(pageRequest.PageSize)
+                    .Select(x => new AniosResponse
+                    {
+                        PkidAnio = x.PkidAnio,
+                        Clave = x.Clave,
+                        Descripcion = string.Empty,
+                        Activo = x.Activo,
+                        FechaCreacion = x.FechaCreacion
+                    })
+                    .ToListAsync();
 
                 if (predicate != null)
-                    items = items.Where(predicate);
+                    items = items.Where(predicate).ToList();
 
                 return new PagedResult<AniosResponse>
                 {
                     Success = true,
                     Message = "Años obtenidos correctamente",
                     Code = "SUCCESS",
-                    Items = items.ToList(),
-                    TotalCount = result.TotalCount
+                    Items = items,
+                    TotalCount = totalCount
                 };
             }
             catch (Exception ex)
