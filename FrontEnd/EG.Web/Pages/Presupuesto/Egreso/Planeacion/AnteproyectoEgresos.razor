@@ -69,7 +69,7 @@
                 </Header>
 
                 <Row Context="item">
-                    <MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">
                         <MudTooltip Text="Autorizar">
                             <MudIconButton Icon="@Icons.Material.Filled.Verified"
                                            Visible="@(CanUpdate && !item.EstaAutorizado)"
@@ -105,24 +105,24 @@
                                            OnClick="@(() => DeleteEgreso(item))" />
                         </MudTooltip>
                     </MudTd>
-                    <MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">
                         <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
                         <span>@TextOrDash(item.ProgramaDescripcion)</span>
                     </MudTd>
-                    <MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">
                         <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
                         <span>@TextOrDash(item.PartidaDescripcion)</span>
                     </MudTd>
-                    <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
-                    <MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">@TextOrDash(item.AreaNombre)</MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">
                         <div class="main-cell">@TextOrDash(item.FuenteFinanciamientoClaveNombre)</div>
                         <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span><br />
                         <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span><br />
                         <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
                         <span>PY: @TextOrDash(item.PyClaveNombre)</span>
                     </MudTd>
-                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">@TextOrDash(item.Descripcion)</MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))">
                         <div class="month-spark">
                             @foreach (var month in GetMonths(item))
                             {
@@ -131,7 +131,7 @@
                             }
                         </div>
                     </MudTd>
-                    <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
+                    <MudTd @ondblclick="@(() => OpenDetail(item))"><strong>@Money(item.Total ?? 0m)</strong></MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -177,6 +177,10 @@
     .anteproyecto-page .main-cell {
         font-weight: 700;
         line-height: 1.1;
+    }
+
+    .anteproyecto-page .mud-table-row {
+        cursor: pointer;
     }
 
     .anteproyecto-page td span {
@@ -537,6 +541,20 @@
         var result = await dialog.Result;
         if (result is { Canceled: false })
             await ReloadData();
+    }
+
+    private async Task OpenDetail(EgresoProyectadoResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Item"] = item,
+            ["CurrencySymbol"] = _currencySymbol,
+            ["CurrencyName"] = _currencyName
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<AnteproyectoEgresosDetalleDialog>(string.Empty, parameters, options);
+        await dialog.Result;
     }
 
     private async Task LoadCurrencyAsync()

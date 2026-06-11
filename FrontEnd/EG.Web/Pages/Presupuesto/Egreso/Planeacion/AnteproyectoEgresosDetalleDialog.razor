@@ -1,0 +1,367 @@
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using MudBlazor
+@using System.Globalization
+
+<MudDialog MaxWidth="MaxWidth.Large" FullWidth="true" CloseOnEscapeKey="true" Class="anteproyecto-detail-dialog">
+    <TitleContent>
+        <div class="anteproyecto-detail-title">
+            <div class="detail-title-left">
+                <div class="detail-title-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.StackedLineChart" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.h6" Class="detail-title-text">Detalle del Anteproyecto</MudText>
+                    <MudText Typo="Typo.body2" Class="detail-title-subtitle">@TextOrDash(Item.PartidaClaveNombre)</MudText>
+                </div>
+            </div>
+            <div class="detail-title-actions">
+                <MudChip T="string" Color="@StatusColor" Size="Size.Small" Variant="Variant.Outlined">@StatusText</MudChip>
+                <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined">ID: @Item.PkidEgresoProyectado</MudChip>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="CloseAsync" Class="detail-close" />
+            </div>
+        </div>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="anteproyecto-detail-content">
+            <section class="detail-total-panel">
+                <div>
+                    <span>Total proyectado</span>
+                    <strong>@Money(Item.Total ?? 0m)</strong>
+                </div>
+                <div>
+                    <span>Anio presupuestal</span>
+                    <strong>@TextOrDash(Item.AnioClave?.ToString())</strong>
+                </div>
+                <div>
+                    <span>Fecha</span>
+                    <strong>@Item.Fecha.ToString("dd/MM/yyyy", DateCulture)</strong>
+                </div>
+                <div>
+                    <span>Moneda</span>
+                    <strong>@CurrencyName (@CurrencySymbol)</strong>
+                </div>
+            </section>
+
+            <section class="detail-section">
+                <MudText Typo="Typo.subtitle2" Class="section-label">Informacion general</MudText>
+                <div class="info-grid">
+                    @InfoItem("Programa", TextOrDash(Item.ProgramaClaveNombre ?? Item.ProgramaClave))
+                    @InfoItem("Partida", TextOrDash(Item.PartidaClaveNombre ?? Item.PartidaClave))
+                    @InfoItem("Area", TextOrDash(Item.AreaNombre))
+                    @InfoItem("Descripcion", TextOrDash(Item.Descripcion))
+                </div>
+            </section>
+
+            <MudDivider Class="my-3" />
+
+            <section class="detail-section">
+                <MudText Typo="Typo.subtitle2" Class="section-label">Clasificacion presupuestal</MudText>
+                <div class="classification-grid">
+                    @InfoItem("Fuente de financiamiento", TextOrDash(Item.FuenteFinanciamientoClaveNombre))
+                    @InfoItem("Tipo de gasto", TextOrDash(Item.TipoGastoClaveNombre))
+                    @InfoItem("Digito identificador", TextOrDash(Item.DigitoIdentificadorClaveNombre))
+                    @InfoItem("Destino de gasto", TextOrDash(Item.DestinoGastoClaveNombre))
+                    @InfoItem("PY", TextOrDash(Item.PyClaveNombre))
+                </div>
+            </section>
+
+            <MudDivider Class="my-3" />
+
+            <section class="detail-section">
+                <div class="section-heading">
+                    <MudText Typo="Typo.subtitle2" Class="section-label">Distribucion mensual</MudText>
+                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled">@Money(Item.Total ?? 0m)</MudChip>
+                </div>
+
+                <div class="months-grid">
+                    @foreach (var month in GetMonths())
+                    {
+                        <div class="month-card">
+                            <div class="month-card-top">
+                                <span>@month.Label</span>
+                                <strong>@Money(month.Amount)</strong>
+                            </div>
+                            <div class="month-bar-track">
+                                <div class="month-bar-fill" style="width:@GetMonthPercent(month.Amount)"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            @if (Item.EstaAutorizado)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-3">
+                    @AuthorizationText
+                </MudAlert>
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public EgresoProyectadoResponse Item { get; set; } = null!;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private static readonly CultureInfo DateCulture = new("es-MX");
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string StatusText => Item.EstaAutorizado ? "Autorizado" : "Proyectado";
+    private Color StatusColor => Item.EstaAutorizado ? Color.Success : Color.Info;
+    private string AuthorizationText => Item.FechaAutorizacion.HasValue
+        ? $"Autorizado el {Item.FechaAutorizacion.Value.ToString("dd/MM/yyyy HH:mm", DateCulture)}."
+        : "Autorizado.";
+
+    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private string GetMonthPercent(decimal amount)
+    {
+        var total = Item.Total ?? 0m;
+        if (amount <= 0 || total <= 0)
+        {
+            return "0%";
+        }
+
+        var percent = Math.Clamp(Math.Round((amount / total) * 100m, 2), 2m, 100m);
+        return $"{percent.ToString("0.##", NumberCulture)}%";
+    }
+
+    private IEnumerable<(string Label, decimal Amount)> GetMonths()
+    {
+        yield return ("Ene", Item.Enero);
+        yield return ("Feb", Item.Febrero);
+        yield return ("Mar", Item.Marzo);
+        yield return ("Abr", Item.Abril);
+        yield return ("May", Item.Mayo);
+        yield return ("Jun", Item.Junio);
+        yield return ("Jul", Item.Julio);
+        yield return ("Ago", Item.Agosto);
+        yield return ("Sep", Item.Septiembre);
+        yield return ("Oct", Item.Octubre);
+        yield return ("Nov", Item.Noviembre);
+        yield return ("Dic", Item.Diciembre);
+    }
+
+    private void CloseAsync() => MudDialog.Close(DialogResult.Cancel());
+
+    private RenderFragment InfoItem(string label, string value) => @<div class="info-item">
+        <div class="info-label">@label</div>
+        <div class="info-value">@value</div>
+    </div>;
+}
+
+<style>
+    .anteproyecto-detail-content {
+        max-height: calc(82vh - 74px);
+        overflow-y: auto;
+        padding: 8px 0 2px;
+    }
+
+    .anteproyecto-detail-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .detail-title-left,
+    .detail-title-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .detail-title-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        background: var(--eg-primary-soft);
+        color: var(--eg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+    }
+
+    .detail-title-text {
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .detail-title-subtitle {
+        max-width: 520px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .detail-close {
+        color: var(--eg-primary);
+        opacity: .78;
+    }
+
+    .detail-total-panel {
+        display: grid;
+        grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .detail-total-panel > div,
+    .info-item,
+    .month-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-background);
+    }
+
+    .detail-total-panel > div {
+        padding: 12px 14px;
+        border-left: 3px solid var(--eg-primary);
+    }
+
+    .detail-total-panel span,
+    .info-label {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .detail-total-panel strong {
+        display: block;
+        margin-top: 3px;
+        color: var(--mud-palette-text-primary);
+        font-size: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .section-label {
+        color: var(--mud-palette-text-secondary);
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .classification-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .info-item {
+        min-width: 0;
+        padding: 12px 14px;
+    }
+
+    .info-value {
+        color: var(--mud-palette-text-primary);
+        font-size: .9rem;
+        font-weight: 600;
+        margin-top: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    .months-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .month-card {
+        padding: 10px;
+    }
+
+    .month-card-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 7px;
+    }
+
+    .month-card-top span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .month-card-top strong {
+        color: var(--mud-palette-text-primary);
+        font-size: .86rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .month-bar-track {
+        height: 7px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--eg-primary) 14%, var(--mud-palette-lines-default));
+        overflow: hidden;
+    }
+
+    .month-bar-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: var(--eg-primary);
+    }
+
+    @@media (max-width: 900px) {
+        .detail-total-panel,
+        .classification-grid,
+        .months-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .anteproyecto-detail-title {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .detail-title-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .detail-total-panel,
+        .info-grid,
+        .classification-grid,
+        .months-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
