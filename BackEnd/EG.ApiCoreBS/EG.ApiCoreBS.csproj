@@ -33,13 +33,4 @@
 	  <Content Include="Reporting\ExportedXml\**\*.repx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Include="..\..\..\..\CIANET\CIANET_JWT\GRP\ReportsTemplates\Report_Polizas.cs" Link="Reporting\Template\Report_Polizas.cs" />
-	  <Compile Include="..\..\..\..\CIANET\CIANET_JWT\GRP\ReportsTemplates\Report_Polizas.Designer.cs" Link="Reporting\Template\Report_Polizas.Designer.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="..\..\..\..\CIANET\CIANET_JWT\GRP\ReportsTemplates\Report_Polizas.resx" Link="Reporting\Template\Report_Polizas.resx" />
-	</ItemGroup>
-
 </Project>
