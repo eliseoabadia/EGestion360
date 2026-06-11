@@ -808,15 +808,33 @@ catch { }
     .main-content {
         flex: 1;
         min-width: 0;
-        overflow-y: auto;
+        overflow: hidden;
         background: var(--mud-palette-background);
         min-height: 0;
     }
 
     .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
         padding: 24px;
         padding-top: 16px;
-        min-height: 100%;
+    }
+
+    .content-wrapper > .mud-container,
+    .content-wrapper > * > .mud-container {
+        min-height: 0;
+    }
+
+    .content-wrapper > .mud-container[style*="height: 100vh"],
+    .content-wrapper > .mud-container[style*="height:100vh"],
+    .content-wrapper > * > .mud-container[style*="height: 100vh"],
+    .content-wrapper > * > .mud-container[style*="height:100vh"] {
+        height: 100% !important;
+        max-height: 100%;
+        overflow: hidden;
     }
 
     .version-footer {

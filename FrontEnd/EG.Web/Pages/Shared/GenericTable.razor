@@ -1,12 +1,14 @@
 ﻿@typeparam TItem
 @using MudBlazor
 
-<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table">
+<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-table">
     <MudTable ServerData="LoadServerData"
               RowsPerPage="@PageSize"
               Page="@CurrentPage"
               RowCount="@TotalCount"
               @ref="mudTableRef"
+              FixedHeader="@FixedHeader"
+              Height="@TableHeight"
               Dense="@Dense"
               Hover="@Hover"
               Striped="@Striped"
@@ -111,6 +113,35 @@
         overflow: hidden;
     }
 
+    .eg-generic-table {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+        max-height: 100%;
+    }
+
+    .eg-generic-table > .mud-table {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .eg-generic-table .mud-table-toolbar,
+    .eg-generic-table .mud-table-pagination {
+        flex: 0 0 auto;
+    }
+
+    .eg-generic-table .mud-table-container {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto !important;
+        overflow-x: auto;
+        scrollbar-gutter: stable;
+    }
+
     .themed-table .mud-table-toolbar {
         background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 13%, var(--mud-palette-surface)) 0%, var(--mud-palette-surface) 72%);
         border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
@@ -179,6 +210,8 @@
     [Parameter] public bool Striped { get; set; } = false;
     [Parameter] public bool ReadOnly { get; set; } = true;
     [Parameter] public bool BlockSwitch { get; set; }
+    [Parameter] public bool FixedHeader { get; set; } = true;
+    [Parameter] public string TableHeight { get; set; } = "100%";
     [Parameter] public SortDirection InitialSortDirection { get; set; } = SortDirection.Descending;
     [Parameter] public TItem? SelectedItem { get; set; }
 
