@@ -10,8 +10,6 @@
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<link href="/css/menu-overlays.css" rel="stylesheet" />
-
 <MudThemeProvider @ref="_themeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
 <MudPopoverProvider />
@@ -135,6 +133,12 @@
             <div class="sidebar-container @(_drawerOpen ? "expanded" : "collapsed")">
                 <DynamicMenu IsCollapsed="!_drawerOpen" ThemeKey="@_selectedTheme" />
             </div>
+            <button type="button"
+                    class="sidebar-resize-handle @(_drawerOpen ? "visible" : "collapsed")"
+                    title="Arrastra para ajustar el menu"
+                    aria-label="Ajustar ancho del menu lateral"
+                    aria-hidden="@(!_drawerOpen)"
+                    tabindex="@(_drawerOpen ? "0" : "-1")"></button>
             <main class="main-content">
                 <div class="content-wrapper">
                     @Body
@@ -173,6 +177,7 @@
     private int? _selectedAnioId;
     private bool _aniosLoading;
     private bool _shellInitialized;
+    private bool _sidebarResizeInitialized;
     private bool _sucursalChangeSubscribed;
     private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
 
@@ -191,6 +196,24 @@
         }
 
         await EnsureShellInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (esPaginaLogin || _sidebarResizeInitialized)
+        {
+            return;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("egestionSidebarResize.initialize");
+            _sidebarResizeInitialized = true;
+        }
+        catch
+        {
+            _sidebarResizeInitialized = false;
+        }
     }
 
     private async Task EnsureShellInitializedAsync()
@@ -218,6 +241,7 @@
         if (e.Location.Contains("/login", StringComparison.OrdinalIgnoreCase))
         {
             _shellInitialized = false;
+            _sidebarResizeInitialized = false;
             _anios.Clear();
             _selectedAnioId = null;
             await InvokeAsync(StateHasChanged);
@@ -230,14 +254,6 @@
             StateHasChanged();
         });
     }
-
-protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-if (firstRender)
-{
-await ApplyMenuThemeClass();
-}
-}
 
     private void OnSucursalChanged(int sucursalId, string sucursalNombre)
     {
@@ -328,40 +344,16 @@ await ApplyMenuThemeClass();
     }
 
     private async Task SelectThemeOption(AppThemeOption option)
-{
+    {
         await ThemeStateService.SetThemeAsync(option);
         await InvokeAsync(StateHasChanged);
         await JSRuntime.InvokeVoidAsync("mudBlazorTheme.applyTheme");
-
-// Forzar actualización del menú - aplicar clase morena si corresponde
-        await Task.Delay(100);
-        await ApplyMenuThemeClass();
     }
-
-private async Task ApplyMenuThemeClass()
-{
-try
-{
-if (_selectedTheme == "morena")
-{
-await JSRuntime.InvokeVoidAsync("eval", "document.querySelectorAll('.bootstrap-sidebar, .professional-nav-menu').forEach(el => el.classList.add('morena'))");
-}
-else
-{
-await JSRuntime.InvokeVoidAsync("eval", "document.querySelectorAll('.bootstrap-sidebar, .professional-nav-menu').forEach(el => el.classList.remove('morena'))");
-}
-}
-catch { }
-}
 
     private void OnThemeChanged(AppThemeOption option)
     {
         ApplyThemeFromState();
-        _ = InvokeAsync(async () =>
-        {
-            StateHasChanged();
-            await ApplyMenuThemeClass();
-        });
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void ApplyThemeFromState()
@@ -649,6 +641,10 @@ catch { }
     }
 
     .layout-root {
+        --eg-sidebar-width: 320px;
+        --eg-sidebar-collapsed-width: 64px;
+        --eg-sidebar-min-width: 260px;
+        --eg-sidebar-max-width: 420px;
         display: flex;
         flex-direction: column;
         height: 100vh;
@@ -788,21 +784,93 @@ catch { }
     }
 
     .sidebar-container {
-        width: 270px;
+        width: var(--eg-sidebar-width);
         flex-shrink: 0;
         background: var(--mud-palette-drawer-background);
         border-right: 1px solid var(--mud-palette-divider);
         overflow: hidden;
-        transition: width 0.3s ease;
+        transition: width 180ms ease, box-shadow 180ms ease;
         align-self: stretch;
     }
 
     .sidebar-container.collapsed {
-        width: 64px;
+        width: var(--eg-sidebar-collapsed-width);
     }
 
     .sidebar-container.expanded {
-        width: 270px;
+        width: var(--eg-sidebar-width);
+    }
+
+    .sidebar-resize-handle {
+        position: relative;
+        z-index: 5;
+        width: 12px;
+        flex: 0 0 12px;
+        align-self: stretch;
+        margin-left: -6px;
+        margin-right: -6px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: col-resize;
+        touch-action: none;
+    }
+
+    .sidebar-resize-handle::before,
+    .sidebar-resize-handle::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        border-radius: 999px;
+        transform: translateX(-50%);
+        transition: background-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+    }
+
+    .sidebar-resize-handle::before {
+        top: 12px;
+        bottom: 12px;
+        width: 1px;
+        background: color-mix(in srgb, var(--mud-palette-divider) 74%, transparent);
+    }
+
+    .sidebar-resize-handle::after {
+        top: 50%;
+        width: 4px;
+        height: 48px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 42%, transparent);
+        opacity: 0;
+        transform: translate(-50%, -50%);
+    }
+
+    .sidebar-resize-handle:hover::before,
+    .sidebar-resize-handle:focus-visible::before,
+    .layout-root.sidebar-resizing .sidebar-resize-handle::before {
+        background: var(--mud-palette-primary);
+        box-shadow: 0 0 0 3px var(--eg-primary-soft);
+    }
+
+    .sidebar-resize-handle:hover::after,
+    .sidebar-resize-handle:focus-visible::after,
+    .layout-root.sidebar-resizing .sidebar-resize-handle::after {
+        opacity: 1;
+    }
+
+    .sidebar-resize-handle:focus-visible {
+        outline: none;
+    }
+
+    .sidebar-resize-handle.collapsed {
+        display: none;
+    }
+
+    .layout-root.sidebar-resizing,
+    .layout-root.sidebar-resizing * {
+        cursor: col-resize !important;
+        user-select: none;
+    }
+
+    .layout-root.sidebar-resizing .sidebar-container {
+        transition: none;
     }
 
     .main-content {
@@ -819,8 +887,7 @@ catch { }
         height: 100%;
         min-height: 0;
         overflow: hidden;
-        padding: 24px;
-        padding-top: 16px;
+        padding: 14px 16px 10px 12px;
     }
 
     .content-wrapper > .mud-container,

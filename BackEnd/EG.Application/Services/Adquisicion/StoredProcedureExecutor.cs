@@ -1,5 +1,8 @@
 using System.Data;
 using System.Text.Json;
+using EG.Common;
+using EG.Common.Enums;
+using EG.Common.Exceptions;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +30,8 @@ namespace EG.Application.Services.Adquisicion
 
     public static class StoredProcedureExecutor
     {
+        private static readonly Logger.Log4NetLogger Logger = new(typeof(StoredProcedureExecutor));
+
         public static SqlParameter Param(string name, object? value)
         {
             return new SqlParameter(name, value ?? DBNull.Value);
@@ -45,49 +50,77 @@ namespace EG.Application.Services.Adquisicion
             string storedProcedure,
             params SqlParameter[] parameters)
         {
-            var connection = context.Database.GetDbConnection();
-            await using var command = connection.CreateCommand();
-            command.CommandText = storedProcedure;
-            command.CommandType = CommandType.StoredProcedure;
-
-            foreach (var parameter in parameters)
+            try
             {
-                command.Parameters.Add(parameter);
-            }
+                var connection = context.Database.GetDbConnection();
+                await using var command = connection.CreateCommand();
+                command.CommandText = storedProcedure;
+                command.CommandType = CommandType.StoredProcedure;
 
-            if (connection.State != ConnectionState.Open)
+                foreach (var parameter in parameters)
+                {
+                    command.Parameters.Add(parameter);
+                }
+
+                if (connection.State != ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                var currentTransaction = context.Database.CurrentTransaction;
+                if (currentTransaction != null)
+                {
+                    command.Transaction = currentTransaction.GetDbTransaction();
+                }
+
+                await using var reader = await command.ExecuteReaderAsync();
+                if (!await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException($"El procedimiento {storedProcedure} no regreso ResultJson.");
+                }
+
+                var json = reader["ResultJson"]?.ToString();
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    throw new InvalidOperationException($"El procedimiento {storedProcedure} regreso ResultJson vacio.");
+                }
+
+                var result = JsonSerializer.Deserialize<StoredProcedureResult>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new StoredProcedureResult();
+
+                if (!result.Success)
+                {
+                    throw new UserVisibleException(
+                        result.Mensaje,
+                        string.IsNullOrWhiteSpace(result.Tipo) ? "SP_MESSAGE" : result.Tipo);
+                }
+
+                return result;
+            }
+            catch (UserVisibleException ex)
             {
-                await connection.OpenAsync();
+                Logger.LogMessage(
+                    LogLevelGRP.Warn,
+                    $"Mensaje controlado del SP {storedProcedure}: {ex.UserMessage}",
+                    (byte)SystemLogTypes.Warning,
+                    "StoredProcedure",
+                    string.Empty,
+                    string.Empty);
+                throw;
             }
-
-            var currentTransaction = context.Database.CurrentTransaction;
-            if (currentTransaction != null)
+            catch (Exception ex)
             {
-                command.Transaction = currentTransaction.GetDbTransaction();
+                Logger.LogMessage(
+                    LogLevelGRP.Error,
+                    $"Error tecnico ejecutando SP {storedProcedure}: {ex}",
+                    (byte)SystemLogTypes.Error,
+                    "StoredProcedure",
+                    string.Empty,
+                    string.Empty);
+
+                throw new InvalidOperationException(UserFacingMessages.UnexpectedError, ex);
             }
-
-            await using var reader = await command.ExecuteReaderAsync();
-            if (!await reader.ReadAsync())
-            {
-                throw new InvalidOperationException($"El procedimiento {storedProcedure} no regreso ResultJson.");
-            }
-
-            var json = reader["ResultJson"]?.ToString();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                throw new InvalidOperationException($"El procedimiento {storedProcedure} regreso ResultJson vacio.");
-            }
-
-            var result = JsonSerializer.Deserialize<StoredProcedureResult>(
-                json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new StoredProcedureResult();
-
-            if (!result.Success)
-            {
-                throw new InvalidOperationException(result.Mensaje);
-            }
-
-            return result;
         }
     }
 }

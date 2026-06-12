@@ -16,6 +16,7 @@
     <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
     <ProjectReference Include="..\EG.Domain\EG.Domain.csproj" />
     <ProjectReference Include="..\EG.Infraestructure\EG.Infraestructure.csproj" />
+    <ProjectReference Include="..\EG.Logger\EG.Logger.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,9 @@ using System.Reflection;
 using EG.Application.Interfaces.Adquisicion;
 using Mapster;
 using EG.Business.Services;
+using EG.Common;
+using EG.Common.Enums;
+using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 
 namespace EG.Application.Services.Adquisicion
@@ -18,6 +21,7 @@ namespace EG.Application.Services.Adquisicion
         private readonly string _idPropertyName;
         private readonly string _entityName;
         private readonly Action<TDto, int> _setId;
+        private readonly Logger.Log4NetLogger _logger;
 
         protected AdquisicionCrudAppService(
             GenericService<TEntity, TDto, TResponse> service,
@@ -31,6 +35,7 @@ namespace EG.Application.Services.Adquisicion
             _idPropertyName = idPropertyName;
             _entityName = entityName;
             _setId = setId;
+            _logger = new Logger.Log4NetLogger(GetType());
         }
 
         public virtual async Task<PagedResult<TResponse>> GetAllAsync()
@@ -87,15 +92,15 @@ namespace EG.Application.Services.Adquisicion
                     TotalCount = 1
                 };
             }
+            catch (UserVisibleException ex)
+            {
+                LogUserVisibleMessage("crear", ex);
+                return Failure<TResponse>(ex.UserMessage, ex.Code);
+            }
             catch (Exception ex)
             {
-                return new PagedResult<TResponse>
-                {
-                    Success = false,
-                    Message = $"Error al crear {_entityName}: {GetErrorMessage(ex)}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                };
+                LogException("crear", ex);
+                return Failure<TResponse>(UserFacingMessages.OperationFailed($"crear {_entityName}"), "ERROR");
             }
         }
 
@@ -130,15 +135,15 @@ namespace EG.Application.Services.Adquisicion
             {
                 return NotFound(id);
             }
+            catch (UserVisibleException ex)
+            {
+                LogUserVisibleMessage("actualizar", ex);
+                return Failure<TResponse>(ex.UserMessage, ex.Code);
+            }
             catch (Exception ex)
             {
-                return new PagedResult<TResponse>
-                {
-                    Success = false,
-                    Message = $"Error al actualizar {_entityName}: {GetErrorMessage(ex)}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                };
+                LogException("actualizar", ex);
+                return Failure<TResponse>(UserFacingMessages.OperationFailed($"actualizar {_entityName}"), "ERROR");
             }
         }
 
@@ -168,15 +173,15 @@ namespace EG.Application.Services.Adquisicion
                     TotalCount = 0
                 };
             }
+            catch (UserVisibleException ex)
+            {
+                LogUserVisibleMessage("eliminar", ex);
+                return Failure<bool>(ex.UserMessage, ex.Code);
+            }
             catch (Exception ex)
             {
-                return new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Error al eliminar {_entityName}: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                };
+                LogException("eliminar", ex);
+                return Failure<bool>(UserFacingMessages.OperationFailed($"eliminar {_entityName}"), "ERROR");
             }
         }
 
@@ -203,6 +208,36 @@ namespace EG.Application.Services.Adquisicion
                 Code = "NOT_FOUND",
                 TotalCount = 0
             };
+        }
+
+        protected PagedResult<TResult> Failure<TResult>(string message, string code = "ERROR") => new()
+        {
+            Success = false,
+            Message = message,
+            Code = code,
+            TotalCount = 0
+        };
+
+        protected void LogException(string operation, Exception ex)
+        {
+            _logger.LogMessage(
+                LogLevelGRP.Error,
+                $"Error al {operation} {_entityName}: {ex}",
+                (byte)SystemLogTypes.Error,
+                _entityName,
+                string.Empty,
+                string.Empty);
+        }
+
+        protected void LogUserVisibleMessage(string operation, UserVisibleException ex)
+        {
+            _logger.LogMessage(
+                LogLevelGRP.Warn,
+                $"Mensaje controlado al {operation} {_entityName}: {ex.UserMessage}",
+                (byte)SystemLogTypes.Warning,
+                _entityName,
+                string.Empty,
+                string.Empty);
         }
 
         private static void CopyProperty(object source, object target, string propertyName)
@@ -238,9 +273,5 @@ namespace EG.Application.Services.Adquisicion
             property.SetValue(target, convertedValue);
         }
 
-        private static string GetErrorMessage(Exception ex)
-        {
-            return ex.InnerException?.Message ?? ex.Message;
-        }
     }
 }

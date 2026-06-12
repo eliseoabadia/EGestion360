@@ -6,6 +6,7 @@ using EG.Domain.DTOs.Requests;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace EG.Business.Services
 {
@@ -14,15 +15,18 @@ namespace EG.Business.Services
         private readonly IRepository<Usuario> _repository;
         private readonly IRepositorySP<LoginInformationEmployeeResult> _repositorySP;
         private readonly IRepositorySP<spGetClaimsByUserResult> _repositoryClaimsSP;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IRepository<Usuario> userRepository,
             IRepositorySP<LoginInformationEmployeeResult> repositorySP,
-            IRepositorySP<spGetClaimsByUserResult> repositoryClaimsSP)
+            IRepositorySP<spGetClaimsByUserResult> repositoryClaimsSP,
+            ILogger<AuthService> logger)
         {
             _repository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _repositorySP = repositorySP ?? throw new ArgumentNullException(nameof(repositorySP));
             _repositoryClaimsSP = repositoryClaimsSP ?? throw new ArgumentNullException(nameof(repositoryClaimsSP));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -62,13 +66,7 @@ namespace EG.Business.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    //LogLevelGRP.Error,
-                    $"Error validando credenciales: {ex.Message}",
-                    (byte)SystemLogTypes.Error,
-                    "ValidarCredenciales",
-                    "0",
-                    ex.StackTrace ?? "");
+                _logger.LogError(ex, "Error validando credenciales para {Email}", loginRequest.Email);
 
                 throw;
             }
@@ -100,13 +98,7 @@ namespace EG.Business.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    //LogLevelGRP.Error,
-                    $"Error obteniendo claims: {ex.Message}",
-                    (byte)SystemLogTypes.Error,
-                    "ObtenerClaimsUsuario",
-                    usuarioId.ToString(),
-                    ex.StackTrace ?? "");
+                _logger.LogError(ex, "Error obteniendo claims para usuario {UsuarioId}", usuarioId);
 
                 throw;
             }

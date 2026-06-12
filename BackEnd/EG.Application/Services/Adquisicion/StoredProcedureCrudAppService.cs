@@ -1,4 +1,6 @@
 using EG.Business.Services;
+using EG.Common;
+using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
@@ -84,13 +86,14 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return new PagedResult<bool>
+                if (ex is UserVisibleException userVisibleException)
                 {
-                    Success = false,
-                    Message = $"Error al eliminar {_entityName}: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                };
+                    LogUserVisibleMessage("eliminar", userVisibleException);
+                    return Failure<bool>(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("eliminar", ex);
+                return Failure<bool>(UserFacingMessages.OperationFailed($"eliminar {_entityName}"), "ERROR");
             }
         }
 
@@ -143,13 +146,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return new PagedResult<TResponse>
+                if (ex is UserVisibleException userVisibleException)
                 {
-                    Success = false,
-                    Message = $"Error al {operationInfinitive} {_entityName}: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                };
+                    LogUserVisibleMessage(operationInfinitive, userVisibleException);
+                    return Failure<TResponse>(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException(operationInfinitive, ex);
+                return Failure<TResponse>(
+                    UserFacingMessages.OperationFailed($"{operationInfinitive} {_entityName}"),
+                    "ERROR");
             }
         }
     }

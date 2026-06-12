@@ -1,8 +1,10 @@
 ﻿using Dapper;
+using EG.Common;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace EG.Infrastructure
@@ -11,23 +13,23 @@ namespace EG.Infrastructure
     {
         private readonly EGestionContext _context;
         private readonly DbSet<T> _dbSet;
+        private readonly ILogger<RepositorySP<T>> _logger;
 
-        public RepositorySP(EGestionContext context)
+        public RepositorySP(EGestionContext context, ILogger<RepositorySP<T>> logger)
         {
             _context = context;
             _dbSet = _context.Set<T>();
+            _logger = logger;
         }
 
 
 
         public async Task<IEnumerable<T>> ExecuteStoredProcedureAsync<T>(string storedProcedure, params SqlParameter[] parameters)
         {
-            Console.WriteLine($"Ejecutando SP: {storedProcedure}");
-            Console.WriteLine("Parámetros:");
-            foreach (var param in parameters)
-            {
-                Console.WriteLine($"{param.ParameterName} = {param.Value} (Tipo: {param.SqlDbType})");
-            }
+            _logger.LogDebug(
+                "Ejecutando SP {StoredProcedure} con parametros {Parameters}",
+                storedProcedure,
+                string.Join(", ", parameters.Select(param => param.ParameterName)));
 
             var connection = _context.Database.GetDbConnection();
             try
@@ -43,13 +45,12 @@ namespace EG.Infrastructure
                     commandType: CommandType.StoredProcedure
                 );
 
-                Console.WriteLine($"Resultados obtenidos: {result?.Count() ?? 0}");
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al ejecutar SP: {ex.Message}");
-                throw;
+                _logger.LogError(ex, "Error al ejecutar SP {StoredProcedure}", storedProcedure);
+                throw new InvalidOperationException(UserFacingMessages.UnexpectedError, ex);
             }
             finally
             {

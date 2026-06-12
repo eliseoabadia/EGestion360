@@ -4,6 +4,10 @@ namespace EG.Web.Extensions
 {
     public static class IconosDisponibles
     {
+        private const string BootstrapIconPrefix = "bi";
+        private const string DefaultIconValue = "FaInfo";
+        private const string DefaultBootstrapIcon = "bi-info-circle";
+
         public class IconoItem
         {
             public string Nombre { get; set; } = string.Empty;
@@ -13,7 +17,7 @@ namespace EG.Web.Extensions
             public string BootstrapIcon { get; set; } = string.Empty;
         }
 
-        public static List<IconoItem> Lista = new()
+        public static readonly List<IconoItem> Lista = new()
         {
             new IconoItem { Nombre = "Home", Valor = "FaHome", Categoria = "Navegaci\u00f3n", MaterialIcon = Icons.Material.Filled.Home, BootstrapIcon = "bi bi-house-door" },
             new IconoItem { Nombre = "Dashboard", Valor = "FaDashboard", Categoria = "Navegaci\u00f3n", MaterialIcon = Icons.Material.Filled.Dashboard, BootstrapIcon = "bi bi-speedometer2" },
@@ -63,5 +67,91 @@ namespace EG.Web.Extensions
             new IconoItem { Nombre = "Reloj", Valor = "FaClock", Categoria = "Varios", MaterialIcon = Icons.Material.Filled.Schedule, BootstrapIcon = "bi bi-clock" },
             new IconoItem { Nombre = "Info", Valor = "FaInfo", Categoria = "Varios", MaterialIcon = Icons.Material.Filled.Info, BootstrapIcon = "bi bi-info-circle" },
         };
+
+        private static readonly IReadOnlyDictionary<string, IconoItem> ItemsByValue = Lista
+            .GroupBy(item => item.Valor, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        private static readonly IReadOnlyDictionary<string, string> SemanticAliases =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["home"] = "FaHome",
+                ["inicio"] = "FaHome",
+                ["dashboard"] = "FaDashboard",
+                ["menu"] = "RiMenuLine",
+                ["settings"] = "FaCog",
+                ["configuracion"] = "FaCog",
+                ["users"] = "FaUsers",
+                ["usuarios"] = "FaUsers",
+                ["folder"] = "FaFolder",
+                ["document"] = "FaDocument",
+                ["documento"] = "FaDocument",
+                ["list"] = "RiListCheck2",
+                ["lista"] = "RiListCheck2",
+                ["budget"] = "FaChartPie",
+                ["presupuesto"] = "FaChartPie",
+                ["accounting"] = "FaTable",
+                ["contabilidad"] = "FaTable",
+                ["report"] = "FaChartLine",
+                ["reporte"] = "FaChartLine",
+                ["calendar"] = "FaCalendar",
+                ["calendario"] = "FaCalendar",
+                ["security"] = "FaLock",
+                ["seguridad"] = "FaLock",
+                ["info"] = DefaultIconValue
+            };
+
+        public static string GetBootstrapIconClass(string? value)
+        {
+            var icon = Resolve(value);
+            return NormalizeBootstrapIcon(icon?.BootstrapIcon) ?? DefaultBootstrapIcon;
+        }
+
+        public static string GetBootstrapIconCssClass(string? value) =>
+            $"{BootstrapIconPrefix} {GetBootstrapIconClass(value)}";
+
+        public static string GetMaterialIcon(string? value) =>
+            Resolve(value)?.MaterialIcon ?? Icons.Material.Filled.Info;
+
+        private static IconoItem? Resolve(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return ItemsByValue[DefaultIconValue];
+
+            var key = value.Trim();
+            if (ItemsByValue.TryGetValue(key, out var item))
+                return item;
+
+            if (SemanticAliases.TryGetValue(NormalizeKey(key), out var alias) &&
+                ItemsByValue.TryGetValue(alias, out var aliasItem))
+            {
+                return aliasItem;
+            }
+
+            return ItemsByValue[DefaultIconValue];
+        }
+
+        private static string NormalizeBootstrapIcon(string? bootstrapIcon)
+        {
+            if (string.IsNullOrWhiteSpace(bootstrapIcon))
+                return DefaultBootstrapIcon;
+
+            var parts = bootstrapIcon
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(part => !string.Equals(part, BootstrapIconPrefix, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            return parts.FirstOrDefault(part => part.StartsWith("bi-", StringComparison.OrdinalIgnoreCase))
+                ?? DefaultBootstrapIcon;
+        }
+
+        private static string NormalizeKey(string key)
+        {
+            return key
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("-", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+        }
     }
 }

@@ -1,395 +1,125 @@
 @using EG.Web.Models.Configuration
-@using Microsoft.AspNetCore.Components.Routing
 
 @{
-    var linkCss = $"sidebar-link level-{Math.Min(Level, 2)}";
-    var groupHeaderCss = $"sidebar-group-header level-{Math.Min(Level, 2)}";
+    var hasChildren = Item.Children?.Any() == true;
+    var level = Math.Min(Level, 2);
     var isExpanded = GetExpandedState(Item.PkidMenu);
+    var isActive = IsActiveRoute(Item.Ruta);
+    var linkCss = $"sidebar-link level-{level}{(isActive ? " active" : string.Empty)}";
+    var groupHeaderCss = $"sidebar-group-header level-{level}{(isExpanded ? " expanded" : string.Empty)}";
+    var childrenId = $"sidebar-children-{Item.PkidMenu}";
     var childrenCss = $"sidebar-children {(isExpanded ? "expanded" : "collapsed")}";
     var chevronCss = $"bi bi-chevron-right chevron {(isExpanded ? "expanded" : "")}";
+    var iconClass = GetIcon(Item.ImageUrl);
 }
 
-@if (Item.Children?.Any() == true)
+@if (hasChildren)
 {
     <div class="sidebar-group">
-        <button class="@groupHeaderCss" @onclick="@(() => ToggleExpand())">
-            <div class="group-left">
-                <i class="bi @GetIcon(Item.ImageUrl)"></i>
+        <button type="button"
+                class="@groupHeaderCss"
+                title="@(IsCollapsed ? Item.Nombre : null)"
+                aria-expanded="@isExpanded"
+                aria-controls="@childrenId"
+                disabled="@IsNavigationLocked"
+                @onclick="ToggleExpand">
+            <span class="group-left">
+                <i class="bi @iconClass sidebar-icon" aria-hidden="true"></i>
                 @if (!IsCollapsed)
                 {
-                    <span>@Item.Nombre</span>
+                    <span class="menu-label">@Item.Nombre</span>
                 }
-            </div>
+            </span>
+
             @if (!IsCollapsed)
             {
-                <i class="@chevronCss"></i>
+                <i class="@chevronCss" aria-hidden="true"></i>
             }
         </button>
+
         @if (!IsCollapsed)
         {
-            <div class="@childrenCss">
-                @foreach (var child in Item.Children.OrderBy(m => m.Orden))
-                {
-                    <DynamicMenuItem Item="child"
-                                     Level="@(Level + 1)"
-                                     IsCollapsed="IsCollapsed"
-                                     GetExpandedState="GetExpandedState"
-                                     SetExpandedState="SetExpandedState"
-                                     GetIcon="GetIcon"
-                                     FindItemByRoute="FindItemByRoute"
-                                     AllItems="AllItems" />
-                }
+            <div id="@childrenId" class="@childrenCss" role="group">
+                <div class="sidebar-children-inner">
+                    @foreach (var child in Item.Children.OrderBy(m => m.Orden ?? int.MaxValue).ThenBy(m => m.Nombre))
+                    {
+                        <DynamicMenuItem Item="child"
+                                         Level="@(Level + 1)"
+                                         IsCollapsed="IsCollapsed"
+                                         IsNavigationLocked="IsNavigationLocked"
+                                         GetExpandedState="GetExpandedState"
+                                         SetExpandedState="SetExpandedState"
+                                         GetIcon="GetIcon"
+                                         IsActiveRoute="IsActiveRoute"
+                                         OnNavigate="OnNavigate" />
+                    }
+                </div>
             </div>
         }
     </div>
 }
+else if (Item.AbrirEnNuevaVentana)
+{
+    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty)" title="@(IsCollapsed ? Item.Nombre : null)">
+        <a class="@linkCss"
+           href="@Href"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="@Item.Nombre"
+           aria-current="@(isActive ? "page" : null)">
+            <i class="bi @iconClass sidebar-icon" aria-hidden="true"></i>
+            @if (!IsCollapsed)
+            {
+                <span class="menu-label">@Item.Nombre</span>
+                <i class="bi bi-box-arrow-up-right external-icon" aria-hidden="true"></i>
+            }
+        </a>
+    </div>
+}
 else
 {
-    @if (IsCollapsed)
-    {
-        <div class="sidebar-item-collapsed" title="@Item.Nombre">
-            <NavLink class="@linkCss"
-                     href="@(Item.Ruta ?? "")"
-                     Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
-                <i class="bi @GetIcon(Item.ImageUrl)"></i>
-            </NavLink>
-        </div>
-    }
-    else
-    {
-        <NavLink class="@linkCss"
-                 href="@(Item.Ruta ?? "")"
-                 Match="@(Item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
-            <i class="bi @GetIcon(Item.ImageUrl)"></i>
-            <span>@Item.Nombre</span>
-        </NavLink>
-    }
+    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty)" title="@(IsCollapsed ? Item.Nombre : null)">
+        <a class="@linkCss"
+           href="@Href"
+           aria-label="@Item.Nombre"
+           aria-current="@(isActive ? "page" : null)"
+           @onclick="HandleNavigateAsync"
+           @onclick:preventDefault="true">
+            <i class="bi @iconClass sidebar-icon" aria-hidden="true"></i>
+            @if (!IsCollapsed)
+            {
+                <span class="menu-label">@Item.Nombre</span>
+            }
+        </a>
+    </div>
 }
 
 @code {
     [Parameter] public MenuItem Item { get; set; } = default!;
     [Parameter] public int Level { get; set; }
-    [Parameter] public bool IsCollapsed { get; set; } = false;
-    [Parameter] public Func<long?, bool> GetExpandedState { get; set; } = default!;
-    [Parameter] public Action<long?, bool> SetExpandedState { get; set; } = default!;
-    [Parameter] public Func<string, string> GetIcon { get; set; } = default!;
-    [Parameter] public Func<List<MenuItem>, string, MenuItem?> FindItemByRoute { get; set; } = default!;
-    [Parameter] public List<MenuItem> AllItems { get; set; } = default!;
+    [Parameter] public bool IsCollapsed { get; set; }
+    [Parameter] public bool IsNavigationLocked { get; set; }
+    [Parameter] public Func<int?, bool> GetExpandedState { get; set; } = default!;
+    [Parameter] public Action<int?, bool> SetExpandedState { get; set; } = default!;
+    [Parameter] public Func<string?, string> GetIcon { get; set; } = default!;
+    [Parameter] public Func<string?, bool> IsActiveRoute { get; set; } = _ => false;
+    [Parameter] public EventCallback<MenuItem> OnNavigate { get; set; }
+
+    private string Href => string.IsNullOrWhiteSpace(Item.Ruta) ? "#" : Item.Ruta;
 
     private void ToggleExpand()
     {
+        if (IsNavigationLocked)
+            return;
+
         SetExpandedState(Item.PkidMenu, !GetExpandedState(Item.PkidMenu));
     }
+
+    private Task HandleNavigateAsync()
+    {
+        if (IsNavigationLocked)
+            return Task.CompletedTask;
+
+        return OnNavigate.InvokeAsync(Item);
+    }
 }
-
-<style>
-    /* ===================== BASE LINK ===================== */
-    .sidebar-link {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        border-radius: 8px;
-        color: var(--mud-palette-drawer-text);
-        font-size: 0.88rem;
-        font-weight: 500;
-        padding: 9px 12px;
-        margin: 2px 0;
-        transition: all 0.25s ease;
-        text-decoration: none;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .sidebar-link::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 3px;
-        height: 100%;
-        border-radius: 3px;
-        transition: all 0.25s ease;
-    }
-
-    .sidebar-link i {
-        margin-right: 10px;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
-    }
-
-    .sidebar-link span {
-        position: relative;
-        z-index: 1;
-    }
-
-    /* ===================== LEVEL 0 ===================== */
-    .sidebar-link.level-0,
-    .sidebar-group-header.level-0 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 12%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 6%, transparent) 100%);
-    }
-
-    .sidebar-link.level-0::before,
-    .sidebar-group-header.level-0::before {
-        background: linear-gradient(180deg, var(--eg-primary) 0%, var(--eg-secondary) 100%);
-    }
-
-    .sidebar-link.level-0:hover,
-    .sidebar-group-header.level-0:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 22%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 14%, transparent) 100%);
-    }
-
-    .sidebar-link.level-0:hover::before,
-    .sidebar-group-header.level-0:hover::before {
-        width: 4px;
-    }
-
-    .sidebar-link.level-0.active,
-    .sidebar-group-header.level-0.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 30%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 20%, transparent) 100%);
-        font-weight: 650;
-    }
-
-    .sidebar-link.level-0.active::before,
-    .sidebar-group-header.level-0.active::before {
-        width: 4px;
-        box-shadow: 0 0 8px color-mix(in srgb, var(--eg-primary) 50%, transparent);
-    }
-
-    /* ===================== LEVEL 1 ===================== */
-    .sidebar-link.level-1,
-    .sidebar-group-header.level-1 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 10%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 5%, transparent) 100%);
-        padding-left: calc(12px + 16px) !important;
-        font-size: 0.84rem !important;
-    }
-
-    .sidebar-link.level-1::before,
-    .sidebar-group-header.level-1::before {
-        background: linear-gradient(180deg, var(--eg-secondary) 0%, var(--eg-primary-light) 100%);
-    }
-
-    .sidebar-link.level-1:hover,
-    .sidebar-group-header.level-1:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 20%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 12%, transparent) 100%);
-    }
-
-    .sidebar-link.level-1:hover::before,
-    .sidebar-group-header.level-1:hover::before {
-        width: 3px;
-    }
-
-    .sidebar-link.level-1.active,
-    .sidebar-group-header.level-1.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 28%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 18%, transparent) 100%);
-        font-weight: 600;
-    }
-
-    .sidebar-link.level-1.active::before,
-    .sidebar-group-header.level-1.active::before {
-        width: 3px;
-        box-shadow: 0 0 6px color-mix(in srgb, var(--eg-secondary) 40%, transparent);
-    }
-
-    /* ===================== LEVEL 2 ===================== */
-    .sidebar-link.level-2,
-    .sidebar-group-header.level-2 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 10%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 5%, transparent) 100%);
-        padding-left: calc(12px + 32px) !important;
-        font-size: 0.80rem !important;
-        font-weight: 400 !important;
-    }
-
-    .sidebar-link.level-2::before,
-    .sidebar-group-header.level-2::before {
-        background: linear-gradient(180deg, var(--eg-accent) 0%, var(--eg-secondary) 100%);
-    }
-
-    .sidebar-link.level-2:hover,
-    .sidebar-group-header.level-2:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 20%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 12%, transparent) 100%);
-    }
-
-    .sidebar-link.level-2:hover::before,
-    .sidebar-group-header.level-2:hover::before {
-        width: 3px;
-    }
-
-    .sidebar-link.level-2.active,
-    .sidebar-group-header.level-2.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 28%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 18%, transparent) 100%);
-        font-weight: 600;
-    }
-
-    .sidebar-link.level-2.active::before,
-    .sidebar-group-header.level-2.active::before {
-        width: 3px;
-        box-shadow: 0 0 6px color-mix(in srgb, var(--eg-accent) 40%, transparent);
-    }
-
-    /* ===================== GROUP HEADER ===================== */
-    .sidebar-group {
-        width: 100%;
-    }
-
-    .sidebar-group-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        border-radius: 8px;
-        color: var(--mud-palette-drawer-text);
-        font-size: 0.88rem;
-        font-weight: 600;
-        padding: 9px 12px;
-        margin: 2px 0;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        background: none;
-        border: none;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .sidebar-group-header::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 3px;
-        height: 100%;
-        border-radius: 3px;
-        transition: all 0.25s ease;
-    }
-
-    .sidebar-group-header .group-left {
-        display: flex;
-        align-items: center;
-    }
-
-    .sidebar-group-header .group-left i {
-        margin-right: 10px;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-    }
-
-    .sidebar-group-header .group-left span {
-        position: relative;
-        z-index: 1;
-    }
-
-    .sidebar-group-header .chevron {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-        flex-shrink: 0;
-    }
-
-    .sidebar-group-header .chevron.expanded {
-        transform: rotate(90deg);
-    }
-
-    /* ===================== CHILDREN CONTAINER ===================== */
-    .sidebar-children {
-        overflow: hidden;
-        transition: max-height 0.35s ease, padding 0.35s ease;
-    }
-
-    .sidebar-children.expanded {
-        max-height: 60vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 4px 0;
-    }
-
-    .sidebar-children.collapsed {
-        max-height: 0;
-        overflow: hidden;
-        padding: 0;
-    }
-
-    .sidebar-children::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .sidebar-children::-webkit-scrollbar-track {
-        background: transparent;
-        border-radius: 4px;
-    }
-
-    .sidebar-children::-webkit-scrollbar-thumb {
-        background: color-mix(in srgb, var(--eg-primary) 30%, transparent);
-        border-radius: 4px;
-    }
-
-    .sidebar-children::-webkit-scrollbar-thumb:hover {
-        background: color-mix(in srgb, var(--eg-primary) 50%, transparent);
-    }
-
-    /* ===================== COLLAPSED STATE ===================== */
-    .sidebar-item-collapsed {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-
-    .sidebar-item-collapsed .sidebar-link {
-        justify-content: center;
-        padding: 10px;
-        width: auto;
-    }
-
-    .sidebar-item-collapsed .sidebar-link::before {
-        display: none;
-    }
-
-    .sidebar-item-collapsed .sidebar-link span {
-        display: none;
-    }
-
-    .sidebar-item-collapsed .sidebar-link i {
-        margin-right: 0;
-        font-size: 1.3rem;
-    }
-
-    /* ===================== THEME VARIABLES ===================== */
-    .sidebar-link.level-0, .sidebar-group-header.level-0 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 18%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 10%, transparent) 100%);
-    }
-
-    .sidebar-link.level-0:hover, .sidebar-group-header.level-0:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 28%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 18%, transparent) 100%);
-    }
-
-    .sidebar-link.level-0.active, .sidebar-group-header.level-0.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 38%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 25%, transparent) 100%);
-    }
-
-    .sidebar-link.level-1, .sidebar-group-header.level-1 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 15%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 8%, transparent) 100%);
-    }
-
-    .sidebar-link.level-1:hover, .sidebar-group-header.level-1:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 25%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 15%, transparent) 100%);
-    }
-
-    .sidebar-link.level-1.active, .sidebar-group-header.level-1.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-secondary) 35%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 22%, transparent) 100%);
-    }
-
-    .sidebar-link.level-2, .sidebar-group-header.level-2 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 15%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 8%, transparent) 100%);
-    }
-
-    .sidebar-link.level-2:hover, .sidebar-group-header.level-2:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 25%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 15%, transparent) 100%);
-    }
-
-    .sidebar-link.level-2.active, .sidebar-group-header.level-2.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-accent) 35%, transparent) 0%, color-mix(in srgb, var(--eg-secondary) 22%, transparent) 100%);
-    }
-
-    .sidebar-children.expanded::-webkit-scrollbar-thumb {
-        background: color-mix(in srgb, var(--eg-primary) 35%, transparent);
-    }
-</style>

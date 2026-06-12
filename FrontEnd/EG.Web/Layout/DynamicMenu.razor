@@ -1,134 +1,155 @@
+@implements IDisposable
+@using System.Globalization
+@using System.Text
 @using EG.Web.Extensions
+@using EG.Web.Contracts.Configuration
 @using EG.Web.Models.Configuration
 @using EG.Web.Services
-@using EG.Web.Contracts.Configuration
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Routing
 @inject INavigateService NavigateService
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
-@inject IJSRuntime _jsRuntime
-@inject HttpClient Http
+@inject IJSRuntime JsRuntime
 @inject MenuStateService MenuStateService
 
 <AuthorizeView>
     <Authorized>
-        <div class="bootstrap-sidebar @ThemeClass @(IsCollapsed ? "collapsed" : "expanded")">
+        <aside class="bootstrap-sidebar @ThemeClass @(IsCollapsed ? "collapsed" : "expanded")"
+               aria-label="Menu principal">
             @if (!IsCollapsed)
             {
-                <div class="sidebar-search-section">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">
+                <section class="sidebar-search-section" aria-label="Busqueda de menu">
+                    <div class="input-group input-group-sm sidebar-search-box">
+                        <span class="input-group-text" aria-hidden="true">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" class="form-control" placeholder="Buscar men&uacute;..."
-                               value="@_searchText" @oninput="OnSearchChanged" />
+                        <input type="search"
+                               class="form-control"
+                               placeholder="Buscar menu..."
+                               aria-label="Buscar menu"
+                               value="@_searchText"
+                               @oninput="OnSearchChanged"
+                               disabled="@_loading" />
                         @if (!string.IsNullOrWhiteSpace(_searchText))
                         {
-                            <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="ClearSearch">
-                                <i class="bi bi-x-lg"></i>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    type="button"
+                                    aria-label="Limpiar busqueda"
+                                    @onclick="ClearSearch">
+                                <i class="bi bi-x-lg" aria-hidden="true"></i>
                             </button>
                         }
                     </div>
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(_searchText))
-                {
-                    <div class="sidebar-search-results">
-                        <div class="results-header">
-                            <i class="bi bi-funnel"></i>
-                            <span>@_searchResults.Count resultado(s)</span>
-                        </div>
-                        <div class="results-list">
-                            @if (_searchResults.Any())
-                            {
-                                @foreach (var result in _searchResults)
-                                {
-                                    <div class="search-result-item" @onclick="@(() => NavigateToSearchResult(result))">
-                                        <i class="bi @result.Icon"></i>
-                                        <div class="result-info">
-                                            <span class="result-name">@result.Name</span>
-                                            @if (!string.IsNullOrEmpty(result.Breadcrumb))
-                                            {
-                                                <span class="result-breadcrumb">@result.Breadcrumb</span>
-                                            }
-                                        </div>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="no-results">
-                                    <i class="bi bi-emoji-frown"></i>
-                                    <span>Sin resultados</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-                else if (_favorites.Any())
-                {
-                    <div class="sidebar-favorites">
-                        <div class="favorites-header">
-                            <i class="bi bi-star-fill"></i>
-                            <span>Accesos R&aacute;pidos</span>
-                        </div>
-                        <div class="favorites-list">
-                            @foreach (var fav in _favorites.Take(5))
-                            {
-                                <div class="favorite-item" @onclick="@(() => NavigateToFavorite(fav.Key))">
-                                    <i class="bi @fav.Value"></i>
-                                    <span>@fav.Key</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
+                </section>
             }
 
-            @if (string.IsNullOrWhiteSpace(_searchText))
+            @if (_loading)
             {
-                <nav class="sidebar-nav flex-column nav nav-pills">
-                    @if (Items != null)
+                <div class="sidebar-state" role="status">
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    <span>Cargando menu...</span>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(_loadError))
+            {
+                <div class="sidebar-state sidebar-state-error" role="alert">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                    <span>@_loadError</span>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(_searchText) && !IsCollapsed)
+            {
+                <section class="sidebar-search-results" aria-label="Resultados de busqueda">
+                    <div class="results-header">
+                        <i class="bi bi-funnel" aria-hidden="true"></i>
+                        <span>@_searchResults.Count resultado(s)</span>
+                    </div>
+
+                    @if (_searchResults.Any())
                     {
-                        @foreach (var item in Items.OrderBy(m => m.Orden))
-                        {
-                            <DynamicMenuItem Item="item" Level="0" IsCollapsed="IsCollapsed"
-                                GetExpandedState="GetExpandedState"
-                                SetExpandedState="SetExpandedState"
-                                GetIcon="GetIcon"
-                                FindItemByRoute="FindItemByRoute"
-                                AllItems="Items" />
-                        }
+                        <div class="results-list">
+                            @foreach (var result in _searchResults)
+                            {
+                                <button type="button"
+                                        class="search-result-item"
+                                        @onclick="@(() => NavigateToSearchResultAsync(result))"
+                                        disabled="@_navigationLocked">
+                                    <i class="bi @result.IconClass" aria-hidden="true"></i>
+                                    <span class="result-info">
+                                        <span class="result-name">@result.Name</span>
+                                        @if (!string.IsNullOrWhiteSpace(result.Breadcrumb))
+                                        {
+                                            <span class="result-breadcrumb">@result.Breadcrumb</span>
+                                        }
+                                    </span>
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-results">
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            <span>Sin resultados</span>
+                        </div>
+                    }
+                </section>
+            }
+            else if (Items?.Any() == true)
+            {
+                <nav class="sidebar-nav" aria-label="Navegacion principal">
+                    @foreach (var item in Items)
+                    {
+                        <DynamicMenuItem Item="item"
+                                         Level="0"
+                                         IsCollapsed="IsCollapsed"
+                                         IsNavigationLocked="_navigationLocked"
+                                         GetExpandedState="GetExpandedState"
+                                         SetExpandedState="SetExpandedState"
+                                         GetIcon="GetIconClass"
+                                         IsActiveRoute="IsActiveRoute"
+                                         OnNavigate="NavigateToMenuItemAsync" />
                     }
                 </nav>
             }
-
-        </div>
+            else if (!IsCollapsed)
+            {
+                <div class="sidebar-state">
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <span>No hay opciones disponibles.</span>
+                </div>
+            }
+        </aside>
     </Authorized>
 </AuthorizeView>
 
 @code {
-    private bool loading = false;
-    private bool _isInitialized = false;
+    private readonly Dictionary<int, bool> _expandedStates = new();
+    private readonly Dictionary<int, MenuItem> _itemsById = new();
+    private readonly Dictionary<int, int?> _parentById = new();
+    private readonly List<MenuItem> _groups = new();
+    private readonly List<MenuItem> _routeItems = new();
+    private readonly List<SearchIndexEntry> _searchIndex = new();
+
+    private CancellationTokenSource? _searchDebounceCts;
+    private bool _loading;
+    private bool _isInitialized;
+    private bool _navigationLocked;
     private int _userId;
+    private int? _lastToggleId;
+    private DateTime _lastToggleAtUtc = DateTime.MinValue;
     private string _token = string.Empty;
     private string _currentPath = string.Empty;
+    private string _searchText = string.Empty;
+    private string? _loadError;
+    private List<SearchResultItem> _searchResults = new();
 
     [Parameter] public List<MenuItem> Items { get; set; } = new();
-    [Parameter] public bool IsCollapsed { get; set; } = false;
+    [Parameter] public bool IsCollapsed { get; set; }
     [Parameter] public string ThemeKey { get; set; } = "default";
 
     private string ThemeClass => ThemeKey == "morena" ? "morena" : string.Empty;
-
-    private string _searchText = string.Empty;
-    private List<MenuItem> _filteredItems = new();
-    private List<SearchResultItem> _searchResults = new();
-    
-    private Dictionary<string, string> _favorites = new();
-
-    private Dictionary<long, bool> expandedStates = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,205 +157,365 @@
         await base.OnInitializedAsync();
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        _currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
-        CollapseSameLevelGroups();
-        StateHasChanged();
-    }
-
-    private void CollapseSameLevelGroups()
-    {
-        if (string.IsNullOrEmpty(_currentPath)) return;
-        var activeItem = FindItemByRoute(Items, _currentPath);
-        if (activeItem == null) return;
-
-        var allMenuItems = GetAllMenuItems(Items);
-        foreach (var item in allMenuItems.Where(i => i.Children?.Any() == true))
-        {
-            expandedStates[item.PkidMenu] = false;
-        }
-        ExpandPathToItem(activeItem);
-    }
-
-    private void ExpandPathToItem(MenuItem item)
-    {
-        var ancestors = GetAncestors(item);
-        foreach (var ancestor in ancestors.Where(a => a.Children?.Any() == true))
-        {
-            expandedStates[ancestor.PkidMenu] = true;
-        }
-        if (item.Children?.Any() == true)
-        {
-            expandedStates[item.PkidMenu] = true;
-        }
-    }
-
-    private List<MenuItem> GetAncestors(MenuItem item)
-    {
-        var ancestors = new List<MenuItem>();
-        var current = item;
-        while (current.FkidMenuSis.HasValue)
-        {
-            var parent = FindItemById(Items, current.FkidMenuSis.Value);
-            if (parent != null)
-            {
-                ancestors.Add(parent);
-                current = parent;
-            }
-            else break;
-        }
-        return ancestors;
-    }
-
-    private List<MenuItem> GetAllMenuItems(List<MenuItem> items)
-    {
-        var result = new List<MenuItem>(items);
-        foreach (var item in items.Where(i => i.Children?.Any() == true))
-        {
-            result.AddRange(GetAllMenuItems(item.Children));
-        }
-        return result;
-    }
-
-    private MenuItem? FindItemByRoute(List<MenuItem> items, string route)
-    {
-        foreach (var item in items)
-        {
-            if (!string.IsNullOrEmpty(item.Ruta) && 
-                (item.Ruta == "/" ? route == "/" : route.StartsWith(item.Ruta.TrimEnd('/'))))
-            {
-                return item;
-            }
-            if (item.Children?.Any() == true)
-            {
-                var found = FindItemByRoute(item.Children, route);
-                if (found != null) return found;
-            }
-        }
-        return null;
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_isInitialized)
-        {
-            _isInitialized = true;
-            await LoadMenuAsync();
-        }
+        if (!firstRender || _isInitialized)
+            return;
+
+        _isInitialized = true;
+        await LoadMenuAsync();
     }
 
     private async Task LoadMenuAsync()
     {
         var uri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
-        if (uri == "login" || uri.StartsWith("login?")) return;
+        if (uri == "login" || uri.StartsWith("login?", StringComparison.OrdinalIgnoreCase))
+            return;
 
-        loading = true;
-        StateHasChanged();
+        _loading = true;
+        _loadError = null;
+        await InvokeAsync(StateHasChanged);
 
         try
         {
-            Console.WriteLine("=== DEBUG LoadMenuAsync ===");
-
             string? rawToken = await GetLocalStorageItemWithTimeoutAsync("authToken", 2000);
-            Console.WriteLine($"Token found: {!string.IsNullOrWhiteSpace(rawToken)}");
             if (string.IsNullOrWhiteSpace(rawToken))
             {
-                Console.WriteLine("Menu no cargado: token aun no disponible.");
                 Items = new();
+                RebuildMenuIndexes();
                 return;
             }
 
-            rawToken = rawToken.Trim();
-            if ((rawToken.StartsWith("\"") && rawToken.EndsWith("\"")) ||
-                (rawToken.StartsWith("'") && rawToken.EndsWith("'")))
-            {
-                rawToken = rawToken.Substring(1, rawToken.Length - 2);
-            }
-
-            _token = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                ? rawToken.Substring("Bearer ".Length) : rawToken;
-
+            _token = NormalizeBearerToken(rawToken);
             _userId = await GetUserIdAsync();
-            Console.WriteLine($"UserId: {_userId}");
             if (_userId == 0)
             {
-                Console.WriteLine("Menu no cargado: userId aun no disponible.");
                 Items = new();
+                RebuildMenuIndexes();
                 return;
             }
 
             if (MenuStateService.TryGetItems(_userId, out var cachedItems))
             {
-                Items = cachedItems;
-                InitializeExpandedStates();
-                _currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
-                CollapseSameLevelGroups();
+                Items = NormalizeMenuItems(cachedItems);
+                RebuildMenuIndexes();
+                SyncExpandedStateWithCurrentRoute();
                 return;
             }
 
-            Console.WriteLine("Calling NavigateService.GetMenuAsync...");
             var result = await NavigateService.GetMenuAsync(_userId);
-            Console.WriteLine($"Menu result items count: {result?.Items?.Count}");
-            if (result?.Items?.Any() == true)
-            {
-                Console.WriteLine($"First menu item: PkidMenu={result.Items[0].PkidMenu}, Nombre={result.Items[0].Nombre}");
-                Items = result.Items;
-                MenuStateService.Initialize(_userId, Items);
-                InitializeExpandedStates();
-            }
-            else
-            {
-                Console.WriteLine("Menu no cargado: el servicio regreso una lista vacia.");
-                Items = new();
-            }
+            Items = NormalizeMenuItems(result?.Items);
+            MenuStateService.Initialize(_userId, Items);
+            RebuildMenuIndexes();
+            SyncExpandedStateWithCurrentRoute();
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error al cargar menu: {ex.Message}");
-            Console.WriteLine($"Stack: {ex.StackTrace}");
+            Items = new();
+            RebuildMenuIndexes();
+            _loadError = "No pudimos cargar el menu. Intenta recargar o avisa a TI.";
         }
         finally
         {
-            loading = false;
-            StateHasChanged();
+            _loading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private void InitializeExpandedStates()
+    private static string NormalizeBearerToken(string rawToken)
     {
-        foreach (var item in Items.Where(m => m.Children?.Any() == true))
+        var token = rawToken.Trim();
+        if ((token.StartsWith("\"", StringComparison.Ordinal) && token.EndsWith("\"", StringComparison.Ordinal)) ||
+            (token.StartsWith("'", StringComparison.Ordinal) && token.EndsWith("'", StringComparison.Ordinal)))
         {
-            if (!expandedStates.ContainsKey(item.PkidMenu))
+            token = token[1..^1];
+        }
+
+        return token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? token["Bearer ".Length..]
+            : token;
+    }
+
+    private static List<MenuItem> NormalizeMenuItems(IEnumerable<MenuItem>? items)
+    {
+        return (items ?? Enumerable.Empty<MenuItem>())
+            .OrderBy(item => item.Orden ?? int.MaxValue)
+            .ThenBy(item => item.Nombre)
+            .Select(item =>
             {
-                expandedStates[item.PkidMenu] = false;
+                item.Children = NormalizeMenuItems(item.Children);
+                return item;
+            })
+            .ToList();
+    }
+
+    private void RebuildMenuIndexes()
+    {
+        _itemsById.Clear();
+        _parentById.Clear();
+        _groups.Clear();
+        _routeItems.Clear();
+        _searchIndex.Clear();
+
+        foreach (var root in Items)
+        {
+            IndexMenuItem(root, parentId: null);
+        }
+
+        _routeItems.AddRange(_itemsById.Values
+            .Where(IsNavigableItem)
+            .OrderByDescending(item => NormalizeRoute(item.Ruta).Length));
+
+        foreach (var item in _routeItems)
+        {
+            var breadcrumb = BuildBreadcrumb(item);
+            _searchIndex.Add(new SearchIndexEntry
+            {
+                Name = item.Nombre,
+                Route = item.Ruta,
+                IconClass = GetIconClass(item.ImageUrl),
+                Breadcrumb = breadcrumb,
+                SearchText = NormalizeText($"{breadcrumb} {item.Nombre} {item.LegacyName} {item.Ruta}")
+            });
+        }
+    }
+
+    private void IndexMenuItem(MenuItem item, int? parentId)
+    {
+        _itemsById[item.PkidMenu] = item;
+        _parentById[item.PkidMenu] = parentId;
+
+        if (item.Children?.Any() == true)
+        {
+            _groups.Add(item);
+            _expandedStates.TryAdd(item.PkidMenu, false);
+
+            foreach (var child in item.Children)
+            {
+                IndexMenuItem(child, item.PkidMenu);
             }
+        }
+    }
+
+    private string BuildBreadcrumb(MenuItem item)
+    {
+        var segments = new Stack<string>();
+        var currentId = item.PkidMenu;
+
+        while (_parentById.TryGetValue(currentId, out var parentId) && parentId.HasValue)
+        {
+            if (!_itemsById.TryGetValue(parentId.Value, out var parent))
+                break;
+
+            segments.Push(parent.Nombre);
+            currentId = parent.PkidMenu;
+        }
+
+        return string.Join(" > ", segments);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        SyncExpandedStateWithCurrentRoute();
+        StateHasChanged();
+    }
+
+    private void SyncExpandedStateWithCurrentRoute()
+    {
+        _currentPath = NormalizeRoute(NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+        var activeItem = FindItemByRoute(_currentPath);
+        if (activeItem == null)
+            return;
+
+        foreach (var group in _groups)
+        {
+            _expandedStates[group.PkidMenu] = false;
+        }
+
+        ExpandPathToItem(activeItem);
+    }
+
+    private MenuItem? FindItemByRoute(string route)
+    {
+        return _routeItems.FirstOrDefault(item => RouteMatches(route, NormalizeRoute(item.Ruta)));
+    }
+
+    private void ExpandPathToItem(MenuItem item)
+    {
+        if (item.Children?.Any() == true)
+        {
+            _expandedStates[item.PkidMenu] = true;
+        }
+
+        var currentId = item.PkidMenu;
+        while (_parentById.TryGetValue(currentId, out var parentId) && parentId.HasValue)
+        {
+            _expandedStates[parentId.Value] = true;
+            currentId = parentId.Value;
+        }
+    }
+
+    private bool GetExpandedState(int? pkId) =>
+        pkId.HasValue && _expandedStates.TryGetValue(pkId.Value, out var state) && state;
+
+    private void SetExpandedState(int? pkId, bool expanded)
+    {
+        if (!pkId.HasValue)
+            return;
+
+        var now = DateTime.UtcNow;
+        if (_lastToggleId == pkId.Value && now - _lastToggleAtUtc < TimeSpan.FromMilliseconds(180))
+            return;
+
+        _lastToggleId = pkId.Value;
+        _lastToggleAtUtc = now;
+        _expandedStates[pkId.Value] = expanded;
+
+        if (expanded)
+        {
+            CollapseSiblings(pkId.Value);
+        }
+
+        StateHasChanged();
+    }
+
+    private void CollapseSiblings(int expandedId)
+    {
+        if (!_itemsById.TryGetValue(expandedId, out var expandedItem))
+            return;
+
+        var siblings = _parentById.TryGetValue(expandedItem.PkidMenu, out var parentId) && parentId.HasValue
+            ? _itemsById.TryGetValue(parentId.Value, out var parent) ? parent.Children : Enumerable.Empty<MenuItem>()
+            : Items;
+
+        foreach (var sibling in siblings.Where(item => item.PkidMenu != expandedId && item.Children?.Any() == true))
+        {
+            _expandedStates[sibling.PkidMenu] = false;
+        }
+    }
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        _searchText = e.Value?.ToString() ?? string.Empty;
+        _searchDebounceCts?.Cancel();
+        _searchDebounceCts?.Dispose();
+
+        if (string.IsNullOrWhiteSpace(_searchText))
+        {
+            _searchResults.Clear();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _searchDebounceCts = cts;
+
+        try
+        {
+            await Task.Delay(140, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (cts.IsCancellationRequested)
+            return;
+
+        _searchResults = FilterMenuItems(_searchText);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private List<SearchResultItem> FilterMenuItems(string searchText)
+    {
+        var term = NormalizeText(searchText);
+        if (string.IsNullOrWhiteSpace(term))
+            return new();
+
+        return _searchIndex
+            .Where(entry => entry.SearchText.Contains(term, StringComparison.Ordinal))
+            .Take(40)
+            .Select(entry => new SearchResultItem
+            {
+                Name = entry.Name,
+                IconClass = entry.IconClass,
+                Route = entry.Route,
+                Breadcrumb = entry.Breadcrumb
+            })
+            .ToList();
+    }
+
+    private void ClearSearch()
+    {
+        _searchDebounceCts?.Cancel();
+        _searchText = string.Empty;
+        _searchResults.Clear();
+        StateHasChanged();
+    }
+
+    private async Task NavigateToSearchResultAsync(SearchResultItem result)
+    {
+        if (string.IsNullOrWhiteSpace(result.Route))
+            return;
+
+        ClearSearch();
+        await NavigateToRouteAsync(result.Route);
+    }
+
+    private async Task NavigateToMenuItemAsync(MenuItem item)
+    {
+        if (!IsNavigableItem(item))
+            return;
+
+        await NavigateToRouteAsync(item.Ruta);
+    }
+
+    private async Task NavigateToRouteAsync(string route)
+    {
+        if (_navigationLocked)
+            return;
+
+        _navigationLocked = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            NavigationManager.NavigateTo(route);
+            await Task.Delay(180);
+        }
+        finally
+        {
+            _navigationLocked = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
     private async Task<int> GetUserIdAsync()
     {
         var userId = await AuthService.GetUserIdAsync();
-        if (userId != 0) return userId;
+        if (userId != 0)
+            return userId;
 
         var parsed = ParseUserIdFromToken(_token);
-        if (parsed.HasValue) return parsed.Value;
+        if (parsed.HasValue)
+            return parsed.Value;
 
         var stored = await GetLocalStorageItemWithTimeoutAsync("userId", 1000);
-        if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out var sId)) return sId;
-
-        return 0;
+        return int.TryParse(stored, out var storedUserId) ? storedUserId : 0;
     }
 
     private async Task<string?> GetLocalStorageItemWithTimeoutAsync(string key, int timeoutMs = 1500)
     {
         try
         {
-            var task = _jsRuntime.InvokeAsync<string>("localStorage.getItem", key).AsTask();
+            var task = JsRuntime.InvokeAsync<string>("localStorage.getItem", key).AsTask();
             var completed = await Task.WhenAny(task, Task.Delay(timeoutMs));
             return completed == task ? await task : null;
         }
-        catch { return null; }
+        catch
+        {
+            return null;
+        }
     }
 
     private static int? ParseUserIdFromToken(string jwt)
@@ -342,519 +523,123 @@
         try
         {
             var parts = jwt.Split('.');
-            if (parts.Length < 2) return null;
-            string payload = parts[1];
-            int mod4 = payload.Length % 4;
-            if (mod4 > 0) payload += new string('=', 4 - mod4);
+            if (parts.Length < 2)
+                return null;
+
+            var payload = parts[1];
+            var mod4 = payload.Length % 4;
+            if (mod4 > 0)
+                payload += new string('=', 4 - mod4);
+
             var bytes = Convert.FromBase64String(payload);
-            var json = System.Text.Encoding.UTF8.GetString(bytes);
-            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var json = Encoding.UTF8.GetString(bytes);
+            using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
             string[] keys = { "UserId", "userId", "id", "Id", "sub", "nameid", "pkIdUsuario" };
+
             foreach (var prop in root.EnumerateObject())
             {
-                if (keys.Any(k => string.Equals(prop.Name, k, StringComparison.OrdinalIgnoreCase)))
-                {
-                    var val = prop.Value.GetString() ?? prop.Value.ToString();
-                    if (int.TryParse(val, out var numeric)) return numeric;
-                    var match = System.Text.RegularExpressions.Regex.Match(val ?? "", @"\d+");
-                    if (match.Success && int.TryParse(match.Value, out var numeric2)) return numeric2;
-                }
+                if (!keys.Any(k => string.Equals(prop.Name, k, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                var val = prop.Value.GetString() ?? prop.Value.ToString();
+                if (int.TryParse(val, out var numeric))
+                    return numeric;
+
+                var match = System.Text.RegularExpressions.Regex.Match(val ?? string.Empty, @"\d+");
+                if (match.Success && int.TryParse(match.Value, out var numericFromText))
+                    return numericFromText;
             }
         }
-        catch { }
+        catch
+        {
+            return null;
+        }
+
         return null;
     }
 
-    private class SearchResultItem
+    private string GetIconClass(string? imageUrl) =>
+        IconosDisponibles.GetBootstrapIconClass(imageUrl);
+
+    private bool IsActiveRoute(string? route) =>
+        RouteMatches(_currentPath, NormalizeRoute(route));
+
+    private static bool IsNavigableItem(MenuItem item)
+    {
+        var route = NormalizeRoute(item.Ruta);
+        return !string.IsNullOrWhiteSpace(route) && item.Ruta != "/";
+    }
+
+    private static string NormalizeRoute(string? route)
+    {
+        if (string.IsNullOrWhiteSpace(route))
+            return string.Empty;
+
+        var value = route.Trim();
+        if (Uri.TryCreate(value, UriKind.Absolute, out var uri))
+        {
+            value = uri.PathAndQuery;
+        }
+
+        var queryIndex = value.IndexOfAny(new[] { '?', '#' });
+        if (queryIndex >= 0)
+        {
+            value = value[..queryIndex];
+        }
+
+        return value.Trim('/');
+    }
+
+    private static bool RouteMatches(string currentRoute, string itemRoute)
+    {
+        if (string.IsNullOrWhiteSpace(itemRoute))
+            return string.IsNullOrWhiteSpace(currentRoute);
+
+        return string.Equals(currentRoute, itemRoute, StringComparison.OrdinalIgnoreCase) ||
+               currentRoute.StartsWith($"{itemRoute}/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeText(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        var normalized = text.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+
+        foreach (var c in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(char.ToLowerInvariant(c));
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        _searchDebounceCts?.Cancel();
+        _searchDebounceCts?.Dispose();
+    }
+
+    private sealed class SearchIndexEntry
     {
         public string Name { get; set; } = string.Empty;
-        public string Icon { get; set; } = string.Empty;
+        public string IconClass { get; set; } = string.Empty;
+        public string Route { get; set; } = string.Empty;
+        public string Breadcrumb { get; set; } = string.Empty;
+        public string SearchText { get; set; } = string.Empty;
+    }
+
+    private sealed class SearchResultItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string IconClass { get; set; } = string.Empty;
         public string Route { get; set; } = string.Empty;
         public string Breadcrumb { get; set; } = string.Empty;
     }
-
-    private bool GetExpandedState(long? pkId) => 
-        pkId.HasValue && expandedStates.TryGetValue(pkId.Value, out var state) ? state : false;
-
-    private void SetExpandedState(long? pkId, bool expanded)
-    {
-        if (!pkId.HasValue) return;
-        expandedStates[pkId.Value] = expanded;
-        if (expanded) CollapseSiblings(pkId.Value);
-        StateHasChanged();
-    }
-
-    private void CollapseSiblings(long expandedId)
-    {
-        var expandedItem = FindItemById(Items, expandedId);
-        if (expandedItem == null) return;
-        var parentId = expandedItem.FkidMenuSis;
-        var siblings = parentId == null 
-            ? Items.Where(i => i.PkidMenu != expandedId && i.Children?.Any() == true)
-            : GetChildrenById(Items, parentId)?.Where(i => i.PkidMenu != expandedId && i.Children?.Any() == true);
-        if (siblings != null)
-        {
-            foreach (var sibling in siblings)
-            {
-                expandedStates[sibling.PkidMenu] = false;
-            }
-        }
-    }
-
-    private MenuItem? FindItemById(List<MenuItem> items, long id)
-    {
-        foreach (var item in items)
-        {
-            if (item.PkidMenu == id) return item;
-            if (item.Children?.Any() == true)
-            {
-                var found = FindItemById(item.Children, id);
-                if (found != null) return found;
-            }
-        }
-        return null;
-    }
-
-    private List<MenuItem>? GetChildrenById(List<MenuItem> items, long? parentId)
-    {
-        if (!parentId.HasValue) return null;
-        var item = FindItemById(items, parentId.Value);
-        return item?.Children;
-    }
-
-    private static readonly Dictionary<string, string> _iconMap = IconosDisponibles.Lista
-        .GroupBy(x => x.Valor)
-        .ToDictionary(g => g.Key, g => g.First().BootstrapIcon);
-
-    private string GetIcon(string imageUrl)
-    {
-        if (string.IsNullOrEmpty(imageUrl)) return "bi bi-info-circle";
-        return _iconMap.TryGetValue(imageUrl, out var icon) ? icon : "bi bi-info-circle";
-    }
-
-    private async Task OnSearchChanged(ChangeEventArgs e)
-    {
-        _searchText = e.Value?.ToString() ?? string.Empty;
-        if (!string.IsNullOrWhiteSpace(_searchText))
-        {
-            _searchResults = FilterMenuItems(Items, _searchText);
-        }
-        else
-        {
-            _searchResults.Clear();
-        }
-        StateHasChanged();
-        await Task.CompletedTask;
-    }
-    
-    private void ClearSearch()
-    {
-        _searchText = string.Empty;
-        _searchResults.Clear();
-        StateHasChanged();
-    }
-    
-    private List<SearchResultItem> FilterMenuItems(List<MenuItem> items, string searchText)
-    {
-        var results = new List<SearchResultItem>();
-        var lowerSearch = searchText.ToLowerInvariant();
-        SearchRecursive(items, lowerSearch, results, new List<string>());
-        return results;
-    }
-
-    private void SearchRecursive(List<MenuItem> items, string searchText, List<SearchResultItem> results, List<string> breadcrumb)
-    {
-        foreach (var item in items.OrderBy(m => m.Orden))
-        {
-            var currentBreadcrumb = string.Join(" > ", breadcrumb);
-            var matches = item.Nombre.ToLowerInvariant().Contains(searchText);
-            
-            if (item.Children?.Any() == true)
-            {
-                var newBreadcrumb = new List<string>(breadcrumb) { item.Nombre };
-                SearchRecursive(item.Children, searchText, results, newBreadcrumb);
-                // If a child matched, the parent is implicitly relevant but we only show leaf/results in the flat list
-            }
-
-            if (matches && !item.Children.Any())
-            {
-                results.Add(new SearchResultItem
-                {
-                    Name = item.Nombre,
-                    Icon = GetIcon(item.ImageUrl),
-                    Route = item.Ruta,
-                    Breadcrumb = currentBreadcrumb
-                });
-            }
-        }
-    }
-    
-    private void NavigateToSearchResult(SearchResultItem result)
-    {
-        if (!string.IsNullOrEmpty(result.Route))
-        {
-            NavigationManager.NavigateTo(result.Route);
-        }
-    }
-    
-    private void NavigateToFavorite(string itemName)
-    {
-        var item = FindItemByName(Items, itemName);
-        if (item?.Ruta != null)
-        {
-            NavigationManager.NavigateTo(item.Ruta);
-        }
-    }
-    
-    private MenuItem? FindItemByName(List<MenuItem> items, string name)
-    {
-        foreach (var item in items)
-        {
-            if (item.Nombre == name) return item;
-            if (item.Children?.Any() == true)
-            {
-                var found = FindItemByName(item.Children, name);
-                if (found != null) return found;
-            }
-        }
-        return null;
-    }
 }
-
-<style>
-    .bootstrap-sidebar {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background: var(--mud-palette-drawer-background);
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-search-section {
-        padding: 12px;
-        margin-top: 50px;
-        border-bottom: 1px solid var(--mud-palette-divider);
-    }
-
-    .sidebar-search-section .input-group-text {
-        background: var(--mud-palette-surface);
-        border: 1px solid var(--mud-palette-divider);
-        color: var(--mud-palette-drawer-text);
-    }
-
-    .sidebar-search-section .form-control {
-        background: var(--mud-palette-surface);
-        border: 1px solid var(--mud-palette-divider);
-        color: var(--mud-palette-drawer-text);
-        font-size: 0.85rem;
-    }
-
-    .sidebar-search-section .form-control::placeholder {
-        color: var(--mud-palette-text-disabled);
-    }
-
-    .sidebar-search-section .form-control:focus {
-        border-color: var(--mud-palette-primary);
-        box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--eg-primary) 25%, transparent);
-        background: var(--mud-palette-surface);
-        color: var(--mud-palette-drawer-text);
-    }
-
-    .sidebar-favorites {
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--mud-palette-divider);
-    }
-
-    .sidebar-search-results {
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--mud-palette-divider);
-        max-height: 40vh;
-        overflow-y: auto;
-    }
-
-    .results-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--mud-palette-text-secondary);
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-
-    .results-list {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .search-result-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .search-result-item:hover {
-        background: var(--eg-primary-soft);
-    }
-
-    .search-result-item i {
-        font-size: 0.9rem;
-        color: var(--mud-palette-primary);
-    }
-
-    .result-info {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .result-name {
-        font-size: 0.82rem;
-        color: var(--mud-palette-drawer-text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .result-breadcrumb {
-        font-size: 0.68rem;
-        color: var(--mud-palette-text-secondary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .no-results {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        color: var(--mud-palette-text-secondary);
-        font-size: 0.8rem;
-        font-style: italic;
-    }
-
-    .no-results i {
-        font-size: 1.1rem;
-    }
-
-    .favorites-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--mud-palette-text-secondary);
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-
-    .favorites-list {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .favorite-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.82rem;
-        color: var(--mud-palette-drawer-text);
-        transition: all 0.2s ease;
-    }
-
-    .favorite-item:hover {
-        background: var(--eg-primary-soft);
-        color: var(--eg-primary);
-    }
-
-    .favorite-item i {
-        font-size: 0.9rem;
-        color: var(--eg-accent);
-    }
-
-    .sidebar-nav {
-        flex: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 8px;
-        gap: 2px;
-    }
-
-    .sidebar-nav::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .sidebar-nav::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .sidebar-nav::-webkit-scrollbar-thumb {
-        background: var(--mud-palette-divider);
-        border-radius: 4px;
-    }
-
-    /* ===================== COLLAPSED STATE ===================== */
-    .bootstrap-sidebar.collapsed .sidebar-search-section,
-    .bootstrap-sidebar.collapsed .sidebar-favorites {
-        display: none;
-    }
-
-    .bootstrap-sidebar.collapsed .sidebar-nav {
-        padding: 4px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .bootstrap-sidebar.collapsed .sidebar-group-header {
-        justify-content: center;
-        padding: 10px;
-        border-radius: 8px;
-    }
-
-    .bootstrap-sidebar.collapsed .sidebar-group-header .group-left span,
-    .bootstrap-sidebar.collapsed .sidebar-group-header .chevron {
-        display: none;
-    }
-
-    .bootstrap-sidebar.collapsed .sidebar-group-header .group-left i {
-        margin-right: 0;
-        font-size: 1.3rem;
-    }
-
-    .bootstrap-sidebar.collapsed .sidebar-children {
-        display: none;
-    }
-
-    /* ===================== THEME: MORENA ===================== */
-    .bootstrap-sidebar.morena {
-        background: linear-gradient(180deg, var(--eg-primary) 0%, var(--eg-primary-dark) 100%) !important;
-    }
-
-    .bootstrap-sidebar.morena .sidebar-search-section .input-group-text,
-    .bootstrap-sidebar.morena .sidebar-search-section .form-control {
-        background: color-mix(in srgb, var(--mud-palette-drawer-text) 12%, transparent);
-        border-color: color-mix(in srgb, var(--mud-palette-drawer-text) 28%, transparent);
-        color: var(--mud-palette-drawer-text);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-search-section .form-control::placeholder {
-        color: color-mix(in srgb, var(--mud-palette-drawer-text) 72%, transparent);
-    }
-
-    .bootstrap-sidebar.morena .favorites-header {
-        color: var(--eg-accent);
-    }
-
-    .bootstrap-sidebar.morena .favorite-item {
-        color: var(--mud-palette-drawer-text);
-    }
-
-    .bootstrap-sidebar.morena .favorite-item:hover {
-        background: var(--eg-accent-soft);
-        color: var(--eg-accent);
-    }
-
-    .bootstrap-sidebar.morena .search-result-item:hover {
-        background: var(--eg-accent-soft);
-    }
-
-    .bootstrap-sidebar.morena .search-result-item i {
-        color: var(--eg-accent);
-    }
-
-    .bootstrap-sidebar.morena .result-name {
-        color: var(--mud-palette-drawer-text);
-    }
-
-    /* Morena - Level 0 */
-    .bootstrap-sidebar.morena .sidebar-link.level-0,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-0 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-dark) 20%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 14%, transparent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-0::before,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-0::before {
-        background: linear-gradient(180deg, var(--eg-accent) 0%, var(--eg-secondary) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-0:hover,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-0:hover {
-        background: linear-gradient(135deg, var(--eg-accent-soft) 0%, color-mix(in srgb, var(--eg-primary) 22%, transparent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-0.active,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-0.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 60%, transparent) 0%, color-mix(in srgb, var(--eg-primary-light) 34%, transparent) 100%);
-    }
-
-    /* Morena - Level 1 */
-    .bootstrap-sidebar.morena .sidebar-link.level-1,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-1 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 72%, transparent) 0%, color-mix(in srgb, var(--eg-primary-dark) 42%, transparent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-1::before,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-1::before {
-        background: linear-gradient(180deg, var(--eg-secondary-light) 0%, var(--eg-accent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-1:hover,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-1:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 68%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 58%, transparent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-1.active,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-1.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 78%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 62%, transparent) 100%);
-    }
-
-    /* Morena - Level 2 */
-    .bootstrap-sidebar.morena .sidebar-link.level-2,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-2 {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-dark) 72%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 52%, transparent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-2::before,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-2::before {
-        background: linear-gradient(180deg, var(--eg-accent) 0%, var(--eg-secondary) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-2:hover,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-2:hover {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 72%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 60%, transparent) 100%);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-link.level-2.active,
-    .bootstrap-sidebar.morena .sidebar-group-header.level-2.active {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--eg-primary-light) 86%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 68%, transparent) 100%);
-    }
-
-    /* Morena - scrollbar */
-    .bootstrap-sidebar.morena .sidebar-nav::-webkit-scrollbar-thumb,
-    .bootstrap-sidebar.morena .sidebar-children::-webkit-scrollbar-thumb {
-        background: color-mix(in srgb, var(--eg-accent) 46%, transparent);
-    }
-
-    .bootstrap-sidebar.morena .sidebar-nav::-webkit-scrollbar-thumb:hover,
-    .bootstrap-sidebar.morena .sidebar-children::-webkit-scrollbar-thumb:hover {
-        background: color-mix(in srgb, var(--eg-accent) 68%, transparent);
-    }
-</style>

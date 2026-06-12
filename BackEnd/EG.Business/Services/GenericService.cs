@@ -1,7 +1,9 @@
 using Mapster;
+using EG.Common;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -12,13 +14,15 @@ namespace EG.Business.Services
 {
     public class GenericService<TEntity, TDto, TResponse>(
         IRepository<TEntity> repository,
-        IUserContextService? userContext = null)
+        IUserContextService? userContext = null,
+        ILogger<GenericService<TEntity, TDto, TResponse>>? logger = null)
         where TEntity : class
         where TDto : class
         where TResponse : class
     {
         protected readonly IRepository<TEntity> _repository = repository;
         protected readonly IUserContextService? _userContext = userContext;
+        protected readonly ILogger<GenericService<TEntity, TDto, TResponse>>? _logger = logger;
 
         private static readonly string[] EmpresaPropertyCandidates =
         [
@@ -468,12 +472,13 @@ namespace EG.Business.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger?.LogError(ex, "Error en GetAllPaginado para {Entity}", typeof(TEntity).Name);
             }
             return new PagedResult<TResponse>
             {
                 TotalCount = 0,
-                Success = false
+                Success = false,
+                Message = UserFacingMessages.UnexpectedError
             };
         }
 
@@ -719,7 +724,9 @@ namespace EG.Business.Services
 
     public class GenericService<TEntity, TDto>(
         IRepository<TEntity> repository,
-        IUserContextService? userContext = null) : GenericService<TEntity, TDto, TDto>(repository, userContext)
+        IUserContextService? userContext = null,
+        ILogger<GenericService<TEntity, TDto, TDto>>? logger = null)
+        : GenericService<TEntity, TDto, TDto>(repository, userContext, logger)
         where TEntity : class
         where TDto : class
     {

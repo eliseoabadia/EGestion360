@@ -2,6 +2,27 @@
 SET NOCOUNT ON;
 GO
 
+SET IDENTITY_INSERT [ORCO].[EstatusRequisicion] ON;
+
+INSERT INTO [ORCO].[EstatusRequisicion]
+([PKIdEstatusRequisicion], [Descripcion], [Color], [Orden], [Icono], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion])
+VALUES
+(1,  N'Borrador',                  N'#6B7280', 10,  N'bi-pencil-square',        1, SYSDATETIME(), 1, NULL, NULL),
+(2,  N'Solicitada',                N'#2563EB', 20,  N'bi-send',                 1, SYSDATETIME(), 1, NULL, NULL),
+(3,  N'En revision',               N'#7C3AED', 30,  N'bi-search',               1, SYSDATETIME(), 1, NULL, NULL),
+(4,  N'Observada',                 N'#F97316', 40,  N'bi-exclamation-triangle', 1, SYSDATETIME(), 1, NULL, NULL),
+(5,  N'Autorizada',                N'#16A34A', 50,  N'bi-check2-circle',        1, SYSDATETIME(), 1, NULL, NULL),
+(6,  N'Rechazada',                 N'#DC2626', 60,  N'bi-x-circle',             1, SYSDATETIME(), 1, NULL, NULL),
+(7,  N'Suficiencia en tramite',    N'#0891B2', 70,  N'bi-hourglass-split',      1, SYSDATETIME(), 1, NULL, NULL),
+(8,  N'Suficiencia autorizada',    N'#0D9488', 80,  N'bi-shield-check',         1, SYSDATETIME(), 1, NULL, NULL),
+(9,  N'En cotizacion',             N'#D97706', 90,  N'bi-receipt',              1, SYSDATETIME(), 1, NULL, NULL),
+(10, N'Orden de compra generada',  N'#4F46E5', 100, N'bi-cart-check',           1, SYSDATETIME(), 1, NULL, NULL),
+(11, N'Recibida',                  N'#059669', 110, N'bi-box-arrow-in-down',    1, SYSDATETIME(), 1, NULL, NULL),
+(12, N'Cerrada',                   N'#374151', 120, N'bi-check-circle',         1, SYSDATETIME(), 1, NULL, NULL),
+(13, N'Cancelada',                 N'#991B1B', 130, N'bi-slash-circle',         1, SYSDATETIME(), 1, NULL, NULL);
+
+SET IDENTITY_INSERT [ORCO].[EstatusRequisicion] OFF;
+
 PRINT N'Insertando datos en [ORCO].[Articulo]';
 SET IDENTITY_INSERT [ORCO].[Articulo] ON;
 INSERT INTO [ORCO].[Articulo] ([PKIdArticulo], [Clave], [Descripcion], [Activo], [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]) VALUES (1, N'54', N'Art. 54', 0, CONVERT(datetime2, '2013-11-04T16:12:50.7633333', 126), 1, NULL, NULL);

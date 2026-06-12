@@ -1,0 +1,243 @@
+.sidebar-group,
+.sidebar-item {
+    width: 100%;
+}
+
+.sidebar-link,
+.sidebar-group-header {
+    position: relative;
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    border: 0;
+    border-radius: 7px;
+    margin: 2px 0;
+    padding: 8px 11px;
+    overflow: hidden;
+    background: transparent;
+    color: var(--mud-palette-drawer-text);
+    font-size: 0.875rem;
+    font-weight: 560;
+    line-height: 1.25;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.sidebar-group-header {
+    justify-content: space-between;
+}
+
+.sidebar-link::before,
+.sidebar-group-header::before {
+    content: "";
+    position: absolute;
+    inset: 6px auto 6px 0;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--mud-palette-primary);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link:focus-visible,
+.sidebar-group-header:hover,
+.sidebar-group-header:focus-visible {
+    background: var(--eg-primary-soft);
+    color: var(--mud-palette-primary);
+    outline: none;
+    transform: translateX(1px);
+}
+
+.sidebar-link.active {
+    background: var(--eg-primary-active);
+    color: var(--mud-palette-primary);
+    font-weight: 700;
+}
+
+.sidebar-group-header.expanded {
+    background: linear-gradient(90deg, var(--eg-primary-active) 0%, var(--eg-primary-soft) 54%, transparent 100%);
+    color: var(--mud-palette-primary);
+    font-weight: 700;
+}
+
+.sidebar-group-header.expanded::before {
+    transform: scaleY(1);
+}
+
+.sidebar-link.active::before,
+.sidebar-link:hover::before,
+.sidebar-link:focus-visible::before,
+.sidebar-group-header:hover::before,
+.sidebar-group-header:focus-visible::before {
+    transform: scaleY(1);
+}
+
+.group-left {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-icon {
+    width: 18px;
+    flex: 0 0 18px;
+    font-size: 1.04rem;
+    text-align: center;
+}
+
+.menu-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chevron {
+    margin-left: 8px;
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    transition: transform 180ms ease;
+}
+
+.chevron.expanded {
+    transform: rotate(90deg);
+}
+
+.external-icon {
+    margin-left: auto;
+    font-size: 0.72rem;
+    opacity: 0.76;
+}
+
+.level-1 {
+    min-height: 35px;
+    padding-left: 26px;
+    font-size: 0.82rem;
+    font-weight: 520;
+}
+
+.level-2 {
+    min-height: 32px;
+    padding-left: 40px;
+    font-size: 0.78rem;
+    font-weight: 480;
+}
+
+.level-1::before {
+    left: 14px;
+}
+
+.level-2::before {
+    left: 28px;
+}
+
+.sidebar-children {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 190ms ease;
+}
+
+.sidebar-children.expanded {
+    grid-template-rows: 1fr;
+}
+
+.sidebar-children-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sidebar-children.expanded .sidebar-children-inner {
+    margin: 2px 0 5px 8px;
+    padding: 4px 0 5px 6px;
+    border-left: 1px solid color-mix(in srgb, var(--mud-palette-primary) 42%, transparent);
+    border-radius: 0 0 0 7px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-primary) 10%, transparent) 0%, transparent 72%);
+}
+
+.level-1 + .sidebar-children.expanded .sidebar-children-inner {
+    border-left-color: color-mix(in srgb, var(--mud-palette-secondary) 48%, transparent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-secondary) 12%, transparent) 0%, transparent 72%);
+}
+
+.level-2 + .sidebar-children.expanded .sidebar-children-inner {
+    border-left-color: color-mix(in srgb, var(--eg-accent) 52%, transparent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 12%, transparent) 0%, transparent 72%);
+}
+
+.sidebar-group-header:disabled,
+.sidebar-link[aria-disabled="true"] {
+    cursor: progress;
+    opacity: 0.72;
+}
+
+.bootstrap-sidebar.morena .sidebar-link:hover,
+.bootstrap-sidebar.morena .sidebar-link:focus-visible,
+.bootstrap-sidebar.morena .sidebar-group-header:hover,
+.bootstrap-sidebar.morena .sidebar-group-header:focus-visible {
+    background: var(--eg-accent-soft);
+    color: var(--eg-accent);
+}
+
+.bootstrap-sidebar.morena .sidebar-link.active {
+    background: color-mix(in srgb, var(--eg-accent) 24%, transparent);
+    color: var(--eg-accent);
+}
+
+.bootstrap-sidebar.morena .sidebar-group-header.expanded {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 30%, transparent) 0%, color-mix(in srgb, var(--eg-accent) 14%, transparent) 58%, transparent 100%);
+    color: var(--eg-accent);
+}
+
+.bootstrap-sidebar.morena .sidebar-link::before,
+.bootstrap-sidebar.morena .sidebar-group-header::before {
+    background: var(--eg-accent);
+}
+
+.bootstrap-sidebar.morena .sidebar-children.expanded .sidebar-children-inner {
+    border-left-color: color-mix(in srgb, var(--eg-accent) 58%, transparent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 14%, transparent) 0%, transparent 72%);
+}
+
+.bootstrap-sidebar.collapsed .sidebar-group-header,
+.bootstrap-sidebar.collapsed .sidebar-link {
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    padding: 0;
+}
+
+.bootstrap-sidebar.collapsed .sidebar-link::before,
+.bootstrap-sidebar.collapsed .sidebar-group-header::before {
+    display: none;
+}
+
+.bootstrap-sidebar.collapsed .group-left {
+    justify-content: center;
+}
+
+.bootstrap-sidebar.collapsed .sidebar-icon {
+    font-size: 1.22rem;
+}
+
+.bootstrap-sidebar.collapsed .menu-label,
+.bootstrap-sidebar.collapsed .chevron,
+.bootstrap-sidebar.collapsed .sidebar-children {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-link,
+    .sidebar-group-header,
+    .sidebar-link::before,
+    .sidebar-group-header::before,
+    .chevron,
+    .sidebar-children {
+        transition-duration: 1ms;
+    }
+}

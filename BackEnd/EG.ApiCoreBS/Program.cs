@@ -1,5 +1,6 @@
 using EG.ApiCoreBS.Extensions;
 using EG.ApiCoreBS.Auth;
+using EG.ApiCoreBS.Middleware;
 using EG.ApiCoreBS.Reporting;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
@@ -147,6 +148,7 @@ try
 
     //app.UseHttpsRedirection();
     app.UseCors("AllowFrontend");
+    app.UseMiddleware<ApiExceptionMiddleware>();
     app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();

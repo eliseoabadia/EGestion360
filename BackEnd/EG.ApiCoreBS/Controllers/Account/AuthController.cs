@@ -1,5 +1,7 @@
 ﻿using EG.Application.Interfaces.Account;
+using EG.Common;
 using EG.Common.Enums;
+using EG.Common.Util;
 using EG.Domain.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +13,13 @@ namespace EG.ApiCoreBS.Controllers.Account
     public class AuthController : ControllerBase
     {
         private readonly IAuthAppService _authAppService;
+        private readonly IUserIpService _userIpService;
         private readonly Logger.Log4NetLogger _logger;
 
-        public AuthController(IAuthAppService authAppService)
+        public AuthController(IAuthAppService authAppService, IUserIpService userIpService)
         {
             _authAppService = authAppService ?? throw new ArgumentNullException(nameof(authAppService));
+            _userIpService = userIpService ?? throw new ArgumentNullException(nameof(userIpService));
             _logger = new Logger.Log4NetLogger(typeof(AuthController));
         }
 
@@ -23,10 +27,22 @@ namespace EG.ApiCoreBS.Controllers.Account
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
         {
+            var clientIp = _userIpService.GetUserIpAddress(HttpContext);
+
             try
             {
                 if (loginRequest == null)
+                {
+                    _logger.LogMessage(
+                        LogLevelGRP.Warn,
+                        $"Login invalido. TraceId={HttpContext.TraceIdentifier}",
+                        (byte)SystemLogTypes.Warning,
+                        "Login",
+                        "0",
+                        clientIp);
+
                     return BadRequest(Error("Solicitud invalida", ApiResponseCode.InvalidData));
+                }
 
                 var response = await _authAppService.LoginAsync(loginRequest);
 
@@ -38,7 +54,7 @@ namespace EG.ApiCoreBS.Controllers.Account
                         (byte)SystemLogTypes.Information,
                         "Login",
                         response.PkIdUsuario.ToString(),
-                        "");
+                        clientIp);
 
                     return Ok(response);
                 }
@@ -50,38 +66,46 @@ namespace EG.ApiCoreBS.Controllers.Account
                         (byte)SystemLogTypes.Warning,
                         "Login",
                         "0",
-                        "");
+                        clientIp);
 
                     return Unauthorized(Error(response?.Message ?? "Credenciales incorrectas", ApiResponseCode.Unauthorized));
                 }
             }
             catch (ArgumentException ex)
             {
+                _logger.LogMessage(
+                    LogLevelGRP.Warn,
+                    $"Solicitud de login invalida para {loginRequest?.Email}. TraceId={HttpContext.TraceIdentifier}; Error={ex.Message}",
+                    (byte)SystemLogTypes.Warning,
+                    "Login",
+                    "0",
+                    clientIp);
+
                 return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogMessage(
                     LogLevelGRP.Error,
-                    $"Error en login: {ex.Message}",
+                    $"Error en login. TraceId={HttpContext.TraceIdentifier}; Error={ex}",
                     (byte)SystemLogTypes.Error,
                     "Login",
                     "0",
-                    ex.StackTrace ?? "");
+                    clientIp);
 
-                return StatusCode(500, Error("Error interno del servidor"));
+                return StatusCode(500, Error(UserFacingMessages.UnexpectedError));
             }
             catch (Exception ex)
             {
                 _logger.LogMessage(
                     LogLevelGRP.Error,
-                    $"Error inesperado en login: {ex.Message}",
+                    $"Error inesperado en login. TraceId={HttpContext.TraceIdentifier}; Error={ex}",
                     (byte)SystemLogTypes.Error,
                     "Login",
                     "0",
-                    ex.StackTrace ?? "");
+                    clientIp);
 
-                return StatusCode(500, Error("Error interno del servidor"));
+                return StatusCode(500, Error(UserFacingMessages.UnexpectedError));
             }
         }
 

@@ -1,8 +1,8 @@
 using EG.Application.Interfaces.Account;
 using EG.Application.Interfaces;
 using EG.Business.Interfaces;
+using EG.Common;
 using EG.Common.GenericModel;
-using EG.Common.Enums;
 using EG.Domain.DTOs.Requests;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
@@ -14,17 +14,18 @@ namespace EG.Application.Services.Account
         private readonly IAuthService _authService; // Business - Datos y Claims
         private readonly ITokenService _tokenService; // Application - Generar JWT
         private readonly IOptions<JwtSettings> _jwtSettings;
-        //private readonly Logger.Log4NetLogger _logger;
+        private readonly ILogger<AuthAppService> _logger;
 
         public AuthAppService(
             IAuthService authService,
             ITokenService tokenService,
-            IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings,
+            ILogger<AuthAppService> logger)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _jwtSettings = jwtSettings ?? throw new ArgumentNullException(nameof(jwtSettings));
-            //_logger = new Logger.Log4NetLogger(typeof(AuthAppService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequest)
@@ -46,13 +47,7 @@ namespace EG.Application.Services.Account
 
                 if (usuarioSP == null)
                 {
-                    Console.WriteLine(
-                        //LogLevelGRP.Warning,
-                        $"Login fallido: Credenciales inválidas - {loginRequest.Email}",
-                        (byte)SystemLogTypes.Warning,
-                        "Login",
-                        "0",
-                        "");
+                    _logger.LogWarning("Login fallido por credenciales invalidas para {Email}", loginRequest.Email);
 
                     return new LoginResponseDto
                     {
@@ -75,51 +70,30 @@ var loginResponse = _tokenService.GenTokenkey(
     claims,
     _jwtSettings.Value);
 
-                Console.WriteLine(
-                    //LogLevelGRP.Info,
-                    $"Login exitoso: {loginRequest.Email}",
-                    (byte)SystemLogTypes.Information,
-                    "Login",
-                    usuarioSP.PkIdUsuario.ToString(),
-                    "");
+                _logger.LogInformation(
+                    "Login exitoso para {Email}. UsuarioId={UsuarioId}",
+                    loginRequest.Email,
+                    usuarioSP.PkIdUsuario);
 
                 return loginResponse;
             }
             catch (ArgumentNullException ex)
             {
-                Console.WriteLine(
-                    //LogLevelGRP.Error,
-                    $"Error de validación: {ex.Message}",
-                    (byte)SystemLogTypes.Error,
-                    "Login",
-                    "0",
-                    ex.StackTrace ?? "");
+                _logger.LogWarning(ex, "Solicitud de login invalida");
 
                 throw;
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine(
-                    //LogLevelGRP.Error,
-                    $"Error de validación: {ex.Message}",
-                    (byte)SystemLogTypes.Error,
-                    "Login",
-                    "0",
-                    ex.StackTrace ?? "");
+                _logger.LogWarning(ex, "Solicitud de login invalida para {Email}", loginRequest.Email);
 
                 throw;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    //LogLevelGRP.Error,
-                    $"Error en login: {ex.Message}",
-                    (byte)SystemLogTypes.Error,
-                    "Login",
-                    "0",
-                    ex.StackTrace ?? "");
+                _logger.LogError(ex, "Error tecnico durante login para {Email}", loginRequest.Email);
 
-                throw new InvalidOperationException("Error durante el proceso de login", ex);
+                throw new InvalidOperationException(UserFacingMessages.UnexpectedError, ex);
             }
         }
     }
