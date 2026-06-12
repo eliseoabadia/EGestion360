@@ -1,6 +1,7 @@
 using Mapster;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -129,10 +130,7 @@ namespace EG.Business.Services
 
             if (whereCondition != null)
             {
-                var parametro = Expression.Parameter(typeof(TEntity), "e");
-                var body = Expression.Invoke(whereCondition, parametro);
-                var lambda = Expression.Lambda<Func<TEntity, bool>>(body, parametro);
-                query = query.Where(lambda);
+                query = query.Where(whereCondition);
             }
 
             return query;
@@ -259,7 +257,7 @@ namespace EG.Business.Services
         public virtual async Task<IEnumerable<TResponse>> GetAllAsync()
         {
             var query = GetQueryWithIncludes();
-            var entities = await Task.Run(() => query.ToList());
+            var entities = await query.ToListAsync();
             return entities.Adapt<IEnumerable<TResponse>>();
         }
 
@@ -291,13 +289,12 @@ namespace EG.Business.Services
                 equality = Expression.Equal(propertyAccess, constant);
             }
 
-        var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
 
-        var entities = await Task.Run(() => query.ToList());
-        var entity = entities.FirstOrDefault(lambda.Compile());
+            var entity = await query.FirstOrDefaultAsync(lambda);
 
-        return entity != null ? entity.Adapt<TResponse>() : null;
-    }
+            return entity != null ? entity.Adapt<TResponse>() : null;
+        }
 
         // Versi�n con par�metros personalizados - CORREGIDA
         public virtual async Task<TResponse?> GetByIdAsync(int id,
@@ -343,9 +340,7 @@ namespace EG.Business.Services
 
             var lambda = Expression.Lambda<Func<TEntity, bool>>(equality, parameter);
 
-            // CORRECCI�N: Usar Task.Run con ToList() en lugar de FirstOrDefaultAsync
-            var entities = await Task.Run(() => query.ToList());
-            var entity = entities.FirstOrDefault(lambda.Compile());
+            var entity = await query.FirstOrDefaultAsync(lambda);
 
             return entity != null ? entity.Adapt<TResponse>() : null;
         }
@@ -453,7 +448,7 @@ namespace EG.Business.Services
 
                 query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
-                var totalCount = await Task.Run(() => query.Count());
+                var totalCount = await query.CountAsync();
                 if (_params.Page < 1)
                     _params.Page = 1;
 
@@ -461,7 +456,7 @@ namespace EG.Business.Services
                     .Skip((_params.Page - 1) * _params.PageSize)
                     .Take(_params.PageSize);
 
-                var entities = await Task.Run(() => pagedQuery.ToList());
+                var entities = await pagedQuery.ToListAsync();
                 var mapped = entities.Adapt<IList<TResponse>>();
 
                 return new PagedResult<TResponse>
@@ -494,23 +489,29 @@ namespace EG.Business.Services
             var parameter = Expression.Parameter(typeof(TEntity), "x");
             var property = Expression.Property(parameter, propertyName);
             var propertyType = property.Type;
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
 
             object convertedValue;
             if (value is JsonElement jsonElement)
             {
                 // Convert JsonElement to the target property type
-                convertedValue = ConvertJsonElement(jsonElement, propertyType);
+                convertedValue = ConvertJsonElement(jsonElement, targetType);
             }
             else
             {
                 // Try direct conversion
-                convertedValue = Convert.ChangeType(value, propertyType, CultureInfo.InvariantCulture);
+                convertedValue = Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
             }
 
             Expression left = useNotEqual && propertyType == typeof(string)
                 ? Expression.Call(property, typeof(string).GetMethod(nameof(string.Trim), Type.EmptyTypes)!)
                 : property;
-            var constant = Expression.Constant(convertedValue, left.Type);
+            Expression constant = Expression.Constant(convertedValue, targetType);
+            if (left.Type != targetType)
+            {
+                constant = Expression.Convert(constant, left.Type);
+            }
+
             var comparison = useNotEqual
                 ? Expression.NotEqual(left, constant)
                 : Expression.Equal(left, constant);
@@ -559,7 +560,7 @@ namespace EG.Business.Services
 
             query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
-            var totalCount = await Task.Run(() => query.Count());
+            var totalCount = await query.CountAsync();
             if (_params.Page < 1)
                 _params.Page = 1;
 
@@ -567,7 +568,7 @@ namespace EG.Business.Services
                 .Skip((_params.Page - 1) * _params.PageSize)
                 .Take(_params.PageSize);
 
-            var entities = await Task.Run(() => pagedQuery.ToList());
+            var entities = await pagedQuery.ToListAsync();
             var mapped = entities.Adapt<IList<TResponse>>();
 
             return new PagedResult<TResponse>

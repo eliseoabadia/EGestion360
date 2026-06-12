@@ -39,12 +39,72 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     protected SortDirection SortDirection { get; set; }
     protected string SortLabel { get; set; } = string.Empty;
     protected CancellationTokenSource SearchCts { get; set; } = new();
+    protected bool OperationInProgress { get; private set; }
+    protected bool IsBusy => Loading || OperationInProgress;
 
     protected abstract string ModuleName { get; }
     protected abstract string SubModuleName { get; }
     protected abstract Type CreateDialogType { get; }
     protected abstract Type EditDialogType { get; }
     protected abstract Type DeleteDialogType { get; }
+    protected virtual int ExportPageSize => 1000;
+    protected virtual int MaxExportRows => 50000;
+
+    protected async Task<bool> RunExclusiveAsync(Func<Task> operation, string? busyMessage = null)
+    {
+        if (OperationInProgress)
+        {
+            if (!string.IsNullOrWhiteSpace(busyMessage))
+            {
+                Snackbar.Add(busyMessage, Severity.Info);
+            }
+
+            return false;
+        }
+
+        OperationInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await operation();
+            return true;
+        }
+        finally
+        {
+            OperationInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected async Task<TResult> RunExclusiveAsync<TResult>(
+        Func<Task<TResult>> operation,
+        TResult busyResult,
+        string? busyMessage = null)
+    {
+        if (OperationInProgress)
+        {
+            if (!string.IsNullOrWhiteSpace(busyMessage))
+            {
+                Snackbar.Add(busyMessage, Severity.Info);
+            }
+
+            return busyResult;
+        }
+
+        OperationInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            return await operation();
+        }
+        finally
+        {
+            OperationInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -182,6 +242,17 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
     protected virtual async Task CreateItem()
     {
+        if (OperationInProgress)
+        {
+            Snackbar.Add("Operacion en proceso...", Severity.Info);
+            return;
+        }
+
+        OperationInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
         if (!CanCreate)
         {
             Snackbar.Add("No tienes permisos para crear", Severity.Warning);
@@ -209,10 +280,27 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             await ReloadData();
             Console.WriteLine("? Datos recargados");
         }
+        }
+        finally
+        {
+            OperationInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     protected virtual async Task EditItem(int id)
     {
+        if (OperationInProgress)
+        {
+            Snackbar.Add("Operacion en proceso...", Severity.Info);
+            return;
+        }
+
+        OperationInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
         if (!CanUpdate)
         {
             Snackbar.Add("No tienes permisos para editar", Severity.Warning);
@@ -241,10 +329,27 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             await ReloadData();
             Console.WriteLine("? Datos recargados");
         }
+        }
+        finally
+        {
+            OperationInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     protected virtual async Task DeleteItem(int id)
     {
+        if (OperationInProgress)
+        {
+            Snackbar.Add("Operacion en proceso...", Severity.Info);
+            return;
+        }
+
+        OperationInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
         if (!CanDelete)
         {
             Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
@@ -274,6 +379,12 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         await dialog.Result;
+        }
+        finally
+        {
+            OperationInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     // M�todo para obtener el nombre del item (sobrescribir en cada p�gina)
@@ -323,6 +434,44 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
     // ==================== FIN M�TODOS CRUD ====================
 
+    protected virtual async Task<List<TResponse>> LoadExportItemsAsync()
+    {
+        var items = new List<TResponse>();
+        var page = 1;
+        var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+
+        while (items.Count < MaxExportRows)
+        {
+            var response = await Service.GetAllPaginadoAsync(page, ExportPageSize, SearchString, sortLabel, SortDirection);
+            if (response?.Success != true)
+            {
+                throw new InvalidOperationException(response?.Message ?? "No fue posible obtener los datos para exportar.");
+            }
+
+            var pageItems = response.Items?.ToList() ?? new List<TResponse>();
+            if (pageItems.Count == 0)
+            {
+                break;
+            }
+
+            items.AddRange(pageItems);
+
+            if (items.Count >= response.TotalCount || pageItems.Count < ExportPageSize)
+            {
+                break;
+            }
+
+            page++;
+        }
+
+        if (items.Count >= MaxExportRows)
+        {
+            Snackbar.Add($"La exportacion se limito a {MaxExportRows:N0} registros. Ajusta filtros para exportar menos datos.", Severity.Warning);
+        }
+
+        return items;
+    }
+
     protected virtual async Task ExportToExcel()
     {
         if (!CanExport)
@@ -331,20 +480,27 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
+        if (OperationInProgress)
+        {
+            Snackbar.Add("Operacion en proceso...", Severity.Info);
+            return;
+        }
+
+        OperationInProgress = true;
         Loading = true;
         StateHasChanged();
 
         try
         {
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, SortLabel, SortDirection);
+            var exportItems = await LoadExportItemsAsync();
 
-            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            if (!exportItems.Any())
             {
-                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                Snackbar.Add("No hay datos para exportar", Severity.Warning);
                 return;
             }
 
-            var excelData = MapToExcelData(response.Items);
+            var excelData = MapToExcelData(exportItems);
 
             using var memoryStream = new MemoryStream();
             await memoryStream.SaveAsAsync(excelData);
@@ -355,7 +511,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"? Exportaci�n exitosa: {response.Items.Count()} registros", Severity.Success);
+            Snackbar.Add($"Exportacion exitosa: {exportItems.Count} registros", Severity.Success);
         }
         catch (Exception ex)
         {
@@ -364,6 +520,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         finally
         {
             Loading = false;
+            OperationInProgress = false;
             StateHasChanged();
         }
     }

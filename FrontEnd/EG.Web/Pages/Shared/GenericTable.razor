@@ -35,8 +35,8 @@
                                OnClick="ExportToExcel"
                                Size="Size.Small"
                                Class="mr-2"
-                               Disabled="@Loading">
-                        @if (Loading)
+                               Disabled="@IsTableBusy">
+                        @if (IsTableBusy)
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                             <span>Exportando...</span>
@@ -55,7 +55,7 @@
                     <MudIconButton Icon="@AddButtonIcon"
                                    Color="@AddButtonColor"
                                    Size="Size.Small"
-                                   Disabled="@Loading"
+                                   Disabled="@IsTableBusy"
                                    OnClick="AddItem"
                                    Class="mr-2" />
                 </MudTooltip>
@@ -99,7 +99,7 @@
                            ShowPageSizeSelector="true"
                            ShowPaginationText="true"
                            PaginationTextFormat="Página {0} de {1}"
-                           Disabled="@isLoading" />
+                           Disabled="@IsTableBusy" />
         </PagerContent>
     </MudTable>
 </MudPaper>
@@ -228,6 +228,8 @@
     private MudTable<TItem> mudTableRef = new();
     private MudTextField<string> searchField = new();
     private bool isLoading = false;
+    private bool actionInProgress = false;
+    private bool IsTableBusy => Loading || isLoading || actionInProgress;
 
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -250,6 +252,9 @@
     {
         if (args.Key == "Enter")
         {
+            if (IsTableBusy)
+                return;
+
             await SearchStringChanged.InvokeAsync(SearchString);
             await OnSearch.InvokeAsync();
             await mudTableRef.ReloadServerData();
@@ -258,19 +263,43 @@
 
     private async Task ExportToExcel()
     {
-        if (ExportFunc != null)
+        await RunTableActionAsync(async () =>
         {
-            await ExportFunc();
-        }
+            if (ExportFunc != null)
+            {
+                await ExportFunc();
+            }
+        });
     }
 
     private async Task AddItem()
     {
-        await OnAdd.InvokeAsync();
+        await RunTableActionAsync(async () => await OnAdd.InvokeAsync());
     }
 
     public async Task ReloadData()
     {
-        await mudTableRef.ReloadServerData();
+        await RunTableActionAsync(async () => await mudTableRef.ReloadServerData());
+    }
+
+    private async Task RunTableActionAsync(Func<Task> action)
+    {
+        if (IsTableBusy)
+        {
+            return;
+        }
+
+        actionInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            actionInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }

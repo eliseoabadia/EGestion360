@@ -147,6 +147,11 @@
     // Parametro de cierre: hijos pueden notificar éxito o fallo
     public void SignalClose(bool success)
     {
+        if (_closed)
+        {
+            return;
+        }
+
         Console.WriteLine($"🔔 SignalClose llamado con success={success}, MudDialog null? {MudDialog == null}");
         if (MudDialog == null)
         {
@@ -176,6 +181,11 @@
 
     protected async Task OnConfirmar()
     {
+        if (isProcessing || _closed || !CanConfirm)
+        {
+            return;
+        }
+
         // Verificar que OnConfirm tiene un handler
         if (!OnConfirm.HasDelegate)
         {
@@ -208,6 +218,11 @@
 
     public void Cancelar()
     {
+        if (isProcessing || _closed)
+        {
+            return;
+        }
+
         Console.WriteLine("🔔 Cancelar llamado - cerrando diálogo");
         _closed = true;
         MudDialog.Close(DialogResult.Cancel());
@@ -215,6 +230,11 @@
 
     public void Close(bool success = true)
     {
+        if (_closed)
+        {
+            return;
+        }
+
         _closed = true;
         if (success)
             MudDialog.Close(DialogResult.Ok(true));

@@ -18,6 +18,9 @@ namespace EG.Web.Services
         protected readonly IConfiguration _configuration;
 
         public static readonly string TOKENKEY = "authToken";
+        private static readonly TimeSpan TokenCacheDuration = TimeSpan.FromSeconds(30);
+        private string? _cachedToken;
+        private DateTimeOffset _cachedTokenExpiresAt = DateTimeOffset.MinValue;
         protected readonly JsonSerializerOptions _jsonOptions;
 
         public bool IsAuthenticated { get; protected set; } = false;
@@ -55,6 +58,11 @@ namespace EG.Web.Services
             if (!IsClientSide())
                 return null;
 
+            if (!string.IsNullOrWhiteSpace(_cachedToken) && _cachedTokenExpiresAt > DateTimeOffset.UtcNow)
+            {
+                return _cachedToken;
+            }
+
             string? rawToken = null;
             try
             {
@@ -78,13 +86,19 @@ namespace EG.Web.Services
                 rawToken = rawToken.Substring(1, rawToken.Length - 2);
             }
 
-            return rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            _cachedToken = rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
                 ? rawToken.Substring("Bearer ".Length)
                 : rawToken;
+            _cachedTokenExpiresAt = DateTimeOffset.UtcNow.Add(TokenCacheDuration);
+
+            return _cachedToken;
         }
 
         protected async Task ClearAuthDataAsync()
         {
+            _cachedToken = null;
+            _cachedTokenExpiresAt = DateTimeOffset.MinValue;
+
             if (IsClientSide())
             {
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", string.Empty);
@@ -114,7 +128,7 @@ namespace EG.Web.Services
             try
             {
                 var fullEndpoint = useBaseUrl ? endpoint : $"{_baseUrl}{endpoint}";
-                var request = await CreateAuthenticatedRequestAsync(method, fullEndpoint);
+                using var request = await CreateAuthenticatedRequestAsync(method, fullEndpoint);
 
                 if (content != null)
                 {
@@ -122,7 +136,7 @@ namespace EG.Web.Services
                     request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                 }
 
-                var response = await _httpClient.SendAsync(request);
+                using var response = await _httpClient.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -164,7 +178,7 @@ namespace EG.Web.Services
             try
             {
                 var fullEndpoint = useBaseUrl ? endpoint : $"{_baseUrl}{endpoint}";
-                var request = await CreateAuthenticatedRequestAsync(method, fullEndpoint);
+                using var request = await CreateAuthenticatedRequestAsync(method, fullEndpoint);
 
                 if (content != null)
                 {
@@ -172,7 +186,7 @@ namespace EG.Web.Services
                     request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                 }
 
-                var response = await _httpClient.SendAsync(request);
+                using var response = await _httpClient.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)

@@ -24,13 +24,15 @@
                         <MudTooltip Text="@CreateTooltip">
                             <MudButton StartIcon="@Icons.Material.Filled.Add"
                                        Visible="@CanCreate"
-                                       OnClick="OnCreate"
+                                       OnClick="HandleCreate"
+                                       Disabled="@IsBusy"
                                        Size="Size.Small" />
                         </MudTooltip>
                     }
                     <MudTooltip Text="Refrescar...">
                         <MudButton StartIcon="@Icons.Material.Filled.Refresh"
-                                   OnClick="OnRefresh"
+                                   OnClick="HandleRefresh"
+                                   Disabled="@IsBusy"
                                    Size="Size.Small" />
                     </MudTooltip>
                     @AdditionalButtons
@@ -50,4 +52,37 @@
     [Parameter] public EventCallback OnCreate { get; set; }
     [Parameter] public EventCallback OnRefresh { get; set; }
     [Parameter] public RenderFragment? AdditionalButtons { get; set; }
+
+    private bool actionInProgress;
+    private bool IsBusy => actionInProgress;
+
+    private async Task HandleCreate()
+    {
+        await RunExclusiveAsync(async () => await OnCreate.InvokeAsync());
+    }
+
+    private async Task HandleRefresh()
+    {
+        await RunExclusiveAsync(async () => await OnRefresh.InvokeAsync());
+    }
+
+    private async Task RunExclusiveAsync(Func<Task> action)
+    {
+        if (actionInProgress)
+        {
+            return;
+        }
+
+        actionInProgress = true;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            actionInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
 }
