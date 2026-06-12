@@ -36,14 +36,17 @@
   <ItemGroup>
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
-    <Folder Include="Pages\Configuration\Catalogos\Adquisicion\" />
-    <Folder Include="Pages\Configuration\Catalogos\Presupuestales\" />
-    <Folder Include="Pages\Patrimonio\" />
-    <Folder Include="Pages\Contabilidad\" />
-    <Folder Include="Pages\Presupuesto\Egreso\PresupuestoModificado\" />
-    <Folder Include="Pages\Presupuesto\Egreso\PresupuestoComprometido\" />
-    <Folder Include="Pages\Presupuesto\Egreso\Planeacion\" />
-    <Folder Include="Pages\Presupuesto\Tesoreria\CuentasXPagar\" />
+    <Folder Include="Pages\Platform\" />
+    <Folder Include="Pages\Platform\Sistema\" />
+    <Folder Include="Pages\Modules\GRP\" />
+    <Folder Include="Pages\Modules\GRP\Configuration\Catalogos\Adquisicion\" />
+    <Folder Include="Pages\Modules\GRP\Configuration\Catalogos\Presupuestales\" />
+    <Folder Include="Pages\Modules\GRP\Patrimonio\" />
+    <Folder Include="Pages\Modules\GRP\Contabilidad\" />
+    <Folder Include="Pages\Modules\GRP\Presupuesto\Egreso\PresupuestoModificado\" />
+    <Folder Include="Pages\Modules\GRP\Presupuesto\Egreso\PresupuestoComprometido\" />
+    <Folder Include="Pages\Modules\GRP\Presupuesto\Egreso\Planeacion\" />
+    <Folder Include="Pages\Modules\GRP\Presupuesto\Tesoreria\CuentasXPagar\" />
     <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 

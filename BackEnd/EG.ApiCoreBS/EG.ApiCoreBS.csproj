@@ -26,7 +26,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Controllers\Catalogos\Tesoreria\" />
+	  <Folder Include="Controllers\Platform\" />
+	  <Folder Include="Controllers\Modules\GRP\Catalogos\Tesoreria\" />
 	</ItemGroup>
 
 	<ItemGroup>
