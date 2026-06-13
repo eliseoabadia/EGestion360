@@ -1,18 +1,18 @@
-@using MudBlazor
-@using EG.Web.Pages.Shared
-@using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.Presupuestales
-@using EG.Web.Services
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
 @inject IGenericCrudService<ProyectoResponse> Service
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="ProyectoResponse"
-                 Title="@dialogTitle"
-                 MaxWidth="MaxWidth.Small"
-                 ActionText="@actionText"
-                 ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
-                 OnConfirm="GuardarCambiosAsync">
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Small"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando proyecto..."
+                OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="ProyectoResponse"
                     @ref="form"
@@ -21,26 +21,34 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
-                              Label="Descripción"
+                <MudTextField @bind-Value="item.Clave"
+                              Label="Clave"
                               Variant="Variant.Outlined"
                               Required="true"
-                              RequiredError="La descripción es requerida" />
+                              RequiredError="La clave es requerida"
+                              MaxLength="15" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La descripcion es requerida"
+                              Lines="3"
+                              MaxLength="500" />
             </MudItem>
 
             @if (Id.HasValue)
             {
                 <MudItem xs="12">
-                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
-                        <MudDivider Class="mb-3" />
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="item.Activo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
+                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
+                        <MudSwitch T="bool"
+                                   @bind-Value="item.Activo"
+                                   Color="Color.Primary"
+                                   ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                            <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                        </MudSwitch>
                     </MudPaper>
                 </MudItem>
             }
@@ -54,7 +62,12 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private BaseEntityForm<ProyectoResponse> form = null!;
-    private ProyectoResponse item = new() { Activo = true };
+    private ProyectoResponse item = new()
+    {
+        Activo = true,
+        Clave = string.Empty,
+        Descripcion = string.Empty
+    };
 
     private string dialogTitle => Id.HasValue ? "Editar Proyecto" : "Nuevo Proyecto";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -64,15 +77,15 @@
     {
         if (Id.HasValue)
         {
-            await CargarDatos();
+            await CargarDatosAsync();
         }
     }
 
-    private async Task CargarDatos()
+    private async Task CargarDatosAsync()
     {
         try
         {
-            var response = await Service.GetByIdAsync(Id.Value);
+            var response = await Service.GetByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
@@ -86,29 +99,33 @@
 
     private async Task GuardarCambiosAsync()
     {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.Clave = item.Clave?.Trim() ?? string.Empty;
+        item.Descripcion = item.Descripcion?.Trim() ?? string.Empty;
+
         try
         {
-            bool success;
-            if (Id.HasValue)
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
             {
-                var response = await Service.UpdateAsync(item, Id.Value);
-                success = response?.Success == true;
-            }
-            else
-            {
-                var response = await Service.CreateAsync(item);
-                success = response?.Success == true;
+                Snackbar.Add(
+                    response.Message ?? (Id.HasValue
+                        ? "Proyecto actualizado correctamente"
+                        : "Proyecto creado correctamente"),
+                    Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
             }
 
-            if (success)
-            {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Proyecto actualizado correctamente" : "Proyecto creado correctamente", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-            else
-            {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
-            }
+            Snackbar.Add(response?.Message ?? "Error al guardar el proyecto.", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -116,4 +133,3 @@
         }
     }
 }
-

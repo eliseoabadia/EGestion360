@@ -51,7 +51,7 @@
                                  Format="0.00"
                                  Culture="@NumberCulture"
                                  Adornment="Adornment.Start"
-                                 AdornmentText="$"
+                                 AdornmentText="@CurrencySymbol"
                                  Min="0m" />
             </MudItem>
 
@@ -69,6 +69,8 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int OrdenCompraId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 

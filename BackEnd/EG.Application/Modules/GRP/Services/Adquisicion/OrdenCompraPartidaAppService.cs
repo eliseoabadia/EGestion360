@@ -1,5 +1,7 @@
 using EG.Application.Interfaces.Adquisicion;
 using EG.Business.Services;
+using EG.Common;
+using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
@@ -48,7 +50,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return Failure($"Error al crear partida de orden de compra: {ex.Message}");
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("crear", userVisibleException);
+                    return Failure(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("crear", ex);
+                return Failure(
+                    UserFacingMessages.OperationFailed("crear partida de orden de compra"),
+                    "ERROR");
             }
         }
 
@@ -72,7 +83,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return Failure($"Error al actualizar partida de orden de compra: {ex.Message}");
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("actualizar", userVisibleException);
+                    return Failure(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("actualizar", ex);
+                return Failure(
+                    UserFacingMessages.OperationFailed("actualizar partida de orden de compra"),
+                    "ERROR");
             }
         }
 
@@ -112,7 +132,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return BoolFailure($"Error al eliminar partida de orden de compra: {ex.Message}");
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("eliminar", userVisibleException);
+                    return BoolFailure(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("eliminar", ex);
+                return BoolFailure(
+                    UserFacingMessages.OperationFailed("eliminar partida de orden de compra"),
+                    "ERROR");
             }
         }
 

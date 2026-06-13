@@ -87,6 +87,8 @@ public partial class TipoBien
 
     public virtual Unidade FkidUnidadesEquivalenteNavigation { get; set; }
 
+    public virtual ICollection<OrdenCompraDetalle> OrdenCompraDetalles { get; set; } = new List<OrdenCompraDetalle>();
+
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
 
     public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();

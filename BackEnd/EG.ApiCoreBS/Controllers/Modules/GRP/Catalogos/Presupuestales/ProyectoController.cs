@@ -1,5 +1,7 @@
 using EG.ApiCoreBS.Services;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
+using EG.Common;
+using EG.Common.Enums;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Presupuestales;
@@ -16,6 +18,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     {
         private readonly IProyectoAppServices _appService;
         private readonly IUserContextService _userContext;
+        private readonly Logger.Log4NetLogger _logger = new(typeof(ProyectoController));
 
         public ProyectoController(
             IProyectoAppServices appService,
@@ -71,7 +74,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 int usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(response, usuarioActual);
 
-                return CreatedAtAction(nameof(GetById), new { id = result.PkidProyecto },
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidPy },
                     new PagedResult<ProyectoResponse>
                     {
                         Success = true,
@@ -92,10 +95,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             }
             catch (Exception ex)
             {
+                LogException("crear", ex);
                 return BadRequest(new PagedResult<ProyectoResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("crear proyecto"),
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -140,10 +144,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             }
             catch (Exception ex)
             {
+                LogException("actualizar", ex);
                 return BadRequest(new PagedResult<ProyectoResponse>
                 {
                     Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("actualizar proyecto"),
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -179,10 +184,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             }
             catch (Exception ex)
             {
+                LogException("eliminar", ex);
                 return BadRequest(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("eliminar proyecto"),
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -195,9 +201,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             var result = await _appService.GetAllPaginadoAsync(request);
             return Ok(new PagedResult<ProyectoResponse>
             {
-                Success = true,
-                Message = "Proyectos obtenidos correctamente",
-                Code = "SUCCESS",
+                Success = result.Success,
+                Message = result.Message,
+                Code = result.Code,
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
@@ -218,12 +224,23 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             var result = await _appService.GetAllPaginadoAsync(pagedRequest);
             return Ok(new PagedResult<ProyectoResponse>
             {
-                Success = true,
-                Message = "Proyectos filtrados correctamente",
-                Code = "SUCCESS",
+                Success = result.Success,
+                Message = result.Message,
+                Code = result.Code,
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
+        }
+
+        private void LogException(string operation, Exception ex)
+        {
+            _logger.LogMessage(
+                LogLevelGRP.Error,
+                $"Error al {operation} Proyecto: {ex}",
+                (byte)SystemLogTypes.Error,
+                nameof(ProyectoController),
+                string.Empty,
+                string.Empty);
         }
     }
 }

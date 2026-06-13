@@ -5,8 +5,8 @@
 @inherits BaseCrudPage<FnResponse, FnResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
-    HasAccess="@HasAccess"
-    NavigateToHome="NavigateToHome">
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Funciones"
                     Subtitle="Catálogo de funciones (FN)"
@@ -18,7 +18,7 @@
         <GenericTable TItem="FnResponse"
                       @ref="table"
                       Title="Lista de Funciones"
-                      SearchPlaceholder="Buscar por clave o descripción..."
+                      SearchPlaceholder="Buscar por clave, descripción o grupo funcional..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -29,8 +29,9 @@
             <Header>
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidFn" T="FnResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="FnResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FnResponse">Descripción</MudTableSortLabel></MudTh>
+                 <MudTh><MudTableSortLabel SortLabel="Clave" T="FnResponse">Clave FN</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FnResponse">Función</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="GfClaveNombre" T="FnResponse">Grupo Funcional</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
@@ -53,6 +54,8 @@
                 <MudTd>@item.PkidFn</MudTd>
                 <MudTd>@item.Clave</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
+                <MudTd>@item.GfClaveNombre</MudTd>
+                
             </Row>
         </GenericTable>
     </MudContainer>
@@ -75,8 +78,10 @@
         return items.Select(u => new
         {
             ID = u.PkidFn,
-            Clave = u.Clave,
-            Descripcion = u.Descripcion ?? string.Empty,
+            ClaveGF = u.GfClave,
+            GrupoFuncional = u.GfDescripcion ?? string.Empty,
+            ClaveFN = u.Clave,
+            Funcion = u.Descripcion ?? string.Empty,
             FechaCreacion = u.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             UsuarioCreacion = u.UsuarioCreacion
         });

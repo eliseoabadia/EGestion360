@@ -1,4 +1,4 @@
-@page "/configuracion/presupuestales/programas-presupuesta-old"
+@page "/configuracion/presupuestales/clave-programa/programa-presupuestal"
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
@@ -8,9 +8,9 @@
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-        <PageHeader Title="Programas Presupuestales"
-                    Subtitle="Catálogo de programas presupuestales"
-                    Icon="@Icons.Material.Filled.Event"
+        <PageHeader Title="Programa Presupuestal"
+                    Subtitle="Catalogo PRES.PP para clasificar la clave del programa"
+                    Icon="@Icons.Material.Filled.Article"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
@@ -18,7 +18,7 @@
         <GenericTable TItem="ProgramaPresupuestalResponse"
                       @ref="table"
                       Title="Lista de Programas Presupuestales"
-                      SearchPlaceholder="Buscar por clave o descripción..."
+                      SearchPlaceholder="Buscar por clave o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -30,19 +30,22 @@
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidPp" T="ProgramaPresupuestalResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Clave" T="ProgramaPresupuestalResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProgramaPresupuestalResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProgramaPresupuestalResponse">Descripcion</MudTableSortLabel></MudTh>
+               @*  <MudTh><MudTableSortLabel SortLabel="Activo" T="ProgramaPresupuestalResponse">Estatus</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="ProgramaPresupuestalResponse">Creacion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaModificacion" T="ProgramaPresupuestalResponse">Modificacion</MudTableSortLabel></MudTh> *@
             </Header>
 
             <Row Context="item">
                 <MudTd>
-                    <MudTooltip Text="Editar">
+                    <MudTooltip Text="Editar programa presupuestal">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Visible="@CanUpdate"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        OnClick="@(() => EditItem(item.PkidPp))" />
                     </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                    <MudTooltip Text="Eliminar programa presupuestal">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Visible="@CanDelete"
                                        Color="Color.Error"
@@ -51,8 +54,19 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd>@item.PkidPp</MudTd>
-                <MudTd>@item.Clave</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                        @item.Clave
+                    </MudChip>
+                </MudTd>
                 <MudTd>@item.Descripcion</MudTd>
+                @* <MudTd>
+                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(item.Activo ? "Activo" : "Inactivo")
+                    </MudChip>
+                </MudTd>
+                <MudTd>@DateOrDash(item.FechaCreacion)</MudTd>
+                <MudTd>@DateOrDash(item.FechaModificacion)</MudTd> *@
             </Row>
         </GenericTable>
     </MudContainer>
@@ -72,18 +86,23 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<ProgramaPresupuestalResponse> items)
     {
-        return items.Select(u => new
+        return items.Select(item => new
         {
-            ID = u.PkidPp,
-            Clave = u.Clave,
-            Descripcion = u.Descripcion,
+            ID = item.PkidPp,
+            item.Clave,
+            item.Descripcion,
+            Estatus = item.Activo ? "Activo" : "Inactivo",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
         });
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.Descripcion ?? "el programa presupuestal";
+        return response?.Data?.ClaveNombre ?? "el programa presupuestal";
     }
 
     protected override async Task ReloadData()
@@ -93,4 +112,7 @@
             await table.ReloadData();
         }
     }
+
+    private static string DateOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";
 }

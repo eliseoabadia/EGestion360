@@ -8,8 +8,8 @@
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-        <PageHeader Title="Proyectos"
-                    Subtitle="Catálogo de proyectos"
+        <PageHeader Title="Proyecto"
+                    Subtitle="Catalogo PRES.PY para clasificar la clave del programa"
                     Icon="@Icons.Material.Filled.AccountTree"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -18,7 +18,7 @@
         <GenericTable TItem="ProyectoResponse"
                       @ref="table"
                       Title="Lista de Proyectos"
-                      SearchPlaceholder="Buscar por descripción..."
+                      SearchPlaceholder="Buscar por clave o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -28,28 +28,34 @@
 
             <Header>
                 <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidProyecto" T="ProyectoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProyectoResponse">Descripción</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidPy" T="ProyectoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProyectoResponse">Clave</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProyectoResponse">Descripcion</MudTableSortLabel></MudTh>
             </Header>
 
             <Row Context="item">
                 <MudTd>
-                    <MudTooltip Text="Editar">
+                    <MudTooltip Text="Editar proyecto">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Visible="@CanUpdate"
                                        Color="Color.Primary"
                                        Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidProyecto))" />
+                                       OnClick="@(() => EditItem(item.PkidPy))" />
                     </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                    <MudTooltip Text="Eliminar proyecto">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Visible="@CanDelete"
                                        Color="Color.Error"
                                        Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidProyecto))" />
+                                       OnClick="@(() => DeleteItem(item.PkidPy))" />
                     </MudTooltip>
                 </MudTd>
-                <MudTd>@item.PkidProyecto</MudTd>
+                <MudTd>@item.PkidPy</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                        @item.Clave
+                    </MudChip>
+                </MudTd>
                 <MudTd>@item.Descripcion</MudTd>
             </Row>
         </GenericTable>
@@ -66,21 +72,27 @@
     protected override Type EditDialogType => typeof(ProyectoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<ProyectoResponse>);
 
-    protected override string GetDefaultSortLabel() => "Descripcion";
+    protected override string GetDefaultSortLabel() => "Clave";
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<ProyectoResponse> items)
     {
-        return items.Select(u => new
+        return items.Select(item => new
         {
-            ID = u.PkidProyecto,
-            Descripcion = u.Descripcion,
+            ID = item.PkidPy,
+            item.Clave,
+            item.Descripcion,
+            Estatus = item.Activo ? "Activo" : "Inactivo",
+            item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
         });
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.Descripcion ?? "el proyecto";
+        return response?.Data?.ClaveNombre ?? "el proyecto";
     }
 
     protected override async Task ReloadData()

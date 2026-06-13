@@ -1,6 +1,8 @@
 using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Business.Services;
+using EG.Common;
+using EG.Common.Enums;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
@@ -12,6 +14,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class ProgramaPresupuestalAppServices : IProgramaPresupuestalAppServices
     {
         private readonly GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> _service;
+        private readonly Logger.Log4NetLogger _logger = new(typeof(ProgramaPresupuestalAppServices));
 
         public ProgramaPresupuestalAppServices(
             GenericService<Pp, ProgramaPresupuestalDto, ProgramaPresupuestalResponse> service)
@@ -70,10 +73,18 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             }
             catch (Exception ex)
             {
+                _logger.LogMessage(
+                    LogLevelGRP.Error,
+                    $"Error al obtener Programas Presupuestales: {ex}",
+                    (byte)SystemLogTypes.Error,
+                    nameof(ProgramaPresupuestalAppServices),
+                    string.Empty,
+                    string.Empty);
+
                 return new PagedResult<ProgramaPresupuestalResponse>
                 {
                     Success = false,
-                    Message = ex.Message,
+                    Message = UserFacingMessages.OperationFailed("obtener programas presupuestales"),
                     Code = "ERROR",
                     Items = new List<ProgramaPresupuestalResponse>(),
                     TotalCount = 0
@@ -108,8 +119,14 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de Programa Presupuestal inválido", nameof(id));
 
+            var existing = await _service.GetByIdAsync(id, idPropertyName: "PkidPp");
+            if (existing == null)
+                throw new KeyNotFoundException($"Programa Presupuestal con ID {id} no encontrado");
+
             var dto = response.Adapt<ProgramaPresupuestalDto>();
             dto.PkidPp = id;
+            dto.UsuarioCreacion = existing.UsuarioCreacion;
+            dto.FechaCreacion = existing.FechaCreacion;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioModificacion;
 
@@ -131,6 +148,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
             var dto = entity.Adapt<ProgramaPresupuestalDto>();
             dto.Activo = false;
+            dto.UsuarioCreacion = entity.UsuarioCreacion;
+            dto.FechaCreacion = entity.FechaCreacion;
             dto.FechaModificacion = DateTime.Now;
             dto.UsuarioModificacion = usuarioActual;
 

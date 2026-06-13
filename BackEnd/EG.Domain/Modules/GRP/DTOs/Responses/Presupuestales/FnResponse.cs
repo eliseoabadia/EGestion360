@@ -11,5 +11,9 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public string ClaveNombre { get; set; } = string.Empty;
+        public int? GfClave { get; set; }
+        public string GfDescripcion { get; set; } = string.Empty;
+        public string GfClaveNombre { get; set; } = string.Empty;
     }
 }

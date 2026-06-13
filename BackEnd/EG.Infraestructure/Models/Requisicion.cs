@@ -123,6 +123,8 @@ public partial class Requisicion
 
     public virtual TipoGasto FkidTipoGastoPresNavigation { get; set; }
 
+    public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
+
     public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
 
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();

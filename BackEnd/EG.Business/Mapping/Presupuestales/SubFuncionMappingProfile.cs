@@ -22,7 +22,8 @@ namespace EG.Business.Mapping.Presupuestales
                 .Ignore(dest => dest.PkidSf);
             config.NewConfig<VwSubFuncion, SubFuncionResponse>();
             config.NewConfig<SubFuncionResponse, SubFuncionDto>()
-                .Ignore(dest => dest.PkidSf)
+                .Map(dest => dest.Clave, src => src.SubFuncionClave)
+                .Map(dest => dest.Descripcion, src => src.SubFuncionDescripcion)
                 .IgnoreNullValues(true);
         }
     }

@@ -3344,3 +3344,31 @@ SELECT *
 FROM [PRES].[VwPrograma];
 GO
 
+
+
+-- =============================================
+-- Vista: PRES.Vw_FN
+-- =============================================
+IF OBJECT_ID(N'PRES.Vw_FN', N'V') IS NOT NULL
+    DROP VIEW PRES.Vw_FN;
+GO
+
+CREATE VIEW PRES.Vw_FN AS
+SELECT
+    fn.PKIdFN,
+    fn.FKIdGF_PRES,
+    fn.Clave,
+    fn.Descripcion,
+    fn.Activo,
+    fn.FechaCreacion,
+    fn.UsuarioCreacion,
+    fn.FechaModificacion,
+    fn.UsuarioModificacion,
+    CONCAT(fn.Clave, ' - ', fn.Descripcion) AS ClaveNombre,
+    gf.Clave AS GFClave,
+    gf.Descripcion AS GFDescripcion,
+    CONCAT(gf.Clave, ' - ', gf.Descripcion) AS GFClaveNombre
+FROM PRES.FN fn
+LEFT JOIN PRES.GF gf ON fn.FKIdGF_PRES = gf.PKIdGF AND gf.Activo = 1
+WHERE fn.Activo = 1;
+GO

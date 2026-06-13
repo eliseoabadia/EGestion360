@@ -1,5 +1,7 @@
 using EG.ApiCoreBS.Services;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
+using EG.Common;
+using EG.Common.Enums;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Presupuestales;
@@ -16,6 +18,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     {
         private readonly IProgramaPresupuestalAppServices _appService;
         private readonly IUserContextService _userContext;
+        private readonly Logger.Log4NetLogger _logger = new(typeof(ProgramaPresupuestalController));
 
         public ProgramaPresupuestalController(
             IProgramaPresupuestalAppServices appService,
@@ -92,10 +95,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             }
             catch (Exception ex)
             {
+                LogException("crear", ex);
                 return BadRequest(new PagedResult<ProgramaPresupuestalResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("crear programa presupuestal"),
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -140,10 +144,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             }
             catch (Exception ex)
             {
+                LogException("actualizar", ex);
                 return BadRequest(new PagedResult<ProgramaPresupuestalResponse>
                 {
                     Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("actualizar programa presupuestal"),
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -179,10 +184,11 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             }
             catch (Exception ex)
             {
+                LogException("eliminar", ex);
                 return BadRequest(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("eliminar programa presupuestal"),
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -195,9 +201,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             var result = await _appService.GetAllPaginadoAsync(request);
             return Ok(new PagedResult<ProgramaPresupuestalResponse>
             {
-                Success = true,
-                Message = "Programas Presupuestales obtenidos correctamente",
-                Code = "SUCCESS",
+                Success = result.Success,
+                Message = result.Message,
+                Code = result.Code,
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
@@ -218,12 +224,23 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             var result = await _appService.GetAllPaginadoAsync(pagedRequest);
             return Ok(new PagedResult<ProgramaPresupuestalResponse>
             {
-                Success = true,
-                Message = "Programas Presupuestales filtrados correctamente",
-                Code = "SUCCESS",
+                Success = result.Success,
+                Message = result.Message,
+                Code = result.Code,
                 Items = result.Items,
                 TotalCount = result.TotalCount
             });
+        }
+
+        private void LogException(string operation, Exception ex)
+        {
+            _logger.LogMessage(
+                LogLevelGRP.Error,
+                $"Error al {operation} Programa Presupuestal: {ex}",
+                (byte)SystemLogTypes.Error,
+                nameof(ProgramaPresupuestalController),
+                string.Empty,
+                string.Empty);
         }
     }
 }

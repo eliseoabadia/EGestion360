@@ -1,125 +1,194 @@
-@using MudBlazor
-@using EG.Web.Pages.Shared
-@using EG.Web.Contracts
+@using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
 @using EG.Web.Services
+@using MudBlazor
+
 @inject IGenericCrudService<FnResponse> Service
+@inject IGenericCrudService<GfResponse> GfService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="FnResponse"
-Title="@dialogTitle"
-MaxWidth="MaxWidth.Small"
-ActionText="@actionText"
-ProcessingText="@processingText"
-LoadingMessage="Cargando datos..."
-OnConfirm="GuardarCambiosAsync">
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Small"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
 
-<BaseEntityForm TEntity="FnResponse"
-@ref="form"
-ShowHeader="true"
-HeaderTitle="@dialogTitle">
+    <BaseEntityForm TEntity="FnResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
 
-<MudGrid GutterSize="2">
-<MudItem xs="12">
-<MudTextField @bind-Value="item.Clave"
-Label="Clave"
-Variant="Variant.Outlined"
-Required="true"
-RequiredError="La clave es requerida" />
-</MudItem>
-<MudItem xs="12">
-<MudTextField @bind-Value="item.Descripcion"
-Label="Descripción"
-Variant="Variant.Outlined"
-Required="true"
-RequiredError="La descripción es requerida" />
-</MudItem>
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@selectedGrupoFuncional"
+                                   ValueChanged="OnGrupoFuncionalChanged"
+                                   Label="Grupo Funcional"
+                                   Required="true"
+                                   RequiredError="Debe seleccionar un Grupo Funcional"
+                                   LoadPage="LoadGruposFuncionalesPageAsync" />
+            </MudItem>
 
-@if (Id.HasValue)
-{
-<MudItem xs="12">
-<MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-<MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
-<MudDivider Class="mb-3" />
-<div class="d-flex align-center">
-<MudSwitch @bind-Value="item.Activo"
-Color="Color.Primary"
-ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-<MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-</MudSwitch>
-</div>
-</MudPaper>
-</MudItem>
-}
-</MudGrid>
-</BaseEntityForm>
+            <MudItem xs="12">
+                <MudNumericField @bind-Value="item.Clave"
+                                 Label="Clave"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 RequiredError="La clave es requerida" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripción"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La descripción es requerida" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus</MudText>
+                        <MudDivider Class="mb-3" />
+                        <div class="d-flex align-center">
+                            <MudSwitch @bind-Value="item.Activo"
+                                       Color="Color.Primary"
+                                       ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                                <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                            </MudSwitch>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
 </BaseCrudDialog>
 
 @code {
-[Parameter] public int? Id { get; set; }
+    [Parameter] public int? Id { get; set; }
 
-[CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-private BaseEntityForm<FnResponse> form = null!;
-private FnResponse item = new() { Activo = true };
+    private BaseEntityForm<FnResponse> form = null!;
+    private FnResponse item = new() { Activo = true };
+    private LookupItem? selectedGrupoFuncional;
 
-private string dialogTitle => Id.HasValue ? "Editar Función" : "Nueva Función";
-private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string dialogTitle => Id.HasValue ? "Editar Función" : "Nueva Función";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
-protected override async Task OnInitializedAsync()
-{
-    if (Id.HasValue)
+    protected override async Task OnInitializedAsync()
     {
-        await CargarDatos();
-    }
-}
-
-private async Task CargarDatos()
-{
-    try
-    {
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
-        {
-            item = response.Data;
-        }
-    }
-    catch (Exception ex)
-    {
-        Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
-    }
-}
-
-private async Task GuardarCambiosAsync()
-{
-    try
-    {
-        bool success;
         if (Id.HasValue)
         {
-            var response = await Service.UpdateAsync(item, Id.Value);
-            success = response?.Success == true;
+            await CargarDatos();
         }
-        else
+    }
+
+    private async Task CargarDatos()
+    {
+        try
         {
-            var response = await Service.CreateAsync(item);
-            success = response?.Success == true;
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                selectedGrupoFuncional = BuildGrupoFuncionalLookup(item);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            if (selectedGrupoFuncional?.Id is not int grupoFuncionalId || grupoFuncionalId <= 0)
+            {
+                Snackbar.Add("Debe seleccionar un Grupo Funcional", Severity.Warning);
+                return;
+            }
+
+            item.FkidGfPres = grupoFuncionalId;
+
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(Id.HasValue ? "Función actualizada correctamente" : "Función creada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "Error al guardar los cambios", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Task OnGrupoFuncionalChanged(LookupItem? value)
+    {
+        selectedGrupoFuncional = value;
+        item.FkidGfPres = value?.Id ?? 0;
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadGruposFuncionalesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+        {
+            return new ComboLookupResult();
         }
 
-        if (success)
-        {
-            Snackbar.Add(dialogTitle.Contains("Editar") ? "Función actualizada correctamente" : "Función creada correctamente", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        else
-        {
-            Snackbar.Add("Error al guardar los cambios", Severity.Error);
-        }
+        var response = await GfService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(
+            response?.Items?.Select(gf => new LookupItem
+            {
+                Id = gf.PkidGf,
+                Text = $"{gf.Clave} - {gf.Descripcion}"
+            }),
+            response?.TotalCount);
     }
-    catch (Exception ex)
+
+    private static LookupItem? BuildGrupoFuncionalLookup(FnResponse funcion)
     {
-        Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        if (funcion.FkidGfPres <= 0)
+        {
+            return null;
+        }
+
+        var text = !string.IsNullOrWhiteSpace(funcion.GfClaveNombre)
+            ? funcion.GfClaveNombre
+            : funcion.GfClave.HasValue
+                ? $"{funcion.GfClave} - {funcion.GfDescripcion}"
+                : $"Grupo Funcional #{funcion.FkidGfPres}";
+
+        return new LookupItem
+        {
+            Id = funcion.FkidGfPres,
+            Text = text
+        };
     }
-}
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult
+        {
+            Items = list,
+            TotalCount = totalCount ?? list.Count
+        };
+    }
 }

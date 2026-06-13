@@ -173,3 +173,533 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_OrdenCompraPartida_Or
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_OrdenCompraPartida_Partida' AND object_id = OBJECT_ID(N'ORCO.OrdenCompraPartida'))
     CREATE INDEX IX_OrdenCompraPartida_Partida ON ORCO.OrdenCompraPartida (FKIdPartida_CONTA) WHERE Activo = 1;
 GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoOrdenCompra]
+    @Action INT,
+    @PKIdOrdenCompra INT = NULL,
+    @FKIdEmpresa_SIS INT = NULL,
+    @FKIdRequisicion_ORCO INT = NULL,
+    @FKIdProveedor_SIS INT = NULL,
+    @FKIdPoliza_CONTA INT = NULL,
+    @FKIdEstatusOrdenCompra_ORCO INT = NULL,
+    @NumeroOrdenCompra NVARCHAR(50) = NULL,
+    @Descripcion NVARCHAR(500) = NULL,
+    @FechaOrdenCompra DATE = NULL,
+    @FechaRequerida DATE = NULL,
+    @FechaEntrega DATE = NULL,
+    @FechaVigencia DATE = NULL,
+    @FechaCancelacion DATE = NULL,
+    @MotivoCancelacion NVARCHAR(MAX) = NULL,
+    @Subtotal DECIMAL(20,4) = NULL,
+    @Iva DECIMAL(20,4) = NULL,
+    @Total DECIMAL(20,4) = NULL,
+    @MonedaId INT = NULL,
+    @TipoCambio DECIMAL(20,6) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @CompraDirecta BIT = NULL,
+    @FL_Documento NVARCHAR(1000) = NULL,
+    @IdUser INT = NULL,
+    @IdAnio INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @Tipo NVARCHAR(20) = N'OK';
+    DECLARE @Mensaje NVARCHAR(1000) = N'Operacion realizada correctamente.';
+    DECLARE @Liga NVARCHAR(100) = N'idOrdenCompra:0';
+
+    BEGIN TRY
+        BEGIN TRAN;
+
+        IF @Action = 1
+        BEGIN
+            IF @FechaOrdenCompra IS NULL
+                THROW 51000, N'La fecha de la orden de compra es obligatoria.', 1;
+
+            IF @FKIdRequisicion_ORCO IS NOT NULL
+            BEGIN
+                DECLARE @FechaRequisicion DATE;
+
+                SELECT @FechaRequisicion = r.FechaRequisicion
+                FROM ORCO.Requisicion r
+                WHERE r.PKIdRequisicion = @FKIdRequisicion_ORCO
+                  AND r.Activo = 1;
+
+                IF @FechaRequisicion IS NOT NULL AND @FechaOrdenCompra < @FechaRequisicion
+                    THROW 51000, N'La fecha de la orden de compra debe ser igual o mayor a la fecha de requisicion.', 1;
+            END;
+
+            IF NULLIF(LTRIM(RTRIM(@NumeroOrdenCompra)), N'') IS NULL
+            BEGIN
+                DECLARE @Anio INT = ISNULL(@IdAnio, YEAR(@FechaOrdenCompra));
+                DECLARE @Consecutivo INT;
+
+                SELECT @Consecutivo = ISNULL(MAX(TRY_CONVERT(INT, RIGHT(NumeroOrdenCompra, 4))), 0) + 1
+                FROM ORCO.OrdenCompra
+                WHERE NumeroOrdenCompra LIKE CONCAT(N'OC-', @Anio, N'-%');
+
+                SET @NumeroOrdenCompra = CONCAT(N'OC-', @Anio, N'-', RIGHT(CONCAT(N'0000', @Consecutivo), 4));
+            END;
+
+            INSERT INTO ORCO.OrdenCompra
+            (
+                FKIdEmpresa_SIS,
+                FKIdRequisicion_ORCO,
+                FKIdProveedor_SIS,
+                FKIdPoliza_CONTA,
+                FKIdEstatusOrdenCompra_ORCO,
+                NumeroOrdenCompra,
+                Descripcion,
+                FechaOrdenCompra,
+                FechaRequerida,
+                FechaEntrega,
+                FechaVigencia,
+                FechaCancelacion,
+                MotivoCancelacion,
+                Subtotal,
+                Iva,
+                Total,
+                MonedaId,
+                TipoCambio,
+                Observaciones,
+                CompraDirecta,
+                FL_Documento,
+                Activo,
+                FechaCreacion,
+                UsuarioCreacion
+            )
+            VALUES
+            (
+                @FKIdEmpresa_SIS,
+                @FKIdRequisicion_ORCO,
+                @FKIdProveedor_SIS,
+                @FKIdPoliza_CONTA,
+                @FKIdEstatusOrdenCompra_ORCO,
+                @NumeroOrdenCompra,
+                @Descripcion,
+                @FechaOrdenCompra,
+                @FechaRequerida,
+                @FechaEntrega,
+                @FechaVigencia,
+                @FechaCancelacion,
+                @MotivoCancelacion,
+                ISNULL(@Subtotal, 0),
+                ISNULL(@Iva, 0),
+                ISNULL(@Total, 0),
+                @MonedaId,
+                ISNULL(@TipoCambio, 1),
+                @Observaciones,
+                ISNULL(@CompraDirecta, 0),
+                @FL_Documento,
+                1,
+                GETDATE(),
+                @IdUser
+            );
+
+            SET @PKIdOrdenCompra = CONVERT(INT, SCOPE_IDENTITY());
+            SET @Mensaje = N'Orden de compra registrada correctamente.';
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM ORCO.OrdenCompra
+                WHERE PKIdOrdenCompra = @PKIdOrdenCompra
+                  AND Activo = 1
+            )
+                THROW 51000, N'La orden de compra no existe o esta inactiva.', 1;
+
+            IF @FKIdRequisicion_ORCO IS NOT NULL AND @FechaOrdenCompra IS NOT NULL
+            BEGIN
+                SELECT @FechaRequisicion = r.FechaRequisicion
+                FROM ORCO.Requisicion r
+                WHERE r.PKIdRequisicion = @FKIdRequisicion_ORCO
+                  AND r.Activo = 1;
+
+                IF @FechaRequisicion IS NOT NULL AND @FechaOrdenCompra < @FechaRequisicion
+                    THROW 51000, N'La fecha de la orden de compra debe ser igual o mayor a la fecha de requisicion.', 1;
+            END;
+
+            UPDATE ORCO.OrdenCompra
+            SET
+                FKIdEmpresa_SIS = @FKIdEmpresa_SIS,
+                FKIdRequisicion_ORCO = @FKIdRequisicion_ORCO,
+                FKIdProveedor_SIS = @FKIdProveedor_SIS,
+                FKIdPoliza_CONTA = @FKIdPoliza_CONTA,
+                FKIdEstatusOrdenCompra_ORCO = @FKIdEstatusOrdenCompra_ORCO,
+                NumeroOrdenCompra = COALESCE(NULLIF(LTRIM(RTRIM(@NumeroOrdenCompra)), N''), NumeroOrdenCompra),
+                Descripcion = @Descripcion,
+                FechaOrdenCompra = @FechaOrdenCompra,
+                FechaRequerida = @FechaRequerida,
+                FechaEntrega = @FechaEntrega,
+                FechaVigencia = @FechaVigencia,
+                FechaCancelacion = @FechaCancelacion,
+                MotivoCancelacion = @MotivoCancelacion,
+                Subtotal = ISNULL(@Subtotal, Subtotal),
+                Iva = ISNULL(@Iva, Iva),
+                Total = ISNULL(@Total, Total),
+                MonedaId = @MonedaId,
+                TipoCambio = ISNULL(@TipoCambio, TipoCambio),
+                Observaciones = @Observaciones,
+                CompraDirecta = ISNULL(@CompraDirecta, CompraDirecta),
+                FL_Documento = @FL_Documento,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE PKIdOrdenCompra = @PKIdOrdenCompra;
+
+            SET @Mensaje = N'Orden de compra actualizada correctamente.';
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            UPDATE ORCO.OrdenCompraDetalle
+            SET Activo = 0,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE FKIdOrdenCompra_ORCO = @PKIdOrdenCompra;
+
+            UPDATE ORCO.OrdenCompraPartida
+            SET Activo = 0,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE FKIdOrdenCompra_ORCO = @PKIdOrdenCompra;
+
+            UPDATE ORCO.OrdenCompra
+            SET Activo = 0,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE PKIdOrdenCompra = @PKIdOrdenCompra;
+
+            SET @Mensaje = N'Orden de compra eliminada correctamente.';
+        END
+        ELSE
+            THROW 51000, N'Accion no valida.', 1;
+
+        COMMIT;
+
+        SET @Liga = CONCAT(N'idOrdenCompra:', ISNULL(@PKIdOrdenCompra, 0));
+
+        SELECT ResultJson = (
+            SELECT @Tipo AS Tipo, @Mensaje AS Mensaje, @Liga AS Liga
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+
+        IF ERROR_NUMBER() <> 51000
+            THROW;
+
+        SELECT ResultJson = (
+            SELECT
+                N'ERROR' AS Tipo,
+                ERROR_MESSAGE() AS Mensaje,
+                CONCAT(N'idOrdenCompra:', ISNULL(@PKIdOrdenCompra, 0)) AS Liga
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoOrdenCompraDetalle]
+    @Action INT,
+    @PKIdOrdenCompraDetalle INT = NULL,
+    @FKIdOrdenCompra_ORCO INT = NULL,
+    @FKIdRequisicionDetalle_ORCO INT = NULL,
+    @FKIdCotizacionDetalle_ORCO INT = NULL,
+    @FKIdTipoBien_ALMA INT = NULL,
+    @FKIdUnidades_ALMA INT = NULL,
+    @CantidadSolicitada DECIMAL(18,4) = NULL,
+    @CantidadRecibida DECIMAL(18,4) = NULL,
+    @PrecioUnitario DECIMAL(20,4) = NULL,
+    @Iva DECIMAL(20,4) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @IdUser INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRAN;
+
+        IF @Action IN (1, 2)
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM ORCO.OrdenCompra
+                WHERE PKIdOrdenCompra = @FKIdOrdenCompra_ORCO
+                  AND Activo = 1
+            )
+                THROW 51000, N'La orden de compra no existe o esta inactiva.', 1;
+
+            IF @FKIdRequisicionDetalle_ORCO IS NOT NULL
+            BEGIN
+                DECLARE @CantidadRequisicion DECIMAL(18,4);
+                DECLARE @CantidadYaOrdenada DECIMAL(18,4);
+
+                SELECT @CantidadRequisicion = rd.Cantidad
+                FROM ORCO.RequisicionDetalle rd
+                WHERE rd.PKIdRequisicionDetalle = @FKIdRequisicionDetalle_ORCO
+                  AND rd.Activo = 1;
+
+                SELECT @CantidadYaOrdenada = ISNULL(SUM(od.CantidadSolicitada), 0)
+                FROM ORCO.OrdenCompraDetalle od
+                WHERE od.FKIdRequisicionDetalle_ORCO = @FKIdRequisicionDetalle_ORCO
+                  AND od.Activo = 1
+                  AND od.PKIdOrdenCompraDetalle <> ISNULL(@PKIdOrdenCompraDetalle, 0);
+
+                IF @CantidadRequisicion IS NOT NULL
+                   AND ISNULL(@CantidadSolicitada, 0) + ISNULL(@CantidadYaOrdenada, 0) > @CantidadRequisicion
+                    THROW 51000, N'No se puede guardar la orden de compra. Excede la cantidad de la requisicion.', 1;
+            END;
+
+            SET @CantidadSolicitada = ISNULL(@CantidadSolicitada, 0);
+            SET @CantidadRecibida = ISNULL(@CantidadRecibida, 0);
+            SET @PrecioUnitario = ISNULL(@PrecioUnitario, 0);
+            SET @Iva = ISNULL(@Iva, 0);
+        END;
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO ORCO.OrdenCompraDetalle
+            (
+                FKIdOrdenCompra_ORCO,
+                FKIdRequisicionDetalle_ORCO,
+                FKIdCotizacionDetalle_ORCO,
+                FKIdTipoBien_ALMA,
+                FKIdUnidades_ALMA,
+                CantidadSolicitada,
+                CantidadRecibida,
+                PrecioUnitario,
+                Iva,
+                Observaciones,
+                Activo,
+                FechaCreacion,
+                UsuarioCreacion
+            )
+            VALUES
+            (
+                @FKIdOrdenCompra_ORCO,
+                @FKIdRequisicionDetalle_ORCO,
+                @FKIdCotizacionDetalle_ORCO,
+                @FKIdTipoBien_ALMA,
+                @FKIdUnidades_ALMA,
+                @CantidadSolicitada,
+                @CantidadRecibida,
+                @PrecioUnitario,
+                @Iva,
+                @Observaciones,
+                1,
+                GETDATE(),
+                @IdUser
+            );
+
+            SET @PKIdOrdenCompraDetalle = CONVERT(INT, SCOPE_IDENTITY());
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            UPDATE ORCO.OrdenCompraDetalle
+            SET
+                FKIdOrdenCompra_ORCO = @FKIdOrdenCompra_ORCO,
+                FKIdRequisicionDetalle_ORCO = @FKIdRequisicionDetalle_ORCO,
+                FKIdCotizacionDetalle_ORCO = @FKIdCotizacionDetalle_ORCO,
+                FKIdTipoBien_ALMA = @FKIdTipoBien_ALMA,
+                FKIdUnidades_ALMA = @FKIdUnidades_ALMA,
+                CantidadSolicitada = @CantidadSolicitada,
+                CantidadRecibida = @CantidadRecibida,
+                PrecioUnitario = @PrecioUnitario,
+                Iva = @Iva,
+                Observaciones = @Observaciones,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE PKIdOrdenCompraDetalle = @PKIdOrdenCompraDetalle
+              AND Activo = 1;
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            SELECT @FKIdOrdenCompra_ORCO = FKIdOrdenCompra_ORCO
+            FROM ORCO.OrdenCompraDetalle
+            WHERE PKIdOrdenCompraDetalle = @PKIdOrdenCompraDetalle;
+
+            UPDATE ORCO.OrdenCompraDetalle
+            SET Activo = 0,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE PKIdOrdenCompraDetalle = @PKIdOrdenCompraDetalle;
+        END
+        ELSE
+            THROW 51000, N'Accion no valida.', 1;
+
+        UPDATE oc
+        SET
+            Subtotal = ISNULL(t.Subtotal, 0),
+            Iva = ISNULL(t.Iva, 0),
+            Total = ISNULL(t.Total, 0),
+            FechaModificacion = GETDATE(),
+            UsuarioModificacion = @IdUser
+        FROM ORCO.OrdenCompra oc
+        OUTER APPLY
+        (
+            SELECT
+                SUM(od.Importe) AS Subtotal,
+                SUM(od.Iva) AS Iva,
+                SUM(od.TotalDetalle) AS Total
+            FROM ORCO.OrdenCompraDetalle od
+            WHERE od.FKIdOrdenCompra_ORCO = oc.PKIdOrdenCompra
+              AND od.Activo = 1
+        ) t
+        WHERE oc.PKIdOrdenCompra = @FKIdOrdenCompra_ORCO;
+
+        COMMIT;
+
+        SELECT ResultJson = (
+            SELECT
+                N'OK' AS Tipo,
+                N'Detalle de orden de compra guardado correctamente.' AS Mensaje,
+                CONCAT(N'idOrdenCompraDetalle:', ISNULL(@PKIdOrdenCompraDetalle, 0)) AS Liga
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+
+        IF ERROR_NUMBER() <> 51000
+            THROW;
+
+        SELECT ResultJson = (
+            SELECT
+                N'ERROR' AS Tipo,
+                ERROR_MESSAGE() AS Mensaje,
+                CONCAT(N'idOrdenCompraDetalle:', ISNULL(@PKIdOrdenCompraDetalle, 0)) AS Liga
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE [ORCO].[SP_MantenimientoOrdenCompraPartida]
+    @Action INT,
+    @PKIdOrdenCompraPartida INT = NULL,
+    @FKIdOrdenCompra_ORCO INT = NULL,
+    @FKIdPartida_CONTA INT = NULL,
+    @FKIdFuenteFinanciamiento_PRES INT = NULL,
+    @Importe DECIMAL(20,4) = NULL,
+    @Observaciones NVARCHAR(MAX) = NULL,
+    @IdUser INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRAN;
+
+        IF @Action IN (1, 2)
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM ORCO.OrdenCompra
+                WHERE PKIdOrdenCompra = @FKIdOrdenCompra_ORCO
+                  AND Activo = 1
+            )
+                THROW 51000, N'La orden de compra no existe o esta inactiva.', 1;
+
+            IF ISNULL(@Importe, 0) < 0
+                THROW 51000, N'El importe de la partida no puede ser negativo.', 1;
+
+            DECLARE @TotalOrden DECIMAL(20,4);
+            DECLARE @TotalPartidas DECIMAL(20,4);
+
+            SELECT @TotalOrden = ISNULL(Total, 0)
+            FROM ORCO.OrdenCompra
+            WHERE PKIdOrdenCompra = @FKIdOrdenCompra_ORCO;
+
+            SELECT @TotalPartidas = ISNULL(SUM(Importe), 0)
+            FROM ORCO.OrdenCompraPartida
+            WHERE FKIdOrdenCompra_ORCO = @FKIdOrdenCompra_ORCO
+              AND Activo = 1
+              AND PKIdOrdenCompraPartida <> ISNULL(@PKIdOrdenCompraPartida, 0);
+
+            IF @TotalOrden > 0 AND @TotalPartidas + ISNULL(@Importe, 0) > @TotalOrden
+                THROW 51000, N'El importe de las partidas excede el total de la orden de compra.', 1;
+        END;
+
+        IF @Action = 1
+        BEGIN
+            INSERT INTO ORCO.OrdenCompraPartida
+            (
+                FKIdOrdenCompra_ORCO,
+                FKIdPartida_CONTA,
+                FKIdFuenteFinanciamiento_PRES,
+                Importe,
+                Observaciones,
+                Activo,
+                FechaCreacion,
+                UsuarioCreacion
+            )
+            VALUES
+            (
+                @FKIdOrdenCompra_ORCO,
+                @FKIdPartida_CONTA,
+                @FKIdFuenteFinanciamiento_PRES,
+                ISNULL(@Importe, 0),
+                @Observaciones,
+                1,
+                GETDATE(),
+                @IdUser
+            );
+
+            SET @PKIdOrdenCompraPartida = CONVERT(INT, SCOPE_IDENTITY());
+        END
+        ELSE IF @Action = 2
+        BEGIN
+            UPDATE ORCO.OrdenCompraPartida
+            SET
+                FKIdOrdenCompra_ORCO = @FKIdOrdenCompra_ORCO,
+                FKIdPartida_CONTA = @FKIdPartida_CONTA,
+                FKIdFuenteFinanciamiento_PRES = @FKIdFuenteFinanciamiento_PRES,
+                Importe = ISNULL(@Importe, 0),
+                Observaciones = @Observaciones,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE PKIdOrdenCompraPartida = @PKIdOrdenCompraPartida
+              AND Activo = 1;
+        END
+        ELSE IF @Action = 3
+        BEGIN
+            UPDATE ORCO.OrdenCompraPartida
+            SET Activo = 0,
+                FechaModificacion = GETDATE(),
+                UsuarioModificacion = @IdUser
+            WHERE PKIdOrdenCompraPartida = @PKIdOrdenCompraPartida;
+        END
+        ELSE
+            THROW 51000, N'Accion no valida.', 1;
+
+        COMMIT;
+
+        SELECT ResultJson = (
+            SELECT
+                N'OK' AS Tipo,
+                N'Partida de orden de compra guardada correctamente.' AS Mensaje,
+                CONCAT(N'idOrdenCompraPartida:', ISNULL(@PKIdOrdenCompraPartida, 0)) AS Liga
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+
+        IF ERROR_NUMBER() <> 51000
+            THROW;
+
+        SELECT ResultJson = (
+            SELECT
+                N'ERROR' AS Tipo,
+                ERROR_MESSAGE() AS Mensaje,
+                CONCAT(N'idOrdenCompraPartida:', ISNULL(@PKIdOrdenCompraPartida, 0)) AS Liga
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+    END CATCH
+END;
+GO

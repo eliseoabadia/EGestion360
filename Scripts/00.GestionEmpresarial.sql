@@ -854,7 +854,7 @@ USING (VALUES
     (55, N'Departamento', 2, 50, N'Departamento', N'/configuracion/sistema/departamento', N'FaUserGroup', 1, N'ESP', 6, 1, GETDATE()),
 
     -- Configuración -> Catálogos presupuestales
-    (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'FaChartBar', 1, N'ESP', 1, 1, GETDATE()),
+    (100, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
     (219, N'Programas Presupuestales', 2, 100, N'Programas Presupuestales.', N'/configuracion/presupuestales/programas-presupuesta', N'FaFolderOpen', 1, N'ESP', 1, 1, GETDATE()),
     (220, N'Clave del Programa', 2, 100, N'Clave del Programa', N'/configuracion/presupuestales/programa-presupuestal', N'FaKey', 1, N'ESP', 1, 1, GETDATE()),
     (221, N'Unidad Responsable', 2, 220, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaUserGroup', 1, N'ESP', 2, 1, GETDATE()),
@@ -894,7 +894,7 @@ USING (VALUES
     (259, N'Fracción', 2, 250, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'RiListCheck2', 1, N'ESP', 12, 1, GETDATE()),
 
     -- Configuración -> Patrimonio
-    (260, N'Patrimonio', 1, 1, N'Patrimonio', N'/', N'FaFolder', 1, N'ESP', 3, 1, GETDATE()),
+    (260, N'Patrimonio', 1, 1, N'Patrimonio', N'/', N'FaFolder', 1, N'ESP', 4, 1, GETDATE()),
     (261, N'Familia', 2, 260, N'Familia', N'/configuracion/Patrimonio/Familia', N'FaFolder', 1, N'ESP', 1, 1, GETDATE()),
     (262, N'Grupo Bien', 2, 260, N'Grupo Bien', N'/configuracion/Patrimonio/Grupo_Bien', N'FaFolderOpen', 1, N'ESP', 2, 1, GETDATE()),
     (263, N'Bienes y Servicios', 2, 260, N'Bienes y Servicios', N'/configuracion/Patrimonio/Bienes_Servicios', N'FaTag', 1, N'ESP', 3, 1, GETDATE()),
@@ -904,7 +904,7 @@ USING (VALUES
     (267, N'Personas', 2, 260, N'Personas', N'/configuracion/Patrimonio/Personas', N'FaUsers', 1, N'ESP', 7, 1, GETDATE()),
 
     -- Configuración -> Almacén
-    (270, N'Almacén', 1, 1, N'Almacén', N'/', N'FaFolderOpen', 1, N'ESP', 4, 1, GETDATE()),
+    (270, N'Almacén', 1, 1, N'Almacén', N'/', N'FaFolderOpen', 1, N'ESP', 5, 1, GETDATE()),
     (271, N'Motivo de Entradas Salidas', 2, 270, N'Motivo de Entradas Salidas', N'/configuracion/almacen/Motivo_Entradas_Salidas', N'FaTools', 1, N'ESP', 1, 1, GETDATE()),
     (272, N'Estatus Solicitud', 2, 270, N'Estatus Solicitud', N'/configuracion/almacen/Estatus_Solicitud', N'FaFlag', 1, N'ESP', 2, 1, GETDATE()),
     (273, N'Unidades', 2, 270, N'Unidades', N'/configuracion/almacen/Unidades', N'RiListCheck2', 1, N'ESP', 3, 1, GETDATE()),
@@ -915,7 +915,7 @@ USING (VALUES
     (278, N'Número Conteo', 2, 270, N'Número Conteo', N'/configuracion/almacen/Numero_Conteo', N'RiListCheck2', 1, N'ESP', 8, 1, GETDATE()),
 
     -- Configuración -> Tesorería
-    (280, N'Tesorería', 1, 1, N'Tesorería', N'/', N'FaChartLine', 1, N'ESP', 5, 1, GETDATE()),
+    (280, N'Tesorería', 1, 1, N'Tesorería', N'/', N'FaChartLine', 1, N'ESP', 6, 1, GETDATE()),
     (281, N'Tipo de Cambio', 2, 280, N'Tipo de Cambio', N'/configuracion/tesoreria/Tipo_Cambio', N'FaChartLine', 1, N'ESP', 1, 1, GETDATE()),
     (282, N'Tipo Inversión', 2, 280, N'Tipo Inversión', N'/configuracion/tesoreria/Tipo_Inversion', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
     (283, N'Tipo Moneda', 2, 280, N'Tipo Moneda', N'/configuracion/tesoreria/Tipo_Moneda', N'FaTag', 1, N'ESP', 3, 1, GETDATE()),

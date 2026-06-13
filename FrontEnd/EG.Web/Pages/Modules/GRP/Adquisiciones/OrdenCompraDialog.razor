@@ -108,6 +108,13 @@
                                  Min="0m" />
             </MudItem>
 
+            <MudItem xs="12" md="4">
+                <MudTextField Value="@CurrencyDisplay"
+                              Label="Moneda"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+
             <MudItem xs="12" md="4" Class="d-flex align-center">
                 <MudSwitch T="bool" @bind-Value="item.CompraDirecta" Label="Compra directa" Color="Color.Primary" />
             </MudItem>
@@ -126,6 +133,9 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int CurrencyId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -150,6 +160,7 @@
     private string dialogTitle => Id.HasValue ? "Editar Orden de Compra" : "Nueva Orden de Compra";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string CurrencyDisplay => $"{CurrencyName} {CurrencySymbol}".Trim();
 
     protected override async Task OnInitializedAsync()
     {
@@ -220,6 +231,9 @@
         item.FkidProveedorSis = _selectedProveedor.Id;
         item.FechaOrdenCompra = _fechaOrdenCompra ?? DateTime.Today;
         item.FkidEstatusOrdenCompraOrco = item.FkidEstatusOrdenCompraOrco <= 0 ? 1 : item.FkidEstatusOrdenCompraOrco;
+        item.MonedaId = item.MonedaId.HasValue && item.MonedaId.Value > 0
+            ? item.MonedaId
+            : (CurrencyId > 0 ? CurrencyId : item.MonedaId);
         item.NumeroOrdenCompra ??= string.Empty;
         item.Observaciones ??= string.Empty;
         item.MotivoCancelacion ??= string.Empty;

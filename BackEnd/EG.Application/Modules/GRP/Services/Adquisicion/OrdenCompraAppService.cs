@@ -1,5 +1,7 @@
 using EG.Application.Interfaces.Adquisicion;
 using EG.Business.Services;
+using EG.Common;
+using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
@@ -81,7 +83,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return Failure<OrdenCompraResponse>($"Error al crear orden de compra: {ex.Message}");
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("crear", userVisibleException);
+                    return Failure<OrdenCompraResponse>(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("crear", ex);
+                return Failure<OrdenCompraResponse>(
+                    UserFacingMessages.OperationFailed("crear orden de compra"),
+                    "ERROR");
             }
         }
 
@@ -118,7 +129,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return Failure<OrdenCompraResponse>($"Error al actualizar orden de compra: {ex.Message}");
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("actualizar", userVisibleException);
+                    return Failure<OrdenCompraResponse>(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("actualizar", ex);
+                return Failure<OrdenCompraResponse>(
+                    UserFacingMessages.OperationFailed("actualizar orden de compra"),
+                    "ERROR");
             }
         }
 
@@ -169,10 +189,24 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("eliminar", userVisibleException);
+                    return new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = userVisibleException.UserMessage,
+                        Code = userVisibleException.Code,
+                        Data = false,
+                        TotalCount = 0
+                    };
+                }
+
+                LogException("eliminar", ex);
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Error al eliminar orden de compra: {ex.Message}",
+                    Message = UserFacingMessages.OperationFailed("eliminar orden de compra"),
                     Code = "ERROR",
                     Data = false,
                     TotalCount = 0
@@ -215,7 +249,16 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                return Failure<OrdenCompraResponse>($"Error al autorizar orden de compra: {ex.Message}");
+                if (ex is UserVisibleException userVisibleException)
+                {
+                    LogUserVisibleMessage("autorizar", userVisibleException);
+                    return Failure<OrdenCompraResponse>(userVisibleException.UserMessage, userVisibleException.Code);
+                }
+
+                LogException("autorizar", ex);
+                return Failure<OrdenCompraResponse>(
+                    UserFacingMessages.OperationFailed("autorizar orden de compra"),
+                    "ERROR");
             }
         }
 

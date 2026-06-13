@@ -4,7 +4,8 @@ namespace EG.Domain.DTOs.Requests.Presupuestales
 {
     public class ProyectoDto
     {
-        public int PkidProyecto { get; set; }
+        public int PkidPy { get; set; }
+        public string Clave { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }

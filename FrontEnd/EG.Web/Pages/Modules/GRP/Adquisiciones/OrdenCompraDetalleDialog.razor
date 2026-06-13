@@ -97,7 +97,7 @@
                                  Format="0.00"
                                  Culture="@NumberCulture"
                                  Adornment="Adornment.Start"
-                                 AdornmentText="$"
+                                 AdornmentText="@CurrencySymbol"
                                  Min="0m" />
             </MudItem>
 
@@ -108,7 +108,7 @@
                                  Format="0.00"
                                  Culture="@NumberCulture"
                                  Adornment="Adornment.Start"
-                                 AdornmentText="$"
+                                 AdornmentText="@CurrencySymbol"
                                  Min="0m" />
             </MudItem>
 
@@ -127,6 +127,8 @@
     [Parameter] public int? Id { get; set; }
     [Parameter] public int OrdenCompraId { get; set; }
     [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -309,8 +311,10 @@
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
 
-    private static string Money(decimal? value) =>
-        value.HasValue ? $"${value.Value.ToString("0.00", NumberCulture)}" : "$0.00";
+    private string Money(decimal? value) =>
+        value.HasValue
+            ? $"{CurrencySymbol}{value.Value.ToString("0.00", NumberCulture)}"
+            : $"{CurrencySymbol}0.00";
 
     private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 

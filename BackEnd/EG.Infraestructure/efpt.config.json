@@ -259,6 +259,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[EstatusOrdenCompra]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[EstatusRequisicion]",
          "ObjectType": 0
       },
@@ -280,6 +284,18 @@
       },
       {
          "Name": "[ORCO].[Modalidad]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[OrdenCompra]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[OrdenCompraDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[OrdenCompraPartida]",
          "ObjectType": 0
       },
       {
@@ -863,6 +879,18 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_OrdenCompra]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_OrdenCompraDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_OrdenCompraPartida]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ORCO].[Vw_PAAAS]",
          "ObjectType": 3
       },
@@ -952,6 +980,10 @@
       },
       {
          "Name": "[PRES].[Vw_FacturaDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_FN]",
          "ObjectType": 3
       },
       {

@@ -8,10 +8,10 @@ namespace EG.Business.Mapping.Presupuestales
     public class ProyectoMappingProfile : IRegister
     {
         public void Register(TypeAdapterConfig config){
-            config.NewConfig<Proyecto, ProyectoDto>().TwoWays();
-            config.NewConfig<Proyecto, ProyectoResponse>();
+            config.NewConfig<Py, ProyectoDto>().TwoWays();
+            config.NewConfig<Py, ProyectoResponse>();
             config.NewConfig<ProyectoResponse, ProyectoDto>()
-                .Ignore(dest => dest.PkidProyecto)
+                .Ignore(dest => dest.PkidPy)
                 .IgnoreNullValues(true);
         }
     }

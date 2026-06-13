@@ -12,11 +12,14 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     public class FnService : IFnService
     {
         private readonly GenericService<Fn, FnDto, FnResponse> _service;
+        private readonly GenericService<VwFn, FnDto, FnResponse> _serviceView;
 
         public FnService(
-            GenericService<Fn, FnDto, FnResponse> service)
+            GenericService<Fn, FnDto, FnResponse> service,
+            GenericService<VwFn, FnDto, FnResponse> serviceView)
         {
             _service = service;
+            _serviceView = serviceView;
             ConfigureService();
             ConfigureValidations();
         }
@@ -48,12 +51,12 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task<IEnumerable<FnResponse>> GetAllAsync()
         {
-            return await _service.GetAllAsync();
+            return await _serviceView.GetAllAsync();
         }
 
         public async Task<FnResponse?> GetByIdAsync(int id)
         {
-            return await _service.GetByIdAsync(id);
+            return await _serviceView.GetByIdAsync(id);
         }
 
         public async Task<FnResponse> AddAsync(FnDto dto, int usuarioId)
@@ -61,20 +64,20 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.UtcNow;
             await _service.AddAsync(dto);
-            var entities = await _service.GetAllAsync();
-            return entities.LastOrDefault();
+            return await GetByIdAsync(dto.PkidFn) ?? dto.Adapt<FnResponse>();
         }
 
         public async Task UpdateAsync(int id, FnDto dto, int usuarioId)
         {
-            dto.UsuarioCreacion = usuarioId;
-            dto.FechaCreacion = DateTime.UtcNow;
+            var existing = await _serviceView.GetByIdAsync(id);
+            dto.UsuarioCreacion = existing?.UsuarioCreacion ?? usuarioId;
+            dto.FechaCreacion = existing?.FechaCreacion ?? DateTime.UtcNow;
             await _service.UpdateAsync(id, dto);
         }
 
         public async Task DeleteAsync(int id)
         {
-            var existing = await GetByIdAsync(id);
+            var existing = await _serviceView.GetByIdAsync(id);
             if (existing == null) throw new KeyNotFoundException($"Fn con ID {id} no encontrado");
 
             var dto = new FnDto
@@ -93,13 +96,17 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task<PagedResult<FnResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            var query = _service.GetQueryWithIncludes();
+            var query = _serviceView.GetQueryWithIncludes();
 
             if (!string.IsNullOrWhiteSpace(request.Filtro))
             {
                 query = query.Where(e =>
                     e.Clave.ToString().Contains(request.Filtro) ||
-                    e.Descripcion.Contains(request.Filtro));
+                    e.Descripcion.Contains(request.Filtro) ||
+                    e.ClaveNombre.Contains(request.Filtro) ||
+                    e.Gfclave.ToString().Contains(request.Filtro) ||
+                    e.Gfdescripcion.Contains(request.Filtro) ||
+                    e.GfclaveNombre.Contains(request.Filtro));
             }
 
             if (!string.IsNullOrEmpty(request.SortLabel))
@@ -110,6 +117,8 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
                     "PkidFn" => isAscending ? query.OrderBy(e => e.PkidFn) : query.OrderByDescending(e => e.PkidFn),
                     "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
                     "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "GfClave" => isAscending ? query.OrderBy(e => e.Gfclave) : query.OrderByDescending(e => e.Gfclave),
+                    "GfDescripcion" => isAscending ? query.OrderBy(e => e.Gfdescripcion) : query.OrderByDescending(e => e.Gfdescripcion),
                     _ => query.OrderBy(e => e.Clave)
                 };
             }
