@@ -1,0 +1,126 @@
+@page "/nomina/configuracion/catalogos/contratos-terceros"
+@using System.Globalization
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomContratoTercerosResponse, NomContratoTercerosResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Contratos de terceros"
+                    Subtitle="Catalogo NOM.ContratoTerceros"
+                    Icon="@Icons.Material.Filled.Assignment"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomContratoTercerosResponse"
+                      @ref="table"
+                      Title="Lista de Contratos de terceros"
+                      SearchPlaceholder="Buscar..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomContratoTercerosResponse">@GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Disabled="@IsBusy"
+                                       OnClick="@(() => EditItem(GetItemId(item)))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Disabled="@IsBusy"
+                                       OnClick="@(() => DeleteItem(GetItemId(item)))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomContratoTercerosResponse> table = null!;
+
+    protected override string ModuleName => "Nomina";
+    protected override string SubModuleName => "Contrato_Terceros";
+
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomContratoTercerosResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomContratoTercerosResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomContratoTercerosResponse>);
+
+    protected override string GetDefaultSortLabel() => "NombreContrato";
+
+    private IEnumerable<PropertyInfo> VisibleColumns => typeof(NomContratoTercerosResponse).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        .Where(p => p.CanRead && !IsHiddenColumn(p))
+        .Take(7);
+
+    private static bool IsHiddenColumn(PropertyInfo property)
+        => property.Name is "ClaveNombre" or "FechaCreacion" or "UsuarioCreacion" or "FechaModificacion" or "UsuarioModificacion";
+
+    private static int GetItemId(NomContratoTercerosResponse item)
+    {
+        var property = typeof(NomContratoTercerosResponse).GetProperties().FirstOrDefault(p => p.Name.StartsWith("Pkid") && p.PropertyType == typeof(int));
+        return property?.GetValue(item) as int? ?? 0;
+    }
+
+    private static string FormatValue(object? value)
+    {
+        return value switch
+        {
+            null => string.Empty,
+            DateTime date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            decimal number => number.ToString("N2", CultureInfo.InvariantCulture),
+            bool flag => flag ? "Si" : "No",
+            _ => value.ToString() ?? string.Empty
+        };
+    }
+
+    private static string GetLabel(PropertyInfo property)
+        => property.Name.Replace("Fkid", "FK ").Replace("Pkid", "ID ");
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomContratoTercerosResponse> items)
+    {
+        return items.Select(item => VisibleColumns.ToDictionary(column => GetLabel(column), column => FormatValue(column.GetValue(item))));
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.ClaveNombre ?? "el registro";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

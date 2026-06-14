@@ -5,13 +5,9 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Partidum1
+public partial class TipoPago1
 {
-    public int PkidPartida { get; set; }
-
-    public int? FkidConceptoSis { get; set; }
-
-    public string Clave { get; set; }
+    public int PkidTipoPago { get; set; }
 
     public string Descripcion { get; set; }
 
@@ -24,10 +20,6 @@ public partial class Partidum1
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
-    public virtual Concepto2 FkidConceptoSisNavigation { get; set; }
-
-    public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

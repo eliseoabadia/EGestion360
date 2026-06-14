@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Partidum1
+public partial class Concepto2
 {
-    public int PkidPartida { get; set; }
+    public int PkidConcepto { get; set; }
 
-    public int? FkidConceptoSis { get; set; }
+    public int FkidCapituloSis { get; set; }
 
     public string Clave { get; set; }
 
@@ -25,9 +25,9 @@ public partial class Partidum1
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual Concepto2 FkidConceptoSisNavigation { get; set; }
+    public virtual Capitulo1 FkidCapituloSisNavigation { get; set; }
 
-    public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
+    public virtual ICollection<Partidum1> Partidum1s { get; set; } = new List<Partidum1>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

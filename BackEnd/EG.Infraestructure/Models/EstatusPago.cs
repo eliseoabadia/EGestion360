@@ -5,11 +5,9 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Capitulo1
+public partial class EstatusPago
 {
-    public int PkidCapitulo { get; set; }
-
-    public string Clave { get; set; }
+    public int PkidEstatusPago { get; set; }
 
     public string Descripcion { get; set; }
 
@@ -17,15 +15,9 @@ public partial class Capitulo1
 
     public DateTime? FechaCreacion { get; set; }
 
-    public int UsuarioCreacion { get; set; }
+    public int? UsuarioCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
-    public virtual ICollection<Concepto2> Concepto2s { get; set; } = new List<Concepto2>();
-
-    public virtual Usuario UsuarioCreacionNavigation { get; set; }
-
-    public virtual Usuario UsuarioModificacionNavigation { get; set; }
 }

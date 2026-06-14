@@ -5,19 +5,25 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Concepto1
+public partial class Credito
 {
-    public int PkidConcepto { get; set; }
+    public int PkidCredito { get; set; }
 
-    public string Clave { get; set; }
+    public int FkidPersonaNom { get; set; }
 
-    public string SubClave { get; set; }
+    public int FkidContratoTerceroNom { get; set; }
 
-    public string PerDed { get; set; }
+    public string MotivoCredito { get; set; }
 
-    public string Nombre { get; set; }
+    public decimal ImporteCredito { get; set; }
 
-    public int FkidFormaCalculoNom { get; set; }
+    public decimal TasaInteres { get; set; }
+
+    public int NumeroPagos { get; set; }
+
+    public int FkidPeriodoInicial { get; set; }
+
+    public decimal ImportePago { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 

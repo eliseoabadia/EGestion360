@@ -5,19 +5,15 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Concepto1
+public partial class PeriodoActivo
 {
-    public int PkidConcepto { get; set; }
+    public int PkidPeriodoActivo { get; set; }
 
-    public string Clave { get; set; }
+    public int FkidEmpresaSis { get; set; }
 
-    public string SubClave { get; set; }
+    public int IdPeriodo { get; set; }
 
-    public string PerDed { get; set; }
-
-    public string Nombre { get; set; }
-
-    public int FkidFormaCalculoNom { get; set; }
+    public bool EstaCerrado { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 
@@ -28,4 +24,10 @@ public partial class Concepto1
     public DateTime? FechaModificacion { get; set; }
 
     public bool Activo { get; set; }
+
+    public bool? EstaComprometido { get; set; }
+
+    public bool? EstaDevengado { get; set; }
+
+    public bool? EstaEjercido { get; set; }
 }

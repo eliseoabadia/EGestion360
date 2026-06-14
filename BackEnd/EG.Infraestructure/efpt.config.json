@@ -239,11 +239,107 @@
          "ObjectType": 0
       },
       {
+         "Name": "[NOM].[Concepto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ConceptoFactor]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ConceptoFijo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ConceptoPorcentaje]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ConceptoProporcional]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ConceptoTabular]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ConceptoVariable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ContratoTerceros]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[Credito]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[DescuentoCredito]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[DescuentoInfonavit]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[EstatusPago]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[FactorInt]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[Infonavit]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[PeriodoActivo]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[NOM].[Persona]",
          "ObjectType": 0
       },
       {
          "Name": "[NOM].[PersonaArea]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[SalarioMinimo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[SueldoEspecial]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[SueldoLiqFin]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[SueldoMensual]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[SueldoQuincenal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[SueldoSemanal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[TipoIncapacidad]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[TipoPago]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[TipoPension]",
          "ObjectType": 0
       },
       {

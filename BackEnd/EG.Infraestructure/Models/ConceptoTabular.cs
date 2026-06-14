@@ -5,19 +5,21 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Concepto1
+public partial class ConceptoTabular
 {
-    public int PkidConcepto { get; set; }
+    public int PkidConceptoTabulador { get; set; }
 
-    public string Clave { get; set; }
+    public int FkidEmpresaSis { get; set; }
 
-    public string SubClave { get; set; }
+    public int FkidConceptoNom { get; set; }
 
-    public string PerDed { get; set; }
+    public int FkidPuestoNom { get; set; }
 
-    public string Nombre { get; set; }
+    public decimal ImporteMensual { get; set; }
 
-    public int FkidFormaCalculoNom { get; set; }
+    public DateOnly? FechaInicio { get; set; }
+
+    public DateOnly? FechaFin { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 

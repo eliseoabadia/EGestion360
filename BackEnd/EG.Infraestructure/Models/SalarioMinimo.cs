@@ -5,19 +5,17 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Concepto1
+public partial class SalarioMinimo
 {
-    public int PkidConcepto { get; set; }
+    public int PkidSalarioMinimo { get; set; }
 
-    public string Clave { get; set; }
+    public int ZonaEconomica { get; set; }
 
-    public string SubClave { get; set; }
+    public int QuincenaInicio { get; set; }
 
-    public string PerDed { get; set; }
+    public int QuincenaFin { get; set; }
 
-    public string Nombre { get; set; }
-
-    public int FkidFormaCalculoNom { get; set; }
+    public decimal Importe { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 

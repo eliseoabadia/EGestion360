@@ -5,19 +5,21 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Concepto1
+public partial class FactorInt
 {
-    public int PkidConcepto { get; set; }
+    public int PkidFactor { get; set; }
 
-    public string Clave { get; set; }
+    public int Anio { get; set; }
 
-    public string SubClave { get; set; }
+    public int Vacaciones { get; set; }
 
-    public string PerDed { get; set; }
+    public decimal Vacacional { get; set; }
 
-    public string Nombre { get; set; }
+    public int Aguinaldo { get; set; }
 
-    public int FkidFormaCalculoNom { get; set; }
+    public decimal? Integracion { get; set; }
+
+    public decimal? PrimaDominical { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 

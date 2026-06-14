@@ -5,19 +5,11 @@ using System.Collections.Generic;
 
 namespace EG.Infraestructure.Models;
 
-public partial class Concepto1
+public partial class TipoPension
 {
-    public int PkidConcepto { get; set; }
+    public int PkidTipoPension { get; set; }
 
-    public string Clave { get; set; }
-
-    public string SubClave { get; set; }
-
-    public string PerDed { get; set; }
-
-    public string Nombre { get; set; }
-
-    public int FkidFormaCalculoNom { get; set; }
+    public string Descripcion { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 

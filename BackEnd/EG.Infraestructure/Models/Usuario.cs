@@ -95,9 +95,9 @@ public partial class Usuario
 
     public virtual ICollection<Clcfactura> ClcfacturaUsuarioModificacionNavigations { get; set; } = new List<Clcfactura>();
 
-    public virtual ICollection<Concepto1> Concepto1UsuarioCreacionNavigations { get; set; } = new List<Concepto1>();
+    public virtual ICollection<Concepto2> Concepto2UsuarioCreacionNavigations { get; set; } = new List<Concepto2>();
 
-    public virtual ICollection<Concepto1> Concepto1UsuarioModificacionNavigations { get; set; } = new List<Concepto1>();
+    public virtual ICollection<Concepto2> Concepto2UsuarioModificacionNavigations { get; set; } = new List<Concepto2>();
 
     public virtual ICollection<Concepto> ConceptoUsuarioCreacionNavigations { get; set; } = new List<Concepto>();
 
@@ -475,13 +475,13 @@ public partial class Usuario
 
     public virtual ICollection<TipoMonedum> TipoMonedumUsuarioModificacionNavigations { get; set; } = new List<TipoMonedum>();
 
+    public virtual ICollection<TipoPago1> TipoPago1UsuarioCreacionNavigations { get; set; } = new List<TipoPago1>();
+
+    public virtual ICollection<TipoPago1> TipoPago1UsuarioModificacionNavigations { get; set; } = new List<TipoPago1>();
+
     public virtual ICollection<TipoPagoSf> TipoPagoSfUsuarioCreacionNavigations { get; set; } = new List<TipoPagoSf>();
 
     public virtual ICollection<TipoPagoSf> TipoPagoSfUsuarioModificacionNavigations { get; set; } = new List<TipoPagoSf>();
-
-    public virtual ICollection<TipoPago> TipoPagoUsuarioCreacionNavigations { get; set; } = new List<TipoPago>();
-
-    public virtual ICollection<TipoPago> TipoPagoUsuarioModificacionNavigations { get; set; } = new List<TipoPago>();
 
     public virtual ICollection<TipoPatrimonio> TipoPatrimonioUsuarioCreacionNavigations { get; set; } = new List<TipoPatrimonio>();
 

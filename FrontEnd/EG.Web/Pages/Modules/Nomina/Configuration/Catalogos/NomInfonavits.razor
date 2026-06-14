@@ -1,0 +1,126 @@
+@page "/nomina/configuracion/catalogos/infonavit"
+@using System.Globalization
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomInfonavitResponse, NomInfonavitResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Infonavit"
+                    Subtitle="Catalogo NOM.Infonavit"
+                    Icon="@Icons.Material.Filled.House"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomInfonavitResponse"
+                      @ref="table"
+                      Title="Lista de Infonavit"
+                      SearchPlaceholder="Buscar..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomInfonavitResponse">@GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Disabled="@IsBusy"
+                                       OnClick="@(() => EditItem(GetItemId(item)))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Disabled="@IsBusy"
+                                       OnClick="@(() => DeleteItem(GetItemId(item)))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomInfonavitResponse> table = null!;
+
+    protected override string ModuleName => "Nomina";
+    protected override string SubModuleName => "Infonavit";
+
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomInfonavitResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomInfonavitResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomInfonavitResponse>);
+
+    protected override string GetDefaultSortLabel() => "PkidInfonavit";
+
+    private IEnumerable<PropertyInfo> VisibleColumns => typeof(NomInfonavitResponse).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        .Where(p => p.CanRead && !IsHiddenColumn(p))
+        .Take(7);
+
+    private static bool IsHiddenColumn(PropertyInfo property)
+        => property.Name is "ClaveNombre" or "FechaCreacion" or "UsuarioCreacion" or "FechaModificacion" or "UsuarioModificacion";
+
+    private static int GetItemId(NomInfonavitResponse item)
+    {
+        var property = typeof(NomInfonavitResponse).GetProperties().FirstOrDefault(p => p.Name.StartsWith("Pkid") && p.PropertyType == typeof(int));
+        return property?.GetValue(item) as int? ?? 0;
+    }
+
+    private static string FormatValue(object? value)
+    {
+        return value switch
+        {
+            null => string.Empty,
+            DateTime date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            decimal number => number.ToString("N2", CultureInfo.InvariantCulture),
+            bool flag => flag ? "Si" : "No",
+            _ => value.ToString() ?? string.Empty
+        };
+    }
+
+    private static string GetLabel(PropertyInfo property)
+        => property.Name.Replace("Fkid", "FK ").Replace("Pkid", "ID ");
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomInfonavitResponse> items)
+    {
+        return items.Select(item => VisibleColumns.ToDictionary(column => GetLabel(column), column => FormatValue(column.GetValue(item))));
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.ClaveNombre ?? "el registro";
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

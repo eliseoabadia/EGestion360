@@ -15,6 +15,7 @@ using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
+using EG.Application.Interfaces.Nomina;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Application.Interfaces.PresupuestoModificado;
 using EG.Application.Interfaces.SoporteDocumental;
@@ -25,6 +26,7 @@ using EG.Application.Services.Almacen;
 using EG.Application.Services.ConteoCiclico;
 using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
+using EG.Application.Services.Nomina;
 using EG.Application.Services.PresupuestoComprometido;
 using EG.Application.Services.PresupuestoModificado;
 using EG.Application.Services.SoporteDocumental;
@@ -37,6 +39,7 @@ using EG.Business.Services;
 using EG.Common.Util;
 using EG.Domain.Interfaces;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
+using EG.Domain.DTOs.Responses.Nomina;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.Tesoreria;
@@ -158,6 +161,33 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ISectorAppServices, SectorAppServices>();
             services.AddScoped<ITipoRecursoAppServices, TipoRecursoAppServices>();
             services.AddScoped<IUnidadResponsableAppServices, UnidadResponsableAppServices>();
+
+            // Application services - Nomina
+            services.AddScoped<INominaCrudAppService<NomConceptoResponse>, NomConceptoAppService>();
+            services.AddScoped<INominaCrudAppService<NomConceptoFactorResponse>, NomConceptoFactorAppService>();
+            services.AddScoped<INominaCrudAppService<NomConceptoFijoResponse>, NomConceptoFijoAppService>();
+            services.AddScoped<INominaCrudAppService<NomConceptoPorcentajeResponse>, NomConceptoPorcentajeAppService>();
+            services.AddScoped<INominaCrudAppService<NomConceptoProporcionalResponse>, NomConceptoProporcionalAppService>();
+            services.AddScoped<INominaCrudAppService<NomConceptoTabularResponse>, NomConceptoTabularAppService>();
+            services.AddScoped<INominaCrudAppService<NomConceptoVariableResponse>, NomConceptoVariableAppService>();
+            services.AddScoped<INominaCrudAppService<NomContratoTercerosResponse>, NomContratoTercerosAppService>();
+            services.AddScoped<INominaCrudAppService<NomCreditoResponse>, NomCreditoAppService>();
+            services.AddScoped<INominaCrudAppService<NomDescuentoCreditoResponse>, NomDescuentoCreditoAppService>();
+            services.AddScoped<INominaCrudAppService<NomDescuentoInfonavitResponse>, NomDescuentoInfonavitAppService>();
+            services.AddScoped<INominaCrudAppService<NomEstatusPagoResponse>, NomEstatusPagoAppService>();
+            services.AddScoped<INominaCrudAppService<NomFactorIntResponse>, NomFactorIntAppService>();
+            services.AddScoped<INominaCrudAppService<NomInfonavitResponse>, NomInfonavitAppService>();
+            services.AddScoped<INominaCrudAppService<NomPeriodoActivoResponse>, NomPeriodoActivoAppService>();
+            services.AddScoped<INominaCrudAppService<NomSalarioMinimoResponse>, NomSalarioMinimoAppService>();
+            services.AddScoped<INominaCrudAppService<NomSueldoEspecialResponse>, NomSueldoEspecialAppService>();
+            services.AddScoped<INominaCrudAppService<NomSueldoLiqFinResponse>, NomSueldoLiqFinAppService>();
+            services.AddScoped<INominaCrudAppService<NomSueldoMensualResponse>, NomSueldoMensualAppService>();
+            services.AddScoped<INominaCrudAppService<NomSueldoQuincenalResponse>, NomSueldoQuincenalAppService>();
+            services.AddScoped<INominaCrudAppService<NomSueldoSemanalResponse>, NomSueldoSemanalAppService>();
+            services.AddScoped<INominaCrudAppService<NomTipoIncapacidadResponse>, NomTipoIncapacidadAppService>();
+            services.AddScoped<INominaCrudAppService<NomTipoPagoResponse>, NomTipoPagoAppService>();
+            services.AddScoped<INominaCrudAppService<NomTipoPensionResponse>, NomTipoPensionAppService>();
+            services.AddScoped<INominaProcesoAppService, NominaProcesoAppService>();
 
             // Application services - Conteo ciclico
             services.AddScoped<IConteoAppService, ConteoAppService>();
