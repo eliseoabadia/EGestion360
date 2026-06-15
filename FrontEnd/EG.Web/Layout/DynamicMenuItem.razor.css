@@ -23,11 +23,16 @@
     text-align: left;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 .sidebar-group-header {
     justify-content: space-between;
+    gap: 8px;
+}
+
+.sidebar-link {
+    gap: 11px;
 }
 
 .sidebar-link::before,
@@ -50,7 +55,7 @@
     background: var(--eg-primary-soft);
     color: var(--mud-palette-primary);
     outline: none;
-    transform: translateX(1px);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 16%, transparent);
 }
 
 .sidebar-link.active {
@@ -79,19 +84,22 @@
 
 .group-left {
     min-width: 0;
+    flex: 1 1 auto;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 11px;
 }
 
 .sidebar-icon {
-    width: 18px;
-    flex: 0 0 18px;
-    font-size: 1.04rem;
+    width: 20px;
+    flex: 0 0 20px;
+    font-size: 1rem;
+    line-height: 1;
     text-align: center;
 }
 
 .menu-label {
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -116,25 +124,25 @@
 }
 
 .level-1 {
-    min-height: 35px;
-    padding-left: 26px;
+    min-height: 34px;
+    padding: 7px 10px;
     font-size: 0.82rem;
     font-weight: 520;
 }
 
 .level-2 {
-    min-height: 32px;
-    padding-left: 40px;
+    min-height: 31px;
+    padding: 6px 9px;
     font-size: 0.78rem;
     font-weight: 480;
 }
 
 .level-1::before {
-    left: 14px;
+    left: 0;
 }
 
 .level-2::before {
-    left: 28px;
+    left: 0;
 }
 
 .sidebar-children {
@@ -153,21 +161,32 @@
 }
 
 .sidebar-children.expanded .sidebar-children-inner {
-    margin: 2px 0 5px 8px;
-    padding: 4px 0 5px 6px;
-    border-left: 1px solid color-mix(in srgb, var(--mud-palette-primary) 42%, transparent);
-    border-radius: 0 0 0 7px;
-    background: linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-primary) 10%, transparent) 0%, transparent 72%);
+    margin: 4px 0 7px;
+    padding: 5px;
+    border-left: 3px solid color-mix(in srgb, var(--mud-palette-primary) 48%, transparent);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-primary) 12%, transparent) 0%, transparent 68%),
+        color-mix(in srgb, var(--mud-palette-surface) 42%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
 
 .level-1 + .sidebar-children.expanded .sidebar-children-inner {
     border-left-color: color-mix(in srgb, var(--mud-palette-secondary) 48%, transparent);
-    background: linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-secondary) 12%, transparent) 0%, transparent 72%);
+    margin: 4px 2px 7px;
+    padding: 5px;
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-secondary) 12%, transparent) 0%, transparent 68%),
+        color-mix(in srgb, var(--mud-palette-surface) 36%, transparent);
 }
 
 .level-2 + .sidebar-children.expanded .sidebar-children-inner {
     border-left-color: color-mix(in srgb, var(--eg-accent) 52%, transparent);
-    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 12%, transparent) 0%, transparent 72%);
+    margin: 4px 2px 7px;
+    padding: 5px;
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 11%, transparent) 0%, transparent 68%),
+        color-mix(in srgb, var(--mud-palette-surface) 32%, transparent);
 }
 
 .sidebar-group-header:disabled,
@@ -201,7 +220,10 @@
 
 .bootstrap-sidebar.morena .sidebar-children.expanded .sidebar-children-inner {
     border-left-color: color-mix(in srgb, var(--eg-accent) 58%, transparent);
-    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 14%, transparent) 0%, transparent 72%);
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 15%, transparent) 0%, transparent 70%),
+        color-mix(in srgb, var(--mud-palette-drawer-text) 7%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--eg-accent) 12%, transparent);
 }
 
 .bootstrap-sidebar.collapsed .sidebar-group-header,
