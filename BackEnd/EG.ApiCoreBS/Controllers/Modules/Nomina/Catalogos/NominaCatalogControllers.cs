@@ -5,6 +5,94 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EG.ApiCoreBS.Controllers.Modules.Nomina.Catalogos
 {
+    [Route("api/NomEmpresaNomina")]
+    public class NomEmpresaNominaController : NominaCatalogControllerBase<NomEmpresaNominaResponse>
+    {
+        public NomEmpresaNominaController(
+            INominaCrudAppService<NomEmpresaNominaResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Empresa de nomina")
+        {
+        }
+    }
+
+    [Route("api/NomUniverso")]
+    public class NomUniversoController : NominaCatalogControllerBase<NomUniversoResponse>
+    {
+        public NomUniversoController(
+            INominaCrudAppService<NomUniversoResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Universo")
+        {
+        }
+    }
+
+    [Route("api/NomNivel")]
+    public class NomNivelController : NominaCatalogControllerBase<NomNivelResponse>
+    {
+        public NomNivelController(
+            INominaCrudAppService<NomNivelResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Nivel")
+        {
+        }
+    }
+
+    [Route("api/NomClasePuesto")]
+    public class NomClasePuestoController : NominaCatalogControllerBase<NomClasePuestoResponse>
+    {
+        public NomClasePuestoController(
+            INominaCrudAppService<NomClasePuestoResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Clase de puesto")
+        {
+        }
+    }
+
+    [Route("api/NomPuesto")]
+    public class NomPuestoController : NominaCatalogControllerBase<NomPuestoResponse>
+    {
+        public NomPuestoController(
+            INominaCrudAppService<NomPuestoResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Puesto")
+        {
+        }
+    }
+
+    [Route("api/NomNombramiento")]
+    public class NomNombramientoController : NominaCatalogControllerBase<NomNombramientoResponse>
+    {
+        public NomNombramientoController(
+            INominaCrudAppService<NomNombramientoResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Nombramiento")
+        {
+        }
+    }
+
+    [Route("api/NomImporteNivel")]
+    public class NomImporteNivelController : NominaCatalogControllerBase<NomImporteNivelResponse>
+    {
+        public NomImporteNivelController(
+            INominaCrudAppService<NomImporteNivelResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Importe por nivel")
+        {
+        }
+    }
+
+    [Route("api/NomContratoLaboral")]
+    public class NomContratoLaboralController : NominaCatalogControllerBase<NomContratoLaboralResponse>
+    {
+        public NomContratoLaboralController(
+            INominaCrudAppService<NomContratoLaboralResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Contrato laboral")
+        {
+        }
+    }
+
     [Route("api/NomConcepto")]
     public class NomConceptoController : NominaCatalogControllerBase<NomConceptoResponse>
     {

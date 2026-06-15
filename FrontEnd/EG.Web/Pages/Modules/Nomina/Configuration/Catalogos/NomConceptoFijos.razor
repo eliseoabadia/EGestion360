@@ -12,7 +12,7 @@
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Conceptos fijos"
-                    Subtitle="Catalogo NOM.ConceptoFijo"
+                    Subtitle="Catálogo NOM.ConceptoFijo"
                     Icon="@Icons.Material.Filled.AttachMoney"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -33,7 +33,7 @@
                 <MudTh>Acciones</MudTh>
                 @foreach (var column in VisibleColumns)
                 {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomConceptoFijoResponse">@GetLabel(column)</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomConceptoFijoResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
                 }
             </Header>
 
@@ -58,7 +58,7 @@
                 </MudTd>
                 @foreach (var column in VisibleColumns)
                 {
-                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
                 }
             </Row>
         </GenericTable>
@@ -77,9 +77,19 @@
 
     protected override string GetDefaultSortLabel() => "PkidConceptoFijo";
 
-    private IEnumerable<PropertyInfo> VisibleColumns => typeof(NomConceptoFijoResponse).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-        .Where(p => p.CanRead && !IsHiddenColumn(p))
-        .Take(7);
+    private static readonly string[] Columns =
+    [
+        nameof(NomConceptoFijoResponse.PkidConceptoFijo),
+        nameof(NomConceptoFijoResponse.EmpresaNominaNombre),
+        nameof(NomConceptoFijoResponse.ConceptoClaveNombre),
+        nameof(NomConceptoFijoResponse.PuestoNombre),
+        nameof(NomConceptoFijoResponse.NivelClave),
+        nameof(NomConceptoFijoResponse.ImporteMensualFijo),
+        nameof(NomConceptoFijoResponse.FechaIni),
+        nameof(NomConceptoFijoResponse.FechaFin)
+    ];
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomConceptoFijoResponse), Columns);
 
     private static bool IsHiddenColumn(PropertyInfo property)
         => property.Name is "ClaveNombre" or "FechaCreacion" or "UsuarioCreacion" or "FechaModificacion" or "UsuarioModificacion";
@@ -96,18 +106,70 @@
         {
             null => string.Empty,
             DateTime date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-            decimal number => number.ToString("N2", CultureInfo.InvariantCulture),
+            DateOnly date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            decimal number => FormatDecimal(number),
             bool flag => flag ? "Si" : "No",
             _ => value.ToString() ?? string.Empty
         };
     }
 
+    private static string FormatDecimal(decimal value)
+        => value.ToString("0.00", CultureInfo.InvariantCulture);
+
     private static string GetLabel(PropertyInfo property)
-        => property.Name.Replace("Fkid", "FK ").Replace("Pkid", "ID ");
+    {
+        return property.Name switch
+        {
+            "PkidConcepto" => "ID",
+            "FkidEmpresaSis" => "Empresa",
+            "FkidPersonaNom" => "Persona",
+            "FkidConceptoNom" => "Concepto",
+            "FkidPuestoNom" => "Puesto",
+            "FkidPeriodo" => "Periodo",
+            "FkidPeriodoInicial" => "Periodo inicial",
+            "FkidPeriodoFinal" => "Periodo final",
+            "FkidContratoTerceroNom" => "Contrato de tercero",
+            "FkidConceptoProporcionalNom" => "Concepto proporcional",
+            "FkidFormaCalculoNom" => "Forma de cálculo",
+            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
+            "FkidNominaEspecialNom" => "Nómina especial",
+            "FkidContratoPres" => "Contrato",
+            "FechaIni" => "Fecha inicial",
+            "FechaFin" => "Fecha final",
+            "PerDed" => "Percepción/Deducción",
+            "TasaInteres" => "Tasa de interés",
+            "NumeroPagos" => "Número de pagos",
+            "ImporteMensualFijo" => "Importe mensual fijo",
+            "EstaCerrado" => "Cerrado",
+            "EstaComprometido" => "Comprometido",
+            "EstaDevengado" => "Devengado",
+            "EstaEjercido" => "Ejercido",
+            "EstaDescontado" => "Descontado",
+            "ZonaEconomica" => "Zona económica",
+            "QuincenaInicio" => "Quincena inicio",
+            "QuincenaFin" => "Quincena fin",
+            "TotalPeriodos" => "Total de periodos",
+            _ => Humanize(property.Name)
+        };
+    }
+
+    private static string Humanize(string value)
+    {
+        var text = value
+            .Replace("Fkid", string.Empty, StringComparison.Ordinal)
+            .Replace("Pkid", "ID", StringComparison.Ordinal)
+            .Replace("Nom", string.Empty, StringComparison.Ordinal)
+            .Replace("Sis", string.Empty, StringComparison.Ordinal)
+            .Replace("Pres", string.Empty, StringComparison.Ordinal);
+
+        return System.Text.RegularExpressions.Regex
+            .Replace(text, "([a-z])([A-Z])", "$1 $2")
+            .Trim();
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<NomConceptoFijoResponse> items)
     {
-        return items.Select(item => VisibleColumns.ToDictionary(column => GetLabel(column), column => FormatValue(column.GetValue(item))));
+        return items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)

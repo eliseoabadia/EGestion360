@@ -1,0 +1,293 @@
+@page "/nomina/procesos"
+@using System.Globalization
+@using EG.Domain.DTOs.Requests.Nomina
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@inherits BaseCrudPage<NominaProcesoResponse, NominaProcesoResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100vh;">
+        <PageHeader Title="Procesos de Nómina"
+                    Subtitle="Ejecución controlada de cálculo y transición presupuestal"
+                    Icon="@Icons.Material.Filled.Payments"
+                    CanCreate="false" />
+
+        <MudPaper Class="pa-4 mb-3" Elevation="1">
+            <MudGrid GutterSize="2" AlignItems="AlignItems.Center">
+                <MudItem xs="12" md="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Empresa</MudText>
+                    <MudText Typo="Typo.subtitle2">@TextOrDash(SucursalStateService.EmpresaNombre)</MudText>
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Año</MudText>
+                    <MudText Typo="Typo.subtitle2">@TextOrDash(AnioStateService.AnioTexto)</MudText>
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudNumericField T="int?" @bind-Value="periodoId"
+                                     Label="Periodo"
+                                     Variant="Variant.Outlined"
+                                     Min="1"
+                                     Immediate="false" />
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudNumericField T="int?" @bind-Value="personaId"
+                                     Label="Persona"
+                                     Variant="Variant.Outlined"
+                                     Min="1"
+                                     Immediate="false" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker @bind-Date="fechaProceso"
+                                   Label="Fecha de proceso"
+                                   Variant="Variant.Outlined"
+                                   DateFormat="dd/MM/yyyy" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="observaciones"
+                                  Label="Observaciones"
+                                  Variant="Variant.Outlined"
+                                  Lines="2"
+                                  MaxLength="500" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @if (!CanExecute)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mb-3">
+                No tienes permiso para ejecutar procesos de nómina.
+            </MudAlert>
+        }
+
+        <MudGrid GutterSize="2" Class="mb-3">
+            @foreach (var action in Actions)
+            {
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudPaper Class="pa-3 h-100" Elevation="1">
+                        <div class="d-flex align-center gap-2 mb-2">
+                            <MudIcon Icon="@action.Icon" Color="@action.Color" />
+                            <MudText Typo="Typo.subtitle2">@action.Title</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                            @action.Description
+                        </MudText>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="@action.Color"
+                                   FullWidth="true"
+                                   Disabled="@(!CanRun(action))"
+                                   OnClick="@(() => ExecuteActionAsync(action))">
+                            Ejecutar
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.h6" Class="mb-2">Resultado reciente</MudText>
+            @if (history.Count == 0)
+            {
+                <MudText Color="Color.Secondary">Aún no se ha ejecutado ningún proceso en esta sesión.</MudText>
+            }
+            else
+            {
+                <MudTable Items="history" Dense="true" Hover="true" Bordered="false">
+                    <HeaderContent>
+                        <MudTh>Fecha</MudTh>
+                        <MudTh>Proceso</MudTh>
+                        <MudTh>Corrida</MudTh>
+                        <MudTh>Empresa</MudTh>
+                        <MudTh>Periodo</MudTh>
+                        <MudTh>Personas</MudTh>
+                        <MudTh>Movs.</MudTh>
+                        <MudTh>Neto</MudTh>
+                        <MudTh>Código</MudTh>
+                        <MudTh>Resultado</MudTh>
+                        <MudTh>Mensaje</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.FechaIntento.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd>@context.Proceso</MudTd>
+                        <MudTd>@(context.CorridaId?.ToString(CultureInfo.InvariantCulture) ?? "-")</MudTd>
+                        <MudTd>@TextOrDash(context.EmpresaNombre)</MudTd>
+                        <MudTd>@(context.PeriodoId?.ToString(CultureInfo.InvariantCulture) ?? "-")</MudTd>
+                        <MudTd>@context.TotalPersonas.ToString("N0", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd>@context.TotalMovimientos.ToString("N0", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd>@FormatMoney(context.TotalNeto)</MudTd>
+                        <MudTd>@context.Codigo</MudTd>
+                        <MudTd>
+                            <MudChip T="string"
+                                     Color="@(context.Ejecutado ? Color.Success : Color.Warning)"
+                                     Size="Size.Small">
+                                @(context.Ejecutado ? "Ejecutado" : "Pendiente")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>@context.Mensaje</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private int? periodoId;
+    private int? personaId;
+    private DateTime? fechaProceso = DateTime.Today;
+    private string observaciones = string.Empty;
+    private readonly List<NominaProcesoResponse> history = new();
+
+    protected override string ModuleName => "Nomina";
+    protected override string SubModuleName => "Procesos";
+    protected override Type CreateDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
+
+    private bool CanExecute => CanCreate || CanAuthorize;
+
+    private IReadOnlyList<ProcessAction> Actions { get; } = new List<ProcessAction>
+    {
+        new("Calcular nómina", "Calcula movimientos del periodo seleccionado.", "calcular-nomina", Icons.Material.Filled.Calculate, Color.Primary, true, false),
+        new("Cerrar periodo", "Bloquea el periodo y prepara la siguiente etapa.", "cerrar-periodo", Icons.Material.Filled.Lock, Color.Error, true, false),
+        new("Calcular aguinaldo", "Genera cálculo anual de aguinaldo.", "calcular-aguinaldo", Icons.Material.Filled.ReceiptLong, Color.Secondary, false, false),
+        new("Prima vacacional individual", "Calcula prima vacacional para una persona.", "prima-vacacional-individual", Icons.Material.Filled.Person, Color.Info, false, true),
+        new("Crear comprometido", "Genera comprometido presupuestal de nómina.", "crear-comprometido", Icons.Material.Filled.AssignmentTurnedIn, Color.Success, true, false),
+        new("Crear devengado", "Genera devengado presupuestal de nómina.", "crear-devengado", Icons.Material.Filled.ReceiptLong, Color.Success, true, false),
+        new("Crear ejercido", "Genera ejercido/pago presupuestal de nómina.", "crear-ejercido", Icons.Material.Filled.Payments, Color.Success, true, false)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+    }
+
+    private bool CanRun(ProcessAction action)
+        => CanExecute && !IsBusy && HasRequiredContext(action, showMessage: false);
+
+    private async Task ExecuteActionAsync(ProcessAction action)
+    {
+        if (!HasRequiredContext(action, showMessage: true))
+        {
+            return;
+        }
+
+        await RunExclusiveAsync(async () =>
+        {
+            var response = await Service.PostActionAsync(action.Endpoint, BuildRequest());
+            var result = response.Data ?? response.Items.FirstOrDefault() ?? new NominaProcesoResponse
+            {
+                Proceso = action.Title,
+                Codigo = response.Code,
+                Ejecutado = response.Success,
+                FechaIntento = DateTime.Now,
+                Mensaje = response.Message
+            };
+
+            history.Insert(0, result);
+            if (history.Count > 10)
+            {
+                history.RemoveAt(history.Count - 1);
+            }
+
+            Snackbar.Add(
+                response.Success
+                    ? response.Message ?? "Proceso ejecutado correctamente."
+                    : response.Message ?? "No fue posible ejecutar el proceso.",
+                response.Success ? Severity.Success : Severity.Warning);
+        }, "Ya hay un proceso de nómina en ejecución.");
+    }
+
+    private NominaProcesoRequest BuildRequest()
+    {
+        return new NominaProcesoRequest
+        {
+            EmpresaId = SucursalStateService.EmpresaId,
+            PeriodoId = periodoId,
+            PersonaId = personaId,
+            Anio = AnioStateService.AnioClave,
+            FechaProceso = fechaProceso,
+            Observaciones = observaciones.Trim()
+        };
+    }
+
+    private bool HasRequiredContext(ProcessAction action, bool showMessage)
+    {
+        if (!SucursalStateService.EmpresaId.HasValue || SucursalStateService.EmpresaId <= 0)
+        {
+            if (showMessage)
+            {
+                Snackbar.Add("Selecciona una empresa antes de ejecutar procesos de nómina.", Severity.Warning);
+            }
+
+            return false;
+        }
+
+        if (action.RequiresPeriod && (!periodoId.HasValue || periodoId <= 0))
+        {
+            if (showMessage)
+            {
+                Snackbar.Add("Captura el periodo para este proceso.", Severity.Warning);
+            }
+
+            return false;
+        }
+
+        if (action.RequiresPerson && (!personaId.HasValue || personaId <= 0))
+        {
+            if (showMessage)
+            {
+                Snackbar.Add("Captura la persona para este proceso.", Severity.Warning);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static string TextOrDash(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string FormatMoney(decimal value)
+        => value == 0 ? "-" : value.ToString("N2", CultureInfo.InvariantCulture);
+
+    protected override string GetDefaultSortLabel() => nameof(NominaProcesoResponse.FechaIntento);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NominaProcesoResponse> items)
+    {
+        return items.Select(item => new
+        {
+            item.FechaIntento,
+            item.Proceso,
+            item.CorridaId,
+            item.EmpresaNombre,
+            item.PeriodoId,
+            item.TotalPersonas,
+            item.TotalMovimientos,
+            item.TotalPercepcion,
+            item.TotalDeduccion,
+            item.TotalAportacion,
+            item.TotalNeto,
+            item.Codigo,
+            item.Ejecutado,
+            item.Mensaje
+        });
+    }
+
+    private sealed record ProcessAction(
+        string Title,
+        string Description,
+        string Endpoint,
+        string Icon,
+        Color Color,
+        bool RequiresPeriod,
+        bool RequiresPerson);
+}

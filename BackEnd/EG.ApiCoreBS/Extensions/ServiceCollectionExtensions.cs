@@ -163,6 +163,14 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUnidadResponsableAppServices, UnidadResponsableAppServices>();
 
             // Application services - Nomina
+            services.AddScoped<INominaCrudAppService<NomEmpresaNominaResponse>, NomEmpresaNominaAppService>();
+            services.AddScoped<INominaCrudAppService<NomUniversoResponse>, NomUniversoAppService>();
+            services.AddScoped<INominaCrudAppService<NomNivelResponse>, NomNivelAppService>();
+            services.AddScoped<INominaCrudAppService<NomClasePuestoResponse>, NomClasePuestoAppService>();
+            services.AddScoped<INominaCrudAppService<NomPuestoResponse>, NomPuestoAppService>();
+            services.AddScoped<INominaCrudAppService<NomNombramientoResponse>, NomNombramientoAppService>();
+            services.AddScoped<INominaCrudAppService<NomImporteNivelResponse>, NomImporteNivelAppService>();
+            services.AddScoped<INominaCrudAppService<NomContratoLaboralResponse>, NomContratoLaboralAppService>();
             services.AddScoped<INominaCrudAppService<NomConceptoResponse>, NomConceptoAppService>();
             services.AddScoped<INominaCrudAppService<NomConceptoFactorResponse>, NomConceptoFactorAppService>();
             services.AddScoped<INominaCrudAppService<NomConceptoFijoResponse>, NomConceptoFijoAppService>();

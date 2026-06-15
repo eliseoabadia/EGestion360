@@ -148,6 +148,14 @@ public static class ApiServiceExtensions
         RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");
         RegisterCrud<ProgramaResponse>(services, "api/Programa");
 
+        RegisterCrud<NomEmpresaNominaResponse>(services, "api/NomEmpresaNomina");
+        RegisterCrud<NomUniversoResponse>(services, "api/NomUniverso");
+        RegisterCrud<NomNivelResponse>(services, "api/NomNivel");
+        RegisterCrud<NomClasePuestoResponse>(services, "api/NomClasePuesto");
+        RegisterCrud<NomPuestoResponse>(services, "api/NomPuesto");
+        RegisterCrud<NomNombramientoResponse>(services, "api/NomNombramiento");
+        RegisterCrud<NomImporteNivelResponse>(services, "api/NomImporteNivel");
+        RegisterCrud<NomContratoLaboralResponse>(services, "api/NomContratoLaboral");
         RegisterCrud<NomConceptoResponse>(services, "api/NomConcepto");
         RegisterCrud<NomConceptoFactorResponse>(services, "api/NomConceptoFactor");
         RegisterCrud<NomConceptoFijoResponse>(services, "api/NomConceptoFijo");
@@ -172,6 +180,7 @@ public static class ApiServiceExtensions
         RegisterCrud<NomTipoIncapacidadResponse>(services, "api/NomTipoIncapacidad");
         RegisterCrud<NomTipoPagoResponse>(services, "api/NomTipoPago");
         RegisterCrud<NomTipoPensionResponse>(services, "api/NomTipoPension");
+        RegisterCrud<NominaProcesoResponse>(services, "api/NomProcesos");
 
         RegisterCrud<ContratoResponse>(services, "api/Contrato");
         RegisterCrud<ContratoDetalleResponse>(services, "api/ContratoDetalle");

@@ -440,6 +440,7 @@ VALUES
 (2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Patrimonio', 'PAT001', 'Patrimonio', 'view,view-menu', 0),
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Almacen', 'ALM001', 'Almacen', 'view,view-menu', 0),
 (2, 'Reportes CxC', 'Reportes CxC', NULL, 'app://{0}/{1}', GETDATE(), 'Reportes CxC', 'RPT001', 'Reportes CxC', 'view,view-menu', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Nomina', 'NOM001', 'Nomina', 'view,view-menu', 0),
 (2, 'Ayuda', 'Ayuda', NULL, 'app://{0}/{1}', GETDATE(), 'Ayuda', 'HLP001', 'Ayuda', 'view,view-menu', 0),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Sistema', 'CONSIS01', 'Configuracion', 'view,view-menu', 0),
@@ -590,7 +591,35 @@ VALUES
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'conteo_ciclico', 'AL0006', 'Almacen', 'view,view-menu', 0),
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_Conteo', 'AL0007', 'Almacen', 'view,view-menu', 0),
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'conteo_ciclico_anual', 'AL0008', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_conteo_anual', 'AL0009', 'Almacen', 'view,view-menu', 0);
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_conteo_anual', 'AL0009', 'Almacen', 'view,view-menu', 0),
+
+
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto', 'NOM001', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto_Factor', 'NOM002', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto_Fijo', 'NOM003', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto_Porcentaje', 'NOM004', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto_Proporcional', 'NOM005', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto_Tabular', 'NOM006', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Concepto_Variable', 'NOM007', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Contrato_Terceros', 'NOM008', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Credito', 'NOM009', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Descuento_Credito', 'NOM010', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Descuento_Infonavit', 'NOM011', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Estatus_Pago', 'NOM012', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Factor_Integracion', 'NOM013', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Infonavit', 'NOM014', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Periodo_Activo', 'NOM015', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Salario_Minimo', 'NOM016', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Sueldo_Especial', 'NOM017', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Sueldo_LiqFin', 'NOM018', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Sueldo_Mensual', 'NOM019', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Sueldo_Quincenal', 'NOM020', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Sueldo_Semanal ', 'NOM021', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Incapacidad', 'NOM022', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Pago', 'NOM023', 'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_Pension', 'NOM024', 'Nomina', 'view,view-menu,delete,new,update', 0)
+
+;
 
 --(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'conteociclico', 'CO0001', 'conteociclico', 'view,view-menu', 0),
 --(2, 'conteociclico', 'conteociclico', NULL, 'app://{0}/{1}', GETDATE(), 'periodo', 'CO0001', 'conteociclico', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -616,6 +645,7 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Adquisiciones', '10000', 'vie
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Patrimonio', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Almacen', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Reportes CxC', 'Reportes CxC', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Ayuda', 'Ayuda', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Sistema', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'MiPerfil', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -734,6 +764,30 @@ EXEC spConfiguracionDeRolYClaims 'Almacen', 'conteo_ciclico', '10000', 'view,vie
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_Conteo', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'conteo_ciclico_anual', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_conteo_anual', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto_Factor', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto_Fijo', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto_Porcentaje', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto_Proporcional', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto_Tabular', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Concepto_Variable', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Contrato_Terceros', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Credito', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Descuento_Credito', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Descuento_Infonavit', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Estatus_Pago', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Factor_Integracion', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Infonavit', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Periodo_Activo', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Salario_Minimo', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Sueldo_Especial', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Sueldo_LiqFin', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Sueldo_Mensual', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Sueldo_Quincenal', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Sueldo_Semanal ', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Tipo_Incapacidad', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Tipo_Pago', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Tipo_Pension', '10000', 'view,view-menu,delete,new,update';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -842,8 +896,9 @@ USING (VALUES
     (4, N'Adquisiciones', 1, NULL, N'Adquisiciones', N'/', N'RiListCheck2', 1, N'ESP', 4, 1, GETDATE()),
     (5, N'Patrimonio', 1, NULL, N'Patrimonio', N'/', N'FaFolder', 1, N'ESP', 5, 1, GETDATE()),
     (6, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaFolderOpen', 1, N'ESP', 6, 1, GETDATE()),
-    (7, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaChartLine', 1, N'ESP', 7, 1, GETDATE()),
-    (8, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaInfo', 1, N'ESP', 8, 1, GETDATE()),
+    (7, N'Nómina', 1, NULL, N'Nómina', N'/', N'FaFolderOpen', 1, N'ESP', 7, 1, GETDATE()),
+    (8, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaChartLine', 1, N'ESP', 8, 1, GETDATE()),
+    (9, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaInfo', 1, N'ESP', 9, 1, GETDATE()),
 
     -- Configuración -> Sistema
     (50, N'Sistema', 1, 1, N'Sistema', N'/', N'FaTools', 1, N'ESP', 1, 1, GETDATE()),
@@ -983,7 +1038,38 @@ USING (VALUES
     (705, N'Conteo Cíclico', 2, 6, N'Conteo Cíclico', N'/Almacen/Conteo_ciclico', N'RiListCheck2', 1, N'ESP', 6, 1, GETDATE()),
     (706, N'Reporte de Diferencias de Conteo', 2, 6, N'Reporte de Diferencias de Conteo', N'/Almacen/Reporte_diferencias_Conteo', N'FaChartBar', 1, N'ESP', 6, 1, GETDATE()),
     (707, N'Conteo Cíclico Anual', 2, 6, N'Conteo Cíclico Anual', N'/Almacen/Conteo_ciclico_anual', N'FaCalendar', 1, N'ESP', 7, 1, GETDATE()),
-    (708, N'Reporte de Diferencias de Conteo Anual', 2, 6, N'Reporte de Diferencias de Conteo Anual', N'/Almacen/Reporte_diferencias_Conteo_anual', N'FaChartLine', 1, N'ESP', 8, 1, GETDATE())
+    (708, N'Reporte de Diferencias de Conteo Anual', 2, 6, N'Reporte de Diferencias de Conteo Anual', N'/Almacen/Reporte_diferencias_Conteo_anual', N'FaChartLine', 1, N'ESP', 8, 1, GETDATE()),
+
+
+        -- Nómina
+    (751, N'Conceptos', 2, 7, N'Conceptos', N'/nomina/configuracion/catalogos/conceptos', N'FaPayments', 1, N'ESP', 1, 1, GETDATE()),
+    (752, N'Factores de concepto', 2, 7, N'Factores de concepto', N'/nomina/configuracion/catalogos/concepto-factor', N'FaCalculate', 1, N'ESP', 2, 1, GETDATE()),
+    (753, N'Conceptos fijos', 2, 7, N'Conceptos fijos', N'/nomina/configuracion/catalogos/conceptos-fijos', N'FaAttachMoney', 1, N'ESP', 3, 1, GETDATE()),
+    (754, N'Conceptos porcentaje', 2, 7, N'Conceptos porcentaje', N'/nomina/configuracion/catalogos/conceptos-porcentaje', N'FaPercent', 1, N'ESP', 4, 1, GETDATE()),
+    (755, N'Conceptos proporcionales', 2, 7, N'Conceptos proporcionales', N'/nomina/configuracion/catalogos/conceptos-proporcionales', N'FaPieChart', 1, N'ESP', 5, 1, GETDATE()),
+    (756, N'Conceptos tabulares', 2, 7, N'Conceptos tabulares', N'/nomina/configuracion/catalogos/conceptos-tabulares', N'FaTableRows', 1, N'ESP', 6, 1, GETDATE()),
+    (757, N'Conceptos variables', 2, 7, N'Conceptos variables', N'/nomina/configuracion/catalogos/conceptos-variables', N'FaTune', 1, N'ESP', 7, 1, GETDATE()),
+    (758, N'Contratos de terceros', 2, 7, N'Contratos de terceros', N'/nomina/configuracion/catalogos/contratos-terceros', N'FaAssignment', 1, N'ESP', 8, 1, GETDATE()),
+    (759, N'Creditos', 2, 7, N'Creditos', N'/nomina/configuracion/catalogos/creditos', N'FaCreditCard', 1, N'ESP', 9, 1, GETDATE()),
+    (760, N'Descuentos credito', 2, 7, N'Descuentos credito', N'/nomina/configuracion/catalogos/descuentos-credito', N'FaMoneyOff', 1, N'ESP', 10, 1, GETDATE()),
+    (761, N'Descuentos Infonavit', 2, 7, N'Descuentos Infonavit', N'/nomina/configuracion/catalogos/descuentos-infonavit', N'FaHomeWork', 1, N'ESP', 11, 1, GETDATE()),
+    (762, N'Estatus de pago', 2, 7, N'Estatus de pago', N'/nomina/configuracion/catalogos/estatus-pago', N'FaVerified', 1, N'ESP', 12, 1, GETDATE()),
+    (763, N'Factores de integracion', 2, 7, N'Factores de integracion', N'/nomina/configuracion/catalogos/factores-integracion', N'FaFunctions', 1, N'ESP', 13, 1, GETDATE()),
+    (764, N'Infonavit', 2, 7, N'Infonavit', N'/nomina/configuracion/catalogos/infonavit', N'FaHouse', 1, N'ESP', 14, 1, GETDATE()),
+    (765, N'Periodos activos', 2, 7, N'Periodos activos', N'/nomina/configuracion/catalogos/periodos-activos', N'FaEventAvailable', 1, N'ESP', 15, 1, GETDATE()),
+    (766, N'Salarios minimos', 2, 7, N'Salarios minimos', N'/nomina/configuracion/catalogos/salarios-minimos', N'FaPriceChange', 1, N'ESP', 16, 1, GETDATE()),
+    (767, N'Sueldos especiales', 2, 7, N'Sueldos especiales', N'/nomina/configuracion/catalogos/sueldos-especiales', N'FaStar', 1, N'ESP', 17, 1, GETDATE()),
+    (768, N'Sueldos liquidacion finiquito', 2, 7, N'Sueldos liquidacion finiquito', N'/nomina/configuracion/catalogos/sueldos-liquidacion-finiquito', N'FaReceiptLong', 1, N'ESP', 18, 1, GETDATE()),
+    (769, N'Sueldos mensuales', 2, 7, N'Sueldos mensuales', N'/nomina/configuracion/catalogos/sueldos-mensuales', N'FaCalendarMonth', 1, N'ESP', 19, 1, GETDATE()),
+    (770, N'Sueldos quincenales', 2, 7, N'Sueldos quincenales', N'/nomina/configuracion/catalogos/sueldos-quincenales', N'FaDateRange', 1, N'ESP', 20, 1, GETDATE()),
+    (771, N'Sueldos semanales', 2, 7, N'Sueldos semanales', N'/nomina/configuracion/catalogos/sueldos-semanales', N'FaViewWeek', 1, N'ESP', 21, 1, GETDATE()),
+    (772, N'Tipos de incapacidad', 2, 7, N'Tipos de incapacidad', N'/nomina/configuracion/catalogos/tipos-incapacidad', N'FaSick', 1, N'ESP', 22, 1, GETDATE()),
+    (773, N'Tipos de pago nomina', 2, 7, N'Tipos de pago nomina', N'/nomina/configuracion/catalogos/tipos-pago', N'FaPointOfSale', 1, N'ESP', 23, 1, GETDATE()),
+    (774, N'Tipos de pension', 2, 7, N'Tipos de pension', N'/nomina/configuracion/catalogos/tipos-pension', N'FaFamilyRestroom', 1, N'ESP', 24, 1, GETDATE())
+
+
+
+
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON TARGET.PKIdMenu = SOURCE.PKIdMenu
 WHEN MATCHED THEN

@@ -1,0 +1,89 @@
+@page "/nomina/configuracion/catalogos/importes-nivel"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomImporteNivelResponse, NomImporteNivelResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Importes por nivel"
+                    Subtitle="Catalogo NOM.ImporteNivel"
+                    Icon="@Icons.Material.Filled.PriceChange"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomImporteNivelResponse"
+                      @ref="table"
+                      Title="Lista de importes por nivel"
+                      SearchPlaceholder="Buscar clave..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomImporteNivelResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(NominaCatalogUi.GetItemId(item)))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(NominaCatalogUi.GetItemId(item)))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomImporteNivelResponse> table = null!;
+    private static readonly string[] Columns =
+    [
+        nameof(NomImporteNivelResponse.PkidImporteNivel),
+        nameof(NomImporteNivelResponse.Clave),
+        nameof(NomImporteNivelResponse.ImpSdi),
+        nameof(NomImporteNivelResponse.ImpImss15),
+        nameof(NomImporteNivelResponse.ImpImss16),
+        nameof(NomImporteNivelResponse.Activo)
+    ];
+
+    protected override string ModuleName => "Nomina";
+    protected override string SubModuleName => "Importe_Nivel";
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomImporteNivelResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomImporteNivelResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomImporteNivelResponse>);
+    protected override string GetDefaultSortLabel() => nameof(NomImporteNivelResponse.Clave);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomImporteNivelResponse), Columns);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomImporteNivelResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el importe por nivel";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

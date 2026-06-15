@@ -115,6 +115,18 @@ namespace EG.Business.Services
             _validationRulesWithId.Clear();
         }
 
+        public virtual GenericService<TEntity, TDto, TResponse> DisableEmpresaFilter()
+        {
+            FilterByEmpresa = false;
+            return this;
+        }
+
+        public virtual GenericService<TEntity, TDto, TResponse> DisableActivoFilter()
+        {
+            FilterByActivo = false;
+            return this;
+        }
+
         // Obtener query con includes configurados
         public virtual IQueryable<TEntity> GetQueryWithIncludes(Expression<Func<TEntity, bool>>? whereCondition = null)
         {
@@ -193,6 +205,11 @@ namespace EG.Business.Services
 
         public virtual void ApplyCurrentEmpresaIfPresent(object? target)
         {
+            if (!FilterByEmpresa)
+            {
+                return;
+            }
+
             if (target == null)
             {
                 return;
@@ -217,6 +234,11 @@ namespace EG.Business.Services
 
         private bool BelongsToCurrentEmpresa(object? entity)
         {
+            if (!FilterByEmpresa)
+            {
+                return true;
+            }
+
             if (entity == null)
             {
                 return false;

@@ -2,6 +2,200 @@ using System;
 
 namespace EG.Domain.DTOs.Requests.Nomina
 {
+    public class NomEmpresaNominaDto
+    {
+        public int PkidEmpresaNomina { get; set; }
+
+        public string RazonSocial { get; set; } = string.Empty;
+
+        public string RegImss { get; set; } = string.Empty;
+
+        public string RegInfonavit { get; set; } = string.Empty;
+
+        public string CedEmpadronam { get; set; } = string.Empty;
+
+        public string NoFonacot { get; set; } = string.Empty;
+
+        public string UsAdmin { get; set; } = string.Empty;
+
+        public string EmailAdmin { get; set; } = string.Empty;
+
+        public int? FkidPeriodoPagoSis { get; set; }
+
+        public decimal? PrimaRiesgoImss { get; set; }
+
+        public bool UsaSueldoTabular { get; set; }
+
+        public int? FkidTipoPagoNom { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomUniversoDto
+    {
+        public int PkidUniverso { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomNivelDto
+    {
+        public int PkidNivel { get; set; }
+
+        public string Clave { get; set; } = string.Empty;
+
+        public int? FkidUniversoNom { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomClasePuestoDto
+    {
+        public int PkidClasePuesto { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomPuestoDto
+    {
+        public int PkidPuesto { get; set; }
+
+        public int? FkidPuestoPadreNom { get; set; }
+
+        public int FkidEmpresaNominaNom { get; set; }
+
+        public string Nombre { get; set; } = string.Empty;
+
+        public int? FkidNivelNom { get; set; }
+
+        public int? FkidClasePuestoNom { get; set; }
+
+        public string Descripcion1 { get; set; } = string.Empty;
+
+        public string Descripcion2 { get; set; } = string.Empty;
+
+        public int? Orden { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomNombramientoDto
+    {
+        public int PkidNombramiento { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomImporteNivelDto
+    {
+        public int PkidImporteNivel { get; set; }
+
+        public string Clave { get; set; } = string.Empty;
+
+        public decimal ImpSdi { get; set; }
+
+        public decimal ImpImss15 { get; set; }
+
+        public decimal ImpImss16 { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomContratoLaboralDto
+    {
+        public int PkidContratoLaboral { get; set; }
+
+        public int FkidEmpresaNominaNom { get; set; }
+
+        public int FkidPersonaNom { get; set; }
+
+        public DateOnly FechaInicio { get; set; }
+
+        public DateOnly FechaFin { get; set; }
+
+        public int FkidPuestoNom { get; set; }
+
+        public string NumeroContrato { get; set; } = string.Empty;
+
+        public string Vigencia { get; set; } = string.Empty;
+
+        public decimal SueldoMensual { get; set; }
+
+        public int? FkidNombramientoNom { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
     public class NomConceptoDto
     {
         public int PkidConcepto { get; set; }

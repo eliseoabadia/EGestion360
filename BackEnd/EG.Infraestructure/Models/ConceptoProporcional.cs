@@ -24,4 +24,10 @@ public partial class ConceptoProporcional
     public DateTime? FechaModificacion { get; set; }
 
     public bool Activo { get; set; }
+
+    public virtual NomEmpresaNomina FkidEmpresaSisNavigation { get; set; }
+
+    public virtual NomPuesto FkidPuestoNomNavigation { get; set; }
+
+    public virtual Concepto1 FkidConceptoNomNavigation { get; set; }
 }

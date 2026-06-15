@@ -267,6 +267,46 @@
          "ObjectType": 0
       },
       {
+         "Name": "[NOM].[EmpresaNomina]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[Universo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[Nivel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ClasePuesto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[Puesto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[Nombramiento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ImporteNivel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[ContratoLaboral]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[CorridaNomina]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[CorridaNominaDetalle]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[NOM].[ContratoTerceros]",
          "ObjectType": 0
       },
@@ -341,6 +381,170 @@
       {
          "Name": "[NOM].[TipoPension]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[NOM].[VwConcepto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwEmpresaNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwUniverso]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwNivel]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwClasePuesto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwPuesto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwNombramiento]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwImporteNivel]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwContratoLaboral]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwUsuarioNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwCorridaNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwCorridaNominaDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwPersona]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwPersonaArea]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoFactor]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoFijo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoProporcional]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoPorcentaje]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoTabular]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoVariable]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwContratoTerceros]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwCredito]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwDescuentoCredito]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwDescuentoInfonavit]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwEstatusPago]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwFactorInt]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwInfonavit]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwPeriodoActivo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwPeriodoActivoResumen]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwSalarioMinimo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwSueldoEspecial]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwSueldoLiqFin]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwSueldoMensual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwSueldoQuincenal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwSueldoSemanal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwMovimientosNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwResumenPeriodo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwConceptoConfiguracion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwTipoIncapacidad]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwTipoPago]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[VwTipoPension]",
+         "ObjectType": 3
       },
       {
          "Name": "[ORCO].[Articulo]",

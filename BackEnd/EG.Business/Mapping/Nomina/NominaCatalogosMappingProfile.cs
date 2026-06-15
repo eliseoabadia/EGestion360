@@ -9,6 +9,48 @@ namespace EG.Business.Mapping.Nomina
     {
         public void Register(TypeAdapterConfig config)
         {
+            config.NewConfig<NomEmpresaNomina, NomEmpresaNominaDto>().TwoWays();
+            config.NewConfig<NomEmpresaNomina, NomEmpresaNominaResponse>().TwoWays();
+            config.NewConfig<NomEmpresaNominaResponse, NomEmpresaNominaDto>().TwoWays();
+
+            config.NewConfig<NomUniverso, NomUniversoDto>().TwoWays();
+            config.NewConfig<NomUniverso, NomUniversoResponse>().TwoWays();
+            config.NewConfig<NomUniversoResponse, NomUniversoDto>().TwoWays();
+
+            config.NewConfig<NomNivel, NomNivelDto>().TwoWays();
+            config.NewConfig<NomNivel, NomNivelResponse>()
+                .Map(dest => dest.UniversoDescripcion, src => src.FkidUniversoNomNavigation != null ? src.FkidUniversoNomNavigation.Descripcion : string.Empty);
+            config.NewConfig<NomNivelResponse, NomNivelDto>().TwoWays();
+
+            config.NewConfig<NomClasePuesto, NomClasePuestoDto>().TwoWays();
+            config.NewConfig<NomClasePuesto, NomClasePuestoResponse>().TwoWays();
+            config.NewConfig<NomClasePuestoResponse, NomClasePuestoDto>().TwoWays();
+
+            config.NewConfig<NomPuesto, NomPuestoDto>().TwoWays();
+            config.NewConfig<NomPuesto, NomPuestoResponse>()
+                .Map(dest => dest.PuestoPadreNombre, src => src.FkidPuestoPadreNomNavigation != null ? src.FkidPuestoPadreNomNavigation.Nombre : string.Empty)
+                .Map(dest => dest.EmpresaNominaNombre, src => src.FkidEmpresaNominaNomNavigation != null ? src.FkidEmpresaNominaNomNavigation.RazonSocial : string.Empty)
+                .Map(dest => dest.NivelClave, src => src.FkidNivelNomNavigation != null ? src.FkidNivelNomNavigation.Clave : string.Empty)
+                .Map(dest => dest.UniversoDescripcion, src => src.FkidNivelNomNavigation != null && src.FkidNivelNomNavigation.FkidUniversoNomNavigation != null ? src.FkidNivelNomNavigation.FkidUniversoNomNavigation.Descripcion : string.Empty)
+                .Map(dest => dest.ClasePuestoDescripcion, src => src.FkidClasePuestoNomNavigation != null ? src.FkidClasePuestoNomNavigation.Descripcion : string.Empty);
+            config.NewConfig<NomPuestoResponse, NomPuestoDto>().TwoWays();
+
+            config.NewConfig<NomNombramiento, NomNombramientoDto>().TwoWays();
+            config.NewConfig<NomNombramiento, NomNombramientoResponse>().TwoWays();
+            config.NewConfig<NomNombramientoResponse, NomNombramientoDto>().TwoWays();
+
+            config.NewConfig<NomImporteNivel, NomImporteNivelDto>().TwoWays();
+            config.NewConfig<NomImporteNivel, NomImporteNivelResponse>().TwoWays();
+            config.NewConfig<NomImporteNivelResponse, NomImporteNivelDto>().TwoWays();
+
+            config.NewConfig<NomContratoLaboral, NomContratoLaboralDto>().TwoWays();
+            config.NewConfig<NomContratoLaboral, NomContratoLaboralResponse>()
+                .Map(dest => dest.EmpresaNominaNombre, src => src.FkidEmpresaNominaNomNavigation != null ? src.FkidEmpresaNominaNomNavigation.RazonSocial : string.Empty)
+                .Map(dest => dest.PersonaClaveNombre, src => src.FkidPersonaNomNavigation != null ? (src.FkidPersonaNomNavigation.Clave + " - " + src.FkidPersonaNomNavigation.Nombre + " " + src.FkidPersonaNomNavigation.Paterno + " " + src.FkidPersonaNomNavigation.Materno).Trim() : string.Empty)
+                .Map(dest => dest.PuestoNombre, src => src.FkidPuestoNomNavigation != null ? src.FkidPuestoNomNavigation.Nombre : string.Empty)
+                .Map(dest => dest.NombramientoDescripcion, src => src.FkidNombramientoNomNavigation != null ? src.FkidNombramientoNomNavigation.Descripcion : string.Empty);
+            config.NewConfig<NomContratoLaboralResponse, NomContratoLaboralDto>().TwoWays();
+
             config.NewConfig<Concepto1, NomConceptoDto>().TwoWays();
             config.NewConfig<Concepto1, NomConceptoResponse>().TwoWays();
             config.NewConfig<NomConceptoResponse, NomConceptoDto>().TwoWays();
@@ -18,7 +60,14 @@ namespace EG.Business.Mapping.Nomina
             config.NewConfig<NomConceptoFactorResponse, NomConceptoFactorDto>().TwoWays();
 
             config.NewConfig<ConceptoFijo, NomConceptoFijoDto>().TwoWays();
-            config.NewConfig<ConceptoFijo, NomConceptoFijoResponse>().TwoWays();
+            config.NewConfig<ConceptoFijo, NomConceptoFijoResponse>()
+                .Map(dest => dest.EmpresaNominaNombre, src => src.FkidEmpresaSisNavigation != null ? src.FkidEmpresaSisNavigation.RazonSocial : string.Empty)
+                .Map(dest => dest.ConceptoClaveNombre, src => src.FkidConceptoNomNavigation != null ? (src.FkidConceptoNomNavigation.Clave + " - " + src.FkidConceptoNomNavigation.Nombre).Trim() : string.Empty)
+                .Map(dest => dest.PuestoNombre, src => src.FkidPuestoNomNavigation != null ? src.FkidPuestoNomNavigation.Nombre : string.Empty)
+                .Map(dest => dest.PuestoClaveNombre, src => src.FkidPuestoNomNavigation != null ? (src.FkidPuestoNomNavigation.PkidPuesto.ToString() + " - " + src.FkidPuestoNomNavigation.Nombre).Trim() : string.Empty)
+                .Map(dest => dest.NivelClave, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation != null ? src.FkidPuestoNomNavigation.FkidNivelNomNavigation.Clave : string.Empty)
+                .Map(dest => dest.UniversoDescripcion, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation != null ? src.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation.Descripcion : string.Empty)
+                .Map(dest => dest.ClasePuestoDescripcion, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation != null ? src.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation.Descripcion : string.Empty);
             config.NewConfig<NomConceptoFijoResponse, NomConceptoFijoDto>().TwoWays();
 
             config.NewConfig<ConceptoPorcentaje, NomConceptoPorcentajeDto>().TwoWays();
@@ -26,11 +75,25 @@ namespace EG.Business.Mapping.Nomina
             config.NewConfig<NomConceptoPorcentajeResponse, NomConceptoPorcentajeDto>().TwoWays();
 
             config.NewConfig<ConceptoProporcional, NomConceptoProporcionalDto>().TwoWays();
-            config.NewConfig<ConceptoProporcional, NomConceptoProporcionalResponse>().TwoWays();
+            config.NewConfig<ConceptoProporcional, NomConceptoProporcionalResponse>()
+                .Map(dest => dest.EmpresaNominaNombre, src => src.FkidEmpresaSisNavigation != null ? src.FkidEmpresaSisNavigation.RazonSocial : string.Empty)
+                .Map(dest => dest.ConceptoClaveNombre, src => src.FkidConceptoNomNavigation != null ? (src.FkidConceptoNomNavigation.Clave + " - " + src.FkidConceptoNomNavigation.Nombre).Trim() : string.Empty)
+                .Map(dest => dest.PuestoNombre, src => src.FkidPuestoNomNavigation != null ? src.FkidPuestoNomNavigation.Nombre : string.Empty)
+                .Map(dest => dest.PuestoClaveNombre, src => src.FkidPuestoNomNavigation != null ? (src.FkidPuestoNomNavigation.PkidPuesto.ToString() + " - " + src.FkidPuestoNomNavigation.Nombre).Trim() : string.Empty)
+                .Map(dest => dest.NivelClave, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation != null ? src.FkidPuestoNomNavigation.FkidNivelNomNavigation.Clave : string.Empty)
+                .Map(dest => dest.UniversoDescripcion, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation != null ? src.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation.Descripcion : string.Empty)
+                .Map(dest => dest.ClasePuestoDescripcion, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation != null ? src.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation.Descripcion : string.Empty);
             config.NewConfig<NomConceptoProporcionalResponse, NomConceptoProporcionalDto>().TwoWays();
 
             config.NewConfig<ConceptoTabular, NomConceptoTabularDto>().TwoWays();
-            config.NewConfig<ConceptoTabular, NomConceptoTabularResponse>().TwoWays();
+            config.NewConfig<ConceptoTabular, NomConceptoTabularResponse>()
+                .Map(dest => dest.EmpresaNominaNombre, src => src.FkidEmpresaSisNavigation != null ? src.FkidEmpresaSisNavigation.RazonSocial : string.Empty)
+                .Map(dest => dest.ConceptoClaveNombre, src => src.FkidConceptoNomNavigation != null ? (src.FkidConceptoNomNavigation.Clave + " - " + src.FkidConceptoNomNavigation.Nombre).Trim() : string.Empty)
+                .Map(dest => dest.PuestoNombre, src => src.FkidPuestoNomNavigation != null ? src.FkidPuestoNomNavigation.Nombre : string.Empty)
+                .Map(dest => dest.PuestoClaveNombre, src => src.FkidPuestoNomNavigation != null ? (src.FkidPuestoNomNavigation.PkidPuesto.ToString() + " - " + src.FkidPuestoNomNavigation.Nombre).Trim() : string.Empty)
+                .Map(dest => dest.NivelClave, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation != null ? src.FkidPuestoNomNavigation.FkidNivelNomNavigation.Clave : string.Empty)
+                .Map(dest => dest.UniversoDescripcion, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation != null && src.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation != null ? src.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation.Descripcion : string.Empty)
+                .Map(dest => dest.ClasePuestoDescripcion, src => src.FkidPuestoNomNavigation != null && src.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation != null ? src.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation.Descripcion : string.Empty);
             config.NewConfig<NomConceptoTabularResponse, NomConceptoTabularDto>().TwoWays();
 
             config.NewConfig<ConceptoVariable, NomConceptoVariableDto>().TwoWays();

@@ -11,8 +11,8 @@
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-        <PageHeader Title="Tipos de pago nomina"
-                    Subtitle="Catalogo NOM.TipoPago"
+        <PageHeader Title="Tipos de pago de nómina"
+                    Subtitle="Catálogo NOM.TipoPago"
                     Icon="@Icons.Material.Filled.PointOfSale"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -20,7 +20,7 @@
 
         <GenericTable TItem="NomTipoPagoResponse"
                       @ref="table"
-                      Title="Lista de Tipos de pago nomina"
+                      Title="Lista de Tipos de pago de nómina"
                       SearchPlaceholder="Buscar..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
@@ -96,14 +96,66 @@
         {
             null => string.Empty,
             DateTime date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-            decimal number => number.ToString("N2", CultureInfo.InvariantCulture),
+            DateOnly date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            decimal number => FormatDecimal(number),
             bool flag => flag ? "Si" : "No",
             _ => value.ToString() ?? string.Empty
         };
     }
 
+    private static string FormatDecimal(decimal value)
+        => value.ToString("0.00", CultureInfo.InvariantCulture);
+
     private static string GetLabel(PropertyInfo property)
-        => property.Name.Replace("Fkid", "FK ").Replace("Pkid", "ID ");
+    {
+        return property.Name switch
+        {
+            "PkidConcepto" => "ID",
+            "FkidEmpresaSis" => "Empresa",
+            "FkidPersonaNom" => "Persona",
+            "FkidConceptoNom" => "Concepto",
+            "FkidPuestoNom" => "Puesto",
+            "FkidPeriodo" => "Periodo",
+            "FkidPeriodoInicial" => "Periodo inicial",
+            "FkidPeriodoFinal" => "Periodo final",
+            "FkidContratoTerceroNom" => "Contrato de tercero",
+            "FkidConceptoProporcionalNom" => "Concepto proporcional",
+            "FkidFormaCalculoNom" => "Forma de cálculo",
+            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
+            "FkidNominaEspecialNom" => "Nómina especial",
+            "FkidContratoPres" => "Contrato",
+            "FechaIni" => "Fecha inicial",
+            "FechaFin" => "Fecha final",
+            "PerDed" => "Percepción/Deducción",
+            "TasaInteres" => "Tasa de interés",
+            "NumeroPagos" => "Número de pagos",
+            "ImporteMensualFijo" => "Importe mensual fijo",
+            "EstaCerrado" => "Cerrado",
+            "EstaComprometido" => "Comprometido",
+            "EstaDevengado" => "Devengado",
+            "EstaEjercido" => "Ejercido",
+            "EstaDescontado" => "Descontado",
+            "ZonaEconomica" => "Zona económica",
+            "QuincenaInicio" => "Quincena inicio",
+            "QuincenaFin" => "Quincena fin",
+            "TotalPeriodos" => "Total de periodos",
+            _ => Humanize(property.Name)
+        };
+    }
+
+    private static string Humanize(string value)
+    {
+        var text = value
+            .Replace("Fkid", string.Empty, StringComparison.Ordinal)
+            .Replace("Pkid", "ID", StringComparison.Ordinal)
+            .Replace("Nom", string.Empty, StringComparison.Ordinal)
+            .Replace("Sis", string.Empty, StringComparison.Ordinal)
+            .Replace("Pres", string.Empty, StringComparison.Ordinal);
+
+        return System.Text.RegularExpressions.Regex
+            .Replace(text, "([a-z])([A-Z])", "$1 $2")
+            .Trim();
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<NomTipoPagoResponse> items)
     {

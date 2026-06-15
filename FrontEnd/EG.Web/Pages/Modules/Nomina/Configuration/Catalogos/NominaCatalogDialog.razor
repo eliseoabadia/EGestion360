@@ -1,11 +1,32 @@
-@typeparam TItem where TItem : class, new()
+﻿@typeparam TItem where TItem : class, new()
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Domain.DTOs.Responses.Patrimonio
 @using System.Globalization
 @using System.Reflection
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using MudBlazor
 
 @inject IGenericCrudService<TItem> Service
+@inject IGenericCrudService<EmpresaResponse> EmpresaService
+@inject IGenericCrudService<NomEmpresaNominaResponse> EmpresaNominaService
+@inject IGenericCrudService<PersonaResponse> PersonaService
+@inject IGenericCrudService<NomConceptoResponse> ConceptoService
+@inject IGenericCrudService<NomConceptoProporcionalResponse> ConceptoProporcionalService
+@inject IGenericCrudService<NomContratoTercerosResponse> ContratoTerceroService
+@inject IGenericCrudService<NomCreditoResponse> CreditoService
+@inject IGenericCrudService<NomInfonavitResponse> InfonavitService
+@inject IGenericCrudService<NomPeriodoActivoResponse> PeriodoActivoService
+@inject IGenericCrudService<NomPuestoResponse> PuestoService
+@inject IGenericCrudService<NomNivelResponse> NivelService
+@inject IGenericCrudService<NomUniversoResponse> UniversoService
+@inject IGenericCrudService<NomClasePuestoResponse> ClasePuestoService
+@inject IGenericCrudService<NomNombramientoResponse> NombramientoService
+@inject IGenericCrudService<ContratoResponse> ContratoService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="TItem"
@@ -24,8 +45,19 @@
         <MudGrid GutterSize="2">
             @foreach (var property in EditableProperties)
             {
+                var lookup = GetLookupConfig(property);
                 <MudItem xs="12" sm="6">
-                    @if (IsBoolean(property))
+                    @if (lookup is not null)
+                    {
+                        <PagedAutocomplete Value="@GetLookupValue(property)"
+                                           ValueChanged="@((LookupItem? value) => SetLookupValue(property, value))"
+                                           Label="@GetLabel(property)"
+                                           Required="@IsRequired(property)"
+                                           RequiredError="@($"{GetLabel(property)} es requerido")"
+                                           Clearable="@IsNullable(property)"
+                                           LoadPage="@((page, pageSize, filter, ct) => LoadLookupPageAsync(lookup, page, pageSize, filter, ct))" />
+                    }
+                    else if (IsBoolean(property))
                     {
                         <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
                             <MudSwitch T="bool"
@@ -74,6 +106,7 @@
 
     private BaseEntityForm<TItem> form = null!;
     private TItem item = new();
+    private readonly Dictionary<string, LookupItem?> lookupValues = new(StringComparer.OrdinalIgnoreCase);
 
     private string dialogTitle => Id.HasValue ? "Editar registro" : "Nuevo registro";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -85,6 +118,21 @@
 
     private bool HasActivo => typeof(TItem).GetProperty("Activo") is not null;
 
+    private sealed record LookupConfig(string PropertyName);
+
+    private static LookupConfig? GetLookupConfig(PropertyInfo property)
+    {
+        var type = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+        if (type != typeof(int))
+        {
+            return null;
+        }
+
+        return property.Name.StartsWith("Fkid", StringComparison.OrdinalIgnoreCase)
+            ? new LookupConfig(property.Name)
+            : null;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         SetActivoValue(true);
@@ -93,6 +141,8 @@
         {
             await CargarDatosAsync();
         }
+
+        await LoadSelectedLookupsAsync();
     }
 
     private async Task CargarDatosAsync()
@@ -109,6 +159,249 @@
         {
             Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task LoadSelectedLookupsAsync()
+    {
+        foreach (var property in EditableProperties)
+        {
+            var lookup = GetLookupConfig(property);
+            if (lookup is null)
+            {
+                continue;
+            }
+
+            var id = GetIntValue(property);
+            lookupValues[property.Name] = id.HasValue && id.Value > 0
+                ? await LoadLookupByIdAsync(lookup, id.Value)
+                : null;
+        }
+    }
+
+    private LookupItem? GetLookupValue(PropertyInfo property)
+    {
+        if (lookupValues.TryGetValue(property.Name, out var value))
+        {
+            return value;
+        }
+
+        var id = GetIntValue(property);
+        if (!id.HasValue || id.Value <= 0)
+        {
+            return null;
+        }
+
+        value = new LookupItem { Id = id.Value, Text = $"{GetLabel(property)} ID {id.Value}" };
+        lookupValues[property.Name] = value;
+        return value;
+    }
+
+    private void SetLookupValue(PropertyInfo property, LookupItem? value)
+    {
+        lookupValues[property.Name] = value;
+        SetIntValue(property, value?.Id);
+    }
+
+    private int? GetIntValue(PropertyInfo property)
+    {
+        var value = property.GetValue(item);
+        return value switch
+        {
+            null => null,
+            int number => number,
+            _ => int.TryParse(Convert.ToString(value, CultureInfo.InvariantCulture), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+                ? parsed
+                : null
+        };
+    }
+
+    private void SetIntValue(PropertyInfo property, int? value)
+    {
+        if (Nullable.GetUnderlyingType(property.PropertyType) != null)
+        {
+            property.SetValue(item, value);
+            return;
+        }
+
+        property.SetValue(item, value ?? 0);
+    }
+
+    private async Task<LookupItem?> LoadLookupByIdAsync(LookupConfig lookup, int id)
+    {
+        try
+        {
+            return lookup.PropertyName switch
+            {
+                "FkidEmpresaSis" or "FkidEmpresaNominaNom" => ToLookupItem((await EmpresaNominaService.GetByIdAsync(id)).Data),
+                "FkidPersonaNom" => ToLookupItem((await PersonaService.GetByIdAsync(id)).Data),
+                "FkidConceptoNom" => ToLookupItem((await ConceptoService.GetByIdAsync(id)).Data),
+                "FkidConceptoProporcionalNom" => ToLookupItem((await ConceptoProporcionalService.GetByIdAsync(id)).Data),
+                "FkidContratoTerceroNom" => ToLookupItem((await ContratoTerceroService.GetByIdAsync(id)).Data),
+                "FkidCreditoNom" => ToLookupItem((await CreditoService.GetByIdAsync(id)).Data),
+                "FkidInfonavitNom" => ToLookupItem((await InfonavitService.GetByIdAsync(id)).Data),
+                "FkidPuestoNom" or "FkidPuestoPadreNom" => ToLookupItem((await PuestoService.GetByIdAsync(id)).Data),
+                "FkidNivelNom" => ToLookupItem((await NivelService.GetByIdAsync(id)).Data),
+                "FkidUniversoNom" => ToLookupItem((await UniversoService.GetByIdAsync(id)).Data),
+                "FkidClasePuestoNom" => ToLookupItem((await ClasePuestoService.GetByIdAsync(id)).Data),
+                "FkidNombramientoNom" => ToLookupItem((await NombramientoService.GetByIdAsync(id)).Data),
+                "FkidContratoPres" => ToLookupItem((await ContratoService.GetByIdAsync(id)).Data),
+                _ => new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" }
+            };
+        }
+        catch
+        {
+            return new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" };
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(LookupConfig lookup, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+        {
+            return new ComboLookupResult();
+        }
+
+        return lookup.PropertyName switch
+        {
+            "FkidEmpresaSis" or "FkidEmpresaNominaNom" => await LoadEmpresasNominaPageAsync(page, pageSize, filter),
+            "FkidPersonaNom" => await LoadPersonasPageAsync(page, pageSize, filter),
+            "FkidConceptoNom" => await LoadConceptosPageAsync(page, pageSize, filter),
+            "FkidConceptoProporcionalNom" => await LoadConceptosProporcionalesPageAsync(page, pageSize, filter),
+            "FkidContratoTerceroNom" => await LoadContratosTercerosPageAsync(page, pageSize, filter),
+            "FkidCreditoNom" => await LoadCreditosPageAsync(page, pageSize, filter),
+            "FkidInfonavitNom" => await LoadInfonavitsPageAsync(page, pageSize, filter),
+            "FkidPuestoNom" or "FkidPuestoPadreNom" => await LoadPuestosPageAsync(page, pageSize, filter),
+            "FkidNivelNom" => await LoadNivelesPageAsync(page, pageSize, filter),
+            "FkidUniversoNom" => await LoadUniversosPageAsync(page, pageSize, filter),
+            "FkidClasePuestoNom" => await LoadClasesPuestoPageAsync(page, pageSize, filter),
+            "FkidNombramientoNom" => await LoadNombramientosPageAsync(page, pageSize, filter),
+            "FkidPeriodo" or "FkidPeriodoInicial" or "FkidPeriodoFinal" or "FkidPeriodoMensualNom" or "FkidPeriodoQuincenalNom" or "FkidPeriodoSemanalNom" or "FkidNominaEspecialNom"
+                => await LoadPeriodosPageAsync(page, pageSize, filter),
+            "FkidContratoPres" => await LoadContratosPageAsync(page, pageSize, filter),
+            _ => LoadNumericLookupPage(lookup, filter)
+        };
+    }
+
+    private async Task<ComboLookupResult> LoadEmpresasPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await EmpresaService.GetAllPaginadoAsync(page, pageSize, filter, "EmpresaNombre");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadEmpresasNominaPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await EmpresaNominaService.GetAllPaginadoAsync(page, pageSize, filter, "RazonSocial");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await PersonaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadConceptosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await ConceptoService.GetAllPaginadoAsync(page, pageSize, filter, "Clave");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadConceptosProporcionalesPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await ConceptoProporcionalService.GetAllPaginadoAsync(page, pageSize, filter, "PkidConceptoProporcional");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadContratosTercerosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await ContratoTerceroService.GetAllPaginadoAsync(page, pageSize, filter, "NombreContrato");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadCreditosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await CreditoService.GetAllPaginadoAsync(page, pageSize, filter, "MotivoCredito");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadInfonavitsPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await InfonavitService.GetAllPaginadoAsync(page, pageSize, filter, "MotivoInfonavit");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPuestosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await PuestoService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadNivelesPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await NivelService.GetAllPaginadoAsync(page, pageSize, filter, "Clave");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadUniversosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await UniversoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadClasesPuestoPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await ClasePuestoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadNombramientosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await NombramientoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPeriodosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await PeriodoActivoService.GetAllPaginadoAsync(page, pageSize, filter, "IdPeriodo", SortDirection.Descending, GetEmpresaFilter());
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadContratosPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await ContratoService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroContrato");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private Dictionary<string, object>? GetEmpresaFilter()
+    {
+        var empresaProperty = typeof(TItem).GetProperty("FkidEmpresaSis");
+        var empresaId = empresaProperty == null ? null : GetIntValue(empresaProperty);
+        return empresaId.HasValue && empresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = empresaId.Value }
+            : null;
+    }
+
+    private static ComboLookupResult LoadNumericLookupPage(LookupConfig lookup, string filter)
+    {
+        var items = new List<LookupItem>();
+        if (int.TryParse(filter, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id) && id > 0)
+        {
+            items.Add(new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" });
+        }
+
+        return new ComboLookupResult { Items = items, TotalCount = items.Count };
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem?>? items, int? totalCount)
+    {
+        var list = items?
+            .Where(item => item is not null && item.Id > 0 && !string.IsNullOrWhiteSpace(item.Text))
+            .Select(item => item!)
+            .GroupBy(item => item.Id)
+            .Select(group => group.First())
+            .ToList() ?? new List<LookupItem>();
+
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
     }
 
     private async Task GuardarCambiosAsync()
@@ -149,7 +442,21 @@
             return true;
         }
 
-        return property.Name is "ClaveNombre" or "FechaCreacion" or "UsuarioCreacion" or "FechaModificacion" or "UsuarioModificacion";
+        return property.Name is "ClaveNombre"
+            or "EmpresaNominaNombre"
+            or "ConceptoClaveNombre"
+            or "PuestoNombre"
+            or "PuestoClaveNombre"
+            or "PuestoPadreNombre"
+            or "NivelClave"
+            or "UniversoDescripcion"
+            or "ClasePuestoDescripcion"
+            or "PersonaClaveNombre"
+            or "NombramientoDescripcion"
+            or "FechaCreacion"
+            or "UsuarioCreacion"
+            or "FechaModificacion"
+            or "UsuarioModificacion";
     }
 
     private static bool IsBoolean(PropertyInfo property)
@@ -157,6 +464,12 @@
         var type = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
         return type == typeof(bool);
     }
+
+    private static bool IsNullable(PropertyInfo property)
+        => Nullable.GetUnderlyingType(property.PropertyType) != null || !property.PropertyType.IsValueType;
+
+    private static bool IsRequired(PropertyInfo property)
+        => !IsNullable(property);
 
     private static bool IsLongText(PropertyInfo property)
         => property.Name.Contains("Descripcion", StringComparison.OrdinalIgnoreCase)
@@ -171,7 +484,7 @@
             return InputType.Number;
         }
 
-        if (type == typeof(DateTime))
+        if (type == typeof(DateTime) || type == typeof(DateOnly))
         {
             return InputType.Date;
         }
@@ -186,6 +499,7 @@
         {
             null => string.Empty,
             DateTime date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            DateOnly date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             decimal number => number.ToString("0.####", CultureInfo.InvariantCulture),
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
             _ => value.ToString() ?? string.Empty
@@ -223,6 +537,10 @@
             else if (targetType == typeof(DateTime))
             {
                 converted = DateTime.Parse(value, CultureInfo.InvariantCulture);
+            }
+            else if (targetType == typeof(DateOnly))
+            {
+                converted = DateOnly.Parse(value, CultureInfo.InvariantCulture);
             }
             else
             {
@@ -265,6 +583,194 @@
         }
     }
 
+    private static LookupItem? ToLookupItem(EmpresaResponse? value)
+        => value == null ? null : new LookupItem { Id = value.PkidEmpresa, Text = value.EmpresaNombre ?? value.RazonSocial ?? $"Empresa {value.PkidEmpresa}" };
+
+    private static LookupItem? ToLookupItem(NomEmpresaNominaResponse? value)
+        => value == null ? null : new LookupItem { Id = value.PkidEmpresaNomina, Text = value.ClaveNombre };
+
+    private static LookupItem? ToLookupItem(PersonaResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidPersona,
+                Text = $"{value.Clave} - {value.Nombre} {value.Paterno} {value.Materno}".Trim(' ', '-')
+            };
+
+    private static LookupItem? ToLookupItem(NomConceptoResponse? value)
+        => value == null ? null : new LookupItem { Id = value.PkidConcepto, Text = value.ClaveNombre };
+
+    private static LookupItem? ToLookupItem(NomConceptoProporcionalResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidConceptoProporcional,
+                Text = $"Concepto proporcional {value.PkidConceptoProporcional} - Concepto {value.FkidConceptoNom}"
+            };
+
+    private static LookupItem? ToLookupItem(NomContratoTercerosResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidContratoTercero,
+                Text = $"{value.NombreContrato} - {value.Descripcion}".Trim(' ', '-')
+            };
+
+    private static LookupItem? ToLookupItem(NomCreditoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidCredito,
+                Text = $"{value.MotivoCredito} - {value.ImporteCredito.ToString("0.00", CultureInfo.InvariantCulture)}".Trim(' ', '-')
+            };
+
+    private static LookupItem? ToLookupItem(NomInfonavitResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidInfonavit,
+                Text = $"{value.MotivoInfonavit} - {value.ImporteInfonavit.ToString("0.00", CultureInfo.InvariantCulture)}".Trim(' ', '-')
+            };
+
+    private static LookupItem? ToLookupItem(NomPuestoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidPuesto,
+                Text = value.ClaveNombre
+            };
+
+    private static LookupItem? ToLookupItem(NomNivelResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidNivel,
+                Text = value.ClaveNombre
+            };
+
+    private static LookupItem? ToLookupItem(NomUniversoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidUniverso,
+                Text = value.ClaveNombre
+            };
+
+    private static LookupItem? ToLookupItem(NomClasePuestoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidClasePuesto,
+                Text = value.ClaveNombre
+            };
+
+    private static LookupItem? ToLookupItem(NomNombramientoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidNombramiento,
+                Text = value.ClaveNombre
+            };
+
+    private static LookupItem? ToLookupItem(NomPeriodoActivoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.IdPeriodo,
+                Text = $"Periodo {value.IdPeriodo} - Empresa {value.FkidEmpresaSis}"
+            };
+
+    private static LookupItem? ToLookupItem(ContratoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidContrato,
+                Text = $"{value.NumeroContrato} - {value.Descripcion}".Trim(' ', '-')
+            };
+
+    private static string GetFallbackLookupLabel(string propertyName)
+        => propertyName switch
+        {
+            "FkidFormaCalculoNom" => "Forma de cálculo",
+            "FkidEmpresaNominaNom" => "Empresa de nómina",
+            "FkidPuestoNom" => "Puesto",
+            "FkidPuestoPadreNom" => "Puesto padre",
+            "FkidNivelNom" => "Nivel",
+            "FkidUniversoNom" => "Universo",
+            "FkidClasePuestoNom" => "Clase de puesto",
+            "FkidNombramientoNom" => "Nombramiento",
+            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
+            "FkidNominaEspecialNom" => "Nómina especial",
+            _ => Humanize(propertyName)
+        };
+
     private static string GetLabel(PropertyInfo property)
-        => property.Name.Replace("Fkid", "FK ").Replace("Pkid", "ID ");
+    {
+        return property.Name switch
+        {
+            "Pkid" => "ID",
+            "PkidConcepto" => "ID",
+            "FkidEmpresaSis" => "Empresa de nómina",
+            "FkidEmpresaNominaNom" => "Empresa de nómina",
+            "FkidPersonaNom" => "Persona",
+            "FkidConceptoNom" => "Concepto",
+            "FkidPuestoNom" => "Puesto",
+            "FkidPuestoPadreNom" => "Puesto padre",
+            "FkidNivelNom" => "Nivel",
+            "FkidUniversoNom" => "Universo",
+            "FkidClasePuestoNom" => "Clase de puesto",
+            "FkidNombramientoNom" => "Nombramiento",
+            "FkidPeriodo" => "Periodo",
+            "FkidPeriodoInicial" => "Periodo inicial",
+            "FkidPeriodoFinal" => "Periodo final",
+            "FkidContratoTerceroNom" => "Contrato de tercero",
+            "FkidConceptoProporcionalNom" => "Concepto proporcional",
+            "FkidFormaCalculoNom" => "Forma de cálculo",
+            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
+            "FkidNominaEspecialNom" => "Nómina especial",
+            "FkidContratoPres" => "Contrato",
+            "FechaIni" => "Fecha inicial",
+            "FechaFin" => "Fecha final",
+            "PerDed" => "Percepción/Deducción",
+            "TasaInteres" => "Tasa de interés",
+            "NumeroPagos" => "Número de pagos",
+            "ImporteMensualFijo" => "Importe mensual fijo",
+            "EstaCerrado" => "Cerrado",
+            "EstaComprometido" => "Comprometido",
+            "EstaDevengado" => "Devengado",
+            "EstaEjercido" => "Ejercido",
+            "EstaDescontado" => "Descontado",
+            "ZonaEconomica" => "Zona económica",
+            "QuincenaInicio" => "Quincena inicio",
+            "QuincenaFin" => "Quincena fin",
+            "TotalPeriodos" => "Total de periodos",
+            _ => Humanize(property.Name)
+        };
+    }
+
+    private static string Humanize(string value)
+    {
+        var text = value
+            .Replace("Fkid", string.Empty, StringComparison.Ordinal)
+            .Replace("Pkid", "ID", StringComparison.Ordinal)
+            .Replace("Nom", string.Empty, StringComparison.Ordinal)
+            .Replace("Sis", string.Empty, StringComparison.Ordinal)
+            .Replace("Pres", string.Empty, StringComparison.Ordinal);
+
+        return System.Text.RegularExpressions.Regex
+            .Replace(text, "([a-z])([A-Z])", "$1 $2")
+            .Trim();
+    }
 }
