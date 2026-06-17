@@ -807,4 +807,51 @@ namespace EG.Domain.DTOs.Requests.Nomina
 
         public bool Activo { get; set; }
     }
+
+    public class NomCatalogoSimpleDto
+    {
+        public int PkidCatalogoSimple { get; set; }
+
+        public string Catalogo { get; set; } = string.Empty;
+
+        public string LegacyTable { get; set; } = string.Empty;
+
+        public int? LegacyId { get; set; }
+
+        public string Clave { get; set; } = string.Empty;
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public string DescripcionCorta { get; set; } = string.Empty;
+
+        public int? FkidCatalogoPadreNom { get; set; }
+
+        public decimal? ValorDecimal1 { get; set; }
+
+        public decimal? ValorDecimal2 { get; set; }
+
+        public int? ValorEntero1 { get; set; }
+
+        public int? ValorEntero2 { get; set; }
+
+        public DateTime? FechaInicio { get; set; }
+
+        public DateTime? FechaFin { get; set; }
+
+        public string DatoExtra1 { get; set; } = string.Empty;
+
+        public string DatoExtra2 { get; set; } = string.Empty;
+
+        public int? Orden { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
 }

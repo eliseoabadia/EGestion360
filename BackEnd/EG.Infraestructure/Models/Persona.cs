@@ -89,17 +89,31 @@ public partial class Persona
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidEmpresaNominaNom { get; set; }
+
     public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; } = new List<AutorizacionSuficiencium>();
 
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; } = new List<ConteoDetalleEscaneo>();
 
     public virtual ICollection<ConteoDetalle> ConteoDetalles { get; set; } = new List<ConteoDetalle>();
 
+    public virtual ICollection<ContratoLaboral> ContratoLaborals { get; set; } = new List<ContratoLaboral>();
+
+    public virtual ICollection<EmpleadoExpediente> EmpleadoExpedientes { get; set; } = new List<EmpleadoExpediente>();
+
     public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
+
+    public virtual EmpresaNomina FkidEmpresaNominaNomNavigation { get; set; }
+
+    public virtual ICollection<Incidencium> Incidencia { get; set; } = new List<Incidencium>();
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
+
+    public virtual ICollection<PersonaDependiente> PersonaDependientes { get; set; } = new List<PersonaDependiente>();
+
+    public virtual ICollection<PersonaPension> PersonaPensions { get; set; } = new List<PersonaPension>();
 
     public virtual ICollection<Requisicion> RequisicionFkidAutorizoNomNavigations { get; set; } = new List<Requisicion>();
 

@@ -1,0 +1,297 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<NomCatalogoSimpleResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NomCatalogoSimpleResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="Guardar"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando catalogo..."
+                OnConfirm="GuardarCambiosAsync">
+    <MudForm @ref="form">
+        <MudGrid GutterSize="2">
+            @foreach (var field in Fields)
+            {
+                <MudItem xs="12" sm="@GetFieldSize(field)">
+                    @switch (field)
+                    {
+                        case nameof(NomCatalogoSimpleResponse.Clave):
+                            <MudTextField @bind-Value="item.Clave"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Immediate="false"
+                                          MaxLength="50" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.Descripcion):
+                            <MudTextField @bind-Value="item.Descripcion"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          RequiredError="La descripcion es requerida"
+                                          Immediate="false"
+                                          MaxLength="250" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.DescripcionCorta):
+                            <MudTextField @bind-Value="item.DescripcionCorta"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Immediate="false"
+                                          MaxLength="120" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.FkidCatalogoPadreNom):
+                            <PagedAutocomplete Value="@selectedParent"
+                                               ValueChanged="OnParentChanged"
+                                               Label="@ParentLabel"
+                                               Clearable="true"
+                                               LoadPage="LoadParentPageAsync" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.ValorDecimal1):
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="item.ValorDecimal1"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined"
+                                             Culture="@System.Globalization.CultureInfo.InvariantCulture" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.ValorDecimal2):
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="item.ValorDecimal2"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined"
+                                             Culture="@System.Globalization.CultureInfo.InvariantCulture" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.ValorEntero1):
+                            <MudNumericField T="int?"
+                                             @bind-Value="item.ValorEntero1"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.ValorEntero2):
+                            <MudNumericField T="int?"
+                                             @bind-Value="item.ValorEntero2"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.FechaInicio):
+                            <MudDatePicker Date="@item.FechaInicio"
+                                           DateChanged="value => item.FechaInicio = value"
+                                           Label="@GetFieldLabel(field)"
+                                           Variant="Variant.Outlined" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.FechaFin):
+                            <MudDatePicker Date="@item.FechaFin"
+                                           DateChanged="value => item.FechaFin = value"
+                                           Label="@GetFieldLabel(field)"
+                                           Variant="Variant.Outlined" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.DatoExtra1):
+                            <MudTextField @bind-Value="item.DatoExtra1"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Lines="2"
+                                          Immediate="false"
+                                          MaxLength="500" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.DatoExtra2):
+                            <MudTextField @bind-Value="item.DatoExtra2"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Lines="2"
+                                          Immediate="false"
+                                          MaxLength="500" />
+                            break;
+                        case nameof(NomCatalogoSimpleResponse.Orden):
+                            <MudNumericField T="int?"
+                                             @bind-Value="item.Orden"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined" />
+                            break;
+                    }
+                </MudItem>
+            }
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
+                        <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Primary">
+                            <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                        </MudSwitch>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public string Catalogo { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = "Catalogo";
+    [Parameter] public string ParentCatalogo { get; set; } = string.Empty;
+    [Parameter] public string ParentLabel { get; set; } = "Catalogo padre";
+    [Parameter] public string[] Fields { get; set; } =
+    [
+        nameof(NomCatalogoSimpleResponse.Clave),
+        nameof(NomCatalogoSimpleResponse.Descripcion),
+        nameof(NomCatalogoSimpleResponse.Orden)
+    ];
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm form = null!;
+    private NomCatalogoSimpleResponse item = new();
+    private LookupItem? selectedParent;
+
+    private string DialogTitle => Id.HasValue ? $"Editar {Title}" : $"Nuevo {Title}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        item = new NomCatalogoSimpleResponse
+        {
+            Catalogo = Catalogo,
+            Activo = true
+        };
+
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+
+        item.Catalogo = Catalogo;
+        selectedParent = await LoadSelectedParentAsync();
+    }
+
+    private async Task<LookupItem?> LoadSelectedParentAsync()
+    {
+        if (item.FkidCatalogoPadreNom is not > 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var response = await Service.GetByIdAsync(item.FkidCatalogoPadreNom.Value);
+            return ToLookupItem(response?.Data);
+        }
+        catch
+        {
+            return new LookupItem { Id = item.FkidCatalogoPadreNom.Value, Text = $"{ParentLabel} {item.FkidCatalogoPadreNom.Value}" };
+        }
+    }
+
+    private void OnParentChanged(LookupItem? value)
+    {
+        selectedParent = value;
+        item.FkidCatalogoPadreNom = value?.Id;
+    }
+
+    private async Task<ComboLookupResult> LoadParentPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested || string.IsNullOrWhiteSpace(ParentCatalogo))
+        {
+            return new ComboLookupResult();
+        }
+
+        var filters = new Dictionary<string, object> { [nameof(NomCatalogoSimpleResponse.Catalogo)] = ParentCatalogo };
+        var response = await Service.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            nameof(NomCatalogoSimpleResponse.Descripcion),
+            SortDirection.Ascending,
+            filters);
+
+        return new ComboLookupResult
+        {
+            Items = response.Items?.Select(ToLookupItem).Where(item => item is not null).Select(item => item!) ?? Enumerable.Empty<LookupItem>(),
+            TotalCount = response.TotalCount
+        };
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        await form.Validate();
+        if (!form.IsValid)
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            NormalizeItem();
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Catalogo guardado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el catalogo.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void NormalizeItem()
+    {
+        item.Catalogo = Catalogo.Trim();
+        item.Clave = item.Clave?.Trim() ?? string.Empty;
+        item.Descripcion = item.Descripcion?.Trim() ?? string.Empty;
+        item.DescripcionCorta = item.DescripcionCorta?.Trim() ?? string.Empty;
+        item.DatoExtra1 = item.DatoExtra1?.Trim() ?? string.Empty;
+        item.DatoExtra2 = item.DatoExtra2?.Trim() ?? string.Empty;
+        item.FkidCatalogoPadreNom = selectedParent?.Id ?? item.FkidCatalogoPadreNom;
+    }
+
+    private static LookupItem? ToLookupItem(NomCatalogoSimpleResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidCatalogoSimple,
+                Text = value.ClaveNombre
+            };
+
+    private static int GetFieldSize(string field)
+        => field is nameof(NomCatalogoSimpleResponse.DatoExtra1)
+            or nameof(NomCatalogoSimpleResponse.DatoExtra2)
+            ? 12
+            : 6;
+
+    private string GetFieldLabel(string field)
+        => field switch
+        {
+            nameof(NomCatalogoSimpleResponse.Clave) => "Clave",
+            nameof(NomCatalogoSimpleResponse.Descripcion) => "Descripcion",
+            nameof(NomCatalogoSimpleResponse.DescripcionCorta) => "Descripcion corta",
+            nameof(NomCatalogoSimpleResponse.FkidCatalogoPadreNom) => ParentLabel,
+            nameof(NomCatalogoSimpleResponse.ValorDecimal1) => "Valor",
+            nameof(NomCatalogoSimpleResponse.ValorDecimal2) => "Valor secundario",
+            nameof(NomCatalogoSimpleResponse.ValorEntero1) => "Entero",
+            nameof(NomCatalogoSimpleResponse.ValorEntero2) => "Entero secundario",
+            nameof(NomCatalogoSimpleResponse.FechaInicio) => "Fecha inicial",
+            nameof(NomCatalogoSimpleResponse.FechaFin) => "Fecha final",
+            nameof(NomCatalogoSimpleResponse.DatoExtra1) => "Dato extra",
+            nameof(NomCatalogoSimpleResponse.DatoExtra2) => "Dato extra 2",
+            nameof(NomCatalogoSimpleResponse.Orden) => "Orden",
+            _ => field
+        };
+}

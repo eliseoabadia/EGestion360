@@ -1,0 +1,103 @@
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhDependienteResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhDependienteResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@ActionText"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando dependiente..."
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="NominaRhDependienteResponse" @ref="form" ShowHeader="false">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+            <strong>Titular:</strong> @PersonaNombre
+        </MudAlert>
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Nombre" Label="Nombre completo" Variant="Variant.Outlined" MaxLength="300" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <NominaRhLookupSelect Value="@item.FkidParentescoSis"
+                                      ValueChanged="value => item.FkidParentescoSis = value"
+                                      DescriptionChanged="value => item.Parentesco = value"
+                                      Catalogo="Parentesco"
+                                      Label="Parentesco"
+                                      InitialText="@item.ParentescoDescripcion"
+                                      Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="FechaNacimiento" Label="Fecha de nacimiento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Parentesco" Label="Parentesco historico" Variant="Variant.Outlined" MaxLength="120" ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
+            </MudItem>
+            <MudItem xs="12">
+                <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
+                                   UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int PersonaId { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string PersonaNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<NominaRhDependienteResponse> form = null!;
+    private NominaRhDependienteResponse item = new() { Activo = true };
+    private string DialogTitle => Id.HasValue ? "Editar dependiente" : "Nuevo dependiente";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private DateTime? FechaNacimiento
+    {
+        get => item.FechaNacimiento?.ToDateTime(TimeOnly.MinValue);
+        set => item.FechaNacimiento = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null) item = response.Data;
+            else Snackbar.Add(response?.Message ?? "No fue posible cargar el dependiente.", Severity.Error);
+        }
+        item.FkidPersonaNom = PersonaId;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPersonaNom = PersonaId;
+        try
+        {
+            var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Dependiente guardado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el dependiente.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar el dependiente. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+}

@@ -1,4 +1,5 @@
 @page "/nomina/configuracion/catalogos/tipos-pago"
+@page "/nomina/configuracion/catalogos/forma-pago"
 @using System.Globalization
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -68,7 +69,7 @@
 @code {
     private GenericTable<NomTipoPagoResponse> table = null!;
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Tipo_Pago";
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomTipoPagoResponse>);

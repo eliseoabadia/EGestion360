@@ -1634,6 +1634,143 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_MantenimientoContratoLaboralResult>> SP_MantenimientoContratoLaboralAsync(int? action, int? pKIdContratoLaboral, int? fKIdEmpresaNomina_NOM, int? fKIdPersona_NOM, DateOnly? fechaInicio, DateOnly? fechaFin, int? fKIdPuesto_NOM, string numeroContrato, string vigencia, decimal? sueldoMensual, int? fKIdNombramiento_NOM, int? fKIdDepartamento_SIS, int? fKIdTipoContratacion_SIS, string departamento, string tipoContratacion, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdContratoLaboral",
+                    Value = pKIdContratoLaboral ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEmpresaNomina_NOM",
+                    Value = fKIdEmpresaNomina_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPersona_NOM",
+                    Value = fKIdPersona_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaInicio",
+                    Value = fechaInicio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaFin",
+                    Value = fechaFin ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPuesto_NOM",
+                    Value = fKIdPuesto_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NumeroContrato",
+                    Size = 40,
+                    Value = numeroContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Vigencia",
+                    Size = 200,
+                    Value = vigencia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SueldoMensual",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = sueldoMensual ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdNombramiento_NOM",
+                    Value = fKIdNombramiento_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdDepartamento_SIS",
+                    Value = fKIdDepartamento_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoContratacion_SIS",
+                    Value = fKIdTipoContratacion_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Departamento",
+                    Size = 400,
+                    Value = departamento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoContratacion",
+                    Size = 400,
+                    Value = tipoContratacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoContratoLaboralResult>("EXEC @returnValue = [NOM].[SP_MantenimientoContratoLaboral] @Action = @Action, @PKIdContratoLaboral = @PKIdContratoLaboral, @FKIdEmpresaNomina_NOM = @FKIdEmpresaNomina_NOM, @FKIdPersona_NOM = @FKIdPersona_NOM, @FechaInicio = @FechaInicio, @FechaFin = @FechaFin, @FKIdPuesto_NOM = @FKIdPuesto_NOM, @NumeroContrato = @NumeroContrato, @Vigencia = @Vigencia, @SueldoMensual = @SueldoMensual, @FKIdNombramiento_NOM = @FKIdNombramiento_NOM, @FKIdDepartamento_SIS = @FKIdDepartamento_SIS, @FKIdTipoContratacion_SIS = @FKIdTipoContratacion_SIS, @Departamento = @Departamento, @TipoContratacion = @TipoContratacion, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<SP_MantenimientoCotizacionResult>> SP_MantenimientoCotizacionAsync(int? action, int? pKIdCotizacion, int? fKIdRequisicion_ORCO, int? fKIdProveedor_SIS, DateTime? fechaSolicitud, DateTime? fechaProveedorCotiza, DateTime? fechaProveedorCompromiso, string comentarios, bool? servicio, string fL_Documento, string entrega, string vigencia, string condiciones, int? fKIdAnio_SIS, int? fKIdContenedorCot_ORCO, int? fKIdContenedorMultiCot_ORCO, string itemsJson, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
@@ -2221,6 +2358,109 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_MantenimientoIncidenciaResult>> SP_MantenimientoIncidenciaAsync(int? action, int? pKIdIncidencia, int? fKIdPersona_NOM, int? fKIdTipoIncidencia_NOM, DateOnly? fecha, string comentario, int? fKIdTipoJustificacion_NOM, bool? aplicaDescuento, string comentarioJustificacion, int? fKIdPeriodoQuincenal_SIS, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdIncidencia",
+                    Value = pKIdIncidencia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPersona_NOM",
+                    Value = fKIdPersona_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoIncidencia_NOM",
+                    Value = fKIdTipoIncidencia_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fecha",
+                    Value = fecha ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Comentario",
+                    Size = 2000,
+                    Value = comentario ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoJustificacion_NOM",
+                    Value = fKIdTipoJustificacion_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "AplicaDescuento",
+                    Value = aplicaDescuento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ComentarioJustificacion",
+                    Size = 2000,
+                    Value = comentarioJustificacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPeriodoQuincenal_SIS",
+                    Value = fKIdPeriodoQuincenal_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoIncidenciaResult>("EXEC @returnValue = [NOM].[SP_MantenimientoIncidencia] @Action = @Action, @PKIdIncidencia = @PKIdIncidencia, @FKIdPersona_NOM = @FKIdPersona_NOM, @FKIdTipoIncidencia_NOM = @FKIdTipoIncidencia_NOM, @Fecha = @Fecha, @Comentario = @Comentario, @FKIdTipoJustificacion_NOM = @FKIdTipoJustificacion_NOM, @AplicaDescuento = @AplicaDescuento, @ComentarioJustificacion = @ComentarioJustificacion, @FKIdPeriodoQuincenal_SIS = @FKIdPeriodoQuincenal_SIS, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<SP_MantenimientoInventarioResult>> SP_MantenimientoInventarioAsync(int? action, int? pKIdInventario, int? fKIdEmpresa_SIS, int? fKIdCalendarioInventario_ALMA, int? fKIdArea_SIS, int? fKIdEstatusInventario_ALMA, DateOnly? fechaInventario, string responsable, string observaciones, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterId = new SqlParameter
@@ -2544,6 +2784,531 @@ namespace EG.Infraestructure.Models
             };
             var _ = await _context.SqlQueryAsync<SP_MantenimientoPAAASResult>("EXEC @returnValue = [ORCO].[SP_MantenimientoPAAAS] @Action = @Action, @PKIdPAAAS = @PKIdPAAAS, @PKIdPAAASPartida = @PKIdPAAASPartida, @PKIdPAAASDetalle = @PKIdPAAASDetalle, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @FKIdAnio_SIS = @FKIdAnio_SIS, @FKIdArea_SIS = @FKIdArea_SIS, @FKIdPersona_NOM = @FKIdPersona_NOM, @Descripcion = @Descripcion, @Observaciones = @Observaciones, @Fecha = @Fecha, @FKIdProyecto_ORCO = @FKIdProyecto_ORCO, @FKIdPrograma_PRES = @FKIdPrograma_PRES, @FKIdFuenteFinanciamiento_PRES = @FKIdFuenteFinanciamiento_PRES, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdTipoBien_ALMA = @FKIdTipoBien_ALMA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @Cantidad = @Cantidad, @LugarEntrega = @LugarEntrega, @IdUser = @IdUser", sqlParameters, cancellationToken);
 
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoPersonaResult>> SP_MantenimientoPersonaAsync(int? action, int? pKIdPersona, string clave, string iniciales, string nombre, string paterno, string materno, string sexo, DateTime? fechaNacimiento, string eSTADO_CIVIL, string rFC, string curp, string rEG_IMSS, string noCartilla, string noLicencia, string noPasaporte, string noCredencialElector, string gafete, string cORREO_ELECTRONICO, string telefono_particular, string telefono_movil, string calle, string num_exterior, string num_interior, string colonia, string cP, string municipio, string estado, DateTime? fecha_de_Inicio, DateTime? fecha_Fin, string tIPO_CONTRATACION, string pUESTO, double? sUELDO_BASE, double? cOMPENSACION_GARANTIZADA, string bANCO, string nUMERO_CUENTA, string cLABE, bool? activo, int? fKIdEmpresaNomina_NOM, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdPersona",
+                    Value = pKIdPersona ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Clave",
+                    Size = 30,
+                    Value = clave ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Iniciales",
+                    Size = 6,
+                    Value = iniciales ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Nombre",
+                    Size = 100,
+                    Value = nombre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Paterno",
+                    Size = 100,
+                    Value = paterno ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Materno",
+                    Size = 100,
+                    Value = materno ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Sexo",
+                    Size = 20,
+                    Value = sexo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaNacimiento",
+                    Value = fechaNacimiento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ESTADO_CIVIL",
+                    Size = 40,
+                    Value = eSTADO_CIVIL ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "RFC",
+                    Size = 30,
+                    Value = rFC ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Curp",
+                    Size = 36,
+                    Value = curp ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "REG_IMSS",
+                    Size = 24,
+                    Value = rEG_IMSS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoCartilla",
+                    Size = 32,
+                    Value = noCartilla ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoLicencia",
+                    Size = 32,
+                    Value = noLicencia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoPasaporte",
+                    Size = 32,
+                    Value = noPasaporte ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoCredencialElector",
+                    Size = 64,
+                    Value = noCredencialElector ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Gafete",
+                    Size = 22,
+                    Value = gafete ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CORREO_ELECTRONICO",
+                    Size = 500,
+                    Value = cORREO_ELECTRONICO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Telefono_particular",
+                    Size = 30,
+                    Value = telefono_particular ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Telefono_movil",
+                    Size = 30,
+                    Value = telefono_movil ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Calle",
+                    Size = 80,
+                    Value = calle ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Num_exterior",
+                    Size = 20,
+                    Value = num_exterior ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Num_interior",
+                    Size = 20,
+                    Value = num_interior ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Colonia",
+                    Size = 80,
+                    Value = colonia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CP",
+                    Size = 12,
+                    Value = cP ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Municipio",
+                    Size = 40,
+                    Value = municipio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Estado",
+                    Size = 60,
+                    Value = estado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fecha_de_Inicio",
+                    Value = fecha_de_Inicio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fecha_Fin",
+                    Value = fecha_Fin ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TIPO_CONTRATACION",
+                    Size = 100,
+                    Value = tIPO_CONTRATACION ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PUESTO",
+                    Size = 200,
+                    Value = pUESTO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SUELDO_BASE",
+                    Value = sUELDO_BASE ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Float,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "COMPENSACION_GARANTIZADA",
+                    Value = cOMPENSACION_GARANTIZADA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Float,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "BANCO",
+                    Size = 200,
+                    Value = bANCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NUMERO_CUENTA",
+                    Size = 50,
+                    Value = nUMERO_CUENTA ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CLABE",
+                    Size = 100,
+                    Value = cLABE ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEmpresaNomina_NOM",
+                    Value = fKIdEmpresaNomina_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoPersonaResult>("EXEC @returnValue = [NOM].[SP_MantenimientoPersona] @Action = @Action, @PKIdPersona = @PKIdPersona, @Clave = @Clave, @Iniciales = @Iniciales, @Nombre = @Nombre, @Paterno = @Paterno, @Materno = @Materno, @Sexo = @Sexo, @FechaNacimiento = @FechaNacimiento, @ESTADO_CIVIL = @ESTADO_CIVIL, @RFC = @RFC, @Curp = @Curp, @REG_IMSS = @REG_IMSS, @NoCartilla = @NoCartilla, @NoLicencia = @NoLicencia, @NoPasaporte = @NoPasaporte, @NoCredencialElector = @NoCredencialElector, @Gafete = @Gafete, @CORREO_ELECTRONICO = @CORREO_ELECTRONICO, @Telefono_particular = @Telefono_particular, @Telefono_movil = @Telefono_movil, @Calle = @Calle, @Num_exterior = @Num_exterior, @Num_interior = @Num_interior, @Colonia = @Colonia, @CP = @CP, @Municipio = @Municipio, @Estado = @Estado, @Fecha_de_Inicio = @Fecha_de_Inicio, @Fecha_Fin = @Fecha_Fin, @TIPO_CONTRATACION = @TIPO_CONTRATACION, @PUESTO = @PUESTO, @SUELDO_BASE = @SUELDO_BASE, @COMPENSACION_GARANTIZADA = @COMPENSACION_GARANTIZADA, @BANCO = @BANCO, @NUMERO_CUENTA = @NUMERO_CUENTA, @CLABE = @CLABE, @Activo = @Activo, @FKIdEmpresaNomina_NOM = @FKIdEmpresaNomina_NOM, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoPersonaDependienteResult>> SP_MantenimientoPersonaDependienteAsync(int? action, int? pKIdDependiente, int? fKIdPersona_NOM, string nombre, int? fKIdParentesco_SIS, string parentesco, DateOnly? fechaNacimiento, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdDependiente",
+                    Value = pKIdDependiente ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPersona_NOM",
+                    Value = fKIdPersona_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Nombre",
+                    Size = 600,
+                    Value = nombre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdParentesco_SIS",
+                    Value = fKIdParentesco_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Parentesco",
+                    Size = 240,
+                    Value = parentesco ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaNacimiento",
+                    Value = fechaNacimiento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoPersonaDependienteResult>("EXEC @returnValue = [NOM].[SP_MantenimientoPersonaDependiente] @Action = @Action, @PKIdDependiente = @PKIdDependiente, @FKIdPersona_NOM = @FKIdPersona_NOM, @Nombre = @Nombre, @FKIdParentesco_SIS = @FKIdParentesco_SIS, @Parentesco = @Parentesco, @FechaNacimiento = @FechaNacimiento, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoPersonaPensionResult>> SP_MantenimientoPersonaPensionAsync(int? action, int? pKIdPension, int? fKIdPersona_NOM, string nombreBeneficiario, string documento, DateOnly? fechaDocumento, decimal? porcentaje, int? fKIdTipoPension_NOM, DateTime? fechaInicio, DateTime? fechaFin, string banco, string cuentaBancaria, string clabe, string formaPago, int? fKIdCuentaContable_SIS, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdPension",
+                    Value = pKIdPension ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPersona_NOM",
+                    Value = fKIdPersona_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombreBeneficiario",
+                    Size = 300,
+                    Value = nombreBeneficiario ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Documento",
+                    Size = 100,
+                    Value = documento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaDocumento",
+                    Value = fechaDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Porcentaje",
+                    Precision = 9,
+                    Scale = 4,
+                    Value = porcentaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoPension_NOM",
+                    Value = fKIdTipoPension_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaInicio",
+                    Scale = 6,
+                    Value = fechaInicio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime2,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaFin",
+                    Scale = 6,
+                    Value = fechaFin ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime2,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Banco",
+                    Size = 100,
+                    Value = banco ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CuentaBancaria",
+                    Size = 100,
+                    Value = cuentaBancaria ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Clabe",
+                    Size = 100,
+                    Value = clabe ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FormaPago",
+                    Size = 100,
+                    Value = formaPago ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdCuentaContable_SIS",
+                    Value = fKIdCuentaContable_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoPersonaPensionResult>("EXEC @returnValue = [NOM].[SP_MantenimientoPersonaPension] @Action = @Action, @PKIdPension = @PKIdPension, @FKIdPersona_NOM = @FKIdPersona_NOM, @NombreBeneficiario = @NombreBeneficiario, @Documento = @Documento, @FechaDocumento = @FechaDocumento, @Porcentaje = @Porcentaje, @FKIdTipoPension_NOM = @FKIdTipoPension_NOM, @FechaInicio = @FechaInicio, @FechaFin = @FechaFin, @Banco = @Banco, @CuentaBancaria = @CuentaBancaria, @Clabe = @Clabe, @FormaPago = @FormaPago, @FKIdCuentaContable_SIS = @FKIdCuentaContable_SIS, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
 
             return _;
@@ -4027,6 +4792,229 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<spCatalogoSimplePorCatalogoResult>> spCatalogoSimplePorCatalogoAsync(string catalogo, bool? soloActivos, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Catalogo",
+                    Size = 160,
+                    Value = catalogo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SoloActivos",
+                    Value = soloActivos ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spCatalogoSimplePorCatalogoResult>("EXEC @returnValue = [NOM].[spCatalogoSimplePorCatalogo] @Catalogo = @Catalogo, @SoloActivos = @SoloActivos", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spConceptoConfiguracion_ListResult>> spConceptoConfiguracion_ListAsync(int? empresaId, int? personaId, int? puestoId, int? periodoId, string tipoConfiguracion, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PuestoId",
+                    Value = puestoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoConfiguracion",
+                    Size = 80,
+                    Value = tipoConfiguracion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spConceptoConfiguracion_ListResult>("EXEC @returnValue = [NOM].[spConceptoConfiguracion_List] @EmpresaId = @EmpresaId, @PersonaId = @PersonaId, @PuestoId = @PuestoId, @PeriodoId = @PeriodoId, @TipoConfiguracion = @TipoConfiguracion, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spConceptos_ListResult>> spConceptos_ListAsync(int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spConceptos_ListResult>("EXEC @returnValue = [NOM].[spConceptos_List] @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spConceptosTabulares_ListResult>> spConceptosTabulares_ListAsync(int? empresaId, int? puestoId, int? conceptoId, int? nivelId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PuestoId",
+                    Value = puestoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ConceptoId",
+                    Value = conceptoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NivelId",
+                    Value = nivelId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spConceptosTabulares_ListResult>("EXEC @returnValue = [NOM].[spConceptosTabulares_List] @EmpresaId = @EmpresaId, @PuestoId = @PuestoId, @ConceptoId = @ConceptoId, @NivelId = @NivelId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spConfiguracionDeRolYClaimsResult>> spConfiguracionDeRolYClaimsAsync(string group, string subgroup, string code, string values, string description, string rolName, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
@@ -4083,6 +5071,195 @@ namespace EG.Infraestructure.Models
                 parameterreturnValue,
             };
             var _ = await _context.SqlQueryAsync<spConfiguracionDeRolYClaimsResult>("EXEC @returnValue = [dbo].[spConfiguracionDeRolYClaims] @group = @group, @subgroup = @subgroup, @code = @code, @values = @values, @description = @description, @rolName = @rolName", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spContratosLaborales_ListResult>> spContratosLaborales_ListAsync(int? empresaNominaId, int? personaId, int? puestoId, int? nombramientoId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaNominaId",
+                    Value = empresaNominaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PuestoId",
+                    Value = puestoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombramientoId",
+                    Value = nombramientoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spContratosLaborales_ListResult>("EXEC @returnValue = [NOM].[spContratosLaborales_List] @EmpresaNominaId = @EmpresaNominaId, @PersonaId = @PersonaId, @PuestoId = @PuestoId, @NombramientoId = @NombramientoId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spCorridaNomina_DemoResult>> spCorridaNomina_DemoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spCorridaNomina_DemoResult>("EXEC @returnValue = [NOM].[spCorridaNomina_Demo] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spCreditos_ListResult>> spCreditos_ListAsync(int? personaId, int? contratoTerceroId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "ContratoTerceroId",
+                    Value = contratoTerceroId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spCreditos_ListResult>("EXEC @returnValue = [NOM].[spCreditos_List] @PersonaId = @PersonaId, @ContratoTerceroId = @ContratoTerceroId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 
@@ -4599,6 +5776,127 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<spInfonavit_ListResult>> spInfonavit_ListAsync(int? personaId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spInfonavit_ListResult>("EXEC @returnValue = [NOM].[spInfonavit_List] @PersonaId = @PersonaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spMovimientosNomina_ListResult>> spMovimientosNomina_ListAsync(int? empresaId, int? periodoId, int? personaId, string tipoNomina, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoNomina",
+                    Size = 80,
+                    Value = tipoNomina ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spMovimientosNomina_ListResult>("EXEC @returnValue = [NOM].[spMovimientosNomina_List] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @TipoNomina = @TipoNomina, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spNodeMenuResult>> spNodeMenuAsync(int? noEmploye, string lenguaje, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
@@ -4626,6 +5924,1169 @@ namespace EG.Infraestructure.Models
                 parameterreturnValue,
             };
             var _ = await _context.SqlQueryAsync<spNodeMenuResult>("EXEC @returnValue = [SIS].[spNodeMenu] @NoEmploye = @NoEmploye, @Lenguaje = @Lenguaje", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spOperacionNomina_ListResult>> spOperacionNomina_ListAsync(string operacion, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Operacion",
+                    Size = 160,
+                    Value = operacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spOperacionNomina_ListResult>("EXEC @returnValue = [NOM].[spOperacionNomina_List] @Operacion = @Operacion, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spPeriodosActivos_ListResult>> spPeriodosActivos_ListAsync(int? empresaId, int? periodoId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spPeriodosActivos_ListResult>("EXEC @returnValue = [NOM].[spPeriodosActivos_List] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spPuestos_ListResult>> spPuestos_ListAsync(int? empresaNominaId, int? nivelId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaNominaId",
+                    Value = empresaNominaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NivelId",
+                    Value = nivelId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spPuestos_ListResult>("EXEC @returnValue = [NOM].[spPuestos_List] @EmpresaNominaId = @EmpresaNominaId, @NivelId = @NivelId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @Activo = @Activo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spResumenPeriodo_ListResult>> spResumenPeriodo_ListAsync(int? empresaId, int? periodoId, int? page, int? pageSize, string filtro, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 400,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spResumenPeriodo_ListResult>("EXEC @returnValue = [NOM].[spResumenPeriodo_List] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhContrato_ListResult>> spRhContrato_ListAsync(int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhContrato_ListResult>("EXEC @returnValue = [NOM].[spRhContrato_List] @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhDependiente_ListResult>> spRhDependiente_ListAsync(int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhDependiente_ListResult>("EXEC @returnValue = [NOM].[spRhDependiente_List] @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhEmpleado_DeleteResult>> spRhEmpleado_DeleteAsync(int? id, int? usuarioActual, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Id",
+                    Value = id ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioActual",
+                    Value = usuarioActual ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhEmpleado_DeleteResult>("EXEC @returnValue = [NOM].[spRhEmpleado_Delete] @Id = @Id, @UsuarioActual = @UsuarioActual", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhEmpleado_GetByIdResult>> spRhEmpleado_GetByIdAsync(int? id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Id",
+                    Value = id ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhEmpleado_GetByIdResult>("EXEC @returnValue = [NOM].[spRhEmpleado_GetById] @Id = @Id", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhEmpleado_ListResult>> spRhEmpleado_ListAsync(int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhEmpleado_ListResult>("EXEC @returnValue = [NOM].[spRhEmpleado_List] @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhEmpleado_SaveResult>> spRhEmpleado_SaveAsync(int? empresaId, string empleado, string nombre, string paterno, string materno, string rfc, string curp, string sexo, DateTime? fechaNacimiento, DateTime? fechaIngreso, DateTime? fechaFin, string tipoContratacion, string puesto, decimal? sueldoBase, decimal? compensacionGarantizada, string banco, string numeroCuenta, string clabe, string email, string telefono, string celular, string calle, string numExterior, string numInterior, string colonia, string cP, string municipio, string estado, string estadoCivil, string regImss, bool? activo, int? usuarioActual, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                parameterId,
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Empleado",
+                    Size = 60,
+                    Value = empleado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Nombre",
+                    Size = 200,
+                    Value = nombre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Paterno",
+                    Size = 200,
+                    Value = paterno ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Materno",
+                    Size = 200,
+                    Value = materno ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Rfc",
+                    Size = 60,
+                    Value = rfc ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Curp",
+                    Size = 72,
+                    Value = curp ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Sexo",
+                    Size = 40,
+                    Value = sexo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaNacimiento",
+                    Value = fechaNacimiento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaIngreso",
+                    Value = fechaIngreso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaFin",
+                    Value = fechaFin ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TipoContratacion",
+                    Size = 200,
+                    Value = tipoContratacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Puesto",
+                    Size = 400,
+                    Value = puesto ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SueldoBase",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = sueldoBase ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CompensacionGarantizada",
+                    Precision = 18,
+                    Scale = 2,
+                    Value = compensacionGarantizada ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Banco",
+                    Size = 400,
+                    Value = banco ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NumeroCuenta",
+                    Size = 100,
+                    Value = numeroCuenta ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Clabe",
+                    Size = 200,
+                    Value = clabe ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Email",
+                    Size = 1000,
+                    Value = email ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Telefono",
+                    Size = 60,
+                    Value = telefono ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Celular",
+                    Size = 60,
+                    Value = celular ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Calle",
+                    Size = 160,
+                    Value = calle ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NumExterior",
+                    Size = 40,
+                    Value = numExterior ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NumInterior",
+                    Size = 40,
+                    Value = numInterior ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Colonia",
+                    Size = 160,
+                    Value = colonia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CP",
+                    Size = 24,
+                    Value = cP ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Municipio",
+                    Size = 80,
+                    Value = municipio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Estado",
+                    Size = 120,
+                    Value = estado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EstadoCivil",
+                    Size = 80,
+                    Value = estadoCivil ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "RegImss",
+                    Size = 48,
+                    Value = regImss ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioActual",
+                    Value = usuarioActual ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhEmpleado_SaveResult>("EXEC @returnValue = [NOM].[spRhEmpleado_Save] @Id = @Id OUTPUT, @EmpresaId = @EmpresaId, @Empleado = @Empleado, @Nombre = @Nombre, @Paterno = @Paterno, @Materno = @Materno, @Rfc = @Rfc, @Curp = @Curp, @Sexo = @Sexo, @FechaNacimiento = @FechaNacimiento, @FechaIngreso = @FechaIngreso, @FechaFin = @FechaFin, @TipoContratacion = @TipoContratacion, @Puesto = @Puesto, @SueldoBase = @SueldoBase, @CompensacionGarantizada = @CompensacionGarantizada, @Banco = @Banco, @NumeroCuenta = @NumeroCuenta, @Clabe = @Clabe, @Email = @Email, @Telefono = @Telefono, @Celular = @Celular, @Calle = @Calle, @NumExterior = @NumExterior, @NumInterior = @NumInterior, @Colonia = @Colonia, @CP = @CP, @Municipio = @Municipio, @Estado = @Estado, @EstadoCivil = @EstadoCivil, @RegImss = @RegImss, @Activo = @Activo, @UsuarioActual = @UsuarioActual", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhEmpleadoDetalle_ListResult>> spRhEmpleadoDetalle_ListAsync(string seccion, int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Seccion",
+                    Size = 80,
+                    Value = seccion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhEmpleadoDetalle_ListResult>("EXEC @returnValue = [NOM].[spRhEmpleadoDetalle_List] @Seccion = @Seccion, @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhEntidadNomina_ListResult>> spRhEntidadNomina_ListAsync(string entidad, int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Entidad",
+                    Size = 80,
+                    Value = entidad ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhEntidadNomina_ListResult>("EXEC @returnValue = [NOM].[spRhEntidadNomina_List] @Entidad = @Entidad, @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhExpediente_ListResult>> spRhExpediente_ListAsync(int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhExpediente_ListResult>("EXEC @returnValue = [NOM].[spRhExpediente_List] @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhIncidencia_ListResult>> spRhIncidencia_ListAsync(int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhIncidencia_ListResult>("EXEC @returnValue = [NOM].[spRhIncidencia_List] @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhPension_ListResult>> spRhPension_ListAsync(int? personaId, int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhPension_ListResult>("EXEC @returnValue = [NOM].[spRhPension_List] @PersonaId = @PersonaId, @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spRhPersona_ListResult>> spRhPersona_ListAsync(int? empresaId, int? page, int? pageSize, string filtro, string sortLabel, string sortDirection, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Page",
+                    Value = page ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PageSize",
+                    Value = pageSize ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Filtro",
+                    Size = 500,
+                    Value = filtro ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortLabel",
+                    Size = 160,
+                    Value = sortLabel ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SortDirection",
+                    Size = 40,
+                    Value = sortDirection ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spRhPersona_ListResult>("EXEC @returnValue = [NOM].[spRhPersona_List] @EmpresaId = @EmpresaId, @Page = @Page, @PageSize = @PageSize, @Filtro = @Filtro, @SortLabel = @SortLabel, @SortDirection = @SortDirection", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spUsuariosNomina_AdaptarDemoResult>> spUsuariosNomina_AdaptarDemoAsync(int? usuarioId, int? empresaNominaId, int? personaId, int? usuarioActual, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaNominaId",
+                    Value = empresaNominaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioActual",
+                    Value = usuarioActual ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spUsuariosNomina_AdaptarDemoResult>("EXEC @returnValue = [NOM].[spUsuariosNomina_AdaptarDemo] @UsuarioId = @UsuarioId, @EmpresaNominaId = @EmpresaNominaId, @PersonaId = @PersonaId, @UsuarioActual = @UsuarioActual", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

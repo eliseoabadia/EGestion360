@@ -40,6 +40,7 @@ using EG.Common.Util;
 using EG.Domain.Interfaces;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.Nomina;
+using EG.Domain.DTOs.Requests.Nomina;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.Tesoreria;
@@ -195,7 +196,17 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INominaCrudAppService<NomTipoIncapacidadResponse>, NomTipoIncapacidadAppService>();
             services.AddScoped<INominaCrudAppService<NomTipoPagoResponse>, NomTipoPagoAppService>();
             services.AddScoped<INominaCrudAppService<NomTipoPensionResponse>, NomTipoPensionAppService>();
+            services.AddScoped<INominaCrudAppService<NomCatalogoSimpleResponse>, NomCatalogoSimpleAppService>();
             services.AddScoped<INominaProcesoAppService, NominaProcesoAppService>();
+            services.AddScoped<INominaOperacionAppService, NominaOperacionAppService>();
+            services.AddScoped<INominaRhEmpleadoAppService, NominaRhEmpleadoAppService>();
+            services.AddScoped<INominaRhEmpleadoDetalleAppService, NominaRhEmpleadoDetalleAppService>();
+            services.AddScoped<INominaRhDetailAppService<NominaRhExpedienteDto, NominaRhExpedienteResponse>, NominaRhExpedienteAppService>();
+            services.AddScoped<INominaRhDetailAppService<NominaRhContratoDto, NominaRhContratoResponse>, NominaRhContratoAppService>();
+            services.AddScoped<INominaRhDetailAppService<NominaRhDependienteDto, NominaRhDependienteResponse>, NominaRhDependienteAppService>();
+            services.AddScoped<INominaRhDetailAppService<NominaRhIncidenciaDto, NominaRhIncidenciaResponse>, NominaRhIncidenciaAppService>();
+            services.AddScoped<INominaRhDetailAppService<NominaRhPensionDto, NominaRhPensionResponse>, NominaRhPensionAppService>();
+            services.AddScoped<INominaRhLookupAppService, NominaRhLookupAppService>();
 
             // Application services - Conteo ciclico
             services.AddScoped<IConteoAppService, ConteoAppService>();

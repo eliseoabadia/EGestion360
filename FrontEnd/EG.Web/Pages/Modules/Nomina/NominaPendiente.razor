@@ -1,0 +1,484 @@
+@page "/nomina/movimientos"
+@page "/rh/datormovto"
+@page "/nomina/depersonal"
+@page "/nomina/reportequincenal"
+@page "/aux/auxcalcissste"
+@page "/aux/auxcalcisrquincenal"
+@page "/aux/auxcalcfovissste"
+@page "/aux/auxcalcinfonavitquincenal"
+@page "/aux/auxcalcimssquincenal"
+@page "/nom/resumennomina"
+@page "/nom/recibonomina"
+@page "/nom/archivodispercion"
+@page "/nom/timbradopercepciones"
+@page "/aux/imssquincenal_rep"
+@page "/nom/reportenomina"
+@page "/rh/incidencia"
+@page "/rh/justificacion"
+@page "/rh/incidenciareport"
+@page "/rh/liquidacion"
+@page "/sis/nominaespecial"
+@page "/sis/vwnominaespecial"
+@page "/emp/faltasxempresa"
+@page "/sis/solicitudvacaciones"
+@page "/sis/autorizacionvacaciones"
+@page "/sis/cuotasimss"
+@page "/nomina/historicos/consulta"
+@page "/nomina/historicos/analisis"
+@page "/nomina/historicos/recibos"
+@page "/nomina/historicos/dispersion"
+@page "/nomina/historicos/timbrado"
+@page "/nomina/historicos/reportequincenal"
+@page "/nomina/historicos/resumen"
+@page "/nomina/historicos/reportehistorico"
+@page "/nomina/historicos/cubo"
+@page "/nomina/historicos/sbc"
+@page "/nomina/historicos/acumuladosimss"
+@page "/nomina/historicos/sbchistorico"
+@page "/nomina/historicos/acumuladosbimestre"
+@page "/nomina/historicos/isr_mensual"
+@page "/nomina/historicos/isr_acumulados"
+@page "/nomina/historicos/impuestoslocales"
+@page "/rh/configuracion"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NominaOperacionResponse, NominaOperacionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="@CurrentItem.Title"
+                    Subtitle="@CurrentItem.Subtitle"
+                    Icon="@CurrentItem.Icon"
+                    CanCreate="false"
+                    OnRefresh="() => table.ReloadData()" />
+
+        @if (!string.IsNullOrWhiteSpace(CurrentItem.Note))
+        {
+            <MudAlert Severity="@CurrentItem.Severity" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+                @CurrentItem.Note
+            </MudAlert>
+        }
+
+        <GenericTable TItem="NominaOperacionResponse"
+                      @ref="table"
+                      Title="@($"Lista de {CurrentItem.Title}")"
+                      SearchPlaceholder="@($"Buscar {CurrentItem.Title.ToLowerInvariant()}...")"
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                @foreach (var column in CurrentItem.Columns)
+                {
+                    <MudTh>
+                        <MudTableSortLabel SortLabel="@column.Property" T="NominaOperacionResponse">
+                            @column.Label
+                        </MudTableSortLabel>
+                    </MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                @foreach (var column in CurrentItem.Columns)
+                {
+                    <MudTd>@FormatValue(GetValue(item, column.Property), column.Kind)</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NominaOperacionResponse> table = null!;
+
+    protected override string ModuleName => CurrentItem.ModuleName;
+    protected override string SubModuleName => CurrentItem.SubModuleName;
+    protected override Type CreateDialogType => typeof(DeleteDialog<NominaOperacionResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<NominaOperacionResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NominaOperacionResponse>);
+    protected override int ExportPageSize => 2500;
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+
+    private OperacionPageItem CurrentItem
+    {
+        get
+        {
+            if (ItemsByPath.TryGetValue(CurrentPath, out var item))
+            {
+                return item;
+            }
+
+            if (HistoricoRoutes.Contains(CurrentPath, StringComparer.OrdinalIgnoreCase))
+            {
+                return Productos(
+                    "Historico de Nomina",
+                    "Consulta historica de productos de nomina migrados",
+                    "Nomina_Historicos",
+                    CurrentPath.Split('/').Last().Replace('-', '_'),
+                    "Los historicos se muestran con la corrida migrada disponible; los reportes finales dependen de adaptar los SP de timbrado, dispersion y recibos.");
+            }
+
+            return Productos(
+                "Nomina",
+                "Operacion de nomina",
+                "Nomina",
+                "Operacion",
+                "Ruta operativa conectada al visor de operaciones NOM.");
+        }
+    }
+
+    private static readonly OperationColumn[] EmployeeColumns =
+    [
+        new("Id", "ID", ColumnKind.Number),
+        new("Empleado", "Empleado"),
+        new("Persona", "Persona"),
+        new("Tipo", "Contratacion"),
+        new("Documento", "RFC"),
+        new("Descripcion", "CURP"),
+        new("FechaInicio", "Ingreso", ColumnKind.Date),
+        new("Importe", "Sueldo", ColumnKind.Money),
+        new("Estatus", "Estatus")
+    ];
+
+    private static readonly OperationColumn[] MovementColumns =
+    [
+        new("Id", "ID", ColumnKind.Number),
+        new("Empleado", "Empleado"),
+        new("Persona", "Persona"),
+        new("Tipo", "Tipo Movimiento"),
+        new("Empresa", "Plaza"),
+        new("Periodo", "Quincena"),
+        new("FechaInicio", "Inicio", ColumnKind.Date),
+        new("FechaFin", "Fin", ColumnKind.Date),
+        new("Importe", "Importe", ColumnKind.Money),
+        new("Estatus", "Estatus")
+    ];
+
+    private static readonly OperationColumn[] IncidenceColumns =
+    [
+        new("Id", "ID", ColumnKind.Number),
+        new("Empleado", "Empleado"),
+        new("Persona", "Persona"),
+        new("Tipo", "Incidencia"),
+        new("Fecha", "Fecha", ColumnKind.Date),
+        new("Periodo", "Periodo"),
+        new("Estatus", "Descuento"),
+        new("Comentario", "Justificacion"),
+        new("Observaciones", "Comentario")
+    ];
+
+    private static readonly OperationColumn[] VacationColumns =
+    [
+        new("Id", "ID", ColumnKind.Number),
+        new("Empleado", "Empleado"),
+        new("Persona", "Persona"),
+        new("Periodo", "Periodo"),
+        new("FechaInicio", "Inicio", ColumnKind.Date),
+        new("FechaFin", "Fin", ColumnKind.Date),
+        new("Importe", "Dias", ColumnKind.Number),
+        new("Estatus", "Estatus"),
+        new("Comentario", "Validacion")
+    ];
+
+    private static readonly OperationColumn[] FiscalColumns =
+    [
+        new("Id", "ID", ColumnKind.Number),
+        new("Periodo", "Catalogo"),
+        new("Clave", "Clave"),
+        new("Descripcion", "Descripcion"),
+        new("Importe", "Valor 1", ColumnKind.Money),
+        new("Percepcion", "Valor 2", ColumnKind.Money),
+        new("Deduccion", "Valor 3", ColumnKind.Money),
+        new("Neto", "Valor 4", ColumnKind.Money),
+        new("FechaInicio", "Inicio", ColumnKind.Date),
+        new("FechaFin", "Fin", ColumnKind.Date)
+    ];
+
+    private static readonly OperationColumn[] ProductColumns =
+    [
+        new("Id", "Corrida", ColumnKind.Number),
+        new("Empresa", "Empresa"),
+        new("Periodo", "Periodo"),
+        new("Tipo", "Tipo"),
+        new("Estatus", "Estatus"),
+        new("Fecha", "Fecha", ColumnKind.Date),
+        new("Percepcion", "Percepcion", ColumnKind.Money),
+        new("Deduccion", "Deduccion", ColumnKind.Money),
+        new("Neto", "Neto", ColumnKind.Money),
+        new("Observaciones", "Observaciones")
+    ];
+
+    private static readonly OperationColumn[] LiquidationColumns =
+    [
+        new("Id", "ID", ColumnKind.Number),
+        new("Empleado", "Contrato"),
+        new("Tipo", "Tipo"),
+        new("Fecha", "Fecha baja", ColumnKind.Date),
+        new("FechaInicio", "Inicio aguinaldo", ColumnKind.Date),
+        new("Importe", "SDI liquidacion", ColumnKind.Money),
+        new("Percepcion", "Salario diario", ColumnKind.Money),
+        new("Deduccion", "Saldo vacaciones", ColumnKind.Money),
+        new("Comentario", "Dias pendientes"),
+        new("Observaciones", "Vacaciones")
+    ];
+
+    private static readonly IReadOnlyDictionary<string, OperacionPageItem> ItemsByPath =
+        new Dictionary<string, OperacionPageItem>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["/nomina/empleados"] = Empleados("Empleados", "Ficha base de empleados migrada", "Empleados"),
+            ["/rh/persona"] = Empleados("Empleados", "Alias legacy RH.Persona", "Empleados"),
+            ["/nomina/movimientos"] = Movimientos("Movimientos de Personal", "Movimientos migrados desde RH_DatosMovto", "Movimientos_Personal"),
+            ["/rh/datormovto"] = Movimientos("Movimientos de Personal", "Alias legacy RH_DatosMovto", "Movimientos_Personal"),
+            ["/nomina/depersonal"] = Movimientos("De Personal", "Plazas y movimientos de personal", "De_Personal"),
+            ["/nomina/reportequincenal"] = Movimientos("Reporte Quincenal MP", "Vista base para reporte quincenal de movimientos", "Reporte_Quincenal_MP"),
+
+            ["/rh/incidencia"] = Incidencias("Captura de Incidencias", "Incidencias migradas desde RH_Incidencia", "Captura_Incidencias"),
+            ["/rh/justificacion"] = Incidencias("Justificacion de Incidencias", "Justificacion y descuento del dia", "Justificacion_Incidencias"),
+            ["/rh/incidenciareport"] = Incidencias("Reporte de Incidencias", "Consulta de incidencias por periodo", "Reporte_Incidencias"),
+
+            ["/sis/solicitudvacaciones"] = Vacaciones("Solicitud Vacaciones", "Solicitudes migradas desde RH_Vacaciones", "Solicitud_Vacaciones"),
+            ["/sis/autorizacionvacaciones"] = Vacaciones("Autorizacion Vacaciones", "Validacion de solicitudes de vacaciones", "Autorizacion_Vacaciones"),
+            ["/rh/liquidacion"] = Liquidaciones("Finiquito/Liquidacion", "Liquidaciones migradas desde RH_Liquidacion", "Nomina_Finiquito_Liquidacion"),
+
+            ["/aux/auxcalcissste"] = Fiscal("Calculo ISSSTE", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_ISSSTE_4134"),
+            ["/aux/auxcalcisrquincenal"] = Fiscal("Calculo ISR", "Tablas ISR y subsidios migrados", "Calculo_ISR_2053"),
+            ["/aux/auxcalcfovissste"] = Fiscal("Calculo FOVISSSTE", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_FOVISSSTE_4136"),
+            ["/aux/auxcalcinfonavitquincenal"] = Fiscal("Calculo Infonavit", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_Infonavit_139"),
+            ["/aux/auxcalcimssquincenal"] = Fiscal("Calculo Cuotas IMSS", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
+            ["/sis/cuotasimss"] = Fiscal("Cuotas IMSS", "Alias legacy SIS_CuotasImss y tablas IMSS", "Cuotas_IMSS"),
+
+            ["/nom/resumennomina"] = Productos("Resumen", "Resumen de corridas de nomina", "Resumen_Nomina"),
+            ["/nom/recibonomina"] = Productos("Recibos", "Base de recibos por corrida", "Recibos_Nomina", "Requiere adaptar el formato final del recibo para impresion."),
+            ["/nom/archivodispercion"] = Productos("Archivos de Dispersion", "Base para archivo bancario de dispersion", "Archivos_Dispersion", "Requiere adaptar el SP/formato bancario final."),
+            ["/nom/timbradopercepciones"] = Productos("Archivos de Timbrado", "Base para timbrado de percepciones", "Archivos_Timbrado", "Requiere adaptar layout CFDI/timbrado legado."),
+            ["/aux/imssquincenal_rep"] = Fiscal("Reporte Cuotas IMSS", "Consulta de cuotas y parametros IMSS", "Reporte_IMSS"),
+            ["/nom/reportenomina"] = Productos("Reporte Nomina Actual", "Reporte operativo de corrida actual", "Reporte_Nomina"),
+
+            ["/sis/nominaespecial"] = Productos("Configura Aguinaldo", "Configuracion y productos de nomina especial", "Configura_Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
+            ["/sis/vwnominaespecial"] = Productos("Aguinaldo", "Consulta de nomina especial/aguinaldo", "Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
+            ["/emp/faltasxempresa"] = Incidencias("Faltas Especiales", "Consulta de incidencias/faltas migradas", "Faltas_Especial"),
+
+            ["/rh/configuracion"] = new(
+                "Configuracion RH",
+                "Parametros y catalogos de soporte RH/NOM",
+                Icons.Material.Filled.Settings,
+                "Configuracion_RH",
+                "Configuracion_RH",
+                "tablas-fiscales",
+                FiscalColumns,
+                "Periodo",
+                "Consulta operativa de parametros migrados para soporte RH/NOM.",
+                Severity.Info)
+        };
+
+    private static readonly string[] HistoricoRoutes =
+    [
+        "/nomina/historicos/consulta",
+        "/nomina/historicos/analisis",
+        "/nomina/historicos/recibos",
+        "/nomina/historicos/dispersion",
+        "/nomina/historicos/timbrado",
+        "/nomina/historicos/reportequincenal",
+        "/nomina/historicos/resumen",
+        "/nomina/historicos/reportehistorico",
+        "/nomina/historicos/cubo",
+        "/nomina/historicos/sbc",
+        "/nomina/historicos/acumuladosimss",
+        "/nomina/historicos/sbchistorico",
+        "/nomina/historicos/acumuladosbimestre",
+        "/nomina/historicos/isr_mensual",
+        "/nomina/historicos/isr_acumulados",
+        "/nomina/historicos/impuestoslocales"
+    ];
+
+    protected override async Task<TableData<NominaOperacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                BuildFilters());
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                Snackbar.Add(response?.Message ?? "No fue posible obtener la operacion de nomina.", Severity.Error);
+            }
+
+            return new TableData<NominaOperacionResponse>
+            {
+                Items = Elements,
+                TotalItems = TotalCount
+            };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task<List<NominaOperacionResponse>> LoadExportItemsAsync()
+    {
+        var items = new List<NominaOperacionResponse>();
+        var page = 1;
+        var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+
+        while (items.Count < MaxExportRows)
+        {
+            var response = await Service.GetAllPaginadoAsync(page, ExportPageSize, SearchString, sortLabel, SortDirection, BuildFilters());
+            if (response?.Success != true)
+            {
+                throw new InvalidOperationException(response?.Message ?? "No fue posible obtener los datos para exportar.");
+            }
+
+            var pageItems = response.Items?.ToList() ?? new List<NominaOperacionResponse>();
+            if (pageItems.Count == 0)
+            {
+                break;
+            }
+
+            items.AddRange(pageItems);
+
+            if (items.Count >= response.TotalCount || pageItems.Count < ExportPageSize)
+            {
+                break;
+            }
+
+            page++;
+        }
+
+        return items;
+    }
+
+    protected override string GetDefaultSortLabel() => CurrentItem.DefaultSortLabel;
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NominaOperacionResponse> items)
+        => items.Select(item => CurrentItem.Columns.ToDictionary(column => column.Label, column => FormatValue(GetValue(item, column.Property), column.Kind)));
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private Dictionary<string, object> BuildFilters()
+        => new() { ["Operacion"] = CurrentItem.Operation };
+
+    private static object? GetValue(NominaOperacionResponse item, string property)
+        => property switch
+        {
+            nameof(NominaOperacionResponse.Operacion) => item.Operacion,
+            nameof(NominaOperacionResponse.Id) => item.Id,
+            nameof(NominaOperacionResponse.Clave) => item.Clave,
+            nameof(NominaOperacionResponse.Persona) => item.Persona,
+            nameof(NominaOperacionResponse.Empleado) => item.Empleado,
+            nameof(NominaOperacionResponse.Empresa) => item.Empresa,
+            nameof(NominaOperacionResponse.Periodo) => item.Periodo,
+            nameof(NominaOperacionResponse.Tipo) => item.Tipo,
+            nameof(NominaOperacionResponse.Estatus) => item.Estatus,
+            nameof(NominaOperacionResponse.Fecha) => item.Fecha,
+            nameof(NominaOperacionResponse.FechaInicio) => item.FechaInicio,
+            nameof(NominaOperacionResponse.FechaFin) => item.FechaFin,
+            nameof(NominaOperacionResponse.Importe) => item.Importe,
+            nameof(NominaOperacionResponse.Percepcion) => item.Percepcion,
+            nameof(NominaOperacionResponse.Deduccion) => item.Deduccion,
+            nameof(NominaOperacionResponse.Neto) => item.Neto,
+            nameof(NominaOperacionResponse.Documento) => item.Documento,
+            nameof(NominaOperacionResponse.Descripcion) => item.Descripcion,
+            nameof(NominaOperacionResponse.Comentario) => item.Comentario,
+            nameof(NominaOperacionResponse.Observaciones) => item.Observaciones,
+            nameof(NominaOperacionResponse.Activo) => item.Activo,
+            _ => string.Empty
+        };
+
+    private static string FormatValue(object? value, ColumnKind kind)
+    {
+        if (value == null)
+        {
+            return string.Empty;
+        }
+
+        return kind switch
+        {
+            ColumnKind.Date when value is DateTime date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            ColumnKind.Money when value is decimal money => money.ToString("N2", CultureInfo.InvariantCulture),
+            ColumnKind.Number when value is decimal number => number.ToString("N2", CultureInfo.InvariantCulture),
+            ColumnKind.Number when value is int number => number.ToString("N0", CultureInfo.InvariantCulture),
+            _ when value is bool flag => flag ? "Si" : "No",
+            _ => value.ToString() ?? string.Empty
+        };
+    }
+
+    private static OperacionPageItem Empleados(string title, string subtitle, string subModule)
+        => new(title, subtitle, Icons.Material.Filled.Badge, "Nomina_Recursos_Humanos", subModule, "empleados", EmployeeColumns, "Persona", string.Empty, Severity.Info);
+
+    private static OperacionPageItem Movimientos(string title, string subtitle, string subModule)
+        => new(title, subtitle, Icons.Material.Filled.SyncAlt, "Nomina_Recursos_Humanos", subModule, "movimientos", MovementColumns, "Fecha", string.Empty, Severity.Info);
+
+    private static OperacionPageItem Incidencias(string title, string subtitle, string subModule)
+        => new(title, subtitle, Icons.Material.Filled.ReportProblem, "Nomina_Incidencias", subModule, "incidencias", IncidenceColumns, "Fecha", string.Empty, Severity.Info);
+
+    private static OperacionPageItem Vacaciones(string title, string subtitle, string subModule)
+        => new(title, subtitle, Icons.Material.Filled.EventAvailable, "Nomina_Vacaciones", subModule, "vacaciones", VacationColumns, "FechaInicio", string.Empty, Severity.Info);
+
+    private static OperacionPageItem Liquidaciones(string title, string subtitle, string subModule)
+        => new(title, subtitle, Icons.Material.Filled.ReceiptLong, "Nomina", subModule, "liquidaciones", LiquidationColumns, "Fecha", string.Empty, Severity.Info);
+
+    private static OperacionPageItem Fiscal(string title, string subtitle, string subModule)
+        => new(title, subtitle, Icons.Material.Filled.Calculate, "Nomina_Auxiliares", subModule, "tablas-fiscales", FiscalColumns, "Periodo", "Los datos base ya estan migrados; el calculo final debe ejecutarse con el SP fiscal correspondiente.", Severity.Warning);
+
+    private static OperacionPageItem Productos(string title, string subtitle, string subModule, string note = "")
+        => Productos(title, subtitle, "Nomina_Productos", subModule, note);
+
+    private static OperacionPageItem Productos(string title, string subtitle, string module, string subModule, string note)
+        => new(title, subtitle, Icons.Material.Filled.Assessment, module, subModule, "productos-nomina", ProductColumns, "Fecha", note, string.IsNullOrWhiteSpace(note) ? Severity.Info : Severity.Warning);
+
+    private sealed record OperacionPageItem(
+        string Title,
+        string Subtitle,
+        string Icon,
+        string ModuleName,
+        string SubModuleName,
+        string Operation,
+        OperationColumn[] Columns,
+        string DefaultSortLabel,
+        string Note,
+        Severity Severity);
+
+    private sealed record OperationColumn(string Property, string Label, ColumnKind Kind = ColumnKind.Text);
+
+    private enum ColumnKind
+    {
+        Text,
+        Date,
+        Money,
+        Number
+    }
+}

@@ -1,0 +1,457 @@
+@page "/rh/configuracion/sexo"
+@page "/rh/configuracion/estado-civil"
+@page "/rh/configuracion/escolaridad"
+@page "/rh/configuracion/parentesco"
+@page "/rh/configuracion/estado"
+@page "/rh/configuracion/banco"
+@page "/rh/configuracion/municipio"
+@page "/rh/configuracion/contratos/base-pago"
+@page "/rh/configuracion/contratos/metodo-pago"
+@page "/rh/configuracion/contratos/tipo-regimen"
+@page "/rh/configuracion/contratos/base-cotizacion"
+@page "/rh/configuracion/contratos/zona-geografica"
+@page "/rh/configuracion/contratos/dia-semana"
+@page "/nomina/configuracion/catalogos/tipo-nomina"
+@page "/nomina/configuracion/catalogos/cuotas-imss"
+@page "/nomina/configuracion/catalogos/uma"
+@page "/nomina/configuracion/catalogos/tipo-contratacion"
+@page "/nomina/configuracion/catalogos/tipo-descanso"
+@page "/nomina/configuracion/catalogos/tipo-incidencia"
+@page "/nomina/configuracion/catalogos/tipos-incidencia"
+@page "/nomina/configuracion/catalogos/tipo-justificacion"
+@page "/nomina/configuracion/catalogos/unidad-infonavit"
+@page "/nomina/configuracion/catalogos/forma-calculo"
+@page "/nomina/configuracion/catalogos/capitulos"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomCatalogoSimpleResponse, NomCatalogoSimpleResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="@CurrentItem.Title"
+                    Subtitle="@CurrentItem.Subtitle"
+                    Icon="@CurrentItem.Icon"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomCatalogoSimpleResponse"
+                      @ref="table"
+                      Title="@($"Lista de {CurrentItem.Title}")"
+                      SearchPlaceholder="@($"Buscar {CurrentItem.Title.ToLowerInvariant()}...")"
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomCatalogoSimpleResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidCatalogoSimple))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidCatalogoSimple))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private static readonly string[] DescriptionFields =
+    [
+        nameof(NomCatalogoSimpleResponse.Descripcion),
+        nameof(NomCatalogoSimpleResponse.Orden)
+    ];
+
+    private static readonly string[] KeyDescriptionFields =
+    [
+        nameof(NomCatalogoSimpleResponse.Clave),
+        nameof(NomCatalogoSimpleResponse.Descripcion),
+        nameof(NomCatalogoSimpleResponse.Orden)
+    ];
+
+    private static readonly string[] DateValueFields =
+    [
+        nameof(NomCatalogoSimpleResponse.FechaInicio),
+        nameof(NomCatalogoSimpleResponse.FechaFin),
+        nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+        nameof(NomCatalogoSimpleResponse.Orden)
+    ];
+
+    private static readonly string[] DefaultColumns =
+    [
+        nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+        nameof(NomCatalogoSimpleResponse.Clave),
+        nameof(NomCatalogoSimpleResponse.Descripcion),
+        nameof(NomCatalogoSimpleResponse.Orden),
+        nameof(NomCatalogoSimpleResponse.Activo)
+    ];
+
+    private static readonly string[] DescriptionColumns =
+    [
+        nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+        nameof(NomCatalogoSimpleResponse.Descripcion),
+        nameof(NomCatalogoSimpleResponse.Orden),
+        nameof(NomCatalogoSimpleResponse.Activo)
+    ];
+
+    private static readonly IReadOnlyDictionary<string, CatalogPageItem> ItemsByPath =
+        new Dictionary<string, CatalogPageItem>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["/rh/configuracion/sexo"] = Rh("Sexo", "Sexo", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Wc),
+            ["/rh/configuracion/estado-civil"] = Rh("Estado Civil", "Estado_Civil", DescriptionFields, DescriptionColumns, Icons.Material.Filled.FamilyRestroom),
+            ["/rh/configuracion/escolaridad"] = Rh("Escolaridad", "Escolaridad", DescriptionFields, DescriptionColumns, Icons.Material.Filled.School),
+            ["/rh/configuracion/parentesco"] = Rh("Tipo de Parentesco", "Tipo_Parentesco", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Groups),
+            ["/rh/configuracion/estado"] = Rh("Estado", "Estado", KeyDescriptionFields, DefaultColumns, Icons.Material.Filled.Map),
+            ["/rh/configuracion/banco"] = Rh("Banco", "Banco",
+                [
+                    nameof(NomCatalogoSimpleResponse.Clave),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DescripcionCorta),
+                    nameof(NomCatalogoSimpleResponse.DatoExtra1),
+                    nameof(NomCatalogoSimpleResponse.DatoExtra2),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Clave),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DescripcionCorta),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.AccountBalance),
+            ["/rh/configuracion/municipio"] = Rh("Municipio", "Municipio",
+                [
+                    nameof(NomCatalogoSimpleResponse.FkidCatalogoPadreNom),
+                    nameof(NomCatalogoSimpleResponse.Clave),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.FkidCatalogoPadreNom),
+                    nameof(NomCatalogoSimpleResponse.Clave),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.LocationCity,
+                parentCatalogo: "Estado",
+                parentLabel: "Estado"),
+            ["/rh/configuracion/contratos/base-pago"] = Rh("Base Pago", "Base_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Payments),
+            ["/rh/configuracion/contratos/metodo-pago"] = Rh("Metodo de Pago", "Metodo_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.PointOfSale),
+            ["/rh/configuracion/contratos/tipo-regimen"] = Rh("Tipo de Regimen", "Tipo_Regimen", DescriptionFields, DescriptionColumns, Icons.Material.Filled.AssignmentInd),
+            ["/rh/configuracion/contratos/base-cotizacion"] = Rh("Base de Cotizacion", "Base_Cotizacion", DescriptionFields, DescriptionColumns, Icons.Material.Filled.RequestQuote),
+            ["/rh/configuracion/contratos/zona-geografica"] = Rh("Zona Geografica", "Zona_Geografica", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Public),
+            ["/rh/configuracion/contratos/dia-semana"] = Rh("Dia de la Semana", "Dia_Semana", DescriptionFields, DescriptionColumns, Icons.Material.Filled.CalendarMonth),
+
+            ["/nomina/configuracion/catalogos/tipo-nomina"] = Nom("Tipo de Nomina", "Tipo_Nomina", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Badge),
+            ["/nomina/configuracion/catalogos/cuotas-imss"] = Nom("Cuotas IMSS", "Cuotas_IMSS",
+                [
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DescripcionCorta),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal2),
+                    nameof(NomCatalogoSimpleResponse.FechaInicio),
+                    nameof(NomCatalogoSimpleResponse.FechaFin),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DescripcionCorta),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal2),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.Percent),
+            ["/nomina/configuracion/catalogos/uma"] = Nom("UMA", "UMA", DateValueFields,
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.FechaInicio),
+                    nameof(NomCatalogoSimpleResponse.FechaFin),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.PriceChange),
+            ["/nomina/configuracion/catalogos/tipo-contratacion"] = Nom("Tipo de Contratacion", "Tipo_Contratacion",
+                [
+                    nameof(NomCatalogoSimpleResponse.Clave),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DatoExtra1),
+                    nameof(NomCatalogoSimpleResponse.DatoExtra2),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                DefaultColumns,
+                Icons.Material.Filled.Work),
+            ["/nomina/configuracion/catalogos/tipo-descanso"] = Nom("Tipo de Descanso", "Tipo_Descanso", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Weekend),
+            ["/nomina/configuracion/catalogos/tipo-incidencia"] = Nom("Tipo de Incidencia", "Tipo_Incidencia",
+                [
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.ReportProblem),
+            ["/nomina/configuracion/catalogos/tipos-incidencia"] = Nom("Tipo de Incidencia", "Tipo_Incidencia",
+                [
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.ReportProblem),
+            ["/nomina/configuracion/catalogos/tipo-justificacion"] = Nom("Tipo de Justificacion", "Tipo_Justificacion", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Rule),
+            ["/nomina/configuracion/catalogos/unidad-infonavit"] = Nom("Unidad Infonavit", "Unidad_Infonavit",
+                [
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.HomeWork),
+            ["/nomina/configuracion/catalogos/forma-calculo"] = Nom("Forma de Calculo", "Forma_Calculo",
+                [
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DatoExtra1),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DatoExtra1),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.Calculate),
+            ["/nomina/configuracion/catalogos/capitulos"] = Nom("Capitulos", "Capitulos", KeyDescriptionFields, DefaultColumns, Icons.Material.Filled.FormatListNumbered)
+        };
+
+    private GenericTable<NomCatalogoSimpleResponse> table = null!;
+
+    protected override string ModuleName => CurrentItem.ModuleName;
+    protected override string SubModuleName => CurrentItem.SubModuleName;
+    protected override Type CreateDialogType => typeof(NomCatalogoSimpleDialog);
+    protected override Type EditDialogType => typeof(NomCatalogoSimpleDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomCatalogoSimpleResponse>);
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+
+    private CatalogPageItem CurrentItem =>
+        ItemsByPath.TryGetValue(CurrentPath, out var item)
+            ? item
+            : Nom("Catalogo de Nomina", "Catalogo_Nomina", KeyDescriptionFields, DefaultColumns, Icons.Material.Filled.Category);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomCatalogoSimpleResponse), CurrentItem.Columns);
+
+    protected override string GetDefaultSortLabel() => CurrentItem.DefaultSortLabel;
+
+    protected override async Task<TableData<NomCatalogoSimpleResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                BuildCatalogFilters());
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                Snackbar.Add(response?.Message ?? "No fue posible obtener el catalogo.", Severity.Error);
+            }
+
+            return new TableData<NomCatalogoSimpleResponse>
+            {
+                Items = Elements,
+                TotalItems = TotalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<NomCatalogoSimpleResponse>();
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            if (!CanCreate)
+            {
+                Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+                return;
+            }
+
+            var dialog = await DialogService.ShowAsync<NomCatalogoSimpleDialog>(
+                $"Crear {CurrentItem.Title}",
+                BuildDialogParameters(),
+                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+            var result = await dialog.Result;
+            if (result is { Canceled: false })
+            {
+                await ReloadData();
+            }
+        }, "Operacion en proceso...");
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            if (!CanUpdate)
+            {
+                Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+                return;
+            }
+
+            var parameters = BuildDialogParameters();
+            parameters["Id"] = id;
+
+            var dialog = await DialogService.ShowAsync<NomCatalogoSimpleDialog>(
+                $"Editar {CurrentItem.Title}",
+                parameters,
+                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+            var result = await dialog.Result;
+            if (result is { Canceled: false })
+            {
+                await ReloadData();
+            }
+        }, "Operacion en proceso...");
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomCatalogoSimpleResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el catalogo";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private DialogParameters BuildDialogParameters() => new()
+    {
+        ["Catalogo"] = CurrentItem.Catalogo,
+        ["Title"] = CurrentItem.Title,
+        ["Fields"] = CurrentItem.Fields,
+        ["ParentCatalogo"] = CurrentItem.ParentCatalogo,
+        ["ParentLabel"] = CurrentItem.ParentLabel
+    };
+
+    private Dictionary<string, object> BuildCatalogFilters()
+        => new() { [nameof(NomCatalogoSimpleResponse.Catalogo)] = CurrentItem.Catalogo };
+
+    private static CatalogPageItem Rh(
+        string title,
+        string catalogo,
+        string[] fields,
+        string[] columns,
+        string icon,
+        string parentCatalogo = "",
+        string parentLabel = "Catalogo padre")
+        => new(
+            title,
+            "Catalogo RH migrado desde BD_GRP_INVEA",
+            icon,
+            "Configuracion_RH",
+            catalogo,
+            catalogo,
+            parentCatalogo,
+            parentLabel,
+            fields,
+            columns,
+            fields.Contains(nameof(NomCatalogoSimpleResponse.Clave)) ? nameof(NomCatalogoSimpleResponse.Clave) : nameof(NomCatalogoSimpleResponse.Descripcion));
+
+    private static CatalogPageItem Nom(
+        string title,
+        string catalogo,
+        string[] fields,
+        string[] columns,
+        string icon)
+        => new(
+            title,
+            "Catalogo de nomina migrado desde BD_GRP_INVEA",
+            icon,
+            EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos,
+            catalogo,
+            catalogo,
+            string.Empty,
+            "Catalogo padre",
+            fields,
+            columns,
+            fields.Contains(nameof(NomCatalogoSimpleResponse.Clave)) ? nameof(NomCatalogoSimpleResponse.Clave) : nameof(NomCatalogoSimpleResponse.Descripcion));
+
+    private sealed record CatalogPageItem(
+        string Title,
+        string Subtitle,
+        string Icon,
+        string ModuleName,
+        string SubModuleName,
+        string Catalogo,
+        string ParentCatalogo,
+        string ParentLabel,
+        string[] Fields,
+        string[] Columns,
+        string DefaultSortLabel);
+}

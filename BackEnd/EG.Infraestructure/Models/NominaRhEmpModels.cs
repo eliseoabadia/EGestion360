@@ -226,3 +226,50 @@ public partial class NomContratoLaboral
 
     public virtual NomNombramiento FkidNombramientoNomNavigation { get; set; }
 }
+
+public partial class NomCatalogoSimple
+{
+    public int PkidCatalogoSimple { get; set; }
+
+    public string Catalogo { get; set; }
+
+    public string LegacyTable { get; set; }
+
+    public int? LegacyId { get; set; }
+
+    public string Clave { get; set; }
+
+    public string Descripcion { get; set; }
+
+    public string DescripcionCorta { get; set; }
+
+    public int? FkidCatalogoPadreNom { get; set; }
+
+    public decimal? ValorDecimal1 { get; set; }
+
+    public decimal? ValorDecimal2 { get; set; }
+
+    public int? ValorEntero1 { get; set; }
+
+    public int? ValorEntero2 { get; set; }
+
+    public DateTime? FechaInicio { get; set; }
+
+    public DateTime? FechaFin { get; set; }
+
+    public string DatoExtra1 { get; set; }
+
+    public string DatoExtra2 { get; set; }
+
+    public int? Orden { get; set; }
+
+    public int? UsuarioCreacion { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public int? UsuarioModificacion { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public bool Activo { get; set; }
+}

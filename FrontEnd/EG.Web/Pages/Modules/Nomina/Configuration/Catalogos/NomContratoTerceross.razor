@@ -68,7 +68,7 @@
 @code {
     private GenericTable<NomContratoTercerosResponse> table = null!;
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Contrato_Terceros";
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomContratoTercerosResponse>);

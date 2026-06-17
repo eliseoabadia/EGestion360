@@ -22,6 +22,8 @@ public partial class EGestionContext
 
     public virtual DbSet<NomContratoLaboral> NomContratoLaborales { get; set; }
 
+    public virtual DbSet<NomCatalogoSimple> NomCatalogoSimples { get; set; }
+
     public virtual DbSet<VwResguardo> VwResguardos { get; set; }
 
     public virtual DbSet<VwResguardoDetalle> VwResguardoDetalles { get; set; }
@@ -188,6 +190,33 @@ public partial class EGestionContext
                 .WithMany()
                 .HasForeignKey(d => d.FkidNombramientoNom)
                 .HasConstraintName("FK_NOM_ContratoLaboral_Nombramiento");
+        });
+
+        modelBuilder.Entity<NomCatalogoSimple>(entity =>
+        {
+            entity.HasKey(e => e.PkidCatalogoSimple).HasName("PK_NOM_CatalogoSimple");
+            entity.ToTable("CatalogoSimple", "NOM");
+            entity.HasIndex(e => new { e.Catalogo, e.LegacyTable, e.LegacyId }, "UX_NOM_CatalogoSimple_Legacy")
+                .IsUnique()
+                .HasFilter("[LegacyId] IS NOT NULL");
+            entity.HasIndex(e => new { e.Catalogo, e.Clave }, "IX_NOM_CatalogoSimple_CatalogoClave");
+
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.Catalogo).HasMaxLength(80);
+            entity.Property(e => e.LegacyTable).HasMaxLength(128);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.Descripcion).HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.FechaInicio).HasColumnType("date");
+            entity.Property(e => e.FechaFin).HasColumnType("date");
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.Activo).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<ConceptoFijo>(entity =>

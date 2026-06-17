@@ -180,7 +180,17 @@ public static class ApiServiceExtensions
         RegisterCrud<NomTipoIncapacidadResponse>(services, "api/NomTipoIncapacidad");
         RegisterCrud<NomTipoPagoResponse>(services, "api/NomTipoPago");
         RegisterCrud<NomTipoPensionResponse>(services, "api/NomTipoPension");
+        RegisterCrud<NomCatalogoSimpleResponse>(services, "api/NomCatalogoSimple");
         RegisterCrud<NominaProcesoResponse>(services, "api/NomProcesos");
+        RegisterCrud<NominaOperacionResponse>(services, "api/NomOperacion");
+        RegisterCrud<NominaRhEmpleadoResponse>(services, "api/NomRhEmpleado");
+        RegisterCrud<NominaRhEmpleadoDetalleResponse>(services, "api/NomRhEmpleadoDetalle");
+        RegisterCrud<NominaRhExpedienteResponse>(services, "api/NomRhExpediente");
+        RegisterCrud<NominaRhContratoResponse>(services, "api/NomRhContrato");
+        RegisterCrud<NominaRhDependienteResponse>(services, "api/NomRhDependiente");
+        RegisterCrud<NominaRhIncidenciaResponse>(services, "api/NomRhIncidencia");
+        RegisterCrud<NominaRhPensionResponse>(services, "api/NomRhPension");
+        RegisterCrud<NominaRhLookupResponse>(services, "api/NomRhLookup");
 
         RegisterCrud<ContratoResponse>(services, "api/Contrato");
         RegisterCrud<ContratoDetalleResponse>(services, "api/ContratoDetalle");

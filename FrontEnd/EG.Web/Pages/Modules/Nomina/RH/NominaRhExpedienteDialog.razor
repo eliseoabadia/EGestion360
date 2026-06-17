@@ -1,0 +1,158 @@
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhExpedienteResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhExpedienteResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando expediente..."
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="NominaRhExpedienteResponse" @ref="form" ShowHeader="false">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+            <strong>Empleado:</strong> @PersonaNombre
+        </MudAlert>
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="4">
+                <NominaRhLookupSelect Value="@item.FkidTipoExpedienteNom"
+                                      ValueChanged="value => item.FkidTipoExpedienteNom = value"
+                                      Catalogo="TipoExpediente"
+                                      Label="Tipo de expediente"
+                                      InitialText="@item.TipoExpedienteDescripcion"
+                                      Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="item.NombreDocumento"
+                              Label="Nombre del documento"
+                              Variant="Variant.Outlined"
+                              MaxLength="255"
+                              Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="item.Ruta"
+                              Label="Ruta o referencia documental"
+                              Variant="Variant.Outlined"
+                              MaxLength="1000" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="FechaExpedicion"
+                               Label="Fecha de expedicion"
+                               Variant="Variant.Outlined"
+                               DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion"
+                              Variant="Variant.Outlined"
+                              MaxLength="1000"
+                              Lines="2" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSwitch T="bool" Value="@(item.NecesitaRenovacion ?? false)"
+                           ValueChanged="value => item.NecesitaRenovacion = value"
+                           Color="Color.Primary">
+                    Requiere renovacion
+                </MudSwitch>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="FechaRenovacion"
+                               Label="Fecha de renovacion"
+                               Variant="Variant.Outlined"
+                               DateFormat="dd/MM/yyyy"
+                               Disabled="@(item.NecesitaRenovacion != true)"
+                               Required="@(item.NecesitaRenovacion == true)" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
+            </MudItem>
+            <MudItem xs="12">
+                <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion"
+                                   FechaCreacion="@item.FechaCreacion"
+                                   UsuarioModificacion="@item.UsuarioModificacion"
+                                   FechaModificacion="@item.FechaModificacion" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int PersonaId { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string PersonaNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<NominaRhExpedienteResponse> form = null!;
+    private NominaRhExpedienteResponse item = new() { Activo = true };
+    private string DialogTitle => Id.HasValue ? "Editar expediente" : "Nuevo expediente";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+
+    private DateTime? FechaExpedicion
+    {
+        get => item.FechaExpedicion?.ToDateTime(TimeOnly.MinValue);
+        set => item.FechaExpedicion = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+    }
+
+    private DateTime? FechaRenovacion
+    {
+        get => item.FechaRenovacion?.ToDateTime(TimeOnly.MinValue);
+        set => item.FechaRenovacion = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No fue posible cargar el expediente.", Severity.Error);
+            }
+        }
+
+        item.FkidPersonaNom = PersonaId;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPersonaNom = PersonaId;
+        if (item.NecesitaRenovacion != true)
+        {
+            item.FechaRenovacion = null;
+        }
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Expediente guardado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el expediente.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar el expediente. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+}

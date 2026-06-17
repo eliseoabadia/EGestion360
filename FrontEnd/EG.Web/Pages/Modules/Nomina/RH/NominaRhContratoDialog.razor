@@ -1,0 +1,165 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhContratoResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhContratoResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando contrato..."
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="NominaRhContratoResponse" @ref="form" ShowHeader="false">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+            <strong>Empleado:</strong> @PersonaNombre
+        </MudAlert>
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.NumeroContrato" Label="Numero de contrato" Variant="Variant.Outlined" MaxLength="20" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="FechaInicio" Label="Fecha de inicio" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="FechaFin" Label="Fecha de fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" Required="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <NominaRhLookupSelect Value="@item.FkidPuestoNom"
+                                      ValueChanged="value => item.FkidPuestoNom = value ?? 0"
+                                      Catalogo="Puesto"
+                                      Label="Puesto"
+                                      InitialText="@item.PuestoNombre"
+                                      Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <NominaRhLookupSelect Value="@item.FkidNombramientoNom"
+                                      ValueChanged="value => item.FkidNombramientoNom = value"
+                                      Catalogo="Nombramiento"
+                                      Label="Nombramiento"
+                                      InitialText="@(item.FkidNombramientoNom?.ToString() ?? string.Empty)" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <NominaRhLookupSelect Value="@item.FkidDepartamentoSis"
+                                      ValueChanged="value => item.FkidDepartamentoSis = value"
+                                      DescriptionChanged="value => item.Departamento = value"
+                                      Catalogo="Departamento"
+                                      Label="Departamento"
+                                      InitialText="@(!string.IsNullOrWhiteSpace(item.DepartamentoNombre) ? item.DepartamentoNombre : item.Departamento)" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <NominaRhLookupSelect Value="@item.FkidTipoContratacionSis"
+                                      ValueChanged="value => item.FkidTipoContratacionSis = value"
+                                      DescriptionChanged="value => item.TipoContratacion = value"
+                                      Catalogo="TipoContratacion"
+                                      Label="Tipo de contratacion"
+                                      InitialText="@(!string.IsNullOrWhiteSpace(item.TipoContratacionDescripcion) ? item.TipoContratacionDescripcion : item.TipoContratacion)" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField T="decimal" @bind-Value="item.SueldoMensual"
+                                 Label="Sueldo mensual"
+                                 Variant="Variant.Outlined"
+                                 Culture="@CultureInfo.InvariantCulture"
+                                 Format="0.00"
+                                 Min="0.01M"
+                                 Required="true"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="$" />
+            </MudItem>
+            <MudItem xs="12" md="5">
+                <MudTextField @bind-Value="item.Vigencia" Label="Vigencia" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
+            </MudItem>
+
+            <MudItem xs="12">
+                <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
+                                   UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int PersonaId { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string PersonaNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<NominaRhContratoResponse> form = null!;
+    private NominaRhContratoResponse item = new()
+    {
+        Activo = true,
+        FechaInicio = DateOnly.FromDateTime(DateTime.Today),
+        FechaFin = DateOnly.FromDateTime(DateTime.Today.AddYears(1))
+    };
+
+    private string DialogTitle => Id.HasValue ? "Editar contrato laboral" : "Nuevo contrato laboral";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private DateTime? FechaInicio
+    {
+        get => item.FechaInicio.ToDateTime(TimeOnly.MinValue);
+        set { if (value.HasValue) item.FechaInicio = DateOnly.FromDateTime(value.Value); }
+    }
+    private DateTime? FechaFin
+    {
+        get => item.FechaFin.ToDateTime(TimeOnly.MinValue);
+        set { if (value.HasValue) item.FechaFin = DateOnly.FromDateTime(value.Value); }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null) item = response.Data;
+            else Snackbar.Add(response?.Message ?? "No fue posible cargar el contrato.", Severity.Error);
+        }
+
+        item.FkidPersonaNom = PersonaId;
+        item.FkidEmpresaNominaNom = EmpresaId ?? item.FkidEmpresaNominaNom;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (item.FechaFin < item.FechaInicio)
+        {
+            Snackbar.Add("La fecha final no puede ser anterior a la fecha inicial.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPersonaNom = PersonaId;
+        item.FkidEmpresaNominaNom = EmpresaId ?? item.FkidEmpresaNominaNom;
+
+        try
+        {
+            var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Contrato guardado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el contrato.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar el contrato. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+}

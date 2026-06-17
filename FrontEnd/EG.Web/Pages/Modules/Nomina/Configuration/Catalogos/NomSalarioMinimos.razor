@@ -1,4 +1,6 @@
 @page "/nomina/configuracion/catalogos/salarios-minimos"
+@page "/nomina/configuracion/catalogos/smg"
+@page "/sis/smg"
 @using System.Globalization
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -68,7 +70,7 @@
 @code {
     private GenericTable<NomSalarioMinimoResponse> table = null!;
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Salario_Minimo";
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomSalarioMinimoResponse>);

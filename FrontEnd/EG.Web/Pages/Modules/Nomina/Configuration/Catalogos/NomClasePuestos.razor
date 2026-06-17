@@ -61,7 +61,7 @@
         nameof(NomClasePuestoResponse.Activo)
     ];
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Clase_Puesto";
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomClasePuestoResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomClasePuestoResponse>);

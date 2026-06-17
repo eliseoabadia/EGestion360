@@ -26,6 +26,7 @@
 @inject IGenericCrudService<NomUniversoResponse> UniversoService
 @inject IGenericCrudService<NomClasePuestoResponse> ClasePuestoService
 @inject IGenericCrudService<NomNombramientoResponse> NombramientoService
+@inject IGenericCrudService<NomTipoPagoResponse> TipoPagoService
 @inject IGenericCrudService<ContratoResponse> ContratoService
 @inject ISnackbar Snackbar
 
@@ -119,6 +120,36 @@
     private bool HasActivo => typeof(TItem).GetProperty("Activo") is not null;
 
     private sealed record LookupConfig(string PropertyName);
+
+    private static readonly IReadOnlyList<LookupItem> FormaCalculoItems =
+    [
+        new() { Id = 1, Text = "Concepto proporción de otros conceptos" },
+        new() { Id = 2, Text = "Conceptos de Importe Fijo" },
+        new() { Id = 3, Text = "Concepto Variable" },
+        new() { Id = 4, Text = "Deducción ISR" },
+        new() { Id = 5, Text = "Aportaciones al IMSS" },
+        new() { Id = 6, Text = "Deducción Importe Fijo" },
+        new() { Id = 7, Text = "Deducción Variable" },
+        new() { Id = 8, Text = "Aguinaldo" },
+        new() { Id = 9, Text = "Descuento por pago a terceros" },
+        new() { Id = 10, Text = "Conceptos que aplican un Tabulador" },
+        new() { Id = 12, Text = "Aportaciones al fondo de vivienda del INFONAVIT" },
+        new() { Id = 13, Text = "Conceptos ISSSTE" }
+    ];
+
+    private static readonly IReadOnlyList<LookupItem> UnidadInfonavitItems =
+    [
+        new() { Id = 1, Text = "Pesos" },
+        new() { Id = 2, Text = "UMA" },
+        new() { Id = 3, Text = "UMI" }
+    ];
+
+    private static readonly IReadOnlyList<LookupItem> PeriodoPagoItems =
+    [
+        new() { Id = 1, Text = "Semanal" },
+        new() { Id = 2, Text = "Quincenal" },
+        new() { Id = 3, Text = "Mensual" }
+    ];
 
     private static LookupConfig? GetLookupConfig(PropertyInfo property)
     {
@@ -244,6 +275,10 @@
                 "FkidUniversoNom" => ToLookupItem((await UniversoService.GetByIdAsync(id)).Data),
                 "FkidClasePuestoNom" => ToLookupItem((await ClasePuestoService.GetByIdAsync(id)).Data),
                 "FkidNombramientoNom" => ToLookupItem((await NombramientoService.GetByIdAsync(id)).Data),
+                "FkidTipoPagoNom" => ToLookupItem((await TipoPagoService.GetByIdAsync(id)).Data),
+                "FkidFormaCalculoNom" => FindStaticLookup(FormaCalculoItems, id),
+                "FkidUnidadInfonavitNom" => FindStaticLookup(UnidadInfonavitItems, id),
+                "FkidPeriodoPagoSis" => FindStaticLookup(PeriodoPagoItems, id),
                 "FkidContratoPres" => ToLookupItem((await ContratoService.GetByIdAsync(id)).Data),
                 _ => new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" }
             };
@@ -275,6 +310,10 @@
             "FkidUniversoNom" => await LoadUniversosPageAsync(page, pageSize, filter),
             "FkidClasePuestoNom" => await LoadClasesPuestoPageAsync(page, pageSize, filter),
             "FkidNombramientoNom" => await LoadNombramientosPageAsync(page, pageSize, filter),
+            "FkidTipoPagoNom" => await LoadTiposPagoPageAsync(page, pageSize, filter),
+            "FkidFormaCalculoNom" => LoadStaticLookupPage(FormaCalculoItems, page, pageSize, filter),
+            "FkidUnidadInfonavitNom" => LoadStaticLookupPage(UnidadInfonavitItems, page, pageSize, filter),
+            "FkidPeriodoPagoSis" => LoadStaticLookupPage(PeriodoPagoItems, page, pageSize, filter),
             "FkidPeriodo" or "FkidPeriodoInicial" or "FkidPeriodoFinal" or "FkidPeriodoMensualNom" or "FkidPeriodoQuincenalNom" or "FkidPeriodoSemanalNom" or "FkidNominaEspecialNom"
                 => await LoadPeriodosPageAsync(page, pageSize, filter),
             "FkidContratoPres" => await LoadContratosPageAsync(page, pageSize, filter),
@@ -360,6 +399,12 @@
         return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
     }
 
+    private async Task<ComboLookupResult> LoadTiposPagoPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await TipoPagoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
     private async Task<ComboLookupResult> LoadPeriodosPageAsync(int page, int pageSize, string filter)
     {
         var response = await PeriodoActivoService.GetAllPaginadoAsync(page, pageSize, filter, "IdPeriodo", SortDirection.Descending, GetEmpresaFilter());
@@ -390,6 +435,26 @@
         }
 
         return new ComboLookupResult { Items = items, TotalCount = items.Count };
+    }
+
+    private static LookupItem FindStaticLookup(IReadOnlyList<LookupItem> source, int id)
+        => source.FirstOrDefault(item => item.Id == id) ?? new LookupItem { Id = id, Text = $"ID {id}" };
+
+    private static ComboLookupResult LoadStaticLookupPage(IReadOnlyList<LookupItem> source, int page, int pageSize, string filter)
+    {
+        var filtered = string.IsNullOrWhiteSpace(filter)
+            ? source
+            : source
+                .Where(item => item.Text.Contains(filter, StringComparison.OrdinalIgnoreCase)
+                               || item.Id.ToString(CultureInfo.InvariantCulture).Contains(filter, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        var items = filtered
+            .Skip(Math.Max(page - 1, 0) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new ComboLookupResult { Items = items, TotalCount = filtered.Count() };
     }
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem?>? items, int? totalCount)
@@ -682,6 +747,15 @@
                 Text = value.ClaveNombre
             };
 
+    private static LookupItem? ToLookupItem(NomTipoPagoResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidTipoPago,
+                Text = value.ClaveNombre
+            };
+
     private static LookupItem? ToLookupItem(NomPeriodoActivoResponse? value)
         => value == null
             ? null
@@ -705,6 +779,8 @@
         {
             "FkidFormaCalculoNom" => "Forma de cálculo",
             "FkidEmpresaNominaNom" => "Empresa de nómina",
+            "FkidPeriodoPagoSis" => "Periodo de pago",
+            "FkidTipoPagoNom" => "Tipo de pago",
             "FkidPuestoNom" => "Puesto",
             "FkidPuestoPadreNom" => "Puesto padre",
             "FkidNivelNom" => "Nivel",
@@ -724,6 +800,8 @@
             "PkidConcepto" => "ID",
             "FkidEmpresaSis" => "Empresa de nómina",
             "FkidEmpresaNominaNom" => "Empresa de nómina",
+            "FkidPeriodoPagoSis" => "Periodo de pago",
+            "FkidTipoPagoNom" => "Tipo de pago",
             "FkidPersonaNom" => "Persona",
             "FkidConceptoNom" => "Concepto",
             "FkidPuestoNom" => "Puesto",

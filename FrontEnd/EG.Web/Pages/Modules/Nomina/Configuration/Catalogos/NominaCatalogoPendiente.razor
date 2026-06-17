@@ -1,0 +1,94 @@
+@page "/nomina/configuracion/isr/semanal"
+@page "/nomina/configuracion/isr/quincenal"
+@page "/nomina/configuracion/isr/mensual"
+@page "/nomina/configuracion/tablas-isr/semanal"
+@page "/nomina/configuracion/tablas-isr/quincenal"
+@page "/nomina/configuracion/tablas-isr/mensual"
+@page "/nomina/configuracion/subsidios/semanal"
+@page "/nomina/configuracion/subsidios/quincenal"
+@page "/nomina/configuracion/subsidios/mensual"
+@page "/nomina/configuracion/subsidios-isr/semanal"
+@page "/nomina/configuracion/subsidios-isr/quincenal"
+@page "/nomina/configuracion/subsidios-isr/mensual"
+@page "/nomina/configuracion/impuestos/base-gravable"
+@page "/nomina/configuracion/impuestos/locales"
+@page "/nomina/configuracion/imss/prestaciones"
+@page "/nomina/configuracion/imss/prestaciones-minimas"
+@page "/nomina/configuracion/imss/clase"
+@page "/nomina/configuracion/imss/clase-imss"
+@page "/nomina/configuracion/imss/fraccion"
+@page "/nomina/configuracion/imss/fraccion-imss"
+@page "/nomina/configuracion/imss/base-gravable"
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    <PageHeader Title="@CurrentItem.Title"
+                Subtitle="Pendiente de migracion"
+                Icon="@Icons.Material.Filled.PendingActions"
+                CanCreate="false"
+                OnRefresh="Refresh" />
+
+    <MudPaper Class="pa-6 mt-4" Elevation="1">
+        <MudStack Spacing="3">
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                Esta pantalla existe en el menu legado, pero aun no tiene entidad, API y pagina CRUD migradas en EGestion360.
+            </MudAlert>
+
+            <MudSimpleTable Dense="true" Hover="true">
+                <tbody>
+                    <tr>
+                        <td><strong>Ruta</strong></td>
+                        <td>@CurrentPath</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Clave legacy</strong></td>
+                        <td>@CurrentItem.LegacyName</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Modulo sugerido</strong></td>
+                        <td>@CurrentItem.GroupName</td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private static readonly IReadOnlyDictionary<string, PendingCatalogItem> ItemsByPath =
+        new Dictionary<string, PendingCatalogItem>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["/nomina/configuracion/isr/semanal"] = new("ISR Semanal", "Tabla_ISR_Semanal", "Nomina_Tablas_ISR"),
+            ["/nomina/configuracion/isr/quincenal"] = new("ISR Quincenal", "Tabla_ISR_Quincenal", "Nomina_Tablas_ISR"),
+            ["/nomina/configuracion/isr/mensual"] = new("ISR Mensual", "Tabla_ISR_Mensual", "Nomina_Tablas_ISR"),
+            ["/nomina/configuracion/tablas-isr/semanal"] = new("ISR Semanal", "ISR_Semanal", "Nomina_Tablas_ISR"),
+            ["/nomina/configuracion/tablas-isr/quincenal"] = new("ISR Quincenal", "ISR_Quincenal", "Nomina_Tablas_ISR"),
+            ["/nomina/configuracion/tablas-isr/mensual"] = new("ISR Mensual", "ISR_Mensual", "Nomina_Tablas_ISR"),
+            ["/nomina/configuracion/subsidios/semanal"] = new("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Nomina_Subsidios_ISR"),
+            ["/nomina/configuracion/subsidios/quincenal"] = new("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Nomina_Subsidios_ISR"),
+            ["/nomina/configuracion/subsidios/mensual"] = new("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Nomina_Subsidios_ISR"),
+            ["/nomina/configuracion/subsidios-isr/semanal"] = new("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Nomina_Subsidios_ISR"),
+            ["/nomina/configuracion/subsidios-isr/quincenal"] = new("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Nomina_Subsidios_ISR"),
+            ["/nomina/configuracion/subsidios-isr/mensual"] = new("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Nomina_Subsidios_ISR"),
+            ["/nomina/configuracion/impuestos/base-gravable"] = new("Base Gravable", "Base_Gravable", "Nomina_Impuestos"),
+            ["/nomina/configuracion/impuestos/locales"] = new("Impuestos Locales", "Impuestos_Locales", "Nomina_Impuestos"),
+            ["/nomina/configuracion/imss/prestaciones"] = new("Prestaciones Minimas de Ley", "Prestaciones_Minimas", "Nomina_IMSS"),
+            ["/nomina/configuracion/imss/prestaciones-minimas"] = new("Prestaciones Minimas de Ley", "Prestaciones_Minimas_Ley", "Nomina_IMSS"),
+            ["/nomina/configuracion/imss/clase"] = new("Clase IMSS", "Clase_IMSS", "Nomina_IMSS"),
+            ["/nomina/configuracion/imss/clase-imss"] = new("Clase IMSS", "Clase_IMSS", "Nomina_IMSS"),
+            ["/nomina/configuracion/imss/fraccion"] = new("Fraccion IMSS", "Fraccion_IMSS", "Nomina_IMSS"),
+            ["/nomina/configuracion/imss/fraccion-imss"] = new("Fraccion IMSS", "Fraccion_IMSS", "Nomina_IMSS"),
+            ["/nomina/configuracion/imss/base-gravable"] = new("Base Gravable IMSS", "Base_Gravable_IMSS", "Nomina_IMSS")
+        };
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+
+    private PendingCatalogItem CurrentItem =>
+        ItemsByPath.TryGetValue(CurrentPath, out var item)
+            ? item
+            : new PendingCatalogItem("Catalogo de Nomina", "Pendiente", "Nomina");
+
+    private static Task Refresh() => Task.CompletedTask;
+
+    private sealed record PendingCatalogItem(string Title, string LegacyName, string GroupName);
+}

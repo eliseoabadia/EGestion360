@@ -356,4 +356,15 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.Catalogos
         {
         }
     }
+
+    [Route("api/NomCatalogoSimple")]
+    public class NomCatalogoSimpleController : NominaCatalogControllerBase<NomCatalogoSimpleResponse>
+    {
+        public NomCatalogoSimpleController(
+            INominaCrudAppService<NomCatalogoSimpleResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Catalogo simple")
+        {
+        }
+    }
 }

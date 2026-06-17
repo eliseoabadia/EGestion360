@@ -1,0 +1,106 @@
+@page "/ayuda"
+@page "/configuracion/presupuestales/programa-presupuestal"
+@page "/configuracion/almacen/Numero_Conteo"
+@page "/Patrimonio/Clasificacion_Bienes_Muebles"
+@page "/Patrimonio/Cedula_Diferencia"
+@page "/Patrimonio/Resguardo_Historico"
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    <PageHeader Title="@CurrentItem.Title"
+                Subtitle="@CurrentItem.Subtitle"
+                Icon="@Icons.Material.Filled.PendingActions"
+                ShowCreateButton="false"
+                OnRefresh="Refresh" />
+
+    <MudPaper Class="pa-6 mt-4" Elevation="1">
+        <MudStack Spacing="3">
+            <MudAlert Severity="@CurrentItem.Severity" Variant="Variant.Outlined">
+                @CurrentItem.Message
+            </MudAlert>
+
+            <MudSimpleTable Dense="true" Hover="true">
+                <tbody>
+                    <tr>
+                        <td><strong>Ruta</strong></td>
+                        <td>@CurrentPath</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Modulo</strong></td>
+                        <td>@CurrentItem.Module</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Estado</strong></td>
+                        <td>@CurrentItem.Status</td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private static readonly IReadOnlyDictionary<string, PendingMenuItem> ItemsByPath =
+        new Dictionary<string, PendingMenuItem>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["/ayuda"] = new(
+                "Ayuda",
+                "Modulo de soporte",
+                "Plataforma",
+                "Pendiente",
+                "La ruta ya esta registrada para evitar pagina no encontrada; falta definir contenido funcional de ayuda.",
+                Severity.Info),
+            ["/configuracion/presupuestales/programa-presupuestal"] = new(
+                "Clave del Programa",
+                "Contenedor de catalogos presupuestales",
+                "Presupuesto",
+                "Contenedor",
+                "Este menu funciona como agrupador; usa sus opciones hijas para operar el catalogo correspondiente.",
+                Severity.Info),
+            ["/configuracion/almacen/Numero_Conteo"] = new(
+                "Numero Conteo",
+                "Catalogo de almacen",
+                "Almacen",
+                "Pendiente de migracion",
+                "No se encontro pagina CRUD migrada para esta opcion del menu.",
+                Severity.Warning),
+            ["/Patrimonio/Clasificacion_Bienes_Muebles"] = new(
+                "Clasificacion de Bienes Muebles",
+                "Operacion de patrimonio",
+                "Patrimonio",
+                "Pendiente de migracion",
+                "No se encontro pagina operativa migrada para esta opcion del menu.",
+                Severity.Warning),
+            ["/Patrimonio/Cedula_Diferencia"] = new(
+                "Cedula de Diferencia",
+                "Operacion de patrimonio",
+                "Patrimonio",
+                "Pendiente de migracion",
+                "No se encontro pagina operativa migrada para esta opcion del menu.",
+                Severity.Warning),
+            ["/Patrimonio/Resguardo_Historico"] = new(
+                "Resguardo Historico",
+                "Operacion de patrimonio",
+                "Patrimonio",
+                "Pendiente de migracion",
+                "No se encontro pagina operativa migrada para esta opcion del menu.",
+                Severity.Warning)
+        };
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+
+    private PendingMenuItem CurrentItem =>
+        ItemsByPath.TryGetValue(CurrentPath, out var item)
+            ? item
+            : new PendingMenuItem("Menu", "Ruta registrada", "Sistema", "Pendiente", "Ruta sin configuracion especifica.", Severity.Info);
+
+    private static Task Refresh() => Task.CompletedTask;
+
+    private sealed record PendingMenuItem(
+        string Title,
+        string Subtitle,
+        string Module,
+        string Status,
+        string Message,
+        Severity Severity);
+}

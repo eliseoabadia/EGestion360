@@ -11,15 +11,21 @@ public partial class VwTipoPago
 
     public string Descripcion { get; set; }
 
+    public int TotalPeriodos { get; set; }
+
+    public string ClaveNombre { get; set; }
+
+    public int? EmpresaId { get; set; }
+
+    public string EmpresaNombre { get; set; }
+
     public bool Activo { get; set; }
+
+    public int? UsuarioCreacion { get; set; }
 
     public DateTime? FechaCreacion { get; set; }
 
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
-
     public int? UsuarioModificacion { get; set; }
 
-    public string ClaveNombre { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 }

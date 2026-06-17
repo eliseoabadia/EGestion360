@@ -1,0 +1,135 @@
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhIncidenciaResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhIncidenciaResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando incidencia..."
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="NominaRhIncidenciaResponse" @ref="form" ShowHeader="false">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+            <strong>Empleado:</strong> @PersonaNombre
+        </MudAlert>
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="4">
+                <NominaRhLookupSelect Value="@item.FkidTipoIncidenciaNom"
+                                      ValueChanged="value => item.FkidTipoIncidenciaNom = value"
+                                      Catalogo="TipoIncidencia"
+                                      Label="Tipo de incidencia"
+                                      InitialText="@item.TipoIncidenciaDescripcion"
+                                      Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="Fecha" Label="Fecha" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <NominaRhLookupSelect Value="@item.FkidPeriodoQuincenalSis"
+                                      ValueChanged="value => item.FkidPeriodoQuincenalSis = value"
+                                      Catalogo="PeriodoQuincenal"
+                                      Label="Periodo quincenal"
+                                      InitialText="@(item.FkidPeriodoQuincenalSis?.ToString() ?? string.Empty)" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Comentario" Label="Comentario" Variant="Variant.Outlined" MaxLength="1000" Lines="2" />
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <NominaRhLookupSelect Value="@item.FkidTipoJustificacionNom"
+                                      ValueChanged="value => item.FkidTipoJustificacionNom = value"
+                                      Catalogo="TipoJustificacion"
+                                      Label="Tipo de justificacion"
+                                      InitialText="@item.TipoJustificacionDescripcion" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSwitch T="bool" Value="@(item.AplicaDescuento ?? false)"
+                           ValueChanged="value => item.AplicaDescuento = value"
+                           Color="Color.Warning">
+                    Aplica descuento
+                </MudSwitch>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.ComentarioJustificacion"
+                              Label="Comentario de justificacion"
+                              Variant="Variant.Outlined"
+                              MaxLength="1000"
+                              Lines="2" />
+            </MudItem>
+            <MudItem xs="12">
+                <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
+                                   UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int PersonaId { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string PersonaNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<NominaRhIncidenciaResponse> form = null!;
+    private NominaRhIncidenciaResponse item = new()
+    {
+        Activo = true,
+        Fecha = DateOnly.FromDateTime(DateTime.Today),
+        AplicaDescuento = false
+    };
+    private string DialogTitle => Id.HasValue ? "Editar incidencia" : "Nueva incidencia";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private DateTime? Fecha
+    {
+        get => item.Fecha?.ToDateTime(TimeOnly.MinValue);
+        set => item.Fecha = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null) item = response.Data;
+            else Snackbar.Add(response?.Message ?? "No fue posible cargar la incidencia.", Severity.Error);
+        }
+        item.FkidPersonaNom = PersonaId;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPersonaNom = PersonaId;
+        try
+        {
+            var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Incidencia guardada correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+            Snackbar.Add(response?.Message ?? "No fue posible guardar la incidencia.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar la incidencia. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+}

@@ -301,6 +301,10 @@ public partial class Usuario
 
     public virtual ICollection<Paaaspartidum> PaaaspartidumUsuarioModificacionNavigations { get; set; } = new List<Paaaspartidum>();
 
+    public virtual ICollection<Parentesco> ParentescoUsuarioCreacionNavigations { get; set; } = new List<Parentesco>();
+
+    public virtual ICollection<Parentesco> ParentescoUsuarioModificacionNavigations { get; set; } = new List<Parentesco>();
+
     public virtual ICollection<Partidum1> Partidum1UsuarioCreacionNavigations { get; set; } = new List<Partidum1>();
 
     public virtual ICollection<Partidum1> Partidum1UsuarioModificacionNavigations { get; set; } = new List<Partidum1>();
@@ -431,6 +435,10 @@ public partial class Usuario
 
     public virtual ICollection<TipoCambio> TipoCambioUsuarioModificacionNavigations { get; set; } = new List<TipoCambio>();
 
+    public virtual ICollection<TipoContratacion> TipoContratacionUsuarioCreacionNavigations { get; set; } = new List<TipoContratacion>();
+
+    public virtual ICollection<TipoContratacion> TipoContratacionUsuarioModificacionNavigations { get; set; } = new List<TipoContratacion>();
+
     public virtual ICollection<TipoContrato> TipoContratoUsuarioCreacionNavigations { get; set; } = new List<TipoContrato>();
 
     public virtual ICollection<TipoContrato> TipoContratoUsuarioModificacionNavigations { get; set; } = new List<TipoContrato>();
@@ -467,9 +475,17 @@ public partial class Usuario
 
     public virtual ICollection<TipoGasto> TipoGastoUsuarioModificacionNavigations { get; set; } = new List<TipoGasto>();
 
+    public virtual ICollection<TipoIncidencium> TipoIncidenciumUsuarioCreacionNavigations { get; set; } = new List<TipoIncidencium>();
+
+    public virtual ICollection<TipoIncidencium> TipoIncidenciumUsuarioModificacionNavigations { get; set; } = new List<TipoIncidencium>();
+
     public virtual ICollection<TipoInversion> TipoInversionUsuarioCreacionNavigations { get; set; } = new List<TipoInversion>();
 
     public virtual ICollection<TipoInversion> TipoInversionUsuarioModificacionNavigations { get; set; } = new List<TipoInversion>();
+
+    public virtual ICollection<TipoJustificacion> TipoJustificacionUsuarioCreacionNavigations { get; set; } = new List<TipoJustificacion>();
+
+    public virtual ICollection<TipoJustificacion> TipoJustificacionUsuarioModificacionNavigations { get; set; } = new List<TipoJustificacion>();
 
     public virtual ICollection<TipoMonedum> TipoMonedumUsuarioCreacionNavigations { get; set; } = new List<TipoMonedum>();
 

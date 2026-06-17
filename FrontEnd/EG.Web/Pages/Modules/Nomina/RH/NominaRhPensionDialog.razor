@@ -1,0 +1,151 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhPensionResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhPensionResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando pension..."
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="NominaRhPensionResponse" @ref="form" ShowHeader="false">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+            <strong>Empleado:</strong> @PersonaNombre
+        </MudAlert>
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.NombreBeneficiario" Label="Nombre del beneficiario" Variant="Variant.Outlined" MaxLength="150" Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <NominaRhLookupSelect Value="@item.FkidTipoPensionNom"
+                                      ValueChanged="value => item.FkidTipoPensionNom = value"
+                                      Catalogo="TipoPension"
+                                      Label="Tipo de pension"
+                                      InitialText="@item.TipoPensionDescripcion"
+                                      Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudNumericField T="decimal?" @bind-Value="item.Porcentaje"
+                                 Label="Porcentaje"
+                                 Variant="Variant.Outlined"
+                                 Culture="@CultureInfo.InvariantCulture"
+                                 Format="0.0000"
+                                 Min="0M"
+                                 Max="100M"
+                                 Required="true"
+                                 Adornment="Adornment.End"
+                                 AdornmentText="%" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Documento" Label="Documento" Variant="Variant.Outlined" MaxLength="50" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="FechaDocumento" Label="Fecha del documento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <NominaRhLookupSelect Value="@item.FkidCuentaContableSis"
+                                      ValueChanged="value => item.FkidCuentaContableSis = value"
+                                      Catalogo="CuentaContable"
+                                      Label="Cuenta contable"
+                                      InitialText="@CuentaContableTexto" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="item.FechaInicio" Label="Inicio" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="item.FechaFin" Label="Fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.FormaPago" Label="Forma de pago" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Banco" Label="Banco" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.CuentaBancaria" Label="Cuenta bancaria" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
+            </MudItem>
+            <MudItem xs="12">
+                <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
+                                   UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int PersonaId { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string PersonaNombre { get; set; } = string.Empty;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<NominaRhPensionResponse> form = null!;
+    private NominaRhPensionResponse item = new() { Activo = true, FechaInicio = DateTime.Today };
+    private string DialogTitle => Id.HasValue ? "Editar pension" : "Nueva pension";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string CuentaContableTexto => string.Join(" - ", new[] { item.CuentaContable, item.CuentaContableDescripcion }.Where(value => !string.IsNullOrWhiteSpace(value)));
+    private DateTime? FechaDocumento
+    {
+        get => item.FechaDocumento?.ToDateTime(TimeOnly.MinValue);
+        set => item.FechaDocumento = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null) item = response.Data;
+            else Snackbar.Add(response?.Message ?? "No fue posible cargar la pension.", Severity.Error);
+        }
+        item.FkidPersonaNom = PersonaId;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (item.FechaInicio.HasValue && item.FechaFin.HasValue && item.FechaFin < item.FechaInicio)
+        {
+            Snackbar.Add("La fecha final no puede ser anterior a la fecha inicial.", Severity.Warning);
+            return;
+        }
+
+        item.FkidPersonaNom = PersonaId;
+        try
+        {
+            var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Pension guardada correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+            Snackbar.Add(response?.Message ?? "No fue posible guardar la pension.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar la pension. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+}

@@ -1,4 +1,6 @@
 @page "/nomina/configuracion/catalogos/conceptos-fijos"
+@page "/nomina/configuracion/catalogos/concepto-fijo"
+@page "/nom/conceptofijo"
 @using System.Globalization
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -68,7 +70,7 @@
 @code {
     private GenericTable<NomConceptoFijoResponse> table = null!;
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Concepto_Fijo";
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomConceptoFijoResponse>);

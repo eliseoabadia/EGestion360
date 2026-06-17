@@ -64,7 +64,7 @@
         nameof(NomImporteNivelResponse.Activo)
     ];
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Importe_Nivel";
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomImporteNivelResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomImporteNivelResponse>);

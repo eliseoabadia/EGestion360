@@ -1,0 +1,262 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<NominaRhEmpleadoResponse> Service
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhEmpleadoResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                LoadingMessage="Cargando empleado..."
+                OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="NominaRhEmpleadoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@DialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Identificacion</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="3">
+                <MudTextField @bind-Value="item.Empleado" Label="No. empleado" Variant="Variant.Outlined" MaxLength="15" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudTextField @bind-Value="item.Iniciales" Label="Iniciales" Variant="Variant.Outlined" MaxLength="3" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudTextField @bind-Value="item.Rfc" Label="RFC" Variant="Variant.Outlined" MaxLength="15" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudTextField @bind-Value="item.Curp" Label="CURP" Variant="Variant.Outlined" MaxLength="18" />
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" MaxLength="50" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Paterno" Label="Paterno" Variant="Variant.Outlined" MaxLength="50" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Materno" Label="Materno" Variant="Variant.Outlined" MaxLength="50" />
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" @bind-Value="item.Sexo" Label="Sexo" Variant="Variant.Outlined" Clearable="true">
+                    <MudSelectItem T="string" Value="@("Masculino")">Masculino</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Femenino")">Femenino</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Otro")">Otro</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudDatePicker @bind-Date="item.FechaNacimiento" Label="Nacimiento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" @bind-Value="item.EstadoCivil" Label="Estado civil" Variant="Variant.Outlined" Clearable="true">
+                    <MudSelectItem T="string" Value="@("Soltero")">Soltero</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Casado")">Casado</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Unión Libre")">Union libre</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Viudo")">Viudo</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Divorciado")">Divorciado</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Documentos de identidad</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.NoCredencialElector" Label="Credencial de elector" Variant="Variant.Outlined" MaxLength="32" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.NoPasaporte" Label="Pasaporte" Variant="Variant.Outlined" MaxLength="16" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.NoLicencia" Label="Licencia" Variant="Variant.Outlined" MaxLength="16" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.NoCartilla" Label="Cartilla" Variant="Variant.Outlined" MaxLength="16" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Gafete" Label="Gafete" Variant="Variant.Outlined" MaxLength="11" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Contacto y domicilio</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Email" Label="Correo" Variant="Variant.Outlined" MaxLength="250" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Telefono" Label="Telefono" Variant="Variant.Outlined" MaxLength="15" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Celular" Label="Celular" Variant="Variant.Outlined" MaxLength="15" />
+            </MudItem>
+
+            <MudItem xs="12" sm="5">
+                <MudTextField @bind-Value="item.Calle" Label="Calle" Variant="Variant.Outlined" MaxLength="40" />
+            </MudItem>
+            <MudItem xs="6" sm="2">
+                <MudTextField @bind-Value="item.NumExterior" Label="No. ext." Variant="Variant.Outlined" MaxLength="10" />
+            </MudItem>
+            <MudItem xs="6" sm="2">
+                <MudTextField @bind-Value="item.NumInterior" Label="No. int." Variant="Variant.Outlined" MaxLength="10" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudTextField @bind-Value="item.CP" Label="CP" Variant="Variant.Outlined" MaxLength="6" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Colonia" Label="Colonia" Variant="Variant.Outlined" MaxLength="40" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Municipio" Label="Municipio" Variant="Variant.Outlined" MaxLength="20" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Estado" Label="Estado" Variant="Variant.Outlined" MaxLength="30" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Datos laborales y pago</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.TipoContratacion" Label="Tipo contratacion" Variant="Variant.Outlined" MaxLength="50" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Puesto" Label="Puesto" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.RegImss" Label="Registro IMSS" Variant="Variant.Outlined" MaxLength="12" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudDatePicker @bind-Date="item.FechaIngreso" Label="Ingreso" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudDatePicker @bind-Date="item.FechaFin" Label="Fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="decimal?" @bind-Value="item.SueldoBase" Label="Sueldo base" Variant="Variant.Outlined" Culture="@CultureInfo.InvariantCulture" Format="0.00" Adornment="Adornment.Start" AdornmentText="$" />
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="decimal?" @bind-Value="item.CompensacionGarantizada" Label="Compensacion" Variant="Variant.Outlined" Culture="@CultureInfo.InvariantCulture" Format="0.00" Adornment="Adornment.Start" AdornmentText="$" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.Banco" Label="Banco" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="item.NumeroCuenta" Label="Cuenta" Variant="Variant.Outlined" MaxLength="25" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="50" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Primary">
+                        <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                    </MudSwitch>
+                </MudPaper>
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
+                                   UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<NominaRhEmpleadoResponse> form = null!;
+    private NominaRhEmpleadoResponse item = new() { Activo = true, FechaIngreso = DateTime.Today };
+
+    private string DialogTitle => Id.HasValue ? "Editar empleado" : "Nuevo empleado";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarDatosAsync();
+        }
+        else
+        {
+            item.EmpresaId = SucursalStateService.EmpresaId;
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                item.Activo = response.Data.Activo;
+                if (string.Equals(item.Sexo, "F", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Sexo = "Femenino";
+                }
+            }
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible cargar el empleado. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        try
+        {
+            item.EmpresaId ??= SucursalStateService.EmpresaId;
+            item.Nombre = item.Nombre.Trim();
+            item.Empleado = item.Empleado.Trim();
+
+            if (string.IsNullOrWhiteSpace(item.Nombre) || string.IsNullOrWhiteSpace(item.Empleado))
+            {
+                Snackbar.Add("Captura al menos empleado y nombre.", Severity.Warning);
+                return;
+            }
+
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Empleado guardado correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el empleado.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar el empleado. El departamento de TI revisara el incidente.", Severity.Error);
+        }
+    }
+}

@@ -1,4 +1,8 @@
 @page "/nomina/configuracion/catalogos/periodos-activos"
+@page "/nomina/configuracion/periodos/semanal"
+@page "/nomina/configuracion/periodos/quincenal"
+@page "/nomina/configuracion/periodos/mensual"
+@page "/nomina/configuracion/periodos/bimestral"
 @using System.Globalization
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -68,7 +72,7 @@
 @code {
     private GenericTable<NomPeriodoActivoResponse> table = null!;
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Periodo_Activo";
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomPeriodoActivoResponse>);

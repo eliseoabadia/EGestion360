@@ -1,0 +1,345 @@
+@page "/nomina/empleados"
+@page "/rh/persona"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@inherits BaseCrudPage<NominaRhEmpleadoResponse, NominaRhEmpleadoResponse>
+
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column rh-empleados-page" MaxWidth="MaxWidth.False">
+        <PageHeader Title="Recursos Humanos"
+                    Subtitle="Expediente integral de empleados de nomina"
+                    Icon="@Icons.Material.Filled.Badge"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="ReloadAllAsync" />
+
+        <section class="rh-context-band">
+            <div class="rh-context-main">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" />
+                </MudAvatar>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Empleado seleccionado</MudText>
+                    <MudText Typo="Typo.subtitle1" Class="rh-context-name">@TextOrDash(selectedEmployee?.ClaveNombre)</MudText>
+                </div>
+            </div>
+            <div class="rh-context-metric">
+                <span>Empresa</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre ?? selectedEmployee?.Empresa)</strong>
+            </div>
+            <div class="rh-context-metric">
+                <span>Contrato</span><strong>@TextOrDash(selectedEmployee?.Contrato)</strong>
+            </div>
+            <div class="rh-context-metric">
+                <span>Puesto</span><strong>@TextOrDash(selectedEmployee?.Puesto)</strong>
+            </div>
+            <div class="rh-context-count"><strong>@(selectedEmployee?.TotalExpedientes ?? 0)</strong><span>Expedientes</span></div>
+            <div class="rh-context-count"><strong>@(selectedEmployee?.TotalIncidencias ?? 0)</strong><span>Incidencias</span></div>
+        </section>
+
+        <GenericTable TItem="NominaRhEmpleadoResponse"
+                      @ref="table"
+                      Title="Empleados activos"
+                      SearchPlaceholder="Buscar empleado, nombre, RFC, CURP o puesto..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="value => SearchString = value"
+                      OnSearch="OnSearch"
+                      Loading="@Loading"
+                      PageSize="10"
+                      TableHeight="37vh">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Empleado" T="NominaRhEmpleadoResponse">Empleado</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="NominaRhEmpleadoResponse">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Rfc" T="NominaRhEmpleadoResponse">RFC</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Curp" T="NominaRhEmpleadoResponse">CURP</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoContratacion" T="NominaRhEmpleadoResponse">Contratacion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Puesto" T="NominaRhEmpleadoResponse">Puesto</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SueldoMensual" T="NominaRhEmpleadoResponse">Sueldo</MudTableSortLabel></MudTh>
+                <MudTh>Estatus</MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd Class="rh-main-actions">
+                    <MudTooltip Text="Abrir ficha">
+                        <MudIconButton Icon="@Icons.Material.Filled.FolderOpen"
+                                       Color="@(selectedEmployee?.Id == item.Id ? Color.Success : Color.Primary)"
+                                       Size="Size.Small"
+                                       Disabled="@IsBusy"
+                                       OnClick="@(() => SelectEmployeeAsync(item))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Editar empleado">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
+                                       Visible="@CanUpdate" Disabled="@IsBusy" OnClick="@(() => EditItem(item.Id))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar empleado">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small"
+                                       Visible="@CanDelete" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.Id))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))"><strong>@item.Empleado</strong></MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">@item.NombreCompleto</MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">@item.Rfc</MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">@item.Curp</MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">@TextOrDash(item.TipoContratacion)</MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">@TextOrDash(item.Puesto)</MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">@FormatMoney(item.SueldoMensual)</MudTd>
+                <MudTd @onclick="@(() => SelectEmployeeAsync(item))">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Activo</MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+
+        <section class="rh-detail-workspace">
+            <MudTabs Elevation="0" Rounded="false" ActivePanelIndex="@activeDetailIndex" ActivePanelIndexChanged="OnDetailTabChanged">
+                <MudTabPanel Text="Contratos" Icon="@Icons.Material.Filled.AssignmentInd" />
+                <MudTabPanel Text="Expedientes" Icon="@Icons.Material.Filled.FolderCopy" />
+                <MudTabPanel Text="Dependientes" Icon="@Icons.Material.Filled.Group" />
+                <MudTabPanel Text="Incidencias" Icon="@Icons.Material.Filled.EventBusy" />
+                <MudTabPanel Text="Pensiones" Icon="@Icons.Material.Filled.AccountBalance" />
+            </MudTabs>
+
+            @if (selectedEmployee is null)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                    Selecciona un empleado para administrar su expediente.
+                </MudAlert>
+            }
+            else
+            {
+                @switch (activeDetailIndex)
+                {
+                    case 0:
+                        <NominaRhDetailTable TItem="NominaRhContratoResponse"
+                                             @key="@($"contratos-{selectedEmployee.Id}")"
+                                             PersonaId="@selectedEmployee.Id" EmpresaId="@selectedEmployee.EmpresaId" PersonaNombre="@selectedEmployee.ClaveNombre"
+                                             Title="Contratos" AddButtonText="Nuevo contrato" SearchPlaceholder="Buscar contrato, puesto o departamento..."
+                                             DefaultSort="FechaInicio" DialogType="@typeof(NominaRhContratoDialog)"
+                                             IdSelector="item => item.PkidContratoLaboral" NameSelector="item => item.NumeroContrato"
+                                             ExportMapper="MapContratoExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                             OnChanged="ReloadEmployeeAsync">
+                            <Header>
+                                <MudTh>Contrato</MudTh><MudTh>Puesto</MudTh><MudTh>Contratacion</MudTh><MudTh>Departamento</MudTh>
+                                <MudTh>Inicio</MudTh><MudTh>Fin</MudTh><MudTh>Sueldo</MudTh><MudTh>Vigencia</MudTh>
+                            </Header>
+                            <Row Context="item">
+                                <MudTd>@item.NumeroContrato</MudTd><MudTd>@TextOrDash(item.PuestoNombre)</MudTd>
+                                <MudTd>@TextOrDash(item.TipoContratacionDescripcion)</MudTd><MudTd>@TextOrDash(item.DepartamentoNombre)</MudTd>
+                                <MudTd>@FormatDate(item.FechaInicio)</MudTd><MudTd>@FormatDate(item.FechaFin)</MudTd>
+                                <MudTd>@FormatMoney(item.SueldoMensual)</MudTd><MudTd>@TextOrDash(item.Vigencia)</MudTd>
+                            </Row>
+                        </NominaRhDetailTable>
+                        break;
+                    case 1:
+                        <NominaRhDetailTable TItem="NominaRhExpedienteResponse"
+                                             @key="@($"expedientes-{selectedEmployee.Id}")"
+                                             PersonaId="@selectedEmployee.Id" EmpresaId="@selectedEmployee.EmpresaId" PersonaNombre="@selectedEmployee.ClaveNombre"
+                                             Title="Expedientes" AddButtonText="Nuevo documento" SearchPlaceholder="Buscar documento, tipo o descripcion..."
+                                             DefaultSort="FechaExpedicion" DialogType="@typeof(NominaRhExpedienteDialog)"
+                                             IdSelector="item => item.PkidExpediente" NameSelector="item => item.NombreDocumento"
+                                             ExportMapper="MapExpedienteExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                             OnChanged="ReloadEmployeeAsync">
+                            <Header>
+                                <MudTh>Documento</MudTh><MudTh>Tipo</MudTh><MudTh>Descripcion</MudTh><MudTh>Expedicion</MudTh>
+                                <MudTh>Renovacion</MudTh><MudTh>Ruta</MudTh><MudTh>Control</MudTh>
+                            </Header>
+                            <Row Context="item">
+                                <MudTd>@item.NombreDocumento</MudTd><MudTd>@TextOrDash(item.TipoExpedienteDescripcion)</MudTd>
+                                <MudTd>@TextOrDash(item.Descripcion)</MudTd><MudTd>@FormatDate(item.FechaExpedicion)</MudTd>
+                                <MudTd>@FormatDate(item.FechaRenovacion)</MudTd><MudTd>@TextOrDash(item.Ruta)</MudTd>
+                                <MudTd>@(item.NecesitaRenovacion == true ? "Renovable" : "Permanente")</MudTd>
+                            </Row>
+                        </NominaRhDetailTable>
+                        break;
+                    case 2:
+                        <NominaRhDetailTable TItem="NominaRhDependienteResponse"
+                                             @key="@($"dependientes-{selectedEmployee.Id}")"
+                                             PersonaId="@selectedEmployee.Id" EmpresaId="@selectedEmployee.EmpresaId" PersonaNombre="@selectedEmployee.ClaveNombre"
+                                             Title="Dependientes" AddButtonText="Nuevo dependiente" SearchPlaceholder="Buscar dependiente o parentesco..."
+                                             DefaultSort="Nombre" DialogType="@typeof(NominaRhDependienteDialog)"
+                                             IdSelector="item => item.PkidDependiente" NameSelector="item => item.Nombre"
+                                             ExportMapper="MapDependienteExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                             OnChanged="ReloadEmployeeAsync">
+                            <Header><MudTh>Nombre</MudTh><MudTh>Parentesco</MudTh><MudTh>Fecha de nacimiento</MudTh><MudTh>Creado</MudTh></Header>
+                            <Row Context="item">
+                                <MudTd>@item.Nombre</MudTd><MudTd>@TextOrDash(item.ParentescoDescripcion)</MudTd>
+                                <MudTd>@FormatDate(item.FechaNacimiento)</MudTd><MudTd>@FormatDateTime(item.FechaCreacion)</MudTd>
+                            </Row>
+                        </NominaRhDetailTable>
+                        break;
+                    case 3:
+                        <NominaRhDetailTable TItem="NominaRhIncidenciaResponse"
+                                             @key="@($"incidencias-{selectedEmployee.Id}")"
+                                             PersonaId="@selectedEmployee.Id" EmpresaId="@selectedEmployee.EmpresaId" PersonaNombre="@selectedEmployee.ClaveNombre"
+                                             Title="Incidencias" AddButtonText="Nueva incidencia" SearchPlaceholder="Buscar incidencia, comentario o justificacion..."
+                                             DefaultSort="Fecha" DialogType="@typeof(NominaRhIncidenciaDialog)"
+                                             IdSelector="item => item.PkidIncidencia" NameSelector="item => item.ClaveNombre"
+                                             ExportMapper="MapIncidenciaExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                             OnChanged="ReloadEmployeeAsync">
+                            <Header>
+                                <MudTh>Fecha</MudTh><MudTh>Tipo</MudTh><MudTh>Comentario</MudTh><MudTh>Justificacion</MudTh>
+                                <MudTh>Comentario de justificacion</MudTh><MudTh>Descuento</MudTh><MudTh>Periodo</MudTh>
+                            </Header>
+                            <Row Context="item">
+                                <MudTd>@FormatDate(item.Fecha)</MudTd><MudTd>@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
+                                <MudTd>@TextOrDash(item.Comentario)</MudTd><MudTd>@TextOrDash(item.TipoJustificacionDescripcion)</MudTd>
+                                <MudTd>@TextOrDash(item.ComentarioJustificacion)</MudTd><MudTd>@(item.AplicaDescuento == true ? "Si" : "No")</MudTd>
+                                <MudTd>@(item.FkidPeriodoQuincenalSis?.ToString() ?? "-")</MudTd>
+                            </Row>
+                        </NominaRhDetailTable>
+                        break;
+                    default:
+                        <NominaRhDetailTable TItem="NominaRhPensionResponse"
+                                             @key="@($"pensiones-{selectedEmployee.Id}")"
+                                             PersonaId="@selectedEmployee.Id" EmpresaId="@selectedEmployee.EmpresaId" PersonaNombre="@selectedEmployee.ClaveNombre"
+                                             Title="Pensiones" AddButtonText="Nueva pension" SearchPlaceholder="Buscar beneficiario, documento o cuenta..."
+                                             DefaultSort="FechaInicio" DialogType="@typeof(NominaRhPensionDialog)"
+                                             IdSelector="item => item.PkidPension" NameSelector="item => item.NombreBeneficiario"
+                                             ExportMapper="MapPensionExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                             OnChanged="ReloadEmployeeAsync">
+                            <Header>
+                                <MudTh>Beneficiario</MudTh><MudTh>Tipo</MudTh><MudTh>Porcentaje</MudTh><MudTh>Inicio</MudTh>
+                                <MudTh>Fin</MudTh><MudTh>Documento</MudTh><MudTh>Cuenta contable</MudTh><MudTh>Forma de pago</MudTh>
+                            </Header>
+                            <Row Context="item">
+                                <MudTd>@item.NombreBeneficiario</MudTd><MudTd>@TextOrDash(item.TipoPensionDescripcion)</MudTd>
+                                <MudTd>@FormatPercent(item.Porcentaje)</MudTd><MudTd>@FormatDateTime(item.FechaInicio)</MudTd>
+                                <MudTd>@FormatDateTime(item.FechaFin)</MudTd><MudTd>@TextOrDash(item.Documento)</MudTd>
+                                <MudTd>@TextOrDash(item.CuentaContableDescripcion)</MudTd><MudTd>@TextOrDash(item.FormaPago)</MudTd>
+                            </Row>
+                        </NominaRhDetailTable>
+                        break;
+                }
+            }
+        </section>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .rh-empleados-page { min-height: 100%; gap: 12px; padding-bottom: 18px; }
+    .rh-context-band { display: grid; grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(140px, 1fr)) 90px 90px; gap: 14px; align-items: center; padding: 10px 14px; border: 1px solid var(--mud-palette-lines-default); border-left: 4px solid var(--eg-primary); background: color-mix(in srgb, var(--eg-primary) 4%, var(--mud-palette-surface)); }
+    .rh-context-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .rh-context-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+    .rh-context-metric, .rh-context-count { display: flex; flex-direction: column; min-width: 0; }
+    .rh-context-metric span, .rh-context-count span { color: var(--mud-palette-text-secondary); font-size: .72rem; }
+    .rh-context-metric strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .82rem; }
+    .rh-context-count { align-items: center; }
+    .rh-context-count strong { color: var(--eg-primary); font-size: 1.15rem; }
+    .rh-main-actions { min-width: 132px; white-space: nowrap; }
+    .rh-detail-workspace { min-height: 390px; border-top: 2px solid var(--eg-primary); padding-top: 2px; }
+    .rh-empleados-page .mud-table-cell { white-space: nowrap; }
+    @@media (max-width: 1100px) { .rh-context-band { grid-template-columns: 1fr 1fr 1fr; } .rh-context-main { grid-column: 1 / -1; } }
+    @@media (max-width: 700px) { .rh-context-band { grid-template-columns: 1fr 1fr; } .rh-context-metric { grid-column: span 2; } }
+</style>
+
+@code {
+    private GenericTable<NominaRhEmpleadoResponse> table = null!;
+    private NominaRhEmpleadoResponse? selectedEmployee;
+    private int activeDetailIndex;
+
+    protected override string ModuleName => "Nomina";
+    protected override string SubModuleName => "Empleados";
+    protected override Type CreateDialogType => typeof(NominaRhEmpleadoDialog);
+    protected override Type EditDialogType => typeof(NominaRhEmpleadoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NominaRhEmpleadoResponse>);
+    protected override int ExportPageSize => 2000;
+
+    protected override async Task OnInitializedAsync() => await SucursalStateService.InitializeAsync();
+
+    protected override async Task<TableData<NominaRhEmpleadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, BuildEmpresaFilter());
+            if (response?.Success == true)
+            {
+                Elements = response.Items?.ToList() ?? [];
+                TotalCount = response.TotalCount;
+                if (selectedEmployee is null && Elements.Count > 0) selectedEmployee = Elements[0];
+                else if (selectedEmployee is not null) selectedEmployee = Elements.FirstOrDefault(item => item.Id == selectedEmployee.Id) ?? selectedEmployee;
+                return new TableData<NominaRhEmpleadoResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible cargar los empleados.", Severity.Error);
+            return new TableData<NominaRhEmpleadoResponse>();
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible cargar los empleados. El departamento de TI revisara el incidente.", Severity.Error);
+            return new TableData<NominaRhEmpleadoResponse>();
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private Dictionary<string, object> BuildEmpresaFilter()
+    {
+        var filters = new Dictionary<string, object>();
+        if (SucursalStateService.EmpresaId is > 0) filters["EmpresaId"] = SucursalStateService.EmpresaId.Value;
+        return filters;
+    }
+
+    private Task SelectEmployeeAsync(NominaRhEmpleadoResponse item)
+    {
+        if (selectedEmployee?.Id != item.Id) selectedEmployee = item;
+        return Task.CompletedTask;
+    }
+
+    private Task OnDetailTabChanged(int index)
+    {
+        activeDetailIndex = index;
+        return Task.CompletedTask;
+    }
+
+    private async Task ReloadEmployeeAsync()
+    {
+        if (selectedEmployee is null) return;
+        var response = await Service.GetByIdAsync(selectedEmployee.Id);
+        if (response?.Success == true && response.Data != null) selectedEmployee = response.Data;
+    }
+
+    private async Task ReloadAllAsync()
+    {
+        await table.ReloadData();
+        await ReloadEmployeeAsync();
+    }
+
+    protected override Task ReloadData() => ReloadAllAsync();
+    protected override string GetDefaultSortLabel() => "NombreCompleto";
+    protected override Task<string> GetItemNameForDelete(int id) => Task.FromResult(Elements.FirstOrDefault(item => item.Id == id)?.ClaveNombre ?? "el empleado");
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NominaRhEmpleadoResponse> items) => items.Select(item => new
+    {
+        item.Empleado, item.NombreCompleto, item.Rfc, item.Curp, item.Sexo, Nacimiento = FormatDateTime(item.FechaNacimiento),
+        Ingreso = FormatDateTime(item.FechaIngreso), item.TipoContratacion, item.Puesto, item.Departamento, item.Contrato,
+        Sueldo = item.SueldoMensual, item.Email, item.Celular, item.EstadoCivil, item.RegImss
+    });
+
+    private static object MapContratoExport(NominaRhContratoResponse item) => new { item.NumeroContrato, item.PuestoNombre, item.TipoContratacionDescripcion, item.DepartamentoNombre, item.FechaInicio, item.FechaFin, item.SueldoMensual, item.Vigencia };
+    private static object MapExpedienteExport(NominaRhExpedienteResponse item) => new { item.NombreDocumento, item.TipoExpedienteDescripcion, item.Descripcion, item.FechaExpedicion, item.NecesitaRenovacion, item.FechaRenovacion, item.Ruta };
+    private static object MapDependienteExport(NominaRhDependienteResponse item) => new { item.Nombre, item.ParentescoDescripcion, item.FechaNacimiento, item.FechaCreacion };
+    private static object MapIncidenciaExport(NominaRhIncidenciaResponse item) => new { item.Fecha, item.TipoIncidenciaDescripcion, item.Comentario, item.TipoJustificacionDescripcion, item.ComentarioJustificacion, item.AplicaDescuento, item.FkidPeriodoQuincenalSis };
+    private static object MapPensionExport(NominaRhPensionResponse item) => new { item.NombreBeneficiario, item.TipoPensionDescripcion, item.Porcentaje, item.FechaInicio, item.FechaFin, item.Documento, item.CuentaContable, item.CuentaContableDescripcion, item.FormaPago };
+
+    private static string FormatDate(DateOnly? value) => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "-";
+    private static string FormatDate(DateOnly value) => value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+    private static string FormatDateTime(DateTime? value) => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "-";
+    private static string FormatMoney(decimal? value) => value?.ToString("N2", CultureInfo.InvariantCulture) ?? "-";
+    private static string FormatMoney(decimal value) => value.ToString("N2", CultureInfo.InvariantCulture);
+    private static string FormatPercent(decimal? value) => value.HasValue ? value.Value.ToString("0.####", CultureInfo.InvariantCulture) + "%" : "-";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

@@ -9,23 +9,31 @@ public partial class VwConcepto
 {
     public int PkidConcepto { get; set; }
 
-    public int FkidCapituloSis { get; set; }
-
     public string Clave { get; set; }
 
-    public string Descripcion { get; set; }
+    public string SubClave { get; set; }
+
+    public string PerDed { get; set; }
+
+    public string TipoMovimiento { get; set; }
+
+    public string Nombre { get; set; }
+
+    public string ClaveNombre { get; set; }
+
+    public int FormaCalculoId { get; set; }
+
+    public int? EmpresaId { get; set; }
+
+    public string EmpresaNombre { get; set; }
 
     public bool Activo { get; set; }
 
+    public int? UsuarioCreacion { get; set; }
+
     public DateTime? FechaCreacion { get; set; }
-
-    public int UsuarioCreacion { get; set; }
-
-    public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
 
-    public string CapituloDescripcion { get; set; }
-
-    public string CapituloClave { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 }

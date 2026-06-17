@@ -20,4 +20,6 @@ public partial class TipoPension
     public DateTime? FechaModificacion { get; set; }
 
     public bool Activo { get; set; }
+
+    public virtual ICollection<PersonaPension> PersonaPensions { get; set; } = new List<PersonaPension>();
 }

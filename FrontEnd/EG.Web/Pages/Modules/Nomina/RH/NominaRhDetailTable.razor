@@ -1,0 +1,305 @@
+@typeparam TItem where TItem : class
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MiniExcelLibs
+@using MudBlazor
+
+@inject IGenericCrudService<TItem> Service
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+<GenericTable TItem="TItem"
+              @ref="table"
+              Title="@Title"
+              SearchPlaceholder="@SearchPlaceholder"
+              ShowExportButton="@CanExport"
+              ShowAddButton="@CanCreate"
+              AddButtonTooltip="@AddButtonText"
+              OnAdd="CreateAsync"
+              ServerDataFunc="LoadServerDataAsync"
+              ExportFunc="ExportAsync"
+              SearchString="@search"
+              SearchStringChanged="value => search = value"
+              OnSearch="SearchAsync"
+              Loading="@busy"
+              PageSize="5"
+              PageSizeOptions="@(new[] { 5, 10, 20 })"
+              TableHeight="31vh">
+    <Header>
+        <MudTh>Acciones</MudTh>
+        @Header
+    </Header>
+    <Row Context="item">
+        <MudTd Class="rh-detail-actions">
+            <MudTooltip Text="Editar">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Visible="@CanUpdate"
+                               Disabled="@busy"
+                               OnClick="@(() => EditAsync(item))" />
+            </MudTooltip>
+            <MudTooltip Text="Eliminar">
+                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               Visible="@CanDelete"
+                               Disabled="@busy"
+                               OnClick="@(() => DeleteAsync(item))" />
+            </MudTooltip>
+        </MudTd>
+        @Row(item)
+    </Row>
+</GenericTable>
+
+<style>
+    .rh-detail-actions {
+        min-width: 92px;
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public int PersonaId { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string PersonaNombre { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
+    [Parameter] public string AddButtonText { get; set; } = "Agregar";
+    [Parameter, EditorRequired] public string DefaultSort { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public Type DialogType { get; set; } = null!;
+    [Parameter, EditorRequired] public Func<TItem, int> IdSelector { get; set; } = null!;
+    [Parameter, EditorRequired] public Func<TItem, string> NameSelector { get; set; } = null!;
+    [Parameter, EditorRequired] public Func<TItem, object> ExportMapper { get; set; } = null!;
+    [Parameter, EditorRequired] public RenderFragment Header { get; set; } = null!;
+    [Parameter, EditorRequired] public RenderFragment<TItem> Row { get; set; } = null!;
+    [Parameter] public bool CanCreate { get; set; }
+    [Parameter] public bool CanUpdate { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool CanExport { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private GenericTable<TItem>? table;
+    private string search = string.Empty;
+    private bool busy;
+
+    private async Task<TableData<TItem>> LoadServerDataAsync(TableState state, CancellationToken cancellationToken)
+    {
+        if (PersonaId <= 0)
+        {
+            return EmptyTable();
+        }
+
+        try
+        {
+            var response = await Service.GetAllPaginadoAsync(
+                Math.Max(1, state.Page + 1),
+                state.PageSize,
+                search,
+                state.SortLabel ?? DefaultSort,
+                state.SortDirection,
+                BuildFilters());
+
+            if (response?.Success == true)
+            {
+                return new TableData<TItem>
+                {
+                    Items = response.Items ?? new List<TItem>(),
+                    TotalItems = response.TotalCount
+                };
+            }
+
+            Snackbar.Add(response?.Message ?? $"No fue posible cargar {Title.ToLowerInvariant()}.", Severity.Error);
+            return EmptyTable();
+        }
+        catch
+        {
+            Snackbar.Add($"No fue posible cargar {Title.ToLowerInvariant()}. El departamento de TI revisara el incidente.", Severity.Error);
+            return EmptyTable();
+        }
+    }
+
+    private Dictionary<string, object> BuildFilters()
+    {
+        var filters = new Dictionary<string, object> { ["PersonaId"] = PersonaId };
+        if (EmpresaId is > 0)
+        {
+            filters["EmpresaId"] = EmpresaId.Value;
+        }
+
+        return filters;
+    }
+
+    private async Task SearchAsync()
+    {
+        if (table is not null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private Task CreateAsync() => RunExclusiveAsync(async () =>
+    {
+        var parameters = BuildDialogParameters();
+        var dialog = await DialogService.ShowAsync(
+            DialogType,
+            AddButtonText,
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAfterChangeAsync();
+        }
+    });
+
+    private Task EditAsync(TItem item) => RunExclusiveAsync(async () =>
+    {
+        var parameters = BuildDialogParameters();
+        parameters["Id"] = IdSelector(item);
+        var dialog = await DialogService.ShowAsync(
+            DialogType,
+            $"Editar {Title}",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAfterChangeAsync();
+        }
+    });
+
+    private Task DeleteAsync(TItem item) => RunExclusiveAsync(async () =>
+    {
+        var id = IdSelector(item);
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["ItemName"] = NameSelector(item),
+            ["DeleteFunc"] = new Func<int, Task<bool>>(async deleteId =>
+            {
+                var response = await Service.DeleteAsync(deleteId);
+                if (response?.Success == true)
+                {
+                    Snackbar.Add(response.Message ?? "Registro eliminado correctamente.", Severity.Success);
+                    await ReloadAfterChangeAsync();
+                    return true;
+                }
+
+                Snackbar.Add(response?.Message ?? "No fue posible eliminar el registro.", Severity.Error);
+                return false;
+            })
+        };
+
+        var deleteDialogType = typeof(DeleteDialog<>).MakeGenericType(typeof(TItem));
+        var dialog = await DialogService.ShowAsync(
+            deleteDialogType,
+            $"Eliminar {Title}",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        await dialog.Result;
+    });
+
+    private async Task ExportAsync()
+    {
+        if (!CanExport || busy)
+        {
+            return;
+        }
+
+        await RunExclusiveAsync(async () =>
+        {
+            var items = new List<TItem>();
+            var page = 1;
+            while (items.Count < 50000)
+            {
+                var response = await Service.GetAllPaginadoAsync(
+                    page,
+                    2000,
+                    search,
+                    DefaultSort,
+                    SortDirection.Ascending,
+                    BuildFilters());
+
+                if (response?.Success != true)
+                {
+                    Snackbar.Add(response?.Message ?? "No fue posible exportar.", Severity.Error);
+                    return;
+                }
+
+                var pageItems = response.Items?.ToList() ?? [];
+                if (pageItems.Count == 0)
+                {
+                    break;
+                }
+
+                items.AddRange(pageItems);
+                if (items.Count >= response.TotalCount || pageItems.Count < 2000)
+                {
+                    break;
+                }
+
+                page++;
+            }
+
+            if (items.Count == 0)
+            {
+                Snackbar.Add("No hay registros para exportar.", Severity.Warning);
+                return;
+            }
+
+            using var stream = new MemoryStream();
+            await stream.SaveAsAsync(items.Select(ExportMapper));
+            await JsRuntime.InvokeVoidAsync(
+                "downloadFile",
+                Convert.ToBase64String(stream.ToArray()),
+                $"RH_{Title.Replace(" ", "_")}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        });
+    }
+
+    private DialogParameters BuildDialogParameters() => new()
+    {
+        ["PersonaId"] = PersonaId,
+        ["PersonaNombre"] = PersonaNombre,
+        ["EmpresaId"] = EmpresaId
+    };
+
+    private async Task ReloadAfterChangeAsync()
+    {
+        if (table is not null)
+        {
+            await table.ReloadData();
+        }
+
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task RunExclusiveAsync(Func<Task> action)
+    {
+        if (busy)
+        {
+            Snackbar.Add("Hay una operacion en proceso.", Severity.Info);
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private static TableData<TItem> EmptyTable() => new()
+    {
+        Items = new List<TItem>(),
+        TotalItems = 0
+    };
+}

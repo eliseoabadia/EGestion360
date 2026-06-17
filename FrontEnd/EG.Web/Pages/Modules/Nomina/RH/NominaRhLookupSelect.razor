@@ -1,0 +1,81 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhLookupResponse> LookupService
+
+<PagedAutocomplete Value="@selected"
+                   ValueChanged="OnSelectedAsync"
+                   Label="@Label"
+                   Required="@Required"
+                   RequiredError="@RequiredError"
+                   Clearable="@Clearable"
+                   Disabled="@Disabled"
+                   LoadPage="LoadPageAsync"
+                   PageSize="25" />
+
+@code {
+    [Parameter] public int? Value { get; set; }
+    [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<string> DescriptionChanged { get; set; }
+    [Parameter, EditorRequired] public string Catalogo { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string InitialText { get; set; } = string.Empty;
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string RequiredError { get; set; } = "Selecciona una opcion.";
+    [Parameter] public bool Clearable { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+
+    private LookupItem? selected;
+    private int? previousValue;
+    private readonly Dictionary<int, string> descriptions = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Value == previousValue)
+        {
+            return;
+        }
+
+        previousValue = Value;
+        selected = Value.HasValue
+            ? new LookupItem { Id = Value.Value, Text = string.IsNullOrWhiteSpace(InitialText) ? Value.Value.ToString() : InitialText }
+            : null;
+    }
+
+    private async Task<ComboLookupResult> LoadPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
+    {
+        var response = await LookupService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            nameof(NominaRhLookupResponse.Descripcion),
+            MudBlazor.SortDirection.Ascending,
+            new Dictionary<string, object> { ["Catalogo"] = Catalogo });
+
+        var items = response?.Items?.ToList() ?? [];
+        foreach (var item in items)
+        {
+            descriptions[item.Id] = item.Descripcion;
+        }
+
+        return new ComboLookupResult
+        {
+            Items = items.Select(item => new LookupItem { Id = item.Id, Text = item.ClaveNombre }),
+            TotalCount = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task OnSelectedAsync(LookupItem? item)
+    {
+        selected = item;
+        previousValue = item?.Id;
+        await ValueChanged.InvokeAsync(item?.Id);
+        var description = item != null && descriptions.TryGetValue(item.Id, out var value)
+            ? value
+            : item?.Text ?? string.Empty;
+        await DescriptionChanged.InvokeAsync(description);
+    }
+}

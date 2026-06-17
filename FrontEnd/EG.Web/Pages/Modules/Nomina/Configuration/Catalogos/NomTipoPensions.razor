@@ -68,7 +68,7 @@
 @code {
     private GenericTable<NomTipoPensionResponse> table = null!;
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Tipo_Pension";
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomTipoPensionResponse>);

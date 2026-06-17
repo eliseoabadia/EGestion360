@@ -1,4 +1,7 @@
 @page "/nomina/procesos"
+@page "/nom/calcnomina"
+@page "/nom/cierraperiodo"
+@page "/nom/calcaguinaldo"
 @using System.Globalization
 @using EG.Domain.DTOs.Requests.Nomina
 @using EG.Domain.DTOs.Responses.Nomina
@@ -144,7 +147,7 @@
     private string observaciones = string.Empty;
     private readonly List<NominaProcesoResponse> history = new();
 
-    protected override string ModuleName => "Nomina";
+    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Root;
     protected override string SubModuleName => "Procesos";
     protected override Type CreateDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
     protected override Type EditDialogType => typeof(DeleteDialog<NominaProcesoResponse>);

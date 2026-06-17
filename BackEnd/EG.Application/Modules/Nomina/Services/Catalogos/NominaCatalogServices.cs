@@ -326,4 +326,13 @@ namespace EG.Application.Services.Nomina
         {
         }
     }
+
+    public class NomCatalogoSimpleAppService : NominaCrudAppService<NomCatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse>
+    {
+        public NomCatalogoSimpleAppService(GenericService<NomCatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> service)
+            : base(service, "PkidCatalogoSimple", "Catalogo simple", (dto, id) => dto.PkidCatalogoSimple = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
 }
