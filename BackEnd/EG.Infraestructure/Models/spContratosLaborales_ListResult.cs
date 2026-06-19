@@ -10,7 +10,7 @@ namespace EG.Infraestructure.Models
     {
         public int PKIdContratoLaboral { get; set; }
         public int EmpresaNominaId { get; set; }
-        [StringLength(100)]
+        [StringLength(255)]
         public string EmpresaNominaNombre { get; set; }
         public int PersonaId { get; set; }
         [StringLength(170)]

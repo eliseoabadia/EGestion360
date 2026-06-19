@@ -27,6 +27,8 @@ public partial class Fn
 
     public virtual Gf FkidGfPresNavigation { get; set; }
 
+    public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
+
     public virtual ICollection<Sf> Sfs { get; set; } = new List<Sf>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

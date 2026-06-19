@@ -30,7 +30,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             try
             {
-                var items = await _context.VwConceptos1.ToListAsync();
+                var items = await _context.VwConceptos.ToListAsync();
                 return new PagedResult<ConceptoResponse>
                 {
                     Items = items.Adapt<List<ConceptoResponse>>(),
@@ -54,7 +54,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             try
             {
-                var entity = await _context.VwConceptos1.FirstOrDefaultAsync(e => e.PkidConcepto == id);
+                var entity = await _context.VwConceptos.FirstOrDefaultAsync(e => e.PkidConcepto == id);
                 if (entity == null) return null;
                 return entity.Adapt<ConceptoResponse>();
             }
@@ -115,7 +115,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             try
             {
-                var query = _context.VwConceptos1.AsQueryable();
+                var query = _context.VwConceptos.AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {

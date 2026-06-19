@@ -399,7 +399,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_NOM_ConceptoTabular_P
     CREATE INDEX [IX_NOM_ConceptoTabular_PuestoConcepto] ON [NOM].[ConceptoTabular] ([FKIdPuesto_NOM], [FKIdConcepto_NOM], [Activo]);
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwEmpresaNomina]
+CREATE OR ALTER VIEW [NOM].[Vw_EmpresaNomina]
 AS
 SELECT
     e.[PKIdEmpresaNomina],
@@ -423,7 +423,7 @@ SELECT
 FROM [NOM].[EmpresaNomina] e;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwUniverso]
+CREATE OR ALTER VIEW [NOM].[Vw_Universo]
 AS
 SELECT
     u.[PKIdUniverso],
@@ -437,7 +437,7 @@ SELECT
 FROM [NOM].[Universo] u;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwNivel]
+CREATE OR ALTER VIEW [NOM].[Vw_Nivel]
 AS
 SELECT
     n.[PKIdNivel],
@@ -458,7 +458,7 @@ LEFT JOIN [NOM].[Universo] u ON u.[PKIdUniverso] = n.[FKIdUniverso_NOM]
 LEFT JOIN [NOM].[ImporteNivel] i ON i.[Clave] = n.[Clave] AND i.[Activo] = 1;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwClasePuesto]
+CREATE OR ALTER VIEW [NOM].[Vw_ClasePuesto]
 AS
 SELECT
     c.[PKIdClasePuesto],
@@ -472,7 +472,7 @@ SELECT
 FROM [NOM].[ClasePuesto] c;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwPuesto]
+CREATE OR ALTER VIEW [NOM].[Vw_Puesto]
 AS
 SELECT
     p.[PKIdPuesto],
@@ -508,7 +508,7 @@ LEFT JOIN [NOM].[ClasePuesto] cp ON cp.[PKIdClasePuesto] = p.[FKIdClasePuesto_NO
 LEFT JOIN [NOM].[ImporteNivel] i ON i.[Clave] = n.[Clave] AND i.[Activo] = 1;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwNombramiento]
+CREATE OR ALTER VIEW [NOM].[Vw_Nombramiento]
 AS
 SELECT
     n.[PKIdNombramiento],
@@ -522,7 +522,7 @@ SELECT
 FROM [NOM].[Nombramiento] n;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwImporteNivel]
+CREATE OR ALTER VIEW [NOM].[Vw_ImporteNivel]
 AS
 SELECT
     i.[PKIdImporteNivel],
@@ -539,7 +539,7 @@ SELECT
 FROM [NOM].[ImporteNivel] i;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwContratoLaboral]
+CREATE OR ALTER VIEW [NOM].[Vw_ContratoLaboral]
 AS
 SELECT
     c.[PKIdContratoLaboral],
@@ -564,12 +564,12 @@ SELECT
     c.[FechaModificacion]
 FROM [NOM].[ContratoLaboral] c
 LEFT JOIN [NOM].[EmpresaNomina] en ON en.[PKIdEmpresaNomina] = c.[FKIdEmpresaNomina_NOM]
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = c.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = c.[FKIdPersona_NOM]
 LEFT JOIN [NOM].[Puesto] p ON p.[PKIdPuesto] = c.[FKIdPuesto_NOM]
 LEFT JOIN [NOM].[Nombramiento] n ON n.[PKIdNombramiento] = c.[FKIdNombramiento_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoFijo]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoFijo]
 AS
 SELECT
     cf.[PKIdConceptoFijo],
@@ -607,11 +607,11 @@ SELECT
 FROM [NOM].[ConceptoFijo] cf
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = cf.[FKIdEmpresa_SIS]
 LEFT JOIN [NOM].[EmpresaNomina] en ON en.[PKIdEmpresaNomina] = cf.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cf.[FKIdConcepto_NOM]
-LEFT JOIN [NOM].[VwPuesto] vp ON vp.[PKIdPuesto] = cf.[FKIdPuesto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cf.[FKIdConcepto_NOM]
+LEFT JOIN [NOM].[Vw_Puesto] vp ON vp.[PKIdPuesto] = cf.[FKIdPuesto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoProporcional]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoProporcional]
 AS
 SELECT
     cp.[PKIdConceptoProporcional],
@@ -638,11 +638,11 @@ SELECT
 FROM [NOM].[ConceptoProporcional] cp
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = cp.[FKIdEmpresa_SIS]
 LEFT JOIN [NOM].[EmpresaNomina] en ON en.[PKIdEmpresaNomina] = cp.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwPuesto] vp ON vp.[PKIdPuesto] = cp.[FKIdPuesto_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cp.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_Puesto] vp ON vp.[PKIdPuesto] = cp.[FKIdPuesto_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cp.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoTabular]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoTabular]
 AS
 SELECT
     ct.[PKIdConceptoTabulador],
@@ -680,8 +680,8 @@ SELECT
 FROM [NOM].[ConceptoTabular] ct
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = ct.[FKIdEmpresa_SIS]
 LEFT JOIN [NOM].[EmpresaNomina] en ON en.[PKIdEmpresaNomina] = ct.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = ct.[FKIdConcepto_NOM]
-LEFT JOIN [NOM].[VwPuesto] vp ON vp.[PKIdPuesto] = ct.[FKIdPuesto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = ct.[FKIdConcepto_NOM]
+LEFT JOIN [NOM].[Vw_Puesto] vp ON vp.[PKIdPuesto] = ct.[FKIdPuesto_NOM];
 GO
 
 CREATE OR ALTER PROCEDURE [NOM].[spPuestos_List]
@@ -701,7 +701,7 @@ BEGIN
     ;WITH Base AS
     (
         SELECT v.*, COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwPuesto] v
+        FROM [NOM].[Vw_Puesto] v
         WHERE (@EmpresaNominaId IS NULL OR v.[EmpresaNominaId] = @EmpresaNominaId)
           AND (@NivelId IS NULL OR v.[NivelId] = @NivelId)
           AND (@Activo IS NULL OR v.[Activo] = @Activo)
@@ -740,7 +740,7 @@ BEGIN
     ;WITH Base AS
     (
         SELECT v.*, COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwConceptoTabular] v
+        FROM [NOM].[Vw_ConceptoTabular] v
         WHERE (@EmpresaId IS NULL OR v.[EmpresaId] = @EmpresaId)
           AND (@PuestoId IS NULL OR v.[PuestoId] = @PuestoId)
           AND (@ConceptoId IS NULL OR v.[ConceptoId] = @ConceptoId)
@@ -782,7 +782,7 @@ BEGIN
     ;WITH Base AS
     (
         SELECT v.*, COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwContratoLaboral] v
+        FROM [NOM].[Vw_ContratoLaboral] v
         WHERE (@EmpresaNominaId IS NULL OR v.[EmpresaNominaId] = @EmpresaNominaId)
           AND (@PersonaId IS NULL OR v.[PersonaId] = @PersonaId)
           AND (@PuestoId IS NULL OR v.[PuestoId] = @PuestoId)

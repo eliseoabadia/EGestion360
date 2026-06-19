@@ -1,6 +1,6 @@
-﻿
 
-CREATE OR ALTER VIEW [ALMA].[vw_Bien]
+
+CREATE OR ALTER VIEW [ALMA].[Vw_Bien]
 AS
 SELECT 
     b.PKIdBien,
@@ -105,12 +105,12 @@ LEFT JOIN ALMA.Material mat ON b.FKIdMaterial_ALMA = mat.PKIdMaterial
 LEFT JOIN ALMA.TipoAdquisicion ta ON b.FKIdTipoAdq_ALMA = ta.PKIdTipoAdq
 LEFT JOIN CONTA.Partida part ON b.FKIdPartida_CONTA = part.PKIdPartida
 GO
-PRINT N'Creando Vista [ALMA].[VW_Existencias]...';
+PRINT N'Creando Vista [ALMA].[Vw_Existencias]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [ALMA].[VW_Existencias]
+CREATE OR ALTER VIEW [ALMA].[Vw_Existencias]
 AS
 
 WITH Existencias AS
@@ -173,12 +173,12 @@ FROM
 WHERE
     TB.Activo = 1
 GO
-PRINT N'Creando Vista [ALMA].[VW_ConteoDetalle]...';
+PRINT N'Creando Vista [ALMA].[Vw_ConteoDetalle]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [ALMA].[VW_ConteoDetalle]
+CREATE OR ALTER VIEW [ALMA].[Vw_ConteoDetalle]
 AS
 SELECT
     -- Campos del encabezado (Conteo)
@@ -393,12 +393,12 @@ FROM
 WHERE 
     tb.Activo = 1;
 GO
-PRINT N'Creando Vista [ALMA].[VW_Conteo]...';
+PRINT N'Creando Vista [ALMA].[Vw_Conteo]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [ALMA].[VW_Conteo]
+CREATE OR ALTER VIEW [ALMA].[Vw_Conteo]
 AS
 SELECT
     c.[PKIdConteo],
@@ -544,12 +544,12 @@ GROUP BY
     pum.[Paterno],
     pum.[Materno];
 GO
-PRINT N'Creando Vista [ALMA].[VW_PeriodoConteo]...';
+PRINT N'Creando Vista [ALMA].[Vw_PeriodoConteo]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [ALMA].[VW_PeriodoConteo]
+CREATE OR ALTER VIEW [ALMA].[Vw_PeriodoConteo]
 AS
 SELECT
     pc.[PKIdPeriodoConteo],
@@ -607,12 +607,12 @@ LEFT JOIN [NOM].[Persona] pr
 LEFT JOIN [NOM].[Persona] psup
     ON sup.[FKIdPersona_NOM] = psup.[PKIdPersona];
 GO
-PRINT N'Creando Vista [ALMA].[VW_ConteoDetalleEscaneo]...';
+PRINT N'Creando Vista [ALMA].[Vw_ConteoDetalleEscaneo]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [ALMA].[VW_ConteoDetalleEscaneo]
+CREATE OR ALTER VIEW [ALMA].[Vw_ConteoDetalleEscaneo]
 AS
 SELECT
     cde.[PKIdDetalleEscaneo],
@@ -1261,12 +1261,12 @@ LEFT JOIN ORCO.PAAASPartida pp ON dp.FKIdPAAASPartida_ORCO = pp.PKIdPAAASPartida
 LEFT JOIN CONTA.Partida part ON pp.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
 WHERE dp.Activo = 1;
 GO
-PRINT N'Creando Vista [ORCO].[VW_ReporteBienesProgramaAnual]...';
+PRINT N'Creando Vista [ORCO].[Vw_ReporteBienesProgramaAnual]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [ORCO].[VW_ReporteBienesProgramaAnual] AS
+CREATE OR ALTER VIEW [ORCO].[Vw_ReporteBienesProgramaAnual] AS
 WITH 
 -- 1. Resumen de ?reas solicitantes por bien
 AreasPorBien AS (
@@ -1870,12 +1870,12 @@ LEFT JOIN SIS.Proveedor prov ON c.FKIdProveedor_SIS = prov.PKIdProveedor AND pro
 LEFT JOIN CONTA.Poliza pol ON f.FKIdPoliza_CONTA = pol.PKIdPoliza AND pol.Activo = 1
 WHERE f.Activo = 1;
 GO
-PRINT N'Creando Vista [PRES].[VwPrograma]...';
+PRINT N'Creando Vista [PRES].[Vw_Programa]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [PRES].[VwPrograma]
+CREATE OR ALTER VIEW [PRES].[Vw_Programa]
 AS
 SELECT
     p.PKIdPrograma,
@@ -2384,12 +2384,12 @@ LEFT JOIN SIS.Empresa emp ON cf.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo
 LEFT JOIN CONTA.Partida part ON fd.FKIdPartida_CONTA = part.PKIdPartida AND part.Activo = 1
 WHERE cf.Activo = 1;
 GO
-PRINT N'Creando Vista [SIS].[VW_EstadoEmpresa]...';
+PRINT N'Creando Vista [SIS].[Vw_EstadoEmpresa]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [SIS].[VW_EstadoEmpresa]
+CREATE OR ALTER VIEW [SIS].[Vw_EstadoEmpresa]
 AS
 SELECT 
     -- Campos de Empresa
@@ -2462,12 +2462,12 @@ LEFT JOIN SIS.Estados e ON prov.FKIdEstado_SIS = e.PKIdEstado AND e.Activo = 1
 LEFT JOIN SIS.Paises pa ON prov.FKIdPais_SIS = pa.PKIdPais AND pa.Activo = 1
 WHERE prov.Activo = 1;
 GO
-PRINT N'Creando Vista [SIS].[VW_UsuarioPersonaArea]...';
+PRINT N'Creando Vista [SIS].[Vw_UsuarioPersonaArea]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [SIS].[VW_UsuarioPersonaArea]
+CREATE OR ALTER VIEW [SIS].[Vw_UsuarioPersonaArea]
 AS
 SELECT 
     u.PkIdUsuario,
@@ -2506,12 +2506,12 @@ LEFT JOIN NOM.PersonaArea pa ON p.PKIdPersona = pa.FKIdPersona_NOM AND pa.Activo
 LEFT JOIN SIS.Area a ON pa.FKIdArea_SIS = a.PKIdArea AND a.Activo = 1
 WHERE u.Activo = 1;
 GO
-PRINT N'Creando Vista [SIS].[VW_UsuarioEmpresa]...';
+PRINT N'Creando Vista [SIS].[Vw_UsuarioEmpresa]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [SIS].[VW_UsuarioEmpresa]
+CREATE OR ALTER VIEW [SIS].[Vw_UsuarioEmpresa]
 AS
 WITH SucursalesResumen AS (
     -- Acceso directo por UsuarioSucursal
@@ -2832,12 +2832,12 @@ WHERE us.Activo = 1
   AND (us.FechaFinAsignacion IS NULL OR us.FechaFinAsignacion >= GETDATE())
   AND u.Activo = 1;
 GO
-PRINT N'Creando Vista [SIS].[vw_Menu]...';
+PRINT N'Creando Vista [SIS].[Vw_Menu]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [SIS].[vw_Menu] AS
+CREATE OR ALTER VIEW [SIS].[Vw_Menu] AS
 WITH MenuJerarquico AS (
     SELECT 
         m.PKIdMenu,
@@ -2952,12 +2952,12 @@ FROM SIS.Concepto c
 LEFT JOIN SIS.Capitulo cap ON c.FKIdCapitulo_SIS = cap.PKIdCapitulo AND cap.Activo = 1
 WHERE c.Activo = 1;
 GO
-PRINT N'Creando Vista [SIS].[VW_EmpresaDepartamanto]...';
+PRINT N'Creando Vista [SIS].[Vw_EmpresaDepartamanto]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [SIS].[VW_EmpresaDepartamanto]
+CREATE OR ALTER VIEW [SIS].[Vw_EmpresaDepartamanto]
 AS
 SELECT E.PKIdEmpresa,
 	   E.Nombre AS EmpresaNombre,
@@ -2971,12 +2971,12 @@ FROM [SIS].[Empresa] E WITH (NOLOCK)
 INNER JOIN [SIS].[Departamento] D WITH (NOLOCK) ON E.PKIdEmpresa = D.FKIdEmpresa_SIS
 WHERE E.Activo = 1 AND D.Activo = 1 ;
 GO
-PRINT N'Creando Vista [SIS].[VW_SucursalEmpresaEstado]...';
+PRINT N'Creando Vista [SIS].[Vw_SucursalEmpresaEstado]...';
 
 
 GO
 
-CREATE OR ALTER VIEW [SIS].[VW_SucursalEmpresaEstado]
+CREATE OR ALTER VIEW [SIS].[Vw_SucursalEmpresaEstado]
 AS
 SELECT 
     s.PKIdSucursal,
@@ -3333,19 +3333,6 @@ LEFT JOIN TES.Banco banco ON cb.FKIdBanco_TES = banco.PKIdBanco AND banco.Activo
 LEFT JOIN TES.TipoMoneda tm ON cb.FKIdTipoMoneda_TES = tm.PKIdTipoMoneda AND tm.Activo = 1
 WHERE cb.Activo = 1;
 GO
-PRINT N'Creando Vista [PRES].[Vw_Programa]...';
-
-
-GO
-
-CREATE OR ALTER VIEW [PRES].[Vw_Programa]
-AS
-SELECT *
-FROM [PRES].[VwPrograma];
-GO
-
-
-
 -- =============================================
 -- Vista: PRES.Vw_FN
 -- =============================================

@@ -5,95 +5,95 @@ using EG.Infraestructure.Models;
 
 namespace EG.Application.Services.Nomina
 {
-    public class NomEmpresaNominaAppService : NominaCrudAppService<NomEmpresaNomina, NomEmpresaNominaDto, NomEmpresaNominaResponse>
+    public class NomEmpresaNominaAppService : NominaCrudAppService<Empresa, NomEmpresaNominaDto, NomEmpresaNominaResponse>
     {
-        public NomEmpresaNominaAppService(GenericService<NomEmpresaNomina, NomEmpresaNominaDto, NomEmpresaNominaResponse> service)
-            : base(service, "PkidEmpresaNomina", "Empresa de nomina", (dto, id) => dto.PkidEmpresaNomina = id)
+        public NomEmpresaNominaAppService(GenericService<Empresa, NomEmpresaNominaDto, NomEmpresaNominaResponse> service)
+            : base(service, "PkidEmpresa", "Empresa de nomina", (dto, id) => dto.PkidEmpresaNomina = id)
         {
             service.DisableEmpresaFilter();
         }
     }
 
-    public class NomUniversoAppService : NominaCrudAppService<NomUniverso, NomUniversoDto, NomUniversoResponse>
+    public class NomUniversoAppService : NominaCrudAppService<Universo, NomUniversoDto, NomUniversoResponse>
     {
-        public NomUniversoAppService(GenericService<NomUniverso, NomUniversoDto, NomUniversoResponse> service)
+        public NomUniversoAppService(GenericService<Universo, NomUniversoDto, NomUniversoResponse> service)
             : base(service, "PkidUniverso", "Universo", (dto, id) => dto.PkidUniverso = id)
         {
             service.DisableEmpresaFilter();
         }
     }
 
-    public class NomNivelAppService : NominaCrudAppService<NomNivel, NomNivelDto, NomNivelResponse>
+    public class NomNivelAppService : NominaCrudAppService<Nivel1, NomNivelDto, NomNivelResponse>
     {
-        public NomNivelAppService(GenericService<NomNivel, NomNivelDto, NomNivelResponse> service)
+        public NomNivelAppService(GenericService<Nivel1, NomNivelDto, NomNivelResponse> service)
             : base(service, "PkidNivel", "Nivel", (dto, id) => dto.PkidNivel = id)
         {
             service
                 .DisableEmpresaFilter()
                 .AddInclude(x => x.FkidUniversoNomNavigation)
-                .AddRelationFilter(nameof(NomNivel.FkidUniversoNomNavigation), new List<string> { nameof(NomUniverso.Descripcion) });
+                .AddRelationFilter(nameof(Nivel1.FkidUniversoNomNavigation), new List<string> { nameof(Universo.Descripcion) });
         }
     }
 
-    public class NomClasePuestoAppService : NominaCrudAppService<NomClasePuesto, NomClasePuestoDto, NomClasePuestoResponse>
+    public class NomClasePuestoAppService : NominaCrudAppService<ClasePuesto, NomClasePuestoDto, NomClasePuestoResponse>
     {
-        public NomClasePuestoAppService(GenericService<NomClasePuesto, NomClasePuestoDto, NomClasePuestoResponse> service)
+        public NomClasePuestoAppService(GenericService<ClasePuesto, NomClasePuestoDto, NomClasePuestoResponse> service)
             : base(service, "PkidClasePuesto", "Clase de puesto", (dto, id) => dto.PkidClasePuesto = id)
         {
             service.DisableEmpresaFilter();
         }
     }
 
-    public class NomPuestoAppService : NominaCrudAppService<NomPuesto, NomPuestoDto, NomPuestoResponse>
+    public class NomPuestoAppService : NominaCrudAppService<Puesto, NomPuestoDto, NomPuestoResponse>
     {
-        public NomPuestoAppService(GenericService<NomPuesto, NomPuestoDto, NomPuestoResponse> service)
+        public NomPuestoAppService(GenericService<Puesto, NomPuestoDto, NomPuestoResponse> service)
             : base(service, "PkidPuesto", "Puesto", (dto, id) => dto.PkidPuesto = id)
         {
             service
                 .DisableEmpresaFilter()
-                .AddInclude(x => x.FkidEmpresaNominaNomNavigation)
+                .AddInclude(x => x.FkidEmpresaSisNavigation)
                 .AddInclude(x => x.FkidNivelNomNavigation)
                 .AddInclude(x => x.FkidNivelNomNavigation.FkidUniversoNomNavigation)
                 .AddInclude(x => x.FkidClasePuestoNomNavigation)
                 .AddInclude(x => x.FkidPuestoPadreNomNavigation)
-                .AddRelationFilter(nameof(NomPuesto.FkidEmpresaNominaNomNavigation), new List<string> { nameof(NomEmpresaNomina.RazonSocial) })
-                .AddRelationFilter(nameof(NomPuesto.FkidNivelNomNavigation), new List<string> { nameof(NomNivel.Clave) })
-                .AddRelationFilter(nameof(NomPuesto.FkidClasePuestoNomNavigation), new List<string> { nameof(NomClasePuesto.Descripcion) });
+                .AddRelationFilter(nameof(Puesto.FkidEmpresaSisNavigation), new List<string> { nameof(Empresa.RazonSocial) })
+                .AddRelationFilter(nameof(Puesto.FkidNivelNomNavigation), new List<string> { nameof(Nivel1.Clave) })
+                .AddRelationFilter(nameof(Puesto.FkidClasePuestoNomNavigation), new List<string> { nameof(ClasePuesto.Descripcion) });
         }
     }
 
-    public class NomNombramientoAppService : NominaCrudAppService<NomNombramiento, NomNombramientoDto, NomNombramientoResponse>
+    public class NomNombramientoAppService : NominaCrudAppService<Nombramiento, NomNombramientoDto, NomNombramientoResponse>
     {
-        public NomNombramientoAppService(GenericService<NomNombramiento, NomNombramientoDto, NomNombramientoResponse> service)
+        public NomNombramientoAppService(GenericService<Nombramiento, NomNombramientoDto, NomNombramientoResponse> service)
             : base(service, "PkidNombramiento", "Nombramiento", (dto, id) => dto.PkidNombramiento = id)
         {
             service.DisableEmpresaFilter();
         }
     }
 
-    public class NomImporteNivelAppService : NominaCrudAppService<NomImporteNivel, NomImporteNivelDto, NomImporteNivelResponse>
+    public class NomImporteNivelAppService : NominaCrudAppService<ImporteNivel, NomImporteNivelDto, NomImporteNivelResponse>
     {
-        public NomImporteNivelAppService(GenericService<NomImporteNivel, NomImporteNivelDto, NomImporteNivelResponse> service)
+        public NomImporteNivelAppService(GenericService<ImporteNivel, NomImporteNivelDto, NomImporteNivelResponse> service)
             : base(service, "PkidImporteNivel", "Importe por nivel", (dto, id) => dto.PkidImporteNivel = id)
         {
             service.DisableEmpresaFilter();
         }
     }
 
-    public class NomContratoLaboralAppService : NominaCrudAppService<NomContratoLaboral, NomContratoLaboralDto, NomContratoLaboralResponse>
+    public class NomContratoLaboralAppService : NominaCrudAppService<ContratoLaboral, NomContratoLaboralDto, NomContratoLaboralResponse>
     {
-        public NomContratoLaboralAppService(GenericService<NomContratoLaboral, NomContratoLaboralDto, NomContratoLaboralResponse> service)
+        public NomContratoLaboralAppService(GenericService<ContratoLaboral, NomContratoLaboralDto, NomContratoLaboralResponse> service)
             : base(service, "PkidContratoLaboral", "Contrato laboral", (dto, id) => dto.PkidContratoLaboral = id)
         {
             service
                 .DisableEmpresaFilter()
-                .AddInclude(x => x.FkidEmpresaNominaNomNavigation)
+                .AddInclude(x => x.FkidEmpresaSisNavigation)
                 .AddInclude(x => x.FkidPersonaNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation)
                 .AddInclude(x => x.FkidNombramientoNomNavigation)
-                .AddRelationFilter(nameof(NomContratoLaboral.FkidEmpresaNominaNomNavigation), new List<string> { nameof(NomEmpresaNomina.RazonSocial) })
-                .AddRelationFilter(nameof(NomContratoLaboral.FkidPuestoNomNavigation), new List<string> { nameof(NomPuesto.Nombre) })
-                .AddRelationFilter(nameof(NomContratoLaboral.FkidNombramientoNomNavigation), new List<string> { nameof(NomNombramiento.Descripcion) });
+                .AddRelationFilter(nameof(ContratoLaboral.FkidEmpresaSisNavigation), new List<string> { nameof(Empresa.RazonSocial) })
+                .AddRelationFilter(nameof(ContratoLaboral.FkidPuestoNomNavigation), new List<string> { nameof(Puesto.Nombre) })
+                .AddRelationFilter(nameof(ContratoLaboral.FkidNombramientoNomNavigation), new List<string> { nameof(Nombramiento.Descripcion) });
         }
     }
 
@@ -131,9 +131,9 @@ namespace EG.Application.Services.Nomina
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidNivelNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation)
-                .AddRelationFilter(nameof(ConceptoFijo.FkidEmpresaSisNavigation), new List<string> { nameof(NomEmpresaNomina.RazonSocial) })
+                .AddRelationFilter(nameof(ConceptoFijo.FkidEmpresaSisNavigation), new List<string> { nameof(Empresa.RazonSocial) })
                 .AddRelationFilter(nameof(ConceptoFijo.FkidConceptoNomNavigation), new List<string> { nameof(Concepto1.Nombre) })
-                .AddRelationFilter(nameof(ConceptoFijo.FkidPuestoNomNavigation), new List<string> { nameof(NomPuesto.Nombre) });
+                .AddRelationFilter(nameof(ConceptoFijo.FkidPuestoNomNavigation), new List<string> { nameof(Puesto.Nombre) });
         }
     }
 
@@ -158,9 +158,9 @@ namespace EG.Application.Services.Nomina
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidNivelNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation)
-                .AddRelationFilter(nameof(ConceptoProporcional.FkidEmpresaSisNavigation), new List<string> { nameof(NomEmpresaNomina.RazonSocial) })
+                .AddRelationFilter(nameof(ConceptoProporcional.FkidEmpresaSisNavigation), new List<string> { nameof(Empresa.RazonSocial) })
                 .AddRelationFilter(nameof(ConceptoProporcional.FkidConceptoNomNavigation), new List<string> { nameof(Concepto1.Nombre) })
-                .AddRelationFilter(nameof(ConceptoProporcional.FkidPuestoNomNavigation), new List<string> { nameof(NomPuesto.Nombre) });
+                .AddRelationFilter(nameof(ConceptoProporcional.FkidPuestoNomNavigation), new List<string> { nameof(Puesto.Nombre) });
         }
     }
 
@@ -177,9 +177,9 @@ namespace EG.Application.Services.Nomina
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidNivelNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidNivelNomNavigation.FkidUniversoNomNavigation)
                 .AddInclude(x => x.FkidPuestoNomNavigation.FkidClasePuestoNomNavigation)
-                .AddRelationFilter(nameof(ConceptoTabular.FkidEmpresaSisNavigation), new List<string> { nameof(NomEmpresaNomina.RazonSocial) })
+                .AddRelationFilter(nameof(ConceptoTabular.FkidEmpresaSisNavigation), new List<string> { nameof(Empresa.RazonSocial) })
                 .AddRelationFilter(nameof(ConceptoTabular.FkidConceptoNomNavigation), new List<string> { nameof(Concepto1.Nombre) })
-                .AddRelationFilter(nameof(ConceptoTabular.FkidPuestoNomNavigation), new List<string> { nameof(NomPuesto.Nombre) });
+                .AddRelationFilter(nameof(ConceptoTabular.FkidPuestoNomNavigation), new List<string> { nameof(Puesto.Nombre) });
         }
     }
 
@@ -327,9 +327,9 @@ namespace EG.Application.Services.Nomina
         }
     }
 
-    public class NomCatalogoSimpleAppService : NominaCrudAppService<NomCatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse>
+    public class NomCatalogoSimpleAppService : NominaCrudAppService<CatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse>
     {
-        public NomCatalogoSimpleAppService(GenericService<NomCatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> service)
+        public NomCatalogoSimpleAppService(GenericService<CatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> service)
             : base(service, "PkidCatalogoSimple", "Catalogo simple", (dto, id) => dto.PkidCatalogoSimple = id)
         {
             service.DisableEmpresaFilter();

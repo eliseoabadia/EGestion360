@@ -35,6 +35,8 @@ public partial class Anio
 
     public virtual ICollection<Poliza> Polizas { get; set; } = new List<Poliza>();
 
+    public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

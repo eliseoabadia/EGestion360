@@ -30,4 +30,6 @@ public partial class ConceptoFijo
     public DateOnly? FechaIni { get; set; }
 
     public DateOnly? FechaFin { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 }

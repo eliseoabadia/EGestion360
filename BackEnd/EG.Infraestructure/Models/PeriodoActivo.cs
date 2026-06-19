@@ -30,4 +30,6 @@ public partial class PeriodoActivo
     public bool? EstaDevengado { get; set; }
 
     public bool? EstaEjercido { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 }

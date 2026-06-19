@@ -33,6 +33,26 @@ public partial class Empresa
 
     public int? UsuarioModificacion { get; set; }
 
+    public string RegImss { get; set; }
+
+    public string RegInfonavit { get; set; }
+
+    public string CedEmpadronam { get; set; }
+
+    public string NoFonacot { get; set; }
+
+    public string UsAdmin { get; set; }
+
+    public string EmailAdmin { get; set; }
+
+    public int? FkidPeriodoPagoSis { get; set; }
+
+    public decimal? PrimaRiesgoImss { get; set; }
+
+    public bool UsaSueldoTabular { get; set; }
+
+    public int? FkidTipoPagoNom { get; set; }
+
     public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
 
     public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; } = new List<AutorizacionSuficiencium>();
@@ -55,9 +75,23 @@ public partial class Empresa
 
     public virtual ICollection<Clc> Clcs { get; set; } = new List<Clc>();
 
+    public virtual ICollection<ConceptoFijo> ConceptoFijos { get; set; } = new List<ConceptoFijo>();
+
+    public virtual ICollection<ConceptoProporcional> ConceptoProporcionals { get; set; } = new List<ConceptoProporcional>();
+
+    public virtual ICollection<ConceptoTabular> ConceptoTabulars { get; set; } = new List<ConceptoTabular>();
+
+    public virtual ICollection<ConceptoVariable> ConceptoVariables { get; set; } = new List<ConceptoVariable>();
+
     public virtual ICollection<ContratoDetalle> ContratoDetalles { get; set; } = new List<ContratoDetalle>();
 
+    public virtual ICollection<ContratoLaboral> ContratoLaborals { get; set; } = new List<ContratoLaboral>();
+
+    public virtual ICollection<ContratoTercero> ContratoTerceros { get; set; } = new List<ContratoTercero>();
+
     public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+
+    public virtual ICollection<CorridaNomina> CorridaNominas { get; set; } = new List<CorridaNomina>();
 
     public virtual ICollection<CuentaBancarium> CuentaBancaria { get; set; } = new List<CuentaBancarium>();
 
@@ -91,6 +125,16 @@ public partial class Empresa
 
     public virtual ICollection<Paaaspartidum> Paaaspartida { get; set; } = new List<Paaaspartidum>();
 
+    public virtual ICollection<PeriodoActivo> PeriodoActivos { get; set; } = new List<PeriodoActivo>();
+
+    public virtual ICollection<PeriodoNomina> PeriodoNominas { get; set; } = new List<PeriodoNomina>();
+
+    public virtual ICollection<Persona> Personas { get; set; } = new List<Persona>();
+
+    public virtual ICollection<PlazaAutorizadum> PlazaAutorizada { get; set; } = new List<PlazaAutorizadum>();
+
+    public virtual ICollection<Puesto> Puestos { get; set; } = new List<Puesto>();
+
     public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
 
     public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
@@ -109,9 +153,19 @@ public partial class Empresa
 
     public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 
+    public virtual ICollection<SueldoEspecial> SueldoEspecials { get; set; } = new List<SueldoEspecial>();
+
+    public virtual ICollection<SueldoMensual> SueldoMensuals { get; set; } = new List<SueldoMensual>();
+
+    public virtual ICollection<SueldoQuincenal> SueldoQuincenals { get; set; } = new List<SueldoQuincenal>();
+
+    public virtual ICollection<SueldoSemanal> SueldoSemanals { get; set; } = new List<SueldoSemanal>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }
 
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+
+    public virtual ICollection<Vacacion> Vacacions { get; set; } = new List<Vacacion>();
 }

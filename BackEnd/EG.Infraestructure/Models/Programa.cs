@@ -65,6 +65,40 @@ public partial class Programa
 
     public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
 
+    public virtual ActividadInstitucional FkidActividadInstitucionalSisNavigation { get; set; }
+
+    public virtual Anio FkidAnioSisNavigation { get; set; }
+
+    public virtual Eje FkidEjePresNavigation { get; set; }
+
+    public virtual Finalidad FkidFinalidadPresNavigation { get; set; }
+
+    public virtual Fn FkidFnPresNavigation { get; set; }
+
+    public virtual FuenteFinanciamiento FkidFuenteFinanciamientoPresNavigation { get; set; }
+
+    public virtual Gf FkidGfPresNavigation { get; set; }
+
+    public virtual Resultado FkidResultadoPresNavigation { get; set; }
+
+    public virtual Sector FkidSectorPresNavigation { get; set; }
+
+    public virtual Sf FkidSfPresNavigation { get; set; }
+
+    public virtual SubEje FkidSubEjePresNavigation { get; set; }
+
+    public virtual SubSector FkidSubSectorPresNavigation { get; set; }
+
+    public virtual SubSubEje FkidSubSubEjePresNavigation { get; set; }
+
+    public virtual Subresultado FkidSubresultadoPresNavigation { get; set; }
+
+    public virtual TipoRecurso FkidTipoRecursoPresNavigation { get; set; }
+
+    public virtual Ur FkidUrPresNavigation { get; set; }
+
+    public virtual VertienteGasto FkidVertienteGastoPresNavigation { get; set; }
+
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();

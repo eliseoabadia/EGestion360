@@ -265,7 +265,7 @@ LEFT JOIN PRES.TipoMovimiento tm ON det.FKIdTipoMovimiento_PRES = tm.PKIdTipoMov
 WHERE det.Activo = 1;
 GO
 
-CREATE OR ALTER VIEW [PRES].[VW_EgresoDisponible]
+CREATE OR ALTER VIEW [PRES].[Vw_EgresoDisponible]
 AS
 WITH AdecXEgreAut AS (
     SELECT

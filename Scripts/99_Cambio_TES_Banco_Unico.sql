@@ -51,8 +51,8 @@ IF OBJECT_ID(N'[TES].[Vw_CuentaBancaria]', N'V') IS NOT NULL
     DROP VIEW [TES].[Vw_CuentaBancaria];
 GO
 
-IF OBJECT_ID(N'[TES].[VW_Inversiones]', N'V') IS NOT NULL
-    DROP VIEW [TES].[VW_Inversiones];
+IF OBJECT_ID(N'[TES].[Vw_Inversiones]', N'V') IS NOT NULL
+    DROP VIEW [TES].[Vw_Inversiones];
 GO
 
 IF EXISTS (
@@ -149,7 +149,7 @@ LEFT JOIN [TES].[TipoMoneda] tm ON cb.[FKIdTipoMoneda_TES] = tm.[PKIdTipoMoneda]
 WHERE cb.[Activo] = 1;
 GO
 
-CREATE OR ALTER VIEW [TES].[VW_Inversiones]
+CREATE OR ALTER VIEW [TES].[Vw_Inversiones]
 AS
 SELECT
     inv.[PKIdInversion],

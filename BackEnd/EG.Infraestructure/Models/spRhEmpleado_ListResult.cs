@@ -10,10 +10,12 @@ namespace EG.Infraestructure.Models
     {
         public int Id { get; set; }
         public int? EmpresaId { get; set; }
-        [StringLength(100)]
+        [StringLength(255)]
         public string Empresa { get; set; }
         [StringLength(15)]
         public string Empleado { get; set; }
+        [StringLength(3)]
+        public string Iniciales { get; set; }
         [StringLength(50)]
         public string Nombre { get; set; }
         [StringLength(50)]
@@ -77,6 +79,16 @@ namespace EG.Infraestructure.Models
         public string EstadoCivil { get; set; }
         [StringLength(12)]
         public string RegImss { get; set; }
+        [StringLength(16)]
+        public string NoCartilla { get; set; }
+        [StringLength(16)]
+        public string NoLicencia { get; set; }
+        [StringLength(16)]
+        public string NoPasaporte { get; set; }
+        [StringLength(32)]
+        public string NoCredencialElector { get; set; }
+        [StringLength(11)]
+        public string Gafete { get; set; }
         public bool? TienePension { get; set; }
         public int? TotalExpedientes { get; set; }
         public int? TotalIncidencias { get; set; }

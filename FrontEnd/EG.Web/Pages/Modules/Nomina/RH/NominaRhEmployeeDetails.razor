@@ -1,0 +1,159 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+
+<section class="rh-inline-details">
+    <div class="rh-inline-heading">
+        <div>
+            <MudText Typo="Typo.subtitle1"><strong>@Employee.ClaveNombre</strong></MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                @TextOrDash(Employee.Empresa) · @TextOrDash(Employee.Puesto) · @TextOrDash(Employee.TipoContratacion)
+            </MudText>
+        </div>
+        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+            Expediente del empleado
+        </MudChip>
+    </div>
+
+    <MudTabs Elevation="0" Rounded="false" ActivePanelIndex="@activeDetailIndex" ActivePanelIndexChanged="index => activeDetailIndex = index" Class="rh-inline-tabs">
+        <MudTabPanel Text="Contratos" Icon="@Icons.Material.Filled.AssignmentInd" />
+        <MudTabPanel Text="Expedientes" Icon="@Icons.Material.Filled.FolderCopy" />
+        <MudTabPanel Text="Dependientes" Icon="@Icons.Material.Filled.Group" />
+        <MudTabPanel Text="Incidencias" Icon="@Icons.Material.Filled.EventBusy" />
+        <MudTabPanel Text="Pensiones" Icon="@Icons.Material.Filled.AccountBalance" />
+    </MudTabs>
+
+    @switch (activeDetailIndex)
+    {
+        case 0:
+            <NominaRhDetailTable TItem="NominaRhContratoResponse"
+                                 @key="@($"contratos-{Employee.Id}")"
+                                 PersonaId="@Employee.Id" EmpresaId="@Employee.EmpresaId" PersonaNombre="@Employee.ClaveNombre"
+                                 Title="Contratos" AddButtonText="Nuevo contrato" SearchPlaceholder="Buscar contrato, puesto o departamento..."
+                                 DefaultSort="FechaInicio" DialogType="@typeof(NominaRhContratoDialog)"
+                                 IdSelector="item => item.PkidContratoLaboral" NameSelector="item => item.NumeroContrato"
+                                 ExportMapper="MapContratoExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                 OnChanged="OnChanged">
+                <Header>
+                    <MudTh>Contrato</MudTh><MudTh>Puesto</MudTh><MudTh>Contratacion</MudTh><MudTh>Departamento</MudTh>
+                    <MudTh>Inicio</MudTh><MudTh>Fin</MudTh><MudTh>Sueldo</MudTh><MudTh>Vigencia</MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>@item.NumeroContrato</MudTd><MudTd>@TextOrDash(item.PuestoNombre)</MudTd>
+                    <MudTd>@TextOrDash(item.TipoContratacionDescripcion)</MudTd><MudTd>@TextOrDash(item.DepartamentoNombre)</MudTd>
+                    <MudTd>@FormatDate(item.FechaInicio)</MudTd><MudTd>@FormatDate(item.FechaFin)</MudTd>
+                    <MudTd>@FormatMoney(item.SueldoMensual)</MudTd><MudTd>@TextOrDash(item.Vigencia)</MudTd>
+                </Row>
+            </NominaRhDetailTable>
+            break;
+        case 1:
+            <NominaRhDetailTable TItem="NominaRhExpedienteResponse"
+                                 @key="@($"expedientes-{Employee.Id}")"
+                                 PersonaId="@Employee.Id" EmpresaId="@Employee.EmpresaId" PersonaNombre="@Employee.ClaveNombre"
+                                 Title="Expedientes" AddButtonText="Nuevo documento" SearchPlaceholder="Buscar documento, tipo o descripcion..."
+                                 DefaultSort="FechaExpedicion" DialogType="@typeof(NominaRhExpedienteDialog)"
+                                 IdSelector="item => item.PkidExpediente" NameSelector="item => item.NombreDocumento"
+                                 ExportMapper="MapExpedienteExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                 OnChanged="OnChanged">
+                <Header>
+                    <MudTh>Documento</MudTh><MudTh>Tipo</MudTh><MudTh>Descripcion</MudTh><MudTh>Expedicion</MudTh>
+                    <MudTh>Renovacion</MudTh><MudTh>Ruta</MudTh><MudTh>Control</MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>@item.NombreDocumento</MudTd><MudTd>@TextOrDash(item.TipoExpedienteDescripcion)</MudTd>
+                    <MudTd>@TextOrDash(item.Descripcion)</MudTd><MudTd>@FormatDate(item.FechaExpedicion)</MudTd>
+                    <MudTd>@FormatDate(item.FechaRenovacion)</MudTd><MudTd>@TextOrDash(item.Ruta)</MudTd>
+                    <MudTd>@(item.NecesitaRenovacion == true ? "Renovable" : "Permanente")</MudTd>
+                </Row>
+            </NominaRhDetailTable>
+            break;
+        case 2:
+            <NominaRhDetailTable TItem="NominaRhDependienteResponse"
+                                 @key="@($"dependientes-{Employee.Id}")"
+                                 PersonaId="@Employee.Id" EmpresaId="@Employee.EmpresaId" PersonaNombre="@Employee.ClaveNombre"
+                                 Title="Dependientes" AddButtonText="Nuevo dependiente" SearchPlaceholder="Buscar dependiente o parentesco..."
+                                 DefaultSort="Nombre" DialogType="@typeof(NominaRhDependienteDialog)"
+                                 IdSelector="item => item.PkidDependiente" NameSelector="item => item.Nombre"
+                                 ExportMapper="MapDependienteExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                 OnChanged="OnChanged">
+                <Header><MudTh>Nombre</MudTh><MudTh>Parentesco</MudTh><MudTh>Fecha de nacimiento</MudTh><MudTh>Creado</MudTh></Header>
+                <Row Context="item">
+                    <MudTd>@item.Nombre</MudTd><MudTd>@TextOrDash(item.ParentescoDescripcion)</MudTd>
+                    <MudTd>@FormatDate(item.FechaNacimiento)</MudTd><MudTd>@FormatDateTime(item.FechaCreacion)</MudTd>
+                </Row>
+            </NominaRhDetailTable>
+            break;
+        case 3:
+            <NominaRhDetailTable TItem="NominaRhIncidenciaResponse"
+                                 @key="@($"incidencias-{Employee.Id}")"
+                                 PersonaId="@Employee.Id" EmpresaId="@Employee.EmpresaId" PersonaNombre="@Employee.ClaveNombre"
+                                 Title="Incidencias" AddButtonText="Nueva incidencia" SearchPlaceholder="Buscar incidencia, comentario o justificacion..."
+                                 DefaultSort="Fecha" DialogType="@typeof(NominaRhIncidenciaDialog)"
+                                 IdSelector="item => item.PkidIncidencia" NameSelector="item => item.ClaveNombre"
+                                 ExportMapper="MapIncidenciaExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                 OnChanged="OnChanged">
+                <Header>
+                    <MudTh>Fecha</MudTh><MudTh>Tipo</MudTh><MudTh>Comentario</MudTh><MudTh>Justificacion</MudTh>
+                    <MudTh>Comentario de justificacion</MudTh><MudTh>Descuento</MudTh><MudTh>Periodo</MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>@FormatDate(item.Fecha)</MudTd><MudTd>@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
+                    <MudTd>@TextOrDash(item.Comentario)</MudTd><MudTd>@TextOrDash(item.TipoJustificacionDescripcion)</MudTd>
+                    <MudTd>@TextOrDash(item.ComentarioJustificacion)</MudTd><MudTd>@(item.AplicaDescuento == true ? "Si" : "No")</MudTd>
+                    <MudTd>@(item.FkidPeriodoQuincenalSis?.ToString() ?? "-")</MudTd>
+                </Row>
+            </NominaRhDetailTable>
+            break;
+        default:
+            <NominaRhDetailTable TItem="NominaRhPensionResponse"
+                                 @key="@($"pensiones-{Employee.Id}")"
+                                 PersonaId="@Employee.Id" EmpresaId="@Employee.EmpresaId" PersonaNombre="@Employee.ClaveNombre"
+                                 Title="Pensiones" AddButtonText="Nueva pension" SearchPlaceholder="Buscar beneficiario, documento o cuenta..."
+                                 DefaultSort="FechaInicio" DialogType="@typeof(NominaRhPensionDialog)"
+                                 IdSelector="item => item.PkidPension" NameSelector="item => item.NombreBeneficiario"
+                                 ExportMapper="MapPensionExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
+                                 OnChanged="OnChanged">
+                <Header>
+                    <MudTh>Beneficiario</MudTh><MudTh>Tipo</MudTh><MudTh>Porcentaje</MudTh><MudTh>Inicio</MudTh>
+                    <MudTh>Fin</MudTh><MudTh>Documento</MudTh><MudTh>Cuenta contable</MudTh><MudTh>Forma de pago</MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>@item.NombreBeneficiario</MudTd><MudTd>@TextOrDash(item.TipoPensionDescripcion)</MudTd>
+                    <MudTd>@FormatPercent(item.Porcentaje)</MudTd><MudTd>@FormatDateTime(item.FechaInicio)</MudTd>
+                    <MudTd>@FormatDateTime(item.FechaFin)</MudTd><MudTd>@TextOrDash(item.Documento)</MudTd>
+                    <MudTd>@TextOrDash(item.CuentaContableDescripcion)</MudTd><MudTd>@TextOrDash(item.FormaPago)</MudTd>
+                </Row>
+            </NominaRhDetailTable>
+            break;
+    }
+</section>
+
+<style>
+    .rh-inline-details { width: 100%; padding: 12px 14px 16px; background: color-mix(in srgb, var(--eg-primary) 2%, var(--mud-palette-surface)); border-left: 4px solid var(--eg-primary); }
+    .rh-inline-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 4px 8px; }
+    .rh-inline-tabs { border-top: 1px solid var(--mud-palette-lines-default); border-bottom: 1px solid var(--mud-palette-lines-default); margin-bottom: 10px; }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public NominaRhEmpleadoResponse Employee { get; set; } = null!;
+    [Parameter] public bool CanCreate { get; set; }
+    [Parameter] public bool CanUpdate { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool CanExport { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private int activeDetailIndex;
+
+    private static object MapContratoExport(NominaRhContratoResponse item) => new { item.NumeroContrato, item.PuestoNombre, item.TipoContratacionDescripcion, item.DepartamentoNombre, item.FechaInicio, item.FechaFin, item.SueldoMensual, item.Vigencia };
+    private static object MapExpedienteExport(NominaRhExpedienteResponse item) => new { item.NombreDocumento, item.TipoExpedienteDescripcion, item.Descripcion, item.FechaExpedicion, item.NecesitaRenovacion, item.FechaRenovacion, item.Ruta };
+    private static object MapDependienteExport(NominaRhDependienteResponse item) => new { item.Nombre, item.ParentescoDescripcion, item.FechaNacimiento, item.FechaCreacion };
+    private static object MapIncidenciaExport(NominaRhIncidenciaResponse item) => new { item.Fecha, item.TipoIncidenciaDescripcion, item.Comentario, item.TipoJustificacionDescripcion, item.ComentarioJustificacion, item.AplicaDescuento, item.FkidPeriodoQuincenalSis };
+    private static object MapPensionExport(NominaRhPensionResponse item) => new { item.NombreBeneficiario, item.TipoPensionDescripcion, item.Porcentaje, item.FechaInicio, item.FechaFin, item.Documento, item.CuentaContable, item.CuentaContableDescripcion, item.FormaPago };
+
+    private static string FormatDate(DateOnly? value) => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "-";
+    private static string FormatDate(DateOnly value) => value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+    private static string FormatDateTime(DateTime? value) => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "-";
+    private static string FormatMoney(decimal? value) => value?.ToString("N2", CultureInfo.InvariantCulture) ?? "-";
+    private static string FormatMoney(decimal value) => value.ToString("N2", CultureInfo.InvariantCulture);
+    private static string FormatPercent(decimal? value) => value.HasValue ? value.Value.ToString("0.####", CultureInfo.InvariantCulture) + "%" : "-";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

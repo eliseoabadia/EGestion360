@@ -1,13 +1,13 @@
 USE [GestionEmpresarial]
 GO
-/****** Objeto: View [PRES].[VwPrograma] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [PRES].[Vw_Programa] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 
-CREATE  OR ALTER VIEW  [PRES].[VwPrograma]
+CREATE  OR ALTER VIEW  [PRES].[Vw_Programa]
 AS
 SELECT
     p.PKIdPrograma,
@@ -135,17 +135,6 @@ LEFT JOIN PRES.FuenteFinanciamiento ff ON p.FKIdFuenteFinanciamiento_PRES = ff.P
 LEFT JOIN PRES.PP pp ON p.FKIdPP_PRES = pp.PKIdPP AND pp.Activo = 1
 WHERE p.Activo = 1;
 GO
-/****** Objeto: View [PRES].[Vw_Programa] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE  OR ALTER VIEW  [PRES].[Vw_Programa]
-AS
-SELECT *
-FROM [PRES].[VwPrograma];
-GO
 /****** Objeto: View [CONTA].[Vw_Cuentas] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
@@ -178,7 +167,7 @@ CREATE  OR ALTER VIEW  [CONTA].[Vw_MatrizConversionColumnas] AS
 SELECT 
     -- Identificador de la matriz
     mc.PKIdMatrizConversion,
-    -- Año
+    -- Aï¿½o
     a.Clave AS AnioClave,
     -- Programa (clave + descripci?n)
     p.Clave AS ProgramaClave,
@@ -267,13 +256,13 @@ LEFT JOIN CONTA.Vw_Cuentas ctaRec ON mi.Fk_IdCuentaContableRecaudado = ctaRec.Pk
 LEFT JOIN CONTA.Vw_Cuentas ctaDep ON mi.Fk_IdCuentaContableDeposito = ctaDep.PkIdCuenta AND ctaDep.ClaveOrd LIKE '1%' AND ctaDep.NivelCuenta = 7
 WHERE mi.Activo = 1;
 GO
-/****** Objeto: View [ALMA].[vw_Bien] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ALMA].[Vw_Bien] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ALMA].[vw_Bien]
+CREATE  OR ALTER VIEW  [ALMA].[Vw_Bien]
 AS
 SELECT 
     b.PKIdBien,
@@ -378,13 +367,13 @@ LEFT JOIN ALMA.Material mat ON b.FKIdMaterial_ALMA = mat.PKIdMaterial
 LEFT JOIN ALMA.TipoAdquisicion ta ON b.FKIdTipoAdq_ALMA = ta.PKIdTipoAdq
 LEFT JOIN CONTA.Partida part ON b.FKIdPartida_CONTA = part.PKIdPartida
 GO
-/****** Objeto: View [ALMA].[VW_Conteo] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ALMA].[Vw_Conteo] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ALMA].[VW_Conteo]
+CREATE  OR ALTER VIEW  [ALMA].[Vw_Conteo]
 AS
 SELECT
     c.[PKIdConteo],
@@ -530,13 +519,13 @@ GROUP BY
     pum.[Paterno],
     pum.[Materno];
 GO
-/****** Objeto: View [ALMA].[VW_ConteoDetalle] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ALMA].[Vw_ConteoDetalle] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ALMA].[VW_ConteoDetalle]
+CREATE  OR ALTER VIEW  [ALMA].[Vw_ConteoDetalle]
 AS
 SELECT
     -- Campos del encabezado (Conteo)
@@ -577,13 +566,13 @@ LEFT JOIN [ALMA].[TipoBien] TB
 LEFT JOIN [NOM].[Persona] P
     ON CD.[FKIdPersona_NOM] = P.[PKIdPersona];
 GO
-/****** Objeto: View [ALMA].[VW_ConteoDetalleEscaneo] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ALMA].[Vw_ConteoDetalleEscaneo] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ALMA].[VW_ConteoDetalleEscaneo]
+CREATE  OR ALTER VIEW  [ALMA].[Vw_ConteoDetalleEscaneo]
 AS
 SELECT
     cde.[PKIdDetalleEscaneo],
@@ -622,13 +611,13 @@ INNER JOIN [ALMA].[TipoBien] tb ON cde.[FKIdTipoBien_ALMA] = tb.[PKIdTipoBien]
 INNER JOIN [NOM].[Persona] p ON cde.[FKIdPersona_NOM] = p.[PKIdPersona]
 LEFT JOIN [ALMA].[Bien] b ON cde.[FKIdBien_ALMA] = b.[PKIdBien];
 GO
-/****** Objeto: View [ALMA].[VW_Existencias] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ALMA].[Vw_Existencias] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ALMA].[VW_Existencias]
+CREATE  OR ALTER VIEW  [ALMA].[Vw_Existencias]
 AS
 
 WITH Existencias AS
@@ -720,13 +709,13 @@ FROM ALMA.GrupoBien gb
 LEFT JOIN ALMA.Familia f ON gb.FKIdFamilia_ALMA = f.PKIdFamilia AND f.Activo = 1
 WHERE gb.Activo = 1;
 GO
-/****** Objeto: View [ALMA].[VW_PeriodoConteo] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ALMA].[Vw_PeriodoConteo] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ALMA].[VW_PeriodoConteo]
+CREATE  OR ALTER VIEW  [ALMA].[Vw_PeriodoConteo]
 AS
 SELECT
     pc.[PKIdPeriodoConteo],
@@ -1405,13 +1394,13 @@ LEFT JOIN CONTA.Partida part ON pp.FKIdPartida_CONTA = part.PKIdPartida AND part
 LEFT JOIN ORCO.PAAAS paaas ON pp.FKIdPAAAS_ORCO = paaas.PKIdPAAAS AND paaas.Activo = 1
 WHERE pp.Activo = 1;
 GO
-/****** Objeto: View [ORCO].[VW_ReporteBienesProgramaAnual] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [ORCO].[Vw_ReporteBienesProgramaAnual] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [ORCO].[VW_ReporteBienesProgramaAnual] AS
+CREATE  OR ALTER VIEW  [ORCO].[Vw_ReporteBienesProgramaAnual] AS
 WITH 
 -- 1. Resumen de ?reas solicitantes por bien
 AreasPorBien AS (
@@ -2517,13 +2506,13 @@ FROM SIS.Concepto c
 LEFT JOIN SIS.Capitulo cap ON c.FKIdCapitulo_SIS = cap.PKIdCapitulo AND cap.Activo = 1
 WHERE c.Activo = 1;
 GO
-/****** Objeto: View [SIS].[VW_EmpresaDepartamanto] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [SIS].[Vw_EmpresaDepartamanto] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [SIS].[VW_EmpresaDepartamanto]
+CREATE  OR ALTER VIEW  [SIS].[Vw_EmpresaDepartamanto]
 AS
 SELECT E.PKIdEmpresa,
 	   E.Nombre AS EmpresaNombre,
@@ -2537,13 +2526,13 @@ FROM [SIS].[Empresa] E WITH (NOLOCK)
 INNER JOIN [SIS].[Departamento] D WITH (NOLOCK) ON E.PKIdEmpresa = D.FKIdEmpresa_SIS
 WHERE E.Activo = 1 AND D.Activo = 1 ;
 GO
-/****** Objeto: View [SIS].[VW_EstadoEmpresa] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [SIS].[Vw_EstadoEmpresa] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [SIS].[VW_EstadoEmpresa]
+CREATE  OR ALTER VIEW  [SIS].[Vw_EstadoEmpresa]
 AS
 SELECT 
     -- Campos de Empresa
@@ -2579,13 +2568,13 @@ INNER JOIN SIS.Estados E ON EE.FKIdEstado_SIS = E.PKIdEstado
 WHERE EM.Activo = 1
   AND E.Activo = 1
 GO
-/****** Objeto: View [SIS].[vw_Menu] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [SIS].[Vw_Menu] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [SIS].[vw_Menu] AS
+CREATE  OR ALTER VIEW  [SIS].[Vw_Menu] AS
 WITH MenuJerarquico AS (
     SELECT 
         m.PKIdMenu,
@@ -2716,13 +2705,13 @@ LEFT JOIN SIS.Estados e ON prov.FKIdEstado_SIS = e.PKIdEstado AND e.Activo = 1
 LEFT JOIN SIS.Paises pa ON prov.FKIdPais_SIS = pa.PKIdPais AND pa.Activo = 1
 WHERE prov.Activo = 1;
 GO
-/****** Objeto: View [SIS].[VW_SucursalEmpresaEstado] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [SIS].[Vw_SucursalEmpresaEstado] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [SIS].[VW_SucursalEmpresaEstado]
+CREATE  OR ALTER VIEW  [SIS].[Vw_SucursalEmpresaEstado]
 AS
 SELECT 
     s.PKIdSucursal,
@@ -2767,13 +2756,13 @@ INNER JOIN [SIS].Paises p WITH (NOLOCK)
     AND p.Activo = 1
 WHERE s.Activo = 1;
 GO
-/****** Objeto: View [SIS].[VW_UsuarioEmpresa] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [SIS].[Vw_UsuarioEmpresa] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [SIS].[VW_UsuarioEmpresa]
+CREATE  OR ALTER VIEW  [SIS].[Vw_UsuarioEmpresa]
 AS
 WITH SucursalesResumen AS (
     -- Acceso directo por UsuarioSucursal
@@ -2982,13 +2971,13 @@ LEFT JOIN SucursalesConsolidadas sc ON u.PkIdUsuario = sc.IdUsuario
 
 WHERE u.Activo = 1;
 GO
-/****** Objeto: View [SIS].[VW_UsuarioPersonaArea] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [SIS].[Vw_UsuarioPersonaArea] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE  OR ALTER VIEW  [SIS].[VW_UsuarioPersonaArea]
+CREATE  OR ALTER VIEW  [SIS].[Vw_UsuarioPersonaArea]
 AS
 SELECT 
     u.PkIdUsuario,
@@ -3210,16 +3199,16 @@ FROM TES.IntermediarioFinanciero i
 LEFT JOIN SIS.Empresa emp ON i.FKIdEmpresa_SIS = emp.PKIdEmpresa AND emp.Activo = 1
 WHERE i.Activo = 1;
 GO
-/****** Objeto: View [TES].[VW_Inversiones] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
+/****** Objeto: View [TES].[Vw_Inversiones] Fecha de script: 26/05/2026 09:50:48 a. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE  OR ALTER VIEW  [TES].[VW_Inversiones]
+CREATE  OR ALTER VIEW  [TES].[Vw_Inversiones]
 AS
 SELECT
     inv.PKIdInversion,
-    -- Descripción de la cuenta bancaria (similar al campo Descripcion original)
+    -- Descripciï¿½n de la cuenta bancaria (similar al campo Descripcion original)
     CONCAT(cb.NumeroCuenta, ' - ', b.Nombre) AS CuentaBan,
     ins.Nombre AS Instrumento,
     inv.Monto,

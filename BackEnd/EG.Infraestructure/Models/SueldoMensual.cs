@@ -34,4 +34,6 @@ public partial class SueldoMensual
     public DateTime? FechaModificacion { get; set; }
 
     public bool Activo { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 }

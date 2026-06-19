@@ -258,7 +258,7 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
         return await Context.Personas.AsNoTracking().AnyAsync(persona =>
             persona.PkidPersona == personaId &&
             persona.Activo &&
-            (!empresaId.HasValue || empresaId <= 0 || persona.FkidEmpresaNominaNom == empresaId));
+            (!empresaId.HasValue || empresaId <= 0 || persona.FkidEmpresaSis == empresaId));
     }
 
     protected static int? ReadIntFilter(PagedRequest request, string key)
@@ -353,10 +353,10 @@ public sealed class NominaRhExpedienteAppService(
 }
 
 public sealed class NominaRhContratoAppService(
-    GenericService<VwContratoLaboral, NominaRhContratoDto, NominaRhContratoResponse> service,
+    GenericService<VwContratoLaboralDetalle, NominaRhContratoDto, NominaRhContratoResponse> service,
     EGestionContext context)
-    : NominaRhDetailAppService<VwContratoLaboral, NominaRhContratoDto, NominaRhContratoResponse>(
-        service, context, "contrato laboral", nameof(VwContratoLaboral.PkidContratoLaboral), "[NOM].[SP_MantenimientoContratoLaboral]")
+    : NominaRhDetailAppService<VwContratoLaboralDetalle, NominaRhContratoDto, NominaRhContratoResponse>(
+        service, context, "contrato laboral", nameof(VwContratoLaboralDetalle.PkidContratoLaboral), "[NOM].[SP_MantenimientoContratoLaboral]")
 {
     protected override int GetId(NominaRhContratoResponse response) => response.PkidContratoLaboral;
 
@@ -542,7 +542,7 @@ public sealed class NominaRhLookupAppService(EGestionContext context) : INominaR
         return catalogo switch
         {
             "Puesto" => _context.Puestos.AsNoTracking()
-                .Where(item => item.Activo && (!empresaId.HasValue || empresaId <= 0 || item.FkidEmpresaNominaNom == empresaId))
+                .Where(item => item.Activo && (!empresaId.HasValue || empresaId <= 0 || item.FkidEmpresaSis == empresaId))
                 .Select(item => new NominaRhLookupResponse { Id = item.PkidPuesto, Catalogo = catalogo, Clave = item.PkidPuesto.ToString(), Descripcion = item.Nombre, Activo = item.Activo }),
             "Nombramiento" => _context.Nombramientos.AsNoTracking()
                 .Where(item => item.Activo)

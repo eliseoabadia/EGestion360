@@ -1634,7 +1634,7 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<SP_MantenimientoContratoLaboralResult>> SP_MantenimientoContratoLaboralAsync(int? action, int? pKIdContratoLaboral, int? fKIdEmpresaNomina_NOM, int? fKIdPersona_NOM, DateOnly? fechaInicio, DateOnly? fechaFin, int? fKIdPuesto_NOM, string numeroContrato, string vigencia, decimal? sueldoMensual, int? fKIdNombramiento_NOM, int? fKIdDepartamento_SIS, int? fKIdTipoContratacion_SIS, string departamento, string tipoContratacion, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<SP_MantenimientoContratoLaboralResult>> SP_MantenimientoContratoLaboralAsync(int? action, int? pKIdContratoLaboral, int? fKIdEmpresa_SIS, int? fKIdPersona_NOM, DateOnly? fechaInicio, DateOnly? fechaFin, int? fKIdPuesto_NOM, string numeroContrato, string vigencia, decimal? sueldoMensual, int? fKIdNombramiento_NOM, int? fKIdDepartamento_SIS, int? fKIdTipoContratacion_SIS, string departamento, string tipoContratacion, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterId = new SqlParameter
             {
@@ -1666,8 +1666,8 @@ namespace EG.Infraestructure.Models
                 },
                 new SqlParameter
                 {
-                    ParameterName = "FKIdEmpresaNomina_NOM",
-                    Value = fKIdEmpresaNomina_NOM ?? Convert.DBNull,
+                    ParameterName = "FKIdEmpresa_SIS",
+                    Value = fKIdEmpresa_SIS ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
                 },
                 new SqlParameter
@@ -1763,7 +1763,7 @@ namespace EG.Infraestructure.Models
                 parameterId,
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_MantenimientoContratoLaboralResult>("EXEC @returnValue = [NOM].[SP_MantenimientoContratoLaboral] @Action = @Action, @PKIdContratoLaboral = @PKIdContratoLaboral, @FKIdEmpresaNomina_NOM = @FKIdEmpresaNomina_NOM, @FKIdPersona_NOM = @FKIdPersona_NOM, @FechaInicio = @FechaInicio, @FechaFin = @FechaFin, @FKIdPuesto_NOM = @FKIdPuesto_NOM, @NumeroContrato = @NumeroContrato, @Vigencia = @Vigencia, @SueldoMensual = @SueldoMensual, @FKIdNombramiento_NOM = @FKIdNombramiento_NOM, @FKIdDepartamento_SIS = @FKIdDepartamento_SIS, @FKIdTipoContratacion_SIS = @FKIdTipoContratacion_SIS, @Departamento = @Departamento, @TipoContratacion = @TipoContratacion, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoContratoLaboralResult>("EXEC @returnValue = [NOM].[SP_MantenimientoContratoLaboral] @Action = @Action, @PKIdContratoLaboral = @PKIdContratoLaboral, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @FKIdPersona_NOM = @FKIdPersona_NOM, @FechaInicio = @FechaInicio, @FechaFin = @FechaFin, @FKIdPuesto_NOM = @FKIdPuesto_NOM, @NumeroContrato = @NumeroContrato, @Vigencia = @Vigencia, @SueldoMensual = @SueldoMensual, @FKIdNombramiento_NOM = @FKIdNombramiento_NOM, @FKIdDepartamento_SIS = @FKIdDepartamento_SIS, @FKIdTipoContratacion_SIS = @FKIdTipoContratacion_SIS, @Departamento = @Departamento, @TipoContratacion = @TipoContratacion, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
@@ -2022,6 +2022,110 @@ namespace EG.Infraestructure.Models
                 parameterreturnValue,
             };
             var _ = await _context.SqlQueryAsync<sp_MantenimientoEgresoAdecuacionResult>("EXEC @returnValue = [PRES].[sp_MantenimientoEgresoAdecuacion] @Action = @Action, @PKIdEgreAdecuacion = @PKIdEgreAdecuacion, @Autorizado = @Autorizado, @IdUser = @IdUser, @idMenu = @idMenu, @AlertMessage = @AlertMessage, @Id = @Id OUTPUT, @FkIdPolizaConta = @FkIdPolizaConta, @FkIdAnioSis = @FkIdAnioSis, @FkIdTipoAdecuacionPres = @FkIdTipoAdecuacionPres, @FkIdEstatusAdecuacionPres = @FkIdEstatusAdecuacionPres, @Justificacion = @Justificacion, @Fecha = @Fecha, @FkIdAccionAdecuacionMasterPres = @FkIdAccionAdecuacionMasterPres, @FechaSolicitud = @FechaSolicitud, @FechaAutorizacion = @FechaAutorizacion", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoEmpleadoExpedienteResult>> SP_MantenimientoEmpleadoExpedienteAsync(int? action, int? pKIdExpediente, int? fKIdPersona_NOM, string nombreDocumento, string ruta, string descripcion, DateOnly? fechaExpedicion, bool? necesitaRenovacion, DateOnly? fechaRenovacion, int? fKIdTipoExpediente_NOM, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdExpediente",
+                    Value = pKIdExpediente ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdPersona_NOM",
+                    Value = fKIdPersona_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NombreDocumento",
+                    Size = 510,
+                    Value = nombreDocumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Ruta",
+                    Size = 2000,
+                    Value = ruta ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = 2000,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaExpedicion",
+                    Value = fechaExpedicion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NecesitaRenovacion",
+                    Value = necesitaRenovacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaRenovacion",
+                    Value = fechaRenovacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoExpediente_NOM",
+                    Value = fKIdTipoExpediente_NOM ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoEmpleadoExpedienteResult>("EXEC @returnValue = [NOM].[SP_MantenimientoEmpleadoExpediente] @Action = @Action, @PKIdExpediente = @PKIdExpediente, @FKIdPersona_NOM = @FKIdPersona_NOM, @NombreDocumento = @NombreDocumento, @Ruta = @Ruta, @Descripcion = @Descripcion, @FechaExpedicion = @FechaExpedicion, @NecesitaRenovacion = @NecesitaRenovacion, @FechaRenovacion = @FechaRenovacion, @FKIdTipoExpediente_NOM = @FKIdTipoExpediente_NOM, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
@@ -2789,7 +2893,7 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<SP_MantenimientoPersonaResult>> SP_MantenimientoPersonaAsync(int? action, int? pKIdPersona, string clave, string iniciales, string nombre, string paterno, string materno, string sexo, DateTime? fechaNacimiento, string eSTADO_CIVIL, string rFC, string curp, string rEG_IMSS, string noCartilla, string noLicencia, string noPasaporte, string noCredencialElector, string gafete, string cORREO_ELECTRONICO, string telefono_particular, string telefono_movil, string calle, string num_exterior, string num_interior, string colonia, string cP, string municipio, string estado, DateTime? fecha_de_Inicio, DateTime? fecha_Fin, string tIPO_CONTRATACION, string pUESTO, double? sUELDO_BASE, double? cOMPENSACION_GARANTIZADA, string bANCO, string nUMERO_CUENTA, string cLABE, bool? activo, int? fKIdEmpresaNomina_NOM, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<SP_MantenimientoPersonaResult>> SP_MantenimientoPersonaAsync(int? action, int? pKIdPersona, string clave, string iniciales, string nombre, string paterno, string materno, string sexo, DateTime? fechaNacimiento, string eSTADO_CIVIL, string rFC, string curp, string rEG_IMSS, string noCartilla, string noLicencia, string noPasaporte, string noCredencialElector, string gafete, string cORREO_ELECTRONICO, string telefono_particular, string telefono_movil, string calle, string num_exterior, string num_interior, string colonia, string cP, string municipio, string estado, DateTime? fecha_de_Inicio, DateTime? fecha_Fin, string tIPO_CONTRATACION, string pUESTO, double? sUELDO_BASE, double? cOMPENSACION_GARANTIZADA, string bANCO, string nUMERO_CUENTA, string cLABE, bool? activo, int? fKIdEmpresa_SIS, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterId = new SqlParameter
             {
@@ -3067,8 +3171,8 @@ namespace EG.Infraestructure.Models
                 },
                 new SqlParameter
                 {
-                    ParameterName = "FKIdEmpresaNomina_NOM",
-                    Value = fKIdEmpresaNomina_NOM ?? Convert.DBNull,
+                    ParameterName = "FKIdEmpresa_SIS",
+                    Value = fKIdEmpresa_SIS ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
                 },
                 new SqlParameter
@@ -3080,7 +3184,7 @@ namespace EG.Infraestructure.Models
                 parameterId,
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_MantenimientoPersonaResult>("EXEC @returnValue = [NOM].[SP_MantenimientoPersona] @Action = @Action, @PKIdPersona = @PKIdPersona, @Clave = @Clave, @Iniciales = @Iniciales, @Nombre = @Nombre, @Paterno = @Paterno, @Materno = @Materno, @Sexo = @Sexo, @FechaNacimiento = @FechaNacimiento, @ESTADO_CIVIL = @ESTADO_CIVIL, @RFC = @RFC, @Curp = @Curp, @REG_IMSS = @REG_IMSS, @NoCartilla = @NoCartilla, @NoLicencia = @NoLicencia, @NoPasaporte = @NoPasaporte, @NoCredencialElector = @NoCredencialElector, @Gafete = @Gafete, @CORREO_ELECTRONICO = @CORREO_ELECTRONICO, @Telefono_particular = @Telefono_particular, @Telefono_movil = @Telefono_movil, @Calle = @Calle, @Num_exterior = @Num_exterior, @Num_interior = @Num_interior, @Colonia = @Colonia, @CP = @CP, @Municipio = @Municipio, @Estado = @Estado, @Fecha_de_Inicio = @Fecha_de_Inicio, @Fecha_Fin = @Fecha_Fin, @TIPO_CONTRATACION = @TIPO_CONTRATACION, @PUESTO = @PUESTO, @SUELDO_BASE = @SUELDO_BASE, @COMPENSACION_GARANTIZADA = @COMPENSACION_GARANTIZADA, @BANCO = @BANCO, @NUMERO_CUENTA = @NUMERO_CUENTA, @CLABE = @CLABE, @Activo = @Activo, @FKIdEmpresaNomina_NOM = @FKIdEmpresaNomina_NOM, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoPersonaResult>("EXEC @returnValue = [NOM].[SP_MantenimientoPersona] @Action = @Action, @PKIdPersona = @PKIdPersona, @Clave = @Clave, @Iniciales = @Iniciales, @Nombre = @Nombre, @Paterno = @Paterno, @Materno = @Materno, @Sexo = @Sexo, @FechaNacimiento = @FechaNacimiento, @ESTADO_CIVIL = @ESTADO_CIVIL, @RFC = @RFC, @Curp = @Curp, @REG_IMSS = @REG_IMSS, @NoCartilla = @NoCartilla, @NoLicencia = @NoLicencia, @NoPasaporte = @NoPasaporte, @NoCredencialElector = @NoCredencialElector, @Gafete = @Gafete, @CORREO_ELECTRONICO = @CORREO_ELECTRONICO, @Telefono_particular = @Telefono_particular, @Telefono_movil = @Telefono_movil, @Calle = @Calle, @Num_exterior = @Num_exterior, @Num_interior = @Num_interior, @Colonia = @Colonia, @CP = @CP, @Municipio = @Municipio, @Estado = @Estado, @Fecha_de_Inicio = @Fecha_de_Inicio, @Fecha_Fin = @Fecha_Fin, @TIPO_CONTRATACION = @TIPO_CONTRATACION, @PUESTO = @PUESTO, @SUELDO_BASE = @SUELDO_BASE, @COMPENSACION_GARANTIZADA = @COMPENSACION_GARANTIZADA, @BANCO = @BANCO, @NUMERO_CUENTA = @NUMERO_CUENTA, @CLABE = @CLABE, @Activo = @Activo, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
@@ -6402,7 +6506,7 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<spRhEmpleado_SaveResult>> spRhEmpleado_SaveAsync(int? empresaId, string empleado, string nombre, string paterno, string materno, string rfc, string curp, string sexo, DateTime? fechaNacimiento, DateTime? fechaIngreso, DateTime? fechaFin, string tipoContratacion, string puesto, decimal? sueldoBase, decimal? compensacionGarantizada, string banco, string numeroCuenta, string clabe, string email, string telefono, string celular, string calle, string numExterior, string numInterior, string colonia, string cP, string municipio, string estado, string estadoCivil, string regImss, bool? activo, int? usuarioActual, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<spRhEmpleado_SaveResult>> spRhEmpleado_SaveAsync(int? empresaId, string empleado, string iniciales, string nombre, string paterno, string materno, string rfc, string curp, string sexo, DateTime? fechaNacimiento, DateTime? fechaIngreso, DateTime? fechaFin, string tipoContratacion, string puesto, decimal? sueldoBase, decimal? compensacionGarantizada, string banco, string numeroCuenta, string clabe, string email, string telefono, string celular, string calle, string numExterior, string numInterior, string colonia, string cP, string municipio, string estado, string estadoCivil, string regImss, string noCartilla, string noLicencia, string noPasaporte, string noCredencialElector, string gafete, bool? activo, int? usuarioActual, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterId = new SqlParameter
             {
@@ -6432,6 +6536,13 @@ namespace EG.Infraestructure.Models
                     ParameterName = "Empleado",
                     Size = 60,
                     Value = empleado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Iniciales",
+                    Size = 12,
+                    Value = iniciales ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.NVarChar,
                 },
                 new SqlParameter
@@ -6631,6 +6742,41 @@ namespace EG.Infraestructure.Models
                 },
                 new SqlParameter
                 {
+                    ParameterName = "NoCartilla",
+                    Size = 64,
+                    Value = noCartilla ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoLicencia",
+                    Size = 64,
+                    Value = noLicencia ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoPasaporte",
+                    Size = 64,
+                    Value = noPasaporte ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "NoCredencialElector",
+                    Size = 128,
+                    Value = noCredencialElector ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Gafete",
+                    Size = 44,
+                    Value = gafete ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
                     ParameterName = "Activo",
                     Value = activo ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Bit,
@@ -6643,7 +6789,7 @@ namespace EG.Infraestructure.Models
                 },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<spRhEmpleado_SaveResult>("EXEC @returnValue = [NOM].[spRhEmpleado_Save] @Id = @Id OUTPUT, @EmpresaId = @EmpresaId, @Empleado = @Empleado, @Nombre = @Nombre, @Paterno = @Paterno, @Materno = @Materno, @Rfc = @Rfc, @Curp = @Curp, @Sexo = @Sexo, @FechaNacimiento = @FechaNacimiento, @FechaIngreso = @FechaIngreso, @FechaFin = @FechaFin, @TipoContratacion = @TipoContratacion, @Puesto = @Puesto, @SueldoBase = @SueldoBase, @CompensacionGarantizada = @CompensacionGarantizada, @Banco = @Banco, @NumeroCuenta = @NumeroCuenta, @Clabe = @Clabe, @Email = @Email, @Telefono = @Telefono, @Celular = @Celular, @Calle = @Calle, @NumExterior = @NumExterior, @NumInterior = @NumInterior, @Colonia = @Colonia, @CP = @CP, @Municipio = @Municipio, @Estado = @Estado, @EstadoCivil = @EstadoCivil, @RegImss = @RegImss, @Activo = @Activo, @UsuarioActual = @UsuarioActual", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<spRhEmpleado_SaveResult>("EXEC @returnValue = [NOM].[spRhEmpleado_Save] @Id = @Id OUTPUT, @EmpresaId = @EmpresaId, @Empleado = @Empleado, @Iniciales = @Iniciales, @Nombre = @Nombre, @Paterno = @Paterno, @Materno = @Materno, @Rfc = @Rfc, @Curp = @Curp, @Sexo = @Sexo, @FechaNacimiento = @FechaNacimiento, @FechaIngreso = @FechaIngreso, @FechaFin = @FechaFin, @TipoContratacion = @TipoContratacion, @Puesto = @Puesto, @SueldoBase = @SueldoBase, @CompensacionGarantizada = @CompensacionGarantizada, @Banco = @Banco, @NumeroCuenta = @NumeroCuenta, @Clabe = @Clabe, @Email = @Email, @Telefono = @Telefono, @Celular = @Celular, @Calle = @Calle, @NumExterior = @NumExterior, @NumInterior = @NumInterior, @Colonia = @Colonia, @CP = @CP, @Municipio = @Municipio, @Estado = @Estado, @EstadoCivil = @EstadoCivil, @RegImss = @RegImss, @NoCartilla = @NoCartilla, @NoLicencia = @NoLicencia, @NoPasaporte = @NoPasaporte, @NoCredencialElector = @NoCredencialElector, @Gafete = @Gafete, @Activo = @Activo, @UsuarioActual = @UsuarioActual", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);

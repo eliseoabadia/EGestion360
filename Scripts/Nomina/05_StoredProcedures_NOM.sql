@@ -23,7 +23,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwConcepto] v
+        FROM [NOM].[Vw_NOM_Concepto] v
         WHERE (@Activo IS NULL OR v.[Activo] = @Activo)
           AND (
                 @Filtro IS NULL
@@ -61,7 +61,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwPeriodoActivoResumen] v
+        FROM [NOM].[Vw_PeriodoActivoResumen] v
         WHERE (@EmpresaId IS NULL OR v.[EmpresaId] = @EmpresaId)
           AND (@PeriodoId IS NULL OR v.[PeriodoId] = @PeriodoId)
           AND (@Activo IS NULL OR v.[Activo] = @Activo)
@@ -103,7 +103,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwMovimientosNomina] v
+        FROM [NOM].[Vw_MovimientosNomina] v
         WHERE (@EmpresaId IS NULL OR v.[EmpresaId] = @EmpresaId)
           AND (@PeriodoId IS NULL OR v.[PeriodoId] = @PeriodoId)
           AND (@PersonaId IS NULL OR v.[PersonaId] = @PersonaId)
@@ -144,7 +144,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwResumenPeriodo] v
+        FROM [NOM].[Vw_ResumenPeriodo] v
         WHERE (@EmpresaId IS NULL OR v.[EmpresaId] = @EmpresaId)
           AND (@PeriodoId IS NULL OR v.[PeriodoId] = @PeriodoId)
           AND (
@@ -181,7 +181,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwCredito] v
+        FROM [NOM].[Vw_Credito] v
         WHERE (@PersonaId IS NULL OR v.[PersonaId] = @PersonaId)
           AND (@ContratoTerceroId IS NULL OR v.[ContratoTerceroId] = @ContratoTerceroId)
           AND (@Activo IS NULL OR v.[Activo] = @Activo)
@@ -219,7 +219,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwInfonavit] v
+        FROM [NOM].[Vw_Infonavit] v
         WHERE (@PersonaId IS NULL OR v.[PersonaId] = @PersonaId)
           AND (@Activo IS NULL OR v.[Activo] = @Activo)
           AND (
@@ -260,7 +260,7 @@ BEGIN
         SELECT
             v.*,
             COUNT(1) OVER() AS [TotalCount]
-        FROM [NOM].[VwConceptoConfiguracion] v
+        FROM [NOM].[Vw_ConceptoConfiguracion] v
         WHERE (@EmpresaId IS NULL OR v.[EmpresaId] = @EmpresaId)
           AND (@PersonaId IS NULL OR v.[PersonaId] = @PersonaId)
           AND (@PuestoId IS NULL OR v.[PuestoId] = @PuestoId)

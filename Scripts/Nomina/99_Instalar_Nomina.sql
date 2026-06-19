@@ -9,8 +9,11 @@
 :r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\07_Demo_Corrida_NOM.sql"
 :r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\10_Operaciones_RH_NOM.sql"
 :r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\11_RH_Empleados_NOM.sql"
+:r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\12_RH_FKs_Vistas_SPs_NOM.sql"
+:r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\13_RH_CRUD_Empleados_NOM.sql"
 :r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\04_Vistas_NOM.sql"
 :r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\05_StoredProcedures_NOM.sql"
+:r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\14_Consolidar_Empresa_SIS_NOM.sql"
 -- El menu NOM se aplica manualmente con el MERGE vigente.
 -- Este script solo alinea permisos y MenuRole sin reescribir SIS.Menu.
 :r "C:\Desarrollo\Desarrollo\FullStack\EGestion360\Scripts\Nomina\08_Alineacion_Menu_Claims_NOM.sql"

@@ -25,7 +25,7 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.RH
         {
             try
             {
-                return Ok(await _appService.GetAllAsync(_userContext.TryGetCurrentEmpresaId()));
+                return Ok(await _appService.GetAllAsync(null));
             }
             catch (Exception ex)
             {
@@ -54,7 +54,7 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.RH
                 var result = await _appService.CreateAsync(
                     response,
                     _userContext.GetCurrentUserId(),
-                    _userContext.TryGetCurrentEmpresaId());
+                    null);
 
                 return result.Success ? Ok(result) : BadRequest(result);
             }
@@ -74,7 +74,7 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.RH
                     id,
                     response,
                     _userContext.GetCurrentUserId(),
-                    _userContext.TryGetCurrentEmpresaId());
+                    null);
 
                 if (!result.Success && result.Code == "NOT_FOUND")
                 {
@@ -121,7 +121,7 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.RH
         {
             try
             {
-                return Ok(await _appService.GetAllPaginadoAsync(request, _userContext.TryGetCurrentEmpresaId()));
+                return Ok(await _appService.GetAllPaginadoAsync(request, null));
             }
             catch (Exception ex)
             {
@@ -166,7 +166,7 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.RH
         {
             try
             {
-                return Ok(await _appService.GetAllPaginadoAsync(request, _userContext.TryGetCurrentEmpresaId()));
+                return Ok(await _appService.GetAllPaginadoAsync(request, null));
             }
             catch (Exception ex)
             {

@@ -41,6 +41,8 @@ public partial class FuenteFinanciamiento
 
     public virtual ICollection<Paaa> Paaas { get; set; } = new List<Paaa>();
 
+    public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

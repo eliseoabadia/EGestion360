@@ -521,7 +521,7 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwOperacionNomina]
+CREATE OR ALTER VIEW [NOM].[Vw_OperacionNomina]
 AS
     SELECT
         N'empleados' AS Operacion,
@@ -709,7 +709,7 @@ BEGIN
             Fecha, FechaInicio, FechaFin, Importe, Percepcion, Deduccion, Neto,
             Documento, Descripcion, Comentario, Observaciones, Activo,
             COUNT(1) OVER() AS TotalCount
-        FROM [NOM].[VwOperacionNomina]
+        FROM [NOM].[Vw_OperacionNomina]
         WHERE (@Operacion = N'''' OR Operacion = @Operacion)
           AND (
                 @Filtro = N''''
@@ -739,7 +739,7 @@ END;
 GO
 
 SELECT Operacion, COUNT(1) AS Registros
-FROM [NOM].[VwOperacionNomina]
+FROM [NOM].[Vw_OperacionNomina]
 GROUP BY Operacion
 ORDER BY Operacion;
 GO

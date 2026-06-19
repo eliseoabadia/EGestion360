@@ -17,7 +17,7 @@ namespace EG.Infraestructure.Models
         public string Persona { get; set; }
         [StringLength(50)]
         public string Empleado { get; set; }
-        [StringLength(200)]
+        [StringLength(255)]
         public string Empresa { get; set; }
         [StringLength(250)]
         public string Periodo { get; set; }

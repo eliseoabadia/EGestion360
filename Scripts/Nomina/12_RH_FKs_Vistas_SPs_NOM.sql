@@ -239,7 +239,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_NOM_PersonaDependient
     CREATE INDEX [IX_NOM_PersonaDependiente_PersonaActivo] ON [NOM].[PersonaDependiente] ([FKIdPersona_NOM], [Activo]);
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwRhEntidadNomina]
+CREATE OR ALTER VIEW [NOM].[Vw_RhEntidadNomina]
 AS
 SELECT
     N'Persona' AS Entidad,
@@ -432,17 +432,17 @@ LEFT JOIN [NOM].[EmpresaNomina] empresa ON empresa.[PKIdEmpresaNomina] = persona
 LEFT JOIN [NOM].[TipoPension] tp ON tp.[PKIdTipoPension] = pe.[FKIdTipoPension_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwRhPersona] AS SELECT * FROM [NOM].[VwRhEntidadNomina] WHERE [Entidad] = N'Persona';
+CREATE OR ALTER VIEW [NOM].[Vw_RhPersona] AS SELECT * FROM [NOM].[Vw_RhEntidadNomina] WHERE [Entidad] = N'Persona';
 GO
-CREATE OR ALTER VIEW [NOM].[VwRhExpediente] AS SELECT * FROM [NOM].[VwRhEntidadNomina] WHERE [Entidad] = N'Expediente';
+CREATE OR ALTER VIEW [NOM].[Vw_RhExpediente] AS SELECT * FROM [NOM].[Vw_RhEntidadNomina] WHERE [Entidad] = N'Expediente';
 GO
-CREATE OR ALTER VIEW [NOM].[VwRhContrato] AS SELECT * FROM [NOM].[VwRhEntidadNomina] WHERE [Entidad] = N'Contrato';
+CREATE OR ALTER VIEW [NOM].[Vw_RhContrato] AS SELECT * FROM [NOM].[Vw_RhEntidadNomina] WHERE [Entidad] = N'Contrato';
 GO
-CREATE OR ALTER VIEW [NOM].[VwRhDependiente] AS SELECT * FROM [NOM].[VwRhEntidadNomina] WHERE [Entidad] = N'Dependiente';
+CREATE OR ALTER VIEW [NOM].[Vw_RhDependiente] AS SELECT * FROM [NOM].[Vw_RhEntidadNomina] WHERE [Entidad] = N'Dependiente';
 GO
-CREATE OR ALTER VIEW [NOM].[VwRhIncidencia] AS SELECT * FROM [NOM].[VwRhEntidadNomina] WHERE [Entidad] = N'Incidencia';
+CREATE OR ALTER VIEW [NOM].[Vw_RhIncidencia] AS SELECT * FROM [NOM].[Vw_RhEntidadNomina] WHERE [Entidad] = N'Incidencia';
 GO
-CREATE OR ALTER VIEW [NOM].[VwRhPension] AS SELECT * FROM [NOM].[VwRhEntidadNomina] WHERE [Entidad] = N'Pension';
+CREATE OR ALTER VIEW [NOM].[Vw_RhPension] AS SELECT * FROM [NOM].[Vw_RhEntidadNomina] WHERE [Entidad] = N'Pension';
 GO
 
 CREATE OR ALTER PROCEDURE [NOM].[spRhEntidadNomina_List]
@@ -479,7 +479,7 @@ BEGIN
             Descripcion, Tipo, Estatus, Fecha, FechaInicio, FechaFin, Importe, Porcentaje,
             Documento, Referencia, Observaciones, Activo, UsuarioCreacion, FechaCreacion,
             UsuarioModificacion, FechaModificacion, COUNT(1) OVER() AS TotalCount
-        FROM [NOM].[VwRhEntidadNomina]
+        FROM [NOM].[Vw_RhEntidadNomina]
         WHERE (@Entidad = N'''' OR Entidad = @Entidad)
           AND (@PersonaId IS NULL OR PersonaId = @PersonaId)
           AND (@EmpresaId IS NULL OR EmpresaId = @EmpresaId)
@@ -561,7 +561,7 @@ END;
 GO
 
 SELECT [Entidad], COUNT(1) AS [Registros]
-FROM [NOM].[VwRhEntidadNomina]
+FROM [NOM].[Vw_RhEntidadNomina]
 GROUP BY [Entidad]
 ORDER BY [Entidad];
 GO

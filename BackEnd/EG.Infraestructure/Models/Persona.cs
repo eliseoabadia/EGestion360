@@ -89,7 +89,7 @@ public partial class Persona
 
     public int? UsuarioModificacion { get; set; }
 
-    public int? FkidEmpresaNominaNom { get; set; }
+    public int? FkidEmpresaSis { get; set; }
 
     public virtual ICollection<AutorizacionSuficiencium> AutorizacionSuficiencia { get; set; } = new List<AutorizacionSuficiencium>();
 
@@ -103,7 +103,7 @@ public partial class Persona
 
     public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
 
-    public virtual EmpresaNomina FkidEmpresaNominaNomNavigation { get; set; }
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual ICollection<Incidencium> Incidencia { get; set; } = new List<Incidencium>();
 

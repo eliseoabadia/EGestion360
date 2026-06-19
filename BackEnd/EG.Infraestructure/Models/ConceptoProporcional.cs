@@ -24,4 +24,6 @@ public partial class ConceptoProporcional
     public DateTime? FechaModificacion { get; set; }
 
     public bool Activo { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 }

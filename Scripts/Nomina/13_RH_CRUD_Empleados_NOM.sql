@@ -27,7 +27,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER VIEW [NOM].[VW_EmpleadoExpediente]
+CREATE OR ALTER VIEW [NOM].[Vw_EmpleadoExpediente]
 AS
 SELECT
     e.[PKIdExpediente],
@@ -58,7 +58,7 @@ LEFT JOIN [NOM].[CatalogoSimple] tipo
 WHERE e.[Activo] = 1;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VW_PersonaDependiente]
+CREATE OR ALTER VIEW [NOM].[Vw_PersonaDependiente]
 AS
 SELECT
     d.[PKIdDependiente],
@@ -86,7 +86,7 @@ LEFT JOIN [NOM].[CatalogoSimple] parentesco
 WHERE d.[Activo] = 1;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VW_Incidencia]
+CREATE OR ALTER VIEW [NOM].[Vw_Incidencia]
 AS
 SELECT
     i.[PKIdIncidencia],

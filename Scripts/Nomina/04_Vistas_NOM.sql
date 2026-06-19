@@ -5,7 +5,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'NOM')
     EXEC(N'CREATE SCHEMA [NOM]');
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConcepto]
+CREATE OR ALTER VIEW [NOM].[Vw_NOM_Concepto]
 AS
 SELECT
     c.[PKIdConcepto],
@@ -31,7 +31,7 @@ SELECT
 FROM [NOM].[Concepto] c;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwPersona]
+CREATE OR ALTER VIEW [NOM].[Vw_Persona]
 AS
 SELECT
     p.[PKIdPersona],
@@ -56,7 +56,7 @@ SELECT
 FROM [NOM].[Persona] p;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwPersonaArea]
+CREATE OR ALTER VIEW [NOM].[Vw_PersonaArea]
 AS
 SELECT
     pa.[PKIdPersonaArea],
@@ -77,11 +77,11 @@ SELECT
     pa.[FechaModificacion],
     pa.[UsuarioModificacion]
 FROM [NOM].[PersonaArea] pa
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = pa.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = pa.[FKIdPersona_NOM]
 LEFT JOIN [SIS].[Area] a ON a.[PKIdArea] = pa.[FKIdArea_SIS];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoFactor]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoFactor]
 AS
 SELECT
     cf.[PKIdConceptoFactor],
@@ -101,10 +101,10 @@ SELECT
     cf.[UsuarioModificacion],
     cf.[FechaModificacion]
 FROM [NOM].[ConceptoFactor] cf
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cf.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cf.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoFijo]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoFijo]
 AS
 SELECT
     cf.[PKIdConceptoFijo],
@@ -133,10 +133,10 @@ SELECT
     cf.[FechaModificacion]
 FROM [NOM].[ConceptoFijo] cf
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = cf.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cf.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cf.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoProporcional]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoProporcional]
 AS
 SELECT
     cp.[PKIdConceptoProporcional],
@@ -154,10 +154,10 @@ SELECT
     cp.[FechaModificacion]
 FROM [NOM].[ConceptoProporcional] cp
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = cp.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cp.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cp.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoPorcentaje]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoPorcentaje]
 AS
 SELECT
     cpo.[PKIdConceptoPorcentaje],
@@ -177,11 +177,11 @@ SELECT
     cpo.[UsuarioModificacion],
     cpo.[FechaModificacion]
 FROM [NOM].[ConceptoPorcentaje] cpo
-LEFT JOIN [NOM].[VwConceptoProporcional] vcp ON vcp.[PKIdConceptoProporcional] = cpo.[FKIdConceptoProporcional_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cpo.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_ConceptoProporcional] vcp ON vcp.[PKIdConceptoProporcional] = cpo.[FKIdConceptoProporcional_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cpo.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoTabular]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoTabular]
 AS
 SELECT
     ct.[PKIdConceptoTabulador],
@@ -210,10 +210,10 @@ SELECT
     ct.[FechaModificacion]
 FROM [NOM].[ConceptoTabular] ct
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = ct.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = ct.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = ct.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoVariable]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoVariable]
 AS
 SELECT
     cv.[PKIdConceptoVariable],
@@ -235,11 +235,11 @@ SELECT
     cv.[FechaModificacion]
 FROM [NOM].[ConceptoVariable] cv
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = cv.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = cv.[FKIdPersona_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cv.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = cv.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cv.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwContratoTerceros]
+CREATE OR ALTER VIEW [NOM].[Vw_ContratoTerceros]
 AS
 SELECT
     ct.[PKIdContratoTercero],
@@ -257,7 +257,7 @@ FROM [NOM].[ContratoTerceros] ct
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = ct.[FKIdEmpresa_SIS];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwCredito]
+CREATE OR ALTER VIEW [NOM].[Vw_Credito]
 AS
 SELECT
     c.[PKIdCredito],
@@ -282,8 +282,8 @@ SELECT
     c.[FechaModificacion],
     c.[UsuarioModificacion]
 FROM [NOM].[Credito] c
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = c.[FKIdPersona_NOM]
-LEFT JOIN [NOM].[VwContratoTerceros] vct ON vct.[PKIdContratoTercero] = c.[FKIdContratoTercero_NOM]
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = c.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_ContratoTerceros] vct ON vct.[PKIdContratoTercero] = c.[FKIdContratoTercero_NOM]
 LEFT JOIN [NOM].[DescuentoCredito] dc ON dc.[FKIdCredito_NOM] = c.[PKIdCredito]
 GROUP BY
     c.[PKIdCredito], vct.[EmpresaId], vct.[EmpresaNombre], c.[FKIdPersona_NOM], vp.[ClaveNombre],
@@ -292,7 +292,7 @@ GROUP BY
     c.[Activo], c.[FechaCreacion], c.[UsuarioCreacion], c.[FechaModificacion], c.[UsuarioModificacion];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwDescuentoCredito]
+CREATE OR ALTER VIEW [NOM].[Vw_DescuentoCredito]
 AS
 SELECT
     dc.[PKIdDescuentoCredito],
@@ -311,10 +311,10 @@ SELECT
     dc.[UsuarioModificacion],
     dc.[FechaModificacion]
 FROM [NOM].[DescuentoCredito] dc
-LEFT JOIN [NOM].[VwCredito] vc ON vc.[PKIdCredito] = dc.[FKIdCredito_NOM];
+LEFT JOIN [NOM].[Vw_Credito] vc ON vc.[PKIdCredito] = dc.[FKIdCredito_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwEstatusPago]
+CREATE OR ALTER VIEW [NOM].[Vw_EstatusPago]
 AS
 SELECT
     ep.[PKIdEstatusPago],
@@ -329,7 +329,7 @@ SELECT
 FROM [NOM].[EstatusPago] ep;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwFactorInt]
+CREATE OR ALTER VIEW [NOM].[Vw_FactorInt]
 AS
 SELECT
     fi.[PKIdFactor],
@@ -349,7 +349,7 @@ SELECT
 FROM [NOM].[FactorInt] fi;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwInfonavit]
+CREATE OR ALTER VIEW [NOM].[Vw_Infonavit]
 AS
 SELECT
     i.[PKIdInfonavit],
@@ -376,7 +376,7 @@ SELECT
     i.[FechaModificacion],
     i.[UsuarioModificacion]
 FROM [NOM].[Infonavit] i
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = i.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = i.[FKIdPersona_NOM]
 LEFT JOIN [NOM].[DescuentoInfonavit] di ON di.[FKIdInfonavit_NOM] = i.[PKIdInfonavit]
 GROUP BY
     i.[PKIdInfonavit], i.[FKIdPersona_NOM], vp.[ClaveNombre], i.[FKIdUnidadInfonavit_NOM],
@@ -386,7 +386,7 @@ GROUP BY
     i.[FechaModificacion], i.[UsuarioModificacion];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwDescuentoInfonavit]
+CREATE OR ALTER VIEW [NOM].[Vw_DescuentoInfonavit]
 AS
 SELECT
     di.[PKIdDescuentoInfonavit],
@@ -405,10 +405,10 @@ SELECT
     di.[UsuarioModificacion],
     di.[FechaModificacion]
 FROM [NOM].[DescuentoInfonavit] di
-LEFT JOIN [NOM].[VwInfonavit] vi ON vi.[PKIdInfonavit] = di.[FKIdInfonavit_NOM];
+LEFT JOIN [NOM].[Vw_Infonavit] vi ON vi.[PKIdInfonavit] = di.[FKIdInfonavit_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwPeriodoActivo]
+CREATE OR ALTER VIEW [NOM].[Vw_PeriodoActivo]
 AS
 SELECT
     pa.[PKIdPeriodoActivo],
@@ -428,7 +428,7 @@ FROM [NOM].[PeriodoActivo] pa
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = pa.[FKIdEmpresa_SIS];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwSalarioMinimo]
+CREATE OR ALTER VIEW [NOM].[Vw_SalarioMinimo]
 AS
 SELECT
     sm.[PKIdSalarioMinimo],
@@ -446,7 +446,7 @@ SELECT
 FROM [NOM].[SalarioMinimo] sm;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwSueldoMensual]
+CREATE OR ALTER VIEW [NOM].[Vw_SueldoMensual]
 AS
 SELECT
     sm.[PKIdSueldoMensual] AS [IdMovimiento],
@@ -473,11 +473,11 @@ SELECT
     sm.[UsuarioModificacion]
 FROM [NOM].[SueldoMensual] sm
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = sm.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = sm.[FKIdPersona_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = sm.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = sm.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = sm.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwSueldoQuincenal]
+CREATE OR ALTER VIEW [NOM].[Vw_SueldoQuincenal]
 AS
 SELECT
     sq.[PKIdSueldoQuincenal] AS [IdMovimiento],
@@ -504,11 +504,11 @@ SELECT
     sq.[UsuarioModificacion]
 FROM [NOM].[SueldoQuincenal] sq
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = sq.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = sq.[FKIdPersona_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = sq.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = sq.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = sq.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwSueldoSemanal]
+CREATE OR ALTER VIEW [NOM].[Vw_SueldoSemanal]
 AS
 SELECT
     ss.[PKIdSueldoSemanal] AS [IdMovimiento],
@@ -535,11 +535,11 @@ SELECT
     ss.[UsuarioModificacion]
 FROM [NOM].[SueldoSemanal] ss
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = ss.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = ss.[FKIdPersona_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = ss.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = ss.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = ss.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwSueldoEspecial]
+CREATE OR ALTER VIEW [NOM].[Vw_SueldoEspecial]
 AS
 SELECT
     se.[PKIdSueldoEspecial] AS [IdMovimiento],
@@ -566,11 +566,11 @@ SELECT
     se.[UsuarioModificacion]
 FROM [NOM].[SueldoEspecial] se
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = se.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwPersona] vp ON vp.[PKIdPersona] = se.[FKIdPersona_NOM]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = se.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_Persona] vp ON vp.[PKIdPersona] = se.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = se.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwSueldoLiqFin]
+CREATE OR ALTER VIEW [NOM].[Vw_SueldoLiqFin]
 AS
 SELECT
     sl.[PKIdSueldoLiqFin] AS [IdMovimiento],
@@ -599,10 +599,10 @@ SELECT
 FROM [NOM].[SueldoLiqFin] sl
 LEFT JOIN [PRES].[Contrato] c ON c.[PKIdContrato] = sl.[FKIdContrato_PRES]
 LEFT JOIN [SIS].[Empresa] e ON e.[PKIdEmpresa] = c.[FKIdEmpresa_SIS]
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = sl.[FKIdConcepto_NOM];
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = sl.[FKIdConcepto_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwMovimientosNomina]
+CREATE OR ALTER VIEW [NOM].[Vw_MovimientosNomina]
 AS
 SELECT
     [IdMovimiento],
@@ -626,35 +626,35 @@ SELECT
     [UsuarioCreacion],
     [FechaModificacion],
     [UsuarioModificacion]
-FROM [NOM].[VwSueldoMensual]
+FROM [NOM].[Vw_SueldoMensual]
 UNION ALL
 SELECT
     [IdMovimiento], [TipoNomina], [EmpresaId], [EmpresaNombre], [PersonaId], [PersonaClaveNombre],
     [PeriodoId], [ConceptoId], [ConceptoClave], [ConceptoNombre], [ConceptoClaveNombre],
     [Percepcion], [Deduccion], [Aportacion], [Neto], [Referencia], [Activo],
     [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]
-FROM [NOM].[VwSueldoQuincenal]
+FROM [NOM].[Vw_SueldoQuincenal]
 UNION ALL
 SELECT
     [IdMovimiento], [TipoNomina], [EmpresaId], [EmpresaNombre], [PersonaId], [PersonaClaveNombre],
     [PeriodoId], [ConceptoId], [ConceptoClave], [ConceptoNombre], [ConceptoClaveNombre],
     [Percepcion], [Deduccion], [Aportacion], [Neto], [Referencia], [Activo],
     [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]
-FROM [NOM].[VwSueldoSemanal]
+FROM [NOM].[Vw_SueldoSemanal]
 UNION ALL
 SELECT
     [IdMovimiento], [TipoNomina], [EmpresaId], [EmpresaNombre], [PersonaId], [PersonaClaveNombre],
     [PeriodoId], [ConceptoId], [ConceptoClave], [ConceptoNombre], [ConceptoClaveNombre],
     [Percepcion], [Deduccion], [Aportacion], [Neto], [Referencia], [Activo],
     [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]
-FROM [NOM].[VwSueldoEspecial]
+FROM [NOM].[Vw_SueldoEspecial]
 UNION ALL
 SELECT
     [IdMovimiento], [TipoNomina], [EmpresaId], [EmpresaNombre], [PersonaId], [PersonaClaveNombre],
     [ContratoId], [ConceptoId], [ConceptoClave], [ConceptoNombre], [ConceptoClaveNombre],
     [Percepcion], [Deduccion], [Aportacion], [Neto], [Referencia], [Activo],
     [FechaCreacion], [UsuarioCreacion], [FechaModificacion], [UsuarioModificacion]
-FROM [NOM].[VwSueldoLiqFin]
+FROM [NOM].[Vw_SueldoLiqFin]
 UNION ALL
 SELECT
     cv.[PKIdConceptoVariable],
@@ -678,11 +678,11 @@ SELECT
     cv.[UsuarioCreacion],
     cv.[FechaModificacion],
     cv.[UsuarioModificacion]
-FROM [NOM].[VwConceptoVariable] cv
-LEFT JOIN [NOM].[VwConcepto] vc ON vc.[PKIdConcepto] = cv.[ConceptoId];
+FROM [NOM].[Vw_ConceptoVariable] cv
+LEFT JOIN [NOM].[Vw_NOM_Concepto] vc ON vc.[PKIdConcepto] = cv.[ConceptoId];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwResumenPeriodo]
+CREATE OR ALTER VIEW [NOM].[Vw_ResumenPeriodo]
 AS
 SELECT
     [EmpresaId],
@@ -693,14 +693,14 @@ SELECT
     CAST(SUM([Deduccion]) AS decimal(19,4)) AS [TotalDeduccion],
     CAST(SUM([Aportacion]) AS decimal(19,4)) AS [TotalAportacion],
     CAST(SUM([Neto]) AS decimal(19,4)) AS [TotalNeto]
-FROM [NOM].[VwMovimientosNomina]
+FROM [NOM].[Vw_MovimientosNomina]
 WHERE [EmpresaId] IS NOT NULL
   AND [PeriodoId] IS NOT NULL
   AND [Activo] = 1
 GROUP BY [EmpresaId], [PeriodoId];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwPeriodoActivoResumen]
+CREATE OR ALTER VIEW [NOM].[Vw_PeriodoActivoResumen]
 AS
 SELECT
     pa.[PKIdPeriodoActivo],
@@ -721,13 +721,13 @@ SELECT
     pa.[UsuarioCreacion],
     pa.[FechaModificacion],
     pa.[UsuarioModificacion]
-FROM [NOM].[VwPeriodoActivo] pa
-LEFT JOIN [NOM].[VwResumenPeriodo] r
+FROM [NOM].[Vw_PeriodoActivo] pa
+LEFT JOIN [NOM].[Vw_ResumenPeriodo] r
     ON r.[EmpresaId] = pa.[EmpresaId]
    AND r.[PeriodoId] = pa.[PeriodoId];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwConceptoConfiguracion]
+CREATE OR ALTER VIEW [NOM].[Vw_ConceptoConfiguracion]
 AS
 SELECT
     cf.[PKIdConceptoFijo] AS [IdConfiguracion],
@@ -751,7 +751,7 @@ SELECT
     cf.[UsuarioCreacion],
     cf.[FechaModificacion],
     cf.[UsuarioModificacion]
-FROM [NOM].[VwConceptoFijo] cf
+FROM [NOM].[Vw_ConceptoFijo] cf
 UNION ALL
 SELECT
     ct.[PKIdConceptoTabulador],
@@ -775,7 +775,7 @@ SELECT
     ct.[UsuarioCreacion],
     ct.[FechaModificacion],
     ct.[UsuarioModificacion]
-FROM [NOM].[VwConceptoTabular] ct
+FROM [NOM].[Vw_ConceptoTabular] ct
 UNION ALL
 SELECT
     cv.[PKIdConceptoVariable],
@@ -799,10 +799,10 @@ SELECT
     cv.[UsuarioCreacion],
     cv.[FechaModificacion],
     cv.[UsuarioModificacion]
-FROM [NOM].[VwConceptoVariable] cv;
+FROM [NOM].[Vw_ConceptoVariable] cv;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwTipoIncapacidad]
+CREATE OR ALTER VIEW [NOM].[Vw_TipoIncapacidad]
 AS
 SELECT
     ti.[PKIdTipoIncapacidad],
@@ -819,7 +819,7 @@ SELECT
 FROM [NOM].[TipoIncapacidad] ti;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwTipoPago]
+CREATE OR ALTER VIEW [NOM].[Vw_NOM_TipoPago]
 AS
 SELECT
     tp.[PKIdTipoPago],
@@ -836,7 +836,7 @@ SELECT
 FROM [NOM].[TipoPago] tp;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwTipoPension]
+CREATE OR ALTER VIEW [NOM].[Vw_TipoPension]
 AS
 SELECT
     tp.[PKIdTipoPension],

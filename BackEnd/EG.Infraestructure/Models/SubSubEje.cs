@@ -24,4 +24,6 @@ public partial class SubSubEje
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
 }

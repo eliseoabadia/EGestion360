@@ -29,5 +29,7 @@ public partial class PersonaDependiente
 
     public bool Activo { get; set; }
 
+    public virtual CatalogoSimple FkidParentescoSisNavigation { get; set; }
+
     public virtual Persona FkidPersonaNomNavigation { get; set; }
 }

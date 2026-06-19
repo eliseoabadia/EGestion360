@@ -9,15 +9,21 @@ public partial class VwContratoLaboral
 {
     public int PkidContratoLaboral { get; set; }
 
-    public int FkidEmpresaNominaNom { get; set; }
+    public int EmpresaNominaId { get; set; }
 
-    public int FkidPersonaNom { get; set; }
+    public string EmpresaNominaNombre { get; set; }
+
+    public int PersonaId { get; set; }
+
+    public string PersonaClaveNombre { get; set; }
 
     public DateOnly FechaInicio { get; set; }
 
     public DateOnly FechaFin { get; set; }
 
-    public int FkidPuestoNom { get; set; }
+    public int PuestoId { get; set; }
+
+    public string PuestoNombre { get; set; }
 
     public string NumeroContrato { get; set; }
 
@@ -25,7 +31,13 @@ public partial class VwContratoLaboral
 
     public decimal SueldoMensual { get; set; }
 
-    public int? FkidNombramientoNom { get; set; }
+    public int? NombramientoId { get; set; }
+
+    public string NombramientoDescripcion { get; set; }
+
+    public bool? Vigente { get; set; }
+
+    public bool Activo { get; set; }
 
     public int? UsuarioCreacion { get; set; }
 
@@ -34,32 +46,4 @@ public partial class VwContratoLaboral
     public int? UsuarioModificacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
-
-    public bool Activo { get; set; }
-
-    public int? FkidDepartamentoSis { get; set; }
-
-    public int? FkidTipoContratacionSis { get; set; }
-
-    public string Departamento { get; set; }
-
-    public string TipoContratacion { get; set; }
-
-    public string ClavePersona { get; set; }
-
-    public string NombreCompleto { get; set; }
-
-    public string Rfc { get; set; }
-
-    public string Curp { get; set; }
-
-    public string PuestoNombre { get; set; }
-
-    public string DepartamentoNombre { get; set; }
-
-    public string DepartamentoDescripcion { get; set; }
-
-    public string TipoContratacionDescripcion { get; set; }
-
-    public string TipoContratacionClave { get; set; }
 }

@@ -75,7 +75,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_NOM_CorridaNominaDeta
         ON [NOM].[CorridaNominaDetalle] ([FKIdCorridaNomina_NOM], [FKIdPersona_NOM], [FKIdConcepto_NOM]);
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwUsuarioNomina]
+CREATE OR ALTER VIEW [NOM].[Vw_UsuarioNomina]
 AS
 SELECT
     u.[PkIdUsuario] AS [UsuarioId],
@@ -108,19 +108,19 @@ OUTER APPLY
        OR au.[Id] = u.[AspNetUserId]
     ORDER BY CASE WHEN au.[Id] = u.[AspNetUserId] THEN 0 ELSE 1 END, au.[Id]
 ) au
-LEFT JOIN [NOM].[VwPersona] vp
+LEFT JOIN [NOM].[Vw_Persona] vp
     ON vp.[PKIdPersona] = u.[FKIdPersona_NOM]
 OUTER APPLY
 (
     SELECT TOP (1) c.*
-    FROM [NOM].[VwContratoLaboral] c
+    FROM [NOM].[Vw_ContratoLaboral] c
     WHERE c.[PersonaId] = u.[FKIdPersona_NOM]
       AND c.[Activo] = 1
     ORDER BY c.[Vigente] DESC, c.[FechaInicio] DESC, c.[PKIdContratoLaboral] DESC
 ) cl;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwCorridaNomina]
+CREATE OR ALTER VIEW [NOM].[Vw_CorridaNomina]
 AS
 SELECT
     c.[PKIdCorridaNomina],
@@ -148,7 +148,7 @@ LEFT JOIN [NOM].[EmpresaNomina] en
     ON en.[PKIdEmpresaNomina] = c.[FKIdEmpresaNomina_NOM];
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwCorridaNominaDetalle]
+CREATE OR ALTER VIEW [NOM].[Vw_CorridaNominaDetalle]
 AS
 SELECT
     d.[PKIdCorridaNominaDetalle],
@@ -178,9 +178,9 @@ SELECT
     d.[FechaCreacion],
     d.[UsuarioCreacion]
 FROM [NOM].[CorridaNominaDetalle] d
-INNER JOIN [NOM].[VwCorridaNomina] c
+INNER JOIN [NOM].[Vw_CorridaNomina] c
     ON c.[PKIdCorridaNomina] = d.[FKIdCorridaNomina_NOM]
-LEFT JOIN [NOM].[VwPersona] vp
+LEFT JOIN [NOM].[Vw_Persona] vp
     ON vp.[PKIdPersona] = d.[FKIdPersona_NOM]
 LEFT JOIN [NOM].[Puesto] p
     ON p.[PKIdPuesto] = d.[FKIdPuesto_NOM];
@@ -231,7 +231,7 @@ BEGIN
     IF @PersonaObjetivo IS NOT NULL AND @EmpresaObjetivo IS NULL
     BEGIN
         SELECT TOP (1) @EmpresaObjetivo = c.[EmpresaNominaId]
-        FROM [NOM].[VwContratoLaboral] c
+        FROM [NOM].[Vw_ContratoLaboral] c
         WHERE c.[PersonaId] = @PersonaObjetivo
           AND c.[Activo] = 1
         ORDER BY c.[Vigente] DESC, c.[FechaInicio] DESC;
@@ -248,7 +248,7 @@ BEGIN
     IF @PersonaObjetivo IS NULL
     BEGIN
         SELECT TOP (1) @PersonaObjetivo = c.[PersonaId]
-        FROM [NOM].[VwContratoLaboral] c
+        FROM [NOM].[Vw_ContratoLaboral] c
         WHERE c.[EmpresaNominaId] = @EmpresaObjetivo
           AND c.[Activo] = 1
         ORDER BY c.[Vigente] DESC, c.[PersonaId];
@@ -292,7 +292,7 @@ BEGIN
         u.[PayrollID],
         CAST(N'Usuario adaptado para demo de nomina.' AS nvarchar(500)) AS [Mensaje]
     FROM [SIS].[Usuario] u
-    LEFT JOIN [NOM].[VwPersona] vp
+    LEFT JOIN [NOM].[Vw_Persona] vp
         ON vp.[PKIdPersona] = u.[FKIdPersona_NOM]
     LEFT JOIN [NOM].[EmpresaNomina] en
         ON en.[PKIdEmpresaNomina] = @EmpresaObjetivo
@@ -434,11 +434,11 @@ BEGIN
         @UsuarioObjetivo,
         SYSUTCDATETIME(),
         1
-    FROM [NOM].[VwMovimientosNomina] m
+    FROM [NOM].[Vw_MovimientosNomina] m
     OUTER APPLY
     (
         SELECT TOP (1) c.[PKIdContratoLaboral], c.[PuestoId]
-        FROM [NOM].[VwContratoLaboral] c
+        FROM [NOM].[Vw_ContratoLaboral] c
         WHERE c.[EmpresaNominaId] = @EmpresaNominaId
           AND c.[PersonaId] = m.[PersonaId]
           AND c.[Activo] = 1
@@ -473,13 +473,13 @@ BEGIN
             @UsuarioObjetivo,
             SYSUTCDATETIME(),
             1
-        FROM [NOM].[VwContratoLaboral] c
-        INNER JOIN [NOM].[VwConceptoTabular] ct
+        FROM [NOM].[Vw_ContratoLaboral] c
+        INNER JOIN [NOM].[Vw_ConceptoTabular] ct
             ON ct.[EmpresaId] = c.[EmpresaNominaId]
            AND ct.[PuestoId] = c.[PuestoId]
            AND ct.[Activo] = 1
            AND ct.[Vigente] = 1
-        LEFT JOIN [NOM].[VwConcepto] vc
+        LEFT JOIN [NOM].[Vw_NOM_Concepto] vc
             ON vc.[PKIdConcepto] = ct.[ConceptoId]
         WHERE c.[EmpresaNominaId] = @EmpresaNominaId
           AND c.[Activo] = 1

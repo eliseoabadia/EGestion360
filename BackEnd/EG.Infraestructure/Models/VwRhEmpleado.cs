@@ -15,6 +15,8 @@ public partial class VwRhEmpleado
 
     public string Empleado { get; set; }
 
+    public string Iniciales { get; set; }
+
     public string Nombre { get; set; }
 
     public string Paterno { get; set; }
@@ -80,6 +82,16 @@ public partial class VwRhEmpleado
     public string EstadoCivil { get; set; }
 
     public string RegImss { get; set; }
+
+    public string NoCartilla { get; set; }
+
+    public string NoLicencia { get; set; }
+
+    public string NoPasaporte { get; set; }
+
+    public string NoCredencialElector { get; set; }
+
+    public string Gafete { get; set; }
 
     public bool? TienePension { get; set; }
 

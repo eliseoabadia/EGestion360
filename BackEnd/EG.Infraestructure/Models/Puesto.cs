@@ -11,7 +11,7 @@ public partial class Puesto
 
     public int? FkidPuestoPadreNom { get; set; }
 
-    public int FkidEmpresaNominaNom { get; set; }
+    public int FkidEmpresaSis { get; set; }
 
     public string Nombre { get; set; }
 
@@ -36,4 +36,6 @@ public partial class Puesto
     public bool Activo { get; set; }
 
     public virtual ICollection<ContratoLaboral> ContratoLaborals { get; set; } = new List<ContratoLaboral>();
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 }

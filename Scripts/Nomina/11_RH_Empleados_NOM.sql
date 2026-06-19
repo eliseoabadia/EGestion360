@@ -141,7 +141,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_NOM_PersonaDependient
     CREATE INDEX [IX_NOM_PersonaDependiente_Persona] ON [NOM].[PersonaDependiente] ([FKIdPersona_NOM], [Activo]);
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwRhEmpleado]
+CREATE OR ALTER VIEW [NOM].[Vw_RhEmpleado]
 AS
 SELECT
     p.[PKIdPersona] AS [Id],
@@ -208,7 +208,7 @@ LEFT JOIN [NOM].[Puesto] puesto ON puesto.[PKIdPuesto] = c.[FKIdPuesto_NOM]
 WHERE p.[Activo] = 1;
 GO
 
-CREATE OR ALTER VIEW [NOM].[VwRhEmpleadoDetalle]
+CREATE OR ALTER VIEW [NOM].[Vw_RhEmpleadoDetalle]
 AS
 SELECT
     N'contratos' AS [Seccion],
@@ -263,7 +263,7 @@ SELECT
     e.[FechaModificacion]
 FROM [NOM].[EmpleadoExpediente] e
 LEFT JOIN [NOM].[CatalogoSimple] tipo ON tipo.[PKIdCatalogoSimple] = e.[FKIdTipoExpediente_NOM]
-LEFT JOIN [NOM].[VwRhEmpleado] emp ON emp.[Id] = e.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_RhEmpleado] emp ON emp.[Id] = e.[FKIdPersona_NOM]
 
 UNION ALL
 SELECT
@@ -290,7 +290,7 @@ SELECT
     d.[UsuarioModificacion],
     d.[FechaModificacion]
 FROM [NOM].[PersonaDependiente] d
-LEFT JOIN [NOM].[VwRhEmpleado] emp ON emp.[Id] = d.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_RhEmpleado] emp ON emp.[Id] = d.[FKIdPersona_NOM]
 
 UNION ALL
 SELECT
@@ -319,7 +319,7 @@ SELECT
 FROM [NOM].[Incidencia] i
 LEFT JOIN [NOM].[CatalogoSimple] tipo ON tipo.[PKIdCatalogoSimple] = i.[FKIdTipoIncidencia_NOM]
 LEFT JOIN [NOM].[CatalogoSimple] justificacion ON justificacion.[PKIdCatalogoSimple] = i.[FKIdTipoJustificacion_NOM]
-LEFT JOIN [NOM].[VwRhEmpleado] emp ON emp.[Id] = i.[FKIdPersona_NOM]
+LEFT JOIN [NOM].[Vw_RhEmpleado] emp ON emp.[Id] = i.[FKIdPersona_NOM]
 
 UNION ALL
 SELECT
@@ -347,7 +347,7 @@ SELECT
     pe.[FechaModificacion]
 FROM [NOM].[PersonaPension] pe
 LEFT JOIN [NOM].[TipoPension] tp ON tp.[PKIdTipoPension] = pe.[FKIdTipoPension_NOM]
-LEFT JOIN [NOM].[VwRhEmpleado] emp ON emp.[Id] = pe.[FKIdPersona_NOM];
+LEFT JOIN [NOM].[Vw_RhEmpleado] emp ON emp.[Id] = pe.[FKIdPersona_NOM];
 GO
 
 CREATE OR ALTER PROCEDURE [NOM].[spRhEmpleado_List]
@@ -385,7 +385,7 @@ BEGIN
             TotalExpedientes, TotalIncidencias, Activo, UsuarioCreacion, FechaCreacion,
             UsuarioModificacion, FechaModificacion,
             COUNT(1) OVER() AS TotalCount
-        FROM [NOM].[VwRhEmpleado]
+        FROM [NOM].[Vw_RhEmpleado]
         WHERE (@EmpresaId IS NULL OR EmpresaId = @EmpresaId)
           AND (
                 @Filtro = N''''
@@ -426,7 +426,7 @@ BEGIN
         TotalExpedientes, TotalIncidencias, Activo, UsuarioCreacion, FechaCreacion,
         UsuarioModificacion, FechaModificacion,
         1 AS TotalCount
-    FROM [NOM].[VwRhEmpleado]
+    FROM [NOM].[Vw_RhEmpleado]
     WHERE [Id] = @Id;
 END;
 GO
@@ -627,7 +627,7 @@ BEGIN
             Fecha, FechaInicio, FechaFin, Importe, Porcentaje, Documento, Referencia,
             Observaciones, Activo, UsuarioCreacion, FechaCreacion, UsuarioModificacion,
             FechaModificacion, COUNT(1) OVER() AS TotalCount
-        FROM [NOM].[VwRhEmpleadoDetalle]
+        FROM [NOM].[Vw_RhEmpleadoDetalle]
         WHERE (@Seccion = N'''' OR Seccion = @Seccion)
           AND (@PersonaId IS NULL OR PersonaId = @PersonaId)
           AND (@EmpresaId IS NULL OR EmpresaId = @EmpresaId)
@@ -658,5 +658,5 @@ END;
 GO
 
 SELECT N'Empleados RH' AS [Proceso], COUNT(1) AS [Registros]
-FROM [NOM].[VwRhEmpleado];
+FROM [NOM].[Vw_RhEmpleado];
 GO

@@ -10,7 +10,7 @@ namespace EG.Infraestructure.Models
     {
         public int CorridaId { get; set; }
         public int EmpresaId { get; set; }
-        [StringLength(100)]
+        [StringLength(255)]
         public string EmpresaNombre { get; set; }
         public int PeriodoId { get; set; }
         public int? Anio { get; set; }

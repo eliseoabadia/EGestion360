@@ -23,6 +23,8 @@ public partial class ActividadInstitucional
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

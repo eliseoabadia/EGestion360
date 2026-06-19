@@ -56,4 +56,6 @@ public partial class CatalogoSimple
     public virtual ICollection<Incidencium> IncidenciumFkidTipoIncidenciaNomNavigations { get; set; } = new List<Incidencium>();
 
     public virtual ICollection<Incidencium> IncidenciumFkidTipoJustificacionNomNavigations { get; set; } = new List<Incidencium>();
+
+    public virtual ICollection<PersonaDependiente> PersonaDependientes { get; set; } = new List<PersonaDependiente>();
 }

@@ -7,7 +7,7 @@ namespace EG.Infraestructure.Models;
 
 public partial class VwEmpresaNomina
 {
-    public int PkidEmpresaNomina { get; set; }
+    public int PkidEmpresa { get; set; }
 
     public string RazonSocial { get; set; }
 

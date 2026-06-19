@@ -25,6 +25,8 @@ public partial class Gf
 
     public virtual ICollection<Fn> Fns { get; set; } = new List<Fn>();
 
+    public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

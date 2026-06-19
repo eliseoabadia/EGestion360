@@ -13,7 +13,7 @@ namespace EG.Infraestructure.Models
         public int Id { get; set; }
         public int PersonaId { get; set; }
         public int? EmpresaId { get; set; }
-        [StringLength(100)]
+        [StringLength(255)]
         public string Empresa { get; set; }
         [StringLength(152)]
         public string Persona { get; set; }

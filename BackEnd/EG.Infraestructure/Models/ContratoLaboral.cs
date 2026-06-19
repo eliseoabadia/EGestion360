@@ -9,7 +9,7 @@ public partial class ContratoLaboral
 {
     public int PkidContratoLaboral { get; set; }
 
-    public int FkidEmpresaNominaNom { get; set; }
+    public int FkidEmpresaSis { get; set; }
 
     public int FkidPersonaNom { get; set; }
 
@@ -45,7 +45,7 @@ public partial class ContratoLaboral
 
     public string TipoContratacion { get; set; }
 
-    public virtual EmpresaNomina FkidEmpresaNominaNomNavigation { get; set; }
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual Nombramiento FkidNombramientoNomNavigation { get; set; }
 
