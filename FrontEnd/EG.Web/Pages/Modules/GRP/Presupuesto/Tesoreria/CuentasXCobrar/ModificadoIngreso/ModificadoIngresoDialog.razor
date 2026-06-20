@@ -1,0 +1,119 @@
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<IngreAdecuacionResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="IngreAdecuacionResponse"
+                Title="@DialogTitle"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="IngreAdecuacionResponse" @ref="form" ShowHeader="true" HeaderTitle="@DialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <MudDatePicker Date="@_fecha"
+                               DateChanged="value => _fecha = value"
+                               Label="Fecha de la adecuacion"
+                               Variant="Variant.Outlined"
+                               Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Value="@TipoTexto"
+                              Label="Tipo de adecuacion"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              @bind-Value="item.Justificacion"
+                              Label="Justificacion"
+                              Variant="Variant.Outlined"
+                              Lines="6"
+                              Required="true"
+                              RequiredError="Captura la justificacion."
+                              Counter="1000"
+                              MaxLength="1000"
+                              HelperText="Describe el fundamento y el resultado esperado de la modificacion." />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int TipoAdecuacionId { get; set; }
+    [Parameter] public int AnioId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<IngreAdecuacionResponse> form = null!;
+    private IngreAdecuacionResponse item = new()
+    {
+        Activo = true,
+        Fecha = DateOnly.FromDateTime(DateTime.Today),
+        FkidEstatusAdecuacionPres = 1,
+        FkidAccionAdecuacionMasterPres = 1
+    };
+    private DateTime? _fecha = DateTime.Today;
+
+    private string DialogTitle => Id.HasValue ? "Editar modificacion de ingresos" : "Nueva modificacion de ingresos";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string TipoTexto => TipoAdecuacionId switch
+    {
+        1 => "Adecuacion compensada",
+        2 => "Reduccion",
+        3 => "Aumento",
+        _ => "Adecuacion"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            item.FkidTipoAdecuacionPres = TipoAdecuacionId;
+            item.FkidAnioSis = AnioId;
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+            _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (AnioId <= 0)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning);
+            return;
+        }
+
+        item.FkidAnioSis = AnioId;
+        item.FkidTipoAdecuacionPres = TipoAdecuacionId;
+        item.FkidEstatusAdecuacionPres = item.FkidEstatusAdecuacionPres <= 0 ? 1 : item.FkidEstatusAdecuacionPres;
+        item.FkidAccionAdecuacionMasterPres ??= 1;
+        item.Fecha = DateOnly.FromDateTime(_fecha ?? DateTime.Today);
+        item.Justificacion = item.Justificacion?.Trim();
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Registro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar la adecuacion.", Severity.Error);
+    }
+}

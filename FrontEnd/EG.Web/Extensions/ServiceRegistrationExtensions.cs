@@ -99,6 +99,9 @@ public static class ApiServiceExtensions
         RegisterCrud<AutorizacionSuficienciaDetalleResponse>(services, "api/AutorizacionSuficienciaDetalle");
         RegisterCrud<EgreAdecuacionResponse>(services, "api/EgreAdecuacion");
         RegisterCrud<EgreAdecuacionDetalleResponse>(services, "api/EgreAdecuacionDetalle");
+        RegisterCrud<IngreAdecuacionResponse>(services, "api/IngreAdecuacion");
+        RegisterCrud<IngreAdecuacionDetalleResponse>(services, "api/IngreAdecuacionDetalle");
+        RegisterCrud<IngresoDisponibleResponse>(services, "api/IngresoDisponible");
         RegisterCrud<TipoAdecuacionResponse>(services, "api/TipoAdecuacion");
         RegisterCrud<EstatusAdecuacionResponse>(services, "api/EstatusAdecuacion");
         RegisterCrud<TipoMovimientoResponse>(services, "api/TipoMovimiento");
@@ -136,6 +139,7 @@ public static class ApiServiceExtensions
         RegisterCrud<FuenteFinanciamientoResponse>(services, "api/FuenteFinanciamiento");
         RegisterCrud<EgresoProyectadoResponse>(services, "api/EgresoProyectado");
         RegisterCrud<EgresoAutorizadoResponse>(services, "api/EgresoAutorizado");
+        RegisterCrud<IngresoAutorizadoResponse>(services, "api/IngresoAutorizado");
         RegisterCrud<PgResponse>(services, "api/Pg");
         RegisterCrud<RamoResponse>(services, "api/Ramo");
         RegisterCrud<ProyectoResponse>(services, "api/Proyecto");

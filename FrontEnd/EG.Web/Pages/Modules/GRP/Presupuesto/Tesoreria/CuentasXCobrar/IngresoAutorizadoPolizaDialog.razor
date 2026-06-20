@@ -1,0 +1,141 @@
+@using System.Globalization
+@using System.Net.Http.Json
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog MaxWidth="MaxWidth.ExtraLarge" FullWidth="true">
+    <TitleContent>
+        <div class="policy-title">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Info" />
+            <MudText Typo="Typo.h6">Poliza presupuestal</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (_loading)
+        {
+            <div class="policy-loading"><MudProgressCircular Indeterminate="true" Color="Color.Primary" /></div>
+        }
+        else if (_policy == null)
+        {
+            <MudAlert Severity="Severity.Warning">No se encontro informacion de la poliza.</MudAlert>
+        }
+        else
+        {
+            <div class="policy-summary">
+                <div><span>Clave</span><strong>@Text(_policy.ClavePoliza)</strong></div>
+                <div><span>Fecha</span><strong>@_policy.FechaPoliza.ToString("dd/MM/yyyy", DateCulture)</strong></div>
+                <div><span>Total debe</span><strong>@Money(_policy.TotalDebe)</strong></div>
+                <div><span>Total haber</span><strong>@Money(_policy.TotalHaber)</strong></div>
+            </div>
+            <div class="policy-status">
+                <MudChip T="string" Size="Size.Small" Color="@(_policy.EstaBalanceado ? Color.Success : Color.Error)">
+                    @(_policy.EstaBalanceado ? "Balanceada" : $"Diferencia {Money(_policy.Diferencia)}")
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@(_policy.Autorizado == true ? Color.Success : Color.Warning)">
+                    @(_policy.Autorizado == true ? "Autorizada" : "Pendiente de autorizacion")
+                </MudChip>
+                <MudText Typo="Typo.body2">@Text(_policy.NombrePoliza)</MudText>
+            </div>
+
+            <div class="policy-table">
+                <GenericTable TItem="IngresoAutorizadoPolizaDetalleResponse"
+                              Title="Movimientos contables"
+                              ShowExportButton="false"
+                              PageSize="10"
+                              TotalCount="@_policy.Detalles.Count"
+                              ServerDataFunc="LoadDetailsAsync"
+                              SearchString="@_search"
+                              SearchStringChanged="value => _search = value"
+                              SearchPlaceholder="Buscar cuenta o descripcion...">
+                    <Header>
+                        <MudTh>Tipo</MudTh>
+                        <MudTh>Cuenta</MudTh>
+                        <MudTh>Descripcion</MudTh>
+                        <MudTh Class="text-right">Debe</MudTh>
+                        <MudTh Class="text-right">Haber</MudTh>
+                    </Header>
+                    <Row Context="detail">
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@(detail.ImporteDebe > 0 ? Color.Primary : Color.Secondary)">
+                                @(detail.ImporteDebe > 0 ? "Debe" : "Haber")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd><strong>@Text(detail.Cuenta)</strong><br /><span>@Text(detail.CuentaDescripcion)</span></MudTd>
+                        <MudTd>@Text(detail.Descripcion)</MudTd>
+                        <MudTd Class="text-right">@Money(detail.ImporteDebe)</MudTd>
+                        <MudTd Class="text-right">@Money(detail.ImporteHaber)</MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="Close">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .policy-title { display: flex; align-items: center; gap: 8px; }
+    .policy-loading { display: grid; min-height: 220px; place-items: center; }
+    .policy-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+    .policy-summary > div { border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; padding: 9px 11px; }
+    .policy-summary span { display: block; color: var(--mud-palette-text-secondary); font-size: .72rem; text-transform: uppercase; }
+    .policy-summary strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .policy-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px; }
+    .policy-table { height: 390px; min-height: 280px; }
+    .policy-table td span { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    @@media (max-width: 760px) { .policy-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-table { height: 440px; } }
+</style>
+
+@code {
+    [Parameter] public int IngresoId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private IngresoAutorizadoPolizaResponse? _policy;
+    private bool _loading = true;
+    private string _search = string.Empty;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<EG.Common.GenericModel.PagedResult<IngresoAutorizadoPolizaResponse>>($"api/IngresoAutorizado/{IngresoId}/poliza");
+            if (response?.Success == true) _policy = response.Data ?? response.Items?.FirstOrDefault();
+            else Snackbar.Add(response?.Message ?? "No fue posible consultar la poliza.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al consultar la poliza: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private Task<TableData<IngresoAutorizadoPolizaDetalleResponse>> LoadDetailsAsync(TableState state, CancellationToken ct)
+    {
+        var query = (_policy?.Detalles ?? []).AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(_search))
+        {
+            query = query.Where(x => x.Cuenta.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || x.CuentaDescripcion.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || x.Descripcion.Contains(_search, StringComparison.OrdinalIgnoreCase));
+        }
+        var rows = query.ToList();
+        var page = rows.Skip(state.Page * state.PageSize).Take(state.PageSize).ToList();
+        return Task.FromResult(new TableData<IngresoAutorizadoPolizaDetalleResponse> { Items = page, TotalItems = rows.Count });
+    }
+
+    private void Close() => MudDialog.Close();
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string Text(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

@@ -24,4 +24,6 @@ public partial class AccionAdecuacionMaster
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<EgreAdecuacion> EgreAdecuacions { get; set; } = new List<EgreAdecuacion>();
+
+    public virtual ICollection<IngreAdecuacion> IngreAdecuacions { get; set; } = new List<IngreAdecuacion>();
 }

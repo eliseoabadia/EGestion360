@@ -27,6 +27,8 @@ public partial class TipoGasto
 
     public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
 
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizados { get; set; } = new List<IngresoAutorizado>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

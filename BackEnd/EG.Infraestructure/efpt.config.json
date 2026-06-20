@@ -307,10 +307,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[NOM].[EmpresaNomina]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[NOM].[EstatusPago]",
          "ObjectType": 0
       },
@@ -632,6 +628,18 @@
       },
       {
          "Name": "[PRES].[GrupoPresupuesto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[IngreAdecuacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[IngreAdecuacionDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[IngresoAutorizado]",
          "ObjectType": 0
       },
       {
@@ -1063,35 +1071,35 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_BaseCotizacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_BaseGravable]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_BaseGravableIMSS]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_BasePago]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_CapituloNomina]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_CatalogoSimple]",
          "ObjectType": 3
       },
       {
-         "Name": "[NOM].[Vw_ContratoLaboralDetalle]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_EmpleadoExpediente]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_Incidencia]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PersonaDependiente]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PersonaPension]",
+         "Name": "[NOM].[Vw_ClaseIMSS]",
          "ObjectType": 3
       },
       {
          "Name": "[NOM].[Vw_ClasePuesto]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_NOM_Concepto]",
          "ObjectType": 3
       },
       {
@@ -1127,6 +1135,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_ContratoLaboralDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_ContratoTerceros]",
          "ObjectType": 3
       },
@@ -1143,6 +1155,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_CuotasIMSS]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_DescuentoCredito]",
          "ObjectType": 3
       },
@@ -1151,7 +1167,27 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_DiaSemana]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_EmpleadoExpediente]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_EmpresaNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_Escolaridad]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_Estado]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_EstadoCivil]",
          "ObjectType": 3
       },
       {
@@ -1163,7 +1199,27 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_FormaCalculo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_FormaPago]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_FraccionIMSS]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_ImporteNivel]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_ImpuestoLocal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_Incidencia]",
          "ObjectType": 3
       },
       {
@@ -1171,11 +1227,31 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_MetodoPago]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_MovimientosNomina]",
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_Municipio]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_Nivel]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_NOM_Banco]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_NOM_Concepto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_NOM_TipoPago]",
          "ObjectType": 3
       },
       {
@@ -1195,11 +1271,43 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_PeriodoBimestral]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PeriodoMensual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PeriodoQuincenal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PeriodoSemanal]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_Persona]",
          "ObjectType": 3
       },
       {
          "Name": "[NOM].[Vw_PersonaArea]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PersonaDependiente]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PersonaPension]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PlazaAutorizada]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PrestacionesMinimas]",
          "ObjectType": 3
       },
       {
@@ -1251,6 +1359,22 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_Sexo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_SubsidioISRMensual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_SubsidioISRQuincenal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_SubsidioISRSemanal]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_SueldoEspecial]",
          "ObjectType": 3
       },
@@ -1271,15 +1395,59 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_TablaISRMensual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TablaISRQuincenal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TablaISRSemanal]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoContratacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoDescanso]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_TipoIncapacidad]",
          "ObjectType": 3
       },
       {
-         "Name": "[NOM].[Vw_NOM_TipoPago]",
+         "Name": "[NOM].[Vw_TipoIncidencia]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoJustificacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoParentesco]",
          "ObjectType": 3
       },
       {
          "Name": "[NOM].[Vw_TipoPension]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoRegimen]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_UMA]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_UnidadInfonavit]",
          "ObjectType": 3
       },
       {
@@ -1288,6 +1456,10 @@
       },
       {
          "Name": "[NOM].[Vw_UsuarioNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_ZonaGeografica]",
          "ObjectType": 3
       },
       {
@@ -1423,6 +1595,26 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_IngresoAdecuacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_IngresoAdecuacionDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_IngresoAutorizado]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_IngresoDisponible]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[Vw_Programa]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_SolicitudSuficiencia]",
          "ObjectType": 3
       },
@@ -1432,10 +1624,6 @@
       },
       {
          "Name": "[PRES].[Vw_SubFuncion]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[PRES].[Vw_Programa]",
          "ObjectType": 3
       },
       {
@@ -1544,170 +1732,6 @@
       },
       {
          "Name": "[TES].[Vw_TipoSolicitudCLC]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_BaseCotizacion]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_BaseGravable]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_BaseGravableIMSS]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_BasePago]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_CapituloNomina]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_ClaseIMSS]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_CuotasIMSS]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_DiaSemana]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_Escolaridad]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_Estado]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_EstadoCivil]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_FormaCalculo]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_FormaPago]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_FraccionIMSS]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_ImpuestoLocal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_MetodoPago]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_Municipio]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_NOM_Banco]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PeriodoBimestral]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PeriodoMensual]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PeriodoQuincenal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PeriodoSemanal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PlazaAutorizada]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_PrestacionesMinimas]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_Sexo]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_SubsidioISRMensual]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_SubsidioISRQuincenal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_SubsidioISRSemanal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TablaISRMensual]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TablaISRQuincenal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TablaISRSemanal]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoContratacion]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoDescanso]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoIncidencia]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoJustificacion]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoNomina]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoParentesco]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_TipoRegimen]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_UMA]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_UnidadInfonavit]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_ZonaGeografica]",
          "ObjectType": 3
       },
       {
@@ -1935,6 +1959,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[PRES].[sp_MantenimientoAdecuacionDisminucionIngreso]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[PRES].[SP_MantenimientoAutorizacionSuficiencia]",
          "ObjectType": 1
       },
@@ -1956,6 +1984,14 @@
       },
       {
          "Name": "[PRES].[SP_MantenimientoFactura]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[sp_MantenimientoIngresoAdecuacion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[sp_MantenimientoIngresoAutorizado]",
          "ObjectType": 1
       },
       {

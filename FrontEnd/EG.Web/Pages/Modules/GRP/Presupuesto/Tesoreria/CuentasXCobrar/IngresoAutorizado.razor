@@ -1,0 +1,347 @@
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Estimados"
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Dommain.DTOs.Responses
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@inherits BaseCrudPage<IngresoAutorizadoResponse, IngresoAutorizadoResponse>
+@implements IDisposable
+
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IJSRuntime JS
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column ingresos-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Ley de Ingresos Estimados"
+                    Subtitle="Presupuesto mensual y poliza de autorizacion"
+                    Icon="@Icons.Material.Filled.AccountBalance"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="ReloadData" />
+
+        <section class="ingresos-summary">
+            <div><span>Total visible</span><strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong></div>
+            <div><span>Registros</span><strong>@TotalCount.ToString("N0", NumberCulture)</strong></div>
+            <div><span>Autorizados visibles</span><strong>@Elements.Count(x => x.EstaAutorizado).ToString("N0", NumberCulture)</strong></div>
+            <div><span>Moneda base</span><strong>@_currencyName (@_currencySymbol)</strong></div>
+        </section>
+
+        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericTable TItem="IngresoAutorizadoResponse"
+                          @ref="table"
+                          Title="Ingresos autorizados"
+                          SearchPlaceholder="Buscar programa, origen, clasificacion o descripcion..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="value => SearchString = value"
+                          OnSearch="OnSearch"
+                          Loading="@Loading">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="IngresoAutorizadoResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="OrigenDescripcion" T="IngresoAutorizadoResponse">Origen</MudTableSortLabel></MudTh>
+                    <MudTh>Clasificacion</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="IngresoAutorizadoResponse">Descripcion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Fecha" T="IngresoAutorizadoResponse">Fecha</MudTableSortLabel></MudTh>
+                    <MudTh>Meses</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Total" T="IngresoAutorizadoResponse">Total</MudTableSortLabel></MudTh>
+                    <MudTh>Poliza</MudTh>
+                    <MudTh>Estatus</MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd Class="ingresos-actions">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Visible="@(CanUpdate && !item.EstaAutorizado)"
+                                           Disabled="@IsBusy"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditItem(item.PkidIngresoAutorizado))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Autorizar ingreso y poliza">
+                            <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                           Visible="@(CanAuthorize && !item.EstaAutorizado)"
+                                           Disabled="@IsBusy"
+                                           Color="Color.Success"
+                                           Size="Size.Small"
+                                           OnClick="@(() => AutorizarAsync(item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Ver poliza">
+                            <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong"
+                                           Disabled="@(!item.FkidPolizaConta.HasValue || IsBusy)"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => OpenPolizaAsync(item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="CuentasXCobrar"
+                                               SubModulo="Ley_Ingresos_Estimados"
+                                               Controlador="IngresoAutorizado"
+                                               EntidadId="@item.PkidIngresoAutorizado"
+                                               RegistroTitulo="@TextOrDash(item.ProgramaClaveNombre)"
+                                               RegistroDescripcion="@TextOrDash(item.Descripcion)" />
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Visible="@(CanDelete && !item.EstaAutorizado)"
+                                           Disabled="@IsBusy"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteIngresoAsync(item))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
+                        <span>@TextOrDash(item.ProgramaDescripcion)</span>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.OrigenClaveNombre)</MudTd>
+                    <MudTd>
+                        <span>FF: @TextOrDash(item.FuenteFinanciamientoClave)</span><br />
+                        <span>TG: @TextOrDash(item.TipoGastoClave?.ToString())</span><br />
+                        <span>DI: @TextOrDash(item.DigitoIdentificadorClave)</span> / <span>DG: @TextOrDash(item.DestinoGastoClave)</span>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
+                    <MudTd>@item.Fecha.ToString("dd/MM/yyyy", DateCulture)</MudTd>
+                    <MudTd>
+                        <div class="month-spark">
+                            @foreach (var month in GetMonths(item))
+                            {
+                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
+                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
+                            }
+                        </div>
+                    </MudTd>
+                    <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
+                    <MudTd>
+                        <MudButton Variant="Variant.Text"
+                                   Size="Size.Small"
+                                   Color="Color.Info"
+                                   Disabled="@(!item.FkidPolizaConta.HasValue)"
+                                   OnClick="@(() => OpenPolizaAsync(item))">
+                            #@(item.FkidPolizaConta?.ToString() ?? "-")
+                        </MudButton>
+                    </MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small" Color="@(item.EstaAutorizado ? Color.Success : Color.Warning)">
+                            @(item.EstaAutorizado ? "Autorizado" : "Pendiente")
+                        </MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .ingresos-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 8px 0 12px; }
+    .ingresos-summary > div { border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; padding: 9px 11px; background: var(--mud-palette-surface); }
+    .ingresos-summary span { display: block; color: var(--mud-palette-text-secondary); font-size: .72rem; text-transform: uppercase; }
+    .ingresos-summary strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.02rem; }
+    .ingresos-actions { min-width: 190px; white-space: nowrap; }
+    .ingresos-page .main-cell { font-weight: 700; line-height: 1.15; }
+    .ingresos-page td span { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    .month-spark { display: grid; grid-template-columns: repeat(12, 6px); align-items: end; gap: 3px; height: 32px; min-width: 105px; }
+    .month-spark span { display: block; min-height: 4px; border-radius: 3px 3px 0 0; background: var(--eg-primary); }
+    @@media (max-width: 900px) { .ingresos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @@media (max-width: 560px) { .ingresos-summary { grid-template-columns: 1fr; } }
+</style>
+
+@code {
+    private GenericTable<IngresoAutorizadoResponse> table = null!;
+    private string _currencySymbol = "$";
+    private string _currencyName = "Peso Mexicano";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override string ModuleName => "CuentasXCobrar";
+    protected override string SubModuleName => "Ley_Ingresos_Estimados";
+    protected override Type CreateDialogType => typeof(IngresoAutorizadoDialog);
+    protected override Type EditDialogType => typeof(IngresoAutorizadoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<IngresoAutorizadoResponse>);
+    protected override string GetDefaultSortLabel() => "PkidIngresoAutorizado";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        await LoadCurrencyAsync();
+    }
+
+    protected override async Task<TableData<IngresoAutorizadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!AnioStateService.AnioId.HasValue)
+                return new TableData<IngresoAutorizadoResponse>();
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value });
+
+            Elements = response?.Success == true ? response.Items?.ToList() ?? [] : [];
+            TotalCount = response?.Success == true ? response.TotalCount : 0;
+            if (response?.Success == false && !string.IsNullOrWhiteSpace(response.Message))
+                Snackbar.Add(response.Message, Severity.Error);
+
+            return new TableData<IngresoAutorizadoResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate || !AnioStateService.AnioId.HasValue)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal y verifica tus permisos.", Severity.Warning);
+            return;
+        }
+
+        var parameters = DialogParameters(null);
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Nuevo ingreso estimado", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await ReloadData();
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate) return;
+        var parameters = DialogParameters(id);
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar ingreso estimado", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await ReloadData();
+    }
+
+    private DialogParameters DialogParameters(int? id) => new()
+    {
+        ["Id"] = id,
+        ["AnioId"] = AnioStateService.AnioId ?? 0,
+        ["CurrencySymbol"] = _currencySymbol,
+        ["CurrencyName"] = _currencyName
+    };
+
+    private async Task AutorizarAsync(IngresoAutorizadoResponse item)
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            if (!CanAuthorize || item.EstaAutorizado) return;
+
+            var parameters = DialogParameters(item.PkidIngresoAutorizado);
+            parameters["IsAuthorizationFlow"] = true;
+
+            var dialog = await DialogService.ShowAsync<IngresoAutorizadoDialog>(
+                "Autorizar ingreso estimado",
+                parameters,
+                new DialogOptions
+                {
+                    MaxWidth = MaxWidth.ExtraExtraLarge,
+                    FullWidth = true,
+                    CloseButton = false,
+                    CloseOnEscapeKey = false
+                });
+
+            if ((await dialog.Result) is { Canceled: false })
+                await ReloadData();
+        });
+    }
+
+    private async Task DeleteIngresoAsync(IngresoAutorizadoResponse item)
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            var confirm = await JS.InvokeAsync<bool>("confirm", $"Eliminar el ingreso '{TextOrDash(item.Descripcion)}'?");
+            if (!confirm) return;
+            var response = await Service.DeleteAsync(item.PkidIngresoAutorizado);
+            Snackbar.Add(response?.Message ?? "No fue posible eliminar.", response?.Success == true ? Severity.Success : Severity.Error);
+            if (response?.Success == true) await ReloadData();
+        });
+    }
+
+    private async Task OpenPolizaAsync(IngresoAutorizadoResponse item)
+    {
+        if (!item.FkidPolizaConta.HasValue) return;
+        var parameters = new DialogParameters
+        {
+            ["IngresoId"] = item.PkidIngresoAutorizado,
+            ["CurrencySymbol"] = _currencySymbol
+        };
+        var dialog = await DialogService.ShowAsync<IngresoAutorizadoPolizaDialog>("Poliza presupuestal", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true });
+        await dialog.Result;
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<IngresoAutorizadoResponse> items) => items.Select(x => new
+    {
+        ID = x.PkidIngresoAutorizado,
+        Programa = x.ProgramaClaveNombre,
+        Origen = x.OrigenClaveNombre,
+        Fuente = x.FuenteFinanciamientoClaveNombre,
+        TipoGasto = x.TipoGastoClaveNombre,
+        Digito = x.DigitoIdentificadorClaveNombre,
+        Destino = x.DestinoGastoClaveNombre,
+        x.Descripcion,
+        Fecha = x.Fecha.ToString("dd/MM/yyyy", DateCulture),
+        x.Enero, x.Febrero, x.Marzo, x.Abril, x.Mayo, x.Junio,
+        x.Julio, x.Agosto, x.Septiembre, x.Octubre, x.Noviembre, x.Diciembre,
+        x.Total,
+        Poliza = x.FkidPolizaConta,
+        x.FechaAutorizacion,
+        x.UsuarioAutorizacion,
+        x.FechaCreacion,
+        x.UsuarioCreacion,
+        x.FechaModificacion,
+        x.UsuarioModificacion
+    });
+
+    protected override Task<string> GetItemNameForDelete(int id)
+        => Task.FromResult(Elements.FirstOrDefault(x => x.PkidIngresoAutorizado == id)?.Descripcion ?? "el ingreso");
+
+    protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+    private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static int GetMonthHeight(decimal amount, decimal total) => amount <= 0 || total <= 0 ? 10 : Math.Clamp((int)Math.Round(amount / total * 300m), 12, 100);
+
+    private static IEnumerable<(string Label, decimal Amount)> GetMonths(IngresoAutorizadoResponse item)
+    {
+        yield return ("Ene", item.Enero); yield return ("Feb", item.Febrero); yield return ("Mar", item.Marzo);
+        yield return ("Abr", item.Abril); yield return ("May", item.Mayo); yield return ("Jun", item.Junio);
+        yield return ("Jul", item.Julio); yield return ("Ago", item.Agosto); yield return ("Sep", item.Septiembre);
+        yield return ("Oct", item.Octubre); yield return ("Nov", item.Noviembre); yield return ("Dic", item.Diciembre);
+    }
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdText = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (!int.TryParse(userIdText, out var userId)) return;
+            var response = await UsuarioService.GetByIdAsync(userId);
+            if (response?.Success != true || response.Data == null) return;
+            _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+            _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
+        }
+        catch { }
+    }
+
+    public void Dispose() => AnioStateService.OnAnioChanged -= OnAnioChanged;
+}

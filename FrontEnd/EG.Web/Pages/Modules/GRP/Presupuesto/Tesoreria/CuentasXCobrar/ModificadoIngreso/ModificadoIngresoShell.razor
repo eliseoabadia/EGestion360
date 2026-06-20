@@ -1,0 +1,464 @@
+@using System.Globalization
+@using System.Net.Http.Json
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
+@using EG.Dommain.DTOs.Responses
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@implements IDisposable
+@inherits BaseCrudPage<IngreAdecuacionResponse, IngreAdecuacionResponse>
+
+@inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<IngreAdecuacionDetalleResponse> DetalleService
+@inject IGenericCrudService<PolizaDetalleResponse> PolizaDetalleService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column income-mod-page" MaxWidth="MaxWidth.False">
+        @if (Selected == null)
+        {
+            <PageHeader Title="@Title"
+                        Subtitle="@Subtitle"
+                        Icon="@Icons.Material.Filled.CurrencyExchange"
+                        CanCreate="@(CanCreate && HasCompany)"
+                        OnCreate="CreateItem"
+                        OnRefresh="ReloadData" />
+
+            @if (!HasCompany)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">
+                    Selecciona una empresa/sucursal para trabajar con modificaciones de ingresos.
+                </MudAlert>
+            }
+
+            <section class="income-summary">
+                <div><span>Aumentos visibles</span><strong class="positive">@Money(Elements.Sum(x => x.TotalAumento))</strong></div>
+                <div><span>Reducciones visibles</span><strong class="warning">@Money(Elements.Sum(x => x.TotalReduccion))</strong></div>
+                <div><span>Neto visible</span><strong>@Money(Elements.Sum(x => x.Diferencia ?? 0m))</strong></div>
+                <div><span>Registros</span><strong>@TotalCount.ToString("N0", NumberCulture)</strong></div>
+            </section>
+
+            <div class="income-table-wrap">
+                <GenericTable TItem="IngreAdecuacionResponse"
+                              @ref="table"
+                              Title="@Title"
+                              SearchPlaceholder="Buscar clave, justificacion o poliza..."
+                              ShowExportButton="@CanExport"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="value => SearchString = value"
+                              OnSearch="OnSearch"
+                              Loading="@Loading">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Clave" T="IngreAdecuacionResponse">Clave</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Fecha" T="IngreAdecuacionResponse">Fecha</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Justificacion" T="IngreAdecuacionResponse">Justificacion</MudTableSortLabel></MudTh>
+                        <MudTh>Aumento</MudTh>
+                        <MudTh>Reduccion</MudTh>
+                        <MudTh>Neto</MudTh>
+                        <MudTh>Poliza</MudTh>
+                        <MudTh>Estado</MudTh>
+                    </Header>
+                    <Row Context="item">
+                        <MudTd>
+                            <MudTooltip Text="Abrir tablero"><MudIconButton Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(item))" /></MudTooltip>
+                            <MudTooltip Text="@RequestTooltip(item)"><MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(item))" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(item, "enviar-solicitud"))" /></MudTooltip>
+                            <MudTooltip Text="Autorizar"><MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(item))" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(item, "autorizar"))" /></MudTooltip>
+                            <MudTooltip Text="Rechazar y reabrir"><MudIconButton Icon="@Icons.Material.Filled.Undo" Visible="@(CanAuthorize && IsRequestSent(item))" Disabled="@item.Autorizado" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Workflow(item, "rechazar"))" /></MudTooltip>
+                            <DocumentSupportButton Modulo="Presupuesto_Modificado"
+                                                   SubModulo="@SubModuleNameValue"
+                                                   Controlador="IngreAdecuacion"
+                                                   EntidadId="@item.PkidIngreAdecuacion"
+                                                   FkidEmpresaSis="@SucursalStateService.EmpresaId"
+                                                   RegistroTitulo="@TextOrDash(item.Clave)"
+                                                   RegistroDescripcion="@TextOrDash(item.Justificacion)" />
+                            <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsCaptureLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidIngreAdecuacion))" /></MudTooltip>
+                            <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsCaptureLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidIngreAdecuacion))" /></MudTooltip>
+                        </MudTd>
+                        <MudTd><strong>@TextOrDash(item.Clave)</strong><br /><small>@TextOrDash(item.TipoAdecuacionDescripcion)</small></MudTd>
+                        <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd><span class="line-clamp">@TextOrDash(item.Justificacion)</span></MudTd>
+                        <MudTd class="money-cell positive">@Money(item.TotalAumento)</MudTd>
+                        <MudTd class="money-cell warning">@Money(item.TotalReduccion)</MudTd>
+                        <MudTd class="money-cell">@Money(item.Diferencia ?? 0m)</MudTd>
+                        <MudTd>@TextOrDash(item.ClavePoliza)</MudTd>
+                        <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item)">@StatusText(item)</MudChip></MudTd>
+                    </Row>
+                </GenericTable>
+            </div>
+        }
+        else
+        {
+            <div class="income-detail">
+                <MudPaper Elevation="0" Class="income-hero">
+                    <div class="hero-copy">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="BackToList" Class="hero-button" />
+                        <div>
+                            <div class="hero-eyebrow">Modificacion de ingresos</div>
+                            <MudText Typo="Typo.h5" Class="hero-title">@TextOrDash(Selected.Clave)</MudText>
+                            <MudText Typo="Typo.body2" Class="hero-subtitle">@TextOrDash(Selected.Justificacion)</MudText>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(Selected)">@StatusText(Selected)</MudChip>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(Selected))" OnClick="@(() => Workflow(Selected, "enviar-solicitud"))">Solicitar</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(Selected))" OnClick="@(() => Workflow(Selected, "autorizar"))">Autorizar</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Undo" Visible="@(CanAuthorize && IsRequestSent(Selected))" Disabled="@Selected.Autorizado" OnClick="@(() => Workflow(Selected, "rechazar"))">Rechazar</MudButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="RefreshSelected" Class="hero-button" />
+                    </div>
+                </MudPaper>
+
+                <MudGrid Spacing="2" Class="income-kpis">
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Aumentos</span><strong class="positive">@Money(AumentosTotal)</strong><small>Tipo de movimiento 3</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Reducciones</span><strong class="warning">@Money(ReduccionesTotal)</strong><small>Tipo de movimiento 4</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi primary"><span>Neto</span><strong>@Money(NetoTotal)</strong><small>Aumento menos reduccion</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Poliza</span><strong>@TextOrDash(Selected.ClavePoliza)</strong><small>@BalanceText</small></MudPaper></MudItem>
+                </MudGrid>
+
+                <MudPaper Elevation="0" Class="month-strip">
+                    @foreach (var month in MonthFields)
+                    {
+                        <div><span>@month.Label</span><strong class="@(MonthTotal(month.Index) < 0 ? "warning" : MonthTotal(month.Index) > 0 ? "positive" : string.Empty)">@Money(MonthTotal(month.Index))</strong></div>
+                    }
+                </MudPaper>
+
+                <div class="income-board">
+                    <section class="board-panel movements">
+                        <header>
+                            <div><small>Calendario presupuestal</small><h3>Movimientos de la adecuacion</h3></div>
+                            <div class="panel-actions">
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@(SelectedLocked || (!AllowBothMovements && DefaultMovimientoId != 3))" OnClick="@(() => OpenDetalle(null, 3))">Aumento</MudButton>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.RemoveCircleOutline" Visible="@CanCreate" Disabled="@(SelectedLocked || (!AllowBothMovements && DefaultMovimientoId != 4))" OnClick="@(() => OpenDetalle(null, 4))">Reduccion</MudButton>
+                            </div>
+                        </header>
+                        <div class="board-scroll">
+                            <GenericTable TItem="IngreAdecuacionDetalleResponse"
+                                          @ref="detalleTable"
+                                          Title="Movimientos"
+                                          ShowExportButton="false"
+                                          ServerDataFunc="LoadDetalleData"
+                                          SearchString="@detalleSearch"
+                                          SearchStringChanged="value => detalleSearch = value"
+                                          OnSearch="ReloadDetalle">
+                                <Header>
+                                    <MudTh>Acciones</MudTh><MudTh>Tipo</MudTh><MudTh>Posicion presupuestal</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh>
+                                </Header>
+                                <Row Context="detail">
+                                    <MudTd>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenDetalle(detail.PkidIngreAdecuacionDetalle, detail.FkidTipoMovimientoPres))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(detail.PkidIngreAdecuacionDetalle))" />
+                                    </MudTd>
+                                    <MudTd><MudChip T="string" Size="Size.Small" Color="@(detail.FkidTipoMovimientoPres == 3 ? Color.Success : Color.Warning)">@TextOrDash(detail.TipoMovimientoDescripcion)</MudChip></MudTd>
+                                    <MudTd><strong>@TextOrDash(detail.PosicionPresupuestal)</strong><br /><small>@TextOrDash(detail.IngresoAutorizadoDescripcion)</small></MudTd>
+                                    <MudTd>@detail.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                                    <MudTd class="money-cell">@Money(Math.Abs(detail.Total ?? 0m))</MudTd>
+                                </Row>
+                            </GenericTable>
+                        </div>
+                    </section>
+
+                    <section class="board-panel accounting">
+                        <header>
+                            <div><small>Vista contable</small><h3>Poliza @TextOrDash(Selected.ClavePoliza)</h3></div>
+                            <MudChip T="string" Size="Size.Small" Color="@(IsSelectedBalanced ? Color.Success : Color.Warning)">@BalanceText</MudChip>
+                        </header>
+                        <div class="accounting-totals"><span>Debe <strong>@Money(DebeTotal)</strong></span><span>Haber <strong>@Money(HaberTotal)</strong></span></div>
+                        <div class="board-scroll">
+                            <table class="accounting-table">
+                                <thead><tr><th>Cuenta</th><th>Descripcion</th><th>Debe</th><th>Haber</th></tr></thead>
+                                <tbody>
+                                    @if (_poliza.Count == 0)
+                                    {
+                                        <tr><td colspan="4" class="empty">Sin movimientos contables</td></tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var row in _poliza)
+                                        {
+                                            <tr><td>@TextOrDash(row.CuentaClaveNombre ?? row.CuentaClave)</td><td>@TextOrDash(row.Descripcion)</td><td>@Money(row.ImporteDebe ?? 0m)</td><td>@Money(row.ImporteHaber ?? 0m)</td></tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <footer>
+                            <span>Creado: usuario @Selected.UsuarioCreacion · @FormatDateTime(Selected.FechaCreacion)</span>
+                            <span>Actualizado: usuario @(Selected.UsuarioModificacion?.ToString() ?? "-") · @FormatDateTime(Selected.FechaModificacion)</span>
+                        </footer>
+                    </section>
+                </div>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .income-mod-page { height: calc(100vh - 146px); max-height: calc(100vh - 146px); min-height: 0; overflow: hidden; }
+    .income-table-wrap, .income-detail, .board-scroll { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+    .income-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin: 8px 0 12px; }
+    .income-summary > div, .income-kpi { background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: 9px; padding: 10px 12px; }
+    .income-summary span, .income-kpi span, .income-kpi small { color: var(--mud-palette-text-secondary); display: block; font-size: .7rem; text-transform: uppercase; }
+    .income-summary strong, .income-kpi strong { display: block; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .income-detail { display: flex; flex-direction: column; gap: 10px; }
+    .income-hero { align-items: center; background: linear-gradient(135deg,#173c56,#102233 55%,#111827); border: 1px solid rgba(45,212,191,.3); border-radius: 10px; color: #fff; display: flex; justify-content: space-between; padding: 14px; }
+    .hero-copy, .hero-actions, .panel-actions, .accounting-totals { align-items: center; display: flex; gap: 10px; }
+    .hero-actions { flex-wrap: wrap; justify-content: flex-end; }
+    .hero-button { background: rgba(255,255,255,.08); color: #fff; }
+    .hero-eyebrow { color: #5eead4; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .hero-title { color: #fff; font-weight: 800; }
+    .hero-subtitle { color: rgba(255,255,255,.72); max-width: 760px; }
+    .income-kpis { flex: 0 0 auto; }
+    .income-kpi.primary { background: linear-gradient(135deg,rgba(14,116,144,.18),rgba(13,148,136,.10)); border-color: rgba(20,184,166,.35); }
+    .month-strip { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); padding: 8px; }
+    .month-strip > div { border-right: 1px solid var(--mud-palette-lines-default); min-width: 0; padding: 2px 6px; text-align: center; }
+    .month-strip > div:last-child { border-right: 0; }
+    .month-strip span { color: var(--mud-palette-text-secondary); display: block; font-size: .65rem; text-transform: uppercase; }
+    .month-strip strong { display: block; font-size: .76rem; overflow: hidden; text-overflow: ellipsis; }
+    .income-board { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0,1.35fr) minmax(360px,.9fr); gap: 10px; min-height: 0; }
+    .board-panel { background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: 10px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .board-panel > header { align-items: center; border-bottom: 1px solid var(--mud-palette-lines-default); display: flex; justify-content: space-between; padding: 10px 12px; }
+    .board-panel h3 { font-size: .95rem; margin: 0; }
+    .board-panel header small { color: var(--mud-palette-text-secondary); font-size: .65rem; text-transform: uppercase; }
+    .accounting-totals { border-bottom: 1px solid var(--mud-palette-lines-default); justify-content: flex-end; padding: 7px 12px; }
+    .accounting-totals span { color: var(--mud-palette-text-secondary); font-size: .72rem; }
+    .accounting-totals strong { color: var(--mud-palette-text-primary); }
+    .accounting-table { border-collapse: collapse; font-size: .76rem; width: 100%; }
+    .accounting-table th, .accounting-table td { border-bottom: 1px solid var(--mud-palette-lines-default); padding: 7px 8px; text-align: left; }
+    .accounting-table th:nth-child(3), .accounting-table th:nth-child(4), .accounting-table td:nth-child(3), .accounting-table td:nth-child(4) { text-align: right; white-space: nowrap; }
+    .board-panel footer { border-top: 1px solid var(--mud-palette-lines-default); color: var(--mud-palette-text-secondary); display: flex; flex-wrap: wrap; font-size: .65rem; gap: 6px 16px; padding: 7px 10px; }
+    .empty { color: var(--mud-palette-text-secondary); padding: 24px !important; text-align: center !important; }
+    .money-cell { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .positive { color: var(--mud-palette-success); }
+    .warning { color: var(--mud-palette-warning); }
+    .line-clamp { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    @@media (max-width: 1100px) { .income-board { grid-template-columns: 1fr; overflow: auto; } .board-panel { min-height: 360px; } .month-strip { grid-template-columns: repeat(6,1fr); } .income-summary { grid-template-columns: repeat(2,1fr); } }
+</style>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Modificado de ingresos";
+    [Parameter] public string Subtitle { get; set; } = "Control presupuestal y contable";
+    [Parameter] public string SubModuleNameValue { get; set; } = "Adecuaciones_Compensadas";
+    [Parameter] public int TipoAdecuacionId { get; set; }
+    [Parameter] public int DefaultMovimientoId { get; set; }
+    [Parameter] public bool AllowBothMovements { get; set; }
+
+    private GenericTable<IngreAdecuacionResponse> table = null!;
+    private GenericTable<IngreAdecuacionDetalleResponse>? detalleTable;
+    private IngreAdecuacionResponse? Selected;
+    private bool SelectedLocked;
+    private string detalleSearch = string.Empty;
+    private string _currencySymbol = "$";
+    private string _currencyName = "Peso Mexicano";
+    private List<IngreAdecuacionDetalleResponse> _detalles = [];
+    private List<PolizaDetalleResponse> _poliza = [];
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly (int Index, string Label)[] MonthFields = [(1,"Ene"),(2,"Feb"),(3,"Mar"),(4,"Abr"),(5,"May"),(6,"Jun"),(7,"Jul"),(8,"Ago"),(9,"Sep"),(10,"Oct"),(11,"Nov"),(12,"Dic")];
+
+    protected override string ModuleName => "Presupuesto_Modificado";
+    protected override string SubModuleName => SubModuleNameValue;
+    protected override Type CreateDialogType => typeof(ModificadoIngresoDialog);
+    protected override Type EditDialogType => typeof(ModificadoIngresoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<IngreAdecuacionResponse>);
+    protected override string GetDefaultSortLabel() => "Fecha";
+
+    private bool HasCompany => SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0;
+    private decimal AumentosTotal => _detalles.Where(x => x.FkidTipoMovimientoPres == 3).Sum(x => Math.Abs(x.Total ?? 0m));
+    private decimal ReduccionesTotal => _detalles.Where(x => x.FkidTipoMovimientoPres == 4).Sum(x => Math.Abs(x.Total ?? 0m));
+    private decimal NetoTotal => AumentosTotal - ReduccionesTotal;
+    private decimal DebeTotal => _poliza.Sum(x => x.ImporteDebe ?? 0m);
+    private decimal HaberTotal => _poliza.Sum(x => x.ImporteHaber ?? 0m);
+    private bool IsSelectedBalanced => _poliza.Count > 0 && DebeTotal == HaberTotal;
+    private string BalanceText => _poliza.Count == 0 ? "Sin movimientos" : IsSelectedBalanced ? "Balanceada" : $"Diferencia {Money(Math.Abs(DebeTotal - HaberTotal))}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        await SucursalStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        await LoadCurrencyAsync();
+    }
+
+    protected override async Task<TableData<IngreAdecuacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (!HasCompany || !AnioStateService.AnioId.HasValue)
+            return new TableData<IngreAdecuacionResponse> { Items = [], TotalItems = 0 };
+
+        var response = await Service.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            SearchString,
+            state.SortLabel ?? GetDefaultSortLabel(),
+            state.SortDirection,
+            new() { ["FkidAnioSis"] = AnioStateService.AnioId.Value, ["FkidTipoAdecuacionPres"] = TipoAdecuacionId });
+
+        Elements = response?.Items?.ToList() ?? [];
+        TotalCount = response?.TotalCount ?? 0;
+        return new TableData<IngreAdecuacionResponse> { Items = Elements, TotalItems = TotalCount };
+    }
+
+    protected override async Task CreateItem()
+    {
+        if (!HasCompany) { Snackbar.Add("Selecciona una empresa/sucursal.", Severity.Warning); return; }
+        if (!AnioStateService.AnioId.HasValue) { Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning); return; }
+
+        var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {Title}", DialogParams(null), new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await ReloadData();
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        var item = Elements.FirstOrDefault(x => x.PkidIngreAdecuacion == id) ?? Selected;
+        if (item != null && IsCaptureLocked(item)) { Snackbar.Add("La captura esta bloqueada por su estado.", Severity.Warning); return; }
+
+        var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {Title}", DialogParams(id), new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            if (Selected != null) await RefreshSelected(); else await ReloadData();
+        }
+    }
+
+    private DialogParameters DialogParams(int? id) => new()
+    {
+        ["Id"] = id,
+        ["TipoAdecuacionId"] = TipoAdecuacionId,
+        ["AnioId"] = AnioStateService.AnioId ?? 0
+    };
+
+    private async Task SelectItem(IngreAdecuacionResponse item) { Selected = item; await RefreshSelected(); }
+    private async Task BackToList() { Selected = null; await ReloadData(); }
+
+    private async Task RefreshSelected()
+    {
+        if (Selected == null) return;
+        var response = await Service.GetByIdAsync(Selected.PkidIngreAdecuacion);
+        if (response?.Success == true && response.Data != null) Selected = response.Data;
+        SelectedLocked = Selected != null && IsCaptureLocked(Selected);
+        await LoadBoardsAsync();
+    }
+
+    private async Task LoadBoardsAsync()
+    {
+        if (Selected == null) return;
+        var detailResponse = await DetalleService.GetAllPaginadoAsync(1, 500, detalleSearch, "Fecha", SortDirection.Descending, new() { ["FkidIngreAdecuacionPres"] = Selected.PkidIngreAdecuacion });
+        _detalles = detailResponse?.Items?.ToList() ?? [];
+
+        var policyResponse = await PolizaDetalleService.GetAllPaginadoAsync(1, 500, string.Empty, "PkidPolizaDetalle", SortDirection.Ascending, new() { ["FkidPolizaConta"] = Selected.FkidPolizaConta ?? 0 });
+        _poliza = policyResponse?.Items?.ToList() ?? [];
+        if (detalleTable != null) await detalleTable.ReloadData();
+        StateHasChanged();
+    }
+
+    private async Task<TableData<IngreAdecuacionDetalleResponse>> LoadDetalleData(TableState state, CancellationToken cancellationToken)
+    {
+        if (Selected == null) return new() { Items = [], TotalItems = 0 };
+        var filters = new Dictionary<string, object> { ["FkidIngreAdecuacionPres"] = Selected.PkidIngreAdecuacion };
+        if (!AllowBothMovements) filters["FkidTipoMovimientoPres"] = DefaultMovimientoId;
+
+        var response = await DetalleService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, detalleSearch, state.SortLabel ?? "Fecha", state.SortDirection, filters);
+        return new() { Items = response?.Items ?? [], TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task OpenDetalle(int? id, int tipoMovimiento)
+    {
+        if (Selected == null || SelectedLocked) return;
+        var dialog = await DialogService.ShowAsync<ModificadoIngresoDetalleDialog>(
+            id.HasValue ? "Editar movimiento" : "Nuevo movimiento",
+            new DialogParameters
+            {
+                ["Id"] = id,
+                ["AdecuacionId"] = Selected.PkidIngreAdecuacion,
+                ["TipoMovimientoId"] = tipoMovimiento,
+                ["AnioId"] = AnioStateService.AnioId ?? 0,
+                ["CurrencySymbol"] = _currencySymbol
+            },
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await RefreshSelected();
+    }
+
+    private async Task DeleteDetalle(int id)
+    {
+        if (SelectedLocked) return;
+        if (!await JS.InvokeAsync<bool>("confirm", "Eliminar este movimiento y sus renglones contables?")) return;
+        var result = await DetalleService.DeleteAsync(id);
+        Snackbar.Add(result?.Message ?? "Movimiento eliminado.", result?.Success == true ? Severity.Success : Severity.Error);
+        await RefreshSelected();
+    }
+
+    private async Task Workflow(IngreAdecuacionResponse item, string action)
+    {
+        var verb = action switch { "autorizar" => "autorizar y bloquear", "rechazar" => "rechazar y reabrir", _ => "enviar a autorizacion" };
+        if (!await JS.InvokeAsync<bool>("confirm", $"Confirmas {verb} {item.Clave}?")) return;
+
+        var response = await Http.PostAsync($"api/IngreAdecuacion/{item.PkidIngreAdecuacion}/{action}", null);
+        var result = await response.Content.ReadFromJsonAsync<EG.Common.GenericModel.PagedResult<IngreAdecuacionResponse>>();
+        Snackbar.Add(result?.Message ?? (response.IsSuccessStatusCode ? "Proceso realizado." : "No fue posible procesar."), response.IsSuccessStatusCode ? Severity.Success : Severity.Error);
+        if (Selected != null) await RefreshSelected(); else await ReloadData();
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<IngreAdecuacionResponse> items) => items.Select(item => new
+    {
+        item.Clave,
+        item.TipoAdecuacionDescripcion,
+        item.EstatusAdecuacionDescripcion,
+        item.Justificacion,
+        Fecha = item.Fecha.ToString("dd/MM/yyyy"),
+        item.TotalAumento,
+        item.TotalReduccion,
+        item.Diferencia,
+        item.ClavePoliza,
+        item.Autorizado,
+        item.UsuarioCreacion,
+        item.FechaCreacion,
+        item.UsuarioModificacion,
+        item.FechaModificacion
+    });
+
+    protected override Task<string> GetItemNameForDelete(int id) => Task.FromResult(Elements.FirstOrDefault(x => x.PkidIngreAdecuacion == id)?.Clave ?? "la adecuacion");
+    protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+    private Task ReloadDetalle() => detalleTable?.ReloadData() ?? Task.CompletedTask;
+    private static bool IsRequestSent(IngreAdecuacionResponse item) => item.FkidAccionAdecuacionMasterPres == 2;
+    private static bool IsCaptureLocked(IngreAdecuacionResponse item) => item.Autorizado || IsRequestSent(item);
+    private bool CanSendRequest(IngreAdecuacionResponse item) => !IsCaptureLocked(item) && item.HasChild == true;
+    private bool CanAuthorizeItem(IngreAdecuacionResponse item) => CanAuthorize && !item.Autorizado && IsRequestSent(item);
+    private string RequestTooltip(IngreAdecuacionResponse item) => item.Autorizado ? "Adecuacion autorizada" : IsRequestSent(item) ? "Solicitud enviada" : item.HasChild == true ? "Enviar solicitud" : "Agrega al menos un movimiento";
+    private static string StatusText(IngreAdecuacionResponse item) => item.Autorizado ? "Autorizada" : item.FkidAccionAdecuacionMasterPres switch { 2 => "En autorizacion", 4 => "Rechazada", _ => "En captura" };
+    private static Color StatusColor(IngreAdecuacionResponse item) => item.Autorizado ? Color.Success : item.FkidAccionAdecuacionMasterPres switch { 2 => Color.Info, 4 => Color.Error, _ => Color.Warning };
+    private decimal MonthTotal(int month) => _detalles.Sum(item => month switch { 1 => item.Enero, 2 => item.Febrero, 3 => item.Marzo, 4 => item.Abril, 5 => item.Mayo, 6 => item.Junio, 7 => item.Julio, 8 => item.Agosto, 9 => item.Septiembre, 10 => item.Octubre, 11 => item.Noviembre, _ => item.Diciembre });
+    private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string FormatDateTime(DateTime? value) => value?.ToString("dd/MM/yyyy HH:mm") ?? "-";
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+    private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdText = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (!int.TryParse(userIdText, out var userId)) return;
+            var response = await UsuarioService.GetByIdAsync(userId);
+            if (response?.Success != true || response.Data == null) return;
+            _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+            _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+    }
+}

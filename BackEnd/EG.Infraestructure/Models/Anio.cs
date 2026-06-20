@@ -27,6 +27,8 @@ public partial class Anio
 
     public virtual ICollection<EstudioMercado> EstudioMercados { get; set; } = new List<EstudioMercado>();
 
+    public virtual ICollection<IngreAdecuacion> IngreAdecuacions { get; set; } = new List<IngreAdecuacion>();
+
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();

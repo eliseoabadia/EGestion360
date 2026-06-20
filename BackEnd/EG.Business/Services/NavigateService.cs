@@ -126,7 +126,7 @@ namespace EG.Business.Services
 
         /// <summary>
         /// Obtiene los claims del usuario desde la base de datos.
-        /// EsParaLogin NO se envía (default en SP) — este método es para cargar permisos post-login.
+        /// Solo devuelve permisos asociados a menús activos.
         /// </summary>
         public async Task<List<spGetClaimsByUserResult>> ObtenerClaimsUsuarioAsync(int usuarioId)
         {
@@ -135,11 +135,14 @@ namespace EG.Business.Services
 
             try
             {
-                // Solo se pasa @PkIdUser; @EsParaLogin NO se envía (queda NULL/0 en el SP)
-                var paramUserId = new SqlParameter("@PkIdUser", usuarioId);
+                var parameters = new[]
+                {
+                    new SqlParameter("@PkIdUser", usuarioId),
+                    new SqlParameter("@EsParaLogin", true)
+                };
                 var resultClaims = await _repositorySP.ExecuteStoredProcedureAsync<spGetClaimsByUserResult>(
                     "[SIS].[spGetClaimsByUser]",
-                    paramUserId);
+                    parameters);
 
                 return resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
             }

@@ -31,6 +31,17 @@ namespace EG.Business.Mapping.PresupuestoModificado
 
             config.NewConfig<VwEgresoDisponible, EgresoDisponibleResponse>().TwoWays();
             config.NewConfig<EgresoDisponibleResponse, EgresoDisponibleDto>().TwoWays();
+
+            config.NewConfig<IngreAdecuacion, IngreAdecuacionDto>().TwoWays();
+            config.NewConfig<VwIngresoAdecuacion, IngreAdecuacionResponse>().TwoWays();
+            config.NewConfig<IngreAdecuacionResponse, IngreAdecuacionDto>().TwoWays();
+
+            config.NewConfig<IngreAdecuacionDetalle, IngreAdecuacionDetalleDto>().TwoWays();
+            config.NewConfig<VwIngresoAdecuacionDetalle, IngreAdecuacionDetalleResponse>().TwoWays();
+            config.NewConfig<IngreAdecuacionDetalleResponse, IngreAdecuacionDetalleDto>().TwoWays();
+
+            config.NewConfig<VwIngresoDisponible, IngresoDisponibleResponse>().TwoWays();
+            config.NewConfig<IngresoDisponibleResponse, IngresoDisponibleDto>().TwoWays();
         }
     }
 }

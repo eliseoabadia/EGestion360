@@ -1,0 +1,300 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<IngreAdecuacionDetalleResponse> Service
+@inject IGenericCrudService<IngresoDisponibleResponse> DisponibleService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="IngreAdecuacionDetalleResponse"
+                Title="@DialogTitle"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="IngreAdecuacionDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@DialogTitle">
+        <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_ingreso"
+                                   ValueChanged="OnIngresoChanged"
+                                   Label="Ingreso autorizado disponible"
+                                   Required="true"
+                                   LoadPage="LoadIngresosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker Date="@_fecha"
+                               DateChanged="value => _fecha = value"
+                               Label="Fecha"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Value="@TipoTexto"
+                              Label="Tipo de movimiento"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              @bind-Value="item.Justificacion"
+                              Label="Justificacion del movimiento"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000" />
+            </MudItem>
+
+            @foreach (var month in MonthFields)
+            {
+                <MudItem xs="6" sm="4" md="2">
+                    <MudNumericField T="decimal"
+                                     Value="@GetMonth(month.Index)"
+                                     ValueChanged="value => SetMonth(month.Index, value)"
+                                     Label="@month.Label"
+                                     Variant="Variant.Outlined"
+                                     Min="0m"
+                                     Format="0.00"
+                                     Culture="@NumberCulture" />
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="pa-3" Style="border:1px solid var(--mud-palette-lines-default);border-radius:8px;">
+                    <MudGrid>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Importe capturado</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">@Money(CapturedTotal)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Disponible seleccionado</MudText>
+                            <MudText Typo="Typo.h6">@Money(_selectedDisponible?.Total ?? 0m)</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Resultado estimado</MudText>
+                            <MudText Typo="Typo.h6" Color="@(TipoMovimientoId == 3 ? Color.Success : Color.Warning)">@Money(ResultadoEstimado)</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int AdecuacionId { get; set; }
+    [Parameter] public int TipoMovimientoId { get; set; }
+    [Parameter] public int AnioId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<IngreAdecuacionDetalleResponse> form = null!;
+    private IngreAdecuacionDetalleResponse item = new()
+    {
+        Activo = true,
+        Fecha = DateOnly.FromDateTime(DateTime.Today)
+    };
+    private LookupItem? _ingreso;
+    private IngresoDisponibleResponse? _selectedDisponible;
+    private DateTime? _fecha = DateTime.Today;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly (int Index, string Label)[] MonthFields =
+    [
+        (1, "Ene"), (2, "Feb"), (3, "Mar"), (4, "Abr"),
+        (5, "May"), (6, "Jun"), (7, "Jul"), (8, "Ago"),
+        (9, "Sep"), (10, "Oct"), (11, "Nov"), (12, "Dic")
+    ];
+
+    private string DialogTitle => Id.HasValue ? "Editar movimiento" : "Nuevo movimiento";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Agregar";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Agregando...";
+    private string TipoTexto => TipoMovimientoId == 3 ? "Aumento de ingresos" : "Reduccion de ingresos";
+    private decimal CapturedTotal => MonthFields.Sum(month => GetMonth(month.Index));
+    private decimal ResultadoEstimado => TipoMovimientoId == 3
+        ? (_selectedDisponible?.Total ?? 0m) + CapturedTotal
+        : Math.Max(0m, (_selectedDisponible?.Total ?? 0m) - CapturedTotal);
+    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        item.FkidIngreAdecuacionPres = AdecuacionId;
+        item.FkidTipoMovimientoPres = TipoMovimientoId;
+        if (!Id.HasValue) return;
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success != true || response.Data == null) return;
+
+        item = response.Data;
+        NormalizeForCapture();
+        _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+        _ingreso = new LookupItem
+        {
+            Id = item.FkidIngresoAutorizadoPres,
+            Text = item.PosicionPresupuestal ?? item.IngresoAutorizadoDescripcion ?? item.FkidIngresoAutorizadoPres.ToString()
+        };
+        await LoadDisponibleById(item.FkidIngresoAutorizadoPres);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+        if (_ingreso == null)
+        {
+            Snackbar.Add("Selecciona un ingreso autorizado.", Severity.Warning);
+            return;
+        }
+        if (CapturedTotal <= 0m)
+        {
+            Snackbar.Add("Captura un importe en al menos un mes.", Severity.Warning);
+            return;
+        }
+        if (HasPreviousMonthAmounts())
+        {
+            Snackbar.Add("No captures importes en meses anteriores al mes de la adecuacion.", Severity.Warning);
+            return;
+        }
+        if (TipoMovimientoId == 4 && TryGetExceededMonth(out var exceededMonth))
+        {
+            Snackbar.Add($"La reduccion supera el disponible de {exceededMonth}.", Severity.Warning);
+            return;
+        }
+
+        item.FkidIngresoAutorizadoPres = _ingreso.Id;
+        item.FkidIngreAdecuacionPres = AdecuacionId;
+        item.FkidTipoMovimientoPres = TipoMovimientoId;
+        item.Fecha = DateOnly.FromDateTime(_fecha ?? DateTime.Today);
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Movimiento guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el movimiento.", Severity.Error);
+    }
+
+    private async Task OnIngresoChanged(LookupItem? value)
+    {
+        _ingreso = value;
+        _selectedDisponible = null;
+        if (value != null) await LoadDisponibleById(value.Id);
+    }
+
+    private async Task LoadDisponibleById(int id)
+    {
+        var response = await DisponibleService.GetByIdAsync(id);
+        if (response?.Success == true) _selectedDisponible = response.Data;
+    }
+
+    private async Task<ComboLookupResult> LoadIngresosPageAsync(
+        int page,
+        int pageSize,
+        string filter,
+        CancellationToken cancellationToken)
+    {
+        var response = await DisponibleService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            "DescripcionRequisicion",
+            SortDirection.Ascending,
+            new() { ["FkidAnioSis"] = AnioId });
+
+        var rows = response?.Items?.Select(row => new LookupItem
+        {
+            Id = row.PkidIngresoAutorizado,
+            Text = $"{row.DescripcionRequisicion} | {Money(row.Total ?? 0m)}"
+        }).ToList() ?? [];
+
+        return new ComboLookupResult { Items = rows, TotalCount = response?.TotalCount ?? rows.Count };
+    }
+
+    private bool HasPreviousMonthAmounts()
+    {
+        var currentMonth = (_fecha ?? DateTime.Today).Month;
+        return MonthFields.Where(month => month.Index < currentMonth)
+            .Any(month => GetMonth(month.Index) > 0m);
+    }
+
+    private bool TryGetExceededMonth(out string monthName)
+    {
+        monthName = string.Empty;
+        if (_selectedDisponible == null) return false;
+
+        foreach (var month in MonthFields)
+        {
+            if (GetMonth(month.Index) <= GetAvailableMonth(month.Index)) continue;
+            monthName = month.Label;
+            return true;
+        }
+
+        return false;
+    }
+
+    private decimal GetAvailableMonth(int index) => index switch
+    {
+        1 => _selectedDisponible?.Enero ?? 0m,
+        2 => _selectedDisponible?.Febrero ?? 0m,
+        3 => _selectedDisponible?.Marzo ?? 0m,
+        4 => _selectedDisponible?.Abril ?? 0m,
+        5 => _selectedDisponible?.Mayo ?? 0m,
+        6 => _selectedDisponible?.Junio ?? 0m,
+        7 => _selectedDisponible?.Julio ?? 0m,
+        8 => _selectedDisponible?.Agosto ?? 0m,
+        9 => _selectedDisponible?.Septiembre ?? 0m,
+        10 => _selectedDisponible?.Octubre ?? 0m,
+        11 => _selectedDisponible?.Noviembre ?? 0m,
+        12 => _selectedDisponible?.Diciembre ?? 0m,
+        _ => 0m
+    };
+
+    private decimal GetMonth(int index) => index switch
+    {
+        1 => item.Enero,
+        2 => item.Febrero,
+        3 => item.Marzo,
+        4 => item.Abril,
+        5 => item.Mayo,
+        6 => item.Junio,
+        7 => item.Julio,
+        8 => item.Agosto,
+        9 => item.Septiembre,
+        10 => item.Octubre,
+        11 => item.Noviembre,
+        12 => item.Diciembre,
+        _ => 0m
+    };
+
+    private void SetMonth(int index, decimal value)
+    {
+        value = Math.Abs(value);
+        switch (index)
+        {
+            case 1: item.Enero = value; break;
+            case 2: item.Febrero = value; break;
+            case 3: item.Marzo = value; break;
+            case 4: item.Abril = value; break;
+            case 5: item.Mayo = value; break;
+            case 6: item.Junio = value; break;
+            case 7: item.Julio = value; break;
+            case 8: item.Agosto = value; break;
+            case 9: item.Septiembre = value; break;
+            case 10: item.Octubre = value; break;
+            case 11: item.Noviembre = value; break;
+            case 12: item.Diciembre = value; break;
+        }
+    }
+
+    private void NormalizeForCapture()
+    {
+        foreach (var month in MonthFields)
+            SetMonth(month.Index, GetMonth(month.Index));
+    }
+}

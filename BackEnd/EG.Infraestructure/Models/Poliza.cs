@@ -59,6 +59,10 @@ public partial class Poliza
 
     public virtual TipoPoliza FkidTipoPolizaSisNavigation { get; set; }
 
+    public virtual ICollection<IngreAdecuacion> IngreAdecuacions { get; set; } = new List<IngreAdecuacion>();
+
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizados { get; set; } = new List<IngresoAutorizado>();
+
     public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
 
     public virtual ICollection<PolizaDetalle> PolizaDetalles { get; set; } = new List<PolizaDetalle>();

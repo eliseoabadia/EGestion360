@@ -22,4 +22,6 @@ public partial class TipoMovimiento
     public int? UsuarioModificacion { get; set; }
 
     public virtual ICollection<EgreAdecuacionDetalle> EgreAdecuacionDetalles { get; set; } = new List<EgreAdecuacionDetalle>();
+
+    public virtual ICollection<IngreAdecuacionDetalle> IngreAdecuacionDetalles { get; set; } = new List<IngreAdecuacionDetalle>();
 }

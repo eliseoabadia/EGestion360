@@ -233,6 +233,12 @@ public partial class Usuario
 
     public virtual ICollection<GrupoBien> GrupoBienUsuarioModificacionNavigations { get; set; } = new List<GrupoBien>();
 
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizadoUsuarioAutorizacionNavigations { get; set; } = new List<IngresoAutorizado>();
+
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizadoUsuarioCreacionNavigations { get; set; } = new List<IngresoAutorizado>();
+
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizadoUsuarioModificacionNavigations { get; set; } = new List<IngresoAutorizado>();
+
     public virtual ICollection<Instrumento> InstrumentoUsuarioCreacionNavigations { get; set; } = new List<Instrumento>();
 
     public virtual ICollection<Instrumento> InstrumentoUsuarioModificacionNavigations { get; set; } = new List<Instrumento>();

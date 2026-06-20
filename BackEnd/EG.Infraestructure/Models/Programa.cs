@@ -99,6 +99,8 @@ public partial class Programa
 
     public virtual VertienteGasto FkidVertienteGastoPresNavigation { get; set; }
 
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizados { get; set; } = new List<IngresoAutorizado>();
+
     public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();

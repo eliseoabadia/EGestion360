@@ -1,20 +1,58 @@
 using System.Security.Claims;
+using EG.Business.Interfaces;
+using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EG.ApiCoreBS.Auth
 {
     public sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
     {
-        protected override Task HandleRequirementAsync(
+        private readonly IAuthService _authService;
+        private readonly IMemoryCache _cache;
+        private readonly ILogger<PermissionAuthorizationHandler> _logger;
+
+        public PermissionAuthorizationHandler(
+            IAuthService authService,
+            IMemoryCache cache,
+            ILogger<PermissionAuthorizationHandler> logger)
+        {
+            _authService = authService;
+            _cache = cache;
+            _logger = logger;
+        }
+
+        protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             PermissionRequirement requirement)
         {
-            if (HasSuperAdminRole(context.User) || HasPermissionTriplet(context.User, requirement))
+            if (HasSuperAdminRole(context.User))
             {
                 context.Succeed(requirement);
+                return;
             }
 
-            return Task.CompletedTask;
+            var userId = GetUserId(context.User);
+            if (!userId.HasValue)
+                return;
+
+            try
+            {
+                var permissions = await _cache.GetOrCreateAsync(
+                    $"authorization-permissions:{userId.Value}",
+                    async entry =>
+                    {
+                        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+                        return await _authService.ObtenerClaimsUsuarioAsync(userId.Value);
+                    }) ?? new List<spGetClaimsByUserResult>();
+
+                if (HasPermission(permissions, requirement))
+                    context.Succeed(requirement);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cargando permisos para el usuario {UserId}", userId.Value);
+            }
         }
 
         private static bool HasSuperAdminRole(ClaimsPrincipal user)
@@ -25,43 +63,24 @@ namespace EG.ApiCoreBS.Auth
                     && string.Equals(c.Value, "SuperAdmin", StringComparison.OrdinalIgnoreCase));
         }
 
-        private static bool HasPermissionTriplet(ClaimsPrincipal user, PermissionRequirement requirement)
+        private static int? GetUserId(ClaimsPrincipal user)
         {
-            var claims = user.Claims.ToList();
+            var value = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? user.FindFirstValue("sub")
+                ?? user.FindFirstValue("id")
+                ?? user.FindFirstValue("Id");
 
-            for (var index = 0; index < claims.Count; index++)
-            {
-                if (!IsClaim(claims[index], "Group", requirement.Group))
-                {
-                    continue;
-                }
-
-                var subGroup = claims.Skip(index + 1).FirstOrDefault(c => IsClaimType(c, "SubGroup"));
-                var values = claims.Skip(index + 1).FirstOrDefault(c => IsClaimType(c, "Values"));
-
-                if (subGroup != null
-                    && values != null
-                    && string.Equals(subGroup.Value, requirement.SubGroup, StringComparison.OrdinalIgnoreCase)
-                    && HasAction(values.Value, requirement.Action))
-                {
-                    return true;
-                }
-            }
-
-            return user.Claims.Any(c => IsClaim(c, "Group", requirement.Group))
-                && user.Claims.Any(c => IsClaim(c, "SubGroup", requirement.SubGroup))
-                && user.Claims.Any(c => IsClaimType(c, "Values") && HasAction(c.Value, requirement.Action));
+            return int.TryParse(value, out var userId) ? userId : null;
         }
 
-        private static bool IsClaim(Claim claim, string type, string value)
+        private static bool HasPermission(
+            IEnumerable<spGetClaimsByUserResult> permissions,
+            PermissionRequirement requirement)
         {
-            return IsClaimType(claim, type)
-                && string.Equals(claim.Value, value, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsClaimType(Claim claim, string type)
-        {
-            return string.Equals(claim.Type, type, StringComparison.OrdinalIgnoreCase);
+            return permissions.Any(permission =>
+                string.Equals(permission.Group, requirement.Group, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(permission.SubGroup, requirement.SubGroup, StringComparison.OrdinalIgnoreCase)
+                && HasAction(permission.Values, requirement.Action));
         }
 
         private static bool HasAction(string values, string action)

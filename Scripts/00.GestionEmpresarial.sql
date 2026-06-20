@@ -536,6 +536,12 @@ VALUES
 (2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Registro_Comprometido', 'PREEPC05', 'Presupuesto_Comprometido', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Tesoreria', 'PREETES01', 'Presupuesto', 'view,view-menu', 0),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'CuentasXCobrar', 'PREETES01', 'Tesoreria', 'view,view-menu', 0),
+(2, 'Tesoreria', 'CuentasXCobrar', NULL, 'app://{0}/{1}', GETDATE(), 'Ley_Ingresos_Estimados', 'PRECPC001', 'CuentasXCobrar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Modificado', 'PREETES01', 'Tesoreria', 'view,view-menu', 0),
+(2, 'Tesoreria', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Adecuaciones_Compensadas', 'PREPM001', 'Presupuesto_Modificado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Tesoreria', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Aumento_Presupuesto', 'PREPM002', 'Presupuesto_Modificado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Tesoreria', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Reduccion_Presupuesto', 'PREPM003', 'Presupuesto_Modificado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'CuentasXPagar', 'PREETES01', 'Tesoreria', 'view,view-menu', 0),
 (2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'RecepcionFactura_ComprobantePago', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Tesoreria', 'CuentasXPagar', NULL, 'app://{0}/{1}', GETDATE(), 'Provision_Pago', 'PREETES02', 'CuentasXPagar', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
@@ -803,6 +809,12 @@ EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficien
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Autorizacion_Suficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Registro_Comprometido', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Tesoreria', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXCobrar', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Ley_Ingresos_Estimados', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Presupuesto_Modificado', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Aumento_Presupuesto', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reduccion_Presupuesto', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXPagar', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'RecepcionFactura_ComprobantePago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
@@ -1044,7 +1056,7 @@ SET IDENTITY_INSERT SIS.Menu ON;
 
 MERGE INTO SIS.Menu AS TARGET
 USING (VALUES
-    -- Módulos principales
+     -- Módulos principales
     (1, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaCog', 1, N'ESP', 1, 1, GETDATE()),
     (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaChartPie', 1, N'ESP', 2, 1, GETDATE()),
     (3, N'Contabilidad', 1, NULL, N'Contabilidad', N'/', N'FaTable', 1, N'ESP', 3, 1, GETDATE()),
@@ -1066,7 +1078,7 @@ USING (VALUES
     -- Configuración -> Presupuestales
     (20, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
     (21, N'Programas Presupuestales', 2, 20, N'Programas Presupuestales.', N'/configuracion/presupuestales/programas-presupuesta', N'FaFolderOpen', 1, N'ESP', 1, 1, GETDATE()),
-    (22, N'Clave del Programa', 2, 20, N'Clave del Programa', N'/configuracion/presupuestales/programa-presupuestal', N'FaKey', 1, N'ESP', 2, 1, GETDATE()),
+    (22, N'Clave del Programa', 1, 20, N'Clave del Programa', N'/', N'FaKey', 1, N'ESP', 2, 1, GETDATE()),
     (23, N'Unidad Responsable', 2, 22, N'Unidad Responsable', N'/configuracion/presupuestales/clave-programa/unidad-responsable', N'FaUserGroup', 1, N'ESP', 1, 1, GETDATE()),
     (24, N'Finalidad', 2, 22, N'Finalidad', N'/configuracion/presupuestales/clave-programa/finalidad', N'FaFlag', 1, N'ESP', 2, 1, GETDATE()),
     (25, N'Función', 2, 22, N'Función', N'/configuracion/presupuestales/clave-programa/funcion', N'FaGears', 1, N'ESP', 3, 1, GETDATE()),
@@ -1096,11 +1108,11 @@ USING (VALUES
     (51, N'Modalidad', 2, 50, N'Modalidad', N'/configuracion/adquisiciones/modalidad', N'FaTag', 1, N'ESP', 1, 1, GETDATE()),
     (52, N'Tipo de Contrato', 2, 50, N'Tipo de Contrato', N'/configuracion/adquisiciones/tipo-contrato', N'FaDocument', 1, N'ESP', 2, 1, GETDATE()),
     (53, N'Tipo de Documentos', 2, 50, N'Tipo de Documentos', N'/configuracion/adquisiciones/tipo-documento', N'FaFile', 1, N'ESP', 3, 1, GETDATE()),
-    (54, N'Tipo de Garantía', 2, 50, N'Tipo de Garantía', N'/configuracion/adquisiciones/tipo-garantia', N'FaLock', 1, N'ESP', 4, 1, GETDATE()),
+    (54, N'Tipo de Garantí­a', 2, 50, N'Tipo de Garantí­a', N'/configuracion/adquisiciones/tipo-garantia', N'FaLock', 1, N'ESP', 4, 1, GETDATE()),
     (55, N'Procedimientos de Contratación', 2, 50, N'Procedimientos de Contratación', N'/configuracion/adquisiciones/procedimientos-contratacion', N'FaGears', 1, N'ESP', 5, 1, GETDATE()),
     (56, N'Estatus Requisición', 2, 50, N'Estatus Requisición', N'/configuracion/adquisiciones/estatus-requisicion', N'FaFlag', 1, N'ESP', 6, 1, GETDATE()),
     (57, N'Proveedores', 2, 50, N'Proveedores', N'/configuracion/adquisiciones/proveedores', N'FaUsers', 1, N'ESP', 7, 1, GETDATE()),
-    (58, N'Artículo', 2, 50, N'Artículo', N'/configuracion/adquisiciones/articulo', N'FaTag', 1, N'ESP', 8, 1, GETDATE()),
+    (58, N'Artí­culo', 2, 50, N'Artí­culo', N'/configuracion/adquisiciones/articulo', N'FaTag', 1, N'ESP', 8, 1, GETDATE()),
     (59, N'Fracción', 2, 50, N'Fracción', N'/configuracion/adquisiciones/fraccion', N'RiListCheck2', 1, N'ESP', 9, 1, GETDATE()),
 
     -- Configuración -> Patrimonio
@@ -1124,8 +1136,8 @@ USING (VALUES
     (77, N'Bien', 2, 70, N'Bien', N'/configuracion/almacen/Bien', N'FaTag', 1, N'ESP', 7, 1, GETDATE()),
     (78, N'Número Conteo', 2, 70, N'Número Conteo', N'/configuracion/almacen/Numero_Conteo', N'RiListCheck2', 1, N'ESP', 8, 1, GETDATE()),
 
-    -- Configuración -> Tesorería
-    (80, N'Tesorería', 1, 1, N'Tesorería', N'/', N'FaChartLine', 1, N'ESP', 7, 1, GETDATE()),
+    -- Configuración -> Tesorerí­a
+    (80, N'Tesorerí­a', 1, 1, N'Tesorerí­a', N'/', N'FaChartLine', 1, N'ESP', 7, 1, GETDATE()),
     (81, N'Tipo de Cambio', 2, 80, N'Tipo de Cambio', N'/configuracion/tesoreria/Tipo_Cambio', N'FaChartLine', 1, N'ESP', 1, 1, GETDATE()),
     (82, N'Tipo Inversión', 2, 80, N'Tipo Inversión', N'/configuracion/tesoreria/Tipo_Inversion', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
     (83, N'Tipo Moneda', 2, 80, N'Tipo Moneda', N'/configuracion/tesoreria/Tipo_Moneda', N'FaTag', 1, N'ESP', 3, 1, GETDATE()),
@@ -1148,20 +1160,28 @@ USING (VALUES
     (110, N'Autorización Suficiencia', 2, 108, N'Autorización Suficiencia', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia', N'FaFlag', 1, N'ESP', 2, 1, GETDATE()),
     (111, N'Registro Comprometido', 2, 108, N'Registro Comprometido', N'/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido', N'FaSave', 1, N'ESP', 3, 1, GETDATE()),
 
-    -- Presupuesto -> Tesorería
-    (120, N'Tesorería', 1, 2, N'Tesorería', N'/', N'FaChartLine', 1, N'ESP', 2, 1, GETDATE()),
-    (121, N'Cuentas por Pagar', 1, 120, N'Cuentas por Pagar', N'/', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
-    (122, N'Recepción de Facturas y Comprobantes de Pago', 2, 121, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),
-    (123, N'Provisión del Pago', 2, 121, N'Provisión del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago', N'FaClock', 1, N'ESP', 2, 1, GETDATE()),
-    (124, N'Elaboración de Cheques o Transferencias', 2, 121, N'Elaboración de Cheques o Transferencias', N'/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia', N'FaSave', 1, N'ESP', 3, 1, GETDATE()),
-    (125, N'Inversiones', 1, 120, N'Inversiones', N'/', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
-    (126, N'Banco', 2, 125, N'Banco', N'/Presupuesto/Tesoreria/Inversiones/Banco', N'FaHome', 1, N'ESP', 1, 1, GETDATE()),
-    (127, N'Cuenta Bancaria', 2, 125, N'Cuenta Bancaria', N'/Presupuesto/Tesoreria/Inversiones/Cuenta_Bancaria', N'FaFile', 1, N'ESP', 2, 1, GETDATE()),
-    (128, N'Intermediarios Financiero', 2, 125, N'Intermediarios Financiero', N'/Presupuesto/Tesoreria/Inversiones/Intermediarios_Financiero', N'FaUsers', 1, N'ESP', 3, 1, GETDATE()),
-    (129, N'Instrumentos de Inversión', 2, 125, N'Instrumentos de Inversión', N'/Presupuesto/Tesoreria/Inversiones/Instrumentos_Inversion', N'FaChartPie', 1, N'ESP', 4, 1, GETDATE()),
-    (130, N'Listado de Inversiones', 2, 125, N'Listado de Inversiones', N'/Presupuesto/Tesoreria/Inversiones/Listado_Inversiones', N'RiListCheck2', 1, N'ESP', 5, 1, GETDATE()),
-    (131, N'Tipo de Plazos', 2, 125, N'Tipo de Plazos', N'/Presupuesto/Tesoreria/Inversiones/Tipo_Plazos', N'FaClock', 1, N'ESP', 6, 1, GETDATE()),
-    (132, N'Tipo de Retiro', 2, 125, N'Tipo de Retiro', N'/Presupuesto/Tesoreria/Inversiones/Tipo_Retiro', N'FaLockOpen', 1, N'ESP', 7, 1, GETDATE()),
+    -- Presupuesto -> Tesorerí­a
+    
+    (120, N'Tesorerí­a', 1, 2, N'Tesorerí­a', N'/', N'FaChartLine', 1, N'ESP', 2, 1, GETDATE()),
+    (121, N'Cuentas por Cobrar', 1, 120, N'Cuentas por Cobrar', N'/', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
+    (126, N'Ley de Ingresos Estimados', 2, 121, N'Ley de Ingresos Estimados', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Estimados', N'FaHome', 1, N'ESP', 1, 1, GETDATE()),
+    (127, N'Modificado de Ingresos', 1, 121, N'Presupuesto_Modificado', N'/', N'FaMoneyBillTransfer', 1, N'ESP', 2, 1, GETDATE()),
+    (128, N'Adecuaciones Compensadas de Ingresos', 2, 127, N'Adecuaciones_Compensadas', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Adecuaciones_Compensadas_Ingresos', N'FaScaleBalanced', 1, N'ESP', 1, 1, GETDATE()),
+    (129, N'Aumentos al presupuesto de Ingresos', 2, 127, N'Ampliaciones', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Aumentos_Presupuesto_Ingreso', N'FaArrowTrendUp', 1, N'ESP', 2, 1, GETDATE()),
+    (130, N'Reducción al presupuesto de Ingresos', 2, 127, N'Reducciones', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Reduccion_Presupuesto_Ingreso', N'FaArrowTrendDown', 1, N'ESP', 3, 1, GETDATE()),
+
+    (140, N'Cuentas por Pagar', 1, 120, N'Cuentas por Pagar', N'/', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
+    (141, N'Recepción de Facturas y Comprobantes de Pago', 2, 140, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),
+    (142, N'Provisión del Pago', 2, 140, N'Provisión del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago', N'FaClock', 1, N'ESP', 2, 1, GETDATE()),
+    (143, N'Elaboración de Cheques o Transferencias', 2, 140, N'Elaboración de Cheques o Transferencias', N'/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia', N'FaSave', 1, N'ESP', 3, 1, GETDATE()),
+    (144, N'Inversiones', 1, 120, N'Inversiones', N'/', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
+    (145, N'Banco', 2, 144, N'Banco', N'/Presupuesto/Tesoreria/Inversiones/Banco', N'FaHome', 1, N'ESP', 1, 1, GETDATE()),
+    (146, N'Cuenta Bancaria', 2, 144, N'Cuenta Bancaria', N'/Presupuesto/Tesoreria/Inversiones/Cuenta_Bancaria', N'FaFile', 1, N'ESP', 2, 1, GETDATE()),
+    (147, N'Intermediarios Financiero', 2, 144, N'Intermediarios Financiero', N'/Presupuesto/Tesoreria/Inversiones/Intermediarios_Financiero', N'FaUsers', 1, N'ESP', 3, 1, GETDATE()),
+    (148, N'Instrumentos de Inversión', 2, 144, N'Instrumentos de Inversión', N'/Presupuesto/Tesoreria/Inversiones/Instrumentos_Inversion', N'FaChartPie', 1, N'ESP', 4, 1, GETDATE()),
+    (149, N'Listado de Inversiones', 2, 144, N'Listado de Inversiones', N'/Presupuesto/Tesoreria/Inversiones/Listado_Inversiones', N'RiListCheck2', 1, N'ESP', 5, 1, GETDATE()),
+    (150, N'Tipo de Plazos', 2, 144, N'Tipo de Plazos', N'/Presupuesto/Tesoreria/Inversiones/Tipo_Plazos', N'FaClock', 1, N'ESP', 6, 1, GETDATE()),
+    (151, N'Tipo de Retiro', 2, 144, N'Tipo de Retiro', N'/Presupuesto/Tesoreria/Inversiones/Tipo_Retiro', N'FaLockOpen', 1, N'ESP', 7, 1, GETDATE()),
 
     -- Contabilidad
     (200, N'Pólizas', 2, 3, N'Pólizas', N'/Contabilidad/Polizas', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
@@ -1190,17 +1210,17 @@ USING (VALUES
     (502, N'Solicitudes de Salida', 2, 6, N'Solicitudes de Salida', N'/Almacen/Solicitudes_Salida', N'RiListCheck2', 1, N'ESP', 3, 1, GETDATE()),
     (503, N'Suministros de Salida', 2, 6, N'Suministros de Salida', N'/Almacen/Suministros_Salida', N'FaFile', 1, N'ESP', 4, 1, GETDATE()),
     (504, N'Existencias Registradas', 2, 6, N'Existencias Registradas', N'/Almacen/Existencias_Registradas', N'FaTable', 1, N'ESP', 5, 1, GETDATE()),
-    (505, N'Conteo Cíclico', 2, 6, N'Conteo Cíclico', N'/Almacen/Conteo_ciclico', N'RiListCheck2', 1, N'ESP', 6, 1, GETDATE()),
+    (505, N'Conteo Cí­clico', 2, 6, N'Conteo Cí­clico', N'/Almacen/Conteo_ciclico', N'RiListCheck2', 1, N'ESP', 6, 1, GETDATE()),
     (506, N'Reporte de Diferencias de Conteo', 2, 6, N'Reporte de Diferencias de Conteo', N'/Almacen/Reporte_diferencias_Conteo', N'FaChartBar', 1, N'ESP', 7, 1, GETDATE()),
-    (507, N'Conteo Cíclico Anual', 2, 6, N'Conteo Cíclico Anual', N'/Almacen/Conteo_ciclico_anual', N'FaCalendar', 1, N'ESP', 8, 1, GETDATE()),
+    (507, N'Conteo Cí­clico Anual', 2, 6, N'Conteo Cí­clico Anual', N'/Almacen/Conteo_ciclico_anual', N'FaCalendar', 1, N'ESP', 8, 1, GETDATE()),
     (508, N'Reporte de Diferencias de Conteo Anual', 2, 6, N'Reporte de Diferencias de Conteo Anual', N'/Almacen/Reporte_diferencias_Conteo_anual', N'FaChartLine', 1, N'ESP', 9, 1, GETDATE()),
 
     -- Nómina -> Recursos Humanos
     (600, N'Recursos Humanos', 1, 7, N'Nomina_Recursos_Humanos', N'/', N'FaUsers', 1, N'ESP', 1, 1, GETDATE()),
-    (601, N'Empleados', 2, 600, N'Empleados', N'/nomina/empleados', N'FaUserTie', 1, N'ESP', 1, 1, GETDATE()),
-    (602, N'Movimientos de Personal', 2, 600, N'Movimientos_Personal', N'/nomina/movimientos', N'FaExchangeAlt', 1, N'ESP', 2, 1, GETDATE()),
-    (603, N'De Personal', 2, 600, N'De_Personal', N'/nomina/depersonal', N'FaUserMinus', 1, N'ESP', 3, 1, GETDATE()),
-    (604, N'Reporte Quincenal MP', 2, 600, N'Reporte_Quincenal_MP', N'/nomina/reportequincenal', N'FaCalendarAlt', 1, N'ESP', 4, 1, GETDATE()),
+    (601, N'Empleados', 2, 600, N'Empleados', N'/nomina/empleados', N'FaUser', 1, N'ESP', 1, 1, GETDATE()),
+    (602, N'Movimientos de Personal', 2, 600, N'Movimientos_Personal', N'/nomina/movimientos', N'FaEdit', 1, N'ESP', 2, 1, GETDATE()),
+    (603, N'De Personal', 2, 600, N'De_Personal', N'/nomina/depersonal', N'FaUsers', 1, N'ESP', 3, 1, GETDATE()),
+    (604, N'Reporte Quincenal MP', 2, 600, N'Reporte_Quincenal_MP', N'/nomina/reportequincenal', N'FaDateRange', 1, N'ESP', 4, 1, GETDATE()),
     (605, N'Créditos Trabajadores', 2, 600, N'Creditos_Trabajadores', N'/nomina/creditos', N'FaMoneyBillWave', 1, N'ESP', 5, 1, GETDATE()),
 
     -- Nómina -> Cálculo
@@ -1212,21 +1232,21 @@ USING (VALUES
     (622, N'Calculo ISR', 2, 620, N'Calculo_ISR_2053', N'/aux/auxcalcisrquincenal', N'FaPercent', 1, N'ESP', 2, 1, GETDATE()),
     (623, N'Calculo FOVISSSTE', 2, 620, N'Calculo_FOVISSSTE_4136', N'/aux/auxcalcfovissste', N'FaHouse', 1, N'ESP', 3, 1, GETDATE()),
     (624, N'Calculo Infonavit', 2, 620, N'Calculo_Infonavit_139', N'/aux/auxcalcinfonavitquincenal', N'FaHomeWork', 1, N'ESP', 4, 1, GETDATE()),
-    (625, N'Calculo Cuotas IMSS', 2, 620, N'Calculo_IMSS_3084', N'/aux/auxcalcimssquincenal', N'FaHospital', 1, N'ESP', 5, 1, GETDATE()),
+    (625, N'Calculo Cuotas IMSS', 2, 620, N'Calculo_IMSS_3084', N'/aux/auxcalcimssquincenal', N'FaPercent', 1, N'ESP', 5, 1, GETDATE()),
 
     -- Nómina -> Productos
     (630, N'Productos', 1, 7, N'Nomina_Productos', N'/', N'FaFolderOpen', 1, N'ESP', 4, 1, GETDATE()),
     (631, N'Resumen', 2, 630, N'Resumen_Nomina', N'/nom/resumennomina', N'FaChartPie', 1, N'ESP', 1, 1, GETDATE()),
-    (632, N'Recibos', 2, 630, N'Recibos_Nomina', N'/nom/recibonomina', N'FaFileInvoiceDollar', 1, N'ESP', 2, 1, GETDATE()),
-    (633, N'Archivos de Dispersión', 2, 630, N'Archivos_Dispersion', N'/nom/archivodispercion', N'FaFileExport', 1, N'ESP', 3, 1, GETDATE()),
-    (634, N'Archivos de Timbrado', 2, 630, N'Archivos_Timbrado', N'/nom/timbradopercepciones', N'FaStamp', 1, N'ESP', 4, 1, GETDATE()),
-    (635, N'Reporte Cuotas IMSS', 2, 630, N'Reporte_IMSS', N'/aux/imssquincenal_rep', N'FaHospitalUser', 1, N'ESP', 5, 1, GETDATE()),
-    (636, N'Reporte Nómina Actual', 2, 630, N'Reporte_Nomina', N'/nom/reportenomina', N'FaFileAlt', 1, N'ESP', 6, 1, GETDATE()),
+    (632, N'Recibos', 2, 630, N'Recibos_Nomina', N'/nom/recibonomina', N'FaReceiptLong', 1, N'ESP', 2, 1, GETDATE()),
+    (633, N'Archivos de Dispersión', 2, 630, N'Archivos_Dispersion', N'/nom/archivodispercion', N'FaFile', 1, N'ESP', 3, 1, GETDATE()),
+    (634, N'Archivos de Timbrado', 2, 630, N'Archivos_Timbrado', N'/nom/timbradopercepciones', N'FaVerified', 1, N'ESP', 4, 1, GETDATE()),
+    (635, N'Reporte Cuotas IMSS', 2, 630, N'Reporte_IMSS', N'/aux/imssquincenal_rep', N'FaChartBar', 1, N'ESP', 5, 1, GETDATE()),
+    (636, N'Reporte Nómina Actual', 2, 630, N'Reporte_Nomina', N'/nom/reportenomina', N'FaDocument', 1, N'ESP', 6, 1, GETDATE()),
 
     -- Nómina -> Incidencias
     (640, N'Incidencias', 1, 7, N'Nomina_Incidencias', N'/', N'RiListCheck2', 1, N'ESP', 5, 1, GETDATE()),
     (641, N'Captura de Incidencias', 2, 640, N'Captura_Incidencias', N'/rh/incidencia', N'FaEdit', 1, N'ESP', 1, 1, GETDATE()),
-    (642, N'Justificación de Incidencias', 2, 640, N'Justificacion_Incidencias', N'/rh/justificacion', N'FaCheckCircle', 1, N'ESP', 2, 1, GETDATE()),
+    (642, N'Justificación de Incidencias', 2, 640, N'Justificacion_Incidencias', N'/rh/justificacion', N'FaVerified', 1, N'ESP', 2, 1, GETDATE()),
     (643, N'Reporte de Incidencias', 2, 640, N'Reporte_Incidencias', N'/rh/incidenciareport', N'FaChartLine', 1, N'ESP', 3, 1, GETDATE()),
 
     -- Nómina -> Pagos Extraordinarios
@@ -1240,35 +1260,35 @@ USING (VALUES
 
     -- Nómina -> Nóminas Especiales
     (680, N'Nominas Especiales', 1, 7, N'Nominas_Especiales', N'/', N'FaCog', 1, N'ESP', 9, 1, GETDATE()),
-    (681, N'Cálculo de Aguinaldo', 2, 680, N'Calc_Aguinaldo', N'/nom/calcaguinaldo', N'FaGift', 1, N'ESP', 1, 1, GETDATE()),
+    (681, N'Cálculo de Aguinaldo', 2, 680, N'Calc_Aguinaldo', N'/nom/calcaguinaldo', N'FaStar', 1, N'ESP', 1, 1, GETDATE()),
     (682, N'Configura Aguinaldo', 2, 680, N'Configura_Aguinaldo', N'/sis/nominaespecial', N'FaCog', 1, N'ESP', 2, 1, GETDATE()),
-    (683, N'Aguinaldo', 2, 680, N'Aguinaldo', N'/sis/vwnominaespecial', N'FaGiftCard', 1, N'ESP', 3, 1, GETDATE()),
-    (684, N'Faltas Especiales', 2, 680, N'Faltas_Especial', N'/emp/faltasxempresa', N'FaUserTimes', 1, N'ESP', 4, 1, GETDATE()),
+    (683, N'Aguinaldo', 2, 680, N'Aguinaldo', N'/sis/vwnominaespecial', N'FaStar', 1, N'ESP', 3, 1, GETDATE()),
+    (684, N'Faltas Especiales', 2, 680, N'Faltas_Especial', N'/emp/faltasxempresa', N'FaClock', 1, N'ESP', 4, 1, GETDATE()),
 
     -- Nómina -> Históricos
-    (700, N'Históricos de Nómina', 0, 7, N'Nomina_Historicos', N'/', N'FaHistory', 1, N'ESP', 10, 1, GETDATE()),
+    (700, N'Históricos de Nómina', 0, 7, N'Nomina_Historicos', N'/', N'FaClock', 1, N'ESP', 10, 1, GETDATE()),
     (710, N'Productos', 1, 700, N'Nomina_Productos_Historicos', N'/', N'FaFolderOpen', 1, N'ESP', 1, 1, GETDATE()),
     (711, N'Consulta de Nómina', 2, 710, N'Consulta_Nomina', N'/nomina/historicos/consulta', N'FaSearch', 1, N'ESP', 1, 1, GETDATE()),
     (712, N'Análisis', 2, 710, N'Analisis', N'/nomina/historicos/analisis', N'FaChartLine', 1, N'ESP', 2, 1, GETDATE()),
-    (713, N'Recibos', 2, 710, N'Recibos_Historicos', N'/nomina/historicos/recibos', N'FaFileInvoiceDollar', 1, N'ESP', 3, 1, GETDATE()),
-    (714, N'Archivos de Dispersión', 2, 710, N'Archivos_Dispersion_Historicos', N'/nomina/historicos/dispersion', N'FaFileExport', 1, N'ESP', 4, 1, GETDATE()),
-    (715, N'Archivos de Timbrado', 2, 710, N'Archivos_Timbrado_Historicos', N'/nomina/historicos/timbrado', N'FaStamp', 1, N'ESP', 5, 1, GETDATE()),
-    (716, N'Reporte Nómina Quincenal', 2, 710, N'Reporte_Nomina_Quincenal', N'/nomina/historicos/reportequincenal', N'FaCalendarAlt', 1, N'ESP', 6, 1, GETDATE()),
+    (713, N'Recibos', 2, 710, N'Recibos_Historicos', N'/nomina/historicos/recibos', N'FaReceiptLong', 1, N'ESP', 3, 1, GETDATE()),
+    (714, N'Archivos de Dispersión', 2, 710, N'Archivos_Dispersion_Historicos', N'/nomina/historicos/dispersion', N'FaFile', 1, N'ESP', 4, 1, GETDATE()),
+    (715, N'Archivos de Timbrado', 2, 710, N'Archivos_Timbrado_Historicos', N'/nomina/historicos/timbrado', N'FaVerified', 1, N'ESP', 5, 1, GETDATE()),
+    (716, N'Reporte Nómina Quincenal', 2, 710, N'Reporte_Nomina_Quincenal', N'/nomina/historicos/reportequincenal', N'FaDateRange', 1, N'ESP', 6, 1, GETDATE()),
     (717, N'Resumen de Nómina Histórica', 2, 710, N'Resumen_Nomina_Historica', N'/nomina/historicos/resumen', N'FaChartPie', 1, N'ESP', 7, 1, GETDATE()),
-    (718, N'Reporte de Nómina Histórica', 2, 710, N'Reporte_Nomina_Historica', N'/nomina/historicos/reportehistorico', N'FaFileAlt', 1, N'ESP', 8, 1, GETDATE()),
-    (719, N'Cubo Nómina Histórica', 2, 710, N'Cubo_Nomina_Historica', N'/nomina/historicos/cubo', N'FaCube', 1, N'ESP', 9, 1, GETDATE()),
+    (718, N'Reporte de Nómina Histórica', 2, 710, N'Reporte_Nomina_Historica', N'/nomina/historicos/reportehistorico', N'FaDocument', 1, N'ESP', 8, 1, GETDATE()),
+    (719, N'Cubo Nómina Histórica', 2, 710, N'Cubo_Nomina_Historica', N'/nomina/historicos/cubo', N'FaTable', 1, N'ESP', 9, 1, GETDATE()),
 
-    (720, N'Reportes del IMSS', 1, 700, N'Reportes_IMSS_Historicos', N'/', N'FaHospitalUser', 1, N'ESP', 2, 1, GETDATE()),
+    (720, N'Reportes del IMSS', 1, 700, N'Reportes_IMSS_Historicos', N'/', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
     (721, N'Salario Base de Cotización', 2, 720, N'Salario_Base_Cotizacion', N'/nomina/historicos/sbc', N'FaPercent', 1, N'ESP', 1, 1, GETDATE()),
     (722, N'Acumulados IMSS', 2, 720, N'Acumulados_IMSS', N'/nomina/historicos/acumuladosimss', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
-    (723, N'SBC Histórico', 2, 720, N'SBC_Historico', N'/nomina/historicos/sbchistorico', N'FaHistory', 1, N'ESP', 3, 1, GETDATE()),
-    (724, N'Acumulados en el Bimestre IMSS', 2, 720, N'Acumulados_Bimestre_IMSS', N'/nomina/historicos/acumuladosbimestre', N'FaCalendarCheck', 1, N'ESP', 4, 1, GETDATE()),
+    (723, N'SBC Histórico', 2, 720, N'SBC_Historico', N'/nomina/historicos/sbchistorico', N'FaClock', 1, N'ESP', 3, 1, GETDATE()),
+    (724, N'Acumulados en el Bimestre IMSS', 2, 720, N'Acumulados_Bimestre_IMSS', N'/nomina/historicos/acumuladosbimestre', N'FaDateRange', 1, N'ESP', 4, 1, GETDATE()),
 
-    (730, N'Reportes del SAT', 1, 700, N'Reportes_SAT_Historicos', N'/', N'FaBalanceScale', 1, N'ESP', 3, 1, GETDATE()),
+    (730, N'Reportes del SAT', 1, 700, N'Reportes_SAT_Historicos', N'/', N'FaChartLine', 1, N'ESP', 3, 1, GETDATE()),
     (731, N'Acumulado Mensual ISR', 2, 730, N'Acumulado_Mensual_ISR', N'/nomina/historicos/isr_mensual', N'FaPercent', 1, N'ESP', 1, 1, GETDATE()),
     (732, N'Acumulados de ISR', 2, 730, N'Acumulados_ISR', N'/nomina/historicos/isr_acumulados', N'FaChartLine', 1, N'ESP', 2, 1, GETDATE()),
 
-    (740, N'Impuestos sobre Nómina locales', 1, 700, N'Impuestos_Locales_Historicos', N'/nomina/historicos/impuestoslocales', N'FaLandmark', 1, N'ESP', 4, 1, GETDATE()),
+    (740, N'Impuestos sobre Nómina locales', 1, 700, N'Impuestos_Locales_Historicos', N'/nomina/historicos/impuestoslocales', N'FaHouse', 1, N'ESP', 4, 1, GETDATE()),
 
     -- Nómina -> Configuración Nóminas
     (800, N'Configuración Nóminas', 0, 7, N'Configuracion_Nominas', N'/', N'FaCog', 1, N'ESP', 11, 1, GETDATE()),
@@ -1277,19 +1297,19 @@ USING (VALUES
     (812, N'Cuotas IMSS', 2, 810, N'Cuotas_IMSS', N'/nomina/configuracion/catalogos/cuotas-imss', N'FaPercent', 1, N'ESP', 2, 1, GETDATE()),
     (813, N'Conceptos de Nómina', 2, 810, N'Conceptos_Nomina', N'/nomina/configuracion/catalogos/conceptos', N'FaPayments', 1, N'ESP', 3, 1, GETDATE()),
     (814, N'UMA', 2, 810, N'UMA', N'/nomina/configuracion/catalogos/uma', N'FaPriceChange', 1, N'ESP', 4, 1, GETDATE()),
-    (815, N'Tipo de Contratación', 2, 810, N'Tipo_Contratacion', N'/nomina/configuracion/catalogos/tipo-contratacion', N'FaUserTie', 1, N'ESP', 5, 1, GETDATE()),
+    (815, N'Tipo de Contratación', 2, 810, N'Tipo_Contratacion', N'/nomina/configuracion/catalogos/tipo-contratacion', N'FaUserGroup', 1, N'ESP', 5, 1, GETDATE()),
     (816, N'Tipo de descanso', 2, 810, N'Tipo_Descanso', N'/nomina/configuracion/catalogos/tipo-descanso', N'FaClock', 1, N'ESP', 6, 1, GETDATE()),
     (817, N'Tipo de Incidencia', 2, 810, N'Tipo_Incidencia', N'/nomina/configuracion/catalogos/tipo-incidencia', N'FaSick', 1, N'ESP', 7, 1, GETDATE()),
     (818, N'Conceptos de importe Fijo', 2, 810, N'Concepto_Fijo', N'/nomina/configuracion/catalogos/concepto-fijo', N'FaAttachMoney', 1, N'ESP', 8, 1, GETDATE()),
-    (819, N'Tipo de Justificación', 2, 810, N'Tipo_Justificacion', N'/nomina/configuracion/catalogos/tipo-justificacion', N'FaCheckCircle', 1, N'ESP', 9, 1, GETDATE()),
+    (819, N'Tipo de Justificación', 2, 810, N'Tipo_Justificacion', N'/nomina/configuracion/catalogos/tipo-justificacion', N'FaVerified', 1, N'ESP', 9, 1, GETDATE()),
     (820, N'Tabulador', 2, 810, N'Tabulador', N'/nomina/configuracion/catalogos/tabulador', N'FaTableRows', 1, N'ESP', 10, 1, GETDATE()),
     (821, N'Unidad Infonavit', 2, 810, N'Unidad_Infonavit', N'/nomina/configuracion/catalogos/unidad-infonavit', N'FaHomeWork', 1, N'ESP', 11, 1, GETDATE()),
-    (822, N'Salario Mínimo General', 2, 810, N'Salario_Minimo', N'/nomina/configuracion/catalogos/smg', N'FaMoneyBillWave', 1, N'ESP', 12, 1, GETDATE()),
+    (822, N'Salario Mí­nimo General', 2, 810, N'Salario_Minimo', N'/nomina/configuracion/catalogos/smg', N'FaMoneyBillWave', 1, N'ESP', 12, 1, GETDATE()),
     (823, N'Forma de Pago', 2, 810, N'Forma_Pago', N'/nomina/configuracion/catalogos/forma-pago', N'FaPointOfSale', 1, N'ESP', 13, 1, GETDATE()),
     (824, N'Forma de Cálculo', 2, 810, N'Forma_Calculo', N'/nomina/configuracion/catalogos/forma-calculo', N'FaFunctions', 1, N'ESP', 14, 1, GETDATE()),
-    (825, N'Capítulos', 2, 810, N'Capitulos', N'/nomina/configuracion/catalogos/capitulos', N'RiListCheck2', 1, N'ESP', 15, 1, GETDATE()),
+    (825, N'Capí­tulos', 2, 810, N'Capitulos', N'/nomina/configuracion/catalogos/capitulos', N'RiListCheck2', 1, N'ESP', 15, 1, GETDATE()),
 
-    (830, N'Periodos', 1, 800, N'Nomina_Periodos', N'/', N'FaCalendarAlt', 1, N'ESP', 2, 1, GETDATE()),
+    (830, N'Periodos', 1, 800, N'Nomina_Periodos', N'/', N'FaCalendarMonth', 1, N'ESP', 2, 1, GETDATE()),
     (831, N'Semanal', 2, 830, N'Periodo_Semanal', N'/nomina/configuracion/periodos/semanal', N'FaViewWeek', 1, N'ESP', 1, 1, GETDATE()),
     (832, N'Quincenal', 2, 830, N'Periodo_Quincenal', N'/nomina/configuracion/periodos/quincenal', N'FaDateRange', 1, N'ESP', 2, 1, GETDATE()),
     (833, N'Mensual', 2, 830, N'Periodo_Mensual', N'/nomina/configuracion/periodos/mensual', N'FaCalendarMonth', 1, N'ESP', 3, 1, GETDATE()),
@@ -1300,42 +1320,42 @@ USING (VALUES
     (842, N'Quincenal', 2, 840, N'Tabla_ISR_Quincenal', N'/nomina/configuracion/isr/quincenal', N'FaPercent', 1, N'ESP', 2, 1, GETDATE()),
     (843, N'Mensual', 2, 840, N'Tabla_ISR_Mensual', N'/nomina/configuracion/isr/mensual', N'FaPercent', 1, N'ESP', 3, 1, GETDATE()),
 
-    (850, N'Prestaciones', 1, 800, N'Nomina_Prestaciones', N'/', N'FaGift', 1, N'ESP', 4, 1, GETDATE()),
+    (850, N'Prestaciones', 1, 800, N'Nomina_Prestaciones', N'/', N'FaStar', 1, N'ESP', 4, 1, GETDATE()),
 
-    (860, N'Subsidios ISR', 1, 800, N'Nomina_Subsidios_ISR', N'/', N'FaBalanceScale', 1, N'ESP', 5, 1, GETDATE()),
+    (860, N'Subsidios ISR', 1, 800, N'Nomina_Subsidios_ISR', N'/', N'FaPercent', 1, N'ESP', 5, 1, GETDATE()),
     (861, N'Semanal', 2, 860, N'Subsidio_ISR_Semanal', N'/nomina/configuracion/subsidios/semanal', N'FaPercent', 1, N'ESP', 1, 1, GETDATE()),
     (862, N'Quincenal', 2, 860, N'Subsidio_ISR_Quincenal', N'/nomina/configuracion/subsidios/quincenal', N'FaPercent', 1, N'ESP', 2, 1, GETDATE()),
     (863, N'Mensual', 2, 860, N'Subsidio_ISR_Mensual', N'/nomina/configuracion/subsidios/mensual', N'FaPercent', 1, N'ESP', 3, 1, GETDATE()),
 
     (870, N'Impuestos', 1, 800, N'Nomina_Impuestos', N'/', N'FaPercent', 1, N'ESP', 6, 1, GETDATE()),
-    (871, N'Base Gravable', 2, 870, N'Base_Gravable', N'/nomina/configuracion/impuestos/base-gravable', N'FaBalanceScale', 1, N'ESP', 1, 1, GETDATE()),
-    (872, N'Impuestos Locales', 2, 870, N'Impuestos_Locales', N'/nomina/configuracion/impuestos/locales', N'FaLandmark', 1, N'ESP', 2, 1, GETDATE()),
+    (871, N'Base Gravable', 2, 870, N'Base_Gravable', N'/nomina/configuracion/impuestos/base-gravable', N'FaPercent', 1, N'ESP', 1, 1, GETDATE()),
+    (872, N'Impuestos Locales', 2, 870, N'Impuestos_Locales', N'/nomina/configuracion/impuestos/locales', N'FaHouse', 1, N'ESP', 2, 1, GETDATE()),
 
-    (880, N'IMSS', 1, 800, N'Nomina_IMSS', N'/', N'FaHospitalUser', 1, N'ESP', 7, 1, GETDATE()),
-    (881, N'Prestaciones Mínimas de Ley', 2, 880, N'Prestaciones_Minimas', N'/nomina/configuracion/imss/prestaciones', N'FaFileContract', 1, N'ESP', 1, 1, GETDATE()),
-    (882, N'Clase IMSS', 2, 880, N'Clase_IMSS', N'/nomina/configuracion/imss/clase', N'FaUserShield', 1, N'ESP', 2, 1, GETDATE()),
-    (883, N'Fracción IMSS', 2, 880, N'Fraccion_IMSS', N'/nomina/configuracion/imss/fraccion', N'FaDivide', 1, N'ESP', 3, 1, GETDATE()),
-    (884, N'Base Gravable IMSS', 2, 880, N'Base_Gravable_IMSS', N'/nomina/configuracion/imss/base-gravable', N'FaBalanceScaleRight', 1, N'ESP', 4, 1, GETDATE()),
+    (880, N'IMSS', 1, 800, N'Nomina_IMSS', N'/', N'FaUsers', 1, N'ESP', 7, 1, GETDATE()),
+    (881, N'Prestaciones Mí­nimas de Ley', 2, 880, N'Prestaciones_Minimas', N'/nomina/configuracion/imss/prestaciones', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
+    (882, N'Clase IMSS', 2, 880, N'Clase_IMSS', N'/nomina/configuracion/imss/clase', N'FaVerified', 1, N'ESP', 2, 1, GETDATE()),
+    (883, N'Fracción IMSS', 2, 880, N'Fraccion_IMSS', N'/nomina/configuracion/imss/fraccion', N'FaPercent', 1, N'ESP', 3, 1, GETDATE()),
+    (884, N'Base Gravable IMSS', 2, 880, N'Base_Gravable_IMSS', N'/nomina/configuracion/imss/base-gravable', N'FaPercent', 1, N'ESP', 4, 1, GETDATE()),
 
     -- Nómina -> Configuración RH
-    (900, N'Configuración RH', 0, 7, N'Configuracion_RH', N'/rh/configuracion', N'FaUsersCog', 1, N'ESP', 12, 1, GETDATE()),
-    (901, N'Plazas Autorizadas', 1, 900, N'Plazas_Autorizadas', N'/rh/configuracion/plazas', N'FaUserCheck', 1, N'ESP', 1, 1, GETDATE()),
-    (902, N'Universo', 1, 900, N'Universo', N'/rh/configuracion/universo', N'FaGlobe', 1, N'ESP', 2, 1, GETDATE()),
-    (903, N'Nivel', 1, 900, N'Nivel', N'/rh/configuracion/nivel', N'FaSortAmountUp', 1, N'ESP', 3, 1, GETDATE()),
-    (904, N'Sexo', 1, 900, N'Sexo', N'/rh/configuracion/sexo', N'FaVenusMars', 1, N'ESP', 4, 1, GETDATE()),
+    (900, N'Configuración RH', 0, 7, N'Configuracion_RH', N'/rh/configuracion', N'FaGears', 1, N'ESP', 12, 1, GETDATE()),
+    (901, N'Plazas Autorizadas', 1, 900, N'Plazas_Autorizadas', N'/rh/configuracion/plazas', N'FaVerified', 1, N'ESP', 1, 1, GETDATE()),
+    (902, N'Universo', 1, 900, N'Universo', N'/rh/configuracion/universo', N'FaUsers', 1, N'ESP', 2, 1, GETDATE()),
+    (903, N'Nivel', 1, 900, N'Nivel', N'/rh/configuracion/nivel', N'FaChartBar', 1, N'ESP', 3, 1, GETDATE()),
+    (904, N'Sexo', 1, 900, N'Sexo', N'/rh/configuracion/sexo', N'FaUsers', 1, N'ESP', 4, 1, GETDATE()),
     (905, N'Estado Civil', 1, 900, N'Estado_Civil', N'/rh/configuracion/estado-civil', N'FaHeart', 1, N'ESP', 5, 1, GETDATE()),
-    (906, N'Escolaridad', 1, 900, N'Escolaridad', N'/rh/configuracion/escolaridad', N'FaGraduationCap', 1, N'ESP', 6, 1, GETDATE()),
+    (906, N'Escolaridad', 1, 900, N'Escolaridad', N'/rh/configuracion/escolaridad', N'FaDocument', 1, N'ESP', 6, 1, GETDATE()),
     (907, N'Tipo de Parentesco', 1, 900, N'Tipo_Parentesco', N'/rh/configuracion/parentesco', N'FaUsers', 1, N'ESP', 7, 1, GETDATE()),
-    (908, N'Estado', 1, 900, N'Estado', N'/rh/configuracion/estado', N'FaMapMarkedAlt', 1, N'ESP', 8, 1, GETDATE()),
-    (909, N'Banco', 1, 900, N'Banco', N'/rh/configuracion/banco', N'FaUniversity', 1, N'ESP', 9, 1, GETDATE()),
-    (910, N'Municipio', 1, 900, N'Municipio', N'/rh/configuracion/municipio', N'FaCity', 1, N'ESP', 10, 1, GETDATE()),
-    (911, N'Contratos', 1, 900, N'Contratos', N'/rh/configuracion/contratos', N'FaFileContract', 1, N'ESP', 11, 1, GETDATE()),
+    (908, N'Estado', 1, 900, N'Estado', N'/rh/configuracion/estado', N'FaHouse', 1, N'ESP', 8, 1, GETDATE()),
+    (909, N'Banco', 1, 900, N'Banco', N'/rh/configuracion/banco', N'FaHouse', 1, N'ESP', 9, 1, GETDATE()),
+    (910, N'Municipio', 1, 900, N'Municipio', N'/rh/configuracion/municipio', N'FaHouse', 1, N'ESP', 10, 1, GETDATE()),
+    (911, N'Contratos', 1, 900, N'Contratos', N'/rh/configuracion/contratos', N'FaDocument', 1, N'ESP', 11, 1, GETDATE()),
     (912, N'Base Pago', 2, 911, N'Base_Pago', N'/rh/configuracion/contratos/base-pago', N'FaMoneyBillWave', 1, N'ESP', 1, 1, GETDATE()),
     (913, N'Método de Pago', 2, 911, N'Metodo_Pago', N'/rh/configuracion/contratos/metodo-pago', N'FaCreditCard', 1, N'ESP', 2, 1, GETDATE()),
-    (914, N'Tipo de Régimen', 2, 911, N'Tipo_Regimen', N'/rh/configuracion/contratos/tipo-regimen', N'FaBalanceScale', 1, N'ESP', 3, 1, GETDATE()),
+    (914, N'Tipo de Régimen', 2, 911, N'Tipo_Regimen', N'/rh/configuracion/contratos/tipo-regimen', N'FaDocument', 1, N'ESP', 3, 1, GETDATE()),
     (915, N'Base de Cotización', 2, 911, N'Base_Cotizacion', N'/rh/configuracion/contratos/base-cotizacion', N'FaPercent', 1, N'ESP', 4, 1, GETDATE()),
-    (916, N'Zona Geográfica', 2, 911, N'Zona_Geografica', N'/rh/configuracion/contratos/zona-geografica', N'FaMap', 1, N'ESP', 5, 1, GETDATE()),
-    (917, N'Día de la Semana', 2, 911, N'Dia_Semana', N'/rh/configuracion/contratos/dia-semana', N'FaCalendarDay', 1, N'ESP', 6, 1, GETDATE())
+    (916, N'Zona Geográfica', 2, 911, N'Zona_Geografica', N'/rh/configuracion/contratos/zona-geografica', N'FaHouse', 1, N'ESP', 5, 1, GETDATE()),
+    (917, N'Dí­a de la Semana', 2, 911, N'Dia_Semana', N'/rh/configuracion/contratos/dia-semana', N'FaCalendar', 1, N'ESP', 6, 1, GETDATE())
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON TARGET.PKIdMenu = SOURCE.PKIdMenu
 WHEN MATCHED THEN

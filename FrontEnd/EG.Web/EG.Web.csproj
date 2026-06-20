@@ -36,9 +36,9 @@
   <ItemGroup>
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
+    <Folder Include="Pages\Modules\GRP\Presupuesto\Tesoreria\CuentasXCobrar\ModificadoIngreso\" />
     <Folder Include="Pages\Platform\" />
     <Folder Include="Pages\Platform\Sistema\" />
-    <Folder Include="Pages\Modules\GRP\" />
     <Folder Include="Pages\Modules\GRP\Configuration\Catalogos\Adquisicion\" />
     <Folder Include="Pages\Modules\GRP\Configuration\Catalogos\Presupuestales\" />
     <Folder Include="Pages\Modules\GRP\Patrimonio\" />

@@ -23,6 +23,8 @@ public partial class Origen
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<IngresoAutorizado> IngresoAutorizados { get; set; } = new List<IngresoAutorizado>();
+
     public virtual ICollection<MatrizIngreso> MatrizIngresos { get; set; } = new List<MatrizIngreso>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

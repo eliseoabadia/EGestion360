@@ -114,6 +114,9 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IPresupuestoModificadoAppService, EgreAdecuacionAppService>();
             services.AddScoped<IAdquisicionCrudAppService<EgreAdecuacionResponse>>(sp => sp.GetRequiredService<IPresupuestoModificadoAppService>());
             services.AddScoped<IAdquisicionCrudAppService<EgreAdecuacionDetalleResponse>, EgreAdecuacionDetalleAppService>();
+            services.AddScoped<IIngresoAdecuacionAppService, IngreAdecuacionAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<IngreAdecuacionResponse>>(sp => sp.GetRequiredService<IIngresoAdecuacionAppService>());
+            services.AddScoped<IAdquisicionCrudAppService<IngreAdecuacionDetalleResponse>, IngreAdecuacionDetalleAppService>();
 
             // Application services - Cuentas por pagar
             services.AddScoped<IAdquisicionCrudAppService<ContratoResponse>, ContratoAppService>();
@@ -155,6 +158,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IFuenteFinanciamientoAppServices, FuenteFinanciamientoAppServices>();
             services.AddScoped<IEgresoProyectadoAppService, EgresoProyectadoAppService>();
             services.AddScoped<IEgresoAutorizadoAppService, EgresoAutorizadoAppService>();
+            services.AddScoped<IIngresoAutorizadoAppService, IngresoAutorizadoAppService>();
             services.AddScoped<IPgAppServices, PgAppServices>();
             services.AddScoped<IProgramaPresupuestalAppServices, ProgramaPresupuestalAppServices>();
             services.AddScoped<IProyectoAppServices, ProyectoAppServices>();

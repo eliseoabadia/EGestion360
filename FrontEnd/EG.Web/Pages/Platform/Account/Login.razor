@@ -465,9 +465,19 @@
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
-                await ((AuthenticationProviderJWT)AuthenticationStateProvider).LoginAsync(result.AccessToken);
+                var authProvider = (AuthenticationProviderJWT)AuthenticationStateProvider;
+                await authProvider.LoginAsync(result.AccessToken);
 
-                var sucursalesUsuario = await LoadSucursalesUsuarioAsync(result.PkIdUsuario, result.AccessToken);
+                // Los permisos se cargan fuera del JWT para mantener pequena la
+                // cabecera Authorization aunque el usuario tenga muchos accesos.
+                var permissionClaimsTask = _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
+                var sucursalesTask = LoadSucursalesUsuarioAsync(result.PkIdUsuario, result.AccessToken);
+                await Task.WhenAll(permissionClaimsTask, sucursalesTask);
+
+                var permissionClaims = await permissionClaimsTask;
+                await authProvider.LoadClaimsFromDbAsync(permissionClaims);
+
+                var sucursalesUsuario = await sucursalesTask;
 
                 if (sucursalesUsuario.Success != true)
                 {

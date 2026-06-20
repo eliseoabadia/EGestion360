@@ -70,6 +70,8 @@ namespace EG.Web.Auth
         public async Task LoginAsync(string token)
         {
             var normalized = NormalizeToken(token);
+            _permissions.Clear();
+            await _js.RemoveItem(DB_CLAIMS_KEY);
             await _js.SetInLocalStorage(TOKEN_KEY, normalized);
             // Asegurar que el HttpClient tenga el header Authorization inmediatamente
             try
@@ -97,8 +99,8 @@ namespace EG.Web.Auth
         /// </summary>
         public async Task LoadClaimsFromDbAsync(List<ClaimItemModel> claimsFromDb)
         {
-            if (claimsFromDb == null || claimsFromDb.Count == 0)
-                return;
+            claimsFromDb ??= new List<ClaimItemModel>();
+            _permissions.Clear();
 
             // Guardar en localStorage para persistencia
             var json = JsonSerializer.Serialize(claimsFromDb);
@@ -142,6 +144,8 @@ namespace EG.Web.Auth
             var state = GetAuthenticationStateAsync().GetAwaiter().GetResult();
             var user = state.User;
             var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)
+                          ?? user.FindFirst("sub")
+                          ?? user.FindFirst("nameid")
                           ?? user.FindFirst("id")
                           ?? user.FindFirst("Id");
             return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
@@ -329,7 +333,9 @@ namespace EG.Web.Auth
             if (identity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
                 return;
 
-            var idClaim = allClaims.FirstOrDefault(c => string.Equals(c.Type, "id", StringComparison.OrdinalIgnoreCase)
+            var idClaim = allClaims.FirstOrDefault(c => string.Equals(c.Type, "sub", StringComparison.OrdinalIgnoreCase)
+                                                     || string.Equals(c.Type, "nameid", StringComparison.OrdinalIgnoreCase)
+                                                     || string.Equals(c.Type, "id", StringComparison.OrdinalIgnoreCase)
                                                      || string.Equals(c.Type, "Id", StringComparison.OrdinalIgnoreCase));
             if (idClaim != null)
                 identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, idClaim.Value));

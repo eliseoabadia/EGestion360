@@ -1,6 +1,5 @@
 ﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests;
-using EG.Infraestructure.Models;
 using System.Security.Claims;
 
 namespace EG.Application.Interfaces
@@ -14,9 +13,7 @@ namespace EG.Application.Interfaces
             string userId,
             string userName,
             string email,
-            int? empresaId,
-            DateTime? expiration,
-            IList<spGetClaimsByUserResult> claims);
+            int? empresaId);
 
         /// <summary>
         /// Genera el token JWT completo
@@ -27,7 +24,6 @@ namespace EG.Application.Interfaces
             string userName,
             string email,
             int? empresaId,
-            IList<spGetClaimsByUserResult> claims,
             JwtSettings jwtSettings);
 
         /// <summary>

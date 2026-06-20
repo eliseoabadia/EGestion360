@@ -1,7 +1,6 @@
 ﻿using EG.Application.Interfaces;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests;
-using EG.Infraestructure.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,37 +22,20 @@ namespace EG.Application.Services
             string userId,
             string userName,
             string email,
-            int? empresaId,
-            DateTime? expiration,
-            IList<spGetClaimsByUserResult> _claims)
+            int? empresaId)
         {
+            // El JWT viaja en la cabecera Authorization de cada solicitud. Los
+            // permisos se consultan por separado para evitar exceder el limite
+            // de cabeceras cuando un usuario tiene muchos accesos asignados.
             var claims = new List<Claim>
             {
-                new Claim("Id", userId),
-                new Claim("id", userId),
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Name, userName ?? string.Empty),
-                new Claim(ClaimTypes.Email, email ?? string.Empty),
-                new Claim("empresaId", empresaId?.ToString() ?? string.Empty),
-                new Claim("EmpresaId", empresaId?.ToString() ?? string.Empty),
-                new Claim("FkidEmpresaSis", empresaId?.ToString() ?? string.Empty),
-                new Claim(ClaimTypes.Expiration, expiration?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? string.Empty)
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.UniqueName, userName ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Email, email ?? string.Empty)
             };
 
-            if (_claims != null && _claims.Any())
-            {
-                foreach (var item in _claims)
-                {
-                    if (!string.IsNullOrWhiteSpace(item.Group))
-                        claims.Add(new Claim("Group", item.Group));
-
-                    if (!string.IsNullOrWhiteSpace(item.SubGroup))
-                        claims.Add(new Claim("SubGroup", item.SubGroup));
-
-                    if (!string.IsNullOrWhiteSpace(item.Values))
-                        claims.Add(new Claim("Values", item.Values));
-                }
-            }
+            if (empresaId.HasValue)
+                claims.Add(new Claim("empresaId", empresaId.Value.ToString()));
 
             return claims;
         }
@@ -64,7 +46,6 @@ namespace EG.Application.Services
         string userName,
         string email,
         int? empresaId,
-        IList<spGetClaimsByUserResult> _claims,
         JwtSettings jwtSettings)
         {
             try
@@ -80,7 +61,7 @@ namespace EG.Application.Services
                 var JWToken = new JwtSecurityToken(
                     issuer: jwtSettings.ValidIssuer,
                     audience: jwtSettings.ValidAudience,
-                    claims: GetClaims(userId, userName, email, empresaId, new DateTimeOffset(expireTime).DateTime, _claims),
+                    claims: GetClaims(userId, userName, email, empresaId),
                     notBefore: DateTime.Now,
                     expires: new DateTimeOffset(expireTime).DateTime,
                     signingCredentials: new SigningCredentials(
@@ -133,6 +114,7 @@ namespace EG.Application.Services
                 // Buscar el claim de ID (puede ser "Id", "id" o "sub")
                 var idClaim = jwtToken.Claims.FirstOrDefault(x =>
                     x.Type == ClaimTypes.NameIdentifier ||
+                    x.Type == JwtRegisteredClaimNames.Sub ||
                     x.Type == "Id" ||
                     x.Type == "id") ??
                     throw new SecurityTokenException("No ID claim found in token");

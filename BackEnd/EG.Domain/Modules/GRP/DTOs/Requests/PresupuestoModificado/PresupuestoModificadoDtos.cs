@@ -75,4 +75,58 @@ namespace EG.Domain.DTOs.Requests.PresupuestoModificado
     {
         public int PkidEgresoAutorizado { get; set; }
     }
+
+    public class IngreAdecuacionDto
+    {
+        public int PkidIngreAdecuacion { get; set; }
+        public string? Clave { get; set; }
+        public int FkidTipoAdecuacionPres { get; set; }
+        public int FkidEstatusAdecuacionPres { get; set; }
+        public string? Justificacion { get; set; }
+        public DateOnly Fecha { get; set; }
+        public int? FkidPolizaConta { get; set; }
+        public int FkidAnioSis { get; set; }
+        public bool Autorizado { get; set; }
+        public int? FkidAccionAdecuacionMasterPres { get; set; }
+        public DateTime? FechaSolicitud { get; set; }
+        public DateTime? FechaAutorizacion { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
+
+    public class IngreAdecuacionDetalleDto
+    {
+        public int PkidIngreAdecuacionDetalle { get; set; }
+        public int FkidIngresoAutorizadoPres { get; set; }
+        public string? Justificacion { get; set; }
+        public DateOnly Fecha { get; set; }
+        public int FkidIngreAdecuacionPres { get; set; }
+        public int FkidTipoMovimientoPres { get; set; }
+        public decimal Enero { get; set; }
+        public decimal Febrero { get; set; }
+        public decimal Marzo { get; set; }
+        public decimal Abril { get; set; }
+        public decimal Mayo { get; set; }
+        public decimal Junio { get; set; }
+        public decimal Julio { get; set; }
+        public decimal Agosto { get; set; }
+        public decimal Septiembre { get; set; }
+        public decimal Octubre { get; set; }
+        public decimal Noviembre { get; set; }
+        public decimal Diciembre { get; set; }
+        public decimal? Total { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
+
+    public class IngresoDisponibleDto
+    {
+        public int PkidIngresoAutorizado { get; set; }
+    }
 }
