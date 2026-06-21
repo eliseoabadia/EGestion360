@@ -526,12 +526,12 @@ VALUES
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion', 'PREEGRE02', 'Egreso', 'view,view-menu', 0),
 (2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Anteproyecto_Egresos', 'EGREPLA01', 'Planeacion', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Modificado', 'EGREMOD01', 'Planeacion', 'view,view-menu', 0),
-(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Adecuaciones_Compensadas', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,CanExportToExcel,authorize', 0),
-(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Ampliaciones', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,CanExportToExcel,authorize', 0),
-(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Reducciones', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Adecuaciones_Compensadas', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Ampliaciones', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Reducciones', 'PREEPC03', 'Presupuesto_Modificado', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Autorizado', 'PREEGRE03', 'Presupuesto', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Comprometido', 'PREEPC02', 'Egreso', 'view,view-menu', 0),
-(2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Suficiencia', 'PREEPC03', 'Presupuesto_Comprometido', 'view,view-menu,CanExportToExcel,authorize', 0),
+(2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Suficiencia', 'PREEPC03', 'Presupuesto_Comprometido', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 0),
 (2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Autorizacion_Suficiencia', 'PREEPC04', 'Presupuesto_Comprometido', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Registro_Comprometido', 'PREEPC05', 'Presupuesto_Comprometido', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 
@@ -800,12 +800,12 @@ EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-me
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Presupuesto_Modificado', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Ampliaciones', '10000', 'view,view-menu,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reducciones', '10000', 'view,view-menu,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Ampliaciones', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reducciones', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Comprometido', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficiencia', '10000', 'view,view-menu,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficiencia', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Autorizacion_Suficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Registro_Comprometido', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Tesoreria', '10000', 'view,view-menu';
@@ -1168,7 +1168,7 @@ USING (VALUES
     (127, N'Modificado de Ingresos', 1, 121, N'Presupuesto_Modificado', N'/', N'FaMoneyBillTransfer', 1, N'ESP', 2, 1, GETDATE()),
     (128, N'Adecuaciones Compensadas de Ingresos', 2, 127, N'Adecuaciones_Compensadas', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Adecuaciones_Compensadas_Ingresos', N'FaScaleBalanced', 1, N'ESP', 1, 1, GETDATE()),
     (129, N'Aumentos al presupuesto de Ingresos', 2, 127, N'Ampliaciones', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Aumentos_Presupuesto_Ingreso', N'FaArrowTrendUp', 1, N'ESP', 2, 1, GETDATE()),
-    (130, N'Reducción al presupuesto de Ingresos', 2, 127, N'Reducciones', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Reduccion_Presupuesto_Ingreso', N'FaArrowTrendDown', 1, N'ESP', 3, 1, GETDATE()),
+    (130, N'Reduccion al presupuesto de Ingresos', 2, 127, N'Reducciones', N'/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Reduccion_Presupuesto_Ingreso', N'FaArrowTrendDown', 1, N'ESP', 3, 1, GETDATE()),
 
     (140, N'Cuentas por Pagar', 1, 120, N'Cuentas por Pagar', N'/', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
     (141, N'Recepción de Facturas y Comprobantes de Pago', 2, 140, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),

@@ -65,7 +65,7 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
                 return Failure<TResponse>($"{EntityName} no encontrado.", "NOT_FOUND");
             }
 
-            if (!await CanAccessPersonaAsync(item.FkidPersonaNom, empresaId))
+            if (!await CanAccessPersonaAsync(item.FkidPersonaNom))
             {
                 return Failure<TResponse>("No tienes acceso al empleado solicitado.", "FORBIDDEN");
             }
@@ -88,7 +88,7 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
             return Failure<TResponse>("Selecciona un empleado para consultar el detalle.", "PERSON_REQUIRED");
         }
 
-        if (!await CanAccessPersonaAsync(personaId.Value, empresaId))
+        if (!await CanAccessPersonaAsync(personaId.Value))
         {
             return Failure<TResponse>("No tienes acceso al empleado solicitado.", "FORBIDDEN");
         }
@@ -118,7 +118,7 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
 
     public async Task<PagedResult<TResponse>> CreateAsync(TDto dto, int usuarioActual, int? empresaId)
     {
-        if (!await CanAccessPersonaAsync(dto.FkidPersonaNom, empresaId))
+        if (!await CanAccessPersonaAsync(dto.FkidPersonaNom))
         {
             return Failure<TResponse>("No tienes acceso al empleado solicitado.", "FORBIDDEN");
         }
@@ -151,7 +151,8 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
         try
         {
             var dto = existing.Data.Adapt<TDto>();
-            var mutation = await ExecuteMutationAsync(3, id, dto, usuarioActual, empresaId);
+            var inheritedEmpresaId = await GetPersonaEmpresaIdAsync(dto.FkidPersonaNom);
+            var mutation = await ExecuteMutationAsync(3, id, dto, usuarioActual, inheritedEmpresaId);
             if (!mutation.Success)
             {
                 return Failure<bool>(mutation.Message, "SQL_ERROR");
@@ -178,7 +179,8 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
     {
         try
         {
-            var mutation = await ExecuteMutationAsync(action, id, dto, usuarioActual, empresaId);
+            var inheritedEmpresaId = await GetPersonaEmpresaIdAsync(dto.FkidPersonaNom);
+            var mutation = await ExecuteMutationAsync(action, id, dto, usuarioActual, inheritedEmpresaId);
             if (!mutation.Success)
             {
                 LogMessage(LogLevelGRP.Warn, mutation.Message, SystemLogTypes.Warning);
@@ -248,7 +250,7 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
         }
     }
 
-    private async Task<bool> CanAccessPersonaAsync(int personaId, int? empresaId)
+    private async Task<bool> CanAccessPersonaAsync(int personaId)
     {
         if (personaId <= 0)
         {
@@ -257,9 +259,15 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
 
         return await Context.Personas.AsNoTracking().AnyAsync(persona =>
             persona.PkidPersona == personaId &&
-            persona.Activo &&
-            (!empresaId.HasValue || empresaId <= 0 || persona.FkidEmpresaSis == empresaId));
+            persona.Activo);
     }
+
+    private Task<int?> GetPersonaEmpresaIdAsync(int personaId)
+        => Context.Personas
+            .AsNoTracking()
+            .Where(persona => persona.PkidPersona == personaId && persona.Activo)
+            .Select(persona => (int?)persona.FkidEmpresaSis)
+            .FirstOrDefaultAsync();
 
     protected static int? ReadIntFilter(PagedRequest request, string key)
     {
