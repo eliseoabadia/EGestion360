@@ -7,7 +7,7 @@
 
     <DialogContent>
         <MudOverlay Visible="@Loading" Fixed="true" ZIndex="10">
-            <div class="d-flex flex-column align-center justify-center" style="height:100%">
+            <div class="base-dialog-loading d-flex flex-column align-center justify-center">
                 <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
                 <MudText Class="mt-4">@LoadingMessage</MudText>
             </div>

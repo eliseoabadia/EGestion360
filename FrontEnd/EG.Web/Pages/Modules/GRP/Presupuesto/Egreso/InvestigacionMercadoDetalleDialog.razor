@@ -16,12 +16,16 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando bien..."
+                CanConfirm="@(!_formLoading)"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EstudioMercadoDetalleResponse"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+                    HeaderTitle="@dialogTitle"
+                    Loading="@_formLoading"
+                    LoadingMessage="Preparando bien a cotizar..."
+                    LoadingSkeletonRows="6">
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
@@ -92,6 +96,7 @@
     private EstudioMercadoDetalleResponse item = new() { Activo = true, Cantidad = 1m };
     private LookupItem? _selectedPaaasDetalle;
     private LookupItem? _selectedTipoBien;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar Bien a Cotizar" : "Nuevo Bien a Cotizar";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -99,14 +104,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (Id.HasValue)
+        try
         {
-            await CargarDatosAsync();
-            return;
-        }
+            if (Id.HasValue)
+            {
+                await CargarDatosAsync();
+                return;
+            }
 
-        item.FkidEmpresaSis = EmpresaId;
-        item.FkidEstudioMercadoOrco = EstudioMercadoId;
+            item.FkidEmpresaSis = EmpresaId;
+            item.FkidEstudioMercadoOrco = EstudioMercadoId;
+        }
+        finally
+        {
+            _formLoading = false;
+        }
     }
 
     private async Task CargarDatosAsync()
@@ -143,6 +155,11 @@
 
     private async Task GuardarCambiosAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);

@@ -157,6 +157,7 @@ public static class ApiServiceExtensions
         RegisterCrud<NomNivelResponse>(services, "api/NomNivel");
         RegisterCrud<NomClasePuestoResponse>(services, "api/NomClasePuesto");
         RegisterCrud<NomPuestoResponse>(services, "api/NomPuesto");
+        RegisterCrud<NomPlazaAutorizadaResponse>(services, "api/NomPlazaAutorizada");
         RegisterCrud<NomNombramientoResponse>(services, "api/NomNombramiento");
         RegisterCrud<NomImporteNivelResponse>(services, "api/NomImporteNivel");
         RegisterCrud<NomContratoLaboralResponse>(services, "api/NomContratoLaboral");
@@ -193,6 +194,7 @@ public static class ApiServiceExtensions
         RegisterCrud<NominaRhContratoResponse>(services, "api/NomRhContrato");
         RegisterCrud<NominaRhDependienteResponse>(services, "api/NomRhDependiente");
         RegisterCrud<NominaRhIncidenciaResponse>(services, "api/NomRhIncidencia");
+        RegisterCrud<VwRhIncidenciaResponse>(services, "api/NomRhIncidenciaListado");
         RegisterCrud<NominaRhPensionResponse>(services, "api/NomRhPension");
         RegisterCrud<NominaRhLookupResponse>(services, "api/NomRhLookup");
 

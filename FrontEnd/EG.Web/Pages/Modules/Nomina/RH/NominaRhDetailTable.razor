@@ -49,17 +49,14 @@
                                Disabled="@busy"
                                OnClick="@(() => DeleteAsync(item))" />
             </MudTooltip>
+            @if (AdditionalActions is not null)
+            {
+                @AdditionalActions(item)
+            }
         </MudTd>
         @Row(item)
     </Row>
 </GenericTable>
-
-<style>
-    .rh-detail-actions {
-        min-width: 92px;
-        white-space: nowrap;
-    }
-</style>
 
 @code {
     [Parameter, EditorRequired] public int PersonaId { get; set; }
@@ -75,6 +72,7 @@
     [Parameter, EditorRequired] public Func<TItem, object> ExportMapper { get; set; } = null!;
     [Parameter, EditorRequired] public RenderFragment Header { get; set; } = null!;
     [Parameter, EditorRequired] public RenderFragment<TItem> Row { get; set; } = null!;
+    [Parameter] public RenderFragment<TItem>? AdditionalActions { get; set; }
     [Parameter] public bool CanCreate { get; set; }
     [Parameter] public bool CanUpdate { get; set; }
     [Parameter] public bool CanDelete { get; set; }

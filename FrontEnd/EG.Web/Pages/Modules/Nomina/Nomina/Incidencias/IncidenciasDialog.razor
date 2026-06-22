@@ -1,0 +1,518 @@
+@namespace EG.Web.Pages.Modules.Nomina.Nomina.Incidencias
+@using EG.Common.GenericModel
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhIncidenciaResponse> Service
+@inject IGenericCrudService<NominaRhEmpleadoResponse> EmpleadoService
+@inject IGenericCrudService<NominaRhLookupResponse> LookupService
+@inject IGenericCrudService<NomPeriodoActivoResponse> PeriodoActivoService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhIncidenciaResponse"
+				Title="@DialogTitle"
+				MaxWidth="MaxWidth.Large"
+				ActionText="@ActionText"
+				ProcessingText="Guardando..."
+				LoadingMessage="Cargando incidencia..."
+				CanConfirm="@(!IsReadOnly)"
+				OnConfirm="SaveAsync">
+	<BaseEntityForm TEntity="NominaRhIncidenciaResponse" @ref="form" ShowHeader="false">
+		<section class="incidence-dialog">
+			<div class="incidence-context">
+				<div class="context-main">
+					<MudAvatar Color="Color.Primary" Size="Size.Medium" Variant="Variant.Filled">
+						<MudIcon Icon="@Icons.Material.Filled.Person" />
+					</MudAvatar>
+					<div class="context-employee">
+						<MudText Typo="Typo.caption" Color="Color.Secondary">Empleado</MudText>
+						@if (IsReadOnly)
+						{
+							<MudText Typo="Typo.subtitle1" Class="context-title">@TextOrDash(SelectedEmpleadoText)</MudText>
+						}
+						else
+						{
+							<PagedAutocomplete Value="@selectedEmpleado"
+											   ValueChanged="OnEmpleadoChanged"
+											   Label="Buscar empleado"
+											   Required="true"
+											   RequiredError="Selecciona el empleado."
+											   Clearable="true"
+											   LoadPage="LoadEmpleadosPageAsync"
+											   PageSize="25" />
+						}
+					</div>
+				</div>
+				<div class="context-pill">
+					<span>Quincena</span>
+					<strong>@TextOrDash(periodoText)</strong>
+				</div>
+				<div class="context-pill">
+					<span>Descuento</span>
+					<strong>@(item.AplicaDescuento == true ? "Aplica" : "No aplica")</strong>
+				</div>
+			</div>
+
+			@if (IsReadOnly)
+			{
+				<MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+					La incidencia está activa o autorizada. Solo puede consultarse.
+				</MudAlert>
+			}
+
+			<MudGrid GutterSize="2">
+				<MudItem xs="12">
+					<MudText Typo="Typo.subtitle2" Color="Color.Primary">Captura</MudText>
+				</MudItem>
+
+				<MudItem xs="12" md="4">
+					<NominaRhLookupSelect Value="@item.FkidTipoIncidenciaNom"
+										  ValueChanged="value => item.FkidTipoIncidenciaNom = value"
+										  Catalogo="TipoIncidencia"
+										  Label="Tipo de incidencia"
+										  InitialText="@item.TipoIncidenciaDescripcion"
+										  Required="true"
+										  Disabled="@IsReadOnly" />
+				</MudItem>
+				<MudItem xs="12" md="4">
+					<MudDatePicker Date="@Fecha"
+								   DateChanged="value => Fecha = value"
+								   Label="Fecha"
+								   Variant="Variant.Outlined"
+								   DateFormat="dd/MM/yyyy"
+								   Required="true"
+								   Disabled="@IsReadOnly" />
+				</MudItem>
+				<MudItem xs="12" md="4">
+					<NominaRhLookupSelect Value="@item.FkidPeriodoQuincenalSis"
+										  ValueChanged="OnPeriodoChanged"
+										  DescriptionChanged="value => periodoText = value"
+										  Catalogo="PeriodoQuincenal"
+										  Label="Periodo"
+										  InitialText="@periodoText"
+										  Required="true"
+										  RequiredError="Selecciona la quincena."
+										  Disabled="@IsReadOnly" />
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudTextField @bind-Value="item.Comentario"
+								  Label="Comentario"
+								  Variant="Variant.Outlined"
+								  MaxLength="1000"
+								  Lines="2"
+								  Required="true"
+								  Disabled="@IsReadOnly" />
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudDivider Class="my-2" />
+					<MudText Typo="Typo.subtitle2" Color="Color.Primary">Justificación</MudText>
+				</MudItem>
+
+				<MudItem xs="12" md="5">
+					<NominaRhLookupSelect Value="@item.FkidTipoJustificacionNom"
+										  ValueChanged="value => item.FkidTipoJustificacionNom = value"
+										  Catalogo="TipoJustificacion"
+										  Label="Tipo de justificación"
+										  InitialText="@item.TipoJustificacionDescripcion"
+										  Disabled="@IsReadOnly" />
+				</MudItem>
+				<MudItem xs="12" md="4">
+					<MudPaper Class="switch-panel" Elevation="0">
+						<MudSwitch T="bool" Value="@(item.AplicaDescuento ?? false)"
+								   ValueChanged="OnAplicaDescuentoChanged"
+								   Color="Color.Warning"
+								   Disabled="@IsReadOnly">
+							Aplica descuento
+						</MudSwitch>
+					</MudPaper>
+				</MudItem>
+				<MudItem xs="12" md="3">
+					<MudPaper Class="switch-panel" Elevation="0">
+						<MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success" Disabled="@IsReadOnly">
+							Activo
+						</MudSwitch>
+					</MudPaper>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudTextField @bind-Value="item.ComentarioJustificacion"
+								  Label="Comentario de justificación"
+								  Variant="Variant.Outlined"
+								  MaxLength="1000"
+								  Lines="2"
+								  Disabled="@IsReadOnly" />
+				</MudItem>
+
+				@if (Id.HasValue)
+				{
+					<MudItem xs="12">
+						<NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion"
+										   FechaCreacion="@item.FechaCreacion"
+										   UsuarioModificacion="@item.UsuarioModificacion"
+										   FechaModificacion="@item.FechaModificacion" />
+					</MudItem>
+				}
+			</MudGrid>
+		</section>
+	</BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+	[Parameter] public int? Id { get; set; }
+	[Parameter] public int PersonaId { get; set; }
+	[Parameter] public int? EmpresaId { get; set; }
+	[Parameter] public string PersonaNombre { get; set; } = string.Empty;
+	[Parameter] public bool IsReadOnly { get; set; }
+	[CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+	private BaseEntityForm<NominaRhIncidenciaResponse> form = null!;
+	private NominaRhIncidenciaResponse item = new()
+	{
+		Activo = true,
+		Fecha = DateOnly.FromDateTime(DateTime.Today),
+		AplicaDescuento = false
+	};
+	private LookupItem? selectedEmpleado;
+	private string periodoText = string.Empty;
+
+	private string DialogTitle =>
+		Id.HasValue
+			? (IsReadOnly ? "Ver incidencia" : "Editar incidencia")
+			: "Nueva incidencia";
+
+	private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+	private string SelectedEmpleadoText => selectedEmpleado?.Text ?? PersonaNombre;
+
+	private DateTime? Fecha
+	{
+		get => item.Fecha?.ToDateTime(TimeOnly.MinValue);
+		set => item.Fecha = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (Id.HasValue)
+		{
+			await LoadItemAsync();
+		}
+
+		if (PersonaId > 0 && item.FkidPersonaNom <= 0)
+		{
+			item.FkidPersonaNom = PersonaId;
+		}
+
+		await InitializeEmpleadoAsync();
+		await InitializePeriodoAsync();
+	}
+
+	private async Task InitializeEmpleadoAsync()
+	{
+		if (item.FkidPersonaNom <= 0)
+		{
+			selectedEmpleado = null;
+			return;
+		}
+
+		var knownText = FirstNonEmpty(
+			PersonaNombre,
+			FormatEmpleadoText(item.ClavePersona, item.NombreCompleto));
+		var text = FirstNonEmpty(knownText, item.FkidPersonaNom.ToString(CultureInfo.InvariantCulture));
+
+		selectedEmpleado = new LookupItem { Id = item.FkidPersonaNom, Text = text };
+		PersonaId = item.FkidPersonaNom;
+		PersonaNombre = text;
+
+		if (!string.IsNullOrWhiteSpace(knownText))
+		{
+			return;
+		}
+
+		try
+		{
+			var response = await EmpleadoService.GetByIdAsync(item.FkidPersonaNom);
+			if (response?.Success == true && response.Data != null)
+			{
+				selectedEmpleado = ToEmpleadoLookupItem(response.Data);
+				PersonaNombre = selectedEmpleado.Text;
+			}
+		}
+		catch
+		{
+			// The selected id is still valid for saving; the text can be resolved on reload.
+		}
+	}
+
+	private async Task LoadItemAsync()
+	{
+		try
+		{
+			var response = await Service.GetByIdAsync(Id!.Value);
+			if (response?.Success == true && response.Data != null)
+			{
+				item = response.Data;
+				return;
+			}
+
+			Snackbar.Add(response?.Message ?? "No fue posible cargar la incidencia.", Severity.Error);
+		}
+		catch
+		{
+			Snackbar.Add("No fue posible cargar la incidencia. El departamento de TI revisará el incidente.", Severity.Error);
+		}
+	}
+
+	private async Task InitializePeriodoAsync()
+	{
+		if (item.FkidPeriodoQuincenalSis.HasValue)
+		{
+			periodoText = await ResolvePeriodoTextAsync(item.FkidPeriodoQuincenalSis.Value);
+			return;
+		}
+
+		var defaultPeriodId = await ResolveDefaultPeriodoIdAsync();
+		if (defaultPeriodId.HasValue)
+		{
+			item.FkidPeriodoQuincenalSis = defaultPeriodId.Value;
+			periodoText = await ResolvePeriodoTextAsync(defaultPeriodId.Value);
+		}
+	}
+
+	private async Task<int?> ResolveDefaultPeriodoIdAsync()
+	{
+		try
+		{
+			var response = await PeriodoActivoService.GetAllPaginadoAsync(
+				1,
+				20,
+				string.Empty,
+				nameof(NomPeriodoActivoResponse.IdPeriodo),
+				SortDirection.Descending,
+				BuildEmpresaFilter());
+
+			var periodoActivo = response?.Items?
+				.Where(item => item.Activo)
+				.OrderByDescending(item => item.IdPeriodo)
+				.FirstOrDefault();
+
+			if (periodoActivo == null)
+			{
+				return null;
+			}
+
+			return periodoActivo.EstaCerrado
+				? periodoActivo.IdPeriodo + 1
+				: periodoActivo.IdPeriodo;
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	private async Task<string> ResolvePeriodoTextAsync(int periodoId)
+	{
+		var lookup = await FindPeriodoAsync(periodoId);
+		if (lookup != null)
+		{
+			return FormatPeriodoText(lookup);
+		}
+
+		return periodoId.ToString(CultureInfo.InvariantCulture);
+	}
+
+	private async Task<NominaRhLookupResponse?> FindPeriodoAsync(int periodoId)
+	{
+		var response = await LookupService.GetAllPaginadoAsync(
+			1,
+			5,
+			periodoId.ToString(CultureInfo.InvariantCulture),
+			nameof(NominaRhLookupResponse.FechaFin),
+			SortDirection.Descending,
+			BuildPeriodoFilter());
+
+		return response?.Items?.FirstOrDefault(item => item.Id == periodoId)
+			?? response?.Items?.FirstOrDefault();
+	}
+
+	private Dictionary<string, object> BuildPeriodoFilter()
+		=> new() { ["Catalogo"] = "PeriodoQuincenal" };
+
+	private Dictionary<string, object>? BuildEmpresaFilter()
+		=> EmpresaId is > 0
+			? new Dictionary<string, object> { ["FkidEmpresaSis"] = EmpresaId.Value }
+			: null;
+
+	private Dictionary<string, object>? BuildEmpleadoFilter()
+		=> EmpresaId is > 0
+			? new Dictionary<string, object> { ["EmpresaId"] = EmpresaId.Value }
+			: null;
+
+	private async Task<ComboLookupResult> LoadEmpleadosPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
+	{
+		if (cancellationToken.IsCancellationRequested)
+		{
+			return new ComboLookupResult();
+		}
+
+		var response = await EmpleadoService.GetAllPaginadoAsync(
+			page,
+			pageSize,
+			filter,
+			nameof(NominaRhEmpleadoResponse.NombreCompleto),
+			SortDirection.Ascending,
+			BuildEmpleadoFilter());
+
+		return new ComboLookupResult
+		{
+			Items = response?.Items?.Select(ToEmpleadoLookupItem) ?? Enumerable.Empty<LookupItem>(),
+			TotalCount = response?.TotalCount ?? 0
+		};
+	}
+
+	private Task OnEmpleadoChanged(LookupItem? empleado)
+	{
+		selectedEmpleado = empleado;
+		item.FkidPersonaNom = empleado?.Id ?? 0;
+		PersonaId = item.FkidPersonaNom;
+		PersonaNombre = empleado?.Text ?? string.Empty;
+		return Task.CompletedTask;
+	}
+
+	private Task OnPeriodoChanged(int? value)
+	{
+		item.FkidPeriodoQuincenalSis = value;
+		if (!value.HasValue)
+		{
+			periodoText = string.Empty;
+		}
+
+		return Task.CompletedTask;
+	}
+
+	private Task OnAplicaDescuentoChanged(bool value)
+	{
+		item.AplicaDescuento = value;
+		return Task.CompletedTask;
+	}
+
+	private async Task SaveAsync()
+	{
+		if (IsReadOnly)
+		{
+			Snackbar.Add("La incidencia está en modo consulta.", Severity.Info);
+			return;
+		}
+
+		if (!await form.ValidateAsync())
+		{
+			Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+			return;
+		}
+
+		if (item.FkidPersonaNom <= 0)
+		{
+			Snackbar.Add("Selecciona el empleado.", Severity.Warning);
+			return;
+		}
+
+		if (item.FkidTipoIncidenciaNom is null or <= 0)
+		{
+			Snackbar.Add("Selecciona el tipo de incidencia.", Severity.Warning);
+			return;
+		}
+
+		if (!item.Fecha.HasValue)
+		{
+			Snackbar.Add("Captura la fecha de incidencia.", Severity.Warning);
+			return;
+		}
+
+		if (item.FkidPeriodoQuincenalSis is null or <= 0)
+		{
+			Snackbar.Add("Selecciona el periodo quincenal.", Severity.Warning);
+			return;
+		}
+
+		if (string.IsNullOrWhiteSpace(item.Comentario))
+		{
+			Snackbar.Add("Captura el comentario de la incidencia.", Severity.Warning);
+			return;
+		}
+
+		item.Comentario = item.Comentario.Trim();
+		item.ComentarioJustificacion = item.ComentarioJustificacion?.Trim() ?? string.Empty;
+
+		try
+		{
+			var response = Id.HasValue
+				? await Service.UpdateAsync(item, Id.Value)
+				: await Service.CreateAsync(item);
+
+			if (response?.Success == true)
+			{
+				Snackbar.Add(response.Message ?? "Incidencia guardada correctamente.", Severity.Success);
+				MudDialog.Close(DialogResult.Ok(true));
+				return;
+			}
+
+			Snackbar.Add(response?.Message ?? "No fue posible guardar la incidencia.", Severity.Error);
+		}
+		catch
+		{
+			Snackbar.Add("No fue posible guardar la incidencia. El departamento de TI revisará el incidente.", Severity.Error);
+		}
+	}
+
+	private static string FormatPeriodoText(NominaRhLookupResponse item)
+	{
+		if (item.FechaInicio.HasValue && item.FechaFin.HasValue)
+		{
+			return string.Create(
+				CultureInfo.InvariantCulture,
+				$"{item.FechaInicio.Value:yyyy-MM-dd}; {item.FechaFin.Value:yyyy-MM-dd}");
+		}
+
+		return string.IsNullOrWhiteSpace(item.Descripcion)
+			? item.Id.ToString(CultureInfo.InvariantCulture)
+			: item.Descripcion;
+	}
+
+	private static LookupItem ToEmpleadoLookupItem(NominaRhEmpleadoResponse empleado)
+		=> new()
+		{
+			Id = empleado.Id,
+			Text = FirstNonEmpty(
+				empleado.ClaveNombre,
+				FormatEmpleadoText(empleado.Empleado, empleado.NombreCompleto),
+				empleado.Id.ToString(CultureInfo.InvariantCulture))
+		};
+
+	private static string FormatEmpleadoText(string? clave, string? nombre)
+	{
+		var claveText = clave?.Trim() ?? string.Empty;
+		var nombreText = nombre?.Trim() ?? string.Empty;
+
+		if (string.IsNullOrWhiteSpace(claveText))
+		{
+			return nombreText;
+		}
+
+		if (string.IsNullOrWhiteSpace(nombreText))
+		{
+			return claveText;
+		}
+
+		return $"{claveText} - {nombreText}";
+	}
+
+	private static string FirstNonEmpty(params string?[] values)
+		=> values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+
+	private static string TextOrDash(string? value)
+		=> string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

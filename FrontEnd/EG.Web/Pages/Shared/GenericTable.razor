@@ -2,6 +2,18 @@
 @using MudBlazor
 
 <MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-table">
+    @if (ShowBusyOverlay && IsTableBusy)
+    {
+        <div class="eg-generic-table-busy">
+            <div class="eg-generic-table-busy-panel">
+                <MudProgressCircular Color="Color.Primary"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Typo="Typo.body2">@CurrentBusyMessage</MudText>
+            </div>
+        </div>
+    }
+
     <MudTable ServerData="LoadServerData"
               RowsPerPage="@PageSize"
               Page="@CurrentPage"
@@ -12,7 +24,8 @@
               Dense="@Dense"
               Hover="@Hover"
               Striped="@Striped"
-              Loading="@Loading"
+              Loading="@IsTableBusy"
+              LoadingProgressColor="Color.Primary"
               ReadOnly="@ReadOnly"
               SortLabel="Ordenar por"
               InitialSortDirection="@InitialSortDirection"
@@ -92,7 +105,12 @@
         </NoRecordsContent>
 
         <LoadingContent>
-            <MudText>Cargando...</MudText>
+            <div class="eg-generic-table-loading-row">
+                <MudProgressCircular Color="Color.Primary"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Typo="Typo.body2">@CurrentBusyMessage</MudText>
+            </div>
         </LoadingContent>
 
         <PagerContent>
@@ -111,101 +129,19 @@
     </MudTable>
 </MudPaper>
 
-<style>
-    .themed-table {
-        border: 1px solid var(--mud-palette-lines-default);
-        border-top: 4px solid var(--eg-primary);
-        background: var(--mud-palette-surface);
-        color: var(--mud-palette-text-primary);
-        overflow: hidden;
-    }
-
-    .eg-generic-table {
-        display: flex;
-        flex: 1 1 auto;
-        flex-direction: column;
-        min-height: 0;
-        max-height: 100%;
-    }
-
-    .eg-generic-table > .mud-table {
-        display: flex;
-        flex: 1 1 auto;
-        flex-direction: column;
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .eg-generic-table .mud-table-toolbar,
-    .eg-generic-table .mud-table-pagination {
-        flex: 0 0 auto;
-    }
-
-    .eg-generic-table .mud-table-container {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto !important;
-        overflow-x: auto;
-        scrollbar-gutter: stable;
-    }
-
-    .themed-table .mud-table-toolbar {
-        background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 13%, var(--mud-palette-surface)) 0%, var(--mud-palette-surface) 72%);
-        border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
-        margin: -16px -16px 0;
-        padding: 16px;
-    }
-
-    .themed-table .mud-table-toolbar .mud-typography-h6 {
-        color: var(--eg-primary-dark);
-        font-weight: 700;
-    }
-
-    .themed-table .mud-table-toolbar .mud-input,
-    .themed-table .mud-table-toolbar .mud-input input,
-    .themed-table .mud-table-toolbar .mud-input-adornment,
-    .themed-table .mud-table-toolbar .mud-input-adornment .mud-icon-root {
-        color: var(--mud-palette-text-primary);
-    }
-
-    .themed-table .mud-table-toolbar .mud-input-adornment .mud-icon-root {
-        color: var(--eg-primary);
-    }
-
-    .themed-table .mud-table-head .mud-table-cell {
-        background: color-mix(in srgb, var(--eg-primary) 10%, var(--mud-palette-surface));
-        color: var(--eg-primary-dark);
-        border-bottom-color: color-mix(in srgb, var(--eg-primary) 42%, var(--mud-palette-lines-default));
-        font-weight: 700;
-    }
-
-    .themed-table .mud-table-body .mud-table-row:nth-child(even) {
-        background-color: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
-    }
-
-    .themed-table .mud-table-row:hover {
-        background-color: var(--eg-primary-soft) !important;
-    }
-
-    .themed-table .mud-table-pagination {
-        border-top: 1px solid color-mix(in srgb, var(--eg-primary) 20%, var(--mud-palette-lines-default));
-    }
-
-    .themed-table .mud-input:focus-within .mud-input-underline::after,
-    .themed-table .mud-input:focus-within .mud-input-outlined-border {
-        border-color: var(--eg-primary);
-    }
-</style>
-
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public int Elevation { get; set; } = 2;
     [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
     [Parameter] public bool ShowExportButton { get; set; } = true;
     [Parameter] public bool ShowAddButton { get; set; }
+    [Parameter] public bool ShowBusyOverlay { get; set; } = true;
     [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
     [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
     [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
+    [Parameter] public string LoadingMessage { get; set; } = "Cargando datos...";
+    [Parameter] public string ActionLoadingMessage { get; set; } = "Procesando...";
+    [Parameter] public string OpenFormLoadingMessage { get; set; } = "Abriendo formulario...";
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
 
     [Parameter] public int PageSize { get; set; } = 10;
@@ -238,10 +174,13 @@
     private bool isLoading = false;
     private bool actionInProgress = false;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
+    private string CurrentBusyMessage => actionInProgress ? ActionLoadingMessage : LoadingMessage;
 
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         isLoading = true;
+        await InvokeAsync(StateHasChanged);
+
         try
         {
             if (ServerDataFunc != null)
@@ -253,6 +192,7 @@
         finally
         {
             isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -282,7 +222,12 @@
 
     private async Task AddItem()
     {
-        await RunTableActionAsync(async () => await OnAdd.InvokeAsync());
+        if (IsTableBusy)
+        {
+            return;
+        }
+
+        await OnAdd.InvokeAsync();
     }
 
     public async Task ReloadData()

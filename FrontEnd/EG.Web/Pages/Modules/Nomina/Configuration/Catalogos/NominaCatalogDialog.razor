@@ -13,6 +13,7 @@
 
 @inject IGenericCrudService<TItem> Service
 @inject IGenericCrudService<EmpresaResponse> EmpresaService
+@inject IGenericCrudService<AreaResponse> AreaService
 @inject IGenericCrudService<NomEmpresaNominaResponse> EmpresaNominaService
 @inject IGenericCrudService<PersonaResponse> PersonaService
 @inject IGenericCrudService<NomConceptoResponse> ConceptoService
@@ -264,6 +265,7 @@
             return lookup.PropertyName switch
             {
                 "FkidEmpresaSis" or "FkidEmpresaNominaNom" => ToLookupItem((await EmpresaNominaService.GetByIdAsync(id)).Data),
+                "FkidAreaSis" => ToLookupItem((await AreaService.GetByIdAsync(id)).Data),
                 "FkidPersonaNom" => ToLookupItem((await PersonaService.GetByIdAsync(id)).Data),
                 "FkidConceptoNom" => ToLookupItem((await ConceptoService.GetByIdAsync(id)).Data),
                 "FkidConceptoProporcionalNom" => ToLookupItem((await ConceptoProporcionalService.GetByIdAsync(id)).Data),
@@ -299,6 +301,7 @@
         return lookup.PropertyName switch
         {
             "FkidEmpresaSis" or "FkidEmpresaNominaNom" => await LoadEmpresasNominaPageAsync(page, pageSize, filter),
+            "FkidAreaSis" => await LoadAreasPageAsync(page, pageSize, filter),
             "FkidPersonaNom" => await LoadPersonasPageAsync(page, pageSize, filter),
             "FkidConceptoNom" => await LoadConceptosPageAsync(page, pageSize, filter),
             "FkidConceptoProporcionalNom" => await LoadConceptosProporcionalesPageAsync(page, pageSize, filter),
@@ -330,6 +333,12 @@
     private async Task<ComboLookupResult> LoadEmpresasNominaPageAsync(int page, int pageSize, string filter)
     {
         var response = await EmpresaNominaService.GetAllPaginadoAsync(page, pageSize, filter, "RazonSocial");
+        return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave");
         return ToComboResult(response.Items?.Select(ToLookupItem), response.TotalCount);
     }
 
@@ -509,6 +518,10 @@
 
         return property.Name is "ClaveNombre"
             or "EmpresaNominaNombre"
+            or "EmpresaNombre"
+            or "AreaClave"
+            or "AreaNombre"
+            or "FkidSituacionPlazaRh"
             or "ConceptoClaveNombre"
             or "PuestoNombre"
             or "PuestoClaveNombre"
@@ -792,6 +805,11 @@
             _ => Humanize(propertyName)
         };
 
+    private static LookupItem? ToLookupItem(AreaResponse? value)
+        => value == null
+            ? null
+            : new LookupItem { Id = value.PkidArea, Text = $"{value.Clave} - {value.Descripcion}".Trim(' ', '-') };
+
     private static string GetLabel(PropertyInfo property)
     {
         return property.Name switch
@@ -799,6 +817,7 @@
             "Pkid" => "ID",
             "PkidConcepto" => "ID",
             "FkidEmpresaSis" => "Empresa de nómina",
+            "FkidAreaSis" => "Área",
             "FkidEmpresaNominaNom" => "Empresa de nómina",
             "FkidPeriodoPagoSis" => "Periodo de pago",
             "FkidTipoPagoNom" => "Tipo de pago",

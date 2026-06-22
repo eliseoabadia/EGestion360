@@ -13,8 +13,8 @@
 @inject IGenericCrudService<TipoMonedaResponse> MonedaService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="InstrumentoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
-    <BaseEntityForm TEntity="InstrumentoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="InstrumentoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
+    <BaseEntityForm TEntity="InstrumentoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando instrumento..." LoadingSkeletonRows="10">
         <MudGrid GutterSize="2">
             <MudItem xs="12"><MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" /></MudItem>
             <MudItem xs="12" md="6"><PagedAutocomplete Value="@_tipoInversion" ValueChanged="value => _tipoInversion = value" Label="Tipo inversion" Required="true" LoadPage="LoadTiposInversionPageAsync" /></MudItem>
@@ -44,6 +44,7 @@
     private LookupItem? _moneda;
     private DateTime? _fechaEmision;
     private DateTime? _fechaVencimiento;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar instrumento" : "Nuevo instrumento";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -52,29 +53,36 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            SetDefaultDates();
-            await SetDefaultMonedaAsync();
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                SetDefaultDates();
+                await SetDefaultMonedaAsync();
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _tipoInversion = new LookupItem { Id = item.FkidTipoInversionTes, Text = item.TipoInversionDescripcion };
+                _intermediario = new LookupItem { Id = item.FkidIntermediarioFinancieroTes, Text = item.IntermediarioNombre };
+                _tipoPlazo = item.FkidTipoPlazoTes.HasValue ? new LookupItem { Id = item.FkidTipoPlazoTes.Value, Text = item.TipoPlazoDescripcion } : null;
+                _moneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = item.TipoMonedaDescripcion };
+                _fechaEmision = item.FechaEmision?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
+                _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
+            }
+        }
+        finally
         {
-            item = response.Data;
-            _tipoInversion = new LookupItem { Id = item.FkidTipoInversionTes, Text = item.TipoInversionDescripcion };
-            _intermediario = new LookupItem { Id = item.FkidIntermediarioFinancieroTes, Text = item.IntermediarioNombre };
-            _tipoPlazo = item.FkidTipoPlazoTes.HasValue ? new LookupItem { Id = item.FkidTipoPlazoTes.Value, Text = item.TipoPlazoDescripcion } : null;
-            _moneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = item.TipoMonedaDescripcion };
-            _fechaEmision = item.FechaEmision?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
-            _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today;
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
         if (_tipoInversion == null || _intermediario == null || _moneda == null)
         {
             Snackbar.Add("Completa tipo de inversion, intermediario y moneda.", Severity.Warning);

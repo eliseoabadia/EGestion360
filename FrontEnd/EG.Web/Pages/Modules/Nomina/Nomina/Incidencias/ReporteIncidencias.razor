@@ -1,0 +1,205 @@
+@page "/rh/incidenciareport"
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<VwRhIncidenciaResponse, VwRhIncidenciaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+					HasAccess="@HasAccess"
+					NavigateToHome="NavigateToHome">
+	<MudContainer Class="px-3 d-flex flex-column reporte-page eg-operation-page" MaxWidth="MaxWidth.False">
+		<PageHeader Title="Reporte de Incidencias"
+					Subtitle="Consulta y análisis de incidencias procesadas"
+					Icon="@Icons.Material.Filled.BarChart"
+					CanCreate="false"
+					OnRefresh="() => table.ReloadData()" />
+
+		<div class="eg-summary-strip">
+			<div>
+				<span class="eg-summary-label">Total de incidencias</span>
+				<strong>@TotalCount.ToString("N0")</strong>
+			</div>
+			<div>
+				<span class="eg-summary-label">Con descuento</span>
+				<strong>@Elements.Count(x => x.AplicaDescuento == true).ToString("N0")</strong>
+			</div>
+			<div>
+				<span class="eg-summary-label">Autorizadas</span>
+				<strong>@Elements.Count(x => x.Activo == true).ToString("N0")</strong>
+			</div>
+		</div>
+
+		<div class="eg-table-shell">
+			<GenericTable TItem="VwRhIncidenciaResponse"
+						  @ref="table"
+						  Title="Reporte de incidencias"
+						  SearchPlaceholder="Buscar empleado, tipo de incidencia, justificación..."
+						  ShowExportButton="@CanExport"
+						  ServerDataFunc="LoadServerData"
+						  ExportFunc="ExportToExcel"
+						  SearchString="@SearchString"
+						  SearchStringChanged="(s) => SearchString = s"
+						  OnSearch="OnSearch">
+
+				<Header>
+					<MudTh>Acciones</MudTh>
+					<MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="VwRhIncidenciaResponse">Empleado</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="ClavePersona" T="VwRhIncidenciaResponse">Clave</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="TipoIncidenciaDescripcion" T="VwRhIncidenciaResponse">Tipo Incidencia</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="Fecha" T="VwRhIncidenciaResponse">Fecha Incidencia</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="FechaFin" T="VwRhIncidenciaResponse">Periodo Fin</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="TipoJustificacionDescripcion" T="VwRhIncidenciaResponse">Tipo Justificación</MudTableSortLabel></MudTh>
+					<MudTh>Aplica Descuento</MudTh>
+					<MudTh><MudTableSortLabel SortLabel="Activo" T="VwRhIncidenciaResponse">Estado</MudTableSortLabel></MudTh>
+				</Header>
+
+				<Row Context="item">
+					<MudTd>
+						<MudTooltip Text="Ver detalles">
+							<MudIconButton Icon="@Icons.Material.Filled.Visibility"
+										   Color="Color.Info"
+										   Size="Size.Small"
+										   OnClick="@(() => ViewDetails(item))" />
+						</MudTooltip>
+					</MudTd>
+					<MudTd>
+						<div class="eg-main-cell">@TextOrDash(item.NombreCompleto)</div>
+						<span>@TextOrDash(item.Rfc)</span>
+					</MudTd>
+					<MudTd>@TextOrDash(item.ClavePersona)</MudTd>
+					<MudTd>@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
+					<MudTd>@(item.Fecha?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+					<MudTd>@(item.FechaFin?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+					<MudTd>
+						@if (string.IsNullOrWhiteSpace(item.TipoJustificacionDescripcion))
+						{
+							<!-- FIX: Added T="string" -->
+							<MudChip T="string" Size="Size.Small" Color="Color.Warning">Pendiente</MudChip>
+						}
+						else
+						{
+							<span>@item.TipoJustificacionDescripcion</span>
+						}
+					</MudTd>
+					<MudTd>
+						<!-- FIX: Added T="string" -->
+						<MudChip T="string"
+								 Size="Size.Small"
+								 Color="@(item.AplicaDescuento == true ? Color.Warning : Color.Default)">
+							@(item.AplicaDescuento == true ? "Aplica" : "No aplica")
+						</MudChip>
+					</MudTd>
+					<MudTd>
+						<!-- FIX: Added T="string" -->
+						<MudChip T="string"
+								 Size="Size.Small"
+								 Color="@(item.Activo == true ? Color.Success : Color.Info)"
+								 Variant="Variant.Text">
+							@(item.Activo == true ? "Autorizada" : "Pendiente")
+						</MudChip>
+					</MudTd>
+				</Row>
+			</GenericTable>
+		</div>
+	</MudContainer>
+</AccessVerification>
+
+@code {
+	private GenericTable<VwRhIncidenciaResponse> table = null!;
+
+	protected override string ModuleName => "Incidencias";
+	protected override string SubModuleName => "Reporte_Incidencias";
+
+	protected override Type CreateDialogType => typeof(object);
+	protected override Type EditDialogType => typeof(object);
+	protected override Type DeleteDialogType => typeof(object);
+	protected override string GetDefaultSortLabel() => "PkidIncidencia";
+	protected override IEnumerable<object> MapToExcelData(IEnumerable<VwRhIncidenciaResponse> items) => items;
+	protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+
+	private async Task ViewDetails(VwRhIncidenciaResponse item)
+	{
+		try
+		{
+			var response = await Service.GetByIdAsync(item.PkidIncidencia);
+			if (response?.Success != true || response.Data == null)
+			{
+				Snackbar.Add("No fue posible cargar los detalles", Severity.Error);
+				return;
+			}
+
+			var fullItem = response.Data;
+
+			var parameters = new DialogParameters<ReporteIncidenciasDetalleDialog>
+			{
+				{ x => x.Item, fullItem }
+			};
+
+			await DialogService.ShowAsync<ReporteIncidenciasDetalleDialog>(
+				"Detalles de la incidencia",
+				parameters,
+				new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al ver detalles: {ex}");
+			Snackbar.Add("Error al cargar los detalles", Severity.Error);
+		}
+	}
+
+	protected override async Task ExportToExcel()
+	{
+		try
+		{
+			var allData = await Service.GetAllPaginadoAsync(
+				1,
+				int.MaxValue,
+				string.Empty,
+				nameof(VwRhIncidenciaResponse.PkidIncidencia),
+				SortDirection.Descending);
+
+			var data = allData?.Items?.Select(x => (object)new
+			{
+				Empleado = x.NombreCompleto,
+				Clave = x.ClavePersona,
+				RFC = x.Rfc,
+				TipoIncidencia = x.TipoIncidenciaDescripcion,
+				FechaIncidencia = x.Fecha?.ToString("dd/MM/yyyy"),
+				Periodo = x.FechaFin?.ToString("dd/MM/yyyy"),
+				Comentario = x.Comentario,
+				TipoJustificacion = x.TipoJustificacionDescripcion ?? "Pendiente",
+				AplicaDescuento = x.AplicaDescuento == true ? "Sí" : "No",
+				ComentarioJustificacion = x.ComentarioJustificacion,
+				Estado = x.Activo == true ? "Autorizada" : "Pendiente",
+				FechaCreacion = x.FechaCreacion?.ToString("dd/MM/yyyy HH:mm"),
+				FechaModificacion = x.FechaModificacion?.ToString("dd/MM/yyyy HH:mm")
+			}).ToList() ?? new List<object>();
+
+			using var stream = new MemoryStream();
+			await stream.SaveAsAsync(data);
+			var base64 = Convert.ToBase64String(stream.ToArray());
+
+			await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+				$"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al exportar reporte: {ex}");
+			Snackbar.Add("Error al exportar los datos", Severity.Error);
+		}
+	}
+
+	private static string TextOrDash(string? value)
+		=> string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+	public void Dispose()
+	{
+		SearchCts?.Cancel();
+		SearchCts?.Dispose();
+	}
+}

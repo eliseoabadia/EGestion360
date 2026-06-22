@@ -1,0 +1,20 @@
+.rh-inline-details {
+    width: 100%;
+    padding: 12px 14px 16px;
+    background: color-mix(in srgb, var(--eg-primary) 2%, var(--mud-palette-surface));
+    border-left: 4px solid var(--eg-primary);
+}
+
+.rh-inline-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 4px 8px;
+}
+
+.rh-inline-tabs {
+    border-top: 1px solid var(--mud-palette-lines-default);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    margin-bottom: 10px;
+}

@@ -1,0 +1,93 @@
+@page "/rh/configuracion/plazas"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomPlazaAutorizadaResponse, NomPlazaAutorizadaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Plazas autorizadas"
+                    Subtitle="Plantilla autorizada de puestos por área y empresa"
+                    Icon="@Icons.Material.Filled.Verified"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomPlazaAutorizadaResponse"
+                      @ref="table"
+                      Title="Lista de plazas autorizadas"
+                      SearchPlaceholder="Buscar plaza, puesto, área, situación o documento..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomPlazaAutorizadaResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidPlazaAutorizada))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidPlazaAutorizada))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomPlazaAutorizadaResponse> table = null!;
+    private static readonly string[] Columns =
+    [
+        nameof(NomPlazaAutorizadaResponse.Plaza),
+        nameof(NomPlazaAutorizadaResponse.PuestoNombre),
+        nameof(NomPlazaAutorizadaResponse.AreaNombre),
+        nameof(NomPlazaAutorizadaResponse.SituacionPlaza),
+        nameof(NomPlazaAutorizadaResponse.TipoPlaza),
+        nameof(NomPlazaAutorizadaResponse.FechaInicio),
+        nameof(NomPlazaAutorizadaResponse.FechaFin),
+        nameof(NomPlazaAutorizadaResponse.Documento),
+        nameof(NomPlazaAutorizadaResponse.EmpresaNombre),
+        nameof(NomPlazaAutorizadaResponse.Activo)
+    ];
+
+    protected override string ModuleName => "Plazas_Autorizadas";
+    protected override string SubModuleName => "Plazas_Autorizadas";
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomPlazaAutorizadaResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomPlazaAutorizadaResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomPlazaAutorizadaResponse>);
+    protected override string GetDefaultSortLabel() => nameof(NomPlazaAutorizadaResponse.Plaza);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomPlazaAutorizadaResponse), Columns);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomPlazaAutorizadaResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "la plaza autorizada";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

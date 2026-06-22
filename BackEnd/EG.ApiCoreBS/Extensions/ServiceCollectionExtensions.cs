@@ -173,6 +173,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INominaCrudAppService<NomNivelResponse>, NomNivelAppService>();
             services.AddScoped<INominaCrudAppService<NomClasePuestoResponse>, NomClasePuestoAppService>();
             services.AddScoped<INominaCrudAppService<NomPuestoResponse>, NomPuestoAppService>();
+            services.AddScoped<INominaCrudAppService<NomPlazaAutorizadaResponse>, NomPlazaAutorizadaAppService>();
             services.AddScoped<INominaCrudAppService<NomNombramientoResponse>, NomNombramientoAppService>();
             services.AddScoped<INominaCrudAppService<NomImporteNivelResponse>, NomImporteNivelAppService>();
             services.AddScoped<INominaCrudAppService<NomContratoLaboralResponse>, NomContratoLaboralAppService>();

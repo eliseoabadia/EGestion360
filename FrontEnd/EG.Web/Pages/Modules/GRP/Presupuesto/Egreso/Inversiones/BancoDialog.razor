@@ -6,8 +6,8 @@
 @inject IGenericCrudService<BancoResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="BancoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="BancoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="BancoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="BancoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando banco..." LoadingSkeletonRows="4">
         <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
         <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
         <MudTextField @bind-Value="item.NombreCorto" Label="Nombre corto" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
@@ -21,26 +21,39 @@
 
     private BaseEntityForm<BancoResponse> form = null!;
     private BancoResponse item = new() { Activo = true };
+    private bool _formLoading = true;
     private string dialogTitle => Id.HasValue ? "Editar banco" : "Nuevo banco";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        finally
         {
-            item = response.Data;
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             return;

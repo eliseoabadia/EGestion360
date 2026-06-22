@@ -8,8 +8,8 @@
 @inject IGenericCrudService<ContratoDetalleResponse> DetalleService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="ContratoResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
-    <BaseEntityForm TEntity="ContratoResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+<BaseCrudDialog TItem="ContratoResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="ContratoResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando contrato..." LoadingSkeletonRows="9">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidAutorizacionSuficienciaPres" Label="Autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -66,38 +66,51 @@
     private DateTime? fechaContrato = DateTime.Today;
     private DateTime? fechaInicio;
     private DateTime? fechaFin;
+    private bool _formLoading = true;
     private string Title => Id.HasValue ? "Editar contrato" : "Nuevo contrato";
     private string ActionText => Id.HasValue ? "Actualizar" : "Guardar contrato";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            if (PrefillItem != null)
+            if (!Id.HasValue)
             {
-                item = CloneHeader(PrefillItem);
+                if (PrefillItem != null)
+                {
+                    item = CloneHeader(PrefillItem);
+                    fechaContrato = item.FechaContrato.ToDateTime(TimeOnly.MinValue);
+                    fechaInicio = item.FechaInicioVigencia?.ToDateTime(TimeOnly.MinValue);
+                    fechaFin = item.FechaFinVigencia?.ToDateTime(TimeOnly.MinValue);
+                }
+
+                detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<ContratoDetalleResponse>();
+                return;
+            }
+
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Data != null)
+            {
+                item = response.Data;
                 fechaContrato = item.FechaContrato.ToDateTime(TimeOnly.MinValue);
                 fechaInicio = item.FechaInicioVigencia?.ToDateTime(TimeOnly.MinValue);
                 fechaFin = item.FechaFinVigencia?.ToDateTime(TimeOnly.MinValue);
             }
-
-            detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<ContratoDetalleResponse>();
-            return;
         }
-
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Data != null)
+        finally
         {
-            item = response.Data;
-            fechaContrato = item.FechaContrato.ToDateTime(TimeOnly.MinValue);
-            fechaInicio = item.FechaInicioVigencia?.ToDateTime(TimeOnly.MinValue);
-            fechaFin = item.FechaFinVigencia?.ToDateTime(TimeOnly.MinValue);
+            _formLoading = false;
         }
     }
 
     private async Task SaveAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);

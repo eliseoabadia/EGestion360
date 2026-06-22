@@ -27,132 +27,146 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
+                CanConfirm="@(!_formLoading)"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="ProgramaResponse"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+                    HeaderTitle="@dialogTitle"
+                    Loading="@_formLoading"
+                    LoadingMessage="Preparando formulario..."
+                    LoadingSkeletonRows="10">
 
-        <MudGrid GutterSize="2">
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Clave"
-                              Label="Clave"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              MaxLength="50"
-                              RequiredError="La clave es requerida" />
-            </MudItem>
-
-            <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="item.Descripcion"
-                              Label="Descripcion"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              MaxLength="50"
-                              RequiredError="La descripcion es requerida" />
-            </MudItem>
-
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.Objetivo"
-                              Label="Objetivo"
-                              Variant="Variant.Outlined"
-                              Lines="3"
-                              MaxLength="500" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedUr"
-                                   ValueChanged="value => _selectedUr = value"
-                                   Label="Unidad responsable"
-                                   Required="true"
-                                   RequiredError="La unidad responsable es requerida"
-                                   LoadPage="LoadUnidadesResponsablesPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedActividadInstitucional"
-                                   ValueChanged="value => _selectedActividadInstitucional = value"
-                                   Label="Actividad institucional"
-                                   Required="true"
-                                   RequiredError="La actividad institucional es requerida"
-                                   LoadPage="LoadActividadesInstitucionalesPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedGf"
-                                   ValueChanged="value => _selectedGf = value"
-                                   Label="Grupo funcional"
-                                   Required="true"
-                                   RequiredError="El grupo funcional es requerido"
-                                   LoadPage="LoadGruposFuncionalesPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedFn"
-                                   ValueChanged="value => _selectedFn = value"
-                                   Label="Funcion"
-                                   Required="true"
-                                   RequiredError="La funcion es requerida"
-                                   LoadPage="LoadFuncionesPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedSf"
-                                   ValueChanged="value => _selectedSf = value"
-                                   Label="Subfuncion"
-                                   Required="true"
-                                   RequiredError="La subfuncion es requerida"
-                                   LoadPage="LoadSubFuncionesPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedAnio"
-                                   ValueChanged="value => _selectedAnio = value"
-                                   Label="Anio"
-                                   Clearable="true"
-                                   LoadPage="LoadAniosPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedSector"
-                                   ValueChanged="value => _selectedSector = value"
-                                   Label="Sector"
-                                   Clearable="true"
-                                   LoadPage="LoadSectoresPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedTipoRecurso"
-                                   ValueChanged="value => _selectedTipoRecurso = value"
-                                   Label="Tipo recurso"
-                                   Clearable="true"
-                                   LoadPage="LoadTiposRecursoPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
-                                   ValueChanged="value => _selectedFuenteFinanciamiento = value"
-                                   Label="Fuente financiamiento"
-                                   Clearable="true"
-                                   LoadPage="LoadFuentesFinanciamientoPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedPp"
-                                   ValueChanged="value => _selectedPp = value"
-                                   Label="Programa presupuestal"
-                                   Clearable="true"
-                                   LoadPage="LoadProgramasPresupuestalesPageAsync" />
-            </MudItem>
-
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+            <MudGrid GutterSize="2">
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="item.Clave"
+                                  Label="Clave"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  MaxLength="50"
+                                  RequiredError="La clave es requerida" />
                 </MudItem>
-            }
-        </MudGrid>
+
+                <MudItem xs="12" md="8">
+                    <MudTextField @bind-Value="item.Descripcion"
+                                  Label="Descripcion"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  MaxLength="50"
+                                  RequiredError="La descripcion es requerida" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="item.Objetivo"
+                                  Label="Objetivo"
+                                  Variant="Variant.Outlined"
+                                  Lines="3"
+                                  MaxLength="500" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <PagedAutocomplete Value="@_selectedUr"
+                                       ValueChanged="value => _selectedUr = value"
+                                       Label="Unidad responsable"
+                                       Required="true"
+                                       RequiredError="La unidad responsable es requerida"
+                                       PageSize="100"
+                                       LoadPage="LoadUnidadesResponsablesPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <PagedAutocomplete Value="@_selectedActividadInstitucional"
+                                       ValueChanged="value => _selectedActividadInstitucional = value"
+                                       Label="Actividad institucional"
+                                       Required="true"
+                                       RequiredError="La actividad institucional es requerida"
+                                       PageSize="100"
+                                       LoadPage="LoadActividadesInstitucionalesPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedGf"
+                                       ValueChanged="value => _selectedGf = value"
+                                       Label="Grupo funcional"
+                                       Required="true"
+                                       RequiredError="El grupo funcional es requerido"
+                                       PageSize="100"
+                                       LoadPage="LoadGruposFuncionalesPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedFn"
+                                       ValueChanged="value => _selectedFn = value"
+                                       Label="Funcion"
+                                       Required="true"
+                                       RequiredError="La funcion es requerida"
+                                       PageSize="100"
+                                       LoadPage="LoadFuncionesPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedSf"
+                                       ValueChanged="value => _selectedSf = value"
+                                       Label="Subfuncion"
+                                       Required="true"
+                                       RequiredError="La subfuncion es requerida"
+                                       PageSize="100"
+                                       LoadPage="LoadSubFuncionesPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedAnio"
+                                       ValueChanged="value => _selectedAnio = value"
+                                       Label="Anio"
+                                       Clearable="true"
+                                       PageSize="100"
+                                       LoadPage="LoadAniosPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedSector"
+                                       ValueChanged="value => _selectedSector = value"
+                                       Label="Sector"
+                                       Clearable="true"
+                                       PageSize="100"
+                                       LoadPage="LoadSectoresPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedTipoRecurso"
+                                       ValueChanged="value => _selectedTipoRecurso = value"
+                                       Label="Tipo recurso"
+                                       Clearable="true"
+                                       PageSize="100"
+                                       LoadPage="LoadTiposRecursoPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
+                                       ValueChanged="value => _selectedFuenteFinanciamiento = value"
+                                       Label="Fuente financiamiento"
+                                       Clearable="true"
+                                       PageSize="100"
+                                       LoadPage="LoadFuentesFinanciamientoPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <PagedAutocomplete Value="@_selectedPp"
+                                       ValueChanged="value => _selectedPp = value"
+                                       Label="Programa presupuestal"
+                                       Clearable="true"
+                                       PageSize="100"
+                                       LoadPage="LoadProgramasPresupuestalesPageAsync" />
+                </MudItem>
+
+                @if (Id.HasValue)
+                {
+                    <MudItem xs="12">
+                        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
+                    </MudItem>
+                }
+            </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 
@@ -174,6 +188,8 @@
     private LookupItem? _selectedTipoRecurso;
     private LookupItem? _selectedFuenteFinanciamiento;
     private LookupItem? _selectedPp;
+    private List<UsuarioAreaResponse>? _unidadResponsableCache;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar Programa Presupuestal" : "Nuevo Programa Presupuestal";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -181,11 +197,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await AnioStateService.InitializeAsync();
-
-        if (Id.HasValue)
+        try
         {
-            await CargarDatosAsync();
+            await AnioStateService.InitializeAsync();
+
+            if (Id.HasValue)
+            {
+                await CargarDatosAsync();
+            }
+        }
+        finally
+        {
+            _formLoading = false;
         }
     }
 
@@ -217,6 +240,11 @@
 
     private async Task GuardarCambiosAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
@@ -263,11 +291,22 @@
 
     private async Task<ComboLookupResult> LoadUnidadesResponsablesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await UnidadResponsableService.GetAllAsync();
-        var items = FilterUsuarioAreas(response?.Items, filter)
+        var items = FilterUsuarioAreas(await GetUnidadesResponsablesAsync(), filter)
             .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
 
         return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private async Task<IEnumerable<UsuarioAreaResponse>> GetUnidadesResponsablesAsync()
+    {
+        if (_unidadResponsableCache != null)
+        {
+            return _unidadResponsableCache;
+        }
+
+        var response = await UnidadResponsableService.GetAllAsync();
+        _unidadResponsableCache = response?.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+        return _unidadResponsableCache;
     }
 
     private async Task<ComboLookupResult> LoadGruposFuncionalesPageAsync(int page, int pageSize, string filter, CancellationToken ct)

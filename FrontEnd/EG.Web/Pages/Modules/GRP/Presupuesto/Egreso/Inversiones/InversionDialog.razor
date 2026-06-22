@@ -11,8 +11,8 @@
 @inject IGenericCrudService<CuentaBancariaResponse> CuentaService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="InversionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="InversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="InversionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="InversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando inversión..." LoadingSkeletonRows="6">
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasPageAsync" />
@@ -45,6 +45,7 @@
     private LookupItem? _instrumento;
     private DateTime? _fechaInversion = DateTime.Today;
     private DateTime? _fechaVencimiento;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar inversion" : "Nueva inversion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -53,22 +54,32 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue) return;
-
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+        try
         {
-            item = response.Data;
-            _cuenta = new LookupItem { Id = item.FkidCuentaBancaria, Text = item.CuentaBan };
-            _instrumento = new LookupItem { Id = item.FkidInstrumento, Text = item.Instrumento };
-            _fechaInversion = item.FechaInversion.ToDateTime(TimeOnly.MinValue);
-            _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue);
+            if (!Id.HasValue)
+            {
+                return;
+            }
+
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _cuenta = new LookupItem { Id = item.FkidCuentaBancaria, Text = item.CuentaBan };
+                _instrumento = new LookupItem { Id = item.FkidInstrumento, Text = item.Instrumento };
+                _fechaInversion = item.FechaInversion.ToDateTime(TimeOnly.MinValue);
+                _fechaVencimiento = item.FechaVencimiento?.ToDateTime(TimeOnly.MinValue);
+            }
+        }
+        finally
+        {
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
         if (_cuenta == null || _instrumento == null)
         {
             Snackbar.Add("Selecciona cuenta e instrumento.", Severity.Warning);

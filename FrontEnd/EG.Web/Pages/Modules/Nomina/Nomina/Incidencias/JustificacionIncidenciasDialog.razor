@@ -1,0 +1,214 @@
+@namespace EG.Web.Pages.Modules.Nomina.Nomina.Incidencias
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+
+@inject IGenericCrudService<NominaRhIncidenciaResponse> Service
+@inject IGenericCrudService<NominaRhLookupResponse> LookupService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NominaRhIncidenciaResponse"
+				Title="@DialogTitle"
+				MaxWidth="MaxWidth.Large"
+				ActionText="@ActionText"
+				ProcessingText="Guardando justificación..."
+				LoadingMessage="Cargando justificación..."
+				CanConfirm="@(!IsReadOnly)"
+				OnConfirm="SaveAsync">
+	<BaseEntityForm TEntity="NominaRhIncidenciaResponse" @ref="form" ShowHeader="false">
+		<section class="justificacion-dialog">
+			<div class="justificacion-context">
+				<div class="context-main">
+					<MudAvatar Color="Color.Primary" Size="Size.Medium" Variant="Variant.Filled">
+						<MudIcon Icon="@Icons.Material.Filled.Person" />
+					</MudAvatar>
+					<div>
+						<MudText Typo="Typo.caption" Color="Color.Secondary">Empleado</MudText>
+						<MudText Typo="Typo.subtitle1" Class="context-title">@TextOrDash(PersonaNombre)</MudText>
+					</div>
+				</div>
+				<div class="context-pill">
+					<span>Tipo Incidencia</span>
+					<strong>@TextOrDash(item.TipoIncidenciaDescripcion)</strong>
+				</div>
+				<div class="context-pill">
+					<span>Fecha</span>
+					<strong>@(item.Fecha?.ToString("dd/MM/yyyy") ?? "-")</strong>
+				</div>
+			</div>
+
+			@if (IsReadOnly)
+			{
+				<MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3" Icon="@Icons.Material.Filled.VerifiedUser">
+					Esta justificación ya ha sido autorizada. Los cambios están bloqueados.
+				</MudAlert>
+			}
+
+			<MudGrid GutterSize="2">
+				<MudItem xs="12">
+					<MudText Typo="Typo.subtitle2" Color="Color.Primary">Datos de la Incidencia</MudText>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudTextField Value="@item.Comentario" Label="Comentario de Incidencia" ReadOnly="true" Variant="Variant.Outlined" />
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudDivider Class="my-3" />
+					<MudText Typo="Typo.subtitle2" Color="Color.Primary">Justificación</MudText>
+				</MudItem>
+
+				<MudItem xs="12" md="6">
+					<NominaRhLookupSelect Value="@item.FkidTipoJustificacionNom"
+										  ValueChanged="value => item.FkidTipoJustificacionNom = value"
+										  Catalogo="TipoJustificacion"
+										  Label="Tipo de justificación"
+										  InitialText="@item.TipoJustificacionDescripcion"
+										  Required="true"
+										  RequiredError="Selecciona el tipo de justificación"
+										  Disabled="@IsReadOnly" />
+				</MudItem>
+
+				<MudItem xs="12" md="6">
+					<MudPaper Class="switch-panel" Elevation="0">
+						<MudSwitch T="bool" Value="@(item.AplicaDescuento ?? false)"
+								   ValueChanged="OnAplicaDescuentoChanged"
+								   Color="Color.Warning"
+								   Disabled="@IsReadOnly">
+							Aplica descuento
+						</MudSwitch>
+					</MudPaper>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudTextField @bind-Value="item.ComentarioJustificacion"
+								  Label="Comentario de Justificación"
+								  Variant="Variant.Outlined"
+								  MaxLength="1000"
+								  Lines="3"
+								  Required="true"
+								  RequiredError="Captura el comentario de justificación"
+								  Disabled="@IsReadOnly" />
+				</MudItem>
+
+				@if (Id.HasValue)
+				{
+					<MudItem xs="12">
+						<NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion"
+										   FechaCreacion="@item.FechaCreacion"
+										   UsuarioModificacion="@item.UsuarioModificacion"
+										   FechaModificacion="@item.FechaModificacion" />
+					</MudItem>
+				}
+			</MudGrid>
+		</section>
+	</BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+	[Parameter] public int? Id { get; set; }
+	[Parameter] public int PersonaId { get; set; }
+	[Parameter] public int? EmpresaId { get; set; }
+	[Parameter] public string PersonaNombre { get; set; } = string.Empty;
+	[Parameter] public bool IsReadOnly { get; set; }
+	[CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+	private BaseEntityForm<NominaRhIncidenciaResponse> form = null!;
+	private NominaRhIncidenciaResponse item = new();
+
+	private string DialogTitle =>
+		Id.HasValue
+			? (IsReadOnly ? "Ver justificación" : "Justificar incidencia")
+			: "Nueva justificación";
+
+	private string ActionText => "Guardar justificación";
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (Id.HasValue)
+		{
+			await LoadItemAsync();
+		}
+
+		item.FkidPersonaNom = PersonaId;
+	}
+
+	private async Task LoadItemAsync()
+	{
+		try
+		{
+			var response = await Service.GetByIdAsync(Id!.Value);
+			if (response?.Success == true && response.Data != null)
+			{
+				item = response.Data;
+				return;
+			}
+
+			Snackbar.Add(response?.Message ?? "No fue posible cargar la justificación.", Severity.Error);
+		}
+		catch
+		{
+			Snackbar.Add("No fue posible cargar la justificación. El departamento de TI revisará el incidente.", Severity.Error);
+		}
+	}
+
+	private Task OnAplicaDescuentoChanged(bool value)
+	{
+		item.AplicaDescuento = value;
+		return Task.CompletedTask;
+	}
+
+	private async Task SaveAsync()
+	{
+		if (IsReadOnly)
+		{
+			Snackbar.Add("La justificación está autorizada y bloqueada.", Severity.Info);
+			return;
+		}
+
+		if (!await form.ValidateAsync())
+		{
+			Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+			return;
+		}
+
+		if (item.FkidTipoJustificacionNom is null or <= 0)
+		{
+			Snackbar.Add("Selecciona el tipo de justificación.", Severity.Warning);
+			return;
+		}
+
+		if (string.IsNullOrWhiteSpace(item.ComentarioJustificacion))
+		{
+			Snackbar.Add("Captura el comentario de justificación.", Severity.Warning);
+			return;
+		}
+
+		item.FkidPersonaNom = PersonaId;
+		item.ComentarioJustificacion = item.ComentarioJustificacion.Trim();
+
+		try
+		{
+			var response = Id.HasValue
+				? await Service.UpdateAsync(item, Id.Value)
+				: await Service.CreateAsync(item);
+
+			if (response?.Success == true)
+			{
+				Snackbar.Add(response.Message ?? "Justificación guardada correctamente.", Severity.Success);
+				MudDialog.Close(DialogResult.Ok(true));
+				return;
+			}
+
+			Snackbar.Add(response?.Message ?? "No fue posible guardar la justificación.", Severity.Error);
+		}
+		catch
+		{
+			Snackbar.Add("No fue posible guardar la justificación. El departamento de TI revisará el incidente.", Severity.Error);
+		}
+	}
+
+	private static string TextOrDash(string? value)
+		=> string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

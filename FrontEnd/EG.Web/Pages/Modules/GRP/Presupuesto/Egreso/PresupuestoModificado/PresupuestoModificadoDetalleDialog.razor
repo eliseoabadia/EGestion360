@@ -10,8 +10,8 @@
 @inject IGenericCrudService<EgresoDisponibleResponse> DisponibleService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="EgreAdecuacionDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="SaveAsync">
-    <BaseEntityForm TEntity="EgreAdecuacionDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="EgreAdecuacionDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="EgreAdecuacionDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando movimiento..." LoadingSkeletonRows="10">
         <MudGrid GutterSize="2">
             <MudItem xs="12">
                 <PagedAutocomplete Value="@_egreso" ValueChanged="OnEgresoChanged" Label="Egreso autorizado disponible" Required="true" LoadPage="LoadEgresosPageAsync" />
@@ -52,6 +52,7 @@
     private LookupItem? _egreso;
     private EgresoDisponibleResponse? _selectedDisponible;
     private DateTime? _fecha = DateTime.Today;
+    private bool _formLoading = true;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly (int Index, string Label)[] MonthFields = [(1, "Ene"), (2, "Feb"), (3, "Mar"), (4, "Abr"), (5, "May"), (6, "Jun"), (7, "Jul"), (8, "Ago"), (9, "Sep"), (10, "Oct"), (11, "Nov"), (12, "Dic")];
 
@@ -64,26 +65,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        item.FkidEgreAdecuacionPres = AdecuacionId;
-        item.FkidTipoMovimientoPres = TipoMovimientoId;
-
-        if (!Id.HasValue) return;
-
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+        try
         {
-            item = response.Data;
-            _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
-            if (item.FkidEgresoAutorizadoPres.HasValue)
+            item.FkidEgreAdecuacionPres = AdecuacionId;
+            item.FkidTipoMovimientoPres = TipoMovimientoId;
+
+            if (!Id.HasValue) return;
+
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
             {
-                _egreso = new LookupItem { Id = item.FkidEgresoAutorizadoPres.Value, Text = item.EgresoAutorizadoDescripcion ?? item.FkidEgresoAutorizadoPres.Value.ToString() };
-                await LoadDisponibleById(item.FkidEgresoAutorizadoPres.Value);
+                item = response.Data;
+                _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+                if (item.FkidEgresoAutorizadoPres.HasValue)
+                {
+                    _egreso = new LookupItem { Id = item.FkidEgresoAutorizadoPres.Value, Text = item.EgresoAutorizadoDescripcion ?? item.FkidEgresoAutorizadoPres.Value.ToString() };
+                    await LoadDisponibleById(item.FkidEgresoAutorizadoPres.Value);
+                }
             }
+        }
+        finally
+        {
+            _formLoading = false;
         }
     }
 
     private async Task SaveAsync()
     {
+        if (_formLoading || form == null) return;
         if (!await form.ValidateAsync()) return;
         if (_egreso == null)
         {

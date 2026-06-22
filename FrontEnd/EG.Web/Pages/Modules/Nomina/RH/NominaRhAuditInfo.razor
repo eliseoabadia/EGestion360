@@ -1,10 +1,10 @@
-@if (FechaCreacion.HasValue || UsuarioCreacion.HasValue)
+@if (FechaCreacion.HasValue || UsuarioCreacion is not null)
 {
     <MudPaper Class="rh-audit-info pa-2 mt-2" Elevation="0">
         <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Small" />
         <MudText Typo="Typo.caption">
             Creado: @(FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "-") por @(UsuarioCreacion?.ToString() ?? "-")
-            @if (FechaModificacion.HasValue || UsuarioModificacion.HasValue)
+            @if (FechaModificacion.HasValue || UsuarioModificacion is not null)
             {
                 <span> | Modificado: @(FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "-") por @(UsuarioModificacion?.ToString() ?? "-")</span>
             }
@@ -12,19 +12,9 @@
     </MudPaper>
 }
 
-<style>
-    .rh-audit-info {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        border: 1px solid var(--mud-palette-lines-default);
-        color: var(--mud-palette-text-secondary);
-    }
-</style>
-
 @code {
-    [Parameter] public int? UsuarioCreacion { get; set; }
+    [Parameter] public object? UsuarioCreacion { get; set; }
     [Parameter] public DateTime? FechaCreacion { get; set; }
-    [Parameter] public int? UsuarioModificacion { get; set; }
+    [Parameter] public object? UsuarioModificacion { get; set; }
     [Parameter] public DateTime? FechaModificacion { get; set; }
 }

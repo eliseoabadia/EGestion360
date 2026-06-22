@@ -123,6 +123,28 @@ namespace EG.Domain.DTOs.Requests.Nomina
         public bool Activo { get; set; }
     }
 
+    public class NomPlazaAutorizadaDto
+    {
+        public int PkidPlazaAutorizada { get; set; }
+        public int? FkidPuestoNom { get; set; }
+        public int? FkidAreaSis { get; set; }
+        public int? FkidSituacionPlazaRh { get; set; }
+        public string SituacionPlaza { get; set; } = string.Empty;
+        public int? Plaza { get; set; }
+        public DateTime? FechaInicio { get; set; }
+        public DateTime? FechaFin { get; set; }
+        public int? TipoPlaza { get; set; }
+        public string Documento { get; set; } = string.Empty;
+        public DateTime? FechaDocumento { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+        public int? FkidEmpresaSis { get; set; }
+        public int? UsuarioCreacion { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public bool Activo { get; set; }
+    }
+
     public class NomNombramientoDto
     {
         public int PkidNombramiento { get; set; }

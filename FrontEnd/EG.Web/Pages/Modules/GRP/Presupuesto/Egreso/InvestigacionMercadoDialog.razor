@@ -19,12 +19,16 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando estudio..."
+                CanConfirm="@(!_formLoading)"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EstudioMercadoResponse"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+                    HeaderTitle="@dialogTitle"
+                    Loading="@_formLoading"
+                    LoadingMessage="Preparando investigación..."
+                    LoadingSkeletonRows="7">
 
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
@@ -109,6 +113,7 @@
     private DateTime? _fechaSolicitud = DateTime.Today;
     private DateTime? _fechaCierre = DateTime.Today;
     private LookupItem? _selectedResponsable;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar Investigacion de Mercado" : "Nueva Investigacion de Mercado";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -125,17 +130,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await AnioStateService.InitializeAsync();
-        await EnsureEmpresaIdAsync();
-
-        if (Id.HasValue)
+        try
         {
-            await CargarDatosAsync();
-            return;
-        }
+            await AnioStateService.InitializeAsync();
+            await EnsureEmpresaIdAsync();
 
-        item.FkidAnioSis = ResolveAnioId();
-        item.FkidEmpresaSis = EmpresaId;
+            if (Id.HasValue)
+            {
+                await CargarDatosAsync();
+                return;
+            }
+
+            item.FkidAnioSis = ResolveAnioId();
+            item.FkidEmpresaSis = EmpresaId;
+        }
+        finally
+        {
+            _formLoading = false;
+        }
     }
 
     private async Task CargarDatosAsync()
@@ -164,6 +176,11 @@
 
     private async Task GuardarCambiosAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);

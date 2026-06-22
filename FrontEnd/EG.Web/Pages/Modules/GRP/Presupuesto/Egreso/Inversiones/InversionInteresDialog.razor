@@ -7,8 +7,8 @@
 @inject IGenericCrudService<InteresResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="InteresResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="InteresResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="InteresResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="InteresResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando interés..." LoadingSkeletonRows="3">
         <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" />
         <MudDatePicker Date="@_fechaGeneracion" DateChanged="OnFechaChanged" Label="Fecha de generacion" Variant="Variant.Outlined" Class="mt-2" />
         <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
@@ -22,6 +22,7 @@
     private BaseEntityForm<InteresResponse> form = null!;
     private InteresResponse item = new() { Activo = true, FechaGeneracion = DateOnly.FromDateTime(DateTime.Today) };
     private DateTime? _fechaGeneracion = DateTime.Today;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar interes" : "Nuevo interes";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -30,23 +31,30 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            item.FkidInversion = InversionId;
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                item.FkidInversion = InversionId;
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaGeneracion = item.FechaGeneracion.ToDateTime(TimeOnly.MinValue);
+            }
+        }
+        finally
         {
-            item = response.Data;
-            _fechaGeneracion = item.FechaGeneracion.ToDateTime(TimeOnly.MinValue);
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
         item.FkidInversion = InversionId;
         item.FechaGeneracion = _fechaGeneracion.HasValue ? DateOnly.FromDateTime(_fechaGeneracion.Value) : DateOnly.FromDateTime(DateTime.Today);
 

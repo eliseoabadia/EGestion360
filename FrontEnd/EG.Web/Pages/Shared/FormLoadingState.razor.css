@@ -1,0 +1,23 @@
+.eg-form-loading-state {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 6px 0 2px;
+}
+
+.eg-form-loading-state__header {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    min-height: 38px;
+    padding: 8px 14px;
+    border: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface));
+    color: var(--mud-palette-text-primary);
+}
+
+.eg-form-loading-state ::deep .mud-skeleton {
+    border-radius: 8px;
+}

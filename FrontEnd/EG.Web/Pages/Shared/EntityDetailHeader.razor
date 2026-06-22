@@ -1,0 +1,76 @@
+<MudPaper Elevation="1" Class="entity-detail-header">
+    <div class="entity-detail-title-row">
+        <MudTooltip Text="@BackTooltip">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           Color="Color.Primary"
+                           Size="Size.Medium"
+                           OnClick="OnBack" />
+        </MudTooltip>
+
+        <div class="entity-detail-title">
+            <div class="d-flex align-center gap-2">
+                <MudText Typo="Typo.h6" Class="entity-detail-name">@Title</MudText>
+                @if (!string.IsNullOrWhiteSpace(StatusText))
+                {
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor">@StatusText</MudChip>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Subtitle</MudText>
+            }
+        </div>
+
+        <MudSpacer />
+
+        @if (Actions is not null)
+        {
+            @Actions
+        }
+        else
+        {
+            <MudTooltip Text="@EditTooltip">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Visible="@CanUpdate"
+                               Disabled="@IsBusy"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               OnClick="OnEdit" />
+            </MudTooltip>
+            <MudTooltip Text="@DeleteTooltip">
+                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                               Visible="@CanDelete"
+                               Disabled="@IsBusy"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="OnDelete" />
+            </MudTooltip>
+        }
+    </div>
+
+    @if (Metrics is not null)
+    {
+        <div class="entity-detail-metrics">
+            @Metrics
+        </div>
+    }
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? StatusText { get; set; }
+    [Parameter] public Color StatusColor { get; set; } = Color.Success;
+    [Parameter] public string BackTooltip { get; set; } = "Regresar";
+    [Parameter] public string EditTooltip { get; set; } = "Editar";
+    [Parameter] public string DeleteTooltip { get; set; } = "Eliminar";
+    [Parameter] public bool CanUpdate { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public EventCallback OnBack { get; set; }
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public RenderFragment? Metrics { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

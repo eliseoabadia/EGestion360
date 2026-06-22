@@ -60,6 +60,17 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.Catalogos
         }
     }
 
+    [Route("api/NomPlazaAutorizada")]
+    public class NomPlazaAutorizadaController : NominaCatalogControllerBase<NomPlazaAutorizadaResponse>
+    {
+        public NomPlazaAutorizadaController(
+            INominaCrudAppService<NomPlazaAutorizadaResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Plaza autorizada")
+        {
+        }
+    }
+
     [Route("api/NomNombramiento")]
     public class NomNombramientoController : NominaCatalogControllerBase<NomNombramientoResponse>
     {

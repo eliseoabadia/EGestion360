@@ -1,0 +1,114 @@
+.themed-table {
+    border: 1px solid var(--mud-palette-lines-default);
+    border-top: 4px solid var(--eg-primary);
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    overflow: hidden;
+}
+
+.eg-generic-table {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 100%;
+}
+
+.eg-generic-table-busy {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    pointer-events: none;
+}
+
+.eg-generic-table-busy-panel,
+.eg-generic-table-loading-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--mud-palette-text-primary) 14%, transparent);
+    color: var(--mud-palette-text-primary);
+}
+
+.eg-generic-table-loading-row {
+    margin: 8px 0;
+    box-shadow: none;
+}
+
+.eg-generic-table ::deep .mud-table {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.eg-generic-table ::deep .mud-table-toolbar,
+.eg-generic-table ::deep .mud-table-pagination {
+    flex: 0 0 auto;
+}
+
+.eg-generic-table ::deep .mud-table-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    scrollbar-gutter: stable;
+}
+
+.themed-table ::deep .mud-table-toolbar {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 13%, var(--mud-palette-surface)) 0%, var(--mud-palette-surface) 72%);
+    border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+    margin: -16px -16px 0;
+    padding: 16px;
+}
+
+.themed-table ::deep .mud-table-toolbar .mud-typography-h6 {
+    color: var(--eg-primary-dark);
+    font-weight: 700;
+}
+
+.themed-table ::deep .mud-table-toolbar .mud-input,
+.themed-table ::deep .mud-table-toolbar .mud-input input,
+.themed-table ::deep .mud-table-toolbar .mud-input-adornment,
+.themed-table ::deep .mud-table-toolbar .mud-input-adornment .mud-icon-root {
+    color: var(--mud-palette-text-primary);
+}
+
+.themed-table ::deep .mud-table-toolbar .mud-input-adornment .mud-icon-root {
+    color: var(--eg-primary);
+}
+
+.themed-table ::deep .mud-table-head .mud-table-cell {
+    background: color-mix(in srgb, var(--eg-primary) 10%, var(--mud-palette-surface));
+    color: var(--eg-primary-dark);
+    border-bottom-color: color-mix(in srgb, var(--eg-primary) 42%, var(--mud-palette-lines-default));
+    font-weight: 700;
+}
+
+.themed-table ::deep .mud-table-body .mud-table-row:nth-child(even) {
+    background-color: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
+}
+
+.themed-table ::deep .mud-table-row:hover {
+    background-color: var(--eg-primary-soft) !important;
+}
+
+.themed-table ::deep .mud-table-pagination {
+    border-top: 1px solid color-mix(in srgb, var(--eg-primary) 20%, var(--mud-palette-lines-default));
+}
+
+.themed-table ::deep .mud-input:focus-within .mud-input-underline::after,
+.themed-table ::deep .mud-input:focus-within .mud-input-outlined-border {
+    border-color: var(--eg-primary);
+}

@@ -206,6 +206,10 @@ public sealed class NominaRhLookupResponse
 
     public string Descripcion { get; set; } = string.Empty;
 
+    public DateOnly? FechaInicio { get; set; }
+
+    public DateOnly? FechaFin { get; set; }
+
     public bool Activo { get; set; }
 
     public string ClaveNombre => string.IsNullOrWhiteSpace(Clave)

@@ -1,0 +1,26 @@
+.rh-empleados-page {
+    min-height: 100%;
+    gap: 12px;
+    padding-bottom: 18px;
+}
+
+.rh-main-actions {
+    min-width: 132px;
+    white-space: nowrap;
+}
+
+.rh-empleados-page ::deep .mud-table-cell {
+    white-space: nowrap;
+}
+
+.rh-empleados-page > ::deep .eg-generic-table {
+    flex: 0 0 auto;
+    max-height: none;
+}
+
+.rh-detail-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}

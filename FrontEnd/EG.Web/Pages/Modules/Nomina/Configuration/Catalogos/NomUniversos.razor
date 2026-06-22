@@ -1,4 +1,3 @@
-@page "/nomina/configuracion/catalogos/universos"
 @page "/rh/configuracion/universo"
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -62,7 +61,7 @@
         nameof(NomUniversoResponse.Activo)
     ];
 
-    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
+    protected override string ModuleName => "Universo";
     protected override string SubModuleName => "Universo";
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomUniversoResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomUniversoResponse>);

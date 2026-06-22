@@ -3,7 +3,7 @@
 @if (!IsInitialized)
 {
     <MudOverlay Visible="true" Fixed="true" ZIndex="10">
-        <div class="d-flex flex-column align-center justify-center" style="height:100%">
+        <div class="access-verification-loading d-flex flex-column align-center justify-center">
             <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
             <MudText Class="mt-4">Cargando...</MudText>
         </div>
@@ -13,7 +13,7 @@ else if (!HasAccess)
 {
     <MudCard Elevation="3" Class="mt-8">
         <MudCardContent>
-            <div class="d-flex flex-column align-center justify-center" style="min-height: 400px;">
+            <div class="access-verification-denied d-flex flex-column align-center justify-center">
                 <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
                 <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">

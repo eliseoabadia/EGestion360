@@ -35,6 +35,12 @@ namespace EG.Business.Mapping.Nomina
                 .Map(dest => dest.ClasePuestoDescripcion, src => src.FkidClasePuestoNomNavigation != null ? src.FkidClasePuestoNomNavigation.Descripcion : string.Empty);
             config.NewConfig<NomPuestoResponse, NomPuestoDto>().TwoWays();
 
+            config.NewConfig<PlazaAutorizadum, NomPlazaAutorizadaDto>().TwoWays();
+            config.NewConfig<PlazaAutorizadum, NomPlazaAutorizadaResponse>()
+                .Map(dest => dest.EmpresaNombre, src => src.FkidEmpresaSisNavigation != null ? src.FkidEmpresaSisNavigation.RazonSocial : string.Empty);
+            config.NewConfig<VwPlazaAutorizadum, NomPlazaAutorizadaResponse>().TwoWays();
+            config.NewConfig<NomPlazaAutorizadaResponse, NomPlazaAutorizadaDto>().TwoWays();
+
             config.NewConfig<Nombramiento, NomNombramientoDto>().TwoWays();
             config.NewConfig<Nombramiento, NomNombramientoResponse>().TwoWays();
             config.NewConfig<NomNombramientoResponse, NomNombramientoDto>().TwoWays();
@@ -98,6 +104,12 @@ namespace EG.Business.Mapping.Nomina
 
             config.NewConfig<ConceptoVariable, NomConceptoVariableDto>().TwoWays();
             config.NewConfig<ConceptoVariable, NomConceptoVariableResponse>().TwoWays();
+            config.NewConfig<VwConceptoVariable, NomConceptoVariableResponse>()
+                .Map(dest => dest.FkidEmpresaSis, src => src.EmpresaId)
+                .Map(dest => dest.FkidPersonaNom, src => src.PersonaId)
+                .Map(dest => dest.FkidPeriodo, src => src.PeriodoId)
+                .Map(dest => dest.FkidConceptoNom, src => src.ConceptoId)
+                .Map(dest => dest.Importe, src => src.Importe ?? 0m);
             config.NewConfig<NomConceptoVariableResponse, NomConceptoVariableDto>().TwoWays();
 
             config.NewConfig<ContratoTercero, NomContratoTercerosDto>().TwoWays();

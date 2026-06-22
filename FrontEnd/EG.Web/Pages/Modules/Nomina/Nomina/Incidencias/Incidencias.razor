@@ -1,0 +1,295 @@
+@page "/rh/incidencia"
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<VwRhIncidenciaResponse, VwRhIncidenciaResponse>
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+					HasAccess="@HasAccess"
+					NavigateToHome="NavigateToHome">
+	<MudContainer Class="px-3 d-flex flex-column incidencias-page eg-operation-page" MaxWidth="MaxWidth.False">
+		<PageHeader Title="Captura de Incidencias"
+					Subtitle="Gestión de incidencias de nómina por empleado"
+					Icon="@Icons.Material.Filled.Assignment"
+					CanCreate="@CanCreate"
+					OnCreate="CreateItem"
+					OnRefresh="() => table.ReloadData()" />
+
+		<div class="eg-summary-strip">
+			<div>
+				<span class="eg-summary-label">Total de incidencias</span>
+				<strong>@TotalCount.ToString("N0")</strong>
+			</div>
+			<div>
+				<span class="eg-summary-label">Activas</span>
+				<strong>@Elements.Count(x => x.Activo == true).ToString("N0")</strong>
+			</div>
+			<div>
+				<span class="eg-summary-label">Inactivas</span>
+				<strong>@Elements.Count(x => x.Activo != true).ToString("N0")</strong>
+			</div>
+		</div>
+
+		<div class="eg-table-shell">
+			<GenericTable TItem="VwRhIncidenciaResponse"
+						  @ref="table"
+						  Title="Incidencias de nómina"
+						  SearchPlaceholder="Buscar empleado, tipo de incidencia, periodo..."
+						  ShowExportButton="@CanExport"
+						  ServerDataFunc="LoadServerData"
+						  ExportFunc="ExportToExcel"
+						  SearchString="@SearchString"
+						  SearchStringChanged="(s) => SearchString = s"
+						  OnSearch="OnSearch">
+
+				<Header>
+					<MudTh>Acciones</MudTh>
+					<MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="VwRhIncidenciaResponse">Empleado</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="TipoIncidenciaDescripcion" T="VwRhIncidenciaResponse">Tipo</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="Fecha" T="VwRhIncidenciaResponse">Fecha</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="FechaFin" T="VwRhIncidenciaResponse">Periodo</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="Comentario" T="VwRhIncidenciaResponse">Comentario</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="AplicaDescuento" T="VwRhIncidenciaResponse">Aplica Descuento</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="Activo" T="VwRhIncidenciaResponse">Estado</MudTableSortLabel></MudTh>
+				</Header>
+
+				<Row Context="item">
+					<MudTd>
+						<MudTooltip Text="@(item.Activo == true ? "Ver incidencia" : "Editar")">
+							<MudIconButton Icon="@Icons.Material.Filled.Edit"
+										   Visible="@CanUpdate"
+										   Color="@(item.Activo == true ? Color.Info : Color.Primary)"
+										   Size="Size.Small"
+										   OnClick="@(() => EditItem(item.PkidIncidencia))" />
+						</MudTooltip>
+						<DocumentSupportButton Modulo="Incidencias"
+											   SubModulo="Captura_Incidencias"
+											   Controlador="Incidencia"
+											   EntidadId="@item.PkidIncidencia"
+											   RegistroTitulo="@TextOrDash(item.NombreCompleto)"
+											   RegistroDescripcion="@TextOrDash(item.TipoIncidenciaDescripcion)" />
+						<MudTooltip Text="Eliminar">
+							<MudIconButton Icon="@Icons.Material.Filled.Delete"
+										   Visible="@(CanDelete && item.Activo != true)"
+										   Color="Color.Error"
+										   Size="Size.Small"
+										   OnClick="@(() => DeleteItem(item.PkidIncidencia))" />
+						</MudTooltip>
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						<div class="eg-main-cell">@TextOrDash(item.NombreCompleto)</div>
+						<span>@TextOrDash(item.ClavePersona)</span>
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@(item.Fecha?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						@if (item.FechaInicio.HasValue && item.FechaFin.HasValue)
+						{
+							<span>@item.FechaInicio.Value.ToString("dd/MM/yyyy") - @item.FechaFin.Value.ToString("dd/MM/yyyy")</span>
+						}
+						else
+						{
+							<span>-</span>
+						}
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@TextOrDash(item.Comentario)</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						<!-- FIX: Se agregó T="string" -->
+						<MudChip T="string"
+								 Size="Size.Small"
+								 Color="@(item.AplicaDescuento == true ? Color.Warning : Color.Default)"
+								 Icon="@(item.AplicaDescuento == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+							@(item.AplicaDescuento == true ? "Aplica" : "No aplica")
+						</MudChip>
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						<!-- FIX: Se agregó T="string" -->
+						<MudChip T="string"
+								 Size="Size.Small"
+								 Color="@(item.Activo == true ? Color.Success : Color.Error)"
+								 Variant="Variant.Text">
+							@(item.Activo == true ? "Activa" : "Inactiva")
+						</MudChip>
+					</MudTd>
+				</Row>
+			</GenericTable>
+		</div>
+	</MudContainer>
+</AccessVerification>
+
+@code {
+	private GenericTable<VwRhIncidenciaResponse> table = null!;
+
+	protected override string ModuleName => "Incidencias";
+	protected override string SubModuleName => "Captura_Incidencias";
+
+	protected override Type CreateDialogType => typeof(IncidenciasDialog);
+	protected override Type EditDialogType => typeof(IncidenciasDialog);
+	protected override Type DeleteDialogType => typeof(DeleteDialog<VwRhIncidenciaResponse>);
+	protected override string GetDefaultSortLabel() => "PkidIncidencia";
+	protected override IEnumerable<object> MapToExcelData(IEnumerable<VwRhIncidenciaResponse> items) => items;
+	protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+
+	protected override async Task CreateItem()
+	{
+		try
+		{
+			var parameters = new DialogParameters<IncidenciasDialog>
+			{
+				{ x => x.EmpresaId, SucursalStateService.EmpresaId },
+			};
+
+			var dialog = await DialogService.ShowAsync<IncidenciasDialog>(
+				"Nueva incidencia",
+				parameters,
+				new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+			var result = await dialog.Result;
+			if (!result.Canceled)
+			{
+				await table.ReloadData();
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al crear incidencia: {ex}");
+			Snackbar.Add("Error al crear la incidencia", Severity.Error);
+		}
+	}
+
+	protected override async Task EditItem(int itemId)
+	{
+		try
+		{
+			var response = await Service.GetByIdAsync(itemId);
+			if (response?.Success != true || response.Data == null)
+			{
+				Snackbar.Add("No fue posible cargar la incidencia", Severity.Error);
+				return;
+			}
+
+			var item = response.Data;
+			var isReadOnly = item.Activo == true; // Si está activa, es de solo lectura
+
+			var parameters = new DialogParameters<IncidenciasDialog>
+			{
+				{ x => x.Id, itemId },
+				{ x => x.PersonaId, item.FkidPersonaNom },
+				{ x => x.PersonaNombre, item.NombreCompleto },
+				{ x => x.EmpresaId, SucursalStateService.EmpresaId },
+				{ x => x.IsReadOnly, isReadOnly }
+			};
+
+			var dialog = await DialogService.ShowAsync<IncidenciasDialog>(
+				isReadOnly ? "Ver incidencia" : "Editar incidencia",
+				parameters,
+				new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+			var result = await dialog.Result;
+			if (!result.Canceled)
+			{
+				await table.ReloadData();
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al editar incidencia: {ex}");
+			Snackbar.Add("Error al editar la incidencia", Severity.Error);
+		}
+	}
+
+	protected override async Task DeleteItem(int itemId)
+	{
+		try
+		{
+			var parameters = new DialogParameters<DeleteDialog<VwRhIncidenciaResponse>>
+			{
+				{ x => x.Id, itemId },
+				{ x => x.ItemName, "la incidencia" },
+				{ x => x.DeleteFunc, async deleteId =>
+					{
+						var response = await Service.DeleteAsync(deleteId);
+						if (response?.Success == true)
+						{
+							Snackbar.Add(response.Message ?? "Incidencia eliminada correctamente", Severity.Success);
+							return true;
+						}
+
+						Snackbar.Add(response?.Message ?? "Error al eliminar la incidencia", Severity.Error);
+						return false;
+					}
+				}
+			};
+
+			var dialog = await DialogService.ShowAsync<DeleteDialog<VwRhIncidenciaResponse>>(
+				"Eliminar incidencia",
+				parameters,
+				new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+			var result = await dialog.Result;
+			if (!result.Canceled)
+			{
+				await table.ReloadData();
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al eliminar incidencia: {ex}");
+			Snackbar.Add("Error al eliminar la incidencia", Severity.Error);
+		}
+	}
+
+	protected override async Task ExportToExcel()
+	{
+		try
+		{
+			var allData = await Service.GetAllPaginadoAsync(
+				1,
+				int.MaxValue,
+				string.Empty,
+				nameof(VwRhIncidenciaResponse.PkidIncidencia),
+				SortDirection.Descending);
+
+			var data = allData?.Items?.Select(x => (object)new
+			{
+				Empleado = x.NombreCompleto,
+				Clave = x.ClavePersona,
+				TipoIncidencia = x.TipoIncidenciaDescripcion,
+				Fecha = x.Fecha?.ToString("dd/MM/yyyy"),
+				PeriodoInicio = x.FechaInicio?.ToString("dd/MM/yyyy"),
+				PeriodoFin = x.FechaFin?.ToString("dd/MM/yyyy"),
+				Comentario = x.Comentario,
+				AplicaDescuento = x.AplicaDescuento == true ? "Sí" : "No",
+				Estado = x.Activo == true ? "Activa" : "Inactiva"
+			}).ToList() ?? new List<object>();
+
+			using var stream = new MemoryStream();
+			await stream.SaveAsAsync(data);
+			var base64 = Convert.ToBase64String(stream.ToArray());
+
+			await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+				$"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al exportar incidencias: {ex}");
+			Snackbar.Add("Error al exportar los datos", Severity.Error);
+		}
+	}
+
+	private static string TextOrDash(string? value)
+		=> string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+	public void Dispose()
+	{
+		SearchCts?.Cancel();
+		SearchCts?.Dispose();
+	}
+}

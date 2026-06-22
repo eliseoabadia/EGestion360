@@ -1,0 +1,12 @@
+.eg-paged-autocomplete-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 10px 16px;
+    color: var(--mud-palette-text-secondary);
+}
+
+.eg-paged-autocomplete ::deep .mud-progress-linear {
+    color: var(--eg-primary);
+}

@@ -8,8 +8,8 @@
 @inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> DetalleService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="AutorizacionSuficienciaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
-    <BaseEntityForm TEntity="AutorizacionSuficienciaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+<BaseCrudDialog TItem="AutorizacionSuficienciaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="AutorizacionSuficienciaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando autorización..." LoadingSkeletonRows="8">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -59,6 +59,7 @@
     private AutorizacionSuficienciaResponse item = new() { Activo = true, Estatus = 1 };
     private List<AutorizacionSuficienciaDetalleResponse> detalleItems = new();
     private DateTime? fechaAutorizacion = DateTime.Today;
+    private bool _formLoading = true;
 
     private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
     private string Title => Id.HasValue ? "Editar autorizacion" : "Nueva autorizacion";
@@ -67,28 +68,40 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            if (PrefillItem != null)
+            if (!Id.HasValue)
             {
-                item = CloneHeader(PrefillItem);
-                fechaAutorizacion = item.FechaAutorizacion.ToDateTime(TimeOnly.MinValue);
+                if (PrefillItem != null)
+                {
+                    item = CloneHeader(PrefillItem);
+                    fechaAutorizacion = item.FechaAutorizacion.ToDateTime(TimeOnly.MinValue);
+                }
+
+                detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<AutorizacionSuficienciaDetalleResponse>();
+                return;
             }
 
-            detalleItems = PrefillDetalles?.Select(CloneDetail).ToList() ?? new List<AutorizacionSuficienciaDetalleResponse>();
-            return;
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Data != null)
+            {
+                item = response.Data;
+                fechaAutorizacion = item.FechaAutorizacion.ToDateTime(TimeOnly.MinValue);
+            }
         }
-
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Data != null)
+        finally
         {
-            item = response.Data;
-            fechaAutorizacion = item.FechaAutorizacion.ToDateTime(TimeOnly.MinValue);
+            _formLoading = false;
         }
     }
 
     private async Task SaveAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);

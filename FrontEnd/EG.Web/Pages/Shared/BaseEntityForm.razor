@@ -16,42 +16,25 @@
         }
         
         <MudCardContent Class="entity-form-content">
-            @ChildContent
+            @if (Loading)
+            {
+                <FormLoadingState Message="@LoadingMessage" Rows="@LoadingSkeletonRows" />
+            }
+            else
+            {
+                @ChildContent
+            }
         </MudCardContent>
     </MudCard>
 </MudForm>
-
-<style>
-    .entity-form-card {
-        border: 0;
-        border-radius: 8px;
-        background: transparent;
-        box-shadow: none !important;
-    }
-
-    .entity-form-card:hover {
-        transform: none;
-        box-shadow: none !important;
-    }
-
-    .entity-form-header {
-        padding: 8px 4px 10px;
-    }
-
-    .entity-form-title {
-        font-weight: 700;
-        line-height: 1.2;
-    }
-
-    .entity-form-content {
-        padding: 0 !important;
-    }
-</style>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public bool ShowHeader { get; set; } = true;
     [Parameter] public string HeaderTitle { get; set; } = string.Empty;
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string LoadingMessage { get; set; } = "Preparando formulario...";
+    [Parameter] public int LoadingSkeletonRows { get; set; } = 8;
     
     [CascadingParameter(Name = "BaseDialog")] 
     private object? BaseDialog { get; set; }

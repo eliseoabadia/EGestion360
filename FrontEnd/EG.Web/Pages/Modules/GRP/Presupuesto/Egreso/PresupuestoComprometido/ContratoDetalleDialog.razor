@@ -6,8 +6,8 @@
 @inject IGenericCrudService<ContratoDetalleResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="ContratoDetalleResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
-    <BaseEntityForm TEntity="ContratoDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
+<BaseCrudDialog TItem="ContratoDetalleResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="ContratoDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando partida..." LoadingSkeletonRows="7">
         <MudGrid GutterSize="2">
             <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ContratoNombre</MudText></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -36,23 +36,32 @@
     ];
     private BaseEntityForm<ContratoDetalleResponse> form = null!;
     private ContratoDetalleResponse item = new() { Activo = true };
+    private bool _formLoading = true;
     private string Title => Id.HasValue ? "Editar partida de contrato" : "Nueva partida de contrato";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            item.FkidContratoPres = ContratoId;
-            return;
+            if (!Id.HasValue)
+            {
+                item.FkidContratoPres = ContratoId;
+                return;
+            }
+
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Data != null)
+            {
+                item = response.Data;
+                ContratoId = item.FkidContratoPres;
+                ContratoNombre = item.NumeroContrato ?? ContratoNombre;
+            }
         }
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Data != null)
+        finally
         {
-            item = response.Data;
-            ContratoId = item.FkidContratoPres;
-            ContratoNombre = item.NumeroContrato ?? ContratoNombre;
+            _formLoading = false;
         }
     }
 
@@ -61,6 +70,11 @@
 
     private async Task SaveAsync()
     {
+        if (_formLoading || form == null)
+        {
+            return;
+        }
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);

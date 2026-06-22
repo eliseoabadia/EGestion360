@@ -1,8 +1,10 @@
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 
 @inject IGenericCrudService<NominaRhExpedienteResponse> Service
+@inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="NominaRhExpedienteResponse"
@@ -34,10 +36,34 @@
                               Required="true" />
             </MudItem>
             <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="item.Ruta"
-                              Label="Ruta o referencia documental"
-                              Variant="Variant.Outlined"
-                              MaxLength="1000" />
+                @if (Id.HasValue)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                        <div class="d-flex align-center gap-2">
+                            <div>
+                                <strong>Soporte documental</strong>
+                                <div>Administra archivos, vista previa, descarga y anotaciones.</div>
+                            </div>
+                            <MudSpacer />
+                            <DocumentSupportButton Modulo="Nomina"
+                                                   SubModulo="Empleados"
+                                                   Controlador="Expediente"
+                                                   Servicio="NomRhExpediente"
+                                                   EntidadId="@item.PkidExpediente"
+                                                   FkidEmpresaSis="@EmpresaId"
+                                                   RegistroTitulo="@item.NombreDocumento"
+                                                   RegistroDescripcion="@item.Descripcion"
+                                                   CanManage="true"
+                                                   Size="Size.Medium" />
+                        </div>
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                        Al crear el expediente se abrirá el soporte documental para adjuntar sus archivos.
+                    </MudAlert>
+                }
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudDatePicker @bind-Date="FechaExpedicion"
@@ -52,6 +78,16 @@
                               MaxLength="1000"
                               Lines="2" />
             </MudItem>
+            @if (HasLegacyReference)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                        Este expediente conserva una referencia del sistema anterior:
+                        <MudLink Href="@item.Ruta" Target="_blank">abrir documento heredado</MudLink>.
+                        Los archivos nuevos deben agregarse desde soporte documental.
+                    </MudAlert>
+                </MudItem>
+            }
             <MudItem xs="12" md="4">
                 <MudSwitch T="bool" Value="@(item.NecesitaRenovacion ?? false)"
                            ValueChanged="value => item.NecesitaRenovacion = value"
@@ -90,7 +126,8 @@
     private BaseEntityForm<NominaRhExpedienteResponse> form = null!;
     private NominaRhExpedienteResponse item = new() { Activo = true };
     private string DialogTitle => Id.HasValue ? "Editar expediente" : "Nuevo expediente";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear y adjuntar";
+    private bool HasLegacyReference => Uri.TryCreate(item.Ruta, UriKind.Absolute, out _);
 
     private DateTime? FechaExpedicion
     {
@@ -144,6 +181,14 @@
             if (response?.Success == true)
             {
                 Snackbar.Add(response.Message ?? "Expediente guardado correctamente.", Severity.Success);
+
+                if (!Id.HasValue && response.Data?.PkidExpediente > 0)
+                {
+                    item = response.Data;
+                    Id = item.PkidExpediente;
+                    await OpenDocumentSupportAsync();
+                }
+
                 MudDialog.Close(DialogResult.Ok(true));
                 return;
             }
@@ -154,5 +199,33 @@
         {
             Snackbar.Add("No fue posible guardar el expediente. El departamento de TI revisara el incidente.", Severity.Error);
         }
+    }
+
+    private async Task OpenDocumentSupportAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(DocumentSupportDialog.Modulo)] = "Nomina",
+            [nameof(DocumentSupportDialog.SubModulo)] = "Empleados",
+            [nameof(DocumentSupportDialog.Controlador)] = "Expediente",
+            [nameof(DocumentSupportDialog.Servicio)] = "NomRhExpediente",
+            [nameof(DocumentSupportDialog.EntidadId)] = item.PkidExpediente,
+            [nameof(DocumentSupportDialog.FkidEmpresaSis)] = EmpresaId,
+            [nameof(DocumentSupportDialog.RegistroTitulo)] = item.NombreDocumento,
+            [nameof(DocumentSupportDialog.RegistroDescripcion)] = item.Descripcion,
+            [nameof(DocumentSupportDialog.CanManage)] = true
+        };
+
+        var dialog = await DialogService.ShowAsync<DocumentSupportDialog>(
+            "Soporte documental",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraLarge,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        await dialog.Result;
     }
 }

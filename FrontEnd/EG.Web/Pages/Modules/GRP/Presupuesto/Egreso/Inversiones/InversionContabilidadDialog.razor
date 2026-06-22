@@ -12,8 +12,8 @@
 @inject IGenericCrudService<TipoDetallePolizaResponse> TipoDetalleService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="PolizaDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
-    <BaseEntityForm TEntity="PolizaDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="PolizaDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
+    <BaseEntityForm TEntity="PolizaDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando movimiento contable..." LoadingSkeletonRows="7">
         <MudGrid GutterSize="2">
             <MudItem xs="12"><PagedAutocomplete Value="@_poliza" ValueChanged="value => _poliza = value" Label="Poliza" Required="true" LoadPage="LoadPolizasPageAsync" /></MudItem>
             <MudItem xs="12"><PagedAutocomplete Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasPageAsync" /></MudItem>
@@ -44,6 +44,7 @@
     private LookupItem? _poliza;
     private LookupItem? _cuenta;
     private LookupItem? _tipoDetalle;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar movimiento contable" : "Nuevo movimiento contable";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -52,28 +53,35 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            item.FkidReferencia = InversionId;
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                item.FkidReferencia = InversionId;
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                item.FkidReferencia = InversionId;
+                _poliza = new LookupItem { Id = item.FkidPolizaConta, Text = $"{item.ClavePoliza} - {item.NombrePoliza}" };
+                _cuenta = new LookupItem { Id = item.FkidCuentaContableConta, Text = item.CuentaClaveNombre ?? item.FkidCuentaContableConta.ToString() };
+                _tipoDetalle = item.FkidTipoDetallePolizaSis.HasValue
+                    ? new LookupItem { Id = item.FkidTipoDetallePolizaSis.Value, Text = item.TipoDetallePoliza ?? item.FkidTipoDetallePolizaSis.Value.ToString() }
+                    : null;
+            }
+        }
+        finally
         {
-            item = response.Data;
-            item.FkidReferencia = InversionId;
-            _poliza = new LookupItem { Id = item.FkidPolizaConta, Text = $"{item.ClavePoliza} - {item.NombrePoliza}" };
-            _cuenta = new LookupItem { Id = item.FkidCuentaContableConta, Text = item.CuentaClaveNombre ?? item.FkidCuentaContableConta.ToString() };
-            _tipoDetalle = item.FkidTipoDetallePolizaSis.HasValue
-                ? new LookupItem { Id = item.FkidTipoDetallePolizaSis.Value, Text = item.TipoDetallePoliza ?? item.FkidTipoDetallePolizaSis.Value.ToString() }
-                : null;
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
         if (_poliza == null || _cuenta == null)
         {
             Snackbar.Add("Selecciona poliza y cuenta contable.", Severity.Warning);

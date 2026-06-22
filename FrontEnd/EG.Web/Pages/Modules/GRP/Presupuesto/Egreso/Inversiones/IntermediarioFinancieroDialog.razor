@@ -6,8 +6,8 @@
 @inject IGenericCrudService<IntermediarioFinancieroResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="IntermediarioFinancieroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="IntermediarioFinancieroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="IntermediarioFinancieroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="IntermediarioFinancieroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando intermediario..." LoadingSkeletonRows="5">
         <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
         <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
         <MudTextField @bind-Value="item.RazonSocial" Label="Razon social" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
@@ -21,20 +21,35 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
     private BaseEntityForm<IntermediarioFinancieroResponse> form = null!;
     private IntermediarioFinancieroResponse item = new() { Activo = true };
+    private bool _formLoading = true;
     private string dialogTitle => Id.HasValue ? "Editar intermediario" : "Nuevo intermediario";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue) return;
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null) item = response.Data;
+        try
+        {
+            if (!Id.HasValue)
+            {
+                return;
+            }
+
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+        finally
+        {
+            _formLoading = false;
+        }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
 
         var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (response?.Success == true)

@@ -1,4 +1,3 @@
-@page "/nomina/configuracion/catalogos/niveles"
 @page "/rh/configuracion/nivel"
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -63,7 +62,7 @@
         nameof(NomNivelResponse.Activo)
     ];
 
-    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
+    protected override string ModuleName => "Nivel";
     protected override string SubModuleName => "Nivel";
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomNivelResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomNivelResponse>);

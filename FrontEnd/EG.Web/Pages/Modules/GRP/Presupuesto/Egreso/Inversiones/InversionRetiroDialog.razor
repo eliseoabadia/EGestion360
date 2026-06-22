@@ -10,8 +10,8 @@
 @inject IGenericCrudService<TipoRetiroResponse> TipoRetiroService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="RetiroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="RetiroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="RetiroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
+    <BaseEntityForm TEntity="RetiroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando retiro..." LoadingSkeletonRows="4">
         <PagedAutocomplete Value="@_tipoRetiro" ValueChanged="value => _tipoRetiro = value" Label="Tipo de retiro" Clearable="true" LoadPage="LoadTiposRetiroPageAsync" />
         <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" Class="mt-2" />
         <MudDatePicker Date="@_fechaRetiro" DateChanged="OnFechaChanged" Label="Fecha de retiro" Variant="Variant.Outlined" Class="mt-2" />
@@ -27,6 +27,7 @@
     private RetiroResponse item = new() { Activo = true, FechaRetiro = DateOnly.FromDateTime(DateTime.Today) };
     private LookupItem? _tipoRetiro;
     private DateTime? _fechaRetiro = DateTime.Today;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar retiro" : "Nuevo retiro";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -35,32 +36,39 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            item.FkidInversion = InversionId;
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                item.FkidInversion = InversionId;
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fechaRetiro = item.FechaRetiro.ToDateTime(TimeOnly.MinValue);
+                _tipoRetiro = item.FkidTipoRetiroTes.HasValue
+                    ? new LookupItem
+                    {
+                        Id = item.FkidTipoRetiroTes.Value,
+                        Text = string.IsNullOrWhiteSpace(item.TipoRetiroDescripcion)
+                            ? item.FkidTipoRetiroTes.Value.ToString()
+                            : item.TipoRetiroDescripcion
+                    }
+                    : null;
+            }
+        }
+        finally
         {
-            item = response.Data;
-            _fechaRetiro = item.FechaRetiro.ToDateTime(TimeOnly.MinValue);
-            _tipoRetiro = item.FkidTipoRetiroTes.HasValue
-                ? new LookupItem
-                {
-                    Id = item.FkidTipoRetiroTes.Value,
-                    Text = string.IsNullOrWhiteSpace(item.TipoRetiroDescripcion)
-                        ? item.FkidTipoRetiroTes.Value.ToString()
-                        : item.TipoRetiroDescripcion
-                }
-                : null;
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
         item.FkidInversion = InversionId;
         item.FkidTipoRetiroTes = _tipoRetiro?.Id;
         item.FechaRetiro = _fechaRetiro.HasValue ? DateOnly.FromDateTime(_fechaRetiro.Value) : DateOnly.FromDateTime(DateTime.Today);

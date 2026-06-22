@@ -12,8 +12,8 @@
 @inject IGenericCrudService<CuentaContableResponse> CuentaContableService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="CuentaBancariaResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
-    <BaseEntityForm TEntity="CuentaBancariaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="CuentaBancariaResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
+    <BaseEntityForm TEntity="CuentaBancariaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando cuenta bancaria..." LoadingSkeletonRows="10">
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedBanco" ValueChanged="value => _selectedBanco = value" Label="Banco" Required="true" LoadPage="LoadBancosPageAsync" />
@@ -58,6 +58,7 @@
     private LookupItem? _selectedMoneda;
     private LookupItem? _selectedCuentaContable;
     private DateTime? _fechaAperturaDate;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar cuenta bancaria" : "Nueva cuenta bancaria";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -66,36 +67,43 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            await SetDefaultMonedaAsync();
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                await SetDefaultMonedaAsync();
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _selectedBanco = item.FkidBancoTes.HasValue
+                    ? new LookupItem { Id = item.FkidBancoTes.Value, Text = string.IsNullOrWhiteSpace(item.BancoNombre) ? item.FkidBancoTes.Value.ToString() : item.BancoNombre }
+                    : null;
+                _selectedMoneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = string.IsNullOrWhiteSpace(item.MonedaDescripcion) ? item.FkidTipoMonedaTes.ToString() : item.MonedaDescripcion };
+                _selectedCuentaContable = item.FkidCuentaContableSis.HasValue
+                    ? new LookupItem
+                    {
+                        Id = item.FkidCuentaContableSis.Value,
+                        Text = string.IsNullOrWhiteSpace(item.CuentaContable)
+                            ? item.FkidCuentaContableSis.Value.ToString()
+                            : $"{item.CuentaContable} - {item.CuentaContableDescripcion}"
+                    }
+                    : null;
+                _fechaAperturaDate = item.FechaApertura?.ToDateTime(TimeOnly.MinValue);
+            }
+        }
+        finally
         {
-            item = response.Data;
-            _selectedBanco = item.FkidBancoTes.HasValue
-                ? new LookupItem { Id = item.FkidBancoTes.Value, Text = string.IsNullOrWhiteSpace(item.BancoNombre) ? item.FkidBancoTes.Value.ToString() : item.BancoNombre }
-                : null;
-            _selectedMoneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = string.IsNullOrWhiteSpace(item.MonedaDescripcion) ? item.FkidTipoMonedaTes.ToString() : item.MonedaDescripcion };
-            _selectedCuentaContable = item.FkidCuentaContableSis.HasValue
-                ? new LookupItem
-                {
-                    Id = item.FkidCuentaContableSis.Value,
-                    Text = string.IsNullOrWhiteSpace(item.CuentaContable)
-                        ? item.FkidCuentaContableSis.Value.ToString()
-                        : $"{item.CuentaContable} - {item.CuentaContableDescripcion}"
-                }
-                : null;
-            _fechaAperturaDate = item.FechaApertura?.ToDateTime(TimeOnly.MinValue);
+            _formLoading = false;
         }
     }
 
     private async Task GuardarCambiosAsync()
     {
-        if (!await form.ValidateAsync()) return;
+        if (_formLoading || form == null || !await form.ValidateAsync()) return;
         if (_selectedBanco == null || _selectedMoneda == null || _selectedCuentaContable == null)
         {
             Snackbar.Add("Selecciona banco, moneda y cuenta contable.", Severity.Warning);

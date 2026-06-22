@@ -11,131 +11,132 @@
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column rh-empleados-page" MaxWidth="MaxWidth.False">
-        <PageHeader Title="Recursos Humanos"
-                    Subtitle="Expediente integral de empleados de nomina"
-                    Icon="@Icons.Material.Filled.Badge"
-                    CanCreate="@CanCreate"
-                    OnCreate="CreateItem"
-                    OnRefresh="ReloadAllAsync" />
+        @if (selectedEmployee is null)
+        {
+            <PageHeader Title="Recursos Humanos"
+                        Subtitle="Expediente integral de empleados de nomina"
+                        Icon="@Icons.Material.Filled.Badge"
+                        CanCreate="@CanCreate"
+                        OnCreate="CreateItem"
+                        OnRefresh="ReloadAllAsync" />
 
-        <section class="rh-context-band">
-            <div class="rh-context-main">
-                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">
-                    <MudIcon Icon="@Icons.Material.Filled.Person" />
-                </MudAvatar>
-                <div>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">Empleado seleccionado</MudText>
-                    <MudText Typo="Typo.subtitle1" Class="rh-context-name">@TextOrDash(selectedEmployee?.ClaveNombre)</MudText>
-                </div>
-            </div>
-            <div class="rh-context-metric">
-                <span>Empresa</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre ?? selectedEmployee?.Empresa)</strong>
-            </div>
-            <div class="rh-context-metric">
-                <span>Contrato</span><strong>@TextOrDash(selectedEmployee?.Contrato)</strong>
-            </div>
-            <div class="rh-context-metric">
-                <span>Puesto</span><strong>@TextOrDash(selectedEmployee?.Puesto)</strong>
-            </div>
-            <div class="rh-context-count"><strong>@(selectedEmployee?.TotalExpedientes ?? 0)</strong><span>Expedientes</span></div>
-            <div class="rh-context-count"><strong>@(selectedEmployee?.TotalIncidencias ?? 0)</strong><span>Incidencias</span></div>
-        </section>
+            <GenericTable TItem="NominaRhEmpleadoResponse"
+                          @ref="table"
+                          Title="Empleados activos"
+                          SearchPlaceholder="Buscar empleado, nombre, RFC, CURP o puesto..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="value => SearchString = value"
+                          OnSearch="OnSearch"
+                          Loading="@Loading"
+                          PageSize="10"
+                          FixedHeader="false"
+                          TableHeight="auto">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Empleado" T="NominaRhEmpleadoResponse">Empleado</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="NominaRhEmpleadoResponse">Nombre</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Rfc" T="NominaRhEmpleadoResponse">RFC</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Curp" T="NominaRhEmpleadoResponse">CURP</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoContratacion" T="NominaRhEmpleadoResponse">Contratacion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Puesto" T="NominaRhEmpleadoResponse">Puesto</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="SueldoMensual" T="NominaRhEmpleadoResponse">Sueldo</MudTableSortLabel></MudTh>
+                    <MudTh>Estatus</MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd Class="rh-main-actions">
+                        <MudTooltip Text="Ver detalle del empleado">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           Disabled="@IsBusy"
+                                           OnClick="@(() => SelectEmployeeAsync(item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar empleado">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           Visible="@CanUpdate"
+                                           Disabled="@IsBusy"
+                                           OnClick="@(() => EditItem(item.Id))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar empleado">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           Visible="@CanDelete"
+                                           Disabled="@IsBusy"
+                                           OnClick="@(() => DeleteItem(item.Id))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))"><strong>@item.Empleado</strong></MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@item.NombreCompleto</MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@item.Rfc</MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@item.Curp</MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@TextOrDash(item.TipoContratacion)</MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@TextOrDash(item.Puesto)</MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@FormatMoney(item.SueldoMensual)</MudTd>
+                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Activo</MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        }
+        else
+        {
+            <section class="rh-detail-shell">
+                <EntityDetailHeader Title="@TextOrDash(selectedEmployee.ClaveNombre)"
+                                    Subtitle="@BuildEmployeeSubtitle(selectedEmployee)"
+                                    StatusText="Activo"
+                                    BackTooltip="Regresar a empleados"
+                                    EditTooltip="Editar empleado"
+                                    DeleteTooltip="Eliminar empleado"
+                                    CanUpdate="@CanUpdate"
+                                    CanDelete="@CanDelete"
+                                    IsBusy="@IsBusy"
+                                    OnBack="BackToTable"
+                                    OnEdit="@(() => EditItem(selectedEmployee.Id))"
+                                    OnDelete="@(() => DeleteItem(selectedEmployee.Id))">
+                    <Metrics>
+                        <div>
+                            <span>Empresa</span>
+                            <strong>@TextOrDash(SucursalStateService.EmpresaNombre ?? selectedEmployee.Empresa)</strong>
+                        </div>
+                        <div>
+                            <span>Contrato</span>
+                            <strong>@TextOrDash(selectedEmployee.Contrato)</strong>
+                        </div>
+                        <div>
+                            <span>Puesto</span>
+                            <strong>@TextOrDash(selectedEmployee.Puesto)</strong>
+                        </div>
+                        <div>
+                            <span>Expedientes</span>
+                            <strong>@selectedEmployee.TotalExpedientes.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                        </div>
+                        <div>
+                            <span>Incidencias</span>
+                            <strong>@selectedEmployee.TotalIncidencias.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                        </div>
+                    </Metrics>
+                </EntityDetailHeader>
 
-        <GenericTable TItem="NominaRhEmpleadoResponse"
-                      @ref="table"
-                      Title="Empleados activos"
-                      SearchPlaceholder="Buscar empleado, nombre, RFC, CURP o puesto..."
-                      ShowExportButton="@CanExport"
-                      ServerDataFunc="LoadServerData"
-                      ExportFunc="ExportToExcel"
-                      SearchString="@SearchString"
-                      SearchStringChanged="value => SearchString = value"
-                      OnSearch="OnSearch"
-                      Loading="@Loading"
-                      PageSize="10"
-                      FixedHeader="false"
-                      TableHeight="auto">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Empleado" T="NominaRhEmpleadoResponse">Empleado</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="NominaRhEmpleadoResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Rfc" T="NominaRhEmpleadoResponse">RFC</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Curp" T="NominaRhEmpleadoResponse">CURP</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoContratacion" T="NominaRhEmpleadoResponse">Contratacion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Puesto" T="NominaRhEmpleadoResponse">Puesto</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SueldoMensual" T="NominaRhEmpleadoResponse">Sueldo</MudTableSortLabel></MudTh>
-                <MudTh>Estatus</MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd Class="rh-main-actions">
-                    <MudTooltip Text="@(selectedEmployee?.Id == item.Id ? "Ocultar expediente" : "Abrir expediente")">
-                        <MudIconButton Icon="@(selectedEmployee?.Id == item.Id ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
-                                       Color="@(selectedEmployee?.Id == item.Id ? Color.Success : Color.Primary)"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => ToggleEmployeeAsync(item))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Editar empleado">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
-                                       Visible="@CanUpdate" Disabled="@IsBusy" OnClick="@(() => EditItem(item.Id))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar empleado">
-                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small"
-                                       Visible="@CanDelete" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.Id))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))"><strong>@item.Empleado</strong></MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">@item.NombreCompleto</MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">@item.Rfc</MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">@item.Curp</MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">@TextOrDash(item.TipoContratacion)</MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">@TextOrDash(item.Puesto)</MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">@FormatMoney(item.SueldoMensual)</MudTd>
-                <MudTd @onclick="@(() => ToggleEmployeeAsync(item))">
-                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Activo</MudChip>
-                </MudTd>
-            </Row>
-            <ChildRow Context="item">
-                @if (selectedEmployee?.Id == item.Id)
-                {
-                    <MudTr Class="rh-employee-child-row">
-                        <MudTd colspan="9" Class="rh-employee-child-cell">
-                            <NominaRhEmployeeDetails Employee="@item"
-                                                     CanCreate="@CanCreate"
-                                                     CanUpdate="@CanUpdate"
-                                                     CanDelete="@CanDelete"
-                                                     CanExport="@CanExport"
-                                                     OnChanged="ReloadEmployeeAsync" />
-                        </MudTd>
-                    </MudTr>
-                }
-            </ChildRow>
-        </GenericTable>
-
+                <NominaRhEmployeeDetails Employee="@selectedEmployee"
+                                         CanCreate="@CanCreate"
+                                         CanUpdate="@CanUpdate"
+                                         CanDelete="@CanDelete"
+                                         CanExport="@CanExport"
+                                         ShowHeader="false"
+                                         OnChanged="ReloadEmployeeAsync" />
+            </section>
+        }
     </MudContainer>
 </AccessVerification>
 
-<style>
-    .rh-empleados-page { min-height: 100%; gap: 12px; padding-bottom: 18px; }
-    .rh-context-band { display: grid; grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(140px, 1fr)) 90px 90px; gap: 14px; align-items: center; padding: 10px 14px; border: 1px solid var(--mud-palette-lines-default); border-left: 4px solid var(--eg-primary); background: color-mix(in srgb, var(--eg-primary) 4%, var(--mud-palette-surface)); }
-    .rh-context-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .rh-context-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
-    .rh-context-metric, .rh-context-count { display: flex; flex-direction: column; min-width: 0; }
-    .rh-context-metric span, .rh-context-count span { color: var(--mud-palette-text-secondary); font-size: .72rem; }
-    .rh-context-metric strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .82rem; }
-    .rh-context-count { align-items: center; }
-    .rh-context-count strong { color: var(--eg-primary); font-size: 1.15rem; }
-    .rh-main-actions { min-width: 132px; white-space: nowrap; }
-    .rh-empleados-page .mud-table-cell { white-space: nowrap; }
-    .rh-employee-child-row, .rh-employee-child-row:hover { background: var(--mud-palette-surface) !important; }
-    .rh-employee-child-cell { padding: 0 !important; position: sticky; left: 0; max-width: calc(100vw - 330px); white-space: normal !important; }
-    .rh-empleados-page > .eg-generic-table { flex: 0 0 auto; max-height: none; }
-    @@media (max-width: 1100px) { .rh-context-band { grid-template-columns: 1fr 1fr 1fr; } .rh-context-main { grid-column: 1 / -1; } }
-    @@media (max-width: 700px) { .rh-context-band { grid-template-columns: 1fr 1fr; } .rh-context-metric { grid-column: span 2; } }
-</style>
-
 @code {
-    private GenericTable<NominaRhEmpleadoResponse> table = null!;
+    private GenericTable<NominaRhEmpleadoResponse>? table;
     private NominaRhEmpleadoResponse? selectedEmployee;
 
     protected override string ModuleName => "Nomina";
@@ -162,8 +163,6 @@
             {
                 Elements = response.Items?.ToList() ?? [];
                 TotalCount = response.TotalCount;
-                if (selectedEmployee is not null)
-                    selectedEmployee = Elements.FirstOrDefault(item => item.Id == selectedEmployee.Id);
                 return new TableData<NominaRhEmpleadoResponse> { Items = Elements, TotalItems = TotalCount };
             }
 
@@ -181,37 +180,72 @@
         }
     }
 
-    private Task ToggleEmployeeAsync(NominaRhEmpleadoResponse item)
+    private Task SelectEmployeeAsync(NominaRhEmpleadoResponse item)
     {
-        selectedEmployee = selectedEmployee?.Id == item.Id ? null : item;
+        selectedEmployee = item;
         return Task.CompletedTask;
+    }
+
+    private async Task BackToTable()
+    {
+        selectedEmployee = null;
+        if (table is not null)
+        {
+            await table.ReloadData();
+        }
     }
 
     private async Task ReloadEmployeeAsync()
     {
-        if (selectedEmployee is null) return;
+        if (selectedEmployee is null)
+        {
+            return;
+        }
+
         var response = await Service.GetByIdAsync(selectedEmployee.Id);
-        if (response?.Success == true && response.Data != null) selectedEmployee = response.Data;
+        if (response?.Success == true && response.Data != null)
+        {
+            selectedEmployee = response.Data;
+        }
     }
 
     private async Task ReloadAllAsync()
     {
-        await table.ReloadData();
+        if (table is not null)
+        {
+            await table.ReloadData();
+        }
+
         await ReloadEmployeeAsync();
     }
 
     protected override Task ReloadData() => ReloadAllAsync();
     protected override string GetDefaultSortLabel() => "NombreCompleto";
-    protected override Task<string> GetItemNameForDelete(int id) => Task.FromResult(Elements.FirstOrDefault(item => item.Id == id)?.ClaveNombre ?? "el empleado");
+    protected override Task<string> GetItemNameForDelete(int id) => Task.FromResult(Elements.FirstOrDefault(item => item.Id == id)?.ClaveNombre ?? selectedEmployee?.ClaveNombre ?? "el empleado");
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<NominaRhEmpleadoResponse> items) => items.Select(item => new
     {
-        item.Empleado, item.NombreCompleto, item.Rfc, item.Curp, item.Sexo, Nacimiento = FormatDateTime(item.FechaNacimiento),
-        Ingreso = FormatDateTime(item.FechaIngreso), item.TipoContratacion, item.Puesto, item.Departamento, item.Contrato,
-        Sueldo = item.SueldoMensual, item.Email, item.Celular, item.EstadoCivil, item.RegImss
+        item.Empleado,
+        item.NombreCompleto,
+        item.Rfc,
+        item.Curp,
+        item.Sexo,
+        Nacimiento = FormatDateTime(item.FechaNacimiento),
+        Ingreso = FormatDateTime(item.FechaIngreso),
+        item.TipoContratacion,
+        item.Puesto,
+        item.Departamento,
+        item.Contrato,
+        Sueldo = item.SueldoMensual,
+        item.Email,
+        item.Celular,
+        item.EstadoCivil,
+        item.RegImss
     });
 
     private static string FormatDateTime(DateTime? value) => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "-";
     private static string FormatMoney(decimal? value) => value?.ToString("N2", CultureInfo.InvariantCulture) ?? "-";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string BuildEmployeeSubtitle(NominaRhEmpleadoResponse employee)
+        => $"{TextOrDash(employee.Empresa)} | {TextOrDash(employee.Puesto)} | {TextOrDash(employee.TipoContratacion)}";
 }

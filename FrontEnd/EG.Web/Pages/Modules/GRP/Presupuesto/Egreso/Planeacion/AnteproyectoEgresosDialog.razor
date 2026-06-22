@@ -23,12 +23,15 @@
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando anteproyecto..."
-                CanConfirm="@(!IsReadOnly)"
+                CanConfirm="@(!IsReadOnly && !_formLoading)"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EgresoProyectadoResponse"
                     @ref="form"
-                    ShowHeader="false">
+                    ShowHeader="false"
+                    Loading="@_formLoading"
+                    LoadingMessage="Preparando anteproyecto..."
+                    LoadingSkeletonRows="14">
 
         <MudGrid GutterSize="1" Class="anteproyecto-dialog">
             <MudItem xs="12">
@@ -316,6 +319,7 @@
     private LookupItem? _selectedDigitoIdentificador;
     private LookupItem? _selectedDestinoGasto;
     private LookupItem? _selectedPy;
+    private bool _formLoading = true;
 
     private string dialogTitle => IsReadOnly ? "Ver Anteproyecto Autorizado" : Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -328,11 +332,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await AnioStateService.InitializeAsync();
-
-        if (Id.HasValue)
+        try
         {
-            await CargarDatosAsync();
+            await AnioStateService.InitializeAsync();
+
+            if (Id.HasValue)
+            {
+                await CargarDatosAsync();
+            }
+        }
+        finally
+        {
+            _formLoading = false;
         }
     }
 
@@ -367,7 +378,7 @@
 
     private async Task GuardarCambiosAsync()
     {
-        if (IsReadOnly)
+        if (IsReadOnly || _formLoading || form == null)
         {
             return;
         }

@@ -145,6 +145,34 @@ namespace EG.Domain.DTOs.Responses.Nomina
         public string ClaveNombre => $"{PkidPuesto} - {Nombre} - Nivel {NivelClave}".Trim(' ', '-');
     }
 
+    public class NomPlazaAutorizadaResponse
+    {
+        public int PkidPlazaAutorizada { get; set; }
+        public int? FkidPuestoNom { get; set; }
+        public string PuestoNombre { get; set; } = string.Empty;
+        public int? FkidAreaSis { get; set; }
+        public string AreaClave { get; set; } = string.Empty;
+        public string AreaNombre { get; set; } = string.Empty;
+        public int? FkidSituacionPlazaRh { get; set; }
+        public string SituacionPlaza { get; set; } = string.Empty;
+        public int? Plaza { get; set; }
+        public DateTime? FechaInicio { get; set; }
+        public DateTime? FechaFin { get; set; }
+        public int? TipoPlaza { get; set; }
+        public string Documento { get; set; } = string.Empty;
+        public DateTime? FechaDocumento { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+        public int? FkidEmpresaSis { get; set; }
+        public string EmpresaNombre { get; set; } = string.Empty;
+        public int? UsuarioCreacion { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => $"Plaza {Plaza ?? PkidPlazaAutorizada} - {PuestoNombre}".Trim(' ', '-');
+    }
+
     public class NomNombramientoResponse
     {
         public int PkidNombramiento { get; set; }
@@ -480,11 +508,27 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public int FkidEmpresaSis { get; set; }
 
+        public string EmpresaNombre { get; set; } = string.Empty;
+
         public int FkidPersonaNom { get; set; }
+
+        public int PersonaId { get; set; }
+
+        public string PersonaClaveNombre { get; set; } = string.Empty;
 
         public int FkidPeriodo { get; set; }
 
+        public int PeriodoId { get; set; }
+
         public int FkidConceptoNom { get; set; }
+
+        public int ConceptoId { get; set; }
+
+        public string ConceptoClave { get; set; } = string.Empty;
+
+        public string ConceptoNombre { get; set; } = string.Empty;
+
+        public string ConceptoClaveNombre { get; set; } = string.Empty;
 
         public decimal Importe { get; set; }
 
@@ -500,7 +544,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => Referencia ?? string.Empty;
+        public string ClaveNombre => $"{PersonaClaveNombre} - {ConceptoClaveNombre}".Trim(' ', '-');
     }
 
     public class NomContratoTercerosResponse

@@ -1,0 +1,349 @@
+@page "/rh/justificacion"
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<VwRhIncidenciaResponse, VwRhIncidenciaResponse>
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<NominaRhIncidenciaResponse> NominaIncidenciaService
+
+<AccessVerification IsInitialized="@IsInitialized"
+					HasAccess="@HasAccess"
+					NavigateToHome="NavigateToHome">
+	<MudContainer Class="px-3 d-flex flex-column justificacion-page eg-operation-page" MaxWidth="MaxWidth.False">
+		<PageHeader Title="Justificación de Incidencias"
+					Subtitle="Gestión de justificaciones y autorizaciones"
+					Icon="@Icons.Material.Filled.CheckCircle"
+					CanCreate="false"
+					OnRefresh="() => table.ReloadData()" />
+
+		<div class="eg-summary-strip">
+			<div>
+				<span class="eg-summary-label">Total de incidencias</span>
+				<strong>@TotalCount.ToString("N0")</strong>
+			</div>
+			<div>
+				<span class="eg-summary-label">Justificadas</span>
+				<strong>@Elements.Count(x => x.FkidTipoJustificacionNom.HasValue && x.FkidTipoJustificacionNom.Value > 0).ToString("N0")</strong>
+			</div>
+			<div>
+				<span class="eg-summary-label">Pendientes</span>
+				<strong>@Elements.Count(x => !x.FkidTipoJustificacionNom.HasValue || x.FkidTipoJustificacionNom.Value <= 0).ToString("N0")</strong>
+			</div>
+		</div>
+
+		<div class="eg-table-shell">
+			<GenericTable TItem="VwRhIncidenciaResponse"
+						  @ref="table"
+						  Title="Incidencias para justificar"
+						  SearchPlaceholder="Buscar empleado, tipo de incidencia, justificación..."
+						  ShowExportButton="@CanExport"
+						  ServerDataFunc="LoadServerData"
+						  ExportFunc="ExportToExcel"
+						  SearchString="@SearchString"
+						  SearchStringChanged="(s) => SearchString = s"
+						  OnSearch="OnSearch">
+
+				<Header>
+					<MudTh>Acciones</MudTh>
+					<MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="VwRhIncidenciaResponse">Empleado</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="TipoIncidenciaDescripcion" T="VwRhIncidenciaResponse">Tipo Incidencia</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="Fecha" T="VwRhIncidenciaResponse">Fecha Incidencia</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortLabel="TipoJustificacionDescripcion" T="VwRhIncidenciaResponse">Justificación</MudTableSortLabel></MudTh>
+					<MudTh>Aplica Descuento</MudTh>
+					<MudTh><MudTableSortLabel SortLabel="ComentarioJustificacion" T="VwRhIncidenciaResponse">Comentario Justificación</MudTableSortLabel></MudTh>
+					<MudTh>Estado</MudTh>
+				</Header>
+
+				<Row Context="item">
+					<MudTd>
+						<MudTooltip Text="Justificar incidencia">
+							<MudIconButton Icon="@Icons.Material.Filled.Edit"
+										   Visible="@CanUpdate"
+										   Color="Color.Primary"
+										   Size="Size.Small"
+										   OnClick="@(() => EditItem(item.PkidIncidencia))" />
+						</MudTooltip>
+						<MudTooltip Text="Autorizar justificación">
+							<MudIconButton Icon="@Icons.Material.Filled.TaskAlt"
+										   Visible="@(CanUpdate && HasJustificacion(item))"
+										   Color="Color.Success"
+										   Size="Size.Small"
+										   OnClick="@(() => AutorizarJustificacion(item))" />
+						</MudTooltip>
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						<div class="eg-main-cell">@TextOrDash(item.NombreCompleto)</div>
+						<span>@TextOrDash(item.ClavePersona)</span>
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@(item.Fecha?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						@if (string.IsNullOrWhiteSpace(item.TipoJustificacionDescripcion))
+						{
+							<!-- FIX: Added T="string" -->
+							<MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Info">
+								Pendiente
+							</MudChip>
+						}
+						else
+						{
+							<span>@item.TipoJustificacionDescripcion</span>
+						}
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						<!-- FIX: Added T="string" -->
+						<MudChip T="string"
+								 Size="Size.Small"
+								 Color="@(item.AplicaDescuento == true ? Color.Warning : Color.Default)"
+								 Icon="@(item.AplicaDescuento == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+							@(item.AplicaDescuento == true ? "Sí" : "No")
+						</MudChip>
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						@if (string.IsNullOrWhiteSpace(item.ComentarioJustificacion))
+						{
+							<span class="eg-muted-cell">-</span>
+						}
+						else
+						{
+							<span>@TextOrDash(item.ComentarioJustificacion)</span>
+						}
+					</MudTd>
+					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
+						@if (item.Activo == true)
+						{
+							<!-- FIX: Added T="string" -->
+							<MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text" Icon="@Icons.Material.Filled.Lock">
+								Autorizada
+							</MudChip>
+						}
+						else
+						{
+							<!-- FIX: Added T="string" -->
+							<MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text" Icon="@Icons.Material.Filled.LockOpen">
+								Pendiente
+							</MudChip>
+						}
+					</MudTd>
+				</Row>
+			</GenericTable>
+		</div>
+	</MudContainer>
+</AccessVerification>
+
+@code {
+	private GenericTable<VwRhIncidenciaResponse> table = null!;
+
+	protected override string ModuleName => "Incidencias";
+	protected override string SubModuleName => "Justificacion_Incidencias";
+
+	protected override Type CreateDialogType => typeof(JustificacionIncidenciasDialog);
+	protected override Type EditDialogType => typeof(JustificacionIncidenciasDialog);
+	protected override Type DeleteDialogType => typeof(DeleteDialog<VwRhIncidenciaResponse>);
+	protected override string GetDefaultSortLabel() => "PkidIncidencia";
+	protected override IEnumerable<object> MapToExcelData(IEnumerable<VwRhIncidenciaResponse> items) => items;
+	protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+
+	protected override async Task<TableData<VwRhIncidenciaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+	{
+		Loading = true;
+		StateHasChanged();
+
+		try
+		{
+			CurrentPage = Math.Max(1, state.Page + 1);
+			PageSize = state.PageSize;
+			SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+			SortDirection = state.SortDirection;
+
+			var response = await Service.GetAllPaginadoAsync(
+				CurrentPage,
+				PageSize,
+				SearchString,
+				SortLabel,
+				SortDirection,
+				new Dictionary<string, object> { ["Activo"] = true }
+			);
+
+			if (response?.Success == true && response.Items != null)
+			{
+				Elements = response.Items.ToList();
+				TotalCount = response.TotalCount;
+			}
+			else
+			{
+				Elements.Clear();
+				TotalCount = 0;
+				if (!string.IsNullOrEmpty(response?.Message))
+				{
+					Snackbar.Add(response.Message, Severity.Error);
+				}
+			}
+
+			return new TableData<VwRhIncidenciaResponse>
+			{
+				Items = Elements,
+				TotalItems = TotalCount
+			};
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+			return new TableData<VwRhIncidenciaResponse> { Items = new List<VwRhIncidenciaResponse>(), TotalItems = 0 };
+		}
+		finally
+		{
+			Loading = false;
+			StateHasChanged();
+		}
+	}
+
+	protected override async Task EditItem(int itemId)
+	{
+		try
+		{
+			var response = await Service.GetByIdAsync(itemId);
+			if (response?.Success != true || response.Data == null)
+			{
+				Snackbar.Add("No fue posible cargar la incidencia", Severity.Error);
+				return;
+			}
+
+			var item = response.Data;
+			var isAuthorized = item.Activo == true && !string.IsNullOrWhiteSpace(item.TipoJustificacionDescripcion);
+
+			var parameters = new DialogParameters<JustificacionIncidenciasDialog>
+			{
+				{ x => x.Id, itemId },
+				{ x => x.PersonaId, item.FkidPersonaNom },
+				{ x => x.PersonaNombre, item.NombreCompleto },
+				{ x => x.EmpresaId, SucursalStateService.EmpresaId },
+				{ x => x.IsReadOnly, isAuthorized }
+			};
+
+			var dialog = await DialogService.ShowAsync<JustificacionIncidenciasDialog>(
+				isAuthorized ? "Ver justificación" : "Justificar incidencia",
+				parameters,
+				new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+			var result = await dialog.Result;
+			if (!result.Canceled)
+			{
+				await table.ReloadData();
+			}
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add("Error al justificar la incidencia", Severity.Error);
+		}
+	}
+
+	private async Task AutorizarJustificacion(VwRhIncidenciaResponse item)
+	{
+		var parameters = new DialogParameters<DeleteDialog<VwRhIncidenciaResponse>>
+		{
+			{ x => x.Id, item.PkidIncidencia },
+			{ x => x.ItemName, item.NombreCompleto },
+			{ x => x.DeleteFunc, async _ =>
+				{
+					try
+					{
+						var fullResponse = await NominaIncidenciaService.GetByIdAsync(item.PkidIncidencia);
+						if (fullResponse?.Success == true && fullResponse.Data != null)
+						{
+							var fullItem = fullResponse.Data;
+							fullItem.Activo = true;
+
+							var updateResponse = await NominaIncidenciaService.UpdateAsync(fullItem, item.PkidIncidencia);
+							if (updateResponse?.Success == true)
+							{
+								Snackbar.Add("Justificación autorizada correctamente", Severity.Success);
+								return true;
+							}
+
+							Snackbar.Add(updateResponse?.Message ?? "Error al autorizar la justificación", Severity.Error);
+						}
+						else
+						{
+							Snackbar.Add("No fue posible cargar la incidencia", Severity.Error);
+						}
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Error al autorizar justificación: {ex}");
+						Snackbar.Add("Error al autorizar la justificación", Severity.Error);
+					}
+
+					return false;
+				}
+			}
+		};
+
+		var dialog = await DialogService.ShowAsync<DeleteDialog<VwRhIncidenciaResponse>>(
+			"Autorizar justificación",
+			parameters,
+			new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+		var result = await dialog.Result;
+		if (!result.Canceled)
+		{
+			await table.ReloadData();
+		}
+	}
+
+	private bool HasJustificacion(VwRhIncidenciaResponse item)
+		=> item.FkidTipoJustificacionNom.HasValue && item.FkidTipoJustificacionNom.Value > 0;
+
+	protected override async Task ExportToExcel()
+	{
+		try
+		{
+			var allData = await Service.GetAllPaginadoAsync(
+				1,
+				int.MaxValue,
+				string.Empty,
+				nameof(VwRhIncidenciaResponse.PkidIncidencia),
+				SortDirection.Descending);
+
+			var data = allData?.Items?
+				.Where(x => x.Activo == true)
+				.Select(x => (object)new
+				{
+					Empleado = x.NombreCompleto,
+					Clave = x.ClavePersona,
+					TipoIncidencia = x.TipoIncidenciaDescripcion,
+					FechaIncidencia = x.Fecha?.ToString("dd/MM/yyyy"),
+					TipoJustificacion = x.TipoJustificacionDescripcion ?? "Pendiente",
+					AplicaDescuento = x.AplicaDescuento == true ? "Sí" : "No",
+					ComentarioJustificacion = x.ComentarioJustificacion,
+					Estado = x.Activo == true ? "Autorizada" : "Pendiente"
+				}).ToList() ?? new List<object>();
+
+			using var stream = new MemoryStream();
+			await stream.SaveAsAsync(data);
+			var base64 = Convert.ToBase64String(stream.ToArray());
+
+			await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+				$"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error al exportar justificaciones: {ex}");
+			Snackbar.Add("Error al exportar los datos", Severity.Error);
+		}
+	}
+
+	private static string TextOrDash(string? value)
+		=> string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+	public void Dispose()
+	{
+		SearchCts?.Cancel();
+		SearchCts?.Dispose();
+	}
+}

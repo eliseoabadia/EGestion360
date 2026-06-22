@@ -1,18 +1,22 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared.SoporteDocumental
 
 <section class="rh-inline-details">
-    <div class="rh-inline-heading">
-        <div>
-            <MudText Typo="Typo.subtitle1"><strong>@Employee.ClaveNombre</strong></MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">
+    @if (ShowHeader)
+    {
+        <div class="rh-inline-heading">
+            <div>
+                <MudText Typo="Typo.subtitle1"><strong>@Employee.ClaveNombre</strong></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
                 @TextOrDash(Employee.Empresa) · @TextOrDash(Employee.Puesto) · @TextOrDash(Employee.TipoContratacion)
-            </MudText>
+                </MudText>
+            </div>
+            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                Expediente del empleado
+            </MudChip>
         </div>
-        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
-            Expediente del empleado
-        </MudChip>
-    </div>
+    }
 
     <MudTabs Elevation="0" Rounded="false" ActivePanelIndex="@activeDetailIndex" ActivePanelIndexChanged="index => activeDetailIndex = index" Class="rh-inline-tabs">
         <MudTabPanel Text="Contratos" Icon="@Icons.Material.Filled.AssignmentInd" />
@@ -56,14 +60,37 @@
                                  OnChanged="OnChanged">
                 <Header>
                     <MudTh>Documento</MudTh><MudTh>Tipo</MudTh><MudTh>Descripcion</MudTh><MudTh>Expedicion</MudTh>
-                    <MudTh>Renovacion</MudTh><MudTh>Ruta</MudTh><MudTh>Control</MudTh>
+                    <MudTh>Renovacion</MudTh><MudTh>Referencia heredada</MudTh><MudTh>Control</MudTh>
                 </Header>
                 <Row Context="item">
                     <MudTd>@item.NombreDocumento</MudTd><MudTd>@TextOrDash(item.TipoExpedienteDescripcion)</MudTd>
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd><MudTd>@FormatDate(item.FechaExpedicion)</MudTd>
-                    <MudTd>@FormatDate(item.FechaRenovacion)</MudTd><MudTd>@TextOrDash(item.Ruta)</MudTd>
+                    <MudTd>@FormatDate(item.FechaRenovacion)</MudTd>
+                    <MudTd>
+                        @if (HasLegacyReference(item.Ruta))
+                        {
+                            <MudLink Href="@item.Ruta" Target="_blank" Typo="Typo.caption">
+                                Abrir referencia
+                            </MudLink>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </MudTd>
                     <MudTd>@(item.NecesitaRenovacion == true ? "Renovable" : "Permanente")</MudTd>
                 </Row>
+                <AdditionalActions Context="item">
+                    <DocumentSupportButton Modulo="Nomina"
+                                           SubModulo="Empleados"
+                                           Controlador="Expediente"
+                                           Servicio="NomRhExpediente"
+                                           EntidadId="@item.PkidExpediente"
+                                           FkidEmpresaSis="@Employee.EmpresaId"
+                                           RegistroTitulo="@item.NombreDocumento"
+                                           RegistroDescripcion="@($"{item.TipoExpedienteDescripcion} | {TextOrDash(item.Descripcion)}")"
+                                           CanManage="@CanUpdate" />
+                </AdditionalActions>
             </NominaRhDetailTable>
             break;
         case 2:
@@ -127,18 +154,13 @@
     }
 </section>
 
-<style>
-    .rh-inline-details { width: 100%; padding: 12px 14px 16px; background: color-mix(in srgb, var(--eg-primary) 2%, var(--mud-palette-surface)); border-left: 4px solid var(--eg-primary); }
-    .rh-inline-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 4px 8px; }
-    .rh-inline-tabs { border-top: 1px solid var(--mud-palette-lines-default); border-bottom: 1px solid var(--mud-palette-lines-default); margin-bottom: 10px; }
-</style>
-
 @code {
     [Parameter, EditorRequired] public NominaRhEmpleadoResponse Employee { get; set; } = null!;
     [Parameter] public bool CanCreate { get; set; }
     [Parameter] public bool CanUpdate { get; set; }
     [Parameter] public bool CanDelete { get; set; }
     [Parameter] public bool CanExport { get; set; }
+    [Parameter] public bool ShowHeader { get; set; } = true;
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private int activeDetailIndex;
@@ -156,4 +178,6 @@
     private static string FormatMoney(decimal value) => value.ToString("N2", CultureInfo.InvariantCulture);
     private static string FormatPercent(decimal? value) => value.HasValue ? value.Value.ToString("0.####", CultureInfo.InvariantCulture) + "%" : "-";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static bool HasLegacyReference(string? value)
+        => Uri.TryCreate(value, UriKind.Absolute, out _);
 }

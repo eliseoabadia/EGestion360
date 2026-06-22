@@ -489,8 +489,11 @@ public sealed class NominaRhLookupAppService(EGestionContext context) : INominaR
             var total = await query.CountAsync();
             var page = Math.Max(1, request.Page);
             var pageSize = Math.Clamp(request.PageSize <= 0 ? 25 : request.PageSize, 1, 500);
-            var items = await query
-                .OrderBy(item => item.Descripcion)
+            var sortedQuery = string.Equals(catalogo, "PeriodoQuincenal", StringComparison.OrdinalIgnoreCase)
+                ? query.OrderByDescending(item => item.FechaFin).ThenByDescending(item => item.Id)
+                : query.OrderBy(item => item.Descripcion);
+
+            var items = await sortedQuery
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -564,9 +567,18 @@ public sealed class NominaRhLookupAppService(EGestionContext context) : INominaR
             "CuentaContable" => _context.CuentaContables.AsNoTracking()
                 .Where(item => item.Activo && (!empresaId.HasValue || empresaId <= 0 || item.FkidEmpresaSis == empresaId))
                 .Select(item => new NominaRhLookupResponse { Id = item.PkidCuentaContable, Catalogo = catalogo, Clave = item.Cuenta, Descripcion = item.Descripcion, Activo = item.Activo }),
-            "PeriodoQuincenal" => _context.PeriodoNominas.AsNoTracking()
-                .Where(item => item.Activo && item.LegacyTable == "SIS_PeriodoQuincenal" && (!empresaId.HasValue || empresaId <= 0 || item.FkidEmpresaSis == null || item.FkidEmpresaSis == empresaId))
-                .Select(item => new NominaRhLookupResponse { Id = item.LegacyId, Catalogo = catalogo, Clave = item.LegacyId.ToString(), Descripcion = item.TipoPeriodo + " " + item.Anio + "/" + item.Periodo, Activo = item.Activo }),
+            "PeriodoQuincenal" => _context.VwPeriodoQuincenals.AsNoTracking()
+                .Where(item => item.Activo && (!empresaId.HasValue || empresaId <= 0 || item.FkidEmpresaSis == null || item.FkidEmpresaSis == empresaId))
+                .Select(item => new NominaRhLookupResponse
+                {
+                    Id = item.LegacyId,
+                    Catalogo = catalogo,
+                    Clave = item.LegacyId.ToString(),
+                    Descripcion = "Quincenal " + item.Anio + "/" + item.Periodo,
+                    FechaInicio = item.FechaInicio,
+                    FechaFin = item.FechaFin,
+                    Activo = item.Activo
+                }),
             _ => _context.CatalogoSimples.AsNoTracking().Where(_ => false)
                 .Select(item => new NominaRhLookupResponse { Id = item.PkidCatalogoSimple, Catalogo = catalogo, Clave = string.Empty, Descripcion = item.Descripcion, Activo = item.Activo })
         };

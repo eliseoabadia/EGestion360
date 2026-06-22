@@ -1,0 +1,405 @@
+@namespace EG.Web.Pages.Modules.Nomina.Nomina.PagosExtraordinarios
+@using EG.Common.GenericModel
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<NomConceptoVariableResponse> Service
+@inject IGenericCrudService<NominaRhEmpleadoResponse> EmpleadoService
+@inject IGenericCrudService<NomConceptoResponse> ConceptoService
+@inject IGenericCrudService<NomPeriodoActivoResponse> PeriodoActivoService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NomConceptoVariableResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando concepto variable..."
+                OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="NomConceptoVariableResponse" @ref="form" ShowHeader="false">
+        <section class="concepto-variable-dialog">
+            <div class="capture-context">
+                <div class="context-main">
+                    <MudAvatar Color="Color.Primary" Size="Size.Medium" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                    </MudAvatar>
+                    <div class="context-employee">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Empleado</MudText>
+                        <PagedAutocomplete Value="@selectedEmpleado"
+                                           ValueChanged="OnEmpleadoChanged"
+                                           Label="Buscar empleado"
+                                           Required="true"
+                                           RequiredError="Selecciona el empleado."
+                                           Clearable="true"
+                                           LoadPage="LoadEmpleadosPageAsync"
+                                           PageSize="25" />
+                    </div>
+                </div>
+                <div class="context-pill">
+                    <span>Periodo</span>
+                    <strong>@TextOrDash(selectedPeriodo?.Text)</strong>
+                </div>
+                <div class="context-pill amount">
+                    <span>Importe</span>
+                    <strong>@Money(item.Importe)</strong>
+                </div>
+            </div>
+
+            <MudGrid GutterSize="2">
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@selectedConcepto"
+                                       ValueChanged="OnConceptoChanged"
+                                       Label="Concepto"
+                                       Required="true"
+                                       RequiredError="Selecciona el concepto."
+                                       Clearable="true"
+                                       LoadPage="LoadConceptosPageAsync"
+                                       PageSize="25" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@selectedPeriodo"
+                                       ValueChanged="OnPeriodoChanged"
+                                       Label="Periodo"
+                                       Required="true"
+                                       RequiredError="Selecciona el periodo."
+                                       Clearable="true"
+                                       LoadPage="LoadPeriodosPageAsync"
+                                       PageSize="25" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="item.Importe"
+                                     Label="Importe"
+                                     Variant="Variant.Outlined"
+                                     Format="0.00"
+                                     Culture="@Culture"
+                                     Min="0"
+                                     Required="true"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="$" />
+                </MudItem>
+
+                <MudItem xs="12" md="9">
+                    <MudTextField @bind-Value="item.Referencia"
+                                  Label="Referencia"
+                                  Variant="Variant.Outlined"
+                                  MaxLength="250"
+                                  Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="switch-panel" Elevation="0">
+                        <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">
+                            Activo
+                        </MudSwitch>
+                    </MudPaper>
+                </MudItem>
+
+                @if (Id.HasValue)
+                {
+                    <MudItem xs="12">
+                        <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion"
+                                           FechaCreacion="@item.FechaCreacion"
+                                           UsuarioModificacion="@item.UsuarioModificacion"
+                                           FechaModificacion="@item.FechaModificacion" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </section>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+    private BaseEntityForm<NomConceptoVariableResponse> form = null!;
+    private NomConceptoVariableResponse item = new() { Activo = true };
+    private LookupItem? selectedEmpleado;
+    private LookupItem? selectedConcepto;
+    private LookupItem? selectedPeriodo;
+
+    private string DialogTitle => Id.HasValue ? "Editar concepto variable" : "Nuevo concepto variable";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await LoadItemAsync();
+        }
+
+        if (EmpresaId is > 0 && item.FkidEmpresaSis <= 0)
+        {
+            item.FkidEmpresaSis = EmpresaId.Value;
+        }
+
+        InitializeSelectedValues();
+
+        if (!Id.HasValue && item.FkidPeriodo <= 0)
+        {
+            await TrySetDefaultPeriodoAsync();
+        }
+    }
+
+    private async Task LoadItemAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible cargar el concepto variable.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible cargar el concepto variable.", Severity.Error);
+        }
+    }
+
+    private void InitializeSelectedValues()
+    {
+        if (item.FkidPersonaNom > 0)
+        {
+            selectedEmpleado = new LookupItem
+            {
+                Id = item.FkidPersonaNom,
+                Text = FirstNonEmpty(item.PersonaClaveNombre, item.FkidPersonaNom.ToString(Culture))
+            };
+        }
+
+        if (item.FkidConceptoNom > 0)
+        {
+            selectedConcepto = new LookupItem
+            {
+                Id = item.FkidConceptoNom,
+                Text = FirstNonEmpty(item.ConceptoClaveNombre, item.FkidConceptoNom.ToString(Culture))
+            };
+        }
+
+        if (item.FkidPeriodo > 0)
+        {
+            selectedPeriodo = new LookupItem
+            {
+                Id = item.FkidPeriodo,
+                Text = item.FkidPeriodo.ToString(Culture)
+            };
+        }
+    }
+
+    private async Task TrySetDefaultPeriodoAsync()
+    {
+        try
+        {
+            var response = await PeriodoActivoService.GetAllPaginadoAsync(
+                1,
+                20,
+                string.Empty,
+                nameof(NomPeriodoActivoResponse.IdPeriodo),
+                SortDirection.Descending,
+                BuildEmpresaFilter());
+
+            var periodo = response?.Items?
+                .Where(x => x.Activo)
+                .OrderByDescending(x => x.IdPeriodo)
+                .FirstOrDefault();
+
+            if (periodo == null)
+            {
+                return;
+            }
+
+            var periodoId = periodo.EstaCerrado ? periodo.IdPeriodo + 1 : periodo.IdPeriodo;
+            item.FkidPeriodo = periodoId;
+            selectedPeriodo = new LookupItem { Id = periodoId, Text = periodoId.ToString(Culture) };
+        }
+        catch
+        {
+            // El periodo sigue siendo requerido y puede seleccionarse manualmente.
+        }
+    }
+
+    private Dictionary<string, object>? BuildEmpresaFilter()
+        => EmpresaId is > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = EmpresaId.Value }
+            : null;
+
+    private Dictionary<string, object>? BuildEmpleadoFilter()
+        => EmpresaId is > 0
+            ? new Dictionary<string, object> { ["EmpresaId"] = EmpresaId.Value }
+            : null;
+
+    private async Task<ComboLookupResult> LoadEmpleadosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await EmpleadoService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            nameof(NominaRhEmpleadoResponse.NombreCompleto),
+            SortDirection.Ascending,
+            BuildEmpleadoFilter());
+
+        return ToComboResult(response?.Items?.Select(ToEmpleadoLookupItem), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadConceptosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await ConceptoService.GetAllPaginadoAsync(page, pageSize, filter, nameof(NomConceptoResponse.Clave));
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidConcepto, Text = FirstNonEmpty(x.ClaveNombre, x.PkidConcepto.ToString(Culture)) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPeriodosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await PeriodoActivoService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            nameof(NomPeriodoActivoResponse.IdPeriodo),
+            SortDirection.Descending,
+            BuildEmpresaFilter());
+
+        return ToComboResult(response?.Items?.Select(ToPeriodoLookupItem), response?.TotalCount);
+    }
+
+    private Task OnEmpleadoChanged(LookupItem? empleado)
+    {
+        selectedEmpleado = empleado;
+        item.FkidPersonaNom = empleado?.Id ?? 0;
+        return Task.CompletedTask;
+    }
+
+    private Task OnConceptoChanged(LookupItem? concepto)
+    {
+        selectedConcepto = concepto;
+        item.FkidConceptoNom = concepto?.Id ?? 0;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPeriodoChanged(LookupItem? periodo)
+    {
+        selectedPeriodo = periodo;
+        item.FkidPeriodo = periodo?.Id ?? 0;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (EmpresaId is > 0)
+        {
+            item.FkidEmpresaSis = EmpresaId.Value;
+        }
+
+        if (item.FkidEmpresaSis <= 0)
+        {
+            Snackbar.Add("No se encontró la empresa activa del login.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidPersonaNom <= 0)
+        {
+            Snackbar.Add("Selecciona el empleado.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidConceptoNom <= 0)
+        {
+            Snackbar.Add("Selecciona el concepto.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidPeriodo <= 0)
+        {
+            Snackbar.Add("Selecciona el periodo.", Severity.Warning);
+            return;
+        }
+
+        if (item.Importe <= 0)
+        {
+            Snackbar.Add("Captura un importe mayor a cero.", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(item.Referencia))
+        {
+            Snackbar.Add("Captura la referencia.", Severity.Warning);
+            return;
+        }
+
+        item.Referencia = item.Referencia.Trim();
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Concepto variable guardado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el concepto variable.", Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible guardar el concepto variable.", Severity.Error);
+        }
+    }
+
+    private static LookupItem ToEmpleadoLookupItem(NominaRhEmpleadoResponse empleado)
+        => new()
+        {
+            Id = empleado.Id,
+            Text = FirstNonEmpty(empleado.ClaveNombre, $"{empleado.Empleado} - {empleado.NombreCompleto}".Trim(' ', '-'), empleado.Id.ToString(Culture))
+        };
+
+    private static LookupItem ToPeriodoLookupItem(NomPeriodoActivoResponse periodo)
+        => new()
+        {
+            Id = periodo.IdPeriodo,
+            Text = $"{periodo.IdPeriodo} - {(periodo.EstaCerrado ? "Cerrado" : "Abierto")}"
+        };
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+    private static string FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+}

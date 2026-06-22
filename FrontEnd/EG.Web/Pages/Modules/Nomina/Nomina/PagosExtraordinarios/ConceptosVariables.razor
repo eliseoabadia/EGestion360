@@ -1,0 +1,198 @@
+@page "/nom/conceptovariable"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Pages.Modules.Nomina.Nomina.PagosExtraordinarios
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using MudBlazor
+@inherits BaseCrudPage<NomConceptoVariableResponse, NomConceptoVariableResponse>
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column conceptos-variables-page" MaxWidth="MaxWidth.False">
+        <PageHeader Title="Conceptos Variables"
+                    Subtitle="Pagos extraordinarios por empleado"
+                    Icon="@Icons.Material.Filled.Payments"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <div class="summary-strip">
+            <div>
+                <span class="summary-label">Registros</span>
+                <strong>@TotalCount.ToString("N0", Culture)</strong>
+            </div>
+            <div>
+                <span class="summary-label">Importe visible</span>
+                <strong>@Money(Elements.Sum(x => x.Importe))</strong>
+            </div>
+            <div>
+                <span class="summary-label">Activos visibles</span>
+                <strong>@Elements.Count(x => x.Activo).ToString("N0", Culture)</strong>
+            </div>
+        </div>
+
+        <div class="conceptos-table-shell">
+            <GenericTable TItem="NomConceptoVariableResponse"
+                          @ref="table"
+                          Title="Captura de conceptos variables"
+                          SearchPlaceholder="Buscar empleado, concepto, periodo o referencia..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PersonaClaveNombre" T="NomConceptoVariableResponse">Empleado</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ConceptoClaveNombre" T="NomConceptoVariableResponse">Concepto</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PeriodoId" T="NomConceptoVariableResponse">Periodo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Importe" T="NomConceptoVariableResponse">Importe</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Referencia" T="NomConceptoVariableResponse">Referencia</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Activo" T="NomConceptoVariableResponse">Estado</MudTableSortLabel></MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd>
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Visible="@CanUpdate"
+                                           Disabled="@(!item.Activo || IsBusy)"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditItem(item.PkidConceptoVariable))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Pagos_Extraordinarios"
+                                               SubModulo="Conceptos_Variables"
+                                               Controlador="NomConceptoVariable"
+                                               EntidadId="@item.PkidConceptoVariable"
+                                               FkidEmpresaSis="@item.FkidEmpresaSis"
+                                               RegistroTitulo="@TextOrDash(item.PersonaClaveNombre)"
+                                               RegistroDescripcion="@TextOrDash(item.ConceptoClaveNombre)" />
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Visible="@CanDelete"
+                                           Disabled="@(!item.Activo || IsBusy)"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteItem(item.PkidConceptoVariable))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">
+                        <div class="main-cell">@TextOrDash(item.PersonaClaveNombre)</div>
+                        <span>@TextOrDash(item.EmpresaNombre)</span>
+                    </MudTd>
+                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">@TextOrDash(item.ConceptoClaveNombre)</MudTd>
+                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">@item.PeriodoId.ToString(CultureInfo.InvariantCulture)</MudTd>
+                    <MudTd @ondblclick="@(() => EditIfAllowed(item))" Class="money-cell">@Money(item.Importe)</MudTd>
+                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">@TextOrDash(item.Referencia)</MudTd>
+                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="@(item.Activo ? Color.Success : Color.Error)"
+                                 Variant="Variant.Text">
+                            @(item.Activo ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+    private GenericTable<NomConceptoVariableResponse> table = null!;
+
+    protected override string ModuleName => "Pagos_Extraordinarios";
+    protected override string SubModuleName => "Conceptos_Variables";
+    protected override Type CreateDialogType => typeof(ConceptosVariablesDialog);
+    protected override Type EditDialogType => typeof(ConceptosVariablesDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomConceptoVariableResponse>);
+    protected override string GetDefaultSortLabel() => "PkidConceptoVariable";
+    protected override async Task ReloadData() => await (table?.ReloadData() ?? Task.CompletedTask);
+
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters<ConceptosVariablesDialog>
+        {
+            { x => x.EmpresaId, SucursalStateService.EmpresaId }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConceptosVariablesDialog>(
+            "Nuevo concepto variable",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters<ConceptosVariablesDialog>
+        {
+            { x => x.Id, id },
+            { x => x.EmpresaId, SucursalStateService.EmpresaId }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConceptosVariablesDialog>(
+            "Editar concepto variable",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            await ReloadData();
+        }
+    }
+
+    private async Task EditIfAllowed(NomConceptoVariableResponse item)
+    {
+        if (CanUpdate && item.Activo)
+        {
+            await EditItem(item.PkidConceptoVariable);
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomConceptoVariableResponse> items)
+        => items.Select(item => new
+        {
+            Empleado = item.PersonaClaveNombre,
+            Concepto = item.ConceptoClaveNombre,
+            Periodo = item.PeriodoId,
+            Importe = item.Importe.ToString("0.00", Culture),
+            item.Referencia,
+            Estado = item.Activo ? "Activo" : "Inactivo"
+        });
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return response?.Data?.ClaveNombre ?? "el concepto variable";
+    }
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
+    private static string Money(decimal value) => value.ToString("$0.00", Culture);
+}

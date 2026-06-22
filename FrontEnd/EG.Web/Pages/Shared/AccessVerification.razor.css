@@ -1,0 +1,7 @@
+.access-verification-loading {
+    height: 100%;
+}
+
+.access-verification-denied {
+    min-height: 400px;
+}

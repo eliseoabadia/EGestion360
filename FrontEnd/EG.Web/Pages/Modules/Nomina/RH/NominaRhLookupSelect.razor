@@ -3,6 +3,7 @@
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
+@using System.Globalization
 
 @inject IGenericCrudService<NominaRhLookupResponse> LookupService
 
@@ -47,23 +48,30 @@
 
     private async Task<ComboLookupResult> LoadPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
     {
+        var sortLabel = Catalogo == "PeriodoQuincenal"
+            ? nameof(NominaRhLookupResponse.FechaFin)
+            : nameof(NominaRhLookupResponse.Descripcion);
+        var sortDirection = Catalogo == "PeriodoQuincenal"
+            ? MudBlazor.SortDirection.Descending
+            : MudBlazor.SortDirection.Ascending;
+
         var response = await LookupService.GetAllPaginadoAsync(
             page,
             pageSize,
             filter,
-            nameof(NominaRhLookupResponse.Descripcion),
-            MudBlazor.SortDirection.Ascending,
+            sortLabel,
+            sortDirection,
             new Dictionary<string, object> { ["Catalogo"] = Catalogo });
 
         var items = response?.Items?.ToList() ?? [];
         foreach (var item in items)
         {
-            descriptions[item.Id] = item.Descripcion;
+            descriptions[item.Id] = FormatLookupText(item);
         }
 
         return new ComboLookupResult
         {
-            Items = items.Select(item => new LookupItem { Id = item.Id, Text = item.ClaveNombre }),
+            Items = items.Select(item => new LookupItem { Id = item.Id, Text = FormatLookupText(item) }),
             TotalCount = response?.TotalCount ?? 0
         };
     }
@@ -77,5 +85,17 @@
             ? value
             : item?.Text ?? string.Empty;
         await DescriptionChanged.InvokeAsync(description);
+    }
+
+    private string FormatLookupText(NominaRhLookupResponse item)
+    {
+        if (Catalogo == "PeriodoQuincenal" && item.FechaInicio.HasValue && item.FechaFin.HasValue)
+        {
+            return string.Create(
+                CultureInfo.InvariantCulture,
+                $"{item.FechaInicio.Value:yyyy-MM-dd}; {item.FechaFin.Value:yyyy-MM-dd}");
+        }
+
+        return item.ClaveNombre;
     }
 }

@@ -1,4 +1,3 @@
-@page "/nomina/configuracion/catalogos/contratos-laborales"
 @page "/rh/configuracion/contratos"
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -67,8 +66,8 @@
         nameof(NomContratoLaboralResponse.Activo)
     ];
 
-    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
-    protected override string SubModuleName => "Contrato_Laboral";
+    protected override string ModuleName => "Contratos";
+    protected override string SubModuleName => "Contratos";
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomContratoLaboralResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomContratoLaboralResponse>);
     protected override Type DeleteDialogType => typeof(DeleteDialog<NomContratoLaboralResponse>);

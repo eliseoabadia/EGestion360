@@ -28,6 +28,7 @@
     [Parameter] public int? FkidEmpresaSis { get; set; }
     [Parameter] public string RegistroTitulo { get; set; } = "Registro";
     [Parameter] public string RegistroDescripcion { get; set; } = string.Empty;
+    [Parameter] public bool CanManage { get; set; } = true;
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public Size Size { get; set; } = Size.Small;
 
@@ -69,7 +70,8 @@
             [nameof(DocumentSupportDialog.EntidadId)] = EntidadId,
             [nameof(DocumentSupportDialog.FkidEmpresaSis)] = FkidEmpresaSis,
             [nameof(DocumentSupportDialog.RegistroTitulo)] = RegistroTitulo,
-            [nameof(DocumentSupportDialog.RegistroDescripcion)] = RegistroDescripcion
+            [nameof(DocumentSupportDialog.RegistroDescripcion)] = RegistroDescripcion,
+            [nameof(DocumentSupportDialog.CanManage)] = CanManage
         };
 
         var dialog = await DialogService.ShowAsync<DocumentSupportDialog>(

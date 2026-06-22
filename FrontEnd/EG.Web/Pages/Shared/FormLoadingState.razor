@@ -1,0 +1,33 @@
+@using MudBlazor
+
+<div class="eg-form-loading-state">
+    <div class="eg-form-loading-state__header">
+        <MudProgressCircular Color="Color.Primary"
+                             Size="Size.Small"
+                             Indeterminate="true" />
+        <MudText Typo="Typo.body2">@Message</MudText>
+    </div>
+
+    <MudGrid GutterSize="2">
+        @for (var i = 0; i < Rows; i++)
+        {
+            <MudItem xs="12" md="@GetColumnSize(i)">
+                <MudSkeleton Height="56px" SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" />
+            </MudItem>
+        }
+    </MudGrid>
+</div>
+
+@code {
+    [Parameter] public string Message { get; set; } = "Preparando formulario...";
+    [Parameter] public int Rows { get; set; } = 8;
+
+    private static int GetColumnSize(int index) =>
+        index switch
+        {
+            0 => 4,
+            1 => 8,
+            2 => 12,
+            _ => 4
+        };
+}

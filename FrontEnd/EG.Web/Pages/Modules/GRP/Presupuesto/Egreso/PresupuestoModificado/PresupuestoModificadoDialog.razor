@@ -6,8 +6,8 @@
 @inject IGenericCrudService<EgreAdecuacionResponse> Service
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="EgreAdecuacionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" OnConfirm="SaveAsync">
-    <BaseEntityForm TEntity="EgreAdecuacionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+<BaseCrudDialog TItem="EgreAdecuacionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
+    <BaseEntityForm TEntity="EgreAdecuacionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando presupuesto modificado..." LoadingSkeletonRows="5">
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
                 <MudDatePicker Date="@_fecha" DateChanged="value => _fecha = value" Label="Fecha" Variant="Variant.Outlined" />
@@ -57,6 +57,7 @@
     private BaseEntityForm<EgreAdecuacionResponse> form = null!;
     private EgreAdecuacionResponse item = new() { Activo = true, Fecha = DateOnly.FromDateTime(DateTime.Today), FkidEstatusAdecuacionPres = 1, FkidAccionAdecuacionMasterPres = 1 };
     private DateTime? _fecha = DateTime.Today;
+    private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar presupuesto modificado" : "Nuevo presupuesto modificado";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -65,23 +66,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Id.HasValue)
+        try
         {
-            item.FkidTipoAdecuacionPres = TipoAdecuacionId;
-            item.FkidAnioSis = AnioId;
-            return;
-        }
+            if (!Id.HasValue)
+            {
+                item.FkidTipoAdecuacionPres = TipoAdecuacionId;
+                item.FkidAnioSis = AnioId;
+                return;
+            }
 
-        var response = await Service.GetByIdAsync(Id.Value);
-        if (response?.Success == true && response.Data != null)
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+            }
+        }
+        finally
         {
-            item = response.Data;
-            _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
+            _formLoading = false;
         }
     }
 
     private async Task SaveAsync()
     {
+        if (_formLoading || form == null) return;
         if (!await form.ValidateAsync()) return;
         if (AnioId <= 0)
         {

@@ -1,0 +1,53 @@
+::deep .conceptos-variables-page {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.conceptos-table-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+::deep .conceptos-variables-page .summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 8px 0 12px;
+}
+
+::deep .conceptos-variables-page .summary-strip > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 12px;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+}
+
+::deep .conceptos-variables-page .summary-label {
+    font-size: .875rem;
+    color: var(--mud-palette-text-secondary);
+    text-transform: uppercase;
+}
+
+::deep .conceptos-variables-page .main-cell {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::deep .conceptos-variables-page .money-cell {
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+    ::deep .conceptos-variables-page .summary-strip {
+        grid-template-columns: 1fr;
+    }
+}
