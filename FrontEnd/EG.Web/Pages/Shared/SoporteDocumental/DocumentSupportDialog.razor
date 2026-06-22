@@ -91,6 +91,34 @@
                         <MudText Typo="Typo.caption" Class="doc-selected-meta">@SelectedMeta</MudText>
                     </div>
                     <div class="doc-actions">
+                        @if (SelectedDocument?.EsImagen == true)
+                        {
+                            <div class="doc-zoom-controls" aria-label="Controles de zoom de imagen">
+                                <MudTooltip Text="Reducir imagen">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ZoomOut"
+                                                   Size="Size.Small"
+                                                   Disabled="@(_imageZoom <= MinImageZoom)"
+                                                   OnClick="ZoomOutImage" />
+                                </MudTooltip>
+                                <button type="button"
+                                        class="doc-zoom-value"
+                                        title="Restablecer al 100%"
+                                        @onclick="ResetImageZoom">
+                                    @ImageZoomPercent
+                                </button>
+                                <MudTooltip Text="Ampliar imagen">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ZoomIn"
+                                                   Size="Size.Small"
+                                                   Disabled="@(_imageZoom >= MaxImageZoom)"
+                                                   OnClick="ZoomInImage" />
+                                </MudTooltip>
+                                <MudTooltip Text="Ajustar al visor">
+                                    <MudIconButton Icon="@Icons.Material.Filled.FitScreen"
+                                                   Size="Size.Small"
+                                                   OnClick="ResetImageZoom" />
+                                </MudTooltip>
+                            </div>
+                        }
                         <MudButton Variant="Variant.Text"
                                    Color="Color.Info"
                                    StartIcon="@Icons.Material.Filled.Highlight"
@@ -135,7 +163,16 @@
                     }
                     else if (!string.IsNullOrWhiteSpace(_previewUrl) && SelectedDocument.EsImagen)
                     {
-                        <img src="@_previewUrl" alt="@SelectedDocument.NombreOriginal" />
+                        <div class="doc-image-stage" style="@ImageZoomStyle">
+                            <img src="@_previewUrl" alt="@SelectedDocument.NombreOriginal" />
+                            @foreach (var mark in HighlightAnnotations)
+                            {
+                                <div class="doc-highlight"
+                                     title="@mark.Comentario"
+                                     style="@HighlightStyle(mark)">
+                                </div>
+                            }
+                        </div>
                     }
                     else
                     {
@@ -145,12 +182,15 @@
                         </div>
                     }
 
-                    @foreach (var mark in HighlightAnnotations)
+                    @if (SelectedDocument?.EsImagen != true)
                     {
-                        <div class="doc-highlight"
-                             title="@mark.Comentario"
-                             style="@HighlightStyle(mark)">
-                        </div>
+                        @foreach (var mark in HighlightAnnotations)
+                        {
+                            <div class="doc-highlight"
+                                 title="@mark.Comentario"
+                                 style="@HighlightStyle(mark)">
+                            </div>
+                        }
                     }
                 </div>
             </section>
@@ -232,8 +272,15 @@
     private bool _loading;
     private bool _previewLoading;
     private bool _highlightMode;
+    private double _imageZoom = 1d;
+
+    private const double MinImageZoom = 0.75d;
+    private const double MaxImageZoom = 3d;
+    private const double ImageZoomStep = 0.25d;
 
     private string DocumentCountText => $"{Documents.Count} documento(s)";
+    private string ImageZoomPercent => $"{_imageZoom:P0}";
+    private string ImageZoomStyle => FormattableString.Invariant($"width: {_imageZoom * 100:0.##}%; height: {_imageZoom * 100:0.##}%;");
 
     private IEnumerable<DocumentoResponse> FilteredDocuments => string.IsNullOrWhiteSpace(_search)
         ? Documents
@@ -310,9 +357,16 @@
     {
         SelectedDocument = document;
         _highlightMode = false;
+        _imageZoom = 1d;
         await LoadPreview();
         await LoadAnnotations();
     }
+
+    private void ZoomOutImage() => _imageZoom = Math.Max(MinImageZoom, _imageZoom - ImageZoomStep);
+
+    private void ZoomInImage() => _imageZoom = Math.Min(MaxImageZoom, _imageZoom + ImageZoomStep);
+
+    private void ResetImageZoom() => _imageZoom = 1d;
 
     private async Task LoadPreview()
     {
@@ -430,6 +484,7 @@
         if (!CanManage)
             return;
 
+        _imageZoom = 1d;
         _highlightMode = !_highlightMode;
     }
 

@@ -32,9 +32,9 @@
                           OnSearch="OnSearch"
                           PageSize="10"
                           FixedHeader="true"
-                          TableHeight="max(320px, calc(100dvh - 450px))">
+                          TableHeight="max(320px, calc(100dvh - 350px))">
                 <Header>
-                    <MudTh>Acciones</MudTh>
+                    <MudTh Class="rh-main-actions">Acciones</MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Empleado" T="NominaRhEmpleadoResponse">Empleado</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="NominaRhEmpleadoResponse">Nombre</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Rfc" T="NominaRhEmpleadoResponse">RFC</MudTableSortLabel></MudTh>
@@ -42,50 +42,47 @@
                     <MudTh><MudTableSortLabel SortLabel="TipoContratacion" T="NominaRhEmpleadoResponse">Contratacion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Puesto" T="NominaRhEmpleadoResponse">Puesto</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="SueldoMensual" T="NominaRhEmpleadoResponse">Sueldo</MudTableSortLabel></MudTh>
-                    <MudTh>Estatus</MudTh>
                 </Header>
                 <Row Context="item">
                     <MudTd Class="rh-main-actions">
-                        <MudTooltip Text="Ver detalle del empleado">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                           Color="Color.Info"
-                                           Size="Size.Small"
-                                           Disabled="@IsBusy"
-                                           OnClick="@(() => SelectEmployeeAsync(item))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Editar empleado">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           Visible="@CanUpdate"
-                                           Disabled="@IsBusy"
-                                           OnClick="@(() => EditItem(item.Id))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar empleado">
-                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           Visible="@CanDelete"
-                                           Disabled="@IsBusy"
-                                           OnClick="@(() => DeleteItem(item.Id))" />
-                        </MudTooltip>
+                        <div class="rh-action-buttons" @onclick:stopPropagation="true">
+                            <MudTooltip Text="Ver detalle del empleado">
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => OpenEmployeeDetails(item))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Editar empleado">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               Visible="@CanUpdate"
+                                               Disabled="@IsBusy"
+                                               OnClick="@(() => EditItem(item.Id))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar empleado">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               Visible="@CanDelete"
+                                               Disabled="@IsBusy"
+                                               OnClick="@(() => DeleteItem(item.Id))" />
+                            </MudTooltip>
+                        </div>
                     </MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))"><strong>@item.Empleado</strong></MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@item.NombreCompleto</MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@item.Rfc</MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@item.Curp</MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@TextOrDash(item.TipoContratacion)</MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@TextOrDash(item.Puesto)</MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">@FormatMoney(item.SueldoMensual)</MudTd>
-                    <MudTd @ondblclick="@(() => SelectEmployeeAsync(item))">
-                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Activo</MudChip>
-                    </MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))"><strong>@item.Empleado</strong></MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))">@item.NombreCompleto</MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))">@item.Rfc</MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))">@item.Curp</MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))">@TextOrDash(item.TipoContratacion)</MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))">@TextOrDash(item.Puesto)</MudTd>
+                    <MudTd @ondblclick="@(() => OpenEmployeeDetails(item))">@FormatMoney(item.SueldoMensual)</MudTd>
                 </Row>
             </GenericTable>
         }
         else
         {
-            <section class="rh-detail-shell">
+            <section class="rh-detail-shell" @key="selectedEmployee.Id">
                 <EntityDetailHeader Title="@TextOrDash(selectedEmployee.ClaveNombre)"
                                     Subtitle="@BuildEmployeeSubtitle(selectedEmployee)"
                                     StatusText="Activo"
@@ -153,7 +150,6 @@
 
     protected override async Task<TableData<NominaRhEmpleadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
-        Loading = true;
         try
         {
             CurrentPage = Math.Max(1, state.Page + 1);
@@ -177,25 +173,15 @@
             Snackbar.Add("No fue posible cargar los empleados. El departamento de TI revisara el incidente.", Severity.Error);
             return new TableData<NominaRhEmpleadoResponse>();
         }
-        finally
-        {
-            Loading = false;
-        }
     }
 
-    private Task SelectEmployeeAsync(NominaRhEmpleadoResponse item)
-    {
-        selectedEmployee = item;
-        return Task.CompletedTask;
-    }
+    private void OpenEmployeeDetails(NominaRhEmpleadoResponse item)
+        => selectedEmployee = item;
 
     private async Task BackToTable()
     {
         selectedEmployee = null;
-        if (table is not null)
-        {
-            await table.ReloadData();
-        }
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ReloadEmployeeAsync()
