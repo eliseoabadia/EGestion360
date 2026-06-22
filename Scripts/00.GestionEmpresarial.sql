@@ -562,7 +562,7 @@ VALUES
 (2, 'CuentasXCobrar', 'Reportes_CxC', NULL, 'app://{0}/{1}', GETDATE(), 'Analisis_Saldos', 'PRETCCRS04', 'Presupuesto_Modificado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'CuentasXCobrar', 'Reportes_CxC', NULL, 'app://{0}/{1}', GETDATE(), 'Consulta_Documentos', 'PRETCCRS05', 'Presupuesto_Modificado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 
-
+(2, 'Contabilidad', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Polizas', 'CONPOL01', 'Contabilidad', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 
 --ESTO NO ME INTEREZA POR AHORA 
@@ -730,7 +730,7 @@ VALUES
 (2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Zona_Geografica', N'RHCFG017', N'Zona Geográfica', 'view,view-menu,delete,new,update', 0),
 (2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Dia_Semana', N'RHCFG018', N'Día de la Semana', 'view,view-menu,delete,new,update', 0)
 ;
-
+ 
 
 SELECT 'EXEC spConfiguracionDeRolYClaims ''' + [Group] + ''', ''' + [SubGroup] + ''', ''10000'', ''' + [Values] + ''';'
 from dbo.AspNetClaims
@@ -847,6 +847,7 @@ EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Integracion_Saldos', '10000', 
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Estado_Cuenta', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Analisis_Saldos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Consulta_Documentos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Polizas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXPagar', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'RecepcionFactura_ComprobantePago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';

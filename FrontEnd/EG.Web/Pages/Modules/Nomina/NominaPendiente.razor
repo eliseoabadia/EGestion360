@@ -111,16 +111,6 @@
                 return item;
             }
 
-            if (HistoricoRoutes.Contains(CurrentPath, StringComparer.OrdinalIgnoreCase))
-            {
-                return Productos(
-                    "Historico de Nomina",
-                    "Consulta historica de productos de nomina migrados",
-                    "Nomina_Historicos",
-                    CurrentPath.Split('/').Last().Replace('-', '_'),
-                    "Los historicos se muestran con la corrida migrada disponible; los reportes finales dependen de adaptar los SP de timbrado, dispersion y recibos.");
-            }
-
             return Productos(
                 "Nomina",
                 "Operacion de nomina",
@@ -233,7 +223,7 @@
             ["/nomina/movimientos"] = Movimientos("Movimientos de Personal", "Movimientos migrados desde RH_DatosMovto", "Movimientos_Personal"),
             ["/rh/datormovto"] = Movimientos("Movimientos de Personal", "Alias legacy RH_DatosMovto", "Movimientos_Personal"),
             ["/nomina/depersonal"] = Movimientos("De Personal", "Plazas y movimientos de personal", "De_Personal"),
-            ["/nomina/reportequincenal"] = Movimientos("Reporte Quincenal MP", "Vista base para reporte quincenal de movimientos", "Reporte_Quincenal_MP"),
+            ["/nomina/reportequincenal"] = Movimientos("Reporte Quincenal MP", "Vista base para reporte quincenal de movimientos", "Reporte Quincenal MP"),
 
             ["/rh/incidencia"] = Incidencias("Captura de Incidencias", "Incidencias migradas desde RH_Incidencia", "Captura_Incidencias"),
             ["/rh/justificacion"] = Incidencias("Justificacion de Incidencias", "Justificacion y descuento del dia", "Justificacion_Incidencias"),
@@ -241,7 +231,7 @@
 
             ["/sis/solicitudvacaciones"] = Vacaciones("Solicitud Vacaciones", "Solicitudes migradas desde RH_Vacaciones", "Solicitud_Vacaciones"),
             ["/sis/autorizacionvacaciones"] = Vacaciones("Autorizacion Vacaciones", "Validacion de solicitudes de vacaciones", "Autorizacion_Vacaciones"),
-            ["/rh/liquidacion"] = Liquidaciones("Finiquito/Liquidacion", "Liquidaciones migradas desde RH_Liquidacion", "Nomina_Finiquito_Liquidacion"),
+            ["/rh/liquidacion"] = Liquidaciones("Finiquito/Liquidacion", "Liquidaciones migradas desde RH_Liquidacion", "Liquidacion"),
 
             ["/aux/auxcalcissste"] = Fiscal("Calculo ISSSTE", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_ISSSTE_4134"),
             ["/aux/auxcalcisrquincenal"] = Fiscal("Calculo ISR", "Tablas ISR y subsidios migrados", "Calculo_ISR_2053"),
@@ -250,16 +240,33 @@
             ["/aux/auxcalcimssquincenal"] = Fiscal("Calculo Cuotas IMSS", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
             ["/sis/cuotasimss"] = Fiscal("Cuotas IMSS", "Alias legacy SIS_CuotasImss y tablas IMSS", "Cuotas_IMSS"),
 
-            ["/nom/resumennomina"] = Productos("Resumen", "Resumen de corridas de nomina", "Resumen_Nomina"),
-            ["/nom/recibonomina"] = Productos("Recibos", "Base de recibos por corrida", "Recibos_Nomina", "Requiere adaptar el formato final del recibo para impresion."),
+            ["/nom/resumennomina"] = Productos("Resumen", "Resumen de corridas de nomina", "Resumen"),
+            ["/nom/recibonomina"] = Productos("Recibos", "Base de recibos por corrida", "Recibos", "Requiere adaptar el formato final del recibo para impresion."),
             ["/nom/archivodispercion"] = Productos("Archivos de Dispersion", "Base para archivo bancario de dispersion", "Archivos_Dispersion", "Requiere adaptar el SP/formato bancario final."),
             ["/nom/timbradopercepciones"] = Productos("Archivos de Timbrado", "Base para timbrado de percepciones", "Archivos_Timbrado", "Requiere adaptar layout CFDI/timbrado legado."),
-            ["/aux/imssquincenal_rep"] = Fiscal("Reporte Cuotas IMSS", "Consulta de cuotas y parametros IMSS", "Reporte_IMSS"),
+            ["/aux/imssquincenal_rep"] = Productos("Reporte Cuotas IMSS", "Consulta de cuotas y parametros IMSS", "Reporte_Cuotas_IMSS"),
             ["/nom/reportenomina"] = Productos("Reporte Nomina Actual", "Reporte operativo de corrida actual", "Reporte_Nomina"),
 
-            ["/sis/nominaespecial"] = Productos("Configura Aguinaldo", "Configuracion y productos de nomina especial", "Configura_Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
-            ["/sis/vwnominaespecial"] = Productos("Aguinaldo", "Consulta de nomina especial/aguinaldo", "Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
-            ["/emp/faltasxempresa"] = Incidencias("Faltas Especiales", "Consulta de incidencias/faltas migradas", "Faltas_Especial"),
+            ["/sis/nominaespecial"] = Productos("Configura Aguinaldo", "Configuracion y productos de nomina especial", "Nominas_Especiales", "Configura_Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
+            ["/sis/vwnominaespecial"] = Productos("Aguinaldo", "Consulta de nomina especial/aguinaldo", "Nominas_Especiales", "Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
+            ["/emp/faltasxempresa"] = Productos("Faltas Especiales", "Consulta de incidencias/faltas migradas", "Nominas_Especiales", "Faltas_Especial", string.Empty),
+
+            ["/nomina/historicos/consulta"] = Historico("Consulta de Nomina", "Productos_Historicos", "Consulta_Nomina"),
+            ["/nomina/historicos/analisis"] = Historico("Analisis", "Productos_Historicos", "Analisis"),
+            ["/nomina/historicos/recibos"] = Historico("Recibos", "Productos_Historicos", "Recibos_Historicos"),
+            ["/nomina/historicos/dispersion"] = Historico("Archivos de Dispersion", "Productos_Historicos", "Archivos_Dispersion_Historicos"),
+            ["/nomina/historicos/timbrado"] = Historico("Archivos de Timbrado", "Productos_Historicos", "Archivos_Timbrado_Historicos"),
+            ["/nomina/historicos/reportequincenal"] = Historico("Reporte Nomina Quincenal", "Productos_Historicos", "Reporte_Nomina_Quincenal"),
+            ["/nomina/historicos/resumen"] = Historico("Resumen Nomina Historica", "Productos_Historicos", "Resumen_Nomina_Historica"),
+            ["/nomina/historicos/reportehistorico"] = Historico("Reporte Nomina Historica", "Productos_Historicos", "Reporte_Nomina_Historica"),
+            ["/nomina/historicos/cubo"] = Historico("Cubo Nomina Historica", "Productos_Historicos", "Cubo_Nomina_Historica"),
+            ["/nomina/historicos/sbc"] = Historico("Salario Base de Cotizacion", "Reportes_IMSS_Historicos", "Salario_Base_Cotizacion"),
+            ["/nomina/historicos/acumuladosimss"] = Historico("Acumulados IMSS", "Reportes_IMSS_Historicos", "Acumulados_IMSS"),
+            ["/nomina/historicos/sbchistorico"] = Historico("SBC Historico", "Reportes_IMSS_Historicos", "SBC_Historico"),
+            ["/nomina/historicos/acumuladosbimestre"] = Historico("Acumulados Bimestre IMSS", "Reportes_IMSS_Historicos", "Acumulados_Bimestre_IMSS"),
+            ["/nomina/historicos/isr_mensual"] = Historico("Acumulado Mensual ISR", "Reportes_SAT_Historicos", "Acumulado_Mensual_ISR"),
+            ["/nomina/historicos/isr_acumulados"] = Historico("Acumulados ISR", "Reportes_SAT_Historicos", "Acumulados_ISR"),
+            ["/nomina/historicos/impuestoslocales"] = Historico("Impuestos Locales", "Impuestos_Locales_Historicos", "Impuestos_Locales"),
 
             ["/rh/configuracion"] = new(
                 "Configuracion RH",
@@ -273,26 +280,6 @@
                 "Consulta operativa de parametros migrados para soporte RH/NOM.",
                 Severity.Info)
         };
-
-    private static readonly string[] HistoricoRoutes =
-    [
-        "/nomina/historicos/consulta",
-        "/nomina/historicos/analisis",
-        "/nomina/historicos/recibos",
-        "/nomina/historicos/dispersion",
-        "/nomina/historicos/timbrado",
-        "/nomina/historicos/reportequincenal",
-        "/nomina/historicos/resumen",
-        "/nomina/historicos/reportehistorico",
-        "/nomina/historicos/cubo",
-        "/nomina/historicos/sbc",
-        "/nomina/historicos/acumuladosimss",
-        "/nomina/historicos/sbchistorico",
-        "/nomina/historicos/acumuladosbimestre",
-        "/nomina/historicos/isr_mensual",
-        "/nomina/historicos/isr_acumulados",
-        "/nomina/historicos/impuestoslocales"
-    ];
 
     protected override async Task<TableData<NominaOperacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -434,28 +421,36 @@
     }
 
     private static OperacionPageItem Empleados(string title, string subtitle, string subModule)
-        => new(title, subtitle, Icons.Material.Filled.Badge, "Nomina_Recursos_Humanos", subModule, "empleados", EmployeeColumns, "Persona", string.Empty, Severity.Info);
+        => new(title, subtitle, Icons.Material.Filled.Badge, "Nomina", subModule, "empleados", EmployeeColumns, "Persona", string.Empty, Severity.Info);
 
     private static OperacionPageItem Movimientos(string title, string subtitle, string subModule)
-        => new(title, subtitle, Icons.Material.Filled.SyncAlt, "Nomina_Recursos_Humanos", subModule, "movimientos", MovementColumns, "Fecha", string.Empty, Severity.Info);
+        => new(title, subtitle, Icons.Material.Filled.SyncAlt, "Nomina", subModule, "movimientos", MovementColumns, "Fecha", string.Empty, Severity.Info);
 
     private static OperacionPageItem Incidencias(string title, string subtitle, string subModule)
-        => new(title, subtitle, Icons.Material.Filled.ReportProblem, "Nomina_Incidencias", subModule, "incidencias", IncidenceColumns, "Fecha", string.Empty, Severity.Info);
+        => new(title, subtitle, Icons.Material.Filled.ReportProblem, "Incidencias", subModule, "incidencias", IncidenceColumns, "Fecha", string.Empty, Severity.Info);
 
     private static OperacionPageItem Vacaciones(string title, string subtitle, string subModule)
         => new(title, subtitle, Icons.Material.Filled.EventAvailable, "Nomina_Vacaciones", subModule, "vacaciones", VacationColumns, "FechaInicio", string.Empty, Severity.Info);
 
     private static OperacionPageItem Liquidaciones(string title, string subtitle, string subModule)
-        => new(title, subtitle, Icons.Material.Filled.ReceiptLong, "Nomina", subModule, "liquidaciones", LiquidationColumns, "Fecha", string.Empty, Severity.Info);
+        => new(title, subtitle, Icons.Material.Filled.ReceiptLong, "Finiquito_Liquidacion", subModule, "liquidaciones", LiquidationColumns, "Fecha", string.Empty, Severity.Info);
 
     private static OperacionPageItem Fiscal(string title, string subtitle, string subModule)
-        => new(title, subtitle, Icons.Material.Filled.Calculate, "Nomina_Auxiliares", subModule, "tablas-fiscales", FiscalColumns, "Periodo", "Los datos base ya estan migrados; el calculo final debe ejecutarse con el SP fiscal correspondiente.", Severity.Warning);
+        => new(title, subtitle, Icons.Material.Filled.Calculate, "Auxiliares", subModule, "tablas-fiscales", FiscalColumns, "Periodo", "Los datos base ya estan migrados; el calculo final debe ejecutarse con el SP fiscal correspondiente.", Severity.Warning);
 
     private static OperacionPageItem Productos(string title, string subtitle, string subModule, string note = "")
-        => Productos(title, subtitle, "Nomina_Productos", subModule, note);
+        => Productos(title, subtitle, "Productos", subModule, note);
 
     private static OperacionPageItem Productos(string title, string subtitle, string module, string subModule, string note)
         => new(title, subtitle, Icons.Material.Filled.Assessment, module, subModule, "productos-nomina", ProductColumns, "Fecha", note, string.IsNullOrWhiteSpace(note) ? Severity.Info : Severity.Warning);
+
+    private static OperacionPageItem Historico(string title, string module, string subModule)
+        => Productos(
+            title,
+            "Consulta historica de productos de nomina migrados",
+            module,
+            subModule,
+            "Los historicos se muestran con la corrida migrada disponible; los reportes finales dependen de adaptar los SP de timbrado, dispersion y recibos.");
 
     private sealed record OperacionPageItem(
         string Title,

@@ -72,8 +72,17 @@
 @code {
     private GenericTable<NomPeriodoActivoResponse> table = null!;
 
-    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
-    protected override string SubModuleName => "Periodo_Activo";
+    protected override string ModuleName => "Periodos";
+    protected override string SubModuleName => CurrentPath switch
+    {
+        "/nomina/configuracion/periodos/semanal" => "Periodo_Semanal",
+        "/nomina/configuracion/periodos/quincenal" => "Periodo_Quincenal",
+        "/nomina/configuracion/periodos/mensual" => "Periodo_Mensual",
+        "/nomina/configuracion/periodos/bimestral" => "Periodo_Bimestral",
+        _ => "Periodo_Semanal"
+    };
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
 
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomPeriodoActivoResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomPeriodoActivoResponse>);

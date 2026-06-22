@@ -4,6 +4,16 @@
 @page "/Patrimonio/Clasificacion_Bienes_Muebles"
 @page "/Patrimonio/Cedula_Diferencia"
 @page "/Patrimonio/Resguardo_Historico"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos_Propios"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Recaudar"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Otros_Ingresos"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Analisis_Saldos"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Antiguedad_Saldos"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Consulta_Documentos"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Estado_Cuenta"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Integracion_Saldos"
 @inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
@@ -84,8 +94,27 @@
                 "Patrimonio",
                 "Pendiente de migracion",
                 "No se encontro pagina operativa migrada para esta opcion del menu.",
-                Severity.Warning)
+                Severity.Warning),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC"] = PendingCuentasPorCobrar("Depositos CLC"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos"] = PendingCuentasPorCobrar("Ingresos"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos_Propios"] = PendingCuentasPorCobrar("Ingresos Propios"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Recaudar"] = PendingCuentasPorCobrar("Ingresos por Recaudar"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Otros_Ingresos"] = PendingCuentasPorCobrar("Otros Ingresos"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Analisis_Saldos"] = PendingCuentasPorCobrar("Analisis de Saldos"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Antiguedad_Saldos"] = PendingCuentasPorCobrar("Antiguedad de Saldos"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Consulta_Documentos"] = PendingCuentasPorCobrar("Consulta de Documentos"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Estado_Cuenta"] = PendingCuentasPorCobrar("Estado de Cuenta"),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Integracion_Saldos"] = PendingCuentasPorCobrar("Integracion de Saldos")
         };
+
+    private static PendingMenuItem PendingCuentasPorCobrar(string title) =>
+        new(
+            title,
+            "Operacion de cuentas por cobrar",
+            "Presupuesto / Tesoreria",
+            "Pendiente de migracion",
+            "La opcion ya es navegable, pero su vista operativa aun no esta implementada.",
+            Severity.Warning);
 
     private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
 

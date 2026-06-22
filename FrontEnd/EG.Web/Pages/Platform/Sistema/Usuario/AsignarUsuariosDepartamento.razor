@@ -155,7 +155,7 @@
         try
         {
             // Verificar permiso básico
-            if (!AuthProvider.HasPermission("configuracion", "perfil", "view"))
+            if (!AuthProvider.HasPermission("Sistema", "Usuario", "view"))
             {
                 NavigationManager.NavigateTo("/");
                 return;

@@ -1,16 +1,23 @@
 ::deep .document-support-dialog {
-    width: min(96vw, 1840px);
-    max-width: none;
+    width: min(96vw, 1840px) !important;
+    max-width: none !important;
+    height: min(88vh, 980px);
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
 }
 
 ::deep .document-support-dialog .mud-dialog-title {
     padding: 12px 20px 10px;
+    flex: 0 0 auto;
 }
 
 ::deep .document-support-dialog .mud-dialog-content {
-    padding: 0 20px 12px;
-    height: calc(100vh - 150px);
-    max-height: 820px;
+    padding: 0 20px 12px !important;
+    flex: 1 1 auto;
+    height: auto !important;
+    min-height: 620px;
+    max-height: none;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -19,6 +26,7 @@
 ::deep .document-support-dialog .mud-dialog-actions {
     padding: 8px 20px 12px;
     min-height: 44px;
+    flex: 0 0 auto;
     border-top: 1px solid var(--mud-palette-lines-default);
 }
 
@@ -62,9 +70,10 @@
 .doc-workspace {
     display: grid;
     grid-template-columns: minmax(280px, 340px) minmax(520px, 1fr) minmax(280px, 330px);
+    grid-template-rows: minmax(0, 1fr);
     gap: 14px;
     height: 100%;
-    min-height: 0;
+    min-height: 620px;
 }
 
 .doc-sidebar,
@@ -74,7 +83,7 @@
     background: var(--mud-palette-surface);
     border-radius: 8px;
     min-width: 0;
-    min-height: 0;
+    min-height: 100%;
 }
 
 .doc-sidebar,
@@ -175,6 +184,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 620px;
 }
 
 .doc-preview-header {
@@ -207,15 +217,16 @@
 .doc-preview-surface {
     position: relative;
     flex: 1;
-    min-height: 0;
+    min-height: 520px;
     background: color-mix(in srgb, var(--mud-palette-dark) 5%, var(--mud-palette-surface));
-    overflow: hidden;
+    overflow: auto;
 }
 
 .doc-preview-surface iframe,
 .doc-preview-surface img {
     width: 100%;
     height: 100%;
+    min-height: 520px;
     border: 0;
     object-fit: contain;
     display: block;
@@ -308,13 +319,22 @@
 }
 
 @media (max-width: 1200px) {
+    ::deep .document-support-dialog {
+        height: min(90vh, 980px);
+        max-height: calc(100vh - 28px);
+    }
+
     ::deep .document-support-dialog .mud-dialog-content {
-        height: calc(100vh - 132px);
-        max-height: none;
+        min-height: 0;
     }
 
     .doc-workspace {
         grid-template-columns: 300px 1fr;
+        min-height: 0;
+    }
+
+    .doc-preview-panel {
+        min-height: 520px;
     }
 
     .doc-notes {
@@ -324,10 +344,17 @@
 }
 
 @media (max-width: 760px) {
+    ::deep .document-support-dialog {
+        width: 100vw !important;
+        height: calc(100vh - 12px);
+        max-height: calc(100vh - 12px);
+    }
+
     ::deep .document-support-dialog .mud-dialog-content {
         height: auto;
         max-height: calc(100vh - 132px);
         overflow: auto;
+        padding: 0 12px 12px !important;
     }
 
     .doc-workspace {
@@ -345,8 +372,39 @@
         min-height: 460px;
     }
 
+    .doc-preview-surface,
+    .doc-preview-surface iframe,
+    .doc-preview-surface img {
+        min-height: 360px;
+    }
+
     .doc-preview-header {
         flex-direction: column;
         align-items: stretch;
+    }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+    ::deep .document-support-dialog {
+        height: calc(100vh - 20px);
+        max-height: calc(100vh - 20px);
+    }
+
+    ::deep .document-support-dialog .mud-dialog-content {
+        min-height: 0;
+    }
+
+    .doc-workspace {
+        min-height: 500px;
+    }
+
+    .doc-preview-panel {
+        min-height: 500px;
+    }
+
+    .doc-preview-surface,
+    .doc-preview-surface iframe,
+    .doc-preview-surface img {
+        min-height: 410px;
     }
 }

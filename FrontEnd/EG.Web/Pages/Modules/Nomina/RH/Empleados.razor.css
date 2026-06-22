@@ -13,6 +13,15 @@
     white-space: nowrap;
 }
 
+.rh-empleados-page ::deep .mud-table-container {
+    max-width: 100%;
+    overflow-x: auto !important;
+}
+
+.rh-empleados-page ::deep .mud-table-container table {
+    min-width: 1220px;
+}
+
 .rh-empleados-page > ::deep .eg-generic-table {
     flex: 0 0 auto;
     max-height: none;

@@ -147,13 +147,28 @@
     private string observaciones = string.Empty;
     private readonly List<NominaProcesoResponse> history = new();
 
-    protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Root;
-    protected override string SubModuleName => "Procesos";
+    protected override string ModuleName => CurrentPath switch
+    {
+        "/nom/calcnomina" => "Calculo",
+        "/nom/cierraperiodo" => "Cierre_Periodo",
+        "/nom/calcaguinaldo" => "Nominas_Especiales",
+        _ => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Root
+    };
+
+    protected override string SubModuleName => CurrentPath switch
+    {
+        "/nom/calcnomina" => "Calculo_2050",
+        "/nom/cierraperiodo" => "Cierre_Periodo",
+        "/nom/calcaguinaldo" => "Calc_Aguinaldo",
+        _ => "Procesos"
+    };
     protected override Type CreateDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
     protected override Type EditDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
     protected override Type DeleteDialogType => typeof(DeleteDialog<NominaProcesoResponse>);
 
     private bool CanExecute => CanCreate || CanAuthorize;
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
 
     private IReadOnlyList<ProcessAction> Actions { get; } = new List<ProcessAction>
     {
@@ -168,6 +183,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
     }

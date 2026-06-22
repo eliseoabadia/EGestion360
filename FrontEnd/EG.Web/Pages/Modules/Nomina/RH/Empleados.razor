@@ -30,10 +30,9 @@
                           SearchString="@SearchString"
                           SearchStringChanged="value => SearchString = value"
                           OnSearch="OnSearch"
-                          Loading="@Loading"
                           PageSize="10"
-                          FixedHeader="false"
-                          TableHeight="auto">
+                          FixedHeader="true"
+                          TableHeight="max(320px, calc(100dvh - 450px))">
                 <Header>
                     <MudTh>Acciones</MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Empleado" T="NominaRhEmpleadoResponse">Empleado</MudTableSortLabel></MudTh>
@@ -146,7 +145,11 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<NominaRhEmpleadoResponse>);
     protected override int ExportPageSize => 2000;
 
-    protected override async Task OnInitializedAsync() => await SucursalStateService.InitializeAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await SucursalStateService.InitializeAsync();
+    }
 
     protected override async Task<TableData<NominaRhEmpleadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
