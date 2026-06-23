@@ -7,41 +7,21 @@ namespace EG.Infraestructure.Models;
 
 public partial class Notificacion
 {
-    public long PkIdNotificacion { get; set; }
+    public int PkidNotificacion { get; set; }
 
-    public int FkIdNotificacionTipo { get; set; }
+    public int FkidUsuarioPbr { get; set; }
 
-    public int? FkIdUsuarioOrigen { get; set; }
-
-    public string Modulo { get; set; }
-
-    public string SubModulo { get; set; }
-
-    public string Evento { get; set; }
-
-    public string Entidad { get; set; }
-
-    public long? FkIdEntidad { get; set; }
+    public string Tipo { get; set; }
 
     public string Titulo { get; set; }
 
     public string Mensaje { get; set; }
 
-    public string Url { get; set; }
+    public string Link { get; set; }
 
-    public string JsonData { get; set; }
+    public bool Leida { get; set; }
 
-    public int? CtCreatedBy { get; set; }
+    public string InformeId { get; set; }
 
-    public DateTime CtCreatedDate { get; set; }
-
-    public int? CtModifiedBy { get; set; }
-
-    public DateTime? CtModifiedDate { get; set; }
-
-    public bool CtLive { get; set; }
-
-    public virtual NotificacionTipo FkIdNotificacionTipoNavigation { get; set; }
-
-    public virtual ICollection<NotificacionDestino> NotificacionDestinos { get; set; } = new List<NotificacionDestino>();
+    public DateTime FechaCreacion { get; set; }
 }

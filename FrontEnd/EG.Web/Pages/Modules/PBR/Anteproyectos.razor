@@ -1,0 +1,201 @@
+@page "/PBR/Anteproyectos"
+@page "/PRB/Anteproyectos"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.PBR
+@using EG.Dommain.DTOs.Responses
+@using EG.Web.Contracts
+@using EG.Web.Pages.Modules.PBR.Shared
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Shared
+@using Microsoft.JSInterop
+@using MudBlazor
+
+@inject IGenericCrudService<PbrAnteproyectoResponse> Service
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+    <PageHeader Title="Anteproyectos PBR"
+                Subtitle="Solicitud, autorizacion y seguimiento del anteproyecto"
+                Icon="@Icons.Material.Filled.AssignmentTurnedIn"
+                CanCreate="true"
+                OnCreate="() => OpenDialog(null)"
+                OnRefresh="() => table.ReloadData()" />
+
+    <PbrTopNavigation />
+
+    <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
+        <GenericTable TItem="PbrAnteproyectoResponse"
+                      @ref="table"
+                      Title="Anteproyectos"
+                      SearchPlaceholder="Buscar por programa, estatus o justificacion..."
+                      ShowExportButton="false"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportAsync"
+                      SearchString="@search"
+                      SearchStringChanged="(s) => search = s"
+                      OnSearch="() => table.ReloadData()">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidAnteproyecto" T="PbrAnteproyectoResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Anio" T="PbrAnteproyectoResponse">Año</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrAnteproyectoResponse">Programa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="MontoSolicitado" T="PbrAnteproyectoResponse">Solicitado</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="MontoAutorizado" T="PbrAnteproyectoResponse">Autorizado</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Estatus" T="PbrAnteproyectoResponse">Estatus</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="PbrAnteproyectoResponse">Creacion</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <DocumentSupportButton Modulo="PBR"
+                                           SubModulo="Anteproyectos"
+                                           Controlador="PbrAnteproyecto"
+                                           EntidadId="@item.PkidAnteproyecto"
+                                           RegistroTitulo="@($"Anteproyecto {item.PkidAnteproyecto}")"
+                                           RegistroDescripcion="@TextOrDash(item.ProgramaDescripcion)" />
+                    <MudTooltip Text="Autorizar">
+                        <MudIconButton Icon="@Icons.Material.Filled.TaskAlt"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Disabled="@IsLocked(item)"
+                                       OnClick="@(() => AutorizarAsync(item))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Disabled="@IsLocked(item)"
+                                       OnClick="@(() => OpenDialog(item.PkidAnteproyecto))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Disabled="@IsLocked(item)"
+                                       OnClick="@(() => DeleteAsync(item))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@item.PkidAnteproyecto</MudTd>
+                <MudTd>@item.Anio</MudTd>
+                <MudTd>
+                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.ProgramaDescripcion)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">PBR @item.FkidProgramaPresupuestarioPbr</MudText>
+                </MudTd>
+                <MudTd>@Money(item.MontoSolicitado)</MudTd>
+                <MudTd>@Money(item.MontoAutorizado ?? 0m)</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@(IsLocked(item) ? Color.Success : Color.Warning)">
+                        @TextOrDash(item.Estatus)
+                    </MudChip>
+                </MudTd>
+                <MudTd>@DateOrDash(item.FechaCreacion)</MudTd>
+            </Row>
+        </GenericTable>
+    </div>
+</MudContainer>
+
+@code {
+    private GenericTable<PbrAnteproyectoResponse> table = null!;
+    private string search = string.Empty;
+    private string currencySymbol = "$";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrencyAsync();
+    }
+
+    private async Task<TableData<PbrAnteproyectoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var response = await Service.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            search,
+            state.SortLabel ?? "PkidAnteproyecto",
+            state.SortDirection);
+
+        return new TableData<PbrAnteproyectoResponse>
+        {
+            Items = response?.Items ?? new List<PbrAnteproyectoResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task OpenDialog(int? id)
+    {
+        var parameters = new DialogParameters { ["Id"] = id };
+        var dialog = await DialogService.ShowAsync<PbrCrudDialog<PbrAnteproyectoResponse>>(
+            id.HasValue ? "Editar anteproyecto" : "Nuevo anteproyecto",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task AutorizarAsync(PbrAnteproyectoResponse item)
+    {
+        item.Estatus = "AUTORIZADO";
+        item.MontoAutorizado ??= item.MontoSolicitado;
+
+        var response = await Service.UpdateAsync(item, item.PkidAnteproyecto);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Anteproyecto autorizado correctamente.", Severity.Success);
+            await table.ReloadData();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible autorizar.", Severity.Error);
+    }
+
+    private async Task DeleteAsync(PbrAnteproyectoResponse item)
+    {
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar anteproyecto {item.PkidAnteproyecto}?"))
+        {
+            return;
+        }
+
+        var response = await Service.DeleteAsync(item.PkidAnteproyecto);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Anteproyecto eliminado correctamente.", Severity.Success);
+            await table.ReloadData();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible eliminar.", Severity.Error);
+    }
+
+    private Task ExportAsync() => Task.CompletedTask;
+
+    private static bool IsLocked(PbrAnteproyectoResponse item)
+        => string.Equals(item.Estatus, "AUTORIZADO", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(item.Estatus, "APROBADO", StringComparison.OrdinalIgnoreCase);
+
+    private string Money(decimal value) => $"{currencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string DateOrDash(DateTime? value) => value?.ToString("dd/MM/yyyy HH:mm") ?? "-";
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                currencySymbol = string.IsNullOrWhiteSpace(response?.Data?.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+            }
+        }
+        catch
+        {
+        }
+    }
+}

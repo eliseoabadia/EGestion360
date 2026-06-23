@@ -1,0 +1,211 @@
+@page "/PBR/MapaProcesos"
+@page "/PRB/MapaProcesos"
+@using EG.Web.Pages.Modules.PBR.Shared
+@using MudBlazor
+
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+    <PageHeader Title="Mapa de Procesos PBR"
+                Subtitle="Ciclo completo de planeacion, programacion, presupuesto, seguimiento y evaluacion"
+                Icon="@Icons.Material.Filled.Route"
+                ShowCreateButton="false" />
+
+    <PbrTopNavigation />
+
+    <div class="pbr-map-scroll">
+        <MudGrid Spacing="2" Class="pbr-map-grid">
+            @for (var i = 0; i < fases.Count; i++)
+            {
+                var fase = fases[i];
+                <MudItem xs="12" md="6" xl="4">
+                    <MudPaper Elevation="1" Class="@($"pa-4 pbr-map-phase phase-{fase.Numero}")">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                            <div class="pbr-map-icon">
+                                <MudIcon Icon="@fase.Icono" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@($"Fase {fase.Numero}")</MudText>
+                                <MudText Typo="Typo.h6">@fase.Titulo</MudText>
+                            </div>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pbr-map-description">
+                            @fase.Descripcion
+                        </MudText>
+
+                        <div class="pbr-map-actions">
+                            @foreach (var accion in fase.Acciones)
+                            {
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.ArrowForward"
+                                           OnClick="@(() => GoTo(accion.Ruta))">
+                                    @accion.Nombre
+                                </MudButton>
+                            }
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudPaper Elevation="1" Class="pa-4 pbr-map-summary">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Color="Color.Warning" />
+                <MudText Typo="Typo.h6">Ciclo PBR</MudText>
+            </MudStack>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                El Presupuesto basado en Resultados conecta objetivos, programas, indicadores, presupuesto y evaluacion.
+                Esta vista funciona como entrada rapida a los procesos del modulo y como guia visual para validar que
+                cada etapa tenga sus datos minimos antes de avanzar.
+            </MudText>
+        </MudPaper>
+    </div>
+</MudContainer>
+
+@code {
+    private readonly List<FasePbr> fases = new()
+    {
+        new(
+            1,
+            "Planeacion",
+            "Definicion de objetivos, diagnostico, poblacion objetivo y programas alineados al PED.",
+            Icons.Material.Filled.EventNote,
+            new[]
+            {
+                new AccionPbr("Programas presupuestarios", "/PRB"),
+                new AccionPbr("Anteproyectos", "/PRB/Anteproyectos")
+            }),
+        new(
+            2,
+            "Programacion MIR",
+            "Construccion de niveles MIR, indicadores, medios de verificacion y supuestos.",
+            Icons.Material.Filled.AccountTree,
+            new[]
+            {
+                new AccionPbr("Matriz MIR", "/PRB/MatrizIndicadores"),
+                new AccionPbr("Mi Tablero", "/PRB/MiTablero")
+            }),
+        new(
+            3,
+            "Presupuestacion",
+            "Asignacion de recursos por programa, techos de gasto y estructura programatica.",
+            Icons.Material.Filled.AccountBalanceWallet,
+            new[]
+            {
+                new AccionPbr("Presupuesto por programa", "/PRB/Presupuestos"),
+                new AccionPbr("Tablero ejecutivo", "/PRB")
+            }),
+        new(
+            4,
+            "Ejercicio y Seguimiento",
+            "Captura de avances, informes trimestrales, RAFFI y alertas tempranas.",
+            Icons.Material.Filled.Timeline,
+            new[]
+            {
+                new AccionPbr("Mi Tablero", "/PRB/MiTablero"),
+                new AccionPbr("Matriz MIR", "/PRB/MatrizIndicadores")
+            }),
+        new(
+            5,
+            "Evaluacion",
+            "Programa anual de evaluacion, consistencia, recomendaciones y seguimiento de resultados.",
+            Icons.Material.Filled.Assignment,
+            new[]
+            {
+                new AccionPbr("Tablero ejecutivo", "/PRB"),
+                new AccionPbr("Mi Tablero", "/PRB/MiTablero")
+            }),
+        new(
+            6,
+            "Mejora Continua",
+            "ASM, acciones correctivas, recomendaciones y ajustes para el siguiente ejercicio.",
+            Icons.Material.Filled.AutoAwesome,
+            new[]
+            {
+                new AccionPbr("Tablero ejecutivo", "/PRB"),
+                new AccionPbr("Mapa de procesos", "/PRB/MapaProcesos")
+            })
+    };
+
+    private void GoTo(string route) => NavigationManager.NavigateTo(route);
+
+    private sealed record AccionPbr(string Nombre, string Ruta);
+
+    private sealed record FasePbr(
+        int Numero,
+        string Titulo,
+        string Descripcion,
+        string Icono,
+        IReadOnlyCollection<AccionPbr> Acciones);
+}
+
+<style>
+    .pbr-map-scroll {
+        flex-grow: 1;
+        overflow: auto;
+        min-height: 0;
+        padding: 8px 0 18px;
+    }
+
+    .pbr-map-grid {
+        position: relative;
+        margin-bottom: 12px;
+    }
+
+    .pbr-map-phase {
+        border-radius: 8px;
+        min-height: 236px;
+        height: 100%;
+        border-left: 4px solid var(--mud-palette-primary);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pbr-map-phase.phase-2 {
+        border-left-color: var(--mud-palette-info);
+    }
+
+    .pbr-map-phase.phase-3,
+    .pbr-map-phase.phase-6 {
+        border-left-color: var(--mud-palette-warning);
+    }
+
+    .pbr-map-phase.phase-4 {
+        border-left-color: var(--mud-palette-success);
+    }
+
+    .pbr-map-phase.phase-5 {
+        border-left-color: var(--mud-palette-secondary);
+    }
+
+    .pbr-map-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: var(--mud-palette-primary);
+        background: var(--mud-palette-action-default-hover);
+        flex: 0 0 auto;
+    }
+
+    .pbr-map-description {
+        min-height: 58px;
+        line-height: 1.45;
+    }
+
+    .pbr-map-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: auto;
+        padding-top: 12px;
+    }
+
+    .pbr-map-summary {
+        border-radius: 8px;
+    }
+</style>

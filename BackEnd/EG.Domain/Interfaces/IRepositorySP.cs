@@ -1,5 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
-using System.Linq.Expressions;
+#if !EG_BROWSER_WASM
+using Microsoft.Data.SqlClient;
 
 namespace EG.Domain.Interfaces
 {
@@ -8,6 +8,6 @@ namespace EG.Domain.Interfaces
         Task<IEnumerable<T>> ExecuteStoredProcedureAsync<T>(string storedProcedure, params SqlParameter[] parameters);
 
         //Task<int> ExecuteNonQueryStoredProcedureAsync(string storedProcedure, params object[] parameters);
-
     }
 }
+#endif

@@ -5,9 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
-    <PublishTrimmed>false</PublishTrimmed>
-    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
+    <PublishTrimmed>true</PublishTrimmed>
+    <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
     <RunAOTCompilation>false</RunAOTCompilation>
+    <WasmInitialHeapSize>134217728</WasmInitialHeapSize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="Blazorise.Snackbar" Version="2.2.0" />
-    <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
@@ -28,15 +28,16 @@
     <PackageReference Include="MudBlazor" Version="9.5.0" />
   </ItemGroup>
 
-   <ItemGroup>
-     <ProjectReference Include="..\..\BackEnd\EG.Common\EG.Common.csproj" />
-     <ProjectReference Include="..\..\BackEnd\EG.Domain\EG.Domain.csproj" />
-   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BackEnd\EG.Common\EG.Common.csproj" />
+    <ProjectReference Include="..\..\BackEnd\EG.Domain\EG.Domain.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
     <Folder Include="Pages\Modules\GRP\Presupuesto\Tesoreria\CuentasXCobrar\ModificadoIngreso\" />
+    <Folder Include="Pages\Modules\PBR\" />
     <Folder Include="Pages\Platform\" />
     <Folder Include="Pages\Platform\Sistema\" />
     <Folder Include="Pages\Modules\GRP\Configuration\Catalogos\Adquisicion\" />
@@ -48,6 +49,15 @@
     <Folder Include="Pages\Modules\GRP\Presupuesto\Egreso\Planeacion\" />
     <Folder Include="Pages\Modules\GRP\Presupuesto\Tesoreria\CuentasXPagar\" />
     <Folder Include="Services\ConteoCiclico\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Pages\Platform\Reporting\ReportViewer.razor" />
+    <Compile Remove="Pages\Platform\Reporting\ReportDesigner.razor" />
+    <Content Remove="Pages\Platform\Reporting\ReportViewer.razor" />
+    <Content Remove="Pages\Platform\Reporting\ReportDesigner.razor" />
+    <None Include="Pages\Platform\Reporting\ReportViewer.razor" />
+    <None Include="Pages\Platform\Reporting\ReportDesigner.razor" />
   </ItemGroup>
 
 </Project>

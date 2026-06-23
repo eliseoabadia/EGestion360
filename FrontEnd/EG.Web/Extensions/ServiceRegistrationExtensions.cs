@@ -7,6 +7,7 @@ using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.DTOs.Responses.Nomina;
+using EG.Domain.DTOs.Responses.PBR;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
@@ -198,6 +199,12 @@ public static class ApiServiceExtensions
         RegisterCrud<NominaRhPensionResponse>(services, "api/NomRhPension");
         RegisterCrud<NominaRhLookupResponse>(services, "api/NomRhLookup");
 
+        RegisterCrud<PbrAnteproyectoResponse>(services, "api/PbrAnteproyecto");
+        RegisterCrud<PbrPresupuestoProgramaResponse>(services, "api/PbrPresupuestoPrograma");
+        RegisterCrud<PbrPartidaGastoResponse>(services, "api/PbrPartidaGasto");
+        RegisterCrud<PbrMirNivelResponse>(services, "api/PbrMirNivel");
+        RegisterCrud<PbrIndicadorResponse>(services, "api/PbrIndicador");
+
         RegisterCrud<ContratoResponse>(services, "api/Contrato");
         RegisterCrud<ContratoDetalleResponse>(services, "api/ContratoDetalle");
         RegisterCrud<FacturaResponse>(services, "api/Factura");
@@ -210,6 +217,7 @@ public static class ApiServiceExtensions
 
         services.AddScoped<INotificacionService, NotificacionService>();
         services.AddScoped<IDocumentSupportService, DocumentSupportService>();
+        services.AddScoped<IPbrDashboardService, PbrDashboardService>();
 
         return services;
     }

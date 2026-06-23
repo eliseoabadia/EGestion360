@@ -27,6 +27,7 @@ using EG.Application.Services.ConteoCiclico;
 using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
 using EG.Application.Services.Nomina;
+using EG.Application.Services.PBR;
 using EG.Application.Services.PresupuestoComprometido;
 using EG.Application.Services.PresupuestoModificado;
 using EG.Application.Services.SoporteDocumental;
@@ -40,6 +41,7 @@ using EG.Common.Util;
 using EG.Domain.Interfaces;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.Nomina;
+using EG.Domain.DTOs.Responses.PBR;
 using EG.Domain.DTOs.Requests.Nomina;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
@@ -212,6 +214,14 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INominaRhDetailAppService<NominaRhIncidenciaDto, NominaRhIncidenciaResponse>, NominaRhIncidenciaAppService>();
             services.AddScoped<INominaRhDetailAppService<NominaRhPensionDto, NominaRhPensionResponse>, NominaRhPensionAppService>();
             services.AddScoped<INominaRhLookupAppService, NominaRhLookupAppService>();
+
+            // Application services - PBR
+            services.AddScoped<IPbrDashboardAppService, PbrDashboardAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<PbrAnteproyectoResponse>, PbrAnteproyectoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<PbrPresupuestoProgramaResponse>, PbrPresupuestoProgramaAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<PbrPartidaGastoResponse>, PbrPartidaGastoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<PbrMirNivelResponse>, PbrMirNivelAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<PbrIndicadorResponse>, PbrIndicadorAppService>();
 
             // Application services - Conteo ciclico
             services.AddScoped<IConteoAppService, ConteoAppService>();

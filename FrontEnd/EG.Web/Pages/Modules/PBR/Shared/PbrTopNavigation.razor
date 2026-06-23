@@ -1,0 +1,121 @@
+@using MudBlazor
+
+@inject NavigationManager NavigationManager
+
+<MudPaper Elevation="1" Class="pa-2 mb-3 pbr-top-navigation">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="pbr-top-navigation-stack">
+        @if (ShowBackButton)
+        {
+            <MudTooltip Text="Regresar">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               OnClick="GoBack" />
+            </MudTooltip>
+            <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
+        }
+
+        <MudButton Variant="@ButtonVariant("/PRB")"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.InsertChart"
+                   OnClick="@(() => GoTo("/PRB"))">
+            Tablero
+        </MudButton>
+        <MudButton Variant="@ButtonVariant("/PRB/MiTablero")"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.DashboardCustomize"
+                   OnClick="@(() => GoTo("/PRB/MiTablero"))">
+            Mi Tablero
+        </MudButton>
+        <MudButton Variant="@ButtonVariant("/PRB/MapaProcesos")"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Route"
+                   OnClick="@(() => GoTo("/PRB/MapaProcesos"))">
+            Mapa PBR
+        </MudButton>
+        <MudButton Variant="@ButtonVariant("/PRB/Anteproyectos")"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.AssignmentTurnedIn"
+                   OnClick="@(() => GoTo("/PRB/Anteproyectos"))">
+            Anteproyectos
+        </MudButton>
+        <MudButton Variant="@ButtonVariant("/PRB/Presupuestos")"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.AccountBalanceWallet"
+                   OnClick="@(() => GoTo("/PRB/Presupuestos"))">
+            Presupuestos
+        </MudButton>
+        <MudButton Variant="@ButtonVariant("/PRB/MatrizIndicadores")"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.AccountTree"
+                   OnClick="@(() => GoTo("/PRB/MatrizIndicadores"))">
+            Matriz MIR
+        </MudButton>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string BackHref { get; set; } = "/PRB";
+    [Parameter] public EventCallback OnBack { get; set; }
+
+    private string CurrentPath
+    {
+        get
+        {
+            var path = new Uri(NavigationManager.Uri).AbsolutePath.TrimEnd('/');
+            return string.IsNullOrWhiteSpace(path) ? "/" : path;
+        }
+    }
+
+    private bool ShowBackButton
+        => !string.Equals(CurrentPath, "/PRB", StringComparison.OrdinalIgnoreCase)
+           && !string.Equals(CurrentPath, "/PBR", StringComparison.OrdinalIgnoreCase);
+
+    private Variant ButtonVariant(string route)
+    {
+        var cleanRoute = route.TrimEnd('/');
+        return string.Equals(CurrentPath, cleanRoute, StringComparison.OrdinalIgnoreCase)
+            ? Variant.Filled
+            : Variant.Outlined;
+    }
+
+    private async Task GoBack()
+    {
+        if (OnBack.HasDelegate)
+        {
+            await OnBack.InvokeAsync();
+            return;
+        }
+
+        NavigationManager.NavigateTo(BackHref);
+    }
+
+    private void GoTo(string route) => NavigationManager.NavigateTo(route);
+}
+
+<style>
+    .pbr-top-navigation {
+        border-radius: 8px;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+    }
+
+    .pbr-top-navigation-stack {
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        padding-bottom: 2px;
+    }
+
+    .pbr-top-navigation-stack .mud-button {
+        flex: 0 0 auto;
+        min-height: 34px;
+    }
+</style>

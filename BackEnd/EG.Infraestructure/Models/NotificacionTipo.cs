@@ -15,5 +15,5 @@ public partial class NotificacionTipo
 
     public bool Activo { get; set; }
 
-    public virtual ICollection<Notificacion> Notificacions { get; set; } = new List<Notificacion>();
+    public virtual ICollection<Notificacion1> Notificacion1s { get; set; } = new List<Notificacion1>();
 }

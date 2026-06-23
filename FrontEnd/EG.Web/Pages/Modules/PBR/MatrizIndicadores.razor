@@ -1,0 +1,218 @@
+@page "/PBR/MatrizIndicadores"
+@page "/PRB/MatrizIndicadores"
+@using EG.Domain.DTOs.Responses.PBR
+@using EG.Web.Contracts
+@using EG.Web.Pages.Modules.PBR.Shared
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Shared
+@using Microsoft.JSInterop
+@using MudBlazor
+
+@inject IGenericCrudService<PbrMirNivelResponse> Service
+@inject IGenericCrudService<PbrIndicadorResponse> IndicadorService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+    @if (selected == null)
+    {
+        <PageHeader Title="MIR PBR"
+                    Subtitle="Niveles de matriz e indicadores"
+                    Icon="@Icons.Material.Filled.AccountTree"
+                    CanCreate="true"
+                    OnCreate="() => OpenMirDialog(null)"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <PbrTopNavigation />
+
+        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="PbrMirNivelResponse"
+                          @ref="table"
+                          Title="Niveles MIR"
+                          SearchPlaceholder="Buscar por nivel, objetivo o programa..."
+                          ShowExportButton="false"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportAsync"
+                          SearchString="@search"
+                          SearchStringChanged="(s) => search = s"
+                          OnSearch="() => table.ReloadData()">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Orden" T="PbrMirNivelResponse">Orden</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Nivel" T="PbrMirNivelResponse">Nivel</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Objetivo" T="PbrMirNivelResponse">Objetivo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrMirNivelResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="PbrMirNivelResponse">Creacion</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>
+                        <DocumentSupportButton Modulo="PBR"
+                                               SubModulo="MIR"
+                                               Controlador="PbrMirNivel"
+                                               EntidadId="@item.PkidMirNivel"
+                                               RegistroTitulo="@TextOrDash(item.Nivel)"
+                                               RegistroDescripcion="@TextOrDash(item.Objetivo)" />
+                        <MudTooltip Text="Ver indicadores">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectMir(item))" />
+                        </MudTooltip>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenMirDialog(item.PkidMirNivel))" />
+                    </MudTd>
+                    <MudTd>@item.Orden</MudTd>
+                    <MudTd><MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(item.Nivel)</MudChip></MudTd>
+                    <MudTd>@TextOrDash(item.Objetivo)</MudTd>
+                    <MudTd>@TextOrDash(item.ProgramaDescripcion)</MudTd>
+                    <MudTd>@DateOrDash(item.FechaCreacion)</MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    }
+    else
+    {
+        <PbrTopNavigation OnBack="BackToTable" />
+
+        <MudPaper Elevation="0" Class="pa-0 d-flex align-center mb-2" Style="background: transparent;">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+            <div class="ml-2">
+                <MudText Typo="Typo.h6" Style="font-weight: 700;">@TextOrDash(selected.Nivel)</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@TextOrDash(selected.Objetivo)</MudText>
+            </div>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" Size="Size.Small" OnClick="() => OpenIndicadorDialog(null)" />
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Size="Size.Small" OnClick="() => indicadorTable.ReloadData()" />
+        </MudPaper>
+
+        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="PbrIndicadorResponse"
+                          @ref="indicadorTable"
+                          Title="Indicadores"
+                          SearchPlaceholder="Buscar por indicador, meta o frecuencia..."
+                          ShowExportButton="false"
+                          ServerDataFunc="LoadIndicadoresServerData"
+                          SearchString="@indicadorSearch"
+                          SearchStringChanged="(s) => indicadorSearch = s"
+                          OnSearch="() => indicadorTable.ReloadData()">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="PbrIndicadorResponse">Indicador</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Tipo" T="PbrIndicadorResponse">Tipo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Dimension" T="PbrIndicadorResponse">Dimension</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Frecuencia" T="PbrIndicadorResponse">Frecuencia</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Meta" T="PbrIndicadorResponse">Meta</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Sentido" T="PbrIndicadorResponse">Sentido</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenIndicadorDialog(item.PkidIndicador))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteIndicadorAsync(item))" />
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.Nombre)</MudTd>
+                    <MudTd>@TextOrDash(item.Tipo)</MudTd>
+                    <MudTd>@TextOrDash(item.Dimension)</MudTd>
+                    <MudTd>@TextOrDash(item.Frecuencia)</MudTd>
+                    <MudTd>@TextOrDash(item.Meta)</MudTd>
+                    <MudTd>@TextOrDash(item.Sentido)</MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private GenericTable<PbrMirNivelResponse> table = null!;
+    private GenericTable<PbrIndicadorResponse> indicadorTable = null!;
+    private PbrMirNivelResponse? selected;
+    private string search = string.Empty;
+    private string indicadorSearch = string.Empty;
+
+    private async Task<TableData<PbrMirNivelResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var response = await Service.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, search, state.SortLabel ?? "Orden", state.SortDirection);
+        return new TableData<PbrMirNivelResponse> { Items = response?.Items ?? new List<PbrMirNivelResponse>(), TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task<TableData<PbrIndicadorResponse>> LoadIndicadoresServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (selected == null)
+        {
+            return new TableData<PbrIndicadorResponse> { Items = new List<PbrIndicadorResponse>(), TotalItems = 0 };
+        }
+
+        var response = await IndicadorService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            indicadorSearch,
+            state.SortLabel ?? "Nombre",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidMirNivelPbr"] = selected.PkidMirNivel });
+
+        return new TableData<PbrIndicadorResponse> { Items = response?.Items ?? new List<PbrIndicadorResponse>(), TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task OpenMirDialog(int? id)
+    {
+        var parameters = new DialogParameters { ["Id"] = id };
+        var dialog = await DialogService.ShowAsync<PbrCrudDialog<PbrMirNivelResponse>>(id.HasValue ? "Editar nivel MIR" : "Nuevo nivel MIR", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task OpenIndicadorDialog(int? id)
+    {
+        if (selected == null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["InitialValues"] = new Dictionary<string, object?> { ["FkidMirNivelPbr"] = selected.PkidMirNivel }
+        };
+
+        var dialog = await DialogService.ShowAsync<PbrCrudDialog<PbrIndicadorResponse>>(id.HasValue ? "Editar indicador" : "Nuevo indicador", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await indicadorTable.ReloadData();
+        }
+    }
+
+    private void SelectMir(PbrMirNivelResponse item)
+    {
+        selected = item;
+        indicadorSearch = string.Empty;
+    }
+
+    private async Task BackToTable()
+    {
+        selected = null;
+        await table.ReloadData();
+    }
+
+    private async Task DeleteIndicadorAsync(PbrIndicadorResponse item)
+    {
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar indicador {item.Nombre}?"))
+        {
+            return;
+        }
+
+        var response = await IndicadorService.DeleteAsync(item.PkidIndicador);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Indicador eliminado correctamente.", Severity.Success);
+            await indicadorTable.ReloadData();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible eliminar.", Severity.Error);
+    }
+
+    private Task ExportAsync() => Task.CompletedTask;
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string DateOrDash(DateTime? value) => value?.ToString("dd/MM/yyyy HH:mm") ?? "-";
+}

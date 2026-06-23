@@ -1,0 +1,279 @@
+@page "/PBR/Presupuestos"
+@page "/PRB/Presupuestos"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.PBR
+@using EG.Dommain.DTOs.Responses
+@using EG.Web.Contracts
+@using EG.Web.Pages.Modules.PBR.Shared
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Shared
+@using Microsoft.JSInterop
+@using MudBlazor
+
+@inject IGenericCrudService<PbrPresupuestoProgramaResponse> Service
+@inject IGenericCrudService<PbrPartidaGastoResponse> PartidaService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+    @if (selected == null)
+    {
+        <PageHeader Title="Presupuestos PBR"
+                    Subtitle="Programas presupuestarios y distribucion por partidas"
+                    Icon="@Icons.Material.Filled.AccountBalanceWallet"
+                    CanCreate="true"
+                    OnCreate="() => OpenPresupuestoDialog(null)"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <PbrTopNavigation />
+
+        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="PbrPresupuestoProgramaResponse"
+                          @ref="table"
+                          Title="Presupuesto por programa"
+                          SearchPlaceholder="Buscar por programa, entidad, UR o fuente..."
+                          ShowExportButton="false"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportAsync"
+                          SearchString="@search"
+                          SearchStringChanged="(s) => search = s"
+                          OnSearch="() => table.ReloadData()">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PkidPresupuestoPrograma" T="PbrPresupuestoProgramaResponse">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Anio" T="PbrPresupuestoProgramaResponse">Año</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrPresupuestoProgramaResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PresupuestoAnual" T="PbrPresupuestoProgramaResponse">Anual</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PresupuestoModificado" T="PbrPresupuestoProgramaResponse">Modificado</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="UnidadResponsableDescripcion" T="PbrPresupuestoProgramaResponse">UR</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Activo" T="PbrPresupuestoProgramaResponse">Estado</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>
+                        <DocumentSupportButton Modulo="PBR"
+                                               SubModulo="Presupuestos"
+                                               Controlador="PbrPresupuestoPrograma"
+                                               EntidadId="@item.PkidPresupuestoPrograma"
+                                               RegistroTitulo="@($"Presupuesto {item.PkidPresupuestoPrograma}")"
+                                               RegistroDescripcion="@TextOrDash(item.ProgramaDescripcion)" />
+                        <MudTooltip Text="Ver partidas">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => SelectPresupuesto(item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => OpenPresupuestoDialog(item.PkidPresupuestoPrograma))" />
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd>@item.PkidPresupuestoPrograma</MudTd>
+                    <MudTd>@item.Anio</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.ProgramaDescripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ProgramaClave)</MudText>
+                    </MudTd>
+                    <MudTd>@Money(item.PresupuestoAnual)</MudTd>
+                    <MudTd>@Money(item.PresupuestoModificado ?? item.PresupuestoAnual)</MudTd>
+                    <MudTd>@TextOrDash(item.UnidadResponsableDescripcion)</MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small" Color="@(item.Activo ? Color.Success : Color.Default)">
+                            @(item.Activo ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    }
+    else
+    {
+        <PbrTopNavigation OnBack="BackToTable" />
+
+        <MudPaper Elevation="0" Class="pa-0 d-flex align-center mb-2" Style="background: transparent;">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
+            <div class="ml-2">
+                <MudText Typo="Typo.h6" Style="font-weight: 700;">@TextOrDash(selected.ProgramaDescripcion)</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@selected.Anio | @Money(selected.PresupuestoAnual)</MudText>
+            </div>
+            <MudSpacer />
+            <MudTooltip Text="Agregar partida">
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
+                               Color="Color.Success"
+                               Size="Size.Small"
+                               OnClick="() => OpenPartidaDialog(null)" />
+            </MudTooltip>
+            <MudTooltip Text="Actualizar">
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                               Color="Color.Default"
+                               Size="Size.Small"
+                               OnClick="() => partidaTable.ReloadData()" />
+            </MudTooltip>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="pa-3 mb-2" Style="border-radius: 8px;">
+            <MudGrid Spacing="2">
+                <MudItem xs="6" md="2"><MudText Typo="Typo.caption">Anual</MudText><MudText Typo="Typo.body2" Style="font-weight: 700;">@Money(selected.PresupuestoAnual)</MudText></MudItem>
+                <MudItem xs="6" md="2"><MudText Typo="Typo.caption">Modificado</MudText><MudText Typo="Typo.body2" Style="font-weight: 700;">@Money(selected.PresupuestoModificado ?? selected.PresupuestoAnual)</MudText></MudItem>
+                <MudItem xs="12" md="4"><MudText Typo="Typo.caption">Fuente</MudText><MudText Typo="Typo.body2">@TextOrDash(selected.FuenteFinanciamientoDescripcion)</MudText></MudItem>
+                <MudItem xs="12" md="4"><MudText Typo="Typo.caption">Proyecto</MudText><MudText Typo="Typo.body2">@TextOrDash(selected.ProyectoInversionDescripcion)</MudText></MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
+            <GenericTable TItem="PbrPartidaGastoResponse"
+                          @ref="partidaTable"
+                          Title="Partidas del presupuesto"
+                          SearchPlaceholder="Buscar por partida, concepto o descripcion..."
+                          ShowExportButton="false"
+                          ServerDataFunc="LoadPartidasServerData"
+                          SearchString="@partidaSearch"
+                          SearchStringChanged="(s) => partidaSearch = s"
+                          OnSearch="() => partidaTable.ReloadData()">
+                <Header>
+                    <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PkidPartidaGasto" T="PbrPartidaGastoResponse">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="PbrPartidaGastoResponse">Partida</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PbrPartidaGastoResponse">Descripcion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="MontoAnual" T="PbrPartidaGastoResponse">Anual</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="MontoModificado" T="PbrPartidaGastoResponse">Modificado</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoGastoDescripcion" T="PbrPartidaGastoResponse">Tipo</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenPartidaDialog(item.PkidPartidaGasto))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeletePartidaAsync(item))" />
+                    </MudTd>
+                    <MudTd>@item.PkidPartidaGasto</MudTd>
+                    <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
+                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
+                    <MudTd>@Money(item.MontoAnual)</MudTd>
+                    <MudTd>@Money(item.MontoModificado ?? item.MontoAnual)</MudTd>
+                    <MudTd>@TextOrDash(item.TipoGastoDescripcion)</MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private GenericTable<PbrPresupuestoProgramaResponse> table = null!;
+    private GenericTable<PbrPartidaGastoResponse> partidaTable = null!;
+    private PbrPresupuestoProgramaResponse? selected;
+    private string search = string.Empty;
+    private string partidaSearch = string.Empty;
+    private string currencySymbol = "$";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    protected override async Task OnInitializedAsync() => await LoadCurrencyAsync();
+
+    private async Task<TableData<PbrPresupuestoProgramaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var response = await Service.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, search, state.SortLabel ?? "PkidPresupuestoPrograma", state.SortDirection);
+        return new TableData<PbrPresupuestoProgramaResponse> { Items = response?.Items ?? new List<PbrPresupuestoProgramaResponse>(), TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task<TableData<PbrPartidaGastoResponse>> LoadPartidasServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (selected == null)
+        {
+            return new TableData<PbrPartidaGastoResponse> { Items = new List<PbrPartidaGastoResponse>(), TotalItems = 0 };
+        }
+
+        var response = await PartidaService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            partidaSearch,
+            state.SortLabel ?? "PkidPartidaGasto",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidPresupuestoProgramaPbr"] = selected.PkidPresupuestoPrograma });
+
+        return new TableData<PbrPartidaGastoResponse> { Items = response?.Items ?? new List<PbrPartidaGastoResponse>(), TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task OpenPresupuestoDialog(int? id)
+    {
+        var parameters = new DialogParameters { ["Id"] = id };
+        var dialog = await DialogService.ShowAsync<PbrCrudDialog<PbrPresupuestoProgramaResponse>>(id.HasValue ? "Editar presupuesto" : "Nuevo presupuesto", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task OpenPartidaDialog(int? id)
+    {
+        if (selected == null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["InitialValues"] = new Dictionary<string, object?> { ["FkidPresupuestoProgramaPbr"] = selected.PkidPresupuestoPrograma }
+        };
+
+        var dialog = await DialogService.ShowAsync<PbrCrudDialog<PbrPartidaGastoResponse>>(id.HasValue ? "Editar partida" : "Nueva partida", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await partidaTable.ReloadData();
+        }
+    }
+
+    private void SelectPresupuesto(PbrPresupuestoProgramaResponse item)
+    {
+        selected = item;
+        partidaSearch = string.Empty;
+    }
+
+    private async Task BackToTable()
+    {
+        selected = null;
+        await table.ReloadData();
+    }
+
+    private async Task DeletePartidaAsync(PbrPartidaGastoResponse item)
+    {
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar partida {item.PkidPartidaGasto}?"))
+        {
+            return;
+        }
+
+        var response = await PartidaService.DeleteAsync(item.PkidPartidaGasto);
+        if (response?.Success == true)
+        {
+            Snackbar.Add("Partida eliminada correctamente.", Severity.Success);
+            await partidaTable.ReloadData();
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible eliminar.", Severity.Error);
+    }
+
+    private Task ExportAsync() => Task.CompletedTask;
+    private string Money(decimal value) => $"{currencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                currencySymbol = string.IsNullOrWhiteSpace(response?.Data?.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+            }
+        }
+        catch
+        {
+        }
+    }
+}

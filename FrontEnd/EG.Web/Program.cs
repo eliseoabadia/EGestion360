@@ -4,6 +4,7 @@ using EG.Web.Auth;
 using EG.Web.Contracts;
 using EG.Web.Contracts.Configuration;
 using EG.Web.Extensions;
+using EG.Web.Localization;
 using EG.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -31,6 +32,8 @@ internal class Program
             config.SnackbarConfiguration.ShowTransitionDuration = 350;
             config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
         });
+        builder.Services.AddLocalizationInterceptor<PassthroughMudLocalizationInterceptor>();
+        builder.Services.AddLocalizationEnumInterceptor<PassthroughMudLocalizationInterceptor>();
 
         // Registrar HttpClient PRIMERO para que pueda ser resuelto por otros servicios
         var apiBaseUrl = builder.Configuration["ApiSetting:baseUrl"];

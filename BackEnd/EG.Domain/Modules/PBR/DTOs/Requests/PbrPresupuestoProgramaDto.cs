@@ -1,0 +1,24 @@
+namespace EG.Domain.DTOs.Requests.PBR
+{
+    public class PbrPresupuestoProgramaDto
+    {
+        public int PkidPresupuestoPrograma { get; set; }
+        public int FkidProgramaPresupuestarioPbr { get; set; }
+        public int Anio { get; set; }
+        public decimal PresupuestoAnual { get; set; }
+        public decimal? PresupuestoModificado { get; set; }
+        public int? FkidEntidadPbr { get; set; }
+        public int? FkidUnidadResponsablePres { get; set; }
+        public int? FkidFuenteFinanciamientoPres { get; set; }
+        public int? FkidActividadInstitucionalSis { get; set; }
+        public int? FkidProyectoInversionPres { get; set; }
+        public int? FkidRegionPbr { get; set; }
+        public string? ComponenteActivado { get; set; }
+        public string? Futuro { get; set; }
+        public bool Activo { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
+}

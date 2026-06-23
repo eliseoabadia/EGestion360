@@ -531,6 +531,182 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PBR].[AlertaConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Anteproyecto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Aprobacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[ArbolNodo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Asm]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[AuditoriaCambio]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[AvanceIndicador]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[CalendarioPresupuesto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[ConfiguracionSistema]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[CRI]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Cuenta]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Dependencia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Diagnostico]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[EjercicioGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Entidad]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[EntidadesExternas]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Evaluacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[EvaluacionConsistencia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[EvaluacionConsistenciaPregunta]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[EvaluacionConsistenciaRespuesta]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Indicador]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[InformeTrimestral]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[MetaODS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[MigracionMap]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[MirNivel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[MirVersion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Notificacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[ObjetivoODS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[ObjetivoPED]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[PartidaGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[PartidaGenerica]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[PoblacionObjetivo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[PresupuestoPrograma]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[ProyeccionMultianual]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[RecomendacionEvaluacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[Region]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[ReglaOperacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[TechoGasto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[TipologiaPrograma]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[VinculacionProgramaODS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[VinculacionProgramaPED]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[WorkflowEstado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[WorkflowTemplate]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PBR].[WorkflowTransicion]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[AccionAdecuacionMaster]",
          "ObjectType": 0
       },
@@ -1527,6 +1703,114 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PBR].[vwAlertaConfig]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwAnteproyecto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwArbolNodo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwAsm]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwAuditoriaCambio]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwAvanceIndicador]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwCalendarioPresupuesto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwDiagnostico]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwEvaluacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwEvaluacionConsistencia]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwEvaluacionConsistenciaRespuesta]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwIndicador]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwInformeTrimestral]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwMirNivel]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwNotificacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwPartidaGasto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwPartidaGenerica]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwPoblacionObjetivo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwPresupuestoPrograma]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwProyeccionMultianual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwRecomendacionEvaluacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwReglaOperacion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwTechoGasto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwVinculacionProgramaODS]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwVinculacionProgramaPED]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwWorkflowEstado]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PBR].[vwWorkflowTransicion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_AutorizacionSuficiencia]",
          "ObjectType": 3
       },
@@ -2016,6 +2300,10 @@
       },
       {
          "Name": "[SIS].[sp_NotificacionCrearPorPerfil]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[sp_NotificacionCrearPorPermiso]",
          "ObjectType": 1
       },
       {

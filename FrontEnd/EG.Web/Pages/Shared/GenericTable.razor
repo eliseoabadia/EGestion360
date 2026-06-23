@@ -1,7 +1,15 @@
 ﻿@typeparam TItem
 @using MudBlazor
+@inject IJSRuntime JSRuntime
 
-<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-table">
+<MudPaper id="@tableElementId" Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-table">
+    @if (hiddenAutoColumnIndexes.Count > 0)
+    {
+        <style>
+            @((MarkupString)BuildAutoColumnVisibilityCss())
+        </style>
+    }
+
     @if (ShowBusyOverlay && IsTableBusy)
     {
         <div class="eg-generic-table-busy">
@@ -38,6 +46,39 @@
         <ToolBarContent>
             <MudText Typo="Typo.h6">@Title</MudText>
             <MudSpacer />
+
+            @if (ShowAutoColumnSelector)
+            {
+                <MudTooltip Text="Mostrar u ocultar columnas">
+                    <MudMenu Icon="@Icons.Material.Filled.ViewColumn"
+                             Color="Color.Primary"
+                             AnchorOrigin="Origin.BottomRight"
+                             TransformOrigin="Origin.TopRight"
+                             Class="mr-2"
+                             Disabled="@IsTableBusy">
+                        <div class="eg-column-menu" @onclick:stopPropagation="true">
+                            <MudText Typo="Typo.subtitle2" Class="eg-column-menu-title">Columnas visibles</MudText>
+                            @foreach (var column in autoColumnOptions)
+                            {
+                                <MudCheckBox T="bool"
+                                             Dense="true"
+                                             Label="@column.Label"
+                                             Value="@IsAutoColumnVisible(column.Index)"
+                                             ValueChanged="@((bool visible) => SetAutoColumnVisibility(column.Index, visible))"
+                                             Disabled="@IsAutoColumnToggleDisabled(column)" />
+                            }
+                            <MudDivider Class="my-1" />
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Restore"
+                                       OnClick="ResetAutoColumnVisibility">
+                                Restablecer
+                            </MudButton>
+                        </div>
+                    </MudMenu>
+                </MudTooltip>
+            }
 
             @if (ShowExportButton)
             {
@@ -141,6 +182,8 @@
     [Parameter] public bool ShowExportButton { get; set; } = true;
     [Parameter] public bool ShowAddButton { get; set; }
     [Parameter] public bool ShowBusyOverlay { get; set; } = true;
+    [Parameter] public bool EnableAutoColumnSelector { get; set; } = true;
+    [Parameter] public int AutoColumnSelectorThreshold { get; set; } = 5;
     [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
     [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
     [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
@@ -177,10 +220,26 @@
 
     private MudTable<TItem> mudTableRef = new();
     private MudTextField<string> searchField = new();
+    private readonly string tableElementId = $"eg-generic-table-{Guid.NewGuid():N}";
+    private readonly HashSet<int> hiddenAutoColumnIndexes = new();
+    private List<AutoColumnOption> autoColumnOptions = new();
+    private string autoColumnSignature = string.Empty;
     private bool isLoading = false;
     private bool actionInProgress = false;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
     private string CurrentBusyMessage => actionInProgress ? ActionLoadingMessage : LoadingMessage;
+    private bool ShowAutoColumnSelector => EnableAutoColumnSelector && autoColumnOptions.Count > AutoColumnSelectorThreshold;
+    private int VisibleAutoColumnCount => autoColumnOptions.Count(column => IsAutoColumnVisible(column.Index));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!EnableAutoColumnSelector)
+        {
+            return;
+        }
+
+        await SyncAutoColumnOptionsAsync();
+    }
 
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -260,5 +319,83 @@
             actionInProgress = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task SyncAutoColumnOptionsAsync()
+    {
+        try
+        {
+            var columns = await JSRuntime.InvokeAsync<List<DetectedTableColumn>>("egestionTableColumns.getColumns", tableElementId);
+            var dataColumns = columns
+                .Where(column => !column.IsAction)
+                .Select(column => new AutoColumnOption(column.Index, string.IsNullOrWhiteSpace(column.Label) ? $"Columna {column.Index}" : column.Label.Trim()))
+                .ToList();
+
+            var signature = string.Join("|", dataColumns.Select(column => $"{column.Index}:{column.Label}"));
+
+            if (signature == autoColumnSignature)
+            {
+                return;
+            }
+
+            autoColumnOptions = dataColumns;
+            autoColumnSignature = signature;
+            hiddenAutoColumnIndexes.RemoveWhere(index => autoColumnOptions.All(column => column.Index != index));
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (JSException)
+        {
+            autoColumnOptions.Clear();
+            hiddenAutoColumnIndexes.Clear();
+            autoColumnSignature = string.Empty;
+        }
+    }
+
+    private bool IsAutoColumnVisible(int columnIndex) => !hiddenAutoColumnIndexes.Contains(columnIndex);
+
+    private bool IsAutoColumnToggleDisabled(AutoColumnOption column)
+        => IsAutoColumnVisible(column.Index) && VisibleAutoColumnCount <= 1;
+
+    private void SetAutoColumnVisibility(int columnIndex, bool visible)
+    {
+        if (visible)
+        {
+            hiddenAutoColumnIndexes.Remove(columnIndex);
+            return;
+        }
+
+        if (VisibleAutoColumnCount > 1)
+        {
+            hiddenAutoColumnIndexes.Add(columnIndex);
+        }
+    }
+
+    private void ResetAutoColumnVisibility() => hiddenAutoColumnIndexes.Clear();
+
+    private string BuildAutoColumnVisibilityCss()
+    {
+        var css = new System.Text.StringBuilder();
+
+        foreach (var columnIndex in hiddenAutoColumnIndexes.OrderBy(index => index))
+        {
+            css.Append('#').Append(tableElementId)
+                .Append(" .mud-table > .mud-table-container > table.mud-table-root > thead > tr > th:nth-child(")
+                .Append(columnIndex)
+                .Append("),#").Append(tableElementId)
+                .Append(" .mud-table > .mud-table-container > table.mud-table-root > tbody > tr > td:nth-child(")
+                .Append(columnIndex)
+                .Append("){display:none!important;}");
+        }
+
+        return css.ToString();
+    }
+
+    private sealed record AutoColumnOption(int Index, string Label);
+
+    private sealed class DetectedTableColumn
+    {
+        public int Index { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public bool IsAction { get; set; }
     }
 }

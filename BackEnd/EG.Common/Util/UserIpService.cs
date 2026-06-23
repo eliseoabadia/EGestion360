@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+#if !EG_BROWSER_WASM
+using Microsoft.AspNetCore.Http;
 
 namespace EG.Common.Util;
 
@@ -20,4 +21,4 @@ public class UserIpService : IUserIpService
         return context.Connection.RemoteIpAddress?.ToString();
     }
 }
-
+#endif

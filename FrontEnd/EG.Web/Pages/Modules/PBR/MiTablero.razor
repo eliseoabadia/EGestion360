@@ -1,0 +1,429 @@
+@page "/PBR/MiTablero"
+@page "/PRB/MiTablero"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.PBR
+@using EG.Web.Contracts
+@using EG.Web.Pages.Modules.PBR.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+
+@inject IPbrDashboardService DashboardService
+@inject AnioPresupuestalStateService AnioState
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+    <PageHeader Title="Mi Tablero"
+                Subtitle="@($"Vista ejecutiva del ejercicio {anio}")"
+                Icon="@Icons.Material.Filled.DashboardCustomize"
+                ShowCreateButton="false"
+                OnRefresh="LoadDashboardAsync" />
+
+    <PbrTopNavigation />
+
+    <div class="pbr-mi-tablero-scroll">
+        @if (loading)
+        {
+            <MudPaper Elevation="0" Class="pa-8 text-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                <MudText Class="mt-3" Color="Color.Secondary">Cargando tablero...</MudText>
+            </MudPaper>
+        }
+        else if (dashboard is null)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                No hay datos para el ejercicio @anio.
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid Spacing="2" Class="mb-2">
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-mi-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.FactCheck" Color="Color.Primary" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Programas</MudText>
+                        <MudText Typo="Typo.h4">@dashboard.Resumen.TotalProgramas.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-mi-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Color="Color.Info" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Indicadores</MudText>
+                        <MudText Typo="Typo.h4">@dashboard.Resumen.TotalIndicadores.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-mi-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Warning" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Evaluaciones</MudText>
+                        <MudText Typo="Typo.h4">@dashboard.Resumen.TotalEvaluaciones.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-mi-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Error" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">ASM activos</MudText>
+                        <MudText Typo="Typo.h4">@dashboard.Resumen.AsmActivos.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12" lg="4">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
+                        <MudText Typo="Typo.h6">Semaforo de indicadores</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Estado del ultimo avance capturado</MudText>
+
+                        <div class="pbr-mi-semaforo-grid">
+                            <div class="pbr-mi-semaforo-item success">
+                                <span>@dashboard.SemaforoConteo.Verde</span>
+                                <small>Verde</small>
+                            </div>
+                            <div class="pbr-mi-semaforo-item warning">
+                                <span>@dashboard.SemaforoConteo.Amarillo</span>
+                                <small>Amarillo</small>
+                            </div>
+                            <div class="pbr-mi-semaforo-item error">
+                                <span>@dashboard.SemaforoConteo.Rojo</span>
+                                <small>Rojo</small>
+                            </div>
+                            <div class="pbr-mi-semaforo-item neutral">
+                                <span>@dashboard.SemaforoConteo.SinDatos</span>
+                                <small>Sin datos</small>
+                            </div>
+                        </div>
+
+                        <MudStack Spacing="1">
+                            @foreach (var item in dashboard.Semaforo.Take(6))
+                            {
+                                <div class="pbr-mi-list-row">
+                                    <div>
+                                        <MudText Typo="Typo.body2">@TextOrDash(item.Nombre)</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Programa)</MudText>
+                                    </div>
+                                    <MudChip T="string" Size="Size.Small" Color="@EstadoColor(item.Estado)">
+                                        @PctOrDash(item.Porcentaje)
+                                    </MudChip>
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="4">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.h6">Avance presupuestal</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Presupuesto anual contra modificado</MudText>
+                            </div>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="OpenPresupuestos">
+                                Abrir
+                            </MudButton>
+                        </MudStack>
+
+                        <div class="pbr-mi-budget">
+                            <div>
+                                <span>Anual</span>
+                                <strong>@MoneyCompact(dashboard.Resumen.PresupuestoAnual)</strong>
+                            </div>
+                            <div>
+                                <span>Modificado</span>
+                                <strong>@MoneyCompact(dashboard.Resumen.PresupuestoModificado)</strong>
+                            </div>
+                            <div>
+                                <span>Diferencia</span>
+                                <strong>@MoneyCompact(dashboard.Resumen.PresupuestoModificado - dashboard.Resumen.PresupuestoAnual)</strong>
+                            </div>
+                        </div>
+
+                        <MudStack Spacing="1">
+                            @foreach (var item in dashboard.TopPresupuestos.Take(6))
+                            {
+                                <div class="pbr-mi-list-row">
+                                    <div>
+                                        <MudText Typo="Typo.body2">@($"{item.ProgramaClave} - {item.Programa}")</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Presupuesto modificado</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.body2" Class="pbr-mi-money">@MoneyCompact(item.PresupuestoModificado)</MudText>
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="4">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
+                        <MudText Typo="Typo.h6">Cobertura MIR</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @dashboard.Resumen.ProgramasConMirCompleta de @dashboard.Resumen.TotalProgramas programas completos
+                        </MudText>
+
+                        <div class="pbr-mi-ring">
+                            <MudProgressCircular Value="@ToDouble(dashboard.Resumen.CoberturaMirPorcentaje)" Color="Color.Primary" Size="Size.Large" StrokeWidth="6" />
+                            <strong>@Pct(dashboard.Resumen.CoberturaMirPorcentaje)</strong>
+                        </div>
+
+                        <MudStack Spacing="1">
+                            @foreach (var item in dashboard.CoberturaMir.Take(6))
+                            {
+                                <div class="pbr-mi-list-row">
+                                    <div>
+                                        <MudText Typo="Typo.body2">@($"{item.Clave} - {item.Nombre}")</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.TotalIndicadores indicadores</MudText>
+                                    </div>
+                                    <MudIcon Icon="@(item.Completa ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.PendingActions)"
+                                             Color="@(item.Completa ? Color.Success : Color.Warning)" />
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="6">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
+                        <MudText Typo="Typo.h6">Ranking de programas</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Cumplimiento fisico registrado</MudText>
+
+                        <MudStack Spacing="2" Class="mt-3">
+                            @foreach (var item in dashboard.RankingProgramas.Take(8))
+                            {
+                                <div class="pbr-mi-ranking-row">
+                                    <div class="pbr-mi-ranking-header">
+                                        <MudText Typo="Typo.body2">@($"{item.Clave} - {item.Nombre}")</MudText>
+                                        <MudText Typo="Typo.body2">@Pct(item.Cumplimiento)</MudText>
+                                    </div>
+                                    <MudProgressLinear Value="@ToDouble(item.Cumplimiento)" Color="@ProgressColor(item.Cumplimiento)" Rounded="true" Size="Size.Small" />
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="6">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
+                        <MudText Typo="Typo.h6">Resumen rapido</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Lectura ejecutiva del ciclo PBR</MudText>
+
+                        <div class="pbr-mi-summary-grid">
+                            <div>
+                                <span>Cumplimiento promedio</span>
+                                <strong>@Pct(dashboard.Resumen.CumplimientoPromedio)</strong>
+                            </div>
+                            <div>
+                                <span>Indicadores cumpliendo</span>
+                                <strong>@dashboard.Resumen.IndicadoresCumpliendo/@dashboard.Resumen.TotalIndicadores</strong>
+                            </div>
+                            <div>
+                                <span>Programas con MIR completa</span>
+                                <strong>@dashboard.Resumen.ProgramasConMirCompleta/@dashboard.Resumen.TotalProgramas</strong>
+                            </div>
+                            <div>
+                                <span>ASM pendientes</span>
+                                <strong>@dashboard.Resumen.AsmActivos</strong>
+                            </div>
+                        </div>
+
+                        <MudStack Row="true" Spacing="2" Class="mt-4" Style="flex-wrap: wrap;">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AccountTree" OnClick="OpenMatriz">Matriz MIR</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Route" OnClick="OpenMapa">Mapa de procesos</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AssignmentTurnedIn" OnClick="OpenAnteproyectos">Anteproyectos</MudButton>
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        }
+    </div>
+</MudContainer>
+
+@code {
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private PbrDashboardResponse? dashboard;
+    private bool loading;
+    private int anio = DateTime.Now.Year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioState.InitializeAsync();
+        anio = AnioState.AnioClave ?? DateTime.Now.Year;
+        AnioState.OnAnioChanged += OnAnioChanged;
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        loading = true;
+        try
+        {
+            dashboard = await DashboardService.GetAsync(anio);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No fue posible cargar Mi Tablero PRB: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async void OnAnioChanged(int? _)
+    {
+        anio = AnioState.AnioClave ?? DateTime.Now.Year;
+        await LoadDashboardAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void GoTo(string route) => NavigationManager.NavigateTo(route);
+    private void OpenAnteproyectos() => GoTo("/PRB/Anteproyectos");
+    private void OpenPresupuestos() => GoTo("/PRB/Presupuestos");
+    private void OpenMatriz() => GoTo("/PRB/MatrizIndicadores");
+    private void OpenMapa() => GoTo("/PRB/MapaProcesos");
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Pct(decimal value) => $"{value.ToString("0.00", NumberCulture)}%";
+    private static string PctOrDash(decimal? value) => value.HasValue ? Pct(value.Value) : "-";
+    private static double ToDouble(decimal value) => (double)Math.Clamp(value, 0, 100);
+
+    private static string MoneyCompact(decimal value)
+    {
+        var abs = Math.Abs(value);
+        var sign = value < 0 ? "-" : string.Empty;
+
+        if (abs >= 1000000)
+        {
+            return sign + "$" + (abs / 1000000m).ToString("0.00", NumberCulture) + "M";
+        }
+
+        if (abs >= 1000)
+        {
+            return sign + "$" + (abs / 1000m).ToString("0.00", NumberCulture) + "K";
+        }
+
+        return sign + "$" + abs.ToString("0.00", NumberCulture);
+    }
+
+    private static Color EstadoColor(string estado) => estado switch
+    {
+        "verde" => Color.Success,
+        "amarillo" => Color.Warning,
+        "rojo" => Color.Error,
+        _ => Color.Default
+    };
+
+    private static Color ProgressColor(decimal value)
+    {
+        if (value >= 90)
+        {
+            return Color.Success;
+        }
+
+        return value >= 70 ? Color.Warning : Color.Error;
+    }
+
+    public void Dispose()
+    {
+        AnioState.OnAnioChanged -= OnAnioChanged;
+    }
+}
+
+<style>
+    .pbr-mi-tablero-scroll {
+        flex-grow: 1;
+        overflow: auto;
+        min-height: 0;
+        padding: 8px 0 18px;
+    }
+
+    .pbr-mi-panel,
+    .pbr-mi-kpi {
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .pbr-mi-kpi {
+        min-height: 118px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .pbr-mi-semaforo-grid,
+    .pbr-mi-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 14px 0;
+    }
+
+    .pbr-mi-semaforo-item,
+    .pbr-mi-summary-grid > div,
+    .pbr-mi-budget > div,
+    .pbr-mi-list-row,
+    .pbr-mi-ranking-row {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .pbr-mi-semaforo-item {
+        min-height: 76px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+    }
+
+    .pbr-mi-semaforo-item span,
+    .pbr-mi-summary-grid strong,
+    .pbr-mi-budget strong {
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .pbr-mi-semaforo-item small,
+    .pbr-mi-summary-grid span,
+    .pbr-mi-budget span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .75rem;
+    }
+
+    .pbr-mi-semaforo-item.success span { color: var(--mud-palette-success); }
+    .pbr-mi-semaforo-item.warning span { color: var(--mud-palette-warning); }
+    .pbr-mi-semaforo-item.error span { color: var(--mud-palette-error); }
+
+    .pbr-mi-budget {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin: 14px 0;
+    }
+
+    .pbr-mi-budget > div,
+    .pbr-mi-summary-grid > div {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .pbr-mi-list-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .pbr-mi-money {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .pbr-mi-ranking-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+</style>

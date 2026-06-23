@@ -4851,6 +4851,123 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<int> sp_NotificacionCrearPorPermisoAsync(string claveTipo, int? fk_IdUsuarioOrigen, string modulo, string subModulo, string accion, string evento, string entidad, long? fk_IdEntidad, string titulo, string mensaje, string url, string jsonData, int? idUser, OutputParameter<long?> idNotificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterIdNotificacion = new SqlParameter
+            {
+                ParameterName = "IdNotificacion",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = idNotificacion?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.BigInt,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "ClaveTipo",
+                    Size = 160,
+                    Value = claveTipo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdUsuarioOrigen",
+                    Value = fk_IdUsuarioOrigen ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Modulo",
+                    Size = 240,
+                    Value = modulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SubModulo",
+                    Size = 240,
+                    Value = subModulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Accion",
+                    Size = 160,
+                    Value = accion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Evento",
+                    Size = 240,
+                    Value = evento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Entidad",
+                    Size = 300,
+                    Value = entidad ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Fk_IdEntidad",
+                    Value = fk_IdEntidad ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.BigInt,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Titulo",
+                    Size = 500,
+                    Value = titulo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = -1,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Url",
+                    Size = 2000,
+                    Value = url ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "JsonData",
+                    Size = -1,
+                    Value = jsonData ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterIdNotificacion,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [SIS].[sp_NotificacionCrearPorPermiso] @ClaveTipo = @ClaveTipo, @Fk_IdUsuarioOrigen = @Fk_IdUsuarioOrigen, @Modulo = @Modulo, @SubModulo = @SubModulo, @Accion = @Accion, @Evento = @Evento, @Entidad = @Entidad, @Fk_IdEntidad = @Fk_IdEntidad, @Titulo = @Titulo, @Mensaje = @Mensaje, @Url = @Url, @JsonData = @JsonData, @IdUser = @IdUser, @IdNotificacion = @IdNotificacion OUTPUT", sqlParameters, cancellationToken);
+
+            idNotificacion?.SetValue(parameterIdNotificacion.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<int> sp_NotificacionFirmaRealizadaAsync(int? fk_IdUsuarioFirmante, int? fk_IdUsuarioSolicitante, long? pk_IdDocumento, string titulo, string mensaje, string url, string jsonData, int? idUser, OutputParameter<long?> idNotificacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterIdNotificacion = new SqlParameter

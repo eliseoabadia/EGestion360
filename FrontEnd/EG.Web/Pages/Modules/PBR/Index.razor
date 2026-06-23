@@ -1,0 +1,399 @@
+@page "/PRB"
+@page "/PBR"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.PBR
+@using EG.Web.Contracts
+@using EG.Web.Pages.Modules.PBR.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+
+@inject IPbrDashboardService DashboardService
+@inject AnioPresupuestalStateService AnioState
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+    <PageHeader Title="PRB"
+                Subtitle="@($"Tablero ejecutivo de planeacion basada en resultados - {anio}")"
+                Icon="@Icons.Material.Filled.InsertChart"
+                ShowCreateButton="false"
+                OnRefresh="LoadDashboardAsync" />
+
+    <PbrTopNavigation />
+
+    <div class="pbr-dashboard-scroll">
+        @if (loading)
+        {
+            <MudPaper Elevation="0" Class="pa-8 text-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                <MudText Class="mt-3" Color="Color.Secondary">Cargando tablero...</MudText>
+            </MudPaper>
+        }
+        else if (dashboard is null)
+        {
+            <MudPaper Elevation="0" Class="pa-6">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No hay datos para mostrar en el ejercicio @anio.
+                </MudAlert>
+            </MudPaper>
+        }
+        else
+        {
+            <MudGrid Spacing="2" Class="mb-2">
+                <MudItem xs="12" sm="6" lg="2">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.FactCheck" Color="Color.Primary" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Programas</MudText>
+                        <MudText Typo="Typo.h5">@dashboard.Resumen.TotalProgramas.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="2">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Color="Color.Info" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Indicadores</MudText>
+                        <MudText Typo="Typo.h5">@dashboard.Resumen.TotalIndicadores.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="2">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Cumplimiento</MudText>
+                        <MudText Typo="Typo.h5">@Pct(dashboard.Resumen.CumplimientoPromedio)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="2">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Warning" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Evaluaciones</MudText>
+                        <MudText Typo="Typo.h5">@dashboard.Resumen.TotalEvaluaciones.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="2">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Color="Color.Error" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">ASM activos</MudText>
+                        <MudText Typo="Typo.h5">@dashboard.Resumen.AsmActivos.ToString(NumberCulture)</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="2">
+                    <MudPaper Elevation="1" Class="pa-3 pbr-kpi">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Secondary" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Presupuesto</MudText>
+                        <MudText Typo="Typo.h5">@MoneyCompact(dashboard.Resumen.PresupuestoModificado)</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12" lg="7">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-panel">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <div>
+                                <MudText Typo="Typo.h6">Semaforo de indicadores</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Ultimo avance registrado del ejercicio</MudText>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                @dashboard.Semaforo.Count indicadores visibles
+                            </MudChip>
+                        </MudStack>
+
+                        <MudGrid Spacing="2" Class="mb-3">
+                            <MudItem xs="6" sm="3">
+                                <MudPaper Elevation="0" Class="pa-3 pbr-semaforo-box">
+                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" />
+                                    <MudText Typo="Typo.h5">@dashboard.SemaforoConteo.Verde</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Verde</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudPaper Elevation="0" Class="pa-3 pbr-semaforo-box">
+                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Warning" Size="Size.Small" />
+                                    <MudText Typo="Typo.h5">@dashboard.SemaforoConteo.Amarillo</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Amarillo</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudPaper Elevation="0" Class="pa-3 pbr-semaforo-box">
+                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Error" Size="Size.Small" />
+                                    <MudText Typo="Typo.h5">@dashboard.SemaforoConteo.Rojo</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Rojo</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudPaper Elevation="0" Class="pa-3 pbr-semaforo-box">
+                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Default" Size="Size.Small" />
+                                    <MudText Typo="Typo.h5">@dashboard.SemaforoConteo.SinDatos</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Sin datos</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
+
+                        <div class="pbr-table-wrap">
+                            <MudTable Items="@dashboard.Semaforo" Dense="true" Hover="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Indicador</MudTh>
+                                    <MudTh>Programa</MudTh>
+                                    <MudTh>Nivel</MudTh>
+                                    <MudTh Class="text-end">%</MudTh>
+                                    <MudTh>Estado</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Indicador">
+                                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(context.Nombre)</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Programa">@TextOrDash(context.Programa)</MudTd>
+                                    <MudTd DataLabel="Nivel">@TextOrDash(context.Nivel)</MudTd>
+                                    <MudTd DataLabel="%" Class="text-end">@PctOrDash(context.Porcentaje)</MudTd>
+                                    <MudTd DataLabel="Estado">
+                                        <MudChip T="string" Size="Size.Small" Color="@EstadoColor(context.Estado)">
+                                            @EstadoLabel(context.Estado)
+                                        </MudChip>
+                                    </MudTd>
+                                </RowTemplate>
+                                <NoRecordsContent>
+                                    <MudText Color="Color.Secondary">No hay indicadores con avance para este ejercicio.</MudText>
+                                </NoRecordsContent>
+                            </MudTable>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="5">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-panel">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <div>
+                                <MudText Typo="Typo.h6">Ranking de programas</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Cumplimiento fisico y cobertura de avances</MudText>
+                            </div>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="OpenMatriz">
+                                Ver MIR
+                            </MudButton>
+                        </MudStack>
+
+                        <MudStack Spacing="2">
+                            @foreach (var item in dashboard.RankingProgramas.Take(8))
+                            {
+                                <div class="pbr-ranking-row">
+                                    <div class="pbr-ranking-header">
+                                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@($"{item.Clave} - {item.Nombre}")</MudText>
+                                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@Pct(item.Cumplimiento)</MudText>
+                                    </div>
+                                    <MudProgressLinear Value="@ToDouble(item.Cumplimiento)" Color="@ProgressColor(item.Cumplimiento)" Rounded="true" Size="Size.Small" />
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.IndicadoresConAvance/@item.TotalIndicadores con avance</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@MoneyCompact(item.Presupuesto)</MudText>
+                                    </MudStack>
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="7">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-panel">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <div>
+                                <MudText Typo="Typo.h6">Presupuesto por programa</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Top por presupuesto modificado</MudText>
+                            </div>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="OpenPresupuestos">
+                                Ver presupuestos
+                            </MudButton>
+                        </MudStack>
+
+                        <MudTable Items="@dashboard.TopPresupuestos" Dense="true" Hover="true" Elevation="0">
+                            <HeaderContent>
+                                <MudTh>Programa</MudTh>
+                                <MudTh Class="text-end">Anual</MudTh>
+                                <MudTh Class="text-end">Modificado</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Programa">@($"{context.ProgramaClave} {context.Programa}")</MudTd>
+                                <MudTd DataLabel="Anual" Class="text-end">@Money(context.PresupuestoAnual)</MudTd>
+                                <MudTd DataLabel="Modificado" Class="text-end">@Money(context.PresupuestoModificado)</MudTd>
+                            </RowTemplate>
+                            <NoRecordsContent>
+                                <MudText Color="Color.Secondary">No hay presupuestos capturados para el ejercicio.</MudText>
+                            </NoRecordsContent>
+                        </MudTable>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="5">
+                    <MudPaper Elevation="1" Class="pa-4 pbr-panel">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <div>
+                                <MudText Typo="Typo.h6">Cobertura MIR</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @dashboard.Resumen.ProgramasConMirCompleta programas completos (@Pct(dashboard.Resumen.CoberturaMirPorcentaje))
+                                </MudText>
+                            </div>
+                            <MudProgressCircular Value="@ToDouble(dashboard.Resumen.CoberturaMirPorcentaje)" Color="Color.Primary" Size="Size.Medium" />
+                        </MudStack>
+
+                        <MudStack Spacing="1">
+                            @foreach (var item in dashboard.CoberturaMir.Take(10))
+                            {
+                                <div class="pbr-coverage-row">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@($"{item.Clave} - {item.Nombre}")</MudText>
+                                    <MudStack Row="true" Spacing="1" Class="mt-1">
+                                        <MudChip T="string" Size="Size.Small" Color="@(item.TieneFin ? Color.Success : Color.Default)">Fin</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="@(item.TieneProposito ? Color.Success : Color.Default)">Proposito</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="@(item.TieneComponente ? Color.Success : Color.Default)">Componente</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="@(item.TieneActividad ? Color.Success : Color.Default)">Actividad</MudChip>
+                                    </MudStack>
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+            </MudGrid>
+        }
+    </div>
+</MudContainer>
+
+@code {
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private PbrDashboardResponse? dashboard;
+    private bool loading;
+    private int anio = DateTime.Now.Year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioState.InitializeAsync();
+        anio = AnioState.AnioClave ?? DateTime.Now.Year;
+        AnioState.OnAnioChanged += OnAnioChanged;
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        loading = true;
+        try
+        {
+            dashboard = await DashboardService.GetAsync(anio);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No fue posible cargar el tablero PRB: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async void OnAnioChanged(int? _)
+    {
+        anio = AnioState.AnioClave ?? DateTime.Now.Year;
+        await LoadDashboardAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void GoTo(string route) => NavigationManager.NavigateTo(route);
+    private void OpenPresupuestos() => GoTo("/PRB/Presupuestos");
+    private void OpenMatriz() => GoTo("/PRB/MatrizIndicadores");
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Pct(decimal value) => $"{value.ToString("0.00", NumberCulture)}%";
+    private static string PctOrDash(decimal? value) => value.HasValue ? Pct(value.Value) : "-";
+    private static double ToDouble(decimal value) => (double)Math.Clamp(value, 0, 100);
+    private static string Money(decimal value) => "$" + value.ToString("0.00", NumberCulture);
+
+    private static string MoneyCompact(decimal value)
+    {
+        if (value >= 1000000)
+        {
+            return "$" + (value / 1000000m).ToString("0.00", NumberCulture) + "M";
+        }
+
+        if (value >= 1000)
+        {
+            return "$" + (value / 1000m).ToString("0.00", NumberCulture) + "K";
+        }
+
+        return Money(value);
+    }
+
+    private static Color EstadoColor(string estado) => estado switch
+    {
+        "verde" => Color.Success,
+        "amarillo" => Color.Warning,
+        "rojo" => Color.Error,
+        _ => Color.Default
+    };
+
+    private static Color ProgressColor(decimal value)
+    {
+        if (value >= 90)
+        {
+            return Color.Success;
+        }
+
+        return value >= 70 ? Color.Warning : Color.Error;
+    }
+
+    private static string EstadoLabel(string estado) => estado switch
+    {
+        "verde" => "Verde",
+        "amarillo" => "Amarillo",
+        "rojo" => "Rojo",
+        _ => "Sin datos"
+    };
+
+    public void Dispose()
+    {
+        AnioState.OnAnioChanged -= OnAnioChanged;
+    }
+}
+
+<style>
+    .pbr-dashboard-scroll {
+        flex-grow: 1;
+        overflow: auto;
+        min-height: 0;
+        padding: 8px 0 18px;
+    }
+
+    .pbr-panel {
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .pbr-kpi {
+        border-radius: 8px;
+        min-height: 112px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .pbr-semaforo-box {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .pbr-table-wrap {
+        max-height: 430px;
+        overflow: auto;
+    }
+
+    .pbr-ranking-row,
+    .pbr-coverage-row {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .pbr-ranking-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+</style>

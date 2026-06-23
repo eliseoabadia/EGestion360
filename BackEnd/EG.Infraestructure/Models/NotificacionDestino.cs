@@ -31,5 +31,5 @@ public partial class NotificacionDestino
 
     public virtual NotificacionEstado FkIdNotificacionEstadoNavigation { get; set; }
 
-    public virtual Notificacion FkIdNotificacionNavigation { get; set; }
+    public virtual Notificacion1 FkIdNotificacionNavigation { get; set; }
 }
