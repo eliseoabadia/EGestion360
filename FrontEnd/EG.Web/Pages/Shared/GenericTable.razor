@@ -74,6 +74,11 @@
                 </MudTooltip>
             }
 
+            @if (ToolbarActions is not null)
+            {
+                @ToolbarActions
+            }
+
             <MudTextField @bind-Value="SearchString"
                           Placeholder="@SearchPlaceholder"
                           Adornment="Adornment.Start"
@@ -165,6 +170,7 @@
     [Parameter] public RenderFragment Header { get; set; } = null!;
     [Parameter] public RenderFragment<TItem> Row { get; set; } = null!;
     [Parameter] public RenderFragment<TItem>? ChildRow { get; set; }
+    [Parameter] public RenderFragment? ToolbarActions { get; set; }
     [Parameter] public Func<TableState, CancellationToken, Task<TableData<TItem>>> ServerDataFunc { get; set; } = null!;
     [Parameter] public Func<Task> ExportFunc { get; set; } = null!;
     [Parameter] public EventCallback OnAdd { get; set; }
