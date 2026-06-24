@@ -42,6 +42,12 @@ namespace EG.Business.Mapping.PresupuestoModificado
 
             config.NewConfig<VwIngresoDisponible, IngresoDisponibleResponse>().TwoWays();
             config.NewConfig<IngresoDisponibleResponse, IngresoDisponibleDto>().TwoWays();
+
+            config.NewConfig<VwIngreXejer, IngreXEjerResponse>().TwoWays();
+            config.NewConfig<IngreXEjerResponse, IngreXEjerDto>().TwoWays();
+
+            config.NewConfig<VwClcfactura, IngresoCLCFacturaResponse>().TwoWays();
+            config.NewConfig<IngresoCLCFacturaResponse, IngresoCLCFacturaDto>().TwoWays();
         }
     }
 }

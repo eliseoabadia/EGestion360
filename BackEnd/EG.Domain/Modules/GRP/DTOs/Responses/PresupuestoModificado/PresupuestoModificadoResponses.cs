@@ -218,4 +218,82 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public bool Activo { get; set; }
         public string? DescripcionRequisicion { get; set; }
     }
+
+    public class IngreXEjerResponse
+    {
+        public int PkIdIngresoAutorizado { get; set; }
+        public string? AreaFuncional { get; set; }
+        public string? Origen { get; set; }
+        public int? FkIdAnioSis { get; set; }
+        public int FkIdProgramaPres { get; set; }
+        public int FkIdOrigenPres { get; set; }
+        public string? Descripcion { get; set; }
+        public decimal? Ene { get; set; }
+        public decimal? Feb { get; set; }
+        public decimal? Mar { get; set; }
+        public decimal? Abr { get; set; }
+        public decimal? May { get; set; }
+        public decimal? Jun { get; set; }
+        public decimal? Jul { get; set; }
+        public decimal? Ago { get; set; }
+        public decimal? Sep { get; set; }
+        public decimal? Oct { get; set; }
+        public decimal? Nov { get; set; }
+        public decimal? Dic { get; set; }
+        public decimal? Total { get; set; }
+        public string? Message { get; set; }
+    }
+
+    public class IngresoCLCFacturaResponse
+    {
+        public int PkidClcfactura { get; set; }
+        public int FkidEmpresaSis { get; set; }
+        public string? EmpresaNombre { get; set; }
+        public int FkidClcPres { get; set; }
+        public string? NumClc { get; set; }
+        public int FkidFacturaPres { get; set; }
+        public string? NumFactura { get; set; }
+        public int? FkIdAnioSis { get; set; }
+        public int? FkIdIngresoAutorizado { get; set; }
+        public DateOnly? Fecha { get; set; }
+        public int? FkIdBancoSis { get; set; }
+        public int? FkIdCuentaAbono { get; set; }
+        public int? FkIdCuentaCargo { get; set; }
+        public int? FkIdPolizaConta { get; set; }
+        public int? FkIdTipoClcfacturaPres { get; set; }
+        public int? FkIdTipoDoctoClcSis { get; set; }
+        public int? FkIdTipoPoliza { get; set; }
+        public bool? Fldocto { get; set; }
+        public decimal? Importe { get; set; }
+        public decimal? Iva { get; set; }
+        public string? Concepto { get; set; }
+        public string? Nombre { get; set; }
+        public string? Rfc { get; set; }
+        public string? NumReferenciaDocto { get; set; }
+        public decimal? Ene { get; set; }
+        public decimal? Feb { get; set; }
+        public decimal? Mar { get; set; }
+        public decimal? Abr { get; set; }
+        public decimal? May { get; set; }
+        public decimal? Jun { get; set; }
+        public decimal? Jul { get; set; }
+        public decimal? Ago { get; set; }
+        public decimal? Sep { get; set; }
+        public decimal? Oct { get; set; }
+        public decimal? Nov { get; set; }
+        public decimal? Dic { get; set; }
+        public decimal? Total { get; set; }
+        public int FkidFacturaDetallePres { get; set; }
+        public int FkidPartidaConta { get; set; }
+        public string? PartidaClave { get; set; }
+        public string? PartidaDescripcion { get; set; }
+        public decimal MontoAplicado { get; set; }
+        public string? Observaciones { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+        public string? Message { get; set; }
+    }
 }

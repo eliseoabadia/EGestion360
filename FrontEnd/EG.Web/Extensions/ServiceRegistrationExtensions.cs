@@ -103,6 +103,7 @@ public static class ApiServiceExtensions
         RegisterCrud<IngreAdecuacionResponse>(services, "api/IngreAdecuacion");
         RegisterCrud<IngreAdecuacionDetalleResponse>(services, "api/IngreAdecuacionDetalle");
         RegisterCrud<IngresoDisponibleResponse>(services, "api/IngresoDisponible");
+        RegisterCrud<IngreXEjerResponse>(services, "api/IngresoRecaudar");
         RegisterCrud<TipoAdecuacionResponse>(services, "api/TipoAdecuacion");
         RegisterCrud<EstatusAdecuacionResponse>(services, "api/EstatusAdecuacion");
         RegisterCrud<TipoMovimientoResponse>(services, "api/TipoMovimiento");
@@ -212,8 +213,10 @@ public static class ApiServiceExtensions
         RegisterCrud<CLCResponse>(services, "api/CLC");
         RegisterCrud<CLCDetalleResponse>(services, "api/CLCDetalle");
         RegisterCrud<CLCFacturaResponse>(services, "api/CLCFactura");
+        RegisterCrud<IngresoCLCFacturaResponse>(services, "api/IngresoCLCFactura");
         RegisterCrud<ChequeResponse>(services, "api/Cheque");
         RegisterCrud<ChequePartidaResponse>(services, "api/ChequePartida");
+        RegisterCrud<DepositoResponse>(services, "api/Deposito");
 
         services.AddScoped<INotificacionService, NotificacionService>();
         services.AddScoped<IDocumentSupportService, DocumentSupportService>();

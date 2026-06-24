@@ -13,6 +13,7 @@ using EG.Application.Interfaces.Configuracion.Catalogo.Almacen;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Application.Interfaces.Contabilidad;
+using EG.Application.Interfaces.CuentasXPagar;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Interfaces.Nomina;
@@ -130,6 +131,8 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAdquisicionCrudAppService<CLCFacturaResponse>, CLCFacturaAppService>();
             services.AddScoped<IAdquisicionCrudAppService<ChequeResponse>, ChequeAppService>();
             services.AddScoped<IAdquisicionCrudAppService<ChequePartidaResponse>, ChequePartidaAppService>();
+            services.AddScoped<IDepositoAppService, DepositoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<DepositoResponse>>(sp => sp.GetRequiredService<IDepositoAppService>());
 
             // Application services - Patrimonio
             services.AddScoped<IFamiliaService, FamiliaService>();

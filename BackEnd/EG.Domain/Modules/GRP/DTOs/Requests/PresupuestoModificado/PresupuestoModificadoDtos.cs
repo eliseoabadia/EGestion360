@@ -129,4 +129,25 @@ namespace EG.Domain.DTOs.Requests.PresupuestoModificado
     {
         public int PkidIngresoAutorizado { get; set; }
     }
+
+    public class IngreXEjerDto
+    {
+        public int PkIdIngresoAutorizado { get; set; }
+    }
+
+    public class IngresoCLCFacturaDto
+    {
+        public int PkidClcfactura { get; set; }
+        public int FkidEmpresaSis { get; set; }
+        public int FkidClcPres { get; set; }
+        public int FkidFacturaPres { get; set; }
+        public int FkidFacturaDetallePres { get; set; }
+        public decimal MontoAplicado { get; set; }
+        public string? Observaciones { get; set; }
+        public bool Activo { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int UsuarioCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
+        public int? UsuarioModificacion { get; set; }
+    }
 }

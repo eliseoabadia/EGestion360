@@ -67,6 +67,8 @@ public partial class IngresoAutorizado
 
     public int? FkidDestinoGastoPres { get; set; }
 
+    public virtual ICollection<Clcfactura> Clcfacturas { get; set; } = new List<Clcfactura>();
+
     public virtual DestinoGasto FkidDestinoGastoPresNavigation { get; set; }
 
     public virtual DigitoIdentificador FkidDigitoIdentificadorPresNavigation { get; set; }

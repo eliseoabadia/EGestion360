@@ -140,4 +140,76 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             Code = "EMPRESA_REQUIRED"
         };
     }
+
+    [ApiController]
+    [Authorize]
+    [Route("api/[controller]")]
+    public class IngresoRecaudarController(
+        GenericService<VwIngreXejer, IngreXEjerDto, IngreXEjerResponse> service,
+        IUserContextService userContext) : ControllerBase
+    {
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<PagedResult<IngreXEjerResponse>>> GetById(int id)
+        {
+            if (!userContext.TryGetCurrentEmpresaId().HasValue)
+                return BadRequest(CompanyRequired());
+
+            var item = await service.GetByIdAsync(id, idPropertyName: "PkIdIngresoAutorizado");
+            return item == null
+                ? NotFound(new PagedResult<IngreXEjerResponse> { Success = false, Message = "Registro no encontrado", Code = "NOT_FOUND" })
+                : Ok(new PagedResult<IngreXEjerResponse> { Success = true, Data = item, Items = [item], TotalCount = 1 });
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<IngreXEjerResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        {
+            if (!userContext.TryGetCurrentEmpresaId().HasValue)
+                return BadRequest(CompanyRequired());
+
+            return Ok(await service.GetAllPaginadoAsync(request));
+        }
+
+        private static PagedResult<IngreXEjerResponse> CompanyRequired() => new()
+        {
+            Success = false,
+            Message = "No se encontro la empresa activa en la sesion.",
+            Code = "EMPRESA_REQUIRED"
+        };
+    }
+
+    [ApiController]
+    [Authorize]
+    [Route("api/[controller]")]
+    public class IngresoCLCFacturaController(
+        GenericService<VwClcfactura, IngresoCLCFacturaDto, IngresoCLCFacturaResponse> service,
+        IUserContextService userContext) : ControllerBase
+    {
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<PagedResult<IngresoCLCFacturaResponse>>> GetById(int id)
+        {
+            if (!userContext.TryGetCurrentEmpresaId().HasValue)
+                return BadRequest(CompanyRequired());
+
+            var item = await service.GetByIdAsync(id, idPropertyName: "PkidClcfactura");
+            return item == null
+                ? NotFound(new PagedResult<IngresoCLCFacturaResponse> { Success = false, Message = "Registro no encontrado", Code = "NOT_FOUND" })
+                : Ok(new PagedResult<IngresoCLCFacturaResponse> { Success = true, Data = item, Items = [item], TotalCount = 1 });
+        }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<IngresoCLCFacturaResponse>>> GetAllPaginado([FromBody] PagedRequest request)
+        {
+            if (!userContext.TryGetCurrentEmpresaId().HasValue)
+                return BadRequest(CompanyRequired());
+
+            return Ok(await service.GetAllPaginadoAsync(request));
+        }
+
+        private static PagedResult<IngresoCLCFacturaResponse> CompanyRequired() => new()
+        {
+            Success = false,
+            Message = "No se encontro la empresa activa en la sesion.",
+            Code = "EMPRESA_REQUIRED"
+        };
+    }
 }

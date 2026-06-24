@@ -147,6 +147,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Dependencium> Dependencia { get; set; }
 
+    public virtual DbSet<Deposito> Depositos { get; set; }
+
     public virtual DbSet<DescuentoCredito> DescuentoCreditos { get; set; }
 
     public virtual DbSet<DescuentoInfonavit> DescuentoInfonavits { get; set; }
@@ -681,6 +683,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwCuotasImss> VwCuotasImsses { get; set; }
 
+    public virtual DbSet<VwDeposito> VwDepositos { get; set; }
+
     public virtual DbSet<VwDescuentoCredito> VwDescuentoCreditos { get; set; }
 
     public virtual DbSet<VwDescuentoInfonavit> VwDescuentoInfonavits { get; set; }
@@ -768,6 +772,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwInfonavit> VwInfonavits { get; set; }
 
     public virtual DbSet<VwInformeTrimestral> VwInformeTrimestrals { get; set; }
+
+    public virtual DbSet<VwIngreXejer> VwIngreXejers { get; set; }
 
     public virtual DbSet<VwIngresoAdecuacion> VwIngresoAdecuacions { get; set; }
 
@@ -2450,6 +2456,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidFacturaDetallePres).HasColumnName("FKIdFacturaDetalle_PRES");
             entity.Property(e => e.FkidFacturaPres).HasColumnName("FKIdFactura_PRES");
+            entity.Property(e => e.FkidIngresoAutorizadoPres).HasColumnName("FKIdIngresoAutorizado_PRES");
             entity.Property(e => e.MontoAplicado).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Observaciones).HasMaxLength(500);
 
@@ -2472,6 +2479,10 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidFacturaPres)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CLCFactura_Factura");
+
+            entity.HasOne(d => d.FkidIngresoAutorizadoPresNavigation).WithMany(p => p.Clcfacturas)
+                .HasForeignKey(d => d.FkidIngresoAutorizadoPres)
+                .HasConstraintName("FK_CLCFactura_IngresoAutorizado");
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ClcfacturaUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
@@ -3711,6 +3722,48 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(20);
             entity.Property(e => e.UsuarioCreacion).HasDefaultValue(1, "DF_PBR_Dependencia_UsuarioCreacion");
+        });
+
+        modelBuilder.Entity<Deposito>(entity =>
+        {
+            entity.HasKey(e => e.PkidDeposito);
+
+            entity.ToTable("Deposito", "PRES");
+
+            entity.HasIndex(e => e.FkidClcfacturaPres, "UX_Deposito_CLCFactura_Activo")
+                .IsUnique()
+                .HasFilter("([Activo]=(1) AND [FKIdCLCFactura_PRES] IS NOT NULL)");
+
+            entity.Property(e => e.PkidDeposito).HasColumnName("PKIdDeposito");
+            entity.Property(e => e.Abril).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Deposito_Activo");
+            entity.Property(e => e.Agosto).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ConceptoCheque).HasMaxLength(150);
+            entity.Property(e => e.Diciembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Enero).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Febrero).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Deposito_FechaCreacion");
+            entity.Property(e => e.FkidClcfacturaPres).HasColumnName("FKIdCLCFactura_PRES");
+            entity.Property(e => e.FkidCuentaAbonoConta).HasColumnName("FKIdCuentaAbono_CONTA");
+            entity.Property(e => e.FkidCuentaCargoConta).HasColumnName("FKIdCuentaCargo_CONTA");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidIngresoAutorizadoPres).HasColumnName("FKIdIngresoAutorizado_PRES");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidTipoDoctoPagoConta).HasColumnName("FKIdTipoDoctoPago_CONTA");
+            entity.Property(e => e.Importe).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Julio).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Junio).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Marzo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Mayo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.NombreAportante).HasMaxLength(500);
+            entity.Property(e => e.Noviembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.NumeroReferencia).HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Septiembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Total)
+                .HasComputedColumnSql("(((((((((((isnull([Enero],(0))+isnull([Febrero],(0)))+isnull([Marzo],(0)))+isnull([Abril],(0)))+isnull([Mayo],(0)))+isnull([Junio],(0)))+isnull([Julio],(0)))+isnull([Agosto],(0)))+isnull([Septiembre],(0)))+isnull([Octubre],(0)))+isnull([Noviembre],(0)))+isnull([Diciembre],(0)))", false)
+                .HasColumnType("decimal(29, 2)");
         });
 
         modelBuilder.Entity<DescuentoCredito>(entity =>
@@ -12475,10 +12528,29 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.NumFactura)
                 .IsRequired()
                 .HasMaxLength(250);
+            entity.Property(e => e.Abr).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Ago).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Concepto).HasMaxLength(250);
+            entity.Property(e => e.Dic).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Ene).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Feb).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Importe).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Iva).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Jul).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Jun).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Mar).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.May).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Nombre).HasMaxLength(250);
+            entity.Property(e => e.Nov).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.NumReferenciaDocto).HasMaxLength(50);
+            entity.Property(e => e.Oct).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.PartidaClave).HasMaxLength(10);
             entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
             entity.Property(e => e.PkidClcfactura).HasColumnName("PKIdCLCFactura");
+            entity.Property(e => e.Rfc).HasMaxLength(20);
+            entity.Property(e => e.Sep).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(20, 4)");
         });
 
         modelBuilder.Entity<VwConcepto>(entity =>
@@ -13097,6 +13169,69 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
             entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
             entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
+        modelBuilder.Entity<VwDeposito>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Deposito", "PRES");
+
+            entity.Property(e => e.Abril).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Agosto).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ClavePoliza).HasMaxLength(10);
+            entity.Property(e => e.ClcfacturaFecha).HasColumnName("CLCFacturaFecha");
+            entity.Property(e => e.ConceptoCheque).HasMaxLength(150);
+            entity.Property(e => e.CuentaAbonoClave)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaAbonoDescripcion)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaCargoClave)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.CuentaCargoDescripcion)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Diciembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.Enero).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Febrero).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.FkidClcfacturaPres).HasColumnName("FKIdCLCFactura_PRES");
+            entity.Property(e => e.FkidCuentaAbonoConta).HasColumnName("FKIdCuentaAbono_CONTA");
+            entity.Property(e => e.FkidCuentaCargoConta).HasColumnName("FKIdCuentaCargo_CONTA");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidIngresoAutorizadoPres).HasColumnName("FKIdIngresoAutorizado_PRES");
+            entity.Property(e => e.FkidOrigenPres).HasColumnName("FKIdOrigen_PRES");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidTipoDoctoPagoConta).HasColumnName("FKIdTipoDoctoPago_CONTA");
+            entity.Property(e => e.Importe).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.IngresoAutorizadoDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Julio).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Junio).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Marzo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Mayo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.NombreAportante).HasMaxLength(500);
+            entity.Property(e => e.NombrePoliza).HasMaxLength(1000);
+            entity.Property(e => e.Noviembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.NumeroReferencia).HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.Octubre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.OrigenClaveNombre)
+                .IsRequired()
+                .HasMaxLength(65);
+            entity.Property(e => e.OrigenDescripcion).HasMaxLength(50);
+            entity.Property(e => e.PkidDeposito).HasColumnName("PKIdDeposito");
+            entity.Property(e => e.ProgramaClave).HasMaxLength(50);
+            entity.Property(e => e.ProgramaClaveNombre)
+                .IsRequired()
+                .HasMaxLength(308);
+            entity.Property(e => e.ProgramaDescripcion).HasMaxLength(255);
+            entity.Property(e => e.Septiembre).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TipoDoctoPagoDescripcion).HasMaxLength(50);
+            entity.Property(e => e.Total).HasColumnType("decimal(29, 2)");
         });
 
         modelBuilder.Entity<VwDescuentoCredito>(entity =>
@@ -14281,6 +14416,39 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.PkidInformeTrimestral).HasColumnName("PKIdInformeTrimestral");
             entity.Property(e => e.ProgramaDescripcion).HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<VwIngreXejer>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_IngreXEjer", "PRES");
+
+            entity.Property(e => e.Abr).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Ago).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.AreaFuncional)
+                .IsRequired()
+                .HasMaxLength(255);
+            entity.Property(e => e.Descripcion).HasMaxLength(250);
+            entity.Property(e => e.Dic).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Ene).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Feb).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.FkIdAnioSis).HasColumnName("Fk_IdAnio__SIS");
+            entity.Property(e => e.FkIdOrigenPres).HasColumnName("Fk_IdOrigen__PRES");
+            entity.Property(e => e.FkIdProgramaPres).HasColumnName("Fk_IdPrograma__PRES");
+            entity.Property(e => e.Jul).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Jun).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Mar).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.May).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Message).IsUnicode(false);
+            entity.Property(e => e.Nov).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Oct).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Origen)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PkIdIngresoAutorizado).HasColumnName("Pk_IdIngresoAutorizado");
+            entity.Property(e => e.Sep).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(38, 4)");
         });
 
         modelBuilder.Entity<VwIngresoAdecuacion>(entity =>

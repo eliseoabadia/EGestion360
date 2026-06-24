@@ -44,6 +44,10 @@ namespace EG.Business.Mapping.CuentasXPagar
             config.NewConfig<ChequePartida, ChequePartidaDto>().TwoWays();
             config.NewConfig<VwChequePartida, ChequePartidaResponse>().TwoWays();
             config.NewConfig<ChequePartidaResponse, ChequePartidaDto>().TwoWays();
+
+            config.NewConfig<Deposito, DepositoDto>().TwoWays();
+            config.NewConfig<VwDeposito, DepositoResponse>().TwoWays();
+            config.NewConfig<DepositoResponse, DepositoDto>().TwoWays();
         }
     }
 }

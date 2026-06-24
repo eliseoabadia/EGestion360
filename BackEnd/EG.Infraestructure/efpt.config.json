@@ -747,6 +747,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[Deposito]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[DestinoGasto]",
          "ObjectType": 0
       },
@@ -1847,6 +1851,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[Vw_Deposito]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_EgresoAdecuacion]",
          "ObjectType": 3
       },
@@ -1892,6 +1900,10 @@
       },
       {
          "Name": "[PRES].[Vw_IngresoDisponible]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[VW_IngreXEjer]",
          "ObjectType": 3
       },
       {
@@ -2263,6 +2275,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[PRES].[SP_MantenimientoDeposito]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[PRES].[sp_MantenimientoEgresoAdecuacion]",
          "ObjectType": 1
       },
@@ -2276,6 +2292,10 @@
       },
       {
          "Name": "[PRES].[sp_MantenimientoIngresoAutorizado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[sp_MantenimientoIngresoCLCFactura]",
          "ObjectType": 1
       },
       {

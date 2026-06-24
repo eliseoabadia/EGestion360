@@ -31,6 +31,10 @@ public partial class Clcfactura
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidIngresoAutorizadoPres { get; set; }
+
+    public DateOnly? Fecha { get; set; }
+
     public virtual Clc FkidClcPresNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
@@ -38,6 +42,8 @@ public partial class Clcfactura
     public virtual FacturaDetalle FkidFacturaDetallePresNavigation { get; set; }
 
     public virtual Factura FkidFacturaPresNavigation { get; set; }
+
+    public virtual IngresoAutorizado FkidIngresoAutorizadoPresNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

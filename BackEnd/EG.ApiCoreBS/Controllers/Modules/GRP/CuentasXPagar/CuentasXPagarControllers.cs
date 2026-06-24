@@ -1,4 +1,5 @@
 using EG.Application.Interfaces.Adquisicion;
+using EG.Application.Interfaces.CuentasXPagar;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
@@ -114,4 +115,52 @@ namespace EG.ApiCoreBS.Controllers.CuentasXPagar
     [Route("api/[controller]")]
     public class ChequePartidaController(IAdquisicionCrudAppService<ChequePartidaResponse> service, IUserContextService userContext)
         : CuentasXPagarControllerBase<ChequePartidaResponse>(service, userContext);
+
+    [Route("api/[controller]")]
+    public class DepositoController(IDepositoAppService service, IUserContextService userContext)
+        : CuentasXPagarControllerBase<DepositoResponse>(service, userContext)
+    {
+        [HttpPost("{id:int}/autorizar")]
+        public async Task<ActionResult<PagedResult<DepositoResponse>>> Autorizar(int id)
+        {
+            var result = await service.AutorizarAsync(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("{id:int}/poliza")]
+        public async Task<ActionResult<PagedResult<DepositoPolizaResponse>>> GetPoliza(int id)
+        {
+            var result = await service.GetPolizaAsync(id);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        [HttpGet("GetIngresoAutorizadoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetIngresoAutorizadoLookupPaginado(
+            int page = 1,
+            int pageSize = 25,
+            string? filter = null,
+            int? idAnio = null)
+            => Ok(await service.GetIngresoAutorizadoLookupPaginadoAsync(page, pageSize, filter, idAnio));
+
+        [HttpGet("GetCLCFacturaLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCLCFacturaLookupPaginado(
+            int page = 1,
+            int pageSize = 25,
+            string? filter = null)
+            => Ok(await service.GetCLCFacturaLookupPaginadoAsync(page, pageSize, filter));
+
+        [HttpGet("GetTipoDoctoPagoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetTipoDoctoPagoLookupPaginado(
+            int page = 1,
+            int pageSize = 25,
+            string? filter = null)
+            => Ok(await service.GetTipoDoctoPagoLookupPaginadoAsync(page, pageSize, filter));
+
+        [HttpGet("GetCuentaContableLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableLookupPaginado(
+            int page = 1,
+            int pageSize = 25,
+            string? filter = null)
+            => Ok(await service.GetCuentaContableLookupPaginadoAsync(page, pageSize, filter));
+    }
 }

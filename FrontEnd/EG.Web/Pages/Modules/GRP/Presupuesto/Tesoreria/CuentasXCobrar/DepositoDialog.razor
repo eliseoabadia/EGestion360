@@ -1,0 +1,387 @@
+@using System.Globalization
+@using System.Net.Http.Json
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+
+@inject IGenericCrudService<DepositoResponse> Service
+@inject AnioPresupuestalStateService AnioStateService
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="DepositoResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.ExtraExtraLarge"
+                ActionColor="@ActionColor"
+                ActionIcon="@ActionIcon"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                LoadingMessage="Cargando deposito..."
+                CanConfirm="@(!item.EstaAutorizado)"
+                OnConfirm="GuardarAsync">
+    <BaseEntityForm TEntity="DepositoResponse" @ref="form" ShowHeader="false">
+        <MudGrid GutterSize="1" Class="deposito-dialog">
+            <MudItem xs="12">
+                <div class="deposit-ribbon">
+                    <div>
+                        <span>Total @CurrencyName</span>
+                        <strong>@Money(TotalMeses)</strong>
+                    </div>
+                    <div>
+                        <span>Poliza</span>
+                        <strong>@PolicyStatus</strong>
+                    </div>
+                    <div>
+                        <span>Estatus</span>
+                        <strong>@(item.EstaAutorizado ? "Autorizado" : "Pendiente")</strong>
+                    </div>
+                </div>
+            </MudItem>
+
+            @if (item.EstaAutorizado)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Success" Dense="true">
+                        Este deposito ya tiene la poliza autorizada y se conserva en modo de consulta.
+                    </MudAlert>
+                </MudItem>
+            }
+            else if (IsAuthorizationFlow)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info"
+                              Variant="Variant.Outlined"
+                              Icon="@Icons.Material.Filled.VerifiedUser">
+                        Revisa el importe y la poliza. Al autorizar, el deposito quedara bloqueado para crear cambios, edicion o eliminacion.
+                    </MudAlert>
+                </MudItem>
+            }
+
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_ingreso"
+                                   ValueChanged="OnIngresoChanged"
+                                   Label="Ingreso autorizado"
+                                   Required="true"
+                                   RequiredError="El ingreso autorizado es requerido"
+                                   Disabled="@FieldsLocked"
+                                   LoadPage="LoadIngresosAsync" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <PagedAutocomplete Value="@_tipoDocto"
+                                   ValueChanged="value => _tipoDocto = value"
+                                   Label="Tipo de documento"
+                                   Required="true"
+                                   RequiredError="El tipo de documento es requerido"
+                                   Disabled="@FieldsLocked"
+                                   LoadPage="LoadTiposDoctoAsync" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="2">
+                <MudDatePicker Date="@_fechaEmision"
+                               DateChanged="value => _fechaEmision = value"
+                               Label="Fecha emision"
+                               Variant="Variant.Outlined"
+                               DateFormat="dd/MM/yyyy"
+                               Culture="@DateCulture"
+                               Required="true"
+                               RequiredError="La fecha es requerida"
+                               Disabled="@FieldsLocked" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="item.NumeroReferencia"
+                              Label="Referencia"
+                              Variant="Variant.Outlined"
+                              MaxLength="50"
+                              Required="true"
+                              RequiredError="La referencia es requerida"
+                              Disabled="@FieldsLocked" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudTextField @bind-Value="item.NombreAportante"
+                              Label="Aportante"
+                              Variant="Variant.Outlined"
+                              MaxLength="250"
+                              Required="true"
+                              RequiredError="El aportante es requerido"
+                              Disabled="@FieldsLocked" />
+            </MudItem>
+            <MudItem xs="12" md="5">
+                <PagedAutocomplete Value="@_clcFactura"
+                                   ValueChanged="value => _clcFactura = value"
+                                   Label="CLC factura"
+                                   Clearable="true"
+                                   Disabled="@FieldsLocked"
+                                   LoadPage="LoadCLCFacturasAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_cuentaCargo"
+                                   ValueChanged="value => _cuentaCargo = value"
+                                   Label="Cuenta cargo"
+                                   Required="true"
+                                   RequiredError="La cuenta cargo es requerida"
+                                   Disabled="@FieldsLocked"
+                                   LoadPage="LoadCuentasAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_cuentaAbono"
+                                   ValueChanged="value => _cuentaAbono = value"
+                                   Label="Cuenta abono"
+                                   Required="true"
+                                   RequiredError="La cuenta abono es requerida"
+                                   Disabled="@FieldsLocked"
+                                   LoadPage="LoadCuentasAsync" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.ConceptoCheque"
+                              Label="Concepto"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="500"
+                              Counter="500"
+                              Required="true"
+                              RequiredError="El concepto es requerido"
+                              Disabled="@FieldsLocked" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <section class="months-panel">
+                    <div class="months-header">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Distribucion mensual</MudText>
+                            <MudText Typo="Typo.caption">Captura importes con punto decimal. El total alimenta el importe del deposito y la poliza.</MudText>
+                        </div>
+                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
+                    </div>
+                    <MudGrid GutterSize="1">
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                    </MudGrid>
+                </section>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Observaciones"
+                              Label="Observaciones"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              MaxLength="500"
+                              Counter="500"
+                              Disabled="@FieldsLocked" />
+            </MudItem>
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <div class="audit-strip">
+                        <span>Creado: <strong>@Audit(item.UsuarioCreacion, item.FechaCreacion)</strong></span>
+                        <span>Modificado: <strong>@Audit(item.UsuarioModificacion, item.FechaModificacion)</strong></span>
+                        <span>Autorizado: <strong>@(item.FechaAutorizacionPoliza.HasValue ? item.FechaAutorizacionPoliza.Value.ToString("dd/MM/yyyy HH:mm", DateCulture) : "-")</strong></span>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+<style>
+    .deposito-dialog .deposit-ribbon { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .deposito-dialog .deposit-ribbon > div { border: 1px solid color-mix(in srgb, var(--eg-primary) 36%, var(--mud-palette-lines-default)); border-radius: 8px; padding: 8px 10px; background: color-mix(in srgb, var(--eg-primary) 7%, var(--mud-palette-surface)); }
+    .deposito-dialog .deposit-ribbon span { display: block; color: var(--mud-palette-text-secondary); font-size: .72rem; text-transform: uppercase; }
+    .deposito-dialog .deposit-ribbon strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.04rem; }
+    .deposito-dialog .months-panel { display: block; border: 1px solid color-mix(in srgb, var(--eg-primary) 28%, var(--mud-palette-lines-default)); border-radius: 8px; padding: 10px; background: color-mix(in srgb, var(--eg-primary) 7%, var(--mud-palette-surface)); }
+    .deposito-dialog .months-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .deposito-dialog .audit-strip { display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--mud-palette-lines-default); padding-top: 9px; color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    @@media (max-width: 760px) { .deposito-dialog .deposit-ribbon { grid-template-columns: 1fr; } .deposito-dialog .months-header { align-items: flex-start; flex-direction: column; } }
+</style>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int AnioId { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
+    [Parameter] public bool IsAuthorizationFlow { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<DepositoResponse> form = null!;
+    private DepositoResponse item = new() { Activo = true, FechaEmision = DateOnly.FromDateTime(DateTime.Today) };
+    private DateTime? _fechaEmision = DateTime.Today;
+    private LookupItem? _ingreso;
+    private LookupItem? _tipoDocto;
+    private LookupItem? _cuentaCargo;
+    private LookupItem? _cuentaAbono;
+    private LookupItem? _clcFactura;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    private bool FieldsLocked => item.EstaAutorizado || IsAuthorizationFlow;
+    private string DialogTitle => item.EstaAutorizado
+        ? "Consultar deposito CLC"
+        : IsAuthorizationFlow
+            ? "Autorizar deposito CLC"
+            : Id.HasValue ? "Editar deposito CLC" : "Nuevo deposito CLC";
+    private Color ActionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
+    private string ActionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
+    private string ActionText => IsAuthorizationFlow ? "Autorizar deposito" : Id.HasValue ? "Actualizar" : "Crear deposito";
+    private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
+    private string PolicyStatus => item.FkidPolizaConta > 0
+        ? $"{(string.IsNullOrWhiteSpace(item.ClavePoliza) ? $"#{item.FkidPolizaConta}" : item.ClavePoliza)} {(item.PolizaBalanceada == true ? "balanceada" : "pendiente")}"
+        : "Se genera al guardar";
+    private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+        if (Id.HasValue) await LoadItemAsync();
+    }
+
+    private async Task LoadItemAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success != true || response.Data == null)
+            {
+                Snackbar.Add(response?.Message ?? "No fue posible cargar el deposito.", Severity.Error);
+                return;
+            }
+
+            item = response.Data;
+            _fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
+            _ingreso = OptionalLookup(item.FkidIngresoAutorizadoPres, item.IngresoAutorizadoDescripcion);
+            _tipoDocto = RequiredLookup(item.FkidTipoDoctoPagoConta, item.TipoDoctoPagoDescripcion);
+            _cuentaCargo = RequiredLookup(item.FkidCuentaCargoConta, BuildText(item.CuentaCargoClave, item.CuentaCargoDescripcion));
+            _cuentaAbono = RequiredLookup(item.FkidCuentaAbonoConta, BuildText(item.CuentaAbonoClave, item.CuentaAbonoDescripcion));
+            _clcFactura = OptionalLookup(item.FkidClcfacturaPres, item.ClcfacturaFecha.HasValue ? $"CLC factura #{item.FkidClcfacturaPres} | {item.ClcfacturaFecha:dd/MM/yyyy}" : null);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar el deposito: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (item.EstaAutorizado) return;
+        if (IsAuthorizationFlow)
+        {
+            await AutorizarAsync();
+            return;
+        }
+
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+        if (_ingreso == null || _tipoDocto == null || _cuentaCargo == null || _cuentaAbono == null || !_fechaEmision.HasValue)
+        {
+            Snackbar.Add("Selecciona ingreso, tipo de documento, cuentas y fecha.", Severity.Warning);
+            return;
+        }
+        if (TotalMeses <= 0m)
+        {
+            Snackbar.Add("El total mensual debe ser mayor que cero.", Severity.Warning);
+            return;
+        }
+
+        item.FkidIngresoAutorizadoPres = _ingreso.Id;
+        item.FkidTipoDoctoPagoConta = _tipoDocto.Id;
+        item.FkidCuentaCargoConta = _cuentaCargo.Id;
+        item.FkidCuentaAbonoConta = _cuentaAbono.Id;
+        item.FkidClcfacturaPres = _clcFactura?.Id;
+        item.FechaEmision = DateOnly.FromDateTime(_fechaEmision.Value);
+        item.Importe = TotalMeses;
+        item.Total = TotalMeses;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Deposito guardado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+            Snackbar.Add(response?.Message ?? "No fue posible guardar el deposito.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task AutorizarAsync()
+    {
+        if (!Id.HasValue)
+        {
+            Snackbar.Add("No se encontro el deposito que se desea autorizar.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsync($"api/Deposito/{Id.Value}/autorizar", null);
+            var result = await response.Content.ReadFromJsonAsync<EG.Common.GenericModel.PagedResult<DepositoResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Deposito autorizado correctamente.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No fue posible autorizar el deposito.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al autorizar el deposito: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void OnIngresoChanged(LookupItem? value)
+    {
+        _ingreso = value;
+        if (value != null && string.IsNullOrWhiteSpace(item.ConceptoCheque))
+            item.ConceptoCheque = value.Text;
+    }
+
+    private Task<ComboLookupResult> LoadIngresosAsync(int page, int size, string filter, CancellationToken ct)
+        => LoadLookupAsync("GetIngresoAutorizadoLookupPaginado", page, size, filter, ct, AnioId > 0 ? $"&idAnio={AnioId}" : string.Empty);
+    private Task<ComboLookupResult> LoadCLCFacturasAsync(int page, int size, string filter, CancellationToken ct)
+        => LoadLookupAsync("GetCLCFacturaLookupPaginado", page, size, filter, ct);
+    private Task<ComboLookupResult> LoadTiposDoctoAsync(int page, int size, string filter, CancellationToken ct)
+        => LoadLookupAsync("GetTipoDoctoPagoLookupPaginado", page, size, filter, ct);
+    private Task<ComboLookupResult> LoadCuentasAsync(int page, int size, string filter, CancellationToken ct)
+        => LoadLookupAsync("GetCuentaContableLookupPaginado", page, size, filter, ct);
+
+    private async Task<ComboLookupResult> LoadLookupAsync(string endpoint, int page, int size, string filter, CancellationToken ct, string suffix = "")
+    {
+        var url = $"api/Deposito/{endpoint}?page={page}&pageSize={size}&filter={Uri.EscapeDataString(filter ?? string.Empty)}{suffix}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(url, ct) ?? new ComboLookupResult();
+    }
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static LookupItem RequiredLookup(int id, string? text) => new() { Id = id, Text = string.IsNullOrWhiteSpace(text) ? id.ToString() : text };
+    private static LookupItem? OptionalLookup(int? id, string? text) => id.HasValue ? RequiredLookup(id.Value, text) : null;
+    private static string Audit(int? userId, DateTime? date) => !date.HasValue ? "-" : $"usuario {userId?.ToString() ?? "-"}, {date:dd/MM/yyyy HH:mm}";
+    private static string BuildText(string? clave, string? descripcion)
+        => string.IsNullOrWhiteSpace(clave) ? descripcion ?? string.Empty : string.IsNullOrWhiteSpace(descripcion) ? clave : $"{clave} - {descripcion}";
+}
