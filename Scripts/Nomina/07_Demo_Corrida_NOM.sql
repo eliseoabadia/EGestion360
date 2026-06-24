@@ -13,7 +13,7 @@ IF OBJECT_ID(N'[NOM].[CorridaNomina]', N'U') IS NULL
 BEGIN
     CREATE TABLE [NOM].[CorridaNomina] (
         [PKIdCorridaNomina] int IDENTITY(1,1) NOT NULL,
-        [FKIdEmpresaNomina_NOM] int NOT NULL,
+        [FKIdEmpresa_SIS] int NOT NULL,
         [IdPeriodo] int NOT NULL,
         [Anio] int NULL,
         [TipoCorrida] nvarchar(30) NOT NULL CONSTRAINT [DF_NOM_CorridaNomina_Tipo] DEFAULT N'DEMO',
@@ -34,6 +34,31 @@ BEGIN
         CONSTRAINT [PK_NOM_CorridaNomina] PRIMARY KEY ([PKIdCorridaNomina])
     );
 END
+GO
+
+IF OBJECT_ID(N'[NOM].[CorridaNomina]', N'U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH(N'NOM.CorridaNomina', N'FKIdEmpresa_SIS') IS NULL
+    BEGIN
+        ALTER TABLE [NOM].[CorridaNomina]
+            ADD [FKIdEmpresa_SIS] int NULL;
+    END;
+
+    IF COL_LENGTH(N'NOM.CorridaNomina', N'FKIdEmpresaNomina_NOM') IS NOT NULL
+    BEGIN
+        IF COLUMNPROPERTY(OBJECT_ID(N'NOM.CorridaNomina'), N'FKIdEmpresaNomina_NOM', 'AllowsNull') = 0
+        BEGIN
+            ALTER TABLE [NOM].[CorridaNomina]
+                ALTER COLUMN [FKIdEmpresaNomina_NOM] int NULL;
+        END;
+
+        EXEC(N'
+            UPDATE [NOM].[CorridaNomina]
+            SET [FKIdEmpresa_SIS] = COALESCE([FKIdEmpresa_SIS], [FKIdEmpresaNomina_NOM])
+            WHERE [FKIdEmpresa_SIS] IS NULL;
+        ');
+    END;
+END;
 GO
 
 IF OBJECT_ID(N'[NOM].[CorridaNominaDetalle]', N'U') IS NULL
@@ -66,8 +91,9 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_NOM_CorridaNomina_Demo' AND object_id = OBJECT_ID(N'[NOM].[CorridaNomina]'))
     CREATE UNIQUE INDEX [UX_NOM_CorridaNomina_Demo]
-        ON [NOM].[CorridaNomina] ([FKIdEmpresaNomina_NOM], [IdPeriodo], [TipoCorrida])
-        WHERE [Activo] = 1;
+        ON [NOM].[CorridaNomina] ([FKIdEmpresa_SIS], [IdPeriodo], [TipoCorrida])
+        WHERE [Activo] = 1
+          AND [FKIdEmpresa_SIS] IS NOT NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_NOM_CorridaNominaDetalle_CorridaPersona' AND object_id = OBJECT_ID(N'[NOM].[CorridaNominaDetalle]'))
@@ -124,7 +150,7 @@ CREATE OR ALTER VIEW [NOM].[Vw_CorridaNomina]
 AS
 SELECT
     c.[PKIdCorridaNomina],
-    c.[FKIdEmpresaNomina_NOM] AS [EmpresaNominaId],
+    c.[FKIdEmpresa_SIS] AS [EmpresaNominaId],
     en.[RazonSocial] AS [EmpresaNominaNombre],
     c.[IdPeriodo],
     c.[Anio],
@@ -144,8 +170,8 @@ SELECT
     c.[FechaModificacion],
     c.[UsuarioModificacion]
 FROM [NOM].[CorridaNomina] c
-LEFT JOIN [NOM].[EmpresaNomina] en
-    ON en.[PKIdEmpresaNomina] = c.[FKIdEmpresaNomina_NOM];
+LEFT JOIN [SIS].[Empresa] en
+    ON en.[PKIdEmpresa] = c.[FKIdEmpresa_SIS];
 GO
 
 CREATE OR ALTER VIEW [NOM].[Vw_CorridaNominaDetalle]
@@ -294,8 +320,8 @@ BEGIN
     FROM [SIS].[Usuario] u
     LEFT JOIN [NOM].[Vw_Persona] vp
         ON vp.[PKIdPersona] = u.[FKIdPersona_NOM]
-    LEFT JOIN [NOM].[EmpresaNomina] en
-        ON en.[PKIdEmpresaNomina] = @EmpresaObjetivo
+    LEFT JOIN [SIS].[Empresa] en
+        ON en.[PKIdEmpresa] = @EmpresaObjetivo
     WHERE u.[PkIdUsuario] = @UsuarioObjetivo;
 END
 GO
@@ -379,7 +405,7 @@ BEGIN
 
     SELECT @CorridaId = [PKIdCorridaNomina]
     FROM [NOM].[CorridaNomina]
-    WHERE [FKIdEmpresaNomina_NOM] = @EmpresaNominaId
+    WHERE [FKIdEmpresa_SIS] = @EmpresaNominaId
       AND [IdPeriodo] = @PeriodoId
       AND [TipoCorrida] = N'DEMO'
       AND [Activo] = 1;
@@ -387,7 +413,7 @@ BEGIN
     IF @CorridaId IS NULL
     BEGIN
         INSERT INTO [NOM].[CorridaNomina]
-            ([FKIdEmpresaNomina_NOM], [IdPeriodo], [Anio], [TipoCorrida], [Estatus], [FechaProceso], [Observaciones], [UsuarioCreacion], [FechaCreacion], [Activo])
+            ([FKIdEmpresa_SIS], [IdPeriodo], [Anio], [TipoCorrida], [Estatus], [FechaProceso], [Observaciones], [UsuarioCreacion], [FechaCreacion], [Activo])
         VALUES
             (@EmpresaNominaId, @PeriodoId, @Anio, N'DEMO', N'Calculada', @FechaProceso, @Observaciones, @UsuarioObjetivo, SYSUTCDATETIME(), 1);
 
@@ -519,7 +545,7 @@ BEGIN
 
     SELECT
         c.[PKIdCorridaNomina] AS [CorridaId],
-        c.[FKIdEmpresaNomina_NOM] AS [EmpresaId],
+        c.[FKIdEmpresa_SIS] AS [EmpresaId],
         en.[RazonSocial] AS [EmpresaNombre],
         c.[IdPeriodo] AS [PeriodoId],
         c.[Anio],
@@ -535,8 +561,8 @@ BEGIN
         SYSUTCDATETIME() AS [FechaIntento],
         CAST(CONCAT(N'Corrida demo generada: ', c.[TotalPersonas], N' personas, ', c.[TotalMovimientos], N' movimientos.') AS nvarchar(500)) AS [Mensaje]
     FROM [NOM].[CorridaNomina] c
-    LEFT JOIN [NOM].[EmpresaNomina] en
-        ON en.[PKIdEmpresaNomina] = c.[FKIdEmpresaNomina_NOM]
+    LEFT JOIN [SIS].[Empresa] en
+        ON en.[PKIdEmpresa] = c.[FKIdEmpresa_SIS]
     WHERE c.[PKIdCorridaNomina] = @CorridaId;
 END
 GO

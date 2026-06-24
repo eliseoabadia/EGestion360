@@ -2,6 +2,7 @@
 @page "/nom/calcnomina"
 @page "/nom/cierraperiodo"
 @page "/nom/calcaguinaldo"
+@page "/nom/primavacacionalind"
 @using System.Globalization
 @using EG.Domain.DTOs.Requests.Nomina
 @using EG.Domain.DTOs.Responses.Nomina
@@ -152,6 +153,7 @@
         "/nom/calcnomina" => "Calculo",
         "/nom/cierraperiodo" => "Cierre_Periodo",
         "/nom/calcaguinaldo" => "Nominas_Especiales",
+        "/nom/primavacacionalind" => "Nominas_Especiales",
         _ => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Root
     };
 
@@ -160,6 +162,7 @@
         "/nom/calcnomina" => "Calculo_2050",
         "/nom/cierraperiodo" => "Cierre_Periodo",
         "/nom/calcaguinaldo" => "Calc_Aguinaldo",
+        "/nom/primavacacionalind" => "Prima_Vacacional_Individual",
         _ => "Procesos"
     };
     protected override Type CreateDialogType => typeof(DeleteDialog<NominaProcesoResponse>);

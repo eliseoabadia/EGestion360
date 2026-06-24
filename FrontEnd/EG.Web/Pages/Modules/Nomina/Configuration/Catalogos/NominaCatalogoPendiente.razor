@@ -1,24 +1,36 @@
 @page "/nomina/configuracion/isr/semanal"
+@page "/sis/isrsemanal"
 @page "/nomina/configuracion/isr/quincenal"
+@page "/sis/isrquincenal"
 @page "/nomina/configuracion/isr/mensual"
+@page "/sis/isrmensual"
 @page "/nomina/configuracion/tablas-isr/semanal"
 @page "/nomina/configuracion/tablas-isr/quincenal"
 @page "/nomina/configuracion/tablas-isr/mensual"
 @page "/nomina/configuracion/subsidios/semanal"
+@page "/sis/subsidiosemanal"
 @page "/nomina/configuracion/subsidios/quincenal"
+@page "/sis/subsidioquincenal"
 @page "/nomina/configuracion/subsidios/mensual"
+@page "/sis/subsidiomensual"
 @page "/nomina/configuracion/subsidios-isr/semanal"
 @page "/nomina/configuracion/subsidios-isr/quincenal"
 @page "/nomina/configuracion/subsidios-isr/mensual"
 @page "/nomina/configuracion/impuestos/base-gravable"
+@page "/sis/basegravable"
 @page "/nomina/configuracion/impuestos/locales"
 @page "/nomina/configuracion/imss/prestaciones"
+@page "/sis/deprecar"
 @page "/nomina/configuracion/imss/prestaciones-minimas"
+@page "/sis/deprecar1"
 @page "/nomina/configuracion/imss/clase"
+@page "/sis/imssclase"
 @page "/nomina/configuracion/imss/clase-imss"
 @page "/nomina/configuracion/imss/fraccion"
+@page "/sis/imssfraccion"
 @page "/nomina/configuracion/imss/fraccion-imss"
 @page "/nomina/configuracion/imss/base-gravable"
+@page "/sis/basegravableimss"
 @inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
@@ -59,26 +71,38 @@
         new Dictionary<string, PendingCatalogItem>(StringComparer.OrdinalIgnoreCase)
         {
             ["/nomina/configuracion/isr/semanal"] = new("ISR Semanal", "Tabla_ISR_Semanal", "Nomina_Tablas_ISR"),
+            ["/sis/isrsemanal"] = new("ISR Semanal", "Tabla_ISR_Semanal", "Nomina_Tablas_ISR"),
             ["/nomina/configuracion/isr/quincenal"] = new("ISR Quincenal", "Tabla_ISR_Quincenal", "Nomina_Tablas_ISR"),
+            ["/sis/isrquincenal"] = new("ISR Quincenal", "Tabla_ISR_Quincenal", "Nomina_Tablas_ISR"),
             ["/nomina/configuracion/isr/mensual"] = new("ISR Mensual", "Tabla_ISR_Mensual", "Nomina_Tablas_ISR"),
+            ["/sis/isrmensual"] = new("ISR Mensual", "Tabla_ISR_Mensual", "Nomina_Tablas_ISR"),
             ["/nomina/configuracion/tablas-isr/semanal"] = new("ISR Semanal", "ISR_Semanal", "Nomina_Tablas_ISR"),
             ["/nomina/configuracion/tablas-isr/quincenal"] = new("ISR Quincenal", "ISR_Quincenal", "Nomina_Tablas_ISR"),
             ["/nomina/configuracion/tablas-isr/mensual"] = new("ISR Mensual", "ISR_Mensual", "Nomina_Tablas_ISR"),
             ["/nomina/configuracion/subsidios/semanal"] = new("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Nomina_Subsidios_ISR"),
+            ["/sis/subsidiosemanal"] = new("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Nomina_Subsidios_ISR"),
             ["/nomina/configuracion/subsidios/quincenal"] = new("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Nomina_Subsidios_ISR"),
+            ["/sis/subsidioquincenal"] = new("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Nomina_Subsidios_ISR"),
             ["/nomina/configuracion/subsidios/mensual"] = new("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Nomina_Subsidios_ISR"),
+            ["/sis/subsidiomensual"] = new("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Nomina_Subsidios_ISR"),
             ["/nomina/configuracion/subsidios-isr/semanal"] = new("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Nomina_Subsidios_ISR"),
             ["/nomina/configuracion/subsidios-isr/quincenal"] = new("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Nomina_Subsidios_ISR"),
             ["/nomina/configuracion/subsidios-isr/mensual"] = new("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Nomina_Subsidios_ISR"),
             ["/nomina/configuracion/impuestos/base-gravable"] = new("Base Gravable", "Base_Gravable", "Nomina_Impuestos"),
+            ["/sis/basegravable"] = new("Base Gravable", "Base_Gravable", "Nomina_Impuestos"),
             ["/nomina/configuracion/impuestos/locales"] = new("Impuestos Locales", "Impuestos_Locales", "Nomina_Impuestos"),
             ["/nomina/configuracion/imss/prestaciones"] = new("Prestaciones Minimas de Ley", "Prestaciones_Minimas", "Nomina_IMSS"),
+            ["/sis/deprecar"] = new("Prestaciones Minimas de Ley", "Prestaciones_Minimas", "Nomina_IMSS"),
             ["/nomina/configuracion/imss/prestaciones-minimas"] = new("Prestaciones Minimas de Ley", "Prestaciones_Minimas_Ley", "Nomina_IMSS"),
+            ["/sis/deprecar1"] = new("Prestaciones Minimas de Ley", "Prestaciones_Minimas_Ley", "Nomina_IMSS"),
             ["/nomina/configuracion/imss/clase"] = new("Clase IMSS", "Clase_IMSS", "Nomina_IMSS"),
+            ["/sis/imssclase"] = new("Clase IMSS", "Clase_IMSS", "Nomina_IMSS"),
             ["/nomina/configuracion/imss/clase-imss"] = new("Clase IMSS", "Clase_IMSS", "Nomina_IMSS"),
             ["/nomina/configuracion/imss/fraccion"] = new("Fraccion IMSS", "Fraccion_IMSS", "Nomina_IMSS"),
+            ["/sis/imssfraccion"] = new("Fraccion IMSS", "Fraccion_IMSS", "Nomina_IMSS"),
             ["/nomina/configuracion/imss/fraccion-imss"] = new("Fraccion IMSS", "Fraccion_IMSS", "Nomina_IMSS"),
-            ["/nomina/configuracion/imss/base-gravable"] = new("Base Gravable IMSS", "Base_Gravable_IMSS", "Nomina_IMSS")
+            ["/nomina/configuracion/imss/base-gravable"] = new("Base Gravable IMSS", "Base_Gravable_IMSS", "Nomina_IMSS"),
+            ["/sis/basegravableimss"] = new("Base Gravable IMSS", "Base_Gravable_IMSS", "Nomina_IMSS")
         };
 
     private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');

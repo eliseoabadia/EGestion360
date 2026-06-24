@@ -1279,6 +1279,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_ClaseMovimiento]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_ClasePuesto]",
          "ObjectType": 3
       },
@@ -1411,6 +1415,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_MovimientoRh]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_MovimientosNomina]",
          "ObjectType": 3
       },
@@ -1439,7 +1447,15 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_OpcionJubilacion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_OperacionNomina]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_Pais]",
          "ObjectType": 3
       },
       {
@@ -1456,6 +1472,10 @@
       },
       {
          "Name": "[NOM].[Vw_PeriodoMensual]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_PeriodoPago]",
          "ObjectType": 3
       },
       {
@@ -1491,7 +1511,15 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_Profesion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_Puesto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_RegimenFiscal]",
          "ObjectType": 3
       },
       {
@@ -1540,6 +1568,18 @@
       },
       {
          "Name": "[NOM].[Vw_Sexo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_SituacionMovimiento]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_SituacionPersona]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_SituacionPlaza]",
          "ObjectType": 3
       },
       {
@@ -1595,6 +1635,18 @@
          "ObjectType": 3
       },
       {
+         "Name": "[NOM].[Vw_TipoDocumento]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoDocumentoRh]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoExpediente]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[NOM].[Vw_TipoIncapacidad]",
          "ObjectType": 3
       },
@@ -1620,6 +1672,10 @@
       },
       {
          "Name": "[NOM].[Vw_TipoRegimen]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_TipoSangre]",
          "ObjectType": 3
       },
       {
@@ -2168,6 +2224,54 @@
       },
       {
          "Name": "[NOM].[spPeriodosActivos_List]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_ActualizarTotales]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_AsegurarConcepto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_Calcular]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_CalcularAguinaldo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_CerrarPeriodo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_CrearComprometido]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_CrearDevengado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_CrearEjercido]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_MarcarPresupuesto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_PrimaVacacionalIndividual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_ResolverContexto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[spProcesoNomina_Resultado]",
          "ObjectType": 1
       },
       {

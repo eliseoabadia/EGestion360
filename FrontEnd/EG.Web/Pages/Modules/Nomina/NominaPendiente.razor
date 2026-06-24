@@ -1,19 +1,33 @@
 @page "/nomina/movimientos"
 @page "/rh/datormovto"
+@page "/rh/datosmovto"
 @page "/nomina/depersonal"
 @page "/nomina/reportequincenal"
 @page "/aux/auxcalcissste"
 @page "/aux/auxcalcisrquincenal"
+@page "/aux/auxcalcisrmensual"
+@page "/aux/auxcalcisrsemanal"
 @page "/aux/auxcalcfovissste"
 @page "/aux/auxcalcinfonavitquincenal"
 @page "/aux/auxcalcimssquincenal"
+@page "/aux/auxcalcimssmensual"
+@page "/aux/auxcalcimsssemanal"
 @page "/nom/resumennomina"
+@page "/nom/resnommen"
 @page "/nom/recibonomina"
 @page "/nom/archivodispercion"
+@page "/nom/archivodispercion__"
 @page "/nom/timbradopercepciones"
 @page "/aux/imssquincenal_rep"
+@page "/aux/imssmensual_rep"
+@page "/aux/imsssemanal_rep"
 @page "/nom/reportenomina"
+@page "/nom/reportenomina_b"
+@page "/nom/reporteisr_actual_rep"
+@page "/nom/nomactualquincenal"
+@page "/nom/nomactualmensual"
 @page "/rh/liquidacion"
+@page "/rh/vacaciones"
 @page "/sis/nominaespecial"
 @page "/sis/vwnominaespecial"
 @page "/emp/faltasxempresa"
@@ -36,6 +50,19 @@
 @page "/nomina/historicos/isr_mensual"
 @page "/nomina/historicos/isr_acumulados"
 @page "/nomina/historicos/impuestoslocales"
+@page "/nhis/vwnomhistoricaquincenal"
+@page "/nhis/vwnomhistoricaquincenal_pivot"
+@page "/nhis/vwnomhistoricaquincenal_rep"
+@page "/nhis/dispercion__2"
+@page "/nhis/timbrado__2"
+@page "/nhis/nominareport"
+@page "/nhis/nominareport_b"
+@page "/nhis/auxcalcimssquincenal_repbim"
+@page "/nhis/auxcalcimssquincenal_repmens"
+@page "/nhis/auxcalcisrquincenal_repmens"
+@page "/nhis/auxcalcisrquincenal_rep"
+@page "/nhis/sbcbimestral"
+@page "/nhis/sbc_rep"
 @page "/rh/configuracion"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Nomina
@@ -222,6 +249,7 @@
             ["/rh/persona"] = Empleados("Empleados", "Alias legacy RH.Persona", "Empleados"),
             ["/nomina/movimientos"] = Movimientos("Movimientos de Personal", "Movimientos migrados desde RH_DatosMovto", "Movimientos_Personal"),
             ["/rh/datormovto"] = Movimientos("Movimientos de Personal", "Alias legacy RH_DatosMovto", "Movimientos_Personal"),
+            ["/rh/datosmovto"] = Movimientos("Movimientos de Personal", "Alias legacy RH_DatosMovto", "Movimientos_Personal"),
             ["/nomina/depersonal"] = Movimientos("De Personal", "Plazas y movimientos de personal", "De_Personal"),
             ["/nomina/reportequincenal"] = Movimientos("Reporte Quincenal MP", "Vista base para reporte quincenal de movimientos", "Reporte Quincenal MP"),
 
@@ -231,21 +259,34 @@
 
             ["/sis/solicitudvacaciones"] = Vacaciones("Solicitud Vacaciones", "Solicitudes migradas desde RH_Vacaciones", "Solicitud_Vacaciones"),
             ["/sis/autorizacionvacaciones"] = Vacaciones("Autorizacion Vacaciones", "Validacion de solicitudes de vacaciones", "Autorizacion_Vacaciones"),
+            ["/rh/vacaciones"] = Vacaciones("Vacaciones", "Alias legacy RH.Vacaciones", "Solicitud_Vacaciones"),
             ["/rh/liquidacion"] = Liquidaciones("Finiquito/Liquidacion", "Liquidaciones migradas desde RH_Liquidacion", "Liquidacion"),
 
             ["/aux/auxcalcissste"] = Fiscal("Calculo ISSSTE", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_ISSSTE_4134"),
             ["/aux/auxcalcisrquincenal"] = Fiscal("Calculo ISR", "Tablas ISR y subsidios migrados", "Calculo_ISR_2053"),
+            ["/aux/auxcalcisrmensual"] = Fiscal("Calculo ISR Mensual", "Tablas ISR y subsidios migrados", "Calculo_ISR_2053"),
+            ["/aux/auxcalcisrsemanal"] = Fiscal("Calculo ISR Semanal", "Tablas ISR y subsidios migrados", "Calculo_ISR_2053"),
             ["/aux/auxcalcfovissste"] = Fiscal("Calculo FOVISSSTE", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_FOVISSSTE_4136"),
             ["/aux/auxcalcinfonavitquincenal"] = Fiscal("Calculo Infonavit", "Parametros fiscales disponibles para calculo auxiliar", "Calculo_Infonavit_139"),
             ["/aux/auxcalcimssquincenal"] = Fiscal("Calculo Cuotas IMSS", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
+            ["/aux/auxcalcimssmensual"] = Fiscal("Calculo Cuotas IMSS Mensual", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
+            ["/aux/auxcalcimsssemanal"] = Fiscal("Calculo Cuotas IMSS Semanal", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
             ["/sis/cuotasimss"] = Fiscal("Cuotas IMSS", "Alias legacy SIS_CuotasImss y tablas IMSS", "Cuotas_IMSS"),
 
             ["/nom/resumennomina"] = Productos("Resumen", "Resumen de corridas de nomina", "Resumen"),
+            ["/nom/resnommen"] = Productos("Resumen", "Alias legacy de resumen de nomina", "Resumen"),
             ["/nom/recibonomina"] = Productos("Recibos", "Base de recibos por corrida", "Recibos", "Requiere adaptar el formato final del recibo para impresion."),
             ["/nom/archivodispercion"] = Productos("Archivos de Dispersion", "Base para archivo bancario de dispersion", "Archivos_Dispersion", "Requiere adaptar el SP/formato bancario final."),
+            ["/nom/archivodispercion__"] = Productos("Archivos de Dispersion", "Alias legacy de dispersion", "Archivos_Dispersion", "Requiere adaptar el SP/formato bancario final."),
             ["/nom/timbradopercepciones"] = Productos("Archivos de Timbrado", "Base para timbrado de percepciones", "Archivos_Timbrado", "Requiere adaptar layout CFDI/timbrado legado."),
             ["/aux/imssquincenal_rep"] = Productos("Reporte Cuotas IMSS", "Consulta de cuotas y parametros IMSS", "Reporte_Cuotas_IMSS"),
+            ["/aux/imssmensual_rep"] = Productos("Reporte Cuotas IMSS Mensual", "Consulta de cuotas y parametros IMSS", "Reporte_Cuotas_IMSS"),
+            ["/aux/imsssemanal_rep"] = Productos("Reporte Cuotas IMSS Semanal", "Consulta de cuotas y parametros IMSS", "Reporte_Cuotas_IMSS"),
             ["/nom/reportenomina"] = Productos("Reporte Nomina Actual", "Reporte operativo de corrida actual", "Reporte_Nomina"),
+            ["/nom/reportenomina_b"] = Productos("Reporte Nomina Actual", "Alias legacy del reporte de nomina", "Reporte_Nomina"),
+            ["/nom/reporteisr_actual_rep"] = Productos("Reporte ISR", "Alias legacy del reporte ISR actual", "Reporte_ISR"),
+            ["/nom/nomactualquincenal"] = Productos("Nomina Actual Quincenal", "Consulta de producto actual quincenal", "Reporte_Nomina"),
+            ["/nom/nomactualmensual"] = Productos("Nomina Actual Mensual", "Consulta de producto actual mensual", "Reporte_Nomina"),
 
             ["/sis/nominaespecial"] = Productos("Configura Aguinaldo", "Configuracion y productos de nomina especial", "Nominas_Especiales", "Configura_Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
             ["/sis/vwnominaespecial"] = Productos("Aguinaldo", "Consulta de nomina especial/aguinaldo", "Nominas_Especiales", "Aguinaldo", "El calculo anual requiere adaptar NOM_SP_CalculaAguinaldo."),
@@ -267,6 +308,19 @@
             ["/nomina/historicos/isr_mensual"] = Historico("Acumulado Mensual ISR", "Reportes_SAT_Historicos", "Acumulado_Mensual_ISR"),
             ["/nomina/historicos/isr_acumulados"] = Historico("Acumulados ISR", "Reportes_SAT_Historicos", "Acumulados_ISR"),
             ["/nomina/historicos/impuestoslocales"] = Historico("Impuestos Locales", "Impuestos_Locales_Historicos", "Impuestos_Locales"),
+            ["/nhis/vwnomhistoricaquincenal"] = Historico("Consulta de Nomina", "Productos_Historicos", "Consulta_Nomina"),
+            ["/nhis/vwnomhistoricaquincenal_pivot"] = Historico("Analisis", "Productos_Historicos", "Analisis"),
+            ["/nhis/vwnomhistoricaquincenal_rep"] = Historico("Reporte Nomina Quincenal", "Productos_Historicos", "Reporte_Nomina_Quincenal"),
+            ["/nhis/dispercion__2"] = Historico("Archivos de Dispersion", "Productos_Historicos", "Archivos_Dispersion_Historicos"),
+            ["/nhis/timbrado__2"] = Historico("Archivos de Timbrado", "Productos_Historicos", "Archivos_Timbrado_Historicos"),
+            ["/nhis/nominareport"] = Historico("Reporte Nomina Historica", "Productos_Historicos", "Reporte_Nomina_Historica"),
+            ["/nhis/nominareport_b"] = Historico("Reporte Nomina Historica", "Productos_Historicos", "Reporte_Nomina_Historica"),
+            ["/nhis/auxcalcimssquincenal_repbim"] = Historico("Acumulados Bimestre IMSS", "Reportes_IMSS_Historicos", "Acumulados_Bimestre_IMSS"),
+            ["/nhis/auxcalcimssquincenal_repmens"] = Historico("Acumulados IMSS", "Reportes_IMSS_Historicos", "Acumulados_IMSS"),
+            ["/nhis/auxcalcisrquincenal_repmens"] = Historico("Acumulado Mensual ISR", "Reportes_SAT_Historicos", "Acumulado_Mensual_ISR"),
+            ["/nhis/auxcalcisrquincenal_rep"] = Historico("Acumulados ISR", "Reportes_SAT_Historicos", "Acumulados_ISR"),
+            ["/nhis/sbcbimestral"] = Historico("SBC Historico", "Reportes_IMSS_Historicos", "SBC_Historico"),
+            ["/nhis/sbc_rep"] = Historico("Salario Base de Cotizacion", "Reportes_IMSS_Historicos", "Salario_Base_Cotizacion"),
 
             ["/rh/configuracion"] = new(
                 "Configuracion RH",

@@ -7096,6 +7096,733 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<int> spProcesoNomina_ActualizarTotalesAsync(int? corridaId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "CorridaId",
+                    Value = corridaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [NOM].[spProcesoNomina_ActualizarTotales] @CorridaId = @CorridaId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<int> spProcesoNomina_AsegurarConceptoAsync(string clave, string nombre, int? usuarioId, OutputParameter<int?> conceptoId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterConceptoId = new SqlParameter
+            {
+                ParameterName = "ConceptoId",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = conceptoId?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Clave",
+                    Size = 8,
+                    Value = clave ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Nombre",
+                    Size = 1000,
+                    Value = nombre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterConceptoId,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [NOM].[spProcesoNomina_AsegurarConcepto] @Clave = @Clave, @Nombre = @Nombre, @UsuarioId = @UsuarioId, @ConceptoId = @ConceptoId OUTPUT", sqlParameters, cancellationToken);
+
+            conceptoId?.SetValue(parameterConceptoId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_CalcularResult>> spProcesoNomina_CalcularAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_CalcularResult>("EXEC @returnValue = [NOM].[spProcesoNomina_Calcular] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_CalcularAguinaldoResult>> spProcesoNomina_CalcularAguinaldoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_CalcularAguinaldoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_CalcularAguinaldo] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_CerrarPeriodoResult>> spProcesoNomina_CerrarPeriodoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_CerrarPeriodoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_CerrarPeriodo] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_CrearComprometidoResult>> spProcesoNomina_CrearComprometidoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_CrearComprometidoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_CrearComprometido] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_CrearDevengadoResult>> spProcesoNomina_CrearDevengadoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_CrearDevengadoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_CrearDevengado] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_CrearEjercidoResult>> spProcesoNomina_CrearEjercidoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_CrearEjercidoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_CrearEjercido] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_MarcarPresupuestoResult>> spProcesoNomina_MarcarPresupuestoAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, string estado, string proceso, string mensaje, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Estado",
+                    Size = 60,
+                    Value = estado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 200,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = 1000,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_MarcarPresupuestoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_MarcarPresupuesto] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId, @Estado = @Estado, @Proceso = @Proceso, @Mensaje = @Mensaje", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_PrimaVacacionalIndividualResult>> spProcesoNomina_PrimaVacacionalIndividualAsync(int? empresaId, int? periodoId, int? personaId, int? anio, DateOnly? fechaProceso, string observaciones, int? usuarioId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PersonaId",
+                    Value = personaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = 1000,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "UsuarioId",
+                    Value = usuarioId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_PrimaVacacionalIndividualResult>("EXEC @returnValue = [NOM].[spProcesoNomina_PrimaVacacionalIndividual] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @PersonaId = @PersonaId, @Anio = @Anio, @FechaProceso = @FechaProceso, @Observaciones = @Observaciones, @UsuarioId = @UsuarioId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<int> spProcesoNomina_ResolverContextoAsync(OutputParameter<int?> empresaId, OutputParameter<int?> periodoId, OutputParameter<int?> anio, OutputParameter<DateOnly?> fechaProceso, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterEmpresaId = new SqlParameter
+            {
+                ParameterName = "EmpresaId",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = empresaId?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterPeriodoId = new SqlParameter
+            {
+                ParameterName = "PeriodoId",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = periodoId?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterAnio = new SqlParameter
+            {
+                ParameterName = "Anio",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = anio?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterFechaProceso = new SqlParameter
+            {
+                ParameterName = "FechaProceso",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = fechaProceso?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Date,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                parameterEmpresaId,
+                parameterPeriodoId,
+                parameterAnio,
+                parameterFechaProceso,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [NOM].[spProcesoNomina_ResolverContexto] @EmpresaId = @EmpresaId OUTPUT, @PeriodoId = @PeriodoId OUTPUT, @Anio = @Anio OUTPUT, @FechaProceso = @FechaProceso OUTPUT", sqlParameters, cancellationToken);
+
+            empresaId?.SetValue(parameterEmpresaId.Value);
+            periodoId?.SetValue(parameterPeriodoId.Value);
+            anio?.SetValue(parameterAnio.Value);
+            fechaProceso?.SetValue(parameterFechaProceso.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<spProcesoNomina_ResultadoResult>> spProcesoNomina_ResultadoAsync(string proceso, string codigo, bool? ejecutado, string mensaje, int? corridaId, int? empresaId, int? periodoId, int? anio, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 200,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Codigo",
+                    Size = 80,
+                    Value = codigo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Ejecutado",
+                    Value = ejecutado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = 1000,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CorridaId",
+                    Value = corridaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<spProcesoNomina_ResultadoResult>("EXEC @returnValue = [NOM].[spProcesoNomina_Resultado] @Proceso = @Proceso, @Codigo = @Codigo, @Ejecutado = @Ejecutado, @Mensaje = @Mensaje, @CorridaId = @CorridaId, @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @Anio = @Anio", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<spPuestos_ListResult>> spPuestos_ListAsync(int? empresaNominaId, int? nivelId, int? page, int? pageSize, string filtro, bool? activo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

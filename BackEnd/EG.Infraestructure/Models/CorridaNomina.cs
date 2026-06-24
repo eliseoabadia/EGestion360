@@ -45,6 +45,8 @@ public partial class CorridaNomina
 
     public bool Activo { get; set; }
 
+    public int? FkidEmpresaNominaNom { get; set; }
+
     public virtual ICollection<CorridaNominaDetalle> CorridaNominaDetalles { get; set; } = new List<CorridaNominaDetalle>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }

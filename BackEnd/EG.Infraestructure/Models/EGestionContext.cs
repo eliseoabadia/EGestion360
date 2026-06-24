@@ -629,6 +629,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwClaseImss> VwClaseImsses { get; set; }
 
+    public virtual DbSet<VwClaseMovimiento> VwClaseMovimientos { get; set; }
+
     public virtual DbSet<VwClasePuesto> VwClasePuestos { get; set; }
 
     public virtual DbSet<VwClc> VwClcs { get; set; }
@@ -803,6 +805,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwMirNivel> VwMirNivels { get; set; }
 
+    public virtual DbSet<VwMovimientoRh> VwMovimientoRhs { get; set; }
+
     public virtual DbSet<VwMovimientosNomina> VwMovimientosNominas { get; set; }
 
     public virtual DbSet<VwMunicipio> VwMunicipios { get; set; }
@@ -821,6 +825,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwNotificacionUsuario> VwNotificacionUsuarios { get; set; }
 
+    public virtual DbSet<VwOpcionJubilacion> VwOpcionJubilacions { get; set; }
+
     public virtual DbSet<VwOperacionNomina> VwOperacionNominas { get; set; }
 
     public virtual DbSet<VwOrdenCompra> VwOrdenCompras { get; set; }
@@ -835,6 +841,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwPaaaspartidum> VwPaaaspartida { get; set; }
 
+    public virtual DbSet<VwPai> VwPais { get; set; }
+
     public virtual DbSet<VwPartidaGasto> VwPartidaGastos { get; set; }
 
     public virtual DbSet<VwPartidaGenerica> VwPartidaGenericas { get; set; }
@@ -848,6 +856,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwPeriodoConteo> VwPeriodoConteos { get; set; }
 
     public virtual DbSet<VwPeriodoMensual> VwPeriodoMensuals { get; set; }
+
+    public virtual DbSet<VwPeriodoPago> VwPeriodoPagos { get; set; }
 
     public virtual DbSet<VwPeriodoQuincenal> VwPeriodoQuincenals { get; set; }
 
@@ -873,6 +883,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwPresupuestoPrograma> VwPresupuestoProgramas { get; set; }
 
+    public virtual DbSet<VwProfesion> VwProfesions { get; set; }
+
     public virtual DbSet<VwPrograma> VwProgramas { get; set; }
 
     public virtual DbSet<VwProveedor> VwProveedors { get; set; }
@@ -882,6 +894,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwPuesto> VwPuestos { get; set; }
 
     public virtual DbSet<VwRecomendacionEvaluacion> VwRecomendacionEvaluacions { get; set; }
+
+    public virtual DbSet<VwRegimenFiscal> VwRegimenFiscals { get; set; }
 
     public virtual DbSet<VwReglaOperacion> VwReglaOperacions { get; set; }
 
@@ -916,6 +930,12 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwSalarioMinimo> VwSalarioMinimos { get; set; }
 
     public virtual DbSet<VwSexo> VwSexos { get; set; }
+
+    public virtual DbSet<VwSituacionMovimiento> VwSituacionMovimientos { get; set; }
+
+    public virtual DbSet<VwSituacionPersona> VwSituacionPersonas { get; set; }
+
+    public virtual DbSet<VwSituacionPlaza> VwSituacionPlazas { get; set; }
 
     public virtual DbSet<VwSolicitudSalidum> VwSolicitudSalida { get; set; }
 
@@ -961,6 +981,12 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwTipoDescanso> VwTipoDescansos { get; set; }
 
+    public virtual DbSet<VwTipoDocumento> VwTipoDocumentos { get; set; }
+
+    public virtual DbSet<VwTipoDocumentoRh> VwTipoDocumentoRhs { get; set; }
+
+    public virtual DbSet<VwTipoExpediente> VwTipoExpedientes { get; set; }
+
     public virtual DbSet<VwTipoIncapacidad> VwTipoIncapacidads { get; set; }
 
     public virtual DbSet<VwTipoIncidencium> VwTipoIncidencia { get; set; }
@@ -984,6 +1010,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwTipoRegiman> VwTipoRegimen { get; set; }
 
     public virtual DbSet<VwTipoRetiro> VwTipoRetiros { get; set; }
+
+    public virtual DbSet<VwTipoSangre> VwTipoSangres { get; set; }
 
     public virtual DbSet<VwTipoSolicitudClc> VwTipoSolicitudClcs { get; set; }
 
@@ -3235,6 +3263,7 @@ public partial class EGestionContext : DbContext
                 .HasPrecision(6)
                 .HasDefaultValueSql("(sysutcdatetime())", "DF_NOM_CorridaNomina_FechaCreacion");
             entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidEmpresaNominaNom).HasColumnName("FKIdEmpresaNomina_NOM");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.TipoCorrida)
@@ -12419,6 +12448,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Valor4).HasColumnType("decimal(19, 4)");
         });
 
+        modelBuilder.Entity<VwClaseMovimiento>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_ClaseMovimiento", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
         modelBuilder.Entity<VwClasePuesto>(entity =>
         {
             entity
@@ -12528,29 +12579,10 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.NumFactura)
                 .IsRequired()
                 .HasMaxLength(250);
-            entity.Property(e => e.Abr).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Ago).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Concepto).HasMaxLength(250);
-            entity.Property(e => e.Dic).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Ene).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Feb).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Importe).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Iva).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Jul).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Jun).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Mar).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.May).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Nombre).HasMaxLength(250);
-            entity.Property(e => e.Nov).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.NumReferenciaDocto).HasMaxLength(50);
-            entity.Property(e => e.Oct).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.PartidaClave).HasMaxLength(10);
             entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
             entity.Property(e => e.PkidClcfactura).HasColumnName("PKIdCLCFactura");
-            entity.Property(e => e.Rfc).HasMaxLength(20);
-            entity.Property(e => e.Sep).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.Total).HasColumnType("decimal(20, 4)");
         });
 
         modelBuilder.Entity<VwConcepto>(entity =>
@@ -14971,6 +15003,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ProgramaDescripcion).HasMaxLength(1000);
         });
 
+        modelBuilder.Entity<VwMovimientoRh>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_MovimientoRh", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
         modelBuilder.Entity<VwMovimientosNomina>(entity =>
         {
             entity
@@ -15181,6 +15235,28 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(250);
             entity.Property(e => e.Url).HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<VwOpcionJubilacion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_OpcionJubilacion", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
         modelBuilder.Entity<VwOperacionNomina>(entity =>
@@ -15401,6 +15477,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PkidPaaaspartida).HasColumnName("PKIdPAAASPartida");
         });
 
+        modelBuilder.Entity<VwPai>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Pais", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
         modelBuilder.Entity<VwPartidaGasto>(entity =>
         {
             entity
@@ -15527,6 +15625,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasPrecision(6);
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.PkidPeriodoNomina).HasColumnName("PKIdPeriodoNomina");
+        });
+
+        modelBuilder.Entity<VwPeriodoPago>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_PeriodoPago", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
         modelBuilder.Entity<VwPeriodoQuincenal>(entity =>
@@ -15841,6 +15961,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.UnidadResponsableDescripcion).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<VwProfesion>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Profesion", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
         modelBuilder.Entity<VwPrograma>(entity =>
         {
             entity
@@ -16080,6 +16222,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Tipo)
                 .IsRequired()
                 .HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<VwRegimenFiscal>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_RegimenFiscal", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
         modelBuilder.Entity<VwReglaOperacion>(entity =>
@@ -16703,6 +16867,72 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
+        modelBuilder.Entity<VwSituacionMovimiento>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_SituacionMovimiento", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
+        modelBuilder.Entity<VwSituacionPersona>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_SituacionPersona", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
+        modelBuilder.Entity<VwSituacionPlaza>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_SituacionPlaza", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
         modelBuilder.Entity<VwSolicitudSalidum>(entity =>
         {
             entity
@@ -17284,6 +17514,72 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
+        modelBuilder.Entity<VwTipoDocumento>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoDocumento", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
+        modelBuilder.Entity<VwTipoDocumentoRh>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoDocumentoRh", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
+        modelBuilder.Entity<VwTipoExpediente>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoExpediente", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
+        });
+
         modelBuilder.Entity<VwTipoIncapacidad>(entity =>
         {
             entity
@@ -17517,6 +17813,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PkidTipoRetiro)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("PKIdTipoRetiro");
+        });
+
+        modelBuilder.Entity<VwTipoSangre>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TipoSangre", "NOM");
+
+            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Clave).HasMaxLength(50);
+            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
+            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
+            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
+            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
         modelBuilder.Entity<VwTipoSolicitudClc>(entity =>
