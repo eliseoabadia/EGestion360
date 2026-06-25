@@ -1,0 +1,220 @@
+@page "/Presupuesto/Tesoreria/Saldos_Cuentas"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<InstrumentoResponse, InstrumentoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column instrumentos-inversion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Instrumentos de Inversion"
+                    Subtitle="Catalogo financiero de tesoreria"
+                    Icon="@Icons.Material.Filled.PieChart"
+                    ShowCreateButton="false"
+                    OnRefresh="ReloadData" />
+
+        <section class="instrumentos-summary">
+            <div>
+                <span>Instrumentos</span>
+                <strong>@TotalCount.ToString("0", NumberCulture)</strong>
+            </div>
+            <div>
+                <span>Monto minimo</span>
+                <strong>@Money(Elements.Sum(x => x.MontoMinimo ?? 0m), DefaultCurrencySymbol)</strong>
+            </div>
+            <div>
+                <span>Tasa promedio</span>
+                <strong>@Percent(AverageRate)</strong>
+            </div>
+            <div>
+                <span>Monedas</span>
+                <strong>@DistinctCurrencies</strong>
+            </div>
+        </section>
+
+        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericTable TItem="InstrumentoResponse"
+                          @ref="table"
+                          Title="Instrumentos"
+                          SearchPlaceholder="Buscar por nombre, tipo, intermediario o moneda..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="value => SearchString = value"
+                          OnSearch="OnSearch"
+                          PageSize="20"
+                          PageSizeOptions="new[] { 10, 20, 50, 100 }"
+                          TableHeight="calc(100vh - 320px)"
+                          Loading="@Loading">
+                <Header>
+                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="InstrumentoResponse">Instrumento</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoInversionDescripcion" T="InstrumentoResponse">Tipo inversion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="IntermediarioNombre" T="InstrumentoResponse">Intermediario</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoPlazoDescripcion" T="InstrumentoResponse">Plazo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="TipoMonedaCodigo" T="InstrumentoResponse">Moneda</MudTableSortLabel></MudTh>
+                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="TasaInteres" T="InstrumentoResponse">Tasa</MudTableSortLabel></MudTh>
+                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="MontoMinimo" T="InstrumentoResponse">Monto minimo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaEmision" T="InstrumentoResponse">Emision</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaVencimiento" T="InstrumentoResponse">Vencimiento</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(item.Nombre)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ClaveNombre)</MudText>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.TipoInversionDescripcion)</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">@TextOrDash(item.IntermediarioNombre)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.IntermediarioClave)</MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">@TextOrDash(item.TipoPlazoDescripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@Days(item.TipoPlazoDias)</MudText>
+                    </MudTd>
+                    <MudTd>@CurrencyLabel(item)</MudTd>
+                    <MudTd Class="text-right">@Percent(item.TasaInteres)</MudTd>
+                    <MudTd Class="text-right">@Money(item.MontoMinimo ?? 0m, item.TipoMonedaSimbolo)</MudTd>
+                    <MudTd>@FormatDate(item.FechaEmision)</MudTd>
+                    <MudTd>@FormatDate(item.FechaVencimiento)</MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .instrumentos-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 4px 0 12px;
+    }
+
+    .instrumentos-summary > div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 9px 11px;
+        background: var(--mud-palette-surface);
+        min-width: 0;
+    }
+
+    .instrumentos-summary span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        text-transform: uppercase;
+    }
+
+    .instrumentos-summary strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 1.02rem;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    @@media (max-width: 1100px) {
+        .instrumentos-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .instrumentos-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<InstrumentoResponse> table = null!;
+    private const string DefaultCurrencySymbol = "$";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Saldos_Cuentas";
+    protected override Type CreateDialogType => typeof(DeleteDialog<InstrumentoResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<InstrumentoResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<InstrumentoResponse>);
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    private decimal? AverageRate
+    {
+        get
+        {
+            var rates = Elements
+                .Where(x => x.TasaInteres.HasValue)
+                .Select(x => x.TasaInteres!.Value)
+                .ToList();
+
+            return rates.Count == 0 ? null : rates.Average();
+        }
+    }
+
+    private string DistinctCurrencies
+    {
+        get
+        {
+            var count = Elements
+                .Select(x => x.TipoMonedaCodigo)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
+            return count.ToString("0", NumberCulture);
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<InstrumentoResponse> items) =>
+        items.Select(x => new
+        {
+            x.PkidInstrumento,
+            Instrumento = x.Nombre,
+            TipoInversion = x.TipoInversionDescripcion,
+            Intermediario = x.IntermediarioNombre,
+            ClaveIntermediario = x.IntermediarioClave,
+            TipoPlazo = x.TipoPlazoDescripcion,
+            DiasPlazo = x.TipoPlazoDias,
+            Moneda = CurrencyLabel(x),
+            TasaInteres = (x.TasaInteres ?? 0m).ToString("0.0000", NumberCulture),
+            MontoMinimo = (x.MontoMinimo ?? 0m).ToString("0.00", NumberCulture),
+            FechaEmision = FormatDate(x.FechaEmision),
+            FechaVencimiento = FormatDate(x.FechaVencimiento),
+            x.Observaciones
+        });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string Money(decimal amount, string? symbol)
+    {
+        var currencySymbol = string.IsNullOrWhiteSpace(symbol) ? DefaultCurrencySymbol : symbol.Trim();
+        return $"{currencySymbol}{amount.ToString("0.00", NumberCulture)}";
+    }
+
+    private static string Percent(decimal? amount) =>
+        amount.HasValue ? $"{amount.Value.ToString("0.0000", NumberCulture)}%" : "-";
+
+    private static string CurrencyLabel(InstrumentoResponse item)
+    {
+        var symbol = string.IsNullOrWhiteSpace(item.TipoMonedaSimbolo) ? DefaultCurrencySymbol : item.TipoMonedaSimbolo.Trim();
+        return string.IsNullOrWhiteSpace(item.TipoMonedaCodigo)
+            ? symbol
+            : $"{symbol} {item.TipoMonedaCodigo}";
+    }
+
+    private static string Days(int? days) => days.HasValue ? $"{days.Value.ToString("0", NumberCulture)} dias" : "-";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string FormatDate(DateOnly? value) => value.HasValue ? value.Value.ToString("dd/MM/yyyy", DateCulture) : "-";
+}

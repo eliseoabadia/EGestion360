@@ -211,6 +211,37 @@ body,
     min-height: 34px;
 }
 
+.document-support-dialog,
+.mud-dialog.document-support-dialog {
+    width: min(92vw, 1760px) !important;
+    max-width: calc(100vw - 48px) !important;
+    height: min(92dvh, 920px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    margin: 12px 24px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.document-support-dialog .mud-dialog-title,
+.mud-dialog.document-support-dialog .mud-dialog-title {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+    padding: 8px 16px 6px !important;
+}
+
+.document-support-dialog .mud-dialog-content,
+.mud-dialog.document-support-dialog .mud-dialog-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: hidden !important;
+    padding: 0 16px 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
 .mud-dialog .mud-paper:not(.icono-item):hover {
     transform: none;
 }

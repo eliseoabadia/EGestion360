@@ -5,17 +5,18 @@
     var level = Math.Min(Level, 2);
     var isExpanded = GetExpandedState(Item.PkidMenu);
     var isActive = IsActiveRoute(Item.Ruta);
+    var groupCss = $"sidebar-group level-{level}-group{(isExpanded ? " expanded" : string.Empty)}";
     var linkCss = $"sidebar-link level-{level}{(isActive ? " active" : string.Empty)}";
     var groupHeaderCss = $"sidebar-group-header level-{level}{(isExpanded ? " expanded" : string.Empty)}";
     var childrenId = $"sidebar-children-{Item.PkidMenu}";
-    var childrenCss = $"sidebar-children {(isExpanded ? "expanded" : "collapsed")}";
+    var childrenCss = $"sidebar-children level-{level}-children {(isExpanded ? "expanded" : "collapsed")}";
     var chevronCss = $"bi bi-chevron-right chevron {(isExpanded ? "expanded" : "")}";
     var iconClass = GetIcon(Item.ImageUrl);
 }
 
 @if (hasChildren)
 {
-    <div class="sidebar-group">
+    <div class="@groupCss">
         <button type="button"
                 class="@groupHeaderCss"
                 title="@(IsCollapsed ? Item.Nombre : null)"

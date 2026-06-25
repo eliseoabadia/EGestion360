@@ -168,17 +168,17 @@ namespace EG.ApiCoreBS.Controllers.Presupuesto.Tesoreria
         : InversionesControllerBase<InstrumentoResponse>(service, userContext)
     {
         [HttpPost]
-        [Authorize(Policy = "Inversiones_Instrumentos_Inversion_new")]
+        [Authorize(Policy = "Tesoreria_Instrumentos_Inversion_new")]
         public async Task<ActionResult<PagedResult<InstrumentoResponse>>> Create([FromBody] InstrumentoResponse response) =>
             await CreateInternal(response);
 
         [HttpPut("{id}")]
-        [Authorize(Policy = "Inversiones_Instrumentos_Inversion_update")]
+        [Authorize(Policy = "Tesoreria_Instrumentos_Inversion_update")]
         public async Task<ActionResult<PagedResult<InstrumentoResponse>>> Update(int id, [FromBody] InstrumentoResponse response) =>
             await UpdateInternal(id, response);
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = "Inversiones_Instrumentos_Inversion_delete")]
+        [Authorize(Policy = "Tesoreria_Instrumentos_Inversion_delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id) =>
             await DeleteInternal(id);
     }

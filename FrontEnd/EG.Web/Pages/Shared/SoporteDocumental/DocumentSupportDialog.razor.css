@@ -1,20 +1,25 @@
+.document-support-dialog,
 ::deep .document-support-dialog {
-    width: min(96vw, 1840px) !important;
-    max-width: none !important;
-    height: calc(100vh - 96px) !important;
-    max-height: 980px !important;
+    width: min(92vw, 1760px) !important;
+    max-width: calc(100vw - 48px) !important;
+    height: min(92dvh, 920px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    margin: 12px 24px !important;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border-radius: 8px !important;
 }
 
+.document-support-dialog ::deep .mud-dialog-title,
 ::deep .document-support-dialog .mud-dialog-title {
-    padding: 12px 20px 10px;
+    padding: 10px 20px 8px;
     flex: 0 0 auto;
 }
 
+.document-support-dialog ::deep .mud-dialog-content,
 ::deep .document-support-dialog .mud-dialog-content {
-    padding: 0 20px 12px !important;
+    padding: 0 16px 10px !important;
     flex: 1 1 auto;
     height: auto !important;
     min-height: 0;
@@ -22,13 +27,6 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-}
-
-::deep .document-support-dialog .mud-dialog-actions {
-    padding: 8px 20px 12px;
-    min-height: 44px;
-    flex: 0 0 auto;
-    border-top: 1px solid var(--mud-palette-lines-default);
 }
 
 .doc-titlebar {
@@ -60,19 +58,23 @@
     white-space: nowrap;
 }
 
-.doc-count-button {
-    border-radius: 999px;
-    min-width: 124px;
-    font-weight: 800;
-    white-space: nowrap;
-    box-shadow: none;
+.doc-close-button {
+    flex: 0 0 auto;
+    margin-left: 4px;
+    color: var(--mud-palette-text-secondary);
+}
+
+.doc-close-button:hover,
+.doc-close-button:focus-visible {
+    color: var(--mud-palette-text-primary);
+    background: var(--mud-palette-action-default-hover);
 }
 
 .doc-workspace {
     display: grid;
-    grid-template-columns: minmax(280px, 340px) minmax(520px, 1fr) minmax(280px, 330px);
+    grid-template-columns: minmax(260px, 340px) minmax(680px, 1fr) minmax(260px, 330px);
     grid-template-rows: minmax(0, 1fr);
-    gap: 14px;
+    gap: 12px;
     height: 100%;
     min-height: 0;
 }
@@ -367,11 +369,16 @@
 }
 
 @media (max-width: 1200px) {
+    .document-support-dialog,
     ::deep .document-support-dialog {
-        height: min(90vh, 980px);
-        max-height: calc(100vh - 28px);
+        width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px) !important;
+        height: min(90dvh, 860px) !important;
+        max-height: calc(100dvh - 32px) !important;
+        margin: 16px !important;
     }
 
+    .document-support-dialog ::deep .mud-dialog-content,
     ::deep .document-support-dialog .mud-dialog-content {
         min-height: 0;
     }
@@ -392,15 +399,19 @@
 }
 
 @media (max-width: 760px) {
+    .document-support-dialog,
     ::deep .document-support-dialog {
-        width: 100vw !important;
-        height: calc(100vh - 12px);
-        max-height: calc(100vh - 12px);
+        width: calc(100vw - 20px) !important;
+        max-width: calc(100vw - 20px) !important;
+        height: calc(100dvh - 20px) !important;
+        max-height: calc(100dvh - 20px) !important;
+        margin: 10px !important;
     }
 
+    .document-support-dialog ::deep .mud-dialog-content,
     ::deep .document-support-dialog .mud-dialog-content {
         height: auto;
-        max-height: calc(100vh - 132px);
+        max-height: calc(100dvh - 120px);
         overflow: auto;
         padding: 0 12px 12px !important;
     }
@@ -433,26 +444,29 @@
 }
 
 @media (max-height: 760px) and (min-width: 761px) {
+    .document-support-dialog,
     ::deep .document-support-dialog {
-        height: calc(100vh - 20px);
-        max-height: calc(100vh - 20px);
+        height: calc(100dvh - 24px) !important;
+        max-height: calc(100dvh - 24px) !important;
+        margin: 12px !important;
     }
 
+    .document-support-dialog ::deep .mud-dialog-content,
     ::deep .document-support-dialog .mud-dialog-content {
         min-height: 0;
     }
 
     .doc-workspace {
-        min-height: 500px;
+        min-height: 0;
     }
 
     .doc-preview-panel {
-        min-height: 500px;
+        min-height: 0;
     }
 
     .doc-preview-surface,
     .doc-preview-surface iframe,
     .doc-preview-surface img {
-        min-height: 410px;
+        min-height: 0;
     }
 }

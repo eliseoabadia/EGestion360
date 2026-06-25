@@ -260,6 +260,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAdquisicionCrudAppService<RetiroResponse>, RetiroAppService>();
             services.AddScoped<IAdquisicionCrudAppService<TipoPlazoResponse>, TipoPlazoInversionService>();
             services.AddScoped<IAdquisicionCrudAppService<TipoRetiroResponse>, TipoRetiroInversionService>();
+            services.AddScoped<IProvisionPagoImporteAppService, ProvisionPagoImporteAppService>();
 
             // Application services - Almacen
             services.AddScoped<IEstatusSolService, EstatusSolService>();

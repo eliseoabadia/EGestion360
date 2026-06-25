@@ -639,6 +639,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwClcfactura> VwClcfacturas { get; set; }
 
+    public virtual DbSet<VwClcfacturaImporte> VwClcfacturaImportes { get; set; }
+
     public virtual DbSet<VwConcepto> VwConceptos { get; set; }
 
     public virtual DbSet<VwConceptoConfiguracion> VwConceptoConfiguracions { get; set; }
@@ -12583,6 +12585,65 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PartidaClave).HasMaxLength(10);
             entity.Property(e => e.PartidaDescripcion).HasMaxLength(255);
             entity.Property(e => e.PkidClcfactura).HasColumnName("PKIdCLCFactura");
+        });
+
+        modelBuilder.Entity<VwClcfacturaImporte>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_CLCFactura_Importe", "PRES");
+
+            entity.Property(e => e.Abr).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Ago).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.ClavePoliza).HasMaxLength(10);
+            entity.Property(e => e.DevengadoEgresos).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.DevengadoIngresos).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Dic).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.Ene).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(11)
+                .IsUnicode(false);
+            entity.Property(e => e.Feb).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.FkidContratoPres).HasColumnName("FKIdContrato_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.Fldocto)
+                .HasMaxLength(1000)
+                .HasColumnName("FLDocto");
+            entity.Property(e => e.Importe).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Iva)
+                .HasColumnType("decimal(20, 4)")
+                .HasColumnName("IVA");
+            entity.Property(e => e.Jul).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Jun).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Mar).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.May).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Nombre).HasMaxLength(500);
+            entity.Property(e => e.Nov).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.NumFactura)
+                .IsRequired()
+                .HasMaxLength(250);
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Oct).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.PkidFactura).HasColumnName("PKIdFactura");
+            entity.Property(e => e.Retencion).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Rfc)
+                .HasMaxLength(50)
+                .HasColumnName("RFC");
+            entity.Property(e => e.SaldoClc)
+                .HasColumnType("decimal(38, 4)")
+                .HasColumnName("SaldoCLC");
+            entity.Property(e => e.Sep).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.SerieFactura).HasMaxLength(20);
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Uuid)
+                .HasMaxLength(36)
+                .HasColumnName("UUID");
         });
 
         modelBuilder.Entity<VwConcepto>(entity =>

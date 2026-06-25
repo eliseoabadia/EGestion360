@@ -69,6 +69,7 @@ public static class ApiServiceExtensions
         RegisterCrud<RetiroResponse>(services, "api/Retiro");
         RegisterCrud<TipoPlazoResponse>(services, "api/TipoPlazo");
         RegisterCrud<TipoRetiroResponse>(services, "api/TipoRetiro");
+        RegisterCrud<VwClcfacturaImporteResponse>(services, "api/ProvisionPagoImporte");
         RegisterCrud<PaiseDto>(services, "api/Paise");
 
         RegisterCrud<GfResponse>(services, "api/Gf");

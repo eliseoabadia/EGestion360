@@ -1,0 +1,205 @@
+@page "/Presupuesto/Tesoreria/Provision_Pago"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<VwClcfacturaImporteResponse, VwClcfacturaImporteResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column provision-pago-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Provision del Pago"
+                    Subtitle="Importes devengados y saldo por factura"
+                    Icon="@Icons.Material.Filled.RequestQuote"
+                    ShowCreateButton="false"
+                    OnRefresh="ReloadData" />
+
+        <section class="provision-summary">
+            <div>
+                <span>Facturas</span>
+                <strong>@TotalCount.ToString("0", NumberCulture)</strong>
+            </div>
+            <div>
+                <span>Devengado ingresos</span>
+                <strong>@Money(Elements.Sum(x => x.DevengadoIngresos))</strong>
+            </div>
+            <div>
+                <span>Devengado egresos</span>
+                <strong>@Money(Elements.Sum(x => x.DevengadoEgresos))</strong>
+            </div>
+            <div>
+                <span>Saldo CLC</span>
+                <strong>@Money(Elements.Sum(x => x.SaldoClc ?? 0m))</strong>
+            </div>
+        </section>
+
+        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericTable TItem="VwClcfacturaImporteResponse"
+                          @ref="table"
+                          Title="Provision del pago por factura"
+                          SearchPlaceholder="Buscar factura, proveedor, poliza, contrato o concepto..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="value => SearchString = value"
+                          OnSearch="OnSearch"
+                          PageSize="20"
+                          PageSizeOptions="new[] { 10, 20, 50, 100 }"
+                          TableHeight="calc(100vh - 320px)"
+                          Loading="@Loading">
+                <Header>
+                    <MudTh><MudTableSortLabel SortLabel="PkidFactura" T="VwClcfacturaImporteResponse">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="NumFactura" T="VwClcfacturaImporteResponse">Factura</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Fecha" T="VwClcfacturaImporteResponse">Fecha</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="VwClcfacturaImporteResponse">Proveedor</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ClavePoliza" T="VwClcfacturaImporteResponse">Poliza</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="VwClcfacturaImporteResponse">Contrato</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Concepto" T="VwClcfacturaImporteResponse">Concepto</MudTableSortLabel></MudTh>
+                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Importe" T="VwClcfacturaImporteResponse">Importe</MudTableSortLabel></MudTh>
+                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="DevengadoIngresos" T="VwClcfacturaImporteResponse">Dev. ingresos</MudTableSortLabel></MudTh>
+                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="DevengadoEgresos" T="VwClcfacturaImporteResponse">Dev. egresos</MudTableSortLabel></MudTh>
+                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="SaldoClc" T="VwClcfacturaImporteResponse">Saldo CLC</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="VwClcfacturaImporteResponse">Estatus</MudTableSortLabel></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd>@item.PkidFactura.ToString(NumberCulture)</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(item.NumFactura)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.SerieFactura)</MudText>
+                    </MudTd>
+                    <MudTd>@FormatDate(item.Fecha)</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">@TextOrDash(item.Nombre)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Rfc)</MudText>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.ClavePoliza)</MudTd>
+                    <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
+                    <MudTd>
+                        <MudTooltip Text="@TextOrDash(item.Concepto)">
+                            <MudText Typo="Typo.body2" Style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                @TextOrDash(item.Concepto)
+                            </MudText>
+                        </MudTooltip>
+                    </MudTd>
+                    <MudTd Class="text-right">@Money(item.Importe)</MudTd>
+                    <MudTd Class="text-right">@Money(item.DevengadoIngresos)</MudTd>
+                    <MudTd Class="text-right">@Money(item.DevengadoEgresos)</MudTd>
+                    <MudTd Class="text-right"><strong>@Money(item.SaldoClc ?? 0m)</strong></MudTd>
+                    <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .provision-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 4px 0 12px;
+    }
+
+    .provision-summary > div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 9px 11px;
+        background: var(--mud-palette-surface);
+        min-width: 0;
+    }
+
+    .provision-summary span {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        text-transform: uppercase;
+    }
+
+    .provision-summary strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 1.02rem;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    @@media (max-width: 1100px) {
+        .provision-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .provision-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<VwClcfacturaImporteResponse> table = null!;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Provision_Pago";
+    protected override Type CreateDialogType => typeof(DeleteDialog<VwClcfacturaImporteResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<VwClcfacturaImporteResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<VwClcfacturaImporteResponse>);
+    protected override string GetDefaultSortLabel() => "Fecha";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<VwClcfacturaImporteResponse> items) =>
+        items.Select(x => new
+        {
+            Id = x.PkidFactura,
+            x.NumFactura,
+            x.SerieFactura,
+            Fecha = FormatDate(x.Fecha),
+            Proveedor = x.Nombre,
+            x.Rfc,
+            Poliza = x.ClavePoliza,
+            Contrato = x.NumeroContrato,
+            x.Concepto,
+            Importe = x.Importe.ToString("0.00", NumberCulture),
+            DevengadoIngresos = x.DevengadoIngresos.ToString("0.00", NumberCulture),
+            DevengadoEgresos = x.DevengadoEgresos.ToString("0.00", NumberCulture),
+            SaldoClc = (x.SaldoClc ?? 0m).ToString("0.00", NumberCulture),
+            x.Ene,
+            x.Feb,
+            x.Mar,
+            x.Abr,
+            x.May,
+            x.Jun,
+            x.Jul,
+            x.Ago,
+            x.Sep,
+            x.Oct,
+            x.Nov,
+            x.Dic,
+            x.EstatusDescripcion
+        });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string Money(decimal amount) => $"${amount.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string FormatDate(DateOnly value) => value.ToString("dd/MM/yyyy", DateCulture);
+
+    private static Color StatusColor(int estatus) => estatus switch
+    {
+        2 => Color.Info,
+        3 => Color.Success,
+        4 => Color.Error,
+        _ => Color.Warning
+    };
+}

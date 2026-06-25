@@ -16,15 +16,13 @@
                 <MudText Typo="Typo.h6" Class="doc-title">Soporte documental</MudText>
                 <MudText Typo="Typo.caption" Class="doc-subtitle">@RegistroTitulo</MudText>
             </div>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Info"
-                       Size="Size.Small"
-                       StartIcon="@Icons.Material.Filled.Refresh"
-                       Disabled="@_loading"
-                       OnClick="RefreshDocuments"
-                       Class="doc-count-button">
-                @DocumentCountText
-            </MudButton>
+            <MudTooltip Text="Cerrar">
+                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                               Size="Size.Small"
+                               Color="Color.Default"
+                               OnClick="Close"
+                               Class="doc-close-button" />
+            </MudTooltip>
         </div>
     </TitleContent>
     <DialogContent>
@@ -35,7 +33,7 @@
                     <InputFile id="@InputId" OnChange="UploadFiles" multiple class="doc-file-input" />
                     <label for="@InputId" class="doc-dropzone">
                         <MudIcon Icon="@Icons.Material.Filled.CloudUpload" />
-                        <span>Arrastra o selecciona PDF e imagenes</span>
+                        <span>Arrastra o selecciona PDF e imágenes</span>
                         <small>PDF, PNG, JPG, WEBP</small>
                     </label>
                 }
@@ -147,7 +145,7 @@
                     {
                         <div class="doc-preview-empty">
                             <MudIcon Icon="@Icons.Material.Filled.Article" />
-                            <span>El expediente documental aparecera aqui.</span>
+                            <span>El expediente documental aparecerá aquí.</span>
                         </div>
                     }
                     else if (_previewLoading)
@@ -243,9 +241,6 @@
             </aside>
         </div>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Close">Cerrar</MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code {
@@ -278,7 +273,6 @@
     private const double MaxImageZoom = 3d;
     private const double ImageZoomStep = 0.25d;
 
-    private string DocumentCountText => $"{Documents.Count} documento(s)";
     private string ImageZoomPercent => $"{_imageZoom:P0}";
     private string ImageZoomStyle => FormattableString.Invariant($"width: {_imageZoom * 100:0.##}%; height: {_imageZoom * 100:0.##}%;");
 
@@ -345,12 +339,6 @@
             _loading = false;
             await InvokeAsync(StateHasChanged);
         }
-    }
-
-    private async Task RefreshDocuments()
-    {
-        await LoadDocuments();
-        Snackbar.Add($"Expediente actualizado: {DocumentCountText}.", Severity.Info);
     }
 
     private async Task SelectDocument(DocumentoResponse document)
@@ -528,7 +516,7 @@
         if (response?.Success == true)
             await LoadAnnotations();
         else
-            Snackbar.Add(response?.Message ?? "No se pudo eliminar la anotacion.", Severity.Error);
+            Snackbar.Add(response?.Message ?? "No se pudo eliminar la anotación.", Severity.Error);
     }
 
     private static string HighlightStyle(DocumentoAnotacionResponse mark)

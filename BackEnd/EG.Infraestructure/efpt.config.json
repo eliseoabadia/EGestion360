@@ -1899,6 +1899,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[VW_CLCFactura_Importe]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_Contrato]",
          "ObjectType": 3
       },
@@ -2492,6 +2496,10 @@
       },
       {
          "Name": "[TES].[SP_CalcularIntereses]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[TES].[SP_MantenimientoInstrumento]",
          "ObjectType": 1
       }
    ],

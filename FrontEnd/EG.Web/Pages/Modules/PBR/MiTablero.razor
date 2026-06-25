@@ -72,8 +72,8 @@
             <MudGrid Spacing="2">
                 <MudItem xs="12" lg="4">
                     <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
-                        <MudText Typo="Typo.h6">Semaforo de indicadores</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Estado del ultimo avance capturado</MudText>
+                        <MudText Typo="Typo.h6">Semáforo de indicadores</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Estado del último avance capturado</MudText>
 
                         <div class="pbr-mi-semaforo-grid">
                             <div class="pbr-mi-semaforo-item success">
@@ -184,7 +184,7 @@
                 <MudItem xs="12" lg="6">
                     <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
                         <MudText Typo="Typo.h6">Ranking de programas</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Cumplimiento fisico registrado</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Cumplimiento físico registrado</MudText>
 
                         <MudStack Spacing="2" Class="mt-3">
                             @foreach (var item in dashboard.RankingProgramas.Take(8))
@@ -203,7 +203,7 @@
 
                 <MudItem xs="12" lg="6">
                     <MudPaper Elevation="1" Class="pa-4 pbr-mi-panel">
-                        <MudText Typo="Typo.h6">Resumen rapido</MudText>
+                        <MudText Typo="Typo.h6">Resumen rápido</MudText>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Lectura ejecutiva del ciclo PBR</MudText>
 
                         <div class="pbr-mi-summary-grid">
@@ -281,7 +281,18 @@
     private void OpenMatriz() => GoTo("/PRB/MatrizIndicadores");
     private void OpenMapa() => GoTo("/PRB/MapaProcesos");
 
-    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string TextOrDash(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "-";
+        }
+
+        return value.Trim()
+            .Replace("ÑIndice", "Índice", StringComparison.Ordinal)
+            .Replace("Ñíndice", "Índice", StringComparison.Ordinal)
+            .Replace("Ñindice", "Índice", StringComparison.Ordinal);
+    }
     private static string Pct(decimal value) => $"{value.ToString("0.00", NumberCulture)}%";
     private static string PctOrDash(decimal? value) => value.HasValue ? Pct(value.Value) : "-";
     private static double ToDouble(decimal value) => (double)Math.Clamp(value, 0, 100);

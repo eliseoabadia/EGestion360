@@ -3393,6 +3393,137 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<SP_MantenimientoInstrumentoResult>> SP_MantenimientoInstrumentoAsync(int? action, int? pKIdInstrumento, int? fKIdEmpresa_SIS, int? fKIdTipoInversion_TES, int? fKIdIntermediarioFinanciero_TES, int? fKIdTipoPlazo_TES, int? fKIdTipoMoneda_TES, string nombre, decimal? tasaInteres, int? plazoOriginal, DateOnly? fechaEmision, DateOnly? fechaVencimiento, decimal? montoMinimo, string observaciones, bool? activo, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterId = new SqlParameter
+            {
+                ParameterName = "Id",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = id?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdInstrumento",
+                    Value = pKIdInstrumento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEmpresa_SIS",
+                    Value = fKIdEmpresa_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoInversion_TES",
+                    Value = fKIdTipoInversion_TES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdIntermediarioFinanciero_TES",
+                    Value = fKIdIntermediarioFinanciero_TES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoPlazo_TES",
+                    Value = fKIdTipoPlazo_TES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoMoneda_TES",
+                    Value = fKIdTipoMoneda_TES ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Nombre",
+                    Size = 400,
+                    Value = nombre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TasaInteres",
+                    Precision = 10,
+                    Scale = 4,
+                    Value = tasaInteres ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PlazoOriginal",
+                    Value = plazoOriginal ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaEmision",
+                    Value = fechaEmision ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaVencimiento",
+                    Value = fechaVencimiento ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "MontoMinimo",
+                    Precision = 20,
+                    Scale = 4,
+                    Value = montoMinimo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Observaciones",
+                    Size = -1,
+                    Value = observaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Activo",
+                    Value = activo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterId,
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoInstrumentoResult>("EXEC @returnValue = [TES].[SP_MantenimientoInstrumento] @Action = @Action, @PKIdInstrumento = @PKIdInstrumento, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @FKIdTipoInversion_TES = @FKIdTipoInversion_TES, @FKIdIntermediarioFinanciero_TES = @FKIdIntermediarioFinanciero_TES, @FKIdTipoPlazo_TES = @FKIdTipoPlazo_TES, @FKIdTipoMoneda_TES = @FKIdTipoMoneda_TES, @Nombre = @Nombre, @TasaInteres = @TasaInteres, @PlazoOriginal = @PlazoOriginal, @FechaEmision = @FechaEmision, @FechaVencimiento = @FechaVencimiento, @MontoMinimo = @MontoMinimo, @Observaciones = @Observaciones, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+
+            id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<SP_MantenimientoInventarioResult>> SP_MantenimientoInventarioAsync(int? action, int? pKIdInventario, int? fKIdEmpresa_SIS, int? fKIdCalendarioInventario_ALMA, int? fKIdArea_SIS, int? fKIdEstatusInventario_ALMA, DateOnly? fechaInventario, string responsable, string observaciones, int? idUser, OutputParameter<int?> id, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterId = new SqlParameter
