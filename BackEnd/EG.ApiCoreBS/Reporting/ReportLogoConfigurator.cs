@@ -25,11 +25,6 @@ public sealed class ReportLogoConfigurator
 
     public void Apply(XtraReport report, string reportName)
     {
-        if (!string.Equals(reportName, ReportKeys.Poliza, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
         var logoPath = ResolveLogoPath();
         if (string.IsNullOrWhiteSpace(logoPath))
         {
@@ -40,16 +35,24 @@ public sealed class ReportLogoConfigurator
         var pictureBoxName = _configuration["Reporting:LogoPictureBoxName"] ?? "xrPictureBox1";
         foreach (var pictureBox in EnumerateControls(report).OfType<XRPictureBox>())
         {
-            if (!string.Equals(pictureBox.Name, pictureBoxName, StringComparison.OrdinalIgnoreCase))
+            if (!IsLogoPictureBox(pictureBox, pictureBoxName))
             {
                 continue;
             }
 
             pictureBox.ImageSource = ImageSource.FromFile(logoPath);
             pictureBox.Sizing = ImageSizeMode.ZoomImage;
-            ApplyConfiguredLayout(pictureBox);
+
+            if (string.Equals(reportName, ReportKeys.Poliza, StringComparison.OrdinalIgnoreCase))
+            {
+                ApplyConfiguredLayout(pictureBox);
+            }
         }
     }
+
+    private static bool IsLogoPictureBox(XRPictureBox pictureBox, string pictureBoxName) =>
+        string.Equals(pictureBox.Name, pictureBoxName, StringComparison.OrdinalIgnoreCase) ||
+        pictureBox.Name.StartsWith("xrPictureBox", StringComparison.OrdinalIgnoreCase);
 
     private void ApplyConfiguredLayout(XRPictureBox pictureBox)
     {

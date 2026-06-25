@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazorise.Snackbar" Version="2.2.0" />
+    <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
@@ -49,15 +50,6 @@
     <Folder Include="Pages\Modules\GRP\Presupuesto\Egreso\Planeacion\" />
     <Folder Include="Pages\Modules\GRP\Presupuesto\Tesoreria\CuentasXPagar\" />
     <Folder Include="Services\ConteoCiclico\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Pages\Platform\Reporting\ReportViewer.razor" />
-    <Compile Remove="Pages\Platform\Reporting\ReportDesigner.razor" />
-    <Content Remove="Pages\Platform\Reporting\ReportViewer.razor" />
-    <Content Remove="Pages\Platform\Reporting\ReportDesigner.razor" />
-    <None Include="Pages\Platform\Reporting\ReportViewer.razor" />
-    <None Include="Pages\Platform\Reporting\ReportDesigner.razor" />
   </ItemGroup>
 
 </Project>

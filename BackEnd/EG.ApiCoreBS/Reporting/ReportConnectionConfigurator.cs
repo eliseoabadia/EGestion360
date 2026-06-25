@@ -21,7 +21,8 @@ public sealed class ReportConnectionConfigurator
                 ? dataSource.Name
                 : dataSource.ConnectionName;
 
-            var connectionString = _configuration.GetConnectionString(connectionName);
+            var connectionString = _configuration.GetConnectionString(connectionName)
+                ?? _configuration.GetConnectionString("BD_MatrixEntities");
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
                 dataSource.ConnectionParameters = new CustomStringConnectionParameters(connectionString);

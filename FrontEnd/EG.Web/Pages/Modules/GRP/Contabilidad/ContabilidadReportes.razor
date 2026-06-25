@@ -1,0 +1,524 @@
+@page "/Contabilidad/Autorizacion_Polizas"
+@page "/Contabilidad/Balanza_Comprobacion"
+@page "/Contabilidad/Auxiliares"
+@page "/Contabilidad/Reportes_Contabilidad"
+@page "/Contabilidad/Reportes_Contabilidad/Libro_Diario"
+@page "/Contabilidad/Reportes_Contabilidad/Libro_Mayor"
+@page "/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Materiales"
+@page "/Contabilidad/Reportes_Contabilidad/Libro_Almacen_Suministros"
+@page "/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Muebles"
+@page "/Contabilidad/Reportes_Contabilidad/Polizas"
+@page "/Contabilidad/Reportes_Contabilidad/Reporte_Retenciones"
+@page "/Contabilidad/Reportes_Contabilidad/Reporte_Depreciacion_Acumulada"
+@page "/Contabilidad/Reportes_Contabilidad/Reporte_Activos_Fijos"
+@page "/Contabilidad/Reportes_Contabilidad/Reporte_Facturas_Emitidas"
+@page "/Contabilidad/Reportes_Contabilidad/Reporte_DIOT"
+@page "/Contabilidad/EI_Contable"
+@page "/Contabilidad/EI_Contable/Estados_Actividades"
+@page "/Contabilidad/EI_Contable/Estado_Situacion_Financiera"
+@page "/Contabilidad/EI_Contable/Estado_VHP"
+@page "/Contabilidad/EI_Contable/Estados_CSF"
+@page "/Contabilidad/EI_Contable/Estado_Flujos_Efectivo"
+@page "/Contabilidad/EI_Contable/Estado_Analitico_Activo"
+@page "/Contabilidad/EI_Contable/Estado_ADOP"
+@page "/Contabilidad/EI_Contable/Informe_Pasivos_Contingentes"
+@page "/Contabilidad/EI_Contable/Notas_Estados_Financieros"
+@page "/Contabilidad/Conciliacion_IE"
+@page "/Contabilidad/EI_Presupuestarios"
+@page "/Contabilidad/EI_Presupuestarios/Estado_Analitico_Ingresos"
+@page "/Contabilidad/EI_Presupuestarios/Estado_AECA"
+@page "/Contabilidad/EI_Presupuestarios/Estado_AECE"
+@page "/Contabilidad/EI_Presupuestarios/Estado_AECOG"
+@page "/Contabilidad/EI_Presupuestarios/Estado_AECF"
+@page "/Contabilidad/EI_Presupuestarios/Endeudamiento_Neto"
+@page "/Contabilidad/EI_Presupuestarios/Intereses_Deuda"
+@page "/Contabilidad/EI_Presupuestarios/Proyecciones_Egresos"
+@page "/Contabilidad/EI_Presupuestarios/Proyecciones_Ingresos"
+@page "/Contabilidad/EI_Presupuestarios/Indicadores_APP"
+@page "/Contabilidad/EI_Presupuestarios/Pp_Inversion"
+@page "/Contabilidad/EI_Presupuestarios/Resultados_Ingresos"
+@page "/Contabilidad/EI_Presupuestarios/Resultados_Egresos"
+@page "/Contabilidad/EI_Programaticos"
+@page "/Contabilidad/Indicadores_Postura_Fiscal"
+@page "/Contabilidad/Cierre_Mensual"
+@using EG.Web.Auth
+@using EG.Web.Pages.Shared
+@using Microsoft.AspNetCore.Components.Routing
+@using MudBlazor
+@implements IDisposable
+
+@inject AuthenticationProviderJWT AuthProvider
+@inject NavigationManager Navigation
+
+<AccessVerification IsInitialized="@_isInitialized"
+                    HasAccess="@_hasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="@_config.Title"
+                    Subtitle="@_config.Subtitle"
+                    Icon="@_config.Icon"
+                    ShowCreateButton="false"
+                    OnRefresh="ResetFilters" />
+
+        <MudPaper Elevation="0" Class="pa-4" Style="overflow: auto; min-height: 0;">
+            @if (_config.Links.Count > 0)
+            {
+                <MudGrid Spacing="2">
+                    @foreach (var link in _config.Links)
+                    {
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@link.Icon"
+                                       FullWidth="true"
+                                       Style="height: 48px; justify-content: flex-start;"
+                                       OnClick="@(() => Navigation.NavigateTo(link.Route))">
+                                @link.Title
+                            </MudButton>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+            else
+            {
+                <MudGrid Spacing="2" Class="mb-3">
+                    @if (_config.ShowDateRange)
+                    {
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudDatePicker Label="Fecha inicio"
+                                           @bind-Date="_startDate"
+                                           DateFormat="dd/MM/yyyy"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudDatePicker Label="Fecha fin"
+                                           @bind-Date="_endDate"
+                                           DateFormat="dd/MM/yyyy"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+
+                    @if (_config.ShowSingleDate)
+                    {
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudDatePicker Label="Fecha"
+                                           @bind-Date="_singleDate"
+                                           DateFormat="dd/MM/yyyy"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+
+                    @if (_config.ShowNivel)
+                    {
+                        <MudItem xs="12" sm="6" md="2">
+                            <MudNumericField T="int" Label="Nivel"
+                                             @bind-Value="_nivel"
+                                             Min="0"
+                                             Max="10"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="2">
+                            <MudSwitch T="bool" Label="Mes 13" @bind-Value="_usaMesTrece" Color="Color.Primary" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudSwitch T="bool" Label="Solo cuentas presupuestales" @bind-Value="_soloCuentasPres" Color="Color.Primary" />
+                        </MudItem>
+                    }
+
+                    @if (_config.ShowCuenta)
+                    {
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField T="int?" Label="Cuenta"
+                                             @bind-Value="_cuenta"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+
+                    @if (_config.ShowCierre)
+                    {
+                        <MudItem xs="12" sm="6" md="2">
+                            <MudSwitch T="bool" Label="Cierre" @bind-Value="_esCierre" Color="Color.Primary" />
+                        </MudItem>
+                    }
+
+                    @if (_config.IdParameter is not null)
+                    {
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField T="int?" Label="@_config.IdLabel"
+                                             @bind-Value="_entityId"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+                </MudGrid>
+
+                @if (string.IsNullOrWhiteSpace(_config.ReportName))
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        Ruta registrada sin layout legacy disponible.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Assessment"
+                                   Disabled="@(!CanOpenReport)"
+                                   OnClick="@(() => OpenReport(false))">
+                            Ver reporte
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.DesignServices"
+                                   Disabled="@(!CanOpenReport)"
+                                   OnClick="@(() => OpenReport(true))"
+                                   Style="@DesignerStyle">
+                            Disenador
+                        </MudButton>
+                    </MudStack>
+                }
+            }
+        </MudPaper>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private ReportPageConfig _config = ReportPageConfig.Empty;
+    private string _currentRoute = string.Empty;
+    private bool _isInitialized;
+    private bool _hasAccess;
+    private bool _canUpdate;
+    private DateTime? _startDate;
+    private DateTime? _endDate;
+    private DateTime? _singleDate;
+    private int _nivel;
+    private int? _cuenta;
+    private int? _entityId;
+    private bool _usaMesTrece;
+    private bool _soloCuentasPres;
+    private bool _esCierre;
+
+    private bool CanOpenReport => !string.IsNullOrWhiteSpace(_config.ReportName) &&
+                                  (_config.IdParameter is null || _entityId.HasValue);
+    private string? DesignerStyle => _canUpdate ? null : "display:none";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+        ResolveConfig(resetFilters: true);
+        await AuthProvider.GetAuthenticationStateAsync();
+        VerifyAccess();
+        _isInitialized = true;
+    }
+
+    protected override void OnParametersSet()
+    {
+        ResolveConfig(resetFilters: false);
+        if (_isInitialized)
+        {
+            VerifyAccess();
+        }
+    }
+
+    private void ResolveConfig(bool resetFilters)
+    {
+        var route = NormalizeRoute(Navigation.ToBaseRelativePath(Navigation.Uri));
+        if (route == _currentRoute && _config != ReportPageConfig.Empty)
+        {
+            return;
+        }
+
+        _currentRoute = route;
+        _config = Configs.TryGetValue(route, out var config) ? config : ReportPageConfig.Empty;
+
+        if (resetFilters || _isInitialized)
+        {
+            ResetFilters();
+        }
+    }
+
+    private void VerifyAccess()
+    {
+        var canView = AuthProvider.HasPermission(_config.ModuleName, _config.SubModuleName, "view") ||
+                      AuthProvider.HasPermission(_config.ModuleName, _config.SubModuleName, "view-menu");
+
+        _canUpdate = AuthProvider.HasPermission(_config.ModuleName, _config.SubModuleName, "update");
+        _hasAccess = canView;
+    }
+
+    private Task ResetFilters()
+    {
+        var today = DateTime.Today;
+        _startDate = new DateTime(today.Year, 1, 1);
+        _endDate = today;
+        _singleDate = today;
+        _nivel = 0;
+        _cuenta = null;
+        _entityId = null;
+        _usaMesTrece = false;
+        _soloCuentasPres = false;
+        _esCierre = false;
+        return Task.CompletedTask;
+    }
+
+    private void OpenReport(bool designer)
+    {
+        if (!CanOpenReport)
+        {
+            return;
+        }
+
+        var reportIdentifier = BuildReportIdentifier();
+        var routeParameters = new Dictionary<string, string?>
+        {
+            ["name"] = reportIdentifier,
+            ["title"] = _config.Title
+        };
+
+        var route = designer ? "/Reporting/Designer" : "/Reporting/Viewer";
+        Navigation.NavigateTo($"{route}?{BuildQuery(routeParameters)}");
+    }
+
+    private string BuildReportIdentifier()
+    {
+        var parameters = BuildReportParameters();
+        var query = BuildQuery(parameters);
+        return string.IsNullOrWhiteSpace(query) ? _config.ReportName! : $"{_config.ReportName}?{query}";
+    }
+
+    private Dictionary<string, string?> BuildReportParameters()
+    {
+        var parameters = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+        if (_config.ShowDateRange)
+        {
+            parameters[_config.StartDateParameter] = FormatDate(_startDate);
+            parameters[_config.EndDateParameter] = FormatDate(_endDate);
+        }
+
+        if (_config.ShowSingleDate)
+        {
+            parameters[_config.StartDateParameter] = FormatDate(_singleDate);
+        }
+
+        if (_config.ShowNivel)
+        {
+            parameters["p_nivel"] = _nivel.ToString();
+            parameters["p_UsaMesTrece"] = _usaMesTrece ? "1" : "0";
+            parameters["p_SoloCuentasPres"] = _soloCuentasPres ? "1" : "0";
+        }
+
+        if (_config.ShowCuenta && _cuenta.HasValue)
+        {
+            parameters[_config.CuentaParameter] = _cuenta.Value.ToString();
+        }
+
+        if (_config.ShowCierre)
+        {
+            parameters["EsCierre"] = _esCierre ? "1" : "0";
+        }
+
+        if (_config.IdParameter is not null && _entityId.HasValue)
+        {
+            parameters[_config.IdParameter] = _entityId.Value.ToString();
+        }
+
+        return parameters;
+    }
+
+    private static string? FormatDate(DateTime? value) => value?.ToString("yyyy-MM-dd");
+
+    private static string BuildQuery(IReadOnlyDictionary<string, string?> values) =>
+        string.Join("&",
+            values
+                .Where(value => !string.IsNullOrWhiteSpace(value.Key) && !string.IsNullOrWhiteSpace(value.Value))
+                .Select(value => $"{Uri.EscapeDataString(value.Key)}={Uri.EscapeDataString(value.Value!)}"));
+
+    private void NavigateToHome() => Navigation.NavigateTo("/");
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        ResolveConfig(resetFilters: true);
+        VerifyAccess();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= HandleLocationChanged;
+
+    private static string NormalizeRoute(string route)
+    {
+        var path = route.Split('?', '#')[0].Trim('/');
+        return "/" + path.ToLowerInvariant();
+    }
+
+    private static readonly IReadOnlyDictionary<string, ReportPageConfig> Configs = BuildConfigs();
+
+    private static IReadOnlyDictionary<string, ReportPageConfig> BuildConfigs()
+    {
+        var configs = new List<ReportPageConfig>
+        {
+            Report("/Contabilidad/Autorizacion_Polizas", "Autorizacion_Polizas", "Autorizacion de polizas", "Reporte de poliza por identificador", Icons.Material.Filled.Verified, "Report_Polizas", showDateRange: false, idParameter: "PKIdPoliza", idLabel: "Poliza"),
+            Report("/Contabilidad/Balanza_Comprobacion", "Balanza_Comprobacion", "Balanza de comprobacion", "Saldos contables por periodo", Icons.Material.Filled.Balance, "Report_CONTA_SPR_BalanzaComprobacion", showNivel: true),
+            Report("/Contabilidad/Auxiliares", "Auxiliares", "Auxiliares", "Movimientos auxiliares por cuenta", Icons.Material.Filled.AccountTree, "Report_CONTA_AuxiliarContables", showCuenta: true),
+
+            Parent("/Contabilidad/Reportes_Contabilidad", "Reportes_Contabilidad", "Reportes Contabilidad", "Libros y reportes operativos", Icons.Material.Filled.Folder, [
+                Link("Libro Diario", "/Contabilidad/Reportes_Contabilidad/Libro_Diario", Icons.Material.Filled.Article),
+                Link("Libro Mayor", "/Contabilidad/Reportes_Contabilidad/Libro_Mayor", Icons.Material.Filled.MenuBook),
+                Link("Inventarios Materiales", "/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Materiales", Icons.Material.Filled.Inventory2),
+                Link("Almacen Suministros", "/Contabilidad/Reportes_Contabilidad/Libro_Almacen_Suministros", Icons.Material.Filled.Warehouse),
+                Link("Inventarios Muebles", "/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Muebles", Icons.Material.Filled.Chair),
+                Link("Polizas", "/Contabilidad/Reportes_Contabilidad/Polizas", Icons.Material.Filled.Description),
+                Link("Retenciones", "/Contabilidad/Reportes_Contabilidad/Reporte_Retenciones", Icons.Material.Filled.ReceiptLong),
+                Link("Depreciacion", "/Contabilidad/Reportes_Contabilidad/Reporte_Depreciacion_Acumulada", Icons.Material.Filled.TrendingDown),
+                Link("Activos Fijos", "/Contabilidad/Reportes_Contabilidad/Reporte_Activos_Fijos", Icons.Material.Filled.Domain),
+                Link("Facturas Emitidas", "/Contabilidad/Reportes_Contabilidad/Reporte_Facturas_Emitidas", Icons.Material.Filled.RequestQuote),
+                Link("DIOT", "/Contabilidad/Reportes_Contabilidad/Reporte_DIOT", Icons.Material.Filled.TableChart)
+            ]),
+            Report("/Contabilidad/Reportes_Contabilidad/Libro_Diario", "Libro_Diario", "Libro Diario", "Movimientos contables diarios", Icons.Material.Filled.Article, "Report_CONTA_SPR_LibroDiario2", startDateParameter: "p_FechaInicio2", endDateParameter: "p_FechaFin2", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Libro_Mayor", "Libro_Mayor", "Libro Mayor", "Mayor contable por cuenta", Icons.Material.Filled.MenuBook, "Report_SPR_LibroMayor", showCuenta: true, cuentaParameter: "NumCuenta", showCierre: true, moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Materiales", "Libro_Inventarios_Materiales", "Libro Inventarios Materiales", "Inventario de materias por periodo", Icons.Material.Filled.Inventory2, "Report_CONTA_SPR_InventariosdeMaterias", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Libro_Almacen_Suministros", "Libro_Almacen_Suministros", "Libro Almacen Suministros", "Almacen de materiales y suministros", Icons.Material.Filled.Warehouse, "Report_CONTA_SPR_AlmacéndeMateriales", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Muebles", "Libro_Inventarios_Muebles", "Libro Inventarios Muebles", "Inventario de bienes muebles", Icons.Material.Filled.Chair, "Report_CONTA_SPR_InventariosdeBienes", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Polizas", "Polizas", "Polizas", "Reporte de poliza por identificador", Icons.Material.Filled.Description, "Report_Polizas", showDateRange: false, idParameter: "PKIdPoliza", idLabel: "Poliza", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Reporte_Retenciones", "Reporte_Retenciones", "Reporte de Retenciones", "Retenciones por periodo", Icons.Material.Filled.ReceiptLong, "Report_Retenciones", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Reporte_Depreciacion_Acumulada", "Reporte_Depreciacion_Acumulada", "Reporte de Depreciacion Acumulada", "Depreciacion acumulada", Icons.Material.Filled.TrendingDown, "Report_Depreciacion_acumulada", showDateRange: false, showSingleDate: true, moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Reporte_Activos_Fijos", "Reporte_Activos_Fijos", "Reporte de Activos Fijos", "Activos fijos", Icons.Material.Filled.Domain, "Report_Activos_Fijos", showDateRange: false, showSingleDate: true, moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Reporte_Facturas_Emitidas", "Reporte_Facturas_Emitidas", "Reporte de Facturas Emitidas", "Facturas emitidas por periodo", Icons.Material.Filled.RequestQuote, "Report_Facturas_emitidas", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Reporte_DIOT", "Reporte_DIOT", "Reporte DIOT", "Declaracion informativa por periodo", Icons.Material.Filled.TableChart, null, moduleName: "Reportes_Contabilidad"),
+
+            Parent("/Contabilidad/EI_Contable", "EI_Contable", "Estados e Informacion Contable", "Estados financieros contables", Icons.Material.Filled.AccountBalance, [
+                Link("Estados de Actividades", "/Contabilidad/EI_Contable/Estados_Actividades", Icons.Material.Filled.Assessment),
+                Link("Situacion Financiera", "/Contabilidad/EI_Contable/Estado_Situacion_Financiera", Icons.Material.Filled.AccountBalance),
+                Link("Variaciones Hacienda", "/Contabilidad/EI_Contable/Estado_VHP", Icons.Material.Filled.CompareArrows),
+                Link("Cambios Situacion", "/Contabilidad/EI_Contable/Estados_CSF", Icons.Material.Filled.SwapHoriz),
+                Link("Flujos de Efectivo", "/Contabilidad/EI_Contable/Estado_Flujos_Efectivo", Icons.Material.Filled.Payments),
+                Link("Analitico del Activo", "/Contabilidad/EI_Contable/Estado_Analitico_Activo", Icons.Material.Filled.Analytics),
+                Link("Deuda y Pasivos", "/Contabilidad/EI_Contable/Estado_ADOP", Icons.Material.Filled.AccountBalanceWallet),
+                Link("Pasivos Contingentes", "/Contabilidad/EI_Contable/Informe_Pasivos_Contingentes", Icons.Material.Filled.Report),
+                Link("Notas Financieras", "/Contabilidad/EI_Contable/Notas_Estados_Financieros", Icons.Material.Filled.Notes)
+            ]),
+            Report("/Contabilidad/EI_Contable/Estados_Actividades", "Estados_Actividades", "Estados de Actividades", "Estado de actividades", Icons.Material.Filled.Assessment, "Report_ORCO_EstadoActividad", showDateRange: false, idParameter: "PK_Id", idLabel: "ID", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estado_Situacion_Financiera", "Estado_Situacion_Financiera", "Estado de Situacion Financiera", "Situacion financiera", Icons.Material.Filled.AccountBalance, "Report_CONTA_SPR_EstadoDeSitucionFinanciera", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estado_VHP", "Estado_VHP", "Estado de Variaciones en la Hacienda Publica", "Variaciones en hacienda publica", Icons.Material.Filled.CompareArrows, "Report_CONTA_SPR_EstadoVariacionHaciendaPublica", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estados_CSF", "Estados_CSF", "Estados de Cambios en la Situacion Financiera", "Cambios en situacion financiera", Icons.Material.Filled.SwapHoriz, "Report_CONTA_SPR_EstadoDeSitucionFinanciera", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estado_Flujos_Efectivo", "Estado_Flujos_Efectivo", "Estado de Flujos de Efectivo", "Flujos de efectivo", Icons.Material.Filled.Payments, "Report_CONTA_SPR_EstadoFlujosEfectivo2", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estado_Analitico_Activo", "Estado_Analitico_Activo", "Estado Analitico del Activo", "Analitico del activo", Icons.Material.Filled.Analytics, "Report_CONTA_SPR_EstadoAnaliticoDelActivo", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estado_ADOP", "Estado_ADOP", "Estado Analitico de la Deuda y Otros Pasivos", "Deuda y otros pasivos", Icons.Material.Filled.AccountBalanceWallet, "Report_CONTA_SPR_EstadoAnaliticoDeudaPasivos", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Informe_Pasivos_Contingentes", "Informe_Pasivos_Contingentes", "Informe sobre Pasivos Contingentes", "Pasivos contingentes", Icons.Material.Filled.Report, "Report_Pasivos_Contingentes", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Notas_Estados_Financieros", "Notas_Estados_Financieros", "Notas Estados Financieros", "Notas a estados financieros", Icons.Material.Filled.Notes, "Report_RepNotasEdosFin", moduleName: "EI_Contable"),
+            Report("/Contabilidad/Conciliacion_IE", "Conciliacion_IE", "Conciliacion Ingresos-Egresos", "Formato de conciliacion", Icons.Material.Filled.Rule, "Report_formato_conciliaciones"),
+
+            Parent("/Contabilidad/EI_Presupuestarios", "EI_Presupuestarios", "Estados e Informes Presupuestarios", "Estados presupuestarios", Icons.Material.Filled.PieChart, [
+                Link("Analitico Ingresos", "/Contabilidad/EI_Presupuestarios/Estado_Analitico_Ingresos", Icons.Material.Filled.TrendingUp),
+                Link("AECA", "/Contabilidad/EI_Presupuestarios/Estado_AECA", Icons.Material.Filled.AccountTree),
+                Link("AECE", "/Contabilidad/EI_Presupuestarios/Estado_AECE", Icons.Material.Filled.StackedLineChart),
+                Link("AECOG", "/Contabilidad/EI_Presupuestarios/Estado_AECOG", Icons.Material.Filled.Category),
+                Link("AECF", "/Contabilidad/EI_Presupuestarios/Estado_AECF", Icons.Material.Filled.Schema),
+                Link("Endeudamiento Neto", "/Contabilidad/EI_Presupuestarios/Endeudamiento_Neto", Icons.Material.Filled.AccountBalanceWallet),
+                Link("Intereses Deuda", "/Contabilidad/EI_Presupuestarios/Intereses_Deuda", Icons.Material.Filled.Percent),
+                Link("Proyecciones Egresos", "/Contabilidad/EI_Presupuestarios/Proyecciones_Egresos", Icons.Material.Filled.Timeline),
+                Link("Proyecciones Ingresos", "/Contabilidad/EI_Presupuestarios/Proyecciones_Ingresos", Icons.Material.Filled.ShowChart),
+                Link("Indicadores APP", "/Contabilidad/EI_Presupuestarios/Indicadores_APP", Icons.Material.Filled.QueryStats),
+                Link("Pp Inversion", "/Contabilidad/EI_Presupuestarios/Pp_Inversion", Icons.Material.Filled.BusinessCenter),
+                Link("Resultados Ingresos", "/Contabilidad/EI_Presupuestarios/Resultados_Ingresos", Icons.Material.Filled.Savings),
+                Link("Resultados Egresos", "/Contabilidad/EI_Presupuestarios/Resultados_Egresos", Icons.Material.Filled.Payments)
+            ]),
+            Report("/Contabilidad/EI_Presupuestarios/Estado_Analitico_Ingresos", "Estado_Analitico_Ingresos", "Estado Analitico de Ingresos", "Ingresos presupuestarios", Icons.Material.Filled.TrendingUp, "Report_Estado_Analitico_Ingresos", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Estado_AECA", "Estado_AECA", "Estado Analitico de Egresos con Clasificacion Administrativa", "Clasificacion administrativa", Icons.Material.Filled.AccountTree, "Report_RepClasAdministrativa", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Estado_AECE", "Estado_AECE", "Estado Analitico de Egresos con Clasificacion Economica", "Clasificacion economica", Icons.Material.Filled.StackedLineChart, "Report_RepClasEconomica", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Estado_AECOG", "Estado_AECOG", "Estado Analitico de Egresos con Clasificacion por Objeto del Gasto", "Objeto del gasto", Icons.Material.Filled.Category, "Report_RepClasObjGasto", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Estado_AECF", "Estado_AECF", "Estado Analitico de Egresos con Clasificacion Funcional", "Clasificacion funcional", Icons.Material.Filled.Schema, "Report_RepClasFuncional", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Endeudamiento_Neto", "Endeudamiento_Neto", "Endeudamiento Neto", "Endeudamiento neto", Icons.Material.Filled.AccountBalanceWallet, "Report_RepEndeudamiento", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Intereses_Deuda", "Intereses_Deuda", "Intereses de la Deuda", "Intereses de deuda", Icons.Material.Filled.Percent, "Report_RepInteresesDeuda", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Proyecciones_Egresos", "Proyecciones_Egresos", "Proyecciones de Egresos", "Proyecciones de egresos", Icons.Material.Filled.Timeline, "Report_Proyecciones_egresos", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Proyecciones_Ingresos", "Proyecciones_Ingresos", "Proyecciones de Ingresos", "Proyecciones de ingresos", Icons.Material.Filled.ShowChart, "Report_RepProyIngresos", showDateRange: false, showSingleDate: true, moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Indicadores_APP", "Indicadores_APP", "Indicadores Asociados a Programas Presupuestarios", "Indicadores APP", Icons.Material.Filled.QueryStats, null, moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Pp_Inversion", "Pp_Inversion", "Programas y proyectos de Inversion", "Programas y proyectos", Icons.Material.Filled.BusinessCenter, "PRES_SPR_PYs", showDateRange: false, idParameter: "idPY", idLabel: "PY", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Resultados_Ingresos", "Resultados_Ingresos", "Resultados de Ingresos", "Resultados de ingresos", Icons.Material.Filled.Savings, "Report_CONTA_SPR_RepResultIngresos", showDateRange: false, showSingleDate: true, moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Resultados_Egresos", "Resultados_Egresos", "Resultados de Egresos", "Resultados de egresos", Icons.Material.Filled.Payments, "Report_Resultado_Egresos", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Programaticos", "EI_Programaticos", "Estados e Informes Programaticos", "Informes programaticos", Icons.Material.Filled.Grading, "Report_RepInformesProg"),
+            Report("/Contabilidad/Indicadores_Postura_Fiscal", "Indicadores_Postura_Fiscal", "Indicadores de Postura Fiscal", "Postura fiscal", Icons.Material.Filled.QueryStats, "Report_RepIndicadoresPF"),
+            Report("/Contabilidad/Cierre_Mensual", "Cierre_Mensual", "Cierre Mensual", "Proceso contable mensual", Icons.Material.Filled.EventBusy, null)
+        };
+
+        return configs.ToDictionary(config => NormalizeRoute(config.Route), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static ReportPageConfig Parent(string route, string subModule, string title, string subtitle, string icon, IReadOnlyList<ReportLink> links, string moduleName = "Contabilidad") =>
+        new(route, moduleName, subModule, title, subtitle, icon, null, links, true, false, "p_FecInicio", "p_FecFin", false, false, false, false, "p_Fk_ICuentaContable", false, null, "ID");
+
+    private static ReportPageConfig Report(
+        string route,
+        string subModule,
+        string title,
+        string subtitle,
+        string icon,
+        string? reportName,
+        bool showDateRange = true,
+        bool showSingleDate = false,
+        string startDateParameter = "p_FecInicio",
+        string endDateParameter = "p_FecFin",
+        bool showNivel = false,
+        bool showCuenta = false,
+        string cuentaParameter = "p_Fk_ICuentaContable",
+        bool showCierre = false,
+        string? idParameter = null,
+        string idLabel = "ID",
+        string moduleName = "Contabilidad") =>
+        new(route, moduleName, subModule, title, subtitle, icon, reportName, [], showDateRange, showSingleDate, startDateParameter, endDateParameter, showNivel, false, false, showCuenta, cuentaParameter, showCierre, idParameter, idLabel);
+
+    private static ReportLink Link(string title, string route, string icon) => new(title, route, icon);
+
+    private sealed record ReportPageConfig(
+        string Route,
+        string ModuleName,
+        string SubModuleName,
+        string Title,
+        string Subtitle,
+        string Icon,
+        string? ReportName,
+        IReadOnlyList<ReportLink> Links,
+        bool ShowDateRange,
+        bool ShowSingleDate,
+        string StartDateParameter,
+        string EndDateParameter,
+        bool ShowNivel,
+        bool UsaMesTrece,
+        bool SoloCuentasPres,
+        bool ShowCuenta,
+        string CuentaParameter,
+        bool ShowCierre,
+        string? IdParameter,
+        string IdLabel)
+    {
+        public static ReportPageConfig Empty { get; } = new(
+            "/",
+            "Contabilidad",
+            "Contabilidad",
+            "Contabilidad",
+            "Reportes contables",
+            Icons.Material.Filled.Assessment,
+            null,
+            [],
+            false,
+            false,
+            "p_FecInicio",
+            "p_FecFin",
+            false,
+            false,
+            false,
+            false,
+            "p_Fk_ICuentaContable",
+            false,
+            null,
+            "ID");
+    }
+
+    private sealed record ReportLink(string Title, string Route, string Icon);
+}

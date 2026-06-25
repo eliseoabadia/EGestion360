@@ -4,6 +4,17 @@ namespace EG.ApiCoreBS.Reporting;
 
 public sealed class ReportRequest
 {
+    private static readonly IReadOnlyDictionary<string, string[]> ParameterAliases =
+        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["p_FecInicio"] = ["p_FechaInicio", "p_FechaInicio2", "FechaInicio"],
+            ["p_FecFin"] = ["p_FechaFin", "p_FechaFin2", "FechaFin"],
+            ["p_FechaInicio"] = ["p_FecInicio", "p_FechaInicio2", "FechaInicio"],
+            ["p_FechaFin"] = ["p_FecFin", "p_FechaFin2", "FechaFin"],
+            ["p_FechaInicio2"] = ["p_FechaInicio", "p_FecInicio", "FechaInicio"],
+            ["p_FechaFin2"] = ["p_FechaFin", "p_FecFin", "FechaFin"]
+        };
+
     private ReportRequest(string name, IReadOnlyDictionary<string, string> parameters)
     {
         Name = name;
@@ -45,6 +56,26 @@ public sealed class ReportRequest
         return Parameters.TryGetValue(name, out var raw) && int.TryParse(raw, out value);
     }
 
-    public string? GetValue(string name) =>
-        Parameters.TryGetValue(name, out var value) ? value : null;
+    public string? GetValue(string name)
+    {
+        if (Parameters.TryGetValue(name, out var value))
+        {
+            return value;
+        }
+
+        if (!ParameterAliases.TryGetValue(name, out var aliases))
+        {
+            return null;
+        }
+
+        foreach (var alias in aliases)
+        {
+            if (Parameters.TryGetValue(alias, out value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
 }
