@@ -98,6 +98,7 @@ public static class NominaCatalogUi
             "PkidImporteNivel" => "ID",
             "PkidContratoLaboral" => "ID",
             "PkidCatalogoSimple" => "ID",
+            "PkidEstadoCivil" => "ID",
             "FkidEmpresaSis" => "Empresa nomina",
             "EmpresaNombre" => "Empresa",
             "FkidAreaSis" => "Área",

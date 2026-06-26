@@ -12,10 +12,13 @@
                            OnClick="GoBack" />
             <MudText Typo="Typo.h6">@ViewerTitle</MudText>
         </div>
-        <MudText Typo="Typo.caption" Color="Color.Tertiary">@Name</MudText>
     </MudPaper>
 
-    @if (string.IsNullOrWhiteSpace(Name))
+    @if (_isResolvingReport)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-3" />
+    }
+    else if (string.IsNullOrWhiteSpace(ResolvedReportName))
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mt-3">
             No se recibio el nombre del reporte.
@@ -24,7 +27,7 @@
     else
     {
         <div class="reporting-viewer-shell">
-            <DxWasmDocumentViewer ReportName="@Name" Height="calc(100vh - 108px)">
+            <DxWasmDocumentViewer ReportName="@ResolvedReportName" Height="calc(100vh - 108px)">
                 <DxWasmDocumentViewerRequestOptions Host="@ApiHost" InvokeAction="DXXRDV" />
                 <DxDocumentViewerExportSettings UseSameTab="false" />
             </DxWasmDocumentViewer>
@@ -73,13 +76,56 @@
     [SupplyParameterFromQuery(Name = "title")]
     public string? Title { get; set; }
 
-    private string ViewerTitle => string.IsNullOrWhiteSpace(Title) ? "Reporte" : Title;
+    private string? ResolvedReportName { get; set; }
+    private string? ResolvedTitle { get; set; }
+    private bool _isResolvingReport = true;
+
+    private string ViewerTitle => string.IsNullOrWhiteSpace(ResolvedTitle) ? "Reporte" : ResolvedTitle;
 
     private string ApiHost => ResolveApiHost();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isResolvingReport = true;
+        ResolvedReportName = await ResolveReportNameAsync();
+        ResolvedTitle = await ResolveReportTitleAsync();
+        _isResolvingReport = false;
+    }
 
     private async Task GoBack()
     {
         await JS.InvokeVoidAsync("history.back");
+    }
+
+    private async Task<string?> ResolveReportNameAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            return null;
+        }
+
+        var storedReport = await JS.InvokeAsync<string?>("sessionStorage.getItem", BuildReportStorageKey(Name));
+        if (!string.IsNullOrWhiteSpace(storedReport))
+        {
+            return storedReport;
+        }
+
+        return IsReportToken(Name) ? null : Name;
+    }
+
+    private async Task<string?> ResolveReportTitleAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Title))
+        {
+            return Title;
+        }
+
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            return null;
+        }
+
+        return await JS.InvokeAsync<string?>("sessionStorage.getItem", BuildReportTitleStorageKey(Name));
     }
 
     private string ResolveApiHost()
@@ -95,4 +141,11 @@
             ? absolute.ToString()
             : new Uri(new Uri(baseUri), configured).ToString();
     }
+
+    private static bool IsReportToken(string value) =>
+        value.StartsWith("RPT-", StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildReportStorageKey(string token) => $"eg.report.{token}";
+
+    private static string BuildReportTitleStorageKey(string token) => $"eg.report.title.{token}";
 }

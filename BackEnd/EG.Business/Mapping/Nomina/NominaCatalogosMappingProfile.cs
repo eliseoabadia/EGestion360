@@ -179,6 +179,27 @@ namespace EG.Business.Mapping.Nomina
             config.NewConfig<TipoPension, NomTipoPensionDto>().TwoWays();
             config.NewConfig<TipoPension, NomTipoPensionResponse>().TwoWays();
             config.NewConfig<NomTipoPensionResponse, NomTipoPensionDto>().TwoWays();
+
+            config.NewConfig<CatalogoSimple, NomCatalogoSimpleDto>()
+                .Map(dest => dest.FechaInicio, src => ToDateTime(src.FechaInicio))
+                .Map(dest => dest.FechaFin, src => ToDateTime(src.FechaFin));
+            config.NewConfig<CatalogoSimple, NomCatalogoSimpleResponse>()
+                .Map(dest => dest.FechaInicio, src => ToDateTime(src.FechaInicio))
+                .Map(dest => dest.FechaFin, src => ToDateTime(src.FechaFin));
+            config.NewConfig<NomCatalogoSimpleDto, CatalogoSimple>()
+                .Map(dest => dest.FechaInicio, src => ToDateOnly(src.FechaInicio))
+                .Map(dest => dest.FechaFin, src => ToDateOnly(src.FechaFin));
+            config.NewConfig<NomCatalogoSimpleResponse, NomCatalogoSimpleDto>().TwoWays();
+
+            config.NewConfig<SisEstadoCivil, NomEstadoCivilDto>().TwoWays();
+            config.NewConfig<SisEstadoCivil, NomEstadoCivilResponse>().TwoWays();
+            config.NewConfig<NomEstadoCivilResponse, NomEstadoCivilDto>().TwoWays();
         }
+
+        private static DateTime? ToDateTime(DateOnly? value)
+            => value?.ToDateTime(TimeOnly.MinValue);
+
+        private static DateOnly? ToDateOnly(DateTime? value)
+            => value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
     }
 }

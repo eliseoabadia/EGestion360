@@ -1,0 +1,569 @@
+@page "/Contabilidad/Cierre_Mensual"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Dommain.DTOs.Responses
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@using MudBlazor
+@inherits BaseCrudPage<CierreMensualResponse, CierreMensualResponse>
+
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IJSRuntime JS
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column cierre-mensual-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Cierre Mensual"
+                    Subtitle="Control operativo de polizas, movimientos y saldos contables"
+                    Icon="@Icons.Material.Filled.EventAvailable"
+                    ShowCreateButton="false"
+                    CanCreate="@CanApplyCierre"
+                    OnRefresh="ReloadData">
+            <AdditionalButtons>
+                <MudTooltip Text="@ApplyTooltip">
+                    <MudButton StartIcon="@Icons.Material.Filled.TaskAlt"
+                               Disabled="@(!CanApplyCierre || _estado?.PuedeRealizarCierre != true || IsBusy || _estadoLoading)"
+                               OnClick="AplicarCierreMensual"
+                               Size="Size.Small"
+                               Color="Color.Success">
+                        Cerrar mes
+                    </MudButton>
+                </MudTooltip>
+            </AdditionalButtons>
+        </PageHeader>
+
+        <div class="cierre-dashboard">
+            <section class="period-panel">
+                <div class="period-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" />
+                </div>
+                <div class="period-copy">
+                    <span>Periodo activo</span>
+                    <strong>@(_estado?.PeriodoNombre ?? "Sin periodo")</strong>
+                    <small>@StatusText</small>
+                </div>
+                <MudChip T="string" Color="@StatusColor" Size="Size.Small" Class="period-chip">
+                    @(_estado?.PuedeRealizarCierre == true ? "Listo para cierre" : "En validacion")
+                </MudChip>
+            </section>
+
+            <section class="metric-panel">
+                <span>Polizas</span>
+                <strong>@FormatCount(_estado?.TotalPolizas ?? 0)</strong>
+                <div class="metric-line">
+                    <span>@FormatCount(_estado?.PolizasBalanceadas ?? 0) balanceadas</span>
+                    <span>@BalancePercentText</span>
+                </div>
+                <MudProgressLinear Color="@BalanceColor" Value="@BalancePercent" Rounded="true" Size="Size.Small" />
+            </section>
+
+            <section class="metric-panel">
+                <span>Debe / Haber</span>
+                <strong>@Money(_estado?.TotalDebe ?? 0m)</strong>
+                <div class="metric-line">
+                    <span>Haber @Money(_estado?.TotalHaber ?? 0m)</span>
+                    <span class="@DifferenceClass">@Money(_estado?.Diferencia ?? 0m)</span>
+                </div>
+                <MudProgressLinear Color="@DifferenceColor" Value="@DifferenceHealth" Rounded="true" Size="Size.Small" />
+            </section>
+
+            <section class="metric-panel">
+                <span>Saldos generados</span>
+                <strong>@FormatCount(_estado?.SaldosGenerados ?? 0)</strong>
+                <div class="metric-line">
+                    <span>@FormatCount(_estado?.CuentasConSaldo ?? 0) cuentas</span>
+                    <span>@Money(_estado?.TotalSaldoFinal ?? 0m)</span>
+                </div>
+                <MudProgressLinear Color="Color.Info" Value="@SaldoCoverage" Rounded="true" Size="Size.Small" />
+            </section>
+        </div>
+
+        <div class="closing-board">
+            <section class="board-panel">
+                <div class="board-title">
+                    <MudIcon Icon="@Icons.Material.Filled.FactCheck" />
+                    <span>Preparacion contable</span>
+                </div>
+                <div class="check-row">
+                    <MudIcon Icon="@BalanceIcon" Color="@BalanceColor" />
+                    <div>
+                        <strong>Polizas balanceadas</strong>
+                        <span>@FormatCount(_estado?.PolizasPendientes ?? 0) pendientes</span>
+                    </div>
+                </div>
+                <div class="check-row">
+                    <MudIcon Icon="@MovementIcon" Color="@MovementColor" />
+                    <div>
+                        <strong>Movimientos del mes</strong>
+                        <span>@FormatCount(_estado?.Movimientos ?? 0) registros contables</span>
+                    </div>
+                </div>
+                <div class="check-row">
+                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="@StatusColor" />
+                    <div>
+                        <strong>Ventana de cierre</strong>
+                        <span>@StatusText</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="board-panel totals-panel">
+                <div class="board-title">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" />
+                    <span>Saldos del periodo</span>
+                    <span class="currency-chip">@_currencyName (@_currencySymbol)</span>
+                </div>
+                <div class="totals-grid">
+                    <div>
+                        <span>Inicial</span>
+                        <strong>@Money(_estado?.TotalSaldoInicial ?? 0m)</strong>
+                    </div>
+                    <div>
+                        <span>Cargos</span>
+                        <strong>@Money(_estado?.TotalCargos ?? 0m)</strong>
+                    </div>
+                    <div>
+                        <span>Abonos</span>
+                        <strong>@Money(_estado?.TotalAbonos ?? 0m)</strong>
+                    </div>
+                    <div>
+                        <span>Final</span>
+                        <strong>@Money(_estado?.TotalSaldoFinal ?? 0m)</strong>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericTable TItem="CierreMensualResponse"
+                          @ref="table"
+                          Title="Saldos mensuales por cuenta"
+                          SearchPlaceholder="Buscar cuenta o descripcion..."
+                          PageSize="15"
+                          InitialSortDirection="@SortDirection.Ascending"
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="(s) => SearchString = s"
+                          OnSearch="OnSearch">
+
+                <ToolbarActions>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="mr-2">
+                        @(_estado?.PeriodoNombre ?? "Periodo")
+                    </MudChip>
+                </ToolbarActions>
+
+                <Header>
+                    <MudTh><MudTableSortLabel SortLabel="FkidCuentaContable" T="CierreMensualResponse">Cuenta</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="SaldoInicial" T="CierreMensualResponse">Saldo inicial</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Cargos" T="CierreMensualResponse">Cargos</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Abonos" T="CierreMensualResponse">Abonos</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="SaldoFinal" T="CierreMensualResponse">Saldo final</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="CierreMensualResponse">Generado</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="CierreMensualResponse">Usuario</MudTableSortLabel></MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd>
+                        <div class="account-cell">@TextOrDash(item.CuentaClave)</div>
+                        <span>@TextOrDash(item.CuentaDescripcion)</span>
+                    </MudTd>
+                    <MudTd>@Money(item.SaldoInicial)</MudTd>
+                    <MudTd>@Money(item.Cargos)</MudTd>
+                    <MudTd>@Money(item.Abonos)</MudTd>
+                    <MudTd><strong>@Money(item.SaldoFinal)</strong></MudTd>
+                    <MudTd>@DateTimeOrDash(item.FechaCreacion)</MudTd>
+                    <MudTd>@item.UsuarioCreacion</MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .cierre-mensual-page {
+        color: var(--mud-palette-text-primary);
+    }
+
+    .cierre-dashboard {
+        display: grid;
+        grid-template-columns: minmax(260px, 1.35fr) repeat(3, minmax(180px, 1fr));
+        gap: 10px;
+        margin: 0 0 10px;
+    }
+
+    .period-panel,
+    .metric-panel,
+    .board-panel {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .period-panel {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        padding: 14px;
+    }
+
+    .period-icon {
+        display: grid;
+        place-items: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        color: var(--mud-palette-primary);
+        background: color-mix(in srgb, var(--mud-palette-primary) 12%, transparent);
+    }
+
+    .period-copy,
+    .metric-panel,
+    .check-row div,
+    .totals-grid div,
+    .account-cell {
+        min-width: 0;
+    }
+
+    .period-copy span,
+    .metric-panel > span,
+    .totals-grid span {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+        line-height: 1.2;
+    }
+
+    .period-copy strong,
+    .metric-panel strong,
+    .totals-grid strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .period-copy strong {
+        font-size: 1.35rem;
+        line-height: 1.2;
+    }
+
+    .period-copy small,
+    .check-row span,
+    .metric-line,
+    .cierre-mensual-page td span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .period-chip {
+        justify-self: end;
+    }
+
+    .metric-panel {
+        padding: 12px;
+    }
+
+    .metric-panel strong {
+        font-size: 1.12rem;
+        line-height: 1.35;
+        margin: 2px 0 8px;
+    }
+
+    .metric-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .metric-line > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .diff-ok {
+        color: var(--mud-palette-success) !important;
+        font-weight: 700;
+    }
+
+    .diff-warn {
+        color: var(--mud-palette-warning) !important;
+        font-weight: 700;
+    }
+
+    .closing-board {
+        display: grid;
+        grid-template-columns: minmax(280px, .9fr) minmax(320px, 1.1fr);
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .board-panel {
+        padding: 12px;
+    }
+
+    .board-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--mud-palette-primary);
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .currency-chip {
+        margin-left: auto;
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .check-row {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        border-top: 1px solid var(--mud-palette-lines-default);
+    }
+
+    .check-row:first-of-type {
+        border-top: 0;
+    }
+
+    .check-row strong {
+        display: block;
+        line-height: 1.2;
+    }
+
+    .totals-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .totals-grid div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px;
+        background: var(--mud-palette-background);
+    }
+
+    .account-cell {
+        font-weight: 700;
+        line-height: 1.15;
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 1100px) {
+        .cierre-dashboard,
+        .closing-board {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .period-panel {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .cierre-dashboard,
+        .closing-board,
+        .totals-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .period-panel {
+            grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .period-chip {
+            grid-column: 1 / -1;
+            justify-self: start;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<CierreMensualResponse> table = null!;
+    private CierreMensualResponse? _estado;
+    private bool _estadoLoading = true;
+    private string _currencySymbol = "$";
+    private string _currencyName = "Peso Mexicano";
+
+    protected override string ModuleName => "Contabilidad";
+    protected override string SubModuleName => "Cierre_Mensual";
+    protected override Type CreateDialogType => typeof(DeleteDialog<CierreMensualResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<CierreMensualResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<CierreMensualResponse>);
+
+    private bool CanApplyCierre => CanCreate || CanUpdate;
+    private string ApplyTooltip => _estado?.PuedeRealizarCierre == true
+        ? "Aplicar cierre mensual"
+        : TextOrDash(_estado?.MotivoBloqueo);
+    private string StatusText => _estadoLoading
+        ? "Actualizando estado..."
+        : string.IsNullOrWhiteSpace(_estado?.MotivoBloqueo)
+            ? $"Ultimo cierre: {DateTimeOrDash(_estado?.FechaUltimoCierre)}"
+            : _estado!.MotivoBloqueo;
+    private Color StatusColor => _estado?.PuedeRealizarCierre == true ? Color.Success : Color.Warning;
+    private Color BalanceColor => (_estado?.PolizasPendientes ?? 0) == 0 ? Color.Success : Color.Warning;
+    private Color MovementColor => (_estado?.Movimientos ?? 0) > 0 ? Color.Info : Color.Warning;
+    private string BalanceIcon => (_estado?.PolizasPendientes ?? 0) == 0 ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.PendingActions;
+    private string MovementIcon => (_estado?.Movimientos ?? 0) > 0 ? Icons.Material.Filled.ReceiptLong : Icons.Material.Filled.ReportProblem;
+    private double BalancePercent => (_estado?.TotalPolizas ?? 0) == 0
+        ? 0
+        : (double)Math.Round((decimal)(_estado?.PolizasBalanceadas ?? 0) / Math.Max(1, _estado?.TotalPolizas ?? 1) * 100m, 2);
+    private string BalancePercentText => $"{BalancePercent.ToString("0.##", NumberCulture)}%";
+    private Color DifferenceColor => decimal.Round(_estado?.Diferencia ?? 0m, 2) == 0m ? Color.Success : Color.Warning;
+    private string DifferenceClass => DifferenceColor == Color.Success ? "diff-ok" : "diff-warn";
+    private double DifferenceHealth => DifferenceColor == Color.Success ? 100d : 35d;
+    private double SaldoCoverage => (_estado?.SaldosGenerados ?? 0) == 0 ? 0d : 100d;
+
+    protected override string GetDefaultSortLabel() => "FkidCuentaContable";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrencyAsync();
+        await LoadEstadoAsync();
+    }
+
+    protected override async Task ReloadData()
+    {
+        await LoadEstadoAsync();
+
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<CierreMensualResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidSaldoMensual,
+            Anio = item.Anio,
+            Mes = item.Mes,
+            Cuenta = item.CuentaClave,
+            Descripcion = item.CuentaDescripcion,
+            SaldoInicial = item.SaldoInicial,
+            Cargos = item.Cargos,
+            Abonos = item.Abonos,
+            SaldoFinal = item.SaldoFinal,
+            Activo = item.Activo,
+            UsuarioCreacion = item.UsuarioCreacion,
+            FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
+            UsuarioModificacion = item.UsuarioModificacion,
+            FechaModificacion = item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty
+        });
+    }
+
+    private async Task LoadEstadoAsync()
+    {
+        _estadoLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var response = await Service.PostActionAsync("estado");
+            if (response?.Success == true && response.Data != null)
+            {
+                _estado = response.Data;
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible obtener el estado del cierre mensual.", Severity.Warning);
+        }
+        finally
+        {
+            _estadoLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task AplicarCierreMensual()
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            if (!CanApplyCierre)
+            {
+                Snackbar.Add("No tienes permisos para aplicar el cierre.", Severity.Warning);
+                return;
+            }
+
+            if (_estado?.PuedeRealizarCierre != true)
+            {
+                Snackbar.Add(ApplyTooltip, Severity.Warning);
+                return;
+            }
+
+            var confirm = await JS.InvokeAsync<bool>(
+                "confirm",
+                $"Aplicar cierre mensual de {_estado.PeriodoNombre}? Esta operacion generara saldos y avanzara el periodo actual.");
+
+            if (!confirm)
+            {
+                return;
+            }
+
+            var response = await Service.PostActionAsync("aplicar");
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Cierre mensual aplicado correctamente.", Severity.Success);
+                _estado = response.Data ?? _estado;
+                await ReloadData();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible aplicar el cierre mensual.", Severity.Error);
+            await LoadEstadoAsync();
+        }, "Operacion en proceso...");
+    }
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                if (response?.Success == true && response.Data != null)
+                {
+                    _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+                    _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
+                }
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+
+    private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private static string FormatCount(int value) => value.ToString("0", NumberCulture);
+
+    private static string DateTimeOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy HH:mm") : "-";
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

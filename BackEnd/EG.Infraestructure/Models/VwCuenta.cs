@@ -9,21 +9,27 @@ public partial class VwCuenta
 {
     public int PkIdCuenta { get; set; }
 
-    public string ClaveOrd { get; set; }
+    public int PkIdCuenta1 { get; set; }
+
+    public string Clave { get; set; }
+
+    public string Padre { get; set; }
+
+    public string Hijo { get; set; }
 
     public int? NivelCuenta { get; set; }
+
+    public string ClaveOrd { get; set; }
+
+    public string ClaveNombre { get; set; }
+
+    public string ClaveNombr { get; set; }
+
+    public string Nombre { get; set; }
 
     public string Descripcion { get; set; }
 
     public bool Activo { get; set; }
 
     public string TipoCuenta { get; set; }
-
-    public string Padre { get; set; }
-
-    public string Hijo { get; set; }
-
-    public string ClaveNombre { get; set; }
-
-    public string Nombre { get; set; }
 }

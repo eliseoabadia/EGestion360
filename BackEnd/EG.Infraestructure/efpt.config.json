@@ -179,11 +179,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[CONTA].[Hist_SaldoMensual]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[CONTA].[MatrizConversion]",
          "ObjectType": 0
       },
       {
          "Name": "[CONTA].[MatrizIngreso]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[MesActual]",
          "ObjectType": 0
       },
       {
@@ -196,6 +204,10 @@
       },
       {
          "Name": "[CONTA].[PolizaDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[CONTA].[SaldoMensual]",
          "ObjectType": 0
       },
       {
@@ -228,6 +240,10 @@
       },
       {
          "Name": "[dbo].[AspNetUsers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SIS_EstadoCivil]",
          "ObjectType": 0
       },
       {
@@ -911,6 +927,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[AccionAutorizar]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[ActividadInstitucional]",
          "ObjectType": 0
       },
@@ -975,6 +995,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[FirmaAutorizada]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Idioma]",
          "ObjectType": 0
       },
@@ -1036,6 +1060,10 @@
       },
       {
          "Name": "[SIS].[Proveedor]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[Reporte]",
          "ObjectType": 0
       },
       {
@@ -1231,7 +1259,15 @@
          "ObjectType": 3
       },
       {
+         "Name": "[CONTA].[SaldoInicialBalanzaComprobacion]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[CONTA].[Vw_Cuentas]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[CONTA].[VW_CUENTAS_LibroMayor]",
          "ObjectType": 3
       },
       {
@@ -1248,6 +1284,10 @@
       },
       {
          "Name": "[CONTA].[Vw_PolizaDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[pivotBien]",
          "ObjectType": 3
       },
       {
@@ -1887,6 +1927,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[VW_ClasificacionEgreso]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_CLC]",
          "ObjectType": 3
       },
@@ -1943,6 +1987,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[PRES].[VW_FacturasPendientesPago]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[PRES].[Vw_FN]",
          "ObjectType": 3
       },
@@ -1980,6 +2028,70 @@
       },
       {
          "Name": "[PRES].[Vw_SubFuncion]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[RHCT].[Persona]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[RHCT].[PersonaPlaza]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[RHCT].[PlazaAutorizada]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[RHCT].[Puesto]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[Bajas]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[Bien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[EstadoBien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[GrupoBien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[Marca]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[Material]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[TipoAdq]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[TipoBien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[TipoPatrimonio]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[VW_Bien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SICOP].[VW_DepreciacionBien]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[SIS].[Mes]",
          "ObjectType": 3
       },
       {
@@ -2135,6 +2247,14 @@
          "ObjectType": 1
       },
       {
+         "Name": "[ALMA].[SPR_LibroAlmacenSuministros_DevEx]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SPR_LibroAlmacenSuministros]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[CONTA].[SP_CREATE_ClavePoliza]",
          "ObjectType": 1
       },
@@ -2151,7 +2271,211 @@
          "ObjectType": 1
       },
       {
+         "Name": "[CONTA].[SP_SaldoMensual]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[CONTA].[SP_UPDATE_PolizaBalanceada]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_AlmacÃ©ndeMateriales]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_AlmacendeMateriales]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_AlmacéndeMateriales]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_CambiosSituacionFinanciera]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoActividades]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoAnaliticoActivo_DevEx]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoAnaliticoDelActivo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoAnaliticoDeudaPasivos]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoDeSitucionFinanciera]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoSituacionFinanciera_DevEx]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoSituacionFinancieraComparativo_DevEx]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_EstadoVariacionHaciendaPublica]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_FacturasEmitidas]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_Get_Balanza]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_InventariosdeBienes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_InventariosdeMaterias]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_LibroDiario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_LibroMayor]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepActFijos]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepAnaActi]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepAnalisSaldosCuPa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepAntigSaldosCuPa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepArtFaltporSurtir]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepAuxiliares]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepBienLentNulMovPer]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepCheques]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepClasAdministrativa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepClasEconomica]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepClasFuncional]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepClasObjGasto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepDepAcum]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepDIOT]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepEndeudamientoNeto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepEstatCuentaBancario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepEstatCuentaCuPa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepIndicadoresPF]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepInformesProg]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepIngEgre]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepIngreAna]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepInteresesDeuda]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepInteSaldosCuPa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepKardexGralporPeriod]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepKardexporArticulo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_ReporteEdoFlujoEfec]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepPasivosContingentes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepProyEgresos]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepProyIngresos]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepResultIngresos]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_RepRetenciones]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[SPR_ResultadoEgresos]",
          "ObjectType": 1
       },
       {
@@ -2359,6 +2683,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[ORCO].[SPR_EstadoActividad]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[PRES].[sp_MantenimientoAdecuacionDisminucion]",
          "ObjectType": 1
       },
@@ -2412,6 +2740,18 @@
       },
       {
          "Name": "[PRES].[spAutorizarEgresoProyectado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SPR_PY]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SICOP].[SPR_LibroInventarioBienes_DevEx]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SICOP].[SPR_LibroInventarioBienes]",
          "ObjectType": 1
       },
       {

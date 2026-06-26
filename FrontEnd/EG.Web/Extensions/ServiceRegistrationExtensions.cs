@@ -150,6 +150,7 @@ public static class ApiServiceExtensions
         RegisterCrud<TipoDetallePolizaResponse>(services, "api/TipoDetallePoliza");
         RegisterCrud<PolizaResponse>(services, "api/Poliza");
         RegisterCrud<PolizaDetalleResponse>(services, "api/PolizaDetalle");
+        RegisterCrud<CierreMensualResponse>(services, "api/CierreMensual");
         RegisterCrud<MatrizIngresoResponse>(services, "api/MatrizIngreso");
         RegisterCrud<ConceptoResponse>(services, "api/Concepto");
         RegisterCrud<CuentaContableResponse>(services, "api/CuentaContable");
@@ -189,6 +190,7 @@ public static class ApiServiceExtensions
         RegisterCrud<NomTipoPagoResponse>(services, "api/NomTipoPago");
         RegisterCrud<NomTipoPensionResponse>(services, "api/NomTipoPension");
         RegisterCrud<NomCatalogoSimpleResponse>(services, "api/NomCatalogoSimple");
+        RegisterCrud<NomEstadoCivilResponse>(services, "api/NomEstadoCivil");
         RegisterCrud<NominaProcesoResponse>(services, "api/NomProcesos");
         RegisterCrud<NominaOperacionResponse>(services, "api/NomOperacion");
         RegisterCrud<NominaRhEmpleadoResponse>(services, "api/NomRhEmpleado");

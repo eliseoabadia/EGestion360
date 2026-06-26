@@ -378,4 +378,15 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.Catalogos
         {
         }
     }
+
+    [Route("api/NomEstadoCivil")]
+    public class NomEstadoCivilController : NominaCatalogControllerBase<NomEstadoCivilResponse>
+    {
+        public NomEstadoCivilController(
+            INominaCrudAppService<NomEstadoCivilResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Estado civil")
+        {
+        }
+    }
 }

@@ -596,7 +596,7 @@ SET LANGUAGE 'español';
 						,aa.Costo AS CostoPromedio  -- Calcular
 						FROM     ALMA.Almacen AS aa 
 								INNER JOIN SICOP.TipoBien AS TB ON aa.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien 
-								INNER JOIN ALMA.Unidades AS au ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = au.PK_IdUnidades 
+								INNER JOIN ALMA.Unidades AS au ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = au.PKIdUnidades 
 								INNER JOIN SICOP.GrupoBien as GB ON TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
 						WHERE aa.InventarioCerrado = 0 AND AA.Activo = 1 AND TB.Activo = 1 AND AU.Activo = 1 AND GB.Activo = 1
 						GROUP BY TB.PK_IdTipoBien, TB.FK_IdPartida__SIS,  GB.CLAVE_CUCOP,  GB.CABM_ACT, GB.ClaveAN, TB.CodigoClave, TB.Descripcion, au.Descripcion, aa.FKIdAnio_SIS, IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA), aa.Costo
@@ -617,7 +617,7 @@ SET LANGUAGE 'español';
 							, CI.CostoPromedioEntradasMes
 						FROM     SICOP.TipoBien AS TB 
 								INNER JOIN SICOP.GrupoBien GB ON TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
-								INNER JOIN ALMA.Unidades AS AU ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = AU.PK_IdUnidades 
+								INNER JOIN ALMA.Unidades AS AU ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = AU.PKIdUnidades 
 								RIGHT OUTER JOIN ALMA.CierreInventario AS CI ON TB.PK_IdTipoBien = CI.FK_IdTipoBien__SICOP
 						WHERE TB.Activo = 1 AND GB.Activo = 1 AND AU.Activo = 1 AND CI.Activo = 1
 				)	
@@ -4708,7 +4708,7 @@ DECLARE @FechaInicio DATE = @p_FecInicio, @FechaFin DATE = @p_FecFin
 	  , Titulo = CAST(CONCAT('AL ', UPPER(FORMAT(@FechaFin, 'dd \DE MMMM \DEL yyyy', 'es-MX'))) AS NVARCHAR(128))
   FROM [SICOP].[VW_Bien] Bn
   JOIN SICOP.TipoBien TB ON Bn.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien
-  JOIN ALMA.Unidades Un ON Tb.FK_IdUnidades_Equivalente = Un.PK_IdUnidades
+  JOIN ALMA.Unidades Un ON Tb.FK_IdUnidades_Equivalente = Un.PKIdUnidades
   ORDER BY Bn.Clave
 	
 END
@@ -4758,7 +4758,7 @@ SET LANGUAGE 'español';
 						,aa.Costo AS CostoPromedio  -- Calcular
 						FROM     ALMA.Almacen AS aa 
 								INNER JOIN SICOP.TipoBien AS TB ON aa.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien 
-								INNER JOIN ALMA.Unidades AS au ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = au.PK_IdUnidades 
+								INNER JOIN ALMA.Unidades AS au ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = au.PKIdUnidades 
 								INNER JOIN SICOP.GrupoBien as GB ON TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
 						WHERE aa.InventarioCerrado = 0 AND AA.Activo = 1 AND TB.Activo = 1 AND AU.Activo = 1 AND GB.Activo = 1
 						GROUP BY TB.PK_IdTipoBien, TB.FK_IdPartida__SIS,  GB.CLAVE_CUCOP,  GB.CABM_ACT, GB.ClaveAN, TB.CodigoClave, TB.Descripcion, au.Descripcion, aa.FKIdAnio_SIS, IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA), aa.Costo
@@ -4779,7 +4779,7 @@ SET LANGUAGE 'español';
 							, CI.CostoPromedioEntradasMes
 						FROM     SICOP.TipoBien AS TB 
 								INNER JOIN SICOP.GrupoBien GB ON TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
-								INNER JOIN ALMA.Unidades AS AU ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = AU.PK_IdUnidades 
+								INNER JOIN ALMA.Unidades AS AU ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = AU.PKIdUnidades 
 								RIGHT OUTER JOIN ALMA.CierreInventario AS CI ON TB.PK_IdTipoBien = CI.FK_IdTipoBien__SICOP
 						WHERE TB.Activo = 1 AND GB.Activo = 1 AND AU.Activo = 1 AND CI.Activo = 1
 				)	
@@ -5149,7 +5149,7 @@ BEGIN
 		, Titulo = CAST(CONCAT('AL ', UPPER(FORMAT(@p_FechaInicio, 'dd \DE MMMM \DEL yyyy', 'es-MX'))) AS NVARCHAR(128))
   FROM [SICOP].[VW_Bien] Bn
   JOIN SICOP.TipoBien TB ON Bn.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien
-  JOIN ALMA.Unidades Un ON Tb.FK_IdUnidades_Equivalente = Un.PK_IdUnidades
+  JOIN ALMA.Unidades Un ON Tb.FK_IdUnidades_Equivalente = Un.PKIdUnidades
   ORDER BY Bn.Clave
 	
 END
@@ -5450,7 +5450,7 @@ BEGIN
       --,[Cantidad_Equivalente]
       --,[FK_IdUnidades_Equivalente]
   INTO #tblRepArtFaltporSurtir
-  FROM [BD_IFT].[ORCO].[VW_DetalleOrdenCompra]
+  FROM [ORCO].[Vw_OrdenCompraDetalle]
 
 
 	--FIN
@@ -5705,7 +5705,7 @@ BEGIN
       --,[FK_IdUnidades__ALMA]
       --,[CostoUnitario]
   INTO #tblRepBienLentNulMovPer
-  FROM [BD_IFT].[ALMA].[VW_Existencias]
+  FROM [ALMA].[Vw_Existencias]
   WHERE [PK_IdTipoBien] NOT IN (
 
 -- Entradas 
@@ -8202,7 +8202,7 @@ BEGIN
 						,aa.Costo AS CostoPromedio  -- Calcular
 						FROM     ALMA.Almacen AS aa 
 								INNER JOIN SICOP.TipoBien AS TB ON aa.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien 
-								INNER JOIN ALMA.Unidades AS au ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = au.PK_IdUnidades 
+								INNER JOIN ALMA.Unidades AS au ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = au.PKIdUnidades 
 								INNER JOIN SICOP.GrupoBien as GB ON TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
 						WHERE aa.InventarioCerrado = 0 AND AA.Activo = 1 AND TB.Activo = 1 AND AU.Activo = 1 AND GB.Activo = 1
 						GROUP BY TB.PK_IdTipoBien, TB.FK_IdPartida__SIS,  GB.CLAVE_CUCOP,  GB.CABM_ACT, GB.ClaveAN, TB.CodigoClave, TB.Descripcion, au.Descripcion, aa.FKIdAnio_SIS, IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA), aa.Costo
@@ -8223,7 +8223,7 @@ BEGIN
 							, CI.CostoPromedioEntradasMes
 						FROM     SICOP.TipoBien AS TB 
 								INNER JOIN SICOP.GrupoBien GB ON TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
-								INNER JOIN ALMA.Unidades AS AU ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = AU.PK_IdUnidades 
+								INNER JOIN ALMA.Unidades AS AU ON IIF(TB.Cantidad_Equivalente > 1,TB.FK_IdUnidades_Equivalente,TB.FK_IdUnidades__ALMA) = AU.PKIdUnidades 
 								RIGHT OUTER JOIN ALMA.CierreInventario AS CI ON TB.PK_IdTipoBien = CI.FK_IdTipoBien__SICOP
 						WHERE TB.Activo = 1 AND GB.Activo = 1 AND AU.Activo = 1 AND CI.Activo = 1
 				)	
@@ -8362,7 +8362,7 @@ BEGIN
 				AND DS.FK_IdSolicitudSalida__ALMA = SS.PK_IdSolicitudSalida
 				AND DS.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien
 				AND TB.FK_IdGrupoBien__SICOP = GB.PK_IdGrupoBien
-				AND DS.FK_IdUnidades__ALMA = UN.PK_IdUnidades
+				AND DS.FK_IdUnidades__ALMA = UN.PKIdUnidades
 				AND AL.FK_IdDetalleSolicitudSalida__ALMA = DS.PK_IdDetalleSolicitudSalida
 				AND SS.FechaSolicitudSalida BETWEEN @FechaInicio AND @FechafIN
 			   AND PE.PK_IdPersona = PP.FK_IdPersona__RHCT
@@ -8683,7 +8683,7 @@ BEGIN
 		, Titulo = CAST(CONCAT('AL ', UPPER(FORMAT(@p_FechaInicio, 'dd \DE MMMM \DEL yyyy', 'es-MX'))) AS NVARCHAR(128))
   FROM [SICOP].[VW_Bien] Bn
   JOIN SICOP.TipoBien TB ON Bn.FK_IdTipoBien__SICOP = TB.PK_IdTipoBien
-  JOIN ALMA.Unidades Un ON Tb.FK_IdUnidades_Equivalente = Un.PK_IdUnidades
+  JOIN ALMA.Unidades Un ON Tb.FK_IdUnidades_Equivalente = Un.PKIdUnidades
   ORDER BY Bn.Clave
 END
 
@@ -8705,3 +8705,4 @@ BEGIN
 END
 
 GO
+

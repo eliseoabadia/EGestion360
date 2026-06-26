@@ -1,4 +1,5 @@
 @using MudBlazor
+@inject IJSRuntime JS
 @inject NavigationManager Navigation
 
 @if (Visible)
@@ -22,20 +23,28 @@
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool Visible { get; set; } = true;
 
-    private void OpenDesigner()
+    private async Task OpenDesigner()
     {
         if (string.IsNullOrWhiteSpace(ReportName))
         {
             return;
         }
 
+        var reportToken = CreateReportToken();
+        await StoreReportRouteAsync(reportToken, ReportName, Title ?? ReportName);
+
         var routeParameters = new Dictionary<string, string?>
         {
-            ["name"] = ReportName,
-            ["title"] = Title ?? ReportName
+            ["name"] = reportToken
         };
 
         Navigation.NavigateTo($"/Reporting/Designer?{BuildQuery(routeParameters)}");
+    }
+
+    private async Task StoreReportRouteAsync(string reportToken, string reportIdentifier, string title)
+    {
+        await JS.InvokeVoidAsync("sessionStorage.setItem", BuildReportStorageKey(reportToken), reportIdentifier);
+        await JS.InvokeVoidAsync("sessionStorage.setItem", BuildReportTitleStorageKey(reportToken), title);
     }
 
     private static string BuildQuery(IReadOnlyDictionary<string, string?> values)
@@ -45,4 +54,10 @@
                 .Where(value => !string.IsNullOrWhiteSpace(value.Key) && !string.IsNullOrWhiteSpace(value.Value))
                 .Select(value => $"{Uri.EscapeDataString(value.Key)}={Uri.EscapeDataString(value.Value!)}"));
     }
+
+    private static string CreateReportToken() => $"RPT-{Guid.NewGuid():N}".Substring(0, 16);
+
+    private static string BuildReportStorageKey(string token) => $"eg.report.{token}";
+
+    private static string BuildReportTitleStorageKey(string token) => $"eg.report.title.{token}";
 }

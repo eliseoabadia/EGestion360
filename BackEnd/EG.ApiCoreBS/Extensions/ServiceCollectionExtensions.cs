@@ -207,6 +207,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INominaCrudAppService<NomTipoPagoResponse>, NomTipoPagoAppService>();
             services.AddScoped<INominaCrudAppService<NomTipoPensionResponse>, NomTipoPensionAppService>();
             services.AddScoped<INominaCrudAppService<NomCatalogoSimpleResponse>, NomCatalogoSimpleAppService>();
+            services.AddScoped<INominaCrudAppService<NomEstadoCivilResponse>, NomEstadoCivilAppService>();
             services.AddScoped<INominaProcesoAppService, NominaProcesoAppService>();
             services.AddScoped<INominaOperacionAppService, NominaOperacionAppService>();
             services.AddScoped<INominaRhEmpleadoAppService, NominaRhEmpleadoAppService>();
@@ -242,6 +243,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoDetallePolizaService, TipoDetallePolizaService>();
             services.AddScoped<IPolizaService, PolizaService>();
             services.AddScoped<IPolizaDetalleService, PolizaDetalleService>();
+            services.AddScoped<ICierreMensualService, CierreMensualService>();
 
             // Application services - Tesoreria
             services.AddScoped<ITipoCambioService, TipoCambioService>();

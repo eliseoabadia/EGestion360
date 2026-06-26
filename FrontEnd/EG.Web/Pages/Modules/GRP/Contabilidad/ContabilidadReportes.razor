@@ -40,7 +40,6 @@
 @page "/Contabilidad/EI_Presupuestarios/Resultados_Egresos"
 @page "/Contabilidad/EI_Programaticos"
 @page "/Contabilidad/Indicadores_Postura_Fiscal"
-@page "/Contabilidad/Cierre_Mensual"
 @using EG.Web.Auth
 @using EG.Web.Pages.Shared
 @using Microsoft.AspNetCore.Components.Routing
@@ -48,6 +47,7 @@
 @implements IDisposable
 
 @inject AuthenticationProviderJWT AuthProvider
+@inject IJSRuntime JS
 @inject NavigationManager Navigation
 
 <AccessVerification IsInitialized="@_isInitialized"
@@ -116,7 +116,7 @@
                         <MudItem xs="12" sm="6" md="2">
                             <MudNumericField T="int" Label="Nivel"
                                              @bind-Value="_nivel"
-                                             Min="0"
+                                             Min="1"
                                              Max="10"
                                              Variant="Variant.Outlined"
                                              Margin="Margin.Dense" />
@@ -258,7 +258,7 @@
         _startDate = new DateTime(today.Year, 1, 1);
         _endDate = today;
         _singleDate = today;
-        _nivel = 0;
+        _nivel = 10;
         _cuenta = null;
         _entityId = null;
         _usaMesTrece = false;
@@ -267,7 +267,7 @@
         return Task.CompletedTask;
     }
 
-    private void OpenReport(bool designer)
+    private async Task OpenReport(bool designer)
     {
         if (!CanOpenReport)
         {
@@ -275,14 +275,22 @@
         }
 
         var reportIdentifier = BuildReportIdentifier();
+        var reportToken = CreateReportToken();
+        await StoreReportRouteAsync(reportToken, reportIdentifier, _config.Title);
+
         var routeParameters = new Dictionary<string, string?>
         {
-            ["name"] = reportIdentifier,
-            ["title"] = _config.Title
+            ["name"] = reportToken
         };
 
         var route = designer ? "/Reporting/Designer" : "/Reporting/Viewer";
         Navigation.NavigateTo($"{route}?{BuildQuery(routeParameters)}");
+    }
+
+    private async Task StoreReportRouteAsync(string reportToken, string reportIdentifier, string title)
+    {
+        await JS.InvokeVoidAsync("sessionStorage.setItem", BuildReportStorageKey(reportToken), reportIdentifier);
+        await JS.InvokeVoidAsync("sessionStorage.setItem", BuildReportTitleStorageKey(reportToken), title);
     }
 
     private string BuildReportIdentifier()
@@ -339,6 +347,12 @@
             values
                 .Where(value => !string.IsNullOrWhiteSpace(value.Key) && !string.IsNullOrWhiteSpace(value.Value))
                 .Select(value => $"{Uri.EscapeDataString(value.Key)}={Uri.EscapeDataString(value.Value!)}"));
+
+    private static string CreateReportToken() => $"RPT-{Guid.NewGuid():N}".Substring(0, 16);
+
+    private static string BuildReportStorageKey(string token) => $"eg.report.{token}";
+
+    private static string BuildReportTitleStorageKey(string token) => $"eg.report.title.{token}";
 
     private void NavigateToHome() => Navigation.NavigateTo("/");
 
@@ -443,8 +457,7 @@
             Report("/Contabilidad/EI_Presupuestarios/Resultados_Ingresos", "Resultados_Ingresos", "Resultados de Ingresos", "Resultados de ingresos", Icons.Material.Filled.Savings, "Report_CONTA_SPR_RepResultIngresos", showDateRange: false, showSingleDate: true, moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Presupuestarios/Resultados_Egresos", "Resultados_Egresos", "Resultados de Egresos", "Resultados de egresos", Icons.Material.Filled.Payments, "Report_Resultado_Egresos", moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Programaticos", "EI_Programaticos", "Estados e Informes Programaticos", "Informes programaticos", Icons.Material.Filled.Grading, "Report_RepInformesProg"),
-            Report("/Contabilidad/Indicadores_Postura_Fiscal", "Indicadores_Postura_Fiscal", "Indicadores de Postura Fiscal", "Postura fiscal", Icons.Material.Filled.QueryStats, "Report_RepIndicadoresPF"),
-            Report("/Contabilidad/Cierre_Mensual", "Cierre_Mensual", "Cierre Mensual", "Proceso contable mensual", Icons.Material.Filled.EventBusy, null)
+            Report("/Contabilidad/Indicadores_Postura_Fiscal", "Indicadores_Postura_Fiscal", "Indicadores de Postura Fiscal", "Postura fiscal", Icons.Material.Filled.QueryStats, "Report_RepIndicadoresPF")
         };
 
         return configs.ToDictionary(config => NormalizeRoute(config.Route), StringComparer.OrdinalIgnoreCase);

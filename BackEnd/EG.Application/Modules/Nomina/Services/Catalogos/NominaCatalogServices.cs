@@ -495,4 +495,13 @@ namespace EG.Application.Services.Nomina
             service.DisableEmpresaFilter();
         }
     }
+
+    public class NomEstadoCivilAppService : NominaCrudAppService<SisEstadoCivil, NomEstadoCivilDto, NomEstadoCivilResponse>
+    {
+        public NomEstadoCivilAppService(GenericService<SisEstadoCivil, NomEstadoCivilDto, NomEstadoCivilResponse> service)
+            : base(service, "PkIdEstadoCivil", "Estado civil", (dto, id) => dto.PkidEstadoCivil = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
 }

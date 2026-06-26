@@ -6,6 +6,12 @@ namespace EG.Infraestructure.Models;
 
 public partial class EGestionContext
 {
+    public virtual DbSet<SaldoMensual> SaldoMensuales
+    {
+        get => SaldoMensuals;
+        set => SaldoMensuals = value;
+    }
+
     public virtual DbSet<VwResguardo> VwResguardos { get; set; }
 
     public virtual DbSet<VwResguardoDetalle> VwResguardoDetalles { get; set; }
@@ -96,6 +102,28 @@ public partial class EGestionContext
                 .HasForeignKey(d => d.FkidPuestoNom)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_NOM_ConceptoTabular_Puesto");
+        });
+
+        modelBuilder.Entity<SaldoMensual>(entity =>
+        {
+            entity.HasOne(d => d.FkidAnioSisNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.FkidAnioSis)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.FkidCuentaContableNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.FkidCuentaContable)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.UsuarioCreacionNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.UsuarioCreacion)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.UsuarioModificacionNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.UsuarioModificacion);
         });
 
         modelBuilder.Entity<VwResguardo>(entity =>
