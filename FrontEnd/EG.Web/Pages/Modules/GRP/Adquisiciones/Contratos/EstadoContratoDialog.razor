@@ -1,0 +1,67 @@
+@using EG.Domain.DTOs.Responses.Contratos
+@using EG.Web.Contracts
+@using MudBlazor
+@inject IGenericCrudService<EstadoContratoResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="EstadoContratoResponse"
+                Title="Cambiar Estado de Contrato"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="Actualizar"
+                ProcessingText="Actualizando..."
+                OnConfirm="SaveAsync">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <MudText Typo="Typo.subtitle2">@item.NumeroContrato</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@item.Descripcion</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudNumericField T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined" Min="1" Required="true" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Value="@item.EstatusDescripcion" Label="Estado actual" Variant="Variant.Outlined" ReadOnly="true" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Variant="Variant.Outlined" Lines="4" />
+        </MudItem>
+    </MudGrid>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private EstadoContratoResponse item = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Id.HasValue)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id.Value);
+        if (response?.Success == true && response.Data != null)
+        {
+            item = response.Data;
+        }
+    }
+
+    private async Task SaveAsync(bool _)
+    {
+        if (!Id.HasValue)
+        {
+            return;
+        }
+
+        var response = await Service.UpdateAsync(item, Id.Value);
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Estado actualizado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible actualizar el estado.", Severity.Error);
+    }
+}

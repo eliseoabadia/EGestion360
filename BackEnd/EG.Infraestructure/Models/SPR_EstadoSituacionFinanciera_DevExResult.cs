@@ -8,5 +8,110 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_EstadoSituacionFinanciera_DevExResult
     {
+        [StringLength(118)]
+        public string Fecha { get; set; }
+        public int? Anio { get; set; }
+        [StringLength(4000)]
+        public string A_111 { get; set; }
+        [StringLength(4000)]
+        public string A_112 { get; set; }
+        [StringLength(4000)]
+        public string A_113 { get; set; }
+        [StringLength(4000)]
+        public string A_114 { get; set; }
+        [StringLength(4000)]
+        public string A_115 { get; set; }
+        [StringLength(4000)]
+        public string A_116 { get; set; }
+        [StringLength(4000)]
+        public string A_117 { get; set; }
+        [StringLength(4000)]
+        public string P_211 { get; set; }
+        [StringLength(4000)]
+        public string P_212 { get; set; }
+        [StringLength(4000)]
+        public string P_213 { get; set; }
+        [StringLength(4000)]
+        public string P_214 { get; set; }
+        [StringLength(4000)]
+        public string P_215 { get; set; }
+        [StringLength(4000)]
+        public string P_216 { get; set; }
+        [StringLength(4000)]
+        public string P_217 { get; set; }
+        [StringLength(4000)]
+        public string P_218 { get; set; }
+        [StringLength(4000)]
+        public string ANC_121 { get; set; }
+        [StringLength(4000)]
+        public string ANC_122 { get; set; }
+        [StringLength(4000)]
+        public string ANC_123 { get; set; }
+        [StringLength(4000)]
+        public string ANC_124 { get; set; }
+        [StringLength(4000)]
+        public string ANC_125 { get; set; }
+        [StringLength(4000)]
+        public string ANC_126 { get; set; }
+        [StringLength(4000)]
+        public string ANC_127 { get; set; }
+        [StringLength(4000)]
+        public string ANC_128 { get; set; }
+        [StringLength(4000)]
+        public string ANC_129 { get; set; }
+        [StringLength(4000)]
+        public string PNC_221 { get; set; }
+        [StringLength(4000)]
+        public string PNC_222 { get; set; }
+        [StringLength(4000)]
+        public string PNC_223 { get; set; }
+        [StringLength(4000)]
+        public string PNC_224 { get; set; }
+        [StringLength(4000)]
+        public string PNC_225 { get; set; }
+        [StringLength(4000)]
+        public string PNC_226 { get; set; }
+        [StringLength(4000)]
+        public string HPPC_31223 { get; set; }
+        [StringLength(4000)]
+        public string HPPC_31222 { get; set; }
+        [StringLength(4000)]
+        public string HPPC_31221 { get; set; }
+        [StringLength(4000)]
+        public string HPPG_321 { get; set; }
+        [StringLength(4000)]
+        public string HPPG_322 { get; set; }
+        [StringLength(4000)]
+        public string HPPG_323 { get; set; }
+        [StringLength(4000)]
+        public string HPPG_324 { get; set; }
+        [StringLength(4000)]
+        public string HPPG_325 { get; set; }
+        [StringLength(4000)]
+        public string Exc01 { get; set; }
+        [StringLength(4000)]
+        public string Exc02 { get; set; }
+        [StringLength(4000)]
+        public string T_Activo { get; set; }
+        [StringLength(4000)]
+        public string T_Pasivo { get; set; }
+        [StringLength(4000)]
+        public string T_ActNoCirculante { get; set; }
+        [StringLength(4000)]
+        public string T_PasNoCirculante { get; set; }
+        [StringLength(4000)]
+        public string T_HPPC { get; set; }
+        [StringLength(4000)]
+        public string T_HPPG { get; set; }
+        [StringLength(4000)]
+        public string T_EOF { get; set; }
+        [StringLength(4000)]
+        public string TOTAL_ACTIVO { get; set; }
+        [StringLength(4000)]
+        public string TOTAL_PASIVO { get; set; }
+        [StringLength(4000)]
+        public string TOTAL_HACIENDA { get; set; }
+        [StringLength(4000)]
+        public string TOTAL_PASIVO_HACIENDA { get; set; }
     }
 }

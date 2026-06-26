@@ -8,5 +8,42 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_EstadoVariacionHaciendaPublicaResult
     {
+        public int id { get; set; }
+        [StringLength(500)]
+        public string Concepto { get; set; }
+        [Column("HP/PC")]
+        [StringLength(17)]
+        public string HPPC { get; set; }
+        [Column("HP/PGEA")]
+        [StringLength(15)]
+        public string HPPGEA { get; set; }
+        [Column("HP/PGE")]
+        [StringLength(16)]
+        public string HPPGE { get; set; }
+        [Column("EIAHP/P")]
+        [StringLength(4)]
+        public string EIAHPP { get; set; }
+        [StringLength(17)]
+        public string Total { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

@@ -8,5 +8,97 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_EstadoAnaliticoActivo_DevExResult
     {
+        [StringLength(119)]
+        public string Fecha { get; set; }
+        [StringLength(4000)]
+        public string R_1110000000_INICIAL { get; set; }
+        [StringLength(4000)]
+        public string R_1110000000_DEBE { get; set; }
+        [StringLength(4000)]
+        public string R_1110000000_HABER { get; set; }
+        [StringLength(4000)]
+        public string R_1110000000_FINAL { get; set; }
+        [StringLength(4000)]
+        public string R_V_1110000000 { get; set; }
+        [StringLength(4000)]
+        public string R_1120000000_INICIAL { get; set; }
+        [StringLength(4000)]
+        public string R_1120000000_DEBE { get; set; }
+        [StringLength(4000)]
+        public string R_1120000000_HABER { get; set; }
+        [StringLength(4000)]
+        public string R_1120000000_FINAL { get; set; }
+        [StringLength(4000)]
+        public string R_V_1120000000 { get; set; }
+        [StringLength(4000)]
+        public string R_1150000000_INICIAL { get; set; }
+        [StringLength(4000)]
+        public string R_1150000000_DEBE { get; set; }
+        [StringLength(4000)]
+        public string R_1150000000_HABER { get; set; }
+        [StringLength(4000)]
+        public string R_1150000000_FINAL { get; set; }
+        [StringLength(4000)]
+        public string R_V_1150000000 { get; set; }
+        [StringLength(4000)]
+        public string R_1240000000_INICIAL { get; set; }
+        [StringLength(4000)]
+        public string R_1240000000_DEBE { get; set; }
+        [StringLength(4000)]
+        public string R_1240000000_HABER { get; set; }
+        [StringLength(4000)]
+        public string R_1240000000_FINAL { get; set; }
+        [StringLength(4000)]
+        public string R_V_1240000000 { get; set; }
+        [StringLength(4000)]
+        public string R_1250000000_INICIAL { get; set; }
+        [StringLength(4000)]
+        public string R_1250000000_DEBE { get; set; }
+        [StringLength(4000)]
+        public string R_1250000000_HABER { get; set; }
+        [StringLength(4000)]
+        public string R_1250000000_FINAL { get; set; }
+        [StringLength(4000)]
+        public string R_V_1250000000 { get; set; }
+        [StringLength(4000)]
+        public string R_1260000000_INICIAL { get; set; }
+        [StringLength(4000)]
+        public string R_1260000000_DEBE { get; set; }
+        [StringLength(4000)]
+        public string R_1260000000_HABER { get; set; }
+        [StringLength(4000)]
+        public string R_1260000000_FINAL { get; set; }
+        [StringLength(4000)]
+        public string R_V_1260000000 { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Inicial_Activo { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Debe_Activo { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Haber_Activo { get; set; }
+        [StringLength(4000)]
+        public string R_Subtotal_Final_Activo { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Inicial_Circulante { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Debe_Circulante { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Haber_Circulante { get; set; }
+        [StringLength(4000)]
+        public string R_SubTotal_Final_Circulante { get; set; }
+        [StringLength(4000)]
+        public string R_Total_Inicial { get; set; }
+        [StringLength(4000)]
+        public string R_Total_Debe { get; set; }
+        [StringLength(4000)]
+        public string R_Total_Haber { get; set; }
+        [StringLength(4000)]
+        public string R_Total_Final { get; set; }
+        [StringLength(4000)]
+        public string R_V_SubTotalActivo { get; set; }
+        [StringLength(4000)]
+        public string R_V_SubTotalCirculante { get; set; }
+        [StringLength(4000)]
+        public string R_v_Total { get; set; }
     }
 }

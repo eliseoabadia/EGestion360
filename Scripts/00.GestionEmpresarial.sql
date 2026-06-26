@@ -520,6 +520,10 @@ VALUES
 (2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Cotizacion', 'ADQCOT01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'SolicitudSuficiencia', 'ADQSUF01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
 (2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'OrdenCompra', 'ADQORD01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Contratos', 'ADQCON01', 'Adquisiciones', 'view,view-menu', 310),
+(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Registro_Compromiso', 'ADQCONRC01', 'Registro de Compromiso', 'view,view-menu,delete,new,update,CanExportToExcel',311),
+(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Saldos_Contratos', 'ADQCONSC01', 'Saldos de Contratos', 'view,view-menu,delete,new,update,CanExportToExcel', 312),
+(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Estado_Contrato', 'ADQCONEC01', 'Estado de Contratos', 'view,view-menu,delete,new,update,CanExportToExcel', 313),
 --HASTA AQUI ESTA MAL
 
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Egreso', 'PREEG01', 'Egreso', 'view,view-menu', 140),
@@ -886,6 +890,10 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'OrdenCompra', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Contratos', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Catalogos_Planeacion', '10000', 'view,view-menu';
@@ -935,7 +943,7 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Inversiones', '10000', 'view,view
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Banco', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Cuenta_Bancaria', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Intermediarios_Financiero', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Instrumentos_Inversion', '10000', 'view,view-menu,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Instrumentos_Inversion', '10000', 'view,view-menu,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Listado_Inversiones', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Tipo_Instrumentos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Tipo_Plazos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1439,8 +1447,13 @@ USING (VALUES
     (303, N'Solicitud Suficiencia', 2, 4, N'Solicitud Suficiencia', N'/Adquisiciones/Solicitud_Suficiencia', N'FaDocument', 1, N'ESP', 4, 1, GETDATE()),
     (304, N'Orden de Compra', 2, 4, N'Orden de Compra', N'/Adquisiciones/Orden_Compra', N'FaDocument', 1, N'ESP', 5, 1, GETDATE()),
 
+    (310, N'Contratos', 1, 4, N'Contratos', N'/', N'FaCalendar', 1, N'ESP', 6, 1, GETDATE()),
+    (311, N'Registro de Compromiso', 2, 310, N'Registro de Compromiso', N'/Adquisiciones/Contratos/Registro_Compromiso', N'FaCalendar', 1, N'ESP', 1, 1, GETDATE()),
+    (312, N'Saldos de Contratos', 2, 310, N'Saldos de Contratos', N'/Adquisiciones/Contratos/Saldos_Contratos', N'FaCalendar', 1, N'ESP', 2, 1, GETDATE()),
+    (313, N'Estado de Contratos', 2, 310, N'Estado de Contratos', N'/Adquisiciones/Contratos/Estado_Contrato', N'FaCalendar', 1, N'ESP', 3, 1, GETDATE()),
+
     -- Patrimonio
-    (400, N'Bienes', 2, 5, N'Bienes', N'/Patrimonio/Bienes', N'FaFolderOpen', 1, N'ESP', 1, 1, GETDATE()),
+    (400, N'Bienes', 2, 5, N'Bienes', N'/Patrimonio/Bienes', N'FaFolderOpen', 1, N'ESP', 6, 1, GETDATE()),
     (401, N'Clasificación de Bienes Muebles', 2, 5, N'Clasificación de Bienes Muebles', N'/Patrimonio/Clasificacion_Bienes_Muebles', N'FaFolder', 1, N'ESP', 2, 1, GETDATE()),
     (402, N'Bajas', 2, 5, N'Bajas', N'/Patrimonio/Bajas', N'FaTrash', 1, N'ESP', 3, 1, GETDATE()),
     (403, N'Calendario de Inventarios', 2, 5, N'Calendario de Inventarios', N'/Patrimonio/Calendario_Inventarios', N'FaCalendar', 1, N'ESP', 4, 1, GETDATE()),

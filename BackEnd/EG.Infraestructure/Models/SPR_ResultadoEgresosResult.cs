@@ -8,5 +8,40 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_ResultadoEgresosResult
     {
+        public int id { get; set; }
+        [StringLength(500)]
+        public string Concepto { get; set; }
+        [StringLength(12)]
+        public string Año5 { get; set; }
+        [StringLength(12)]
+        public string Año4 { get; set; }
+        [StringLength(12)]
+        public string Año3 { get; set; }
+        [StringLength(12)]
+        public string Año2 { get; set; }
+        [StringLength(12)]
+        public string Año1 { get; set; }
+        [StringLength(12)]
+        public string Vigente { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

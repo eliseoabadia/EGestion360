@@ -12,7 +12,14 @@ public sealed class ReportRequest
             ["p_FechaInicio"] = ["p_FecInicio", "p_FechaInicio2", "FechaInicio"],
             ["p_FechaFin"] = ["p_FecFin", "p_FechaFin2", "FechaFin"],
             ["p_FechaInicio2"] = ["p_FechaInicio", "p_FecInicio", "FechaInicio"],
-            ["p_FechaFin2"] = ["p_FechaFin", "p_FecFin", "FechaFin"]
+            ["p_FechaFin2"] = ["p_FechaFin", "p_FecFin", "FechaFin"],
+            ["IdEmpresa"] = ["p_IdEmpresa", "EmpresaId", "FKIdEmpresa", "FKIdEmpresa_SIS"],
+            ["p_IdEmpresa"] = ["IdEmpresa", "EmpresaId", "FKIdEmpresa", "FKIdEmpresa_SIS"],
+            ["EmpresaId"] = ["IdEmpresa", "p_IdEmpresa", "FKIdEmpresa", "FKIdEmpresa_SIS"],
+            ["IdEmpleado"] = ["p_IdEmpleado", "IdUsuario", "UsuarioId", "UserId"],
+            ["p_IdEmpleado"] = ["IdEmpleado", "IdUsuario", "UsuarioId", "UserId"],
+            ["IdUsuario"] = ["IdEmpleado", "p_IdEmpleado", "UsuarioId", "UserId"],
+            ["UsuarioId"] = ["IdEmpleado", "p_IdEmpleado", "IdUsuario", "UserId"]
         };
 
     private ReportRequest(string name, IReadOnlyDictionary<string, string> parameters)

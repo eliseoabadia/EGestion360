@@ -49,7 +49,7 @@ public partial class Poliza
 
     public virtual ICollection<Clc> Clcs { get; set; } = new List<Clc>();
 
-    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+    public virtual ICollection<Contrato1> Contrato1s { get; set; } = new List<Contrato1>();
 
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 

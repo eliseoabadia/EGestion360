@@ -41,5 +41,35 @@ namespace EG.Infraestructure.Models
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public int? DetallePKIdDetalleSolicitudSalida { get; set; }
+        public int? DetalleFKIdSolicitudSalida_ALMA { get; set; }
+        [StringLength(30)]
+        public string DetalleSolicitudFolio { get; set; }
+        public int? DetalleFKIdAlmacen_ALMA { get; set; }
+        [StringLength(30)]
+        public string DetalleAlmacenClave { get; set; }
+        public int? DetalleFKIdTipoBien_ALMA { get; set; }
+        [StringLength(200)]
+        public string DetalleTipoBienClave { get; set; }
+        [StringLength(1200)]
+        public string DetalleTipoBienDescripcion { get; set; }
+        public int? DetalleFKIdUnidades_ALMA { get; set; }
+        [StringLength(50)]
+        public string DetalleUnidadDescripcion { get; set; }
+        [Column("DetalleCantidadSolicitada", TypeName = "decimal(20,4)")]
+        public decimal? DetalleCantidadSolicitada { get; set; }
+        [Column("DetalleCantidadAutorizada", TypeName = "decimal(20,4)")]
+        public decimal? DetalleCantidadAutorizada { get; set; }
+        [Column("DetalleCantidadEntregada", TypeName = "decimal(20,4)")]
+        public decimal? DetalleCantidadEntregada { get; set; }
+        [Column("DetalleCantidadPendiente", TypeName = "decimal(20,4)")]
+        public decimal? DetalleCantidadPendiente { get; set; }
+        [StringLength(1000)]
+        public string DetalleObservaciones { get; set; }
+        public bool? DetalleActivo { get; set; }
+        public DateTime? DetalleFechaCreacion { get; set; }
+        public int? DetalleUsuarioCreacion { get; set; }
+        public DateTime? DetalleFechaModificacion { get; set; }
+        public int? DetalleUsuarioModificacion { get; set; }
     }
 }

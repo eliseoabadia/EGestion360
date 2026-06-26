@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
-    <PublishTrimmed>true</PublishTrimmed>
-    <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
+    <PublishTrimmed>false</PublishTrimmed>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <RunAOTCompilation>false</RunAOTCompilation>
     <WasmInitialHeapSize>134217728</WasmInitialHeapSize>
   </PropertyGroup>
@@ -37,6 +37,7 @@
   <ItemGroup>
     <Folder Include="Models\ConteoCiclico\" />
     <Folder Include="Models\DTO\Configuration\" />
+    <Folder Include="Pages\Modules\GRP\Adquisiciones\Contratos\" />
     <Folder Include="Pages\Modules\GRP\Presupuesto\Tesoreria\CuentasXCobrar\ModificadoIngreso\" />
     <Folder Include="Pages\Modules\PBR\" />
     <Folder Include="Pages\Platform\" />

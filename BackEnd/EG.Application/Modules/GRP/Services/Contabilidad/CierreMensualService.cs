@@ -13,7 +13,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 {
     public class CierreMensualService : ICierreMensualService
     {
-        private const string StoredProcedureName = "CONTA.SP_SaldoMensual";
+        private const string StoredProcedureName = "CONTA.CierreMensual";
         private readonly GenericService<SaldoMensual, CierreMensualResponse, CierreMensualResponse> _saldoService;
         private readonly EGestionContext _context;
         private readonly IUserContextService _userContext;

@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
-@if (Visible)
+@if (Visible && IsReportDesignerEntryVisible)
 {
     <MudTooltip Text="@Tooltip">
         <MudIconButton Icon="@Icon"
@@ -14,6 +14,8 @@
 }
 
 @code {
+    private static bool IsReportDesignerEntryVisible => false;
+
     [Parameter, EditorRequired] public string ReportName { get; set; } = string.Empty;
     [Parameter] public string? Title { get; set; }
     [Parameter] public string Tooltip { get; set; } = "Editar reporte";

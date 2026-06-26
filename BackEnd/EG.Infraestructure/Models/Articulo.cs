@@ -23,6 +23,8 @@ public partial class Articulo
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+
     public virtual ICollection<Fraccion> Fraccions { get; set; } = new List<Fraccion>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

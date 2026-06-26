@@ -8,5 +8,50 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepEstatCuentaCuPaResult
     {
+        public int? ID { get; set; }
+        [StringLength(250)]
+        public string nocuenta { get; set; }
+        [StringLength(6)]
+        public string nociente { get; set; }
+        [StringLength(14)]
+        public string rfc { get; set; }
+        [StringLength(50)]
+        public string fechoper { get; set; }
+        [StringLength(250)]
+        public string mov { get; set; }
+        [StringLength(50)]
+        public string clave { get; set; }
+        [StringLength(250)]
+        public string concepto { get; set; }
+        [StringLength(500)]
+        public string @ref { get; set; }
+        [Column("saldoinicial", TypeName = "decimal(20,2)")]
+        public decimal? saldoinicial { get; set; }
+        [Column("cargo", TypeName = "decimal(20,2)")]
+        public decimal? cargo { get; set; }
+        [Column("abono", TypeName = "decimal(20,2)")]
+        public decimal? abono { get; set; }
+        [Column("saldo", TypeName = "decimal(20,2)")]
+        public decimal? saldo { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

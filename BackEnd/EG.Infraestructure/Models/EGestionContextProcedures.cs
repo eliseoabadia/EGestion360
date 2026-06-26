@@ -43,6 +43,26 @@ namespace EG.Infraestructure.Models
             _context = context;
         }
 
+        public virtual async Task<List<CierreMensualResult>> CierreMensualAsync(OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<CierreMensualResult>("EXEC @returnValue = [CONTA].[CierreMensual]", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<LoginInformationEmployeeResult>> LoginInformationEmployeeAsync(string payrollID, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
@@ -1947,6 +1967,231 @@ namespace EG.Infraestructure.Models
             var _ = await _context.SqlQueryAsync<SP_MantenimientoContratoLaboralResult>("EXEC @returnValue = [NOM].[SP_MantenimientoContratoLaboral] @Action = @Action, @PKIdContratoLaboral = @PKIdContratoLaboral, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @FKIdPersona_NOM = @FKIdPersona_NOM, @FechaInicio = @FechaInicio, @FechaFin = @FechaFin, @FKIdPuesto_NOM = @FKIdPuesto_NOM, @NumeroContrato = @NumeroContrato, @Vigencia = @Vigencia, @SueldoMensual = @SueldoMensual, @FKIdNombramiento_NOM = @FKIdNombramiento_NOM, @FKIdDepartamento_SIS = @FKIdDepartamento_SIS, @FKIdTipoContratacion_SIS = @FKIdTipoContratacion_SIS, @Departamento = @Departamento, @TipoContratacion = @TipoContratacion, @Activo = @Activo, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SP_MantenimientoContratosResult>> SP_MantenimientoContratosAsync(int? action, int? pKIdContrato, int? fKIdEmpresa_SIS, int? fKIdOrdenCompra_ORCO, int? fKIdTipoContrato_ORCO, int? fKIdTipoDocumento_ORCO, int? fKIdArea_SIS, int? fKIdTipoGarantia_ORCO, int? fKIdProcedimientoContratacion_ORCO, int? fKIdFundamentoJuridico_ORCO, string fundamentoJuridico, string numero, string descripcion, DateOnly? fechaContrato, DateOnly? fechaRecepcion, DateOnly? fechaFirmaContrato, DateOnly? fechaVigenciaInicio, DateOnly? fechaVigenciaFin, int? fKIdModalidad_ORCO, decimal? montoMaximo, decimal? montoMinimo, decimal? penalizacion, string plazoEjecucion, string fL_Archivo, string justificacion, int? fKIdArticulo_ORCO, int? fKIdFraccion_ORCO, string sesionSubcomite, bool? isSesionExtraordinaria, DateOnly? fechaSesionSubcomite, int? fKIdEstatusContrato_ORCO, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Action",
+                    Value = action ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PKIdContrato",
+                    Value = pKIdContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEmpresa_SIS",
+                    Value = fKIdEmpresa_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdOrdenCompra_ORCO",
+                    Value = fKIdOrdenCompra_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoContrato_ORCO",
+                    Value = fKIdTipoContrato_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoDocumento_ORCO",
+                    Value = fKIdTipoDocumento_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdArea_SIS",
+                    Value = fKIdArea_SIS ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdTipoGarantia_ORCO",
+                    Value = fKIdTipoGarantia_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdProcedimientoContratacion_ORCO",
+                    Value = fKIdProcedimientoContratacion_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdFundamentoJuridico_ORCO",
+                    Value = fKIdFundamentoJuridico_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FundamentoJuridico",
+                    Size = -1,
+                    Value = fundamentoJuridico ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Numero",
+                    Size = 100,
+                    Value = numero ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Descripcion",
+                    Size = -1,
+                    Value = descripcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaContrato",
+                    Value = fechaContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaRecepcion",
+                    Value = fechaRecepcion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaFirmaContrato",
+                    Value = fechaFirmaContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaVigenciaInicio",
+                    Value = fechaVigenciaInicio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaVigenciaFin",
+                    Value = fechaVigenciaFin ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdModalidad_ORCO",
+                    Value = fKIdModalidad_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "MontoMaximo",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = montoMaximo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "MontoMinimo",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = montoMinimo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Penalizacion",
+                    Precision = 18,
+                    Scale = 4,
+                    Value = penalizacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Decimal,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PlazoEjecucion",
+                    Size = 500,
+                    Value = plazoEjecucion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FL_Archivo",
+                    Size = 500,
+                    Value = fL_Archivo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Justificacion",
+                    Size = -1,
+                    Value = justificacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdArticulo_ORCO",
+                    Value = fKIdArticulo_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdFraccion_ORCO",
+                    Value = fKIdFraccion_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "SesionSubcomite",
+                    Size = 300,
+                    Value = sesionSubcomite ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IsSesionExtraordinaria",
+                    Value = isSesionExtraordinaria ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaSesionSubcomite",
+                    Value = fechaSesionSubcomite ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FKIdEstatusContrato_ORCO",
+                    Value = fKIdEstatusContrato_ORCO ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdUser",
+                    Value = idUser ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SP_MantenimientoContratosResult>("EXEC @returnValue = [ORCO].[SP_MantenimientoContratos] @Action = @Action, @PKIdContrato = @PKIdContrato, @FKIdEmpresa_SIS = @FKIdEmpresa_SIS, @FKIdOrdenCompra_ORCO = @FKIdOrdenCompra_ORCO, @FKIdTipoContrato_ORCO = @FKIdTipoContrato_ORCO, @FKIdTipoDocumento_ORCO = @FKIdTipoDocumento_ORCO, @FKIdArea_SIS = @FKIdArea_SIS, @FKIdTipoGarantia_ORCO = @FKIdTipoGarantia_ORCO, @FKIdProcedimientoContratacion_ORCO = @FKIdProcedimientoContratacion_ORCO, @FKIdFundamentoJuridico_ORCO = @FKIdFundamentoJuridico_ORCO, @FundamentoJuridico = @FundamentoJuridico, @Numero = @Numero, @Descripcion = @Descripcion, @FechaContrato = @FechaContrato, @FechaRecepcion = @FechaRecepcion, @FechaFirmaContrato = @FechaFirmaContrato, @FechaVigenciaInicio = @FechaVigenciaInicio, @FechaVigenciaFin = @FechaVigenciaFin, @FKIdModalidad_ORCO = @FKIdModalidad_ORCO, @MontoMaximo = @MontoMaximo, @MontoMinimo = @MontoMinimo, @Penalizacion = @Penalizacion, @PlazoEjecucion = @PlazoEjecucion, @FL_Archivo = @FL_Archivo, @Justificacion = @Justificacion, @FKIdArticulo_ORCO = @FKIdArticulo_ORCO, @FKIdFraccion_ORCO = @FKIdFraccion_ORCO, @SesionSubcomite = @SesionSubcomite, @IsSesionExtraordinaria = @IsSesionExtraordinaria, @FechaSesionSubcomite = @FechaSesionSubcomite, @FKIdEstatusContrato_ORCO = @FKIdEstatusContrato_ORCO, @IdUser = @IdUser", sqlParameters, cancellationToken);
+
             returnValue?.SetValue(parameterreturnValue.Value);
 
             return _;
@@ -5781,7 +6026,7 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<SP_ReporteInventarioResult>> SP_ReporteInventarioAsync(int? pKIdInventario, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<SP_ReporteInventarioResult>> SP_ReporteInventarioAsync(int? pKIdInventario, int? idEmpresa, int? idEmpleado, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
             {
@@ -5798,9 +6043,21 @@ namespace EG.Infraestructure.Models
                     Value = pKIdInventario ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
                 },
+                new SqlParameter
+                {
+                    ParameterName = "IdEmpresa",
+                    Value = idEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdEmpleado",
+                    Value = idEmpleado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_ReporteInventarioResult>("EXEC @returnValue = [ALMA].[SP_ReporteInventario] @PKIdInventario = @PKIdInventario", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<SP_ReporteInventarioResult>("EXEC @returnValue = [ALMA].[SP_ReporteInventario] @PKIdInventario = @PKIdInventario, @IdEmpresa = @IdEmpresa, @IdEmpleado = @IdEmpleado", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 
@@ -5859,7 +6116,7 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
-        public virtual async Task<List<SP_ReporteSolicitudSalidaResult>> SP_ReporteSolicitudSalidaAsync(int? pKIdSolicitudSalida, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<SP_ReporteSolicitudSalidaResult>> SP_ReporteSolicitudSalidaAsync(int? pKIdSolicitudSalida, int? idEmpresa, int? idEmpleado, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
             {
@@ -5876,9 +6133,21 @@ namespace EG.Infraestructure.Models
                     Value = pKIdSolicitudSalida ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
                 },
+                new SqlParameter
+                {
+                    ParameterName = "IdEmpresa",
+                    Value = idEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdEmpleado",
+                    Value = idEmpleado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_ReporteSolicitudSalidaResult>("EXEC @returnValue = [ALMA].[SP_ReporteSolicitudSalida] @PKIdSolicitudSalida = @PKIdSolicitudSalida", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<SP_ReporteSolicitudSalidaResult>("EXEC @returnValue = [ALMA].[SP_ReporteSolicitudSalida] @PKIdSolicitudSalida = @PKIdSolicitudSalida, @IdEmpresa = @IdEmpresa, @IdEmpleado = @IdEmpleado", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 
@@ -8515,6 +8784,50 @@ namespace EG.Infraestructure.Models
                 parameterreturnValue,
             };
             var _ = await _context.SqlQueryAsync<SPR_EstadoSituacionFinanciera_DevExResult>("EXEC @returnValue = [CONTA].[SPR_EstadoSituacionFinanciera_DevEx] @FechaFin = @FechaFin, @FKIdMes_SIS = @FKIdMes_SIS, @IdEmpresa = @IdEmpresa, @IdEmpleado = @IdEmpleado", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<SPR_EstadoSituacionFinancieraComparativo_DevExResult>> SPR_EstadoSituacionFinancieraComparativo_DevExAsync(DateTime? fechaFin, bool? esCierre, int? idEmpresa, int? idEmpleado, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "FechaFin",
+                    Value = fechaFin ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.DateTime,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EsCierre",
+                    Value = esCierre ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdEmpresa",
+                    Value = idEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "IdEmpleado",
+                    Value = idEmpleado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<SPR_EstadoSituacionFinancieraComparativo_DevExResult>("EXEC @returnValue = [CONTA].[SPR_EstadoSituacionFinancieraComparativo_DevEx] @FechaFin = @FechaFin, @EsCierre = @EsCierre, @IdEmpresa = @IdEmpresa, @IdEmpleado = @IdEmpleado", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

@@ -13,6 +13,7 @@ using EG.Application.Interfaces.Configuracion.Catalogo.Almacen;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Application.Interfaces.Contabilidad;
+using EG.Application.Interfaces.Contratos;
 using EG.Application.Interfaces.CuentasXPagar;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
@@ -25,6 +26,7 @@ using EG.Application.Services.Account;
 using EG.Application.Services.Adquisicion;
 using EG.Application.Services.Almacen;
 using EG.Application.Services.ConteoCiclico;
+using EG.Application.Services.Contratos;
 using EG.Application.Services.CuentasXPagar;
 using EG.Application.Services.General;
 using EG.Application.Services.Nomina;
@@ -41,6 +43,7 @@ using EG.Business.Services;
 using EG.Common.Util;
 using EG.Domain.Interfaces;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
+using EG.Domain.DTOs.Responses.Contratos;
 using EG.Domain.DTOs.Responses.Nomina;
 using EG.Domain.DTOs.Responses.PBR;
 using EG.Domain.DTOs.Requests.Nomina;
@@ -108,6 +111,12 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoContratoAppService, TipoContratoAppService>();
             services.AddScoped<ITipoDocumentoAppService, TipoDocumentoAppService>();
             services.AddScoped<ITipoGarantiaAppService, TipoGarantiaAppService>();
+
+            // Application services - Contratos
+            services.AddScoped<IRegistroCompromisoAppService, RegistroCompromisoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<OrcoContratoResponse>>(sp => sp.GetRequiredService<IRegistroCompromisoAppService>());
+            services.AddScoped<IAdquisicionCrudAppService<SaldosContratoResponse>, SaldosContratoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<EstadoContratoResponse>, EstadoContratoAppService>();
 
             // Application services - Presupuesto comprometido
             services.AddScoped<IAdquisicionCrudAppService<AutorizacionSuficienciaResponse>, AutorizacionSuficienciaAppService>();

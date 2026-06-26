@@ -9,31 +9,61 @@ public partial class Contrato
 {
     public int PkidContrato { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
+    public int? FkidOrdenCompraOrco { get; set; }
 
-    public int FkidAutorizacionSuficienciaPres { get; set; }
+    public int FkidTipoContratoOrco { get; set; }
 
-    public int FkidProveedorSis { get; set; }
+    public int FkidTipoDocumentoOrco { get; set; }
 
-    public int? FkidPolizaConta { get; set; }
+    public int FkidAreaSis { get; set; }
 
-    public string NumeroContrato { get; set; }
+    public int FkidTipoGarantiaOrco { get; set; }
+
+    public int FkidProcedimientoContratacionOrco { get; set; }
+
+    public int? FkidFundamentoJuridicoOrco { get; set; }
+
+    public string FundamentoJuridico { get; set; }
+
+    public string Numero { get; set; }
 
     public string Descripcion { get; set; }
 
-    public DateOnly FechaContrato { get; set; }
+    public DateTime FechaContrato { get; set; }
 
-    public DateOnly? FechaInicioVigencia { get; set; }
+    public DateTime FechaRecepcion { get; set; }
 
-    public DateOnly? FechaFinVigencia { get; set; }
+    public DateTime? FechaFirmaContrato { get; set; }
 
-    public decimal MontoTotal { get; set; }
+    public DateTime? FechaVigenciaInicio { get; set; }
+
+    public DateTime? FechaVigenciaFin { get; set; }
+
+    public int FkidModalidadOrco { get; set; }
+
+    public decimal MontoMaximo { get; set; }
+
+    public decimal? MontoMinimo { get; set; }
+
+    public string Penalizacion { get; set; }
 
     public string PlazoEjecucion { get; set; }
 
-    public string Observaciones { get; set; }
+    public string FlArchivo { get; set; }
 
-    public int Estatus { get; set; }
+    public string Justificacion { get; set; }
+
+    public int? FkidArticuloOrco { get; set; }
+
+    public int? FkidFraccionOrco { get; set; }
+
+    public string SesionSubcomite { get; set; }
+
+    public bool? IsSesionExtraordinaria { get; set; }
+
+    public DateTime? FechaSesionSubcomite { get; set; }
+
+    public int FkidEstatusContratoOrco { get; set; }
 
     public bool Activo { get; set; }
 
@@ -45,21 +75,23 @@ public partial class Contrato
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<Clc> Clcs { get; set; } = new List<Clc>();
+    public int FkidEmpresaSis { get; set; }
 
-    public virtual ICollection<ContratoDetalle> ContratoDetalles { get; set; } = new List<ContratoDetalle>();
+    public virtual Articulo FkidArticuloOrcoNavigation { get; set; }
 
-    public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
+    public virtual EstatusContrato FkidEstatusContratoOrcoNavigation { get; set; }
 
-    public virtual AutorizacionSuficiencium FkidAutorizacionSuficienciaPresNavigation { get; set; }
+    public virtual Fraccion FkidFraccionOrcoNavigation { get; set; }
 
-    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
+    public virtual FundamentoJuridico FkidFundamentoJuridicoOrcoNavigation { get; set; }
 
-    public virtual Poliza FkidPolizaContaNavigation { get; set; }
+    public virtual Modalidad FkidModalidadOrcoNavigation { get; set; }
 
-    public virtual Proveedor FkidProveedorSisNavigation { get; set; }
+    public virtual ProcedimientoContratacion FkidProcedimientoContratacionOrcoNavigation { get; set; }
 
-    public virtual Usuario UsuarioCreacionNavigation { get; set; }
+    public virtual TipoContrato FkidTipoContratoOrcoNavigation { get; set; }
 
-    public virtual Usuario UsuarioModificacionNavigation { get; set; }
+    public virtual TipoDocumento FkidTipoDocumentoOrcoNavigation { get; set; }
+
+    public virtual TipoGarantium FkidTipoGarantiaOrcoNavigation { get; set; }
 }

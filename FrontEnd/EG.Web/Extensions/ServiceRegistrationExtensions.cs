@@ -3,6 +3,7 @@ using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.DTOs.Responses.Contabilidad;
+using EG.Domain.DTOs.Responses.Contratos;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.General;
@@ -97,6 +98,9 @@ public static class ApiServiceExtensions
         RegisterCrud<OrdenCompraPartidaResponse>(services, "api/OrdenCompraPartida");
         RegisterCrud<SolicitudSuficienciaResponse>(services, "api/SolicitudSuficiencia");
         RegisterCrud<SolicitudSuficienciaDetalleResponse>(services, "api/SolicitudSuficienciaDetalle");
+        RegisterCrud<OrcoContratoResponse>(services, "api/RegistroCompromiso");
+        RegisterCrud<SaldosContratoResponse>(services, "api/SaldosContratos");
+        RegisterCrud<EstadoContratoResponse>(services, "api/EstadoContrato");
         RegisterCrud<AutorizacionSuficienciaResponse>(services, "api/AutorizacionSuficiencia");
         RegisterCrud<AutorizacionSuficienciaDetalleResponse>(services, "api/AutorizacionSuficienciaDetalle");
         RegisterCrud<EgreAdecuacionResponse>(services, "api/EgreAdecuacion");

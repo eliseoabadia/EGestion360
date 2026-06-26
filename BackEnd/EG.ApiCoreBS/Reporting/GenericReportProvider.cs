@@ -66,10 +66,20 @@ public sealed class GenericReportProvider : IReportProvider
 
     private void ApplyParameters(XtraReport report, ReportRequest request)
     {
+        report.RequestParameters = false;
+
         foreach (DevExpress.XtraReports.Parameters.Parameter parameter in report.Parameters)
         {
             if (!TryGetParameterValue(parameter.Name, request, out var rawValue))
             {
+                if (!TryGetDefaultParameterValue(parameter.Name, parameter.Type, out var defaultValue))
+                {
+                    parameter.Visible = false;
+                    continue;
+                }
+
+                parameter.Value = defaultValue;
+                parameter.Visible = false;
                 continue;
             }
 
@@ -85,6 +95,46 @@ public sealed class GenericReportProvider : IReportProvider
             parameter.Visible = false;
         }
     }
+
+    private static bool TryGetDefaultParameterValue(string parameterName, Type parameterType, out object value)
+    {
+        var today = DateTime.Today;
+
+        if (IsStartDateParameter(parameterName))
+        {
+            value = ConvertDefaultValue(new DateTime(today.Year, 1, 1), parameterType);
+            return true;
+        }
+
+        if (IsEndDateParameter(parameterName))
+        {
+            value = ConvertDefaultValue(today, parameterType);
+            return true;
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static object ConvertDefaultValue(DateTime value, Type parameterType)
+    {
+        var targetType = Nullable.GetUnderlyingType(parameterType) ?? parameterType;
+        if (targetType == typeof(DateTime))
+        {
+            return value;
+        }
+
+        return value.ToString("yyyy-MM-dd");
+    }
+
+    private static bool IsStartDateParameter(string parameterName) =>
+        MatchesParameterName(parameterName, "p_FecInicio", "p_FechaInicio", "p_FechaInicio2", "FechaInicio");
+
+    private static bool IsEndDateParameter(string parameterName) =>
+        MatchesParameterName(parameterName, "p_FecFin", "p_FechaFin", "p_FechaFin2", "FechaFin");
+
+    private static bool MatchesParameterName(string parameterName, params string[] names) =>
+        names.Any(name => string.Equals(parameterName, name, StringComparison.OrdinalIgnoreCase));
 
     private bool TryGetParameterValue(string parameterName, ReportRequest request, out string rawValue)
     {

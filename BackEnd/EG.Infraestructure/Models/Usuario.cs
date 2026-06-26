@@ -115,13 +115,13 @@ public partial class Usuario
 
     public virtual ICollection<Conteo> ConteoUsuarioModificacionNavigations { get; set; } = new List<Conteo>();
 
+    public virtual ICollection<Contrato1> Contrato1UsuarioCreacionNavigations { get; set; } = new List<Contrato1>();
+
+    public virtual ICollection<Contrato1> Contrato1UsuarioModificacionNavigations { get; set; } = new List<Contrato1>();
+
     public virtual ICollection<ContratoDetalle> ContratoDetalleUsuarioCreacionNavigations { get; set; } = new List<ContratoDetalle>();
 
     public virtual ICollection<ContratoDetalle> ContratoDetalleUsuarioModificacionNavigations { get; set; } = new List<ContratoDetalle>();
-
-    public virtual ICollection<Contrato> ContratoUsuarioCreacionNavigations { get; set; } = new List<Contrato>();
-
-    public virtual ICollection<Contrato> ContratoUsuarioModificacionNavigations { get; set; } = new List<Contrato>();
 
     public virtual ICollection<CotizacionDetalle> CotizacionDetalleUsuarioCreacionNavigations { get; set; } = new List<CotizacionDetalle>();
 

@@ -8,5 +8,38 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepProyEgresosResult
     {
+        public int id { get; set; }
+        [StringLength(57)]
+        public string Concepto { get; set; }
+        [StringLength(14)]
+        public string AnioC { get; set; }
+        [StringLength(14)]
+        public string Anio1 { get; set; }
+        [StringLength(14)]
+        public string Anio2 { get; set; }
+        [StringLength(14)]
+        public string Anio3 { get; set; }
+        [StringLength(14)]
+        public string Anio5 { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

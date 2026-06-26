@@ -53,7 +53,7 @@ public partial class Factura
 
     public virtual ICollection<FacturaDetalle> FacturaDetalles { get; set; } = new List<FacturaDetalle>();
 
-    public virtual Contrato FkidContratoPresNavigation { get; set; }
+    public virtual Contrato1 FkidContratoPresNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

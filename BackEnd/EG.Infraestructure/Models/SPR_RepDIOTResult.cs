@@ -8,5 +8,111 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepDIOTResult
     {
+        [StringLength(2)]
+        public string TTer { get; set; }
+        [StringLength(2)]
+        public string TOp { get; set; }
+        [StringLength(13)]
+        public string ReFeCon { get; set; }
+        [StringLength(1)]
+        public string NumIdFis { get; set; }
+        [StringLength(16)]
+        public string NomEx { get; set; }
+        [StringLength(3)]
+        public string PaJuReFis { get; set; }
+        [StringLength(6)]
+        public string EsJuFis { get; set; }
+        [StringLength(4)]
+        public string VTAPFN { get; set; }
+        [StringLength(2)]
+        public string DDBAArfn { get; set; }
+        [StringLength(4)]
+        public string VtaAaprfs { get; set; }
+        [StringLength(2)]
+        public string DDBAAefs { get; set; }
+        [StringLength(4)]
+        public string VtapAAtpiva { get; set; }
+        [StringLength(2)]
+        public string DDBAatpiva { get; set; }
+        [StringLength(4)]
+        public string VTAPAAPIiva { get; set; }
+        [StringLength(2)]
+        public string DDBAAIiva { get; set; }
+        [StringLength(4)]
+        public string VTAAPAAPIbiva { get; set; }
+        [StringLength(2)]
+        public string DDBAAPIBiva { get; set; }
+        [StringLength(2)]
+        public string EAGAAPRFN { get; set; }
+        [StringLength(2)]
+        public string ASAPAAPRFN { get; set; }
+        [StringLength(2)]
+        public string EXAGAAPRFS { get; set; }
+        [StringLength(2)]
+        public string AAAPAAPRFS { get; set; }
+        [StringLength(2)]
+        public string EAGAATPiva { get; set; }
+        [StringLength(2)]
+        public string ASAPAARiva { get; set; }
+        [StringLength(2)]
+        public string EXAGAAPIAiva { get; set; }
+        [StringLength(2)]
+        public string AAAPAAPIAiva { get; set; }
+        [StringLength(2)]
+        public string EXAGAAPIBiva { get; set; }
+        [StringLength(2)]
+        public string AAAPAAPIBiva { get; set; }
+        [StringLength(1)]
+        public string AAAPAAPRFN { get; set; }
+        [StringLength(1)]
+        public string AANCRAAPRFN { get; set; }
+        [StringLength(1)]
+        public string AAEAAPRFN { get; set; }
+        [StringLength(1)]
+        public string AANOBAAPRFN { get; set; }
+        [StringLength(1)]
+        public string AAPAPRAAPRFS { get; set; }
+        [StringLength(1)]
+        public string AANCRAAPRFS { get; set; }
+        [StringLength(1)]
+        public string AAEXAAPRFS { get; set; }
+        [StringLength(1)]
+        public string AANOBAAPRFS { get; set; }
+        [StringLength(1)]
+        public string AACAPRAATPiva { get; set; }
+        [StringLength(1)]
+        public string ASANCRAATPiva { get; set; }
+        [StringLength(1)]
+        public string ASAEXAATPiva { get; set; }
+        [StringLength(1)]
+        public string ASANBAATPiva { get; set; }
+        [StringLength(1)]
+        public string ASAPCAPAAPIPABiva { get; set; }
+        [StringLength(1)]
+        public string AANCRAAPIABiva { get; set; }
+        [StringLength(1)]
+        public string AAEXAAPIPABiva { get; set; }
+        [StringLength(1)]
+        public string AAPCAPAOAPIBiva { get; set; }
+        [StringLength(1)]
+        public string ASANCRAAPIBIiva { get; set; }
+        [StringLength(1)]
+        public string ASAEXAAPIBISiva { get; set; }
+        [StringLength(1)]
+        public string ASANOAAPIBISiva { get; set; }
+        [StringLength(1)]
+        public string IVARPC { get; set; }
+        [StringLength(3)]
+        public string AAPIBSPNPIVAEX { get; set; }
+        [StringLength(3)]
+        public string AAPPNPIVAEX { get; set; }
+        [StringLength(3)]
+        public string DAAPTCIVA { get; set; }
+        [StringLength(3)]
+        public string AANOBIVARTN { get; set; }
+        [StringLength(3)]
+        public string AANOIVANCETN { get; set; }
+        [StringLength(2)]
+        public string MEFCAORPR { get; set; }
     }
 }

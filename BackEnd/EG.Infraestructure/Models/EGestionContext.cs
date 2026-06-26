@@ -123,6 +123,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<Contrato> Contratos { get; set; }
 
+    public virtual DbSet<Contrato1> Contratos1 { get; set; }
+
     public virtual DbSet<ContratoDetalle> ContratoDetalles { get; set; }
 
     public virtual DbSet<ContratoLaboral> ContratoLaborals { get; set; }
@@ -211,6 +213,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<EstatusBaja> EstatusBajas { get; set; }
 
+    public virtual DbSet<EstatusContrato> EstatusContratos { get; set; }
+
     public virtual DbSet<EstatusInventario> EstatusInventarios { get; set; }
 
     public virtual DbSet<EstatusOrdenCompra> EstatusOrdenCompras { get; set; }
@@ -258,6 +262,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Fraccion> Fraccions { get; set; }
 
     public virtual DbSet<FuenteFinanciamiento> FuenteFinanciamientos { get; set; }
+
+    public virtual DbSet<FundamentoJuridico> FundamentoJuridicos { get; set; }
 
     public virtual DbSet<Gf> Gfs { get; set; }
 
@@ -715,6 +721,10 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwContrato> VwContratos { get; set; }
 
+    public virtual DbSet<VwContrato1> VwContratos1 { get; set; }
+
+    public virtual DbSet<VwContrato2> VwContratos2 { get; set; }
+
     public virtual DbSet<VwContratoDetalle> VwContratoDetalles { get; set; }
 
     public virtual DbSet<VwContratoLaboral> VwContratoLaborals { get; set; }
@@ -762,6 +772,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwDocumentoResumenAnotacion> VwDocumentoResumenAnotacions { get; set; }
 
     public virtual DbSet<VwDocumentoResumenEntidad> VwDocumentoResumenEntidads { get; set; }
+
+    public virtual DbSet<VwEgreCompNoDev> VwEgreCompNoDevs { get; set; }
 
     public virtual DbSet<VwEgresoAdecuacion> VwEgresoAdecuacions { get; set; }
 
@@ -3177,6 +3189,99 @@ public partial class EGestionContext : DbContext
         {
             entity.HasKey(e => e.PkidContrato);
 
+            entity.ToTable("Contratos", "ORCO");
+
+            entity.HasIndex(e => e.Activo, "IX_Contratos_Activo");
+
+            entity.HasIndex(e => e.Numero, "IX_Contratos_Numero");
+
+            entity.Property(e => e.PkidContrato).HasColumnName("PKIdContrato");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_Contratos_Activo");
+            entity.Property(e => e.Descripcion).IsRequired();
+            entity.Property(e => e.FechaContrato).HasColumnType("datetime");
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_Contratos_FechaCreacion");
+            entity.Property(e => e.FechaFirmaContrato).HasColumnType("datetime");
+            entity.Property(e => e.FechaRecepcion).HasColumnType("datetime");
+            entity.Property(e => e.FechaSesionSubcomite).HasColumnType("datetime");
+            entity.Property(e => e.FechaVigenciaFin).HasColumnType("datetime");
+            entity.Property(e => e.FechaVigenciaInicio).HasColumnType("datetime");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidArticuloOrco).HasColumnName("FKIdArticulo_ORCO");
+            entity.Property(e => e.FkidEmpresaSis)
+                .HasDefaultValue(1, "DF_ORCO_Contratos_FKIdEmpresa_SIS")
+                .HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstatusContratoOrco)
+                .HasDefaultValue(1, "DF_Contratos_Estatus")
+                .HasColumnName("FKIdEstatusContrato_ORCO");
+            entity.Property(e => e.FkidFraccionOrco).HasColumnName("FKIdFraccion_ORCO");
+            entity.Property(e => e.FkidFundamentoJuridicoOrco).HasColumnName("FKIdFundamentoJuridico_ORCO");
+            entity.Property(e => e.FkidModalidadOrco).HasColumnName("FKIdModalidad_ORCO");
+            entity.Property(e => e.FkidOrdenCompraOrco).HasColumnName("FKIdOrdenCompra_ORCO");
+            entity.Property(e => e.FkidProcedimientoContratacionOrco).HasColumnName("FKIdProcedimientoContratacion_ORCO");
+            entity.Property(e => e.FkidTipoContratoOrco).HasColumnName("FKIdTipoContrato_ORCO");
+            entity.Property(e => e.FkidTipoDocumentoOrco).HasColumnName("FKIdTipoDocumento_ORCO");
+            entity.Property(e => e.FkidTipoGarantiaOrco).HasColumnName("FKIdTipoGarantia_ORCO");
+            entity.Property(e => e.FlArchivo).HasColumnName("FL_Archivo");
+            entity.Property(e => e.FundamentoJuridico).IsRequired();
+            entity.Property(e => e.MontoMaximo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.MontoMinimo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Numero)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Penalizacion).HasMaxLength(100);
+            entity.Property(e => e.PlazoEjecucion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.SesionSubcomite).HasMaxLength(80);
+            entity.Property(e => e.UsuarioCreacion).HasDefaultValue(1, "DF_Contratos_UsuarioCreacion");
+
+            entity.HasOne(d => d.FkidArticuloOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidArticuloOrco)
+                .HasConstraintName("FK_Contratos_Articulo");
+
+            entity.HasOne(d => d.FkidEstatusContratoOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidEstatusContratoOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contratos_EstatusContrato");
+
+            entity.HasOne(d => d.FkidFraccionOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidFraccionOrco)
+                .HasConstraintName("FK_Contratos_Fraccion");
+
+            entity.HasOne(d => d.FkidFundamentoJuridicoOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidFundamentoJuridicoOrco)
+                .HasConstraintName("FK_Contratos_FundamentoJuridico");
+
+            entity.HasOne(d => d.FkidModalidadOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidModalidadOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contratos_Modalidad");
+
+            entity.HasOne(d => d.FkidProcedimientoContratacionOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidProcedimientoContratacionOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contratos_ProcedimientoContratacion");
+
+            entity.HasOne(d => d.FkidTipoContratoOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidTipoContratoOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contratos_TipoContrato");
+
+            entity.HasOne(d => d.FkidTipoDocumentoOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidTipoDocumentoOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contratos_TipoDocumento");
+
+            entity.HasOne(d => d.FkidTipoGarantiaOrcoNavigation).WithMany(p => p.Contratos)
+                .HasForeignKey(d => d.FkidTipoGarantiaOrco)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contratos_TipoGarantia");
+        });
+
+        modelBuilder.Entity<Contrato1>(entity =>
+        {
+            entity.HasKey(e => e.PkidContrato);
+
             entity.ToTable("Contrato", "PRES");
 
             entity.HasIndex(e => e.Activo, "IX_Contrato_Activo_1042102753");
@@ -3210,31 +3315,31 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(50);
             entity.Property(e => e.PlazoEjecucion).HasMaxLength(100);
 
-            entity.HasOne(d => d.FkidAutorizacionSuficienciaPresNavigation).WithMany(p => p.Contratos)
+            entity.HasOne(d => d.FkidAutorizacionSuficienciaPresNavigation).WithMany(p => p.Contrato1s)
                 .HasForeignKey(d => d.FkidAutorizacionSuficienciaPres)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Contrato_AutorizacionSuficiencia");
 
-            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Contratos)
+            entity.HasOne(d => d.FkidEmpresaSisNavigation).WithMany(p => p.Contrato1s)
                 .HasForeignKey(d => d.FkidEmpresaSis)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Contrato_Empresa");
 
-            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.Contratos)
+            entity.HasOne(d => d.FkidPolizaContaNavigation).WithMany(p => p.Contrato1s)
                 .HasForeignKey(d => d.FkidPolizaConta)
                 .HasConstraintName("FK_Contrato_Poliza");
 
-            entity.HasOne(d => d.FkidProveedorSisNavigation).WithMany(p => p.Contratos)
+            entity.HasOne(d => d.FkidProveedorSisNavigation).WithMany(p => p.Contrato1s)
                 .HasForeignKey(d => d.FkidProveedorSis)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Contrato_Proveedor");
 
-            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.ContratoUsuarioCreacionNavigations)
+            entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.Contrato1UsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Contrato_UsuarioCreacion");
 
-            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.ContratoUsuarioModificacionNavigations)
+            entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.Contrato1UsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_Contrato_UsuarioModificacion");
         });
@@ -4999,6 +5104,23 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaModificacion).HasPrecision(0);
         });
 
+        modelBuilder.Entity<EstatusContrato>(entity =>
+        {
+            entity.HasKey(e => e.PkidEstatusContrato);
+
+            entity.ToTable("EstatusContrato", "ORCO");
+
+            entity.Property(e => e.PkidEstatusContrato).HasColumnName("PKIdEstatusContrato");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_EstatusContrato_Activo");
+            entity.Property(e => e.Color).HasMaxLength(8);
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EstatusContrato_FechaCreacion");
+            entity.Property(e => e.Icono).HasMaxLength(50);
+            entity.Property(e => e.UsuarioCreacion).HasDefaultValue(1, "DF_EstatusContrato_UsuarioCreacion");
+        });
+
         modelBuilder.Entity<EstatusInventario>(entity =>
         {
             entity.HasKey(e => e.PkidEstatusInventario);
@@ -5795,6 +5917,21 @@ public partial class EGestionContext : DbContext
             entity.HasOne(d => d.UsuarioModificacionNavigation).WithMany(p => p.FuenteFinanciamientoUsuarioModificacionNavigations)
                 .HasForeignKey(d => d.UsuarioModificacion)
                 .HasConstraintName("FK_FuenteFinanciamiento_UsuarioModificacion");
+        });
+
+        modelBuilder.Entity<FundamentoJuridico>(entity =>
+        {
+            entity.HasKey(e => e.PkidFundamentoJuridico);
+
+            entity.ToTable("FundamentoJuridico", "ORCO");
+
+            entity.Property(e => e.PkidFundamentoJuridico).HasColumnName("PKIdFundamentoJuridico");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_FundamentoJuridico_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_FundamentoJuridico_FechaCreacion");
+            entity.Property(e => e.UsuarioCreacion).HasDefaultValue(1, "DF_FundamentoJuridico_UsuarioCreacion");
         });
 
         modelBuilder.Entity<Gf>(entity =>
@@ -13855,6 +13992,118 @@ public partial class EGestionContext : DbContext
         {
             entity
                 .HasNoKey()
+                .ToView("Vw_Contratos", "ORCO");
+
+            entity.Property(e => e.AreaNombre).HasMaxLength(200);
+            entity.Property(e => e.ArticuloClave).HasMaxLength(20);
+            entity.Property(e => e.ArticuloDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Descripcion).IsRequired();
+            entity.Property(e => e.EstatusContratoDescripcion).HasMaxLength(50);
+            entity.Property(e => e.FechaContrato).HasColumnType("datetime");
+            entity.Property(e => e.FechaFirmaContrato).HasColumnType("datetime");
+            entity.Property(e => e.FechaRecepcion).HasColumnType("datetime");
+            entity.Property(e => e.FechaSesionSubcomite).HasColumnType("datetime");
+            entity.Property(e => e.FechaVigenciaFin).HasColumnType("datetime");
+            entity.Property(e => e.FechaVigenciaInicio).HasColumnType("datetime");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidArticuloOrco).HasColumnName("FKIdArticulo_ORCO");
+            entity.Property(e => e.FkidEstatusContratoOrco).HasColumnName("FKIdEstatusContrato_ORCO");
+            entity.Property(e => e.FkidFraccionOrco).HasColumnName("FKIdFraccion_ORCO");
+            entity.Property(e => e.FkidFundamentoJuridicoOrco).HasColumnName("FKIdFundamentoJuridico_ORCO");
+            entity.Property(e => e.FkidModalidadOrco).HasColumnName("FKIdModalidad_ORCO");
+            entity.Property(e => e.FkidOrdenCompraOrco).HasColumnName("FKIdOrdenCompra_ORCO");
+            entity.Property(e => e.FkidProcedimientoContratacionOrco).HasColumnName("FKIdProcedimientoContratacion_ORCO");
+            entity.Property(e => e.FkidTipoContratoOrco).HasColumnName("FKIdTipoContrato_ORCO");
+            entity.Property(e => e.FkidTipoDocumentoOrco).HasColumnName("FKIdTipoDocumento_ORCO");
+            entity.Property(e => e.FkidTipoGarantiaOrco).HasColumnName("FKIdTipoGarantia_ORCO");
+            entity.Property(e => e.FlArchivo).HasColumnName("FL_Archivo");
+            entity.Property(e => e.FraccionClave).HasMaxLength(20);
+            entity.Property(e => e.FraccionDescripcion).HasMaxLength(250);
+            entity.Property(e => e.FundamentoJuridico).IsRequired();
+            entity.Property(e => e.FundamentoJuridicoDescripcion).HasMaxLength(100);
+            entity.Property(e => e.ModalidadDescripcion).HasMaxLength(30);
+            entity.Property(e => e.MontoMaximo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.MontoMinimo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Numero)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Penalizacion).HasMaxLength(100);
+            entity.Property(e => e.PkidContrato).HasColumnName("PKIdContrato");
+            entity.Property(e => e.PlazoEjecucion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.ProcedimientoContratacionDescripcion).HasMaxLength(50);
+            entity.Property(e => e.SesionSubcomite).HasMaxLength(80);
+            entity.Property(e => e.TipoContratoDescripcion).HasMaxLength(25);
+            entity.Property(e => e.TipoDocumentoDescripcion).HasMaxLength(25);
+            entity.Property(e => e.TipoGarantiaDescripcion).HasMaxLength(25);
+        });
+
+        modelBuilder.Entity<VwContrato1>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VwContratos", "ORCO");
+
+            entity.Property(e => e.AreaNombre).HasMaxLength(200);
+            entity.Property(e => e.ArticuloDescripcion).HasMaxLength(250);
+            entity.Property(e => e.Descripcion).IsRequired();
+            entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
+            entity.Property(e => e.EstatusDescripcion)
+                .IsRequired()
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.FechaContrato).HasColumnType("datetime");
+            entity.Property(e => e.FechaFirmaContrato).HasColumnType("datetime");
+            entity.Property(e => e.FechaRecepcion).HasColumnType("datetime");
+            entity.Property(e => e.FechaSesionSubcomite).HasColumnType("datetime");
+            entity.Property(e => e.FechaVigenciaFin).HasColumnType("datetime");
+            entity.Property(e => e.FechaVigenciaInicio).HasColumnType("datetime");
+            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
+            entity.Property(e => e.FkidArticuloOrco).HasColumnName("FKIdArticulo_ORCO");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstatusContratoOrco).HasColumnName("FKIdEstatusContrato_ORCO");
+            entity.Property(e => e.FkidFraccionOrco).HasColumnName("FKIdFraccion_ORCO");
+            entity.Property(e => e.FkidFundamentoJuridicoOrco).HasColumnName("FKIdFundamentoJuridico_ORCO");
+            entity.Property(e => e.FkidModalidadOrco).HasColumnName("FKIdModalidad_ORCO");
+            entity.Property(e => e.FkidOrdenCompraOrco).HasColumnName("FKIdOrdenCompra_ORCO");
+            entity.Property(e => e.FkidProcedimientoContratacionOrco).HasColumnName("FKIdProcedimientoContratacion_ORCO");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.FkidTipoContratoOrco).HasColumnName("FKIdTipoContrato_ORCO");
+            entity.Property(e => e.FkidTipoDocumentoOrco).HasColumnName("FKIdTipoDocumento_ORCO");
+            entity.Property(e => e.FkidTipoGarantiaOrco).HasColumnName("FKIdTipoGarantia_ORCO");
+            entity.Property(e => e.FlArchivo).HasColumnName("FL_Archivo");
+            entity.Property(e => e.FraccionDescripcion).HasMaxLength(250);
+            entity.Property(e => e.FundamentoJuridico).IsRequired();
+            entity.Property(e => e.FundamentoJuridicoDescripcion).HasMaxLength(250);
+            entity.Property(e => e.ModalidadDescripcion).HasMaxLength(30);
+            entity.Property(e => e.MontoMaximo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.MontoMinimo).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Numero)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.NumeroOrdenCompra).HasMaxLength(50);
+            entity.Property(e => e.OrdenCompraDescripcion).HasMaxLength(500);
+            entity.Property(e => e.Penalizacion).HasMaxLength(100);
+            entity.Property(e => e.PkidContrato).HasColumnName("PKIdContrato");
+            entity.Property(e => e.PlazoEjecucion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.ProcedimientoContratacionDescripcion).HasMaxLength(50);
+            entity.Property(e => e.ProveedorNombre).HasMaxLength(500);
+            entity.Property(e => e.ProveedorRfc).HasMaxLength(50);
+            entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
+            entity.Property(e => e.SesionSubcomite).HasMaxLength(80);
+            entity.Property(e => e.TipoContratoDescripcion).HasMaxLength(25);
+            entity.Property(e => e.TipoDocumentoDescripcion).HasMaxLength(25);
+            entity.Property(e => e.TipoGarantiaDescripcion).HasMaxLength(25);
+        });
+
+        modelBuilder.Entity<VwContrato2>(entity =>
+        {
+            entity
+                .HasNoKey()
                 .ToView("Vw_Contrato", "PRES");
 
             entity.Property(e => e.ClavePoliza).HasMaxLength(10);
@@ -14547,6 +14796,48 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Servicio).HasMaxLength(160);
             entity.Property(e => e.SubModulo).HasMaxLength(120);
             entity.Property(e => e.UltimaFechaDocumento).HasPrecision(0);
+        });
+
+        modelBuilder.Entity<VwEgreCompNoDev>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_EgreCompNoDev", "PRES");
+
+            entity.Property(e => e.Abr).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Ago).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.Dic).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Ene).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Feb).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidAutorizacionSuficienciaPres).HasColumnName("FKIdAutorizacionSuficiencia_PRES");
+            entity.Property(e => e.FkidEgresoAutorizadoPres).HasColumnName("FKIdEgresoAutorizado_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidFuenteFinanciamientoPres).HasColumnName("FKIdFuenteFinanciamiento_PRES");
+            entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
+            entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");
+            entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
+            entity.Property(e => e.Jul).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Jun).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Mar).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.May).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Message).IsUnicode(false);
+            entity.Property(e => e.MontoTotal).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Nov).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.NumeroContrato)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Oct).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.PkidContrato).HasColumnName("PKIdContrato");
+            entity.Property(e => e.PlazoEjecucion).HasMaxLength(100);
+            entity.Property(e => e.Sep).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.TotalContratado).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.TotalDevengado).HasColumnType("decimal(38, 4)");
         });
 
         modelBuilder.Entity<VwEgresoAdecuacion>(entity =>

@@ -8,5 +8,47 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepKardexGralporPeriodResult
     {
+        public int ID { get; set; }
+        [StringLength(4)]
+        public string PP { get; set; }
+        [StringLength(10)]
+        public string cabmsdf { get; set; }
+        [StringLength(8)]
+        public string clave { get; set; }
+        [StringLength(46)]
+        public string concepto { get; set; }
+        [Column("exist", TypeName = "decimal(6,2)")]
+        public decimal exist { get; set; }
+        [Column("entrada", TypeName = "decimal(2,2)")]
+        public decimal entrada { get; set; }
+        [Column("salida", TypeName = "decimal(5,2)")]
+        public decimal salida { get; set; }
+        [Column("saldos", TypeName = "decimal(6,2)")]
+        public decimal saldos { get; set; }
+        public int saldounidad { get; set; }
+        [Column("costoprom", TypeName = "decimal(4,2)")]
+        public decimal costoprom { get; set; }
+        [StringLength(5)]
+        public string um { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

@@ -1,0 +1,172 @@
+@page "/Contratos/Saldos_Contratos"
+@page "/Adquisiciones/Contratos/Saldos_Contratos"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Contratos
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<SaldosContratoResponse, SaldosContratoResponse>
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
+        <PageHeader Title="Saldos de Contratos"
+                    Subtitle="Comprometido no devengado por contrato"
+                    Icon="@Icons.Material.Filled.AccountBalanceWallet"
+                    CanCreate="false"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <MudGrid Spacing="2" Class="mb-2">
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card metric-primary" Elevation="0">
+                    <span>Saldo visible</span>
+                    <strong>@Money(Elements.Sum(x => x.Total))</strong>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card" Elevation="0">
+                    <span>Contratado</span>
+                    <strong>@Money(Elements.Sum(x => x.TotalContratado))</strong>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card" Elevation="0">
+                    <span>Devengado</span>
+                    <strong>@Money(Elements.Sum(x => x.TotalDevengado))</strong>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card" Elevation="0">
+                    <span>Registros</span>
+                    <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <GenericTable TItem="SaldosContratoResponse"
+                      @ref="table"
+                      Title="Contratos con saldo"
+                      SearchPlaceholder="Buscar por contrato, requisicion o descripcion..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="SaldosContratoResponse">Contrato</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FkidRequisicionOrco" T="SaldosContratoResponse">Requisicion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaContrato" T="SaldosContratoResponse">Fecha</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TotalContratado" T="SaldosContratoResponse">Contratado</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TotalDevengado" T="SaldosContratoResponse">Devengado</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Total" T="SaldosContratoResponse">Saldo</MudTableSortLabel></MudTh>
+                <MudTh>Calendario</MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <div class="main-cell">@TextOrDash(item.NumeroContrato)</div>
+                    <span>@TextOrDash(item.Descripcion)</span>
+                </MudTd>
+                <MudTd>@(item.FkidRequisicionOrco?.ToString() ?? "-")</MudTd>
+                <MudTd>@item.FechaContrato.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>@Money(item.TotalContratado)</MudTd>
+                <MudTd>@Money(item.TotalDevengado)</MudTd>
+                <MudTd><strong>@Money(item.Total)</strong></MudTd>
+                <MudTd>
+                    <div class="months-line">
+                        <span>ENE @Money(item.Ene)</span>
+                        <span>FEB @Money(item.Feb)</span>
+                        <span>MAR @Money(item.Mar)</span>
+                        <span>ABR @Money(item.Abr)</span>
+                        <span>MAY @Money(item.May)</span>
+                        <span>JUN @Money(item.Jun)</span>
+                    </div>
+                    <div class="months-line">
+                        <span>JUL @Money(item.Jul)</span>
+                        <span>AGO @Money(item.Ago)</span>
+                        <span>SEP @Money(item.Sep)</span>
+                        <span>OCT @Money(item.Oct)</span>
+                        <span>NOV @Money(item.Nov)</span>
+                        <span>DIC @Money(item.Dic)</span>
+                    </div>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .contratos-dashboard { height: 100vh; overflow: hidden; padding: 12px; display: flex; flex-direction: column; }
+    .metric-card { min-height: 76px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: #ffffff; }
+    .metric-card span { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; }
+    .metric-card strong { color: #111827; font-size: 1.1rem; line-height: 1.4; overflow-wrap: anywhere; }
+    .metric-primary { border-left: 4px solid #2563eb; }
+    .main-cell { font-weight: 700; color: #111827; }
+    .main-cell + span { color: #6b7280; font-size: .78rem; }
+    .months-line { display: flex; flex-wrap: wrap; gap: 6px; }
+    .months-line span { font-size: .72rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 5px; color: #334155; }
+</style>
+
+@code {
+    private GenericTable<SaldosContratoResponse> table = null!;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private const string CurrencySymbol = "$";
+
+    protected override string ModuleName => "Contratos";
+    protected override string SubModuleName => "Saldos_Contratos";
+    protected override Type CreateDialogType => typeof(object);
+    protected override Type EditDialogType => typeof(object);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<SaldosContratoResponse>);
+    protected override string GetDefaultSortLabel() => "NumeroContrato";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        await SucursalStateService.InitializeAsync();
+    }
+
+    protected override Task CreateItem() => Task.CompletedTask;
+    protected override Task EditItem(int id) => Task.CompletedTask;
+    protected override Task DeleteItem(int id) => Task.CompletedTask;
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<SaldosContratoResponse> items) => items.Select(x => new
+    {
+        x.PkidContrato,
+        x.NumeroContrato,
+        x.Descripcion,
+        x.FkidRequisicionOrco,
+        Fecha = x.FechaContrato.ToString("dd/MM/yyyy"),
+        x.Ene,
+        x.Feb,
+        x.Mar,
+        x.Abr,
+        x.May,
+        x.Jun,
+        x.Jul,
+        x.Ago,
+        x.Sep,
+        x.Oct,
+        x.Nov,
+        x.Dic,
+        x.TotalContratado,
+        x.TotalDevengado,
+        Saldo = x.Total
+    });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
+    public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+}

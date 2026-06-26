@@ -8,5 +8,42 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepAuxiliaresResult
     {
+        public int Num { get; set; }
+        public int? PKIdPoliza { get; set; }
+        public int? PKIdPolizaDetalle { get; set; }
+        public int? FKIdTipoCuenta_CONTA { get; set; }
+        public int? PKIdCuentaContable { get; set; }
+        [StringLength(50)]
+        public string IniPeriodo { get; set; }
+        [StringLength(50)]
+        public string FinPeriodo { get; set; }
+        [StringLength(50)]
+        public string FechaActual { get; set; }
+        [StringLength(250)]
+        public string Cuenta { get; set; }
+        [StringLength(250)]
+        public string NombrePoliza { get; set; }
+        [StringLength(250)]
+        public string ClavePoliza { get; set; }
+        [StringLength(50)]
+        public string TipoPoliza { get; set; }
+        [StringLength(500)]
+        public string ConceptoMovimiento { get; set; }
+        [Column("SaldoInicial", TypeName = "decimal(20,2)")]
+        public decimal? SaldoInicial { get; set; }
+        [Column("Cargos", TypeName = "decimal(20,2)")]
+        public decimal? Cargos { get; set; }
+        [Column("Abonos", TypeName = "decimal(20,2)")]
+        public decimal? Abonos { get; set; }
+        [Column("Saldos", TypeName = "decimal(20,2)")]
+        public decimal? Saldos { get; set; }
+        [StringLength(250)]
+        public string TotalSaldos { get; set; }
+        [Column("totalCargos", TypeName = "decimal(20,2)")]
+        public decimal? totalCargos { get; set; }
+        [Column("totalAbonos", TypeName = "decimal(20,2)")]
+        public decimal? totalAbonos { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

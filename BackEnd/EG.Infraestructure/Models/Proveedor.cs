@@ -73,7 +73,7 @@ public partial class Proveedor
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
-    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+    public virtual ICollection<Contrato1> Contrato1s { get; set; } = new List<Contrato1>();
 
     public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
 

@@ -47,6 +47,8 @@
 @implements IDisposable
 
 @inject AuthenticationProviderJWT AuthProvider
+@inject EG.Web.Services.AuthService UserAuthService
+@inject EG.Web.Services.SucursalStateService SucursalStateService
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
@@ -173,14 +175,16 @@
                                    OnClick="@(() => OpenReport(false))">
                             Ver reporte
                         </MudButton>
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Secondary"
-                                   StartIcon="@Icons.Material.Filled.DesignServices"
-                                   Disabled="@(!CanOpenReport)"
-                                   OnClick="@(() => OpenReport(true))"
-                                   Style="@DesignerStyle">
-                            Disenador
-                        </MudButton>
+                        @if (IsReportDesignerEntryVisible)
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.DesignServices"
+                                       Disabled="@(!CanOpenReport)"
+                                       OnClick="@(() => OpenReport(true))">
+                                Disenador
+                            </MudButton>
+                        }
                     </MudStack>
                 }
             }
@@ -200,17 +204,20 @@
     private int _nivel;
     private int? _cuenta;
     private int? _entityId;
+    private int? _empresaId;
+    private int? _usuarioId;
     private bool _usaMesTrece;
     private bool _soloCuentasPres;
     private bool _esCierre;
 
     private bool CanOpenReport => !string.IsNullOrWhiteSpace(_config.ReportName) &&
                                   (_config.IdParameter is null || _entityId.HasValue);
-    private string? DesignerStyle => _canUpdate ? null : "display:none";
+    private static bool IsReportDesignerEntryVisible => false;
 
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += HandleLocationChanged;
+        await LoadReportContextAsync();
         ResolveConfig(resetFilters: true);
         await AuthProvider.GetAuthenticationStateAsync();
         VerifyAccess();
@@ -304,6 +311,16 @@
     {
         var parameters = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
+        if (_empresaId.HasValue && _empresaId.Value > 0)
+        {
+            parameters["IdEmpresa"] = _empresaId.Value.ToString();
+        }
+
+        if (_usuarioId.HasValue && _usuarioId.Value > 0)
+        {
+            parameters["IdEmpleado"] = _usuarioId.Value.ToString();
+        }
+
         if (_config.ShowDateRange)
         {
             parameters[_config.StartDateParameter] = FormatDate(_startDate);
@@ -338,6 +355,15 @@
         }
 
         return parameters;
+    }
+
+    private async Task LoadReportContextAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        _empresaId = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+
+        var userId = await UserAuthService.GetUserIdAsync();
+        _usuarioId = userId > 0 ? userId : null;
     }
 
     private static string? FormatDate(DateTime? value) => value?.ToString("yyyy-MM-dd");

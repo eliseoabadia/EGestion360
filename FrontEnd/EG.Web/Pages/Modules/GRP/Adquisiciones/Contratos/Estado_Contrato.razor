@@ -1,0 +1,199 @@
+@page "/Contratos/Estado_Contrato"
+@page "/Adquisiciones/Contratos/Estado_Contrato"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Contratos
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<EstadoContratoResponse, EstadoContratoResponse>
+@inject SucursalStateService SucursalStateService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
+        <PageHeader Title="Estado de Contrato"
+                    Subtitle="Seguimiento operativo de contratos presupuestales"
+                    Icon="@Icons.Material.Filled.FactCheck"
+                    CanCreate="false"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <MudGrid Spacing="2" Class="mb-2">
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card metric-primary" Elevation="0">
+                    <span>Monto visible</span>
+                    <strong>@Money(Elements.Sum(x => x.MontoTotal))</strong>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card" Elevation="0">
+                    <span>Contratos</span>
+                    <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card" Elevation="0">
+                    <span>Bloqueados</span>
+                    <strong>@Elements.Count(x => x.EstaAutorizado).ToString("N0", NumberCulture)</strong>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="metric-card" Elevation="0">
+                    <span>Empresa</span>
+                    <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <GenericTable TItem="EstadoContratoResponse"
+                      @ref="table"
+                      Title="Estados de contrato"
+                      SearchPlaceholder="Buscar por contrato, proveedor, requisicion o descripcion..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="EstadoContratoResponse">Contrato</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="EstadoContratoResponse">Proveedor</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FkidRequisicionOrco" T="EstadoContratoResponse">Requisicion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="FechaContrato" T="EstadoContratoResponse">Fecha</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="MontoTotal" T="EstadoContratoResponse">Monto</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="EstadoContratoResponse">Estatus</MudTableSortLabel></MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <DocumentSupportButton Modulo="Contratos"
+                                           SubModulo="Estado_Contrato"
+                                           Controlador="EstadoContrato"
+                                           EntidadId="@item.PkidContrato"
+                                           FkidEmpresaSis="@item.FkidEmpresaSis"
+                                           RegistroTitulo="@TextOrDash(item.NumeroContrato)"
+                                           RegistroDescripcion="@($"{TextOrDash(item.ProveedorNombre)} | {TextOrDash(item.Descripcion)}")"
+                                           CanManage="@(!IsLocked(item))" />
+                    <MudTooltip Text="Cambiar estado">
+                        <MudIconButton Icon="@Icons.Material.Filled.Rule"
+                                       Visible="@CanUpdate"
+                                       Disabled="@IsLocked(item)"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(item.PkidContrato))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>
+                    <div class="main-cell">@TextOrDash(item.NumeroContrato)</div>
+                    <span>@TextOrDash(item.Descripcion)</span>
+                </MudTd>
+                <MudTd>
+                    <div class="main-cell">@TextOrDash(item.ProveedorNombre)</div>
+                    <span>@TextOrDash(item.ProveedorRfc)</span>
+                </MudTd>
+                <MudTd>@(item.FkidRequisicionOrco?.ToString() ?? "-")</MudTd>
+                <MudTd>@item.FechaContrato.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>@Money(item.MontoTotal)</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Style="@GetStatusStyle(item)" Variant="Variant.Filled">
+                        @TextOrDash(item.EstatusDescripcion)
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .contratos-dashboard { height: 100vh; overflow: hidden; padding: 12px; display: flex; flex-direction: column; }
+    .metric-card { min-height: 76px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: #ffffff; }
+    .metric-card span { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; }
+    .metric-card strong { color: #111827; font-size: 1.15rem; line-height: 1.4; overflow-wrap: anywhere; }
+    .metric-primary { border-left: 4px solid #7c3aed; }
+    .main-cell { font-weight: 700; color: #111827; }
+    .main-cell + span, .mud-table-cell span { color: #6b7280; font-size: .78rem; }
+</style>
+
+@code {
+    private GenericTable<EstadoContratoResponse> table = null!;
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private const string CurrencySymbol = "$";
+
+    protected override string ModuleName => "Contratos";
+    protected override string SubModuleName => "Estado_Contrato";
+    protected override Type CreateDialogType => typeof(EstadoContratoDialog);
+    protected override Type EditDialogType => typeof(EstadoContratoDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EstadoContratoResponse>);
+    protected override string GetDefaultSortLabel() => "FechaContrato";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        await SucursalStateService.InitializeAsync();
+    }
+
+    protected override Task CreateItem() => Task.CompletedTask;
+    protected override Task DeleteItem(int id) => Task.CompletedTask;
+
+    protected override async Task EditItem(int id)
+    {
+        if (await IsItemLockedAsync(id))
+        {
+            return;
+        }
+
+        await base.EditItem(id);
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EstadoContratoResponse> items) => items.Select(x => new
+    {
+        x.PkidContrato,
+        x.NumeroContrato,
+        x.Descripcion,
+        Proveedor = x.ProveedorNombre,
+        Requisicion = x.FkidRequisicionOrco,
+        Fecha = x.FechaContrato.ToString("dd/MM/yyyy"),
+        x.MontoTotal,
+        Estatus = x.EstatusDescripcion,
+        x.Observaciones
+    });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async Task<bool> IsItemLockedAsync(int id)
+    {
+        var item = Elements.FirstOrDefault(x => x.PkidContrato == id);
+        if (item == null)
+        {
+            var response = await Service.GetByIdAsync(id);
+            item = response?.Data;
+        }
+
+        if (!IsLocked(item))
+        {
+            return false;
+        }
+
+        Snackbar.Add("El contrato ya fue autorizado. No se puede cambiar desde esta pantalla.", Severity.Warning);
+        return true;
+    }
+
+    private static bool IsLocked(EstadoContratoResponse? item) => item?.PuedeModificar == false;
+    private static string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string GetStatusStyle(EstadoContratoResponse item) => item.EstaAutorizado
+        ? "background:#dcfce7; color:#166534; font-weight:700;"
+        : "background:#e0f2fe; color:#075985; font-weight:700;";
+
+    private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
+    public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+}

@@ -8,5 +8,38 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepAntigSaldosCuPaResult
     {
+        public int ID { get; set; }
+        [StringLength(301)]
+        public string nocuenta { get; set; }
+        [StringLength(500)]
+        public string nomdeno { get; set; }
+        [Column("saldo", TypeName = "decimal(20,4)")]
+        public decimal saldo { get; set; }
+        public DateTime? fechaemi { get; set; }
+        public int? diasvencidos { get; set; }
+        public int? rango01 { get; set; }
+        public int? rango31 { get; set; }
+        public int? rango61 { get; set; }
+        public int? rango90mas { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

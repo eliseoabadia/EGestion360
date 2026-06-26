@@ -25,6 +25,8 @@ public partial class Fraccion
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+
     public virtual Articulo FkidArticuloOrcoNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

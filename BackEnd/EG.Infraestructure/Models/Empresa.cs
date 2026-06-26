@@ -83,13 +83,13 @@ public partial class Empresa
 
     public virtual ICollection<ConceptoVariable> ConceptoVariables { get; set; } = new List<ConceptoVariable>();
 
+    public virtual ICollection<Contrato1> Contrato1s { get; set; } = new List<Contrato1>();
+
     public virtual ICollection<ContratoDetalle> ContratoDetalles { get; set; } = new List<ContratoDetalle>();
 
     public virtual ICollection<ContratoLaboral> ContratoLaborals { get; set; } = new List<ContratoLaboral>();
 
     public virtual ICollection<ContratoTercero> ContratoTerceros { get; set; } = new List<ContratoTercero>();
-
-    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
 
     public virtual ICollection<CorridaNomina> CorridaNominas { get; set; } = new List<CorridaNomina>();
 

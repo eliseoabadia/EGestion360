@@ -21,6 +21,8 @@ public partial class TipoContrato
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

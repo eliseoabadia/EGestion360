@@ -451,11 +451,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[Contratos]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[Cotizacion]",
          "ObjectType": 0
       },
       {
          "Name": "[ORCO].[CotizacionDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[EstatusContrato]",
          "ObjectType": 0
       },
       {
@@ -480,6 +488,10 @@
       },
       {
          "Name": "[ORCO].[Fraccion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[FundamentoJuridico]",
          "ObjectType": 0
       },
       {
@@ -1739,6 +1751,10 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ORCO].[Vw_Contratos]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ORCO].[Vw_Cotizacion]",
          "ObjectType": 3
       },
@@ -1800,6 +1816,10 @@
       },
       {
          "Name": "[ORCO].[Vw_RequisicionPartida]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[VwContratos]",
          "ObjectType": 3
       },
       {
@@ -1956,6 +1976,10 @@
       },
       {
          "Name": "[PRES].[Vw_Deposito]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[PRES].[VW_EgreCompNoDev]",
          "ObjectType": 3
       },
       {
@@ -2252,6 +2276,10 @@
       },
       {
          "Name": "[ALMA].[SPR_LibroAlmacenSuministros]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[CONTA].[CierreMensual]",
          "ObjectType": 1
       },
       {
@@ -2660,6 +2688,10 @@
       },
       {
          "Name": "[NOM].[spUsuariosNomina_AdaptarDemo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoContratos]",
          "ObjectType": 1
       },
       {

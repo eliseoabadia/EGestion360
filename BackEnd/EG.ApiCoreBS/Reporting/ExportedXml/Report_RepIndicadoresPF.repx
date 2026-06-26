@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1, Version=24.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="Report_RepIndicadoresPF" Margins="50, 50, 50, 50" PageWidth="850" PageHeight="1100" Version="24.1" DataMember="CONTA_SPR_RepIndicadoresPF" DataSource="#Ref-0" Font="Arial, 9.75pt">
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1, Version=24.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="Report_RepIndicadoresPF" Margins="50, 50, 50, 50" PageWidth="850" PageHeight="1100" Version="24.1" RequestParameters="false" DataMember="CONTA_SPR_RepIndicadoresPF" DataSource="#Ref-0" Font="Arial, 9.75pt">
   <Parameters>
     <Item1 Ref="3" Name="p_FecInicio" />
     <Item2 Ref="4" Name="p_FecFin" />

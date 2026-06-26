@@ -61,7 +61,7 @@ public partial class ContratoDetalle
 
     public virtual AutorizacionSuficienciaDetalle FkidAutorizacionSuficienciaDetallePresNavigation { get; set; }
 
-    public virtual Contrato FkidContratoPresNavigation { get; set; }
+    public virtual Contrato1 FkidContratoPresNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

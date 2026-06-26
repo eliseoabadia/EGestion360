@@ -9,49 +9,85 @@ public partial class VwContrato
 {
     public int PkidContrato { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
+    public int? FkidOrdenCompraOrco { get; set; }
 
-    public string EmpresaNombre { get; set; }
+    public int FkidTipoContratoOrco { get; set; }
 
-    public int FkidAutorizacionSuficienciaPres { get; set; }
+    public string TipoContratoDescripcion { get; set; }
 
-    public int FkidSolicitudSuficienciaPres { get; set; }
+    public int FkidTipoDocumentoOrco { get; set; }
 
-    public int? FkidRequisicionOrco { get; set; }
+    public string TipoDocumentoDescripcion { get; set; }
 
-    public string RequisicionDescripcion { get; set; }
+    public int FkidAreaSis { get; set; }
 
-    public int FkidProveedorSis { get; set; }
+    public string AreaNombre { get; set; }
 
-    public string ProveedorClave { get; set; }
+    public int FkidTipoGarantiaOrco { get; set; }
 
-    public string ProveedorNombre { get; set; }
+    public string TipoGarantiaDescripcion { get; set; }
 
-    public string ProveedorRfc { get; set; }
+    public int FkidProcedimientoContratacionOrco { get; set; }
 
-    public int? FkidPolizaConta { get; set; }
+    public string ProcedimientoContratacionDescripcion { get; set; }
 
-    public string ClavePoliza { get; set; }
+    public int? FkidFundamentoJuridicoOrco { get; set; }
 
-    public string NumeroContrato { get; set; }
+    public string FundamentoJuridicoDescripcion { get; set; }
+
+    public string FundamentoJuridico { get; set; }
+
+    public string Numero { get; set; }
 
     public string Descripcion { get; set; }
 
-    public DateOnly FechaContrato { get; set; }
+    public DateTime FechaContrato { get; set; }
 
-    public DateOnly? FechaInicioVigencia { get; set; }
+    public DateTime FechaRecepcion { get; set; }
 
-    public DateOnly? FechaFinVigencia { get; set; }
+    public DateTime? FechaFirmaContrato { get; set; }
 
-    public decimal MontoTotal { get; set; }
+    public DateTime? FechaVigenciaInicio { get; set; }
+
+    public DateTime? FechaVigenciaFin { get; set; }
+
+    public int FkidModalidadOrco { get; set; }
+
+    public string ModalidadDescripcion { get; set; }
+
+    public decimal MontoMaximo { get; set; }
+
+    public decimal? MontoMinimo { get; set; }
+
+    public string Penalizacion { get; set; }
 
     public string PlazoEjecucion { get; set; }
 
-    public string Observaciones { get; set; }
+    public string FlArchivo { get; set; }
 
-    public int Estatus { get; set; }
+    public string Justificacion { get; set; }
 
-    public string EstatusDescripcion { get; set; }
+    public int? FkidArticuloOrco { get; set; }
+
+    public string ArticuloClave { get; set; }
+
+    public string ArticuloDescripcion { get; set; }
+
+    public int? FkidFraccionOrco { get; set; }
+
+    public string FraccionClave { get; set; }
+
+    public string FraccionDescripcion { get; set; }
+
+    public string SesionSubcomite { get; set; }
+
+    public bool? IsSesionExtraordinaria { get; set; }
+
+    public DateTime? FechaSesionSubcomite { get; set; }
+
+    public int FkidEstatusContratoOrco { get; set; }
+
+    public string EstatusContratoDescripcion { get; set; }
 
     public bool Activo { get; set; }
 

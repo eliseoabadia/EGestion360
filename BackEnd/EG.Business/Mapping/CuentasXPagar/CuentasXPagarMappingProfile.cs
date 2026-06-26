@@ -9,8 +9,8 @@ namespace EG.Business.Mapping.CuentasXPagar
     {
         public void Register(TypeAdapterConfig config)
         {
-            config.NewConfig<Contrato, ContratoDto>().TwoWays();
-            config.NewConfig<VwContrato, ContratoResponse>().TwoWays();
+            config.NewConfig<Contrato1, ContratoDto>().TwoWays();
+            config.NewConfig<VwContrato2, ContratoResponse>().TwoWays();
             config.NewConfig<ContratoResponse, ContratoDto>().TwoWays();
 
             config.NewConfig<ContratoDetalle, ContratoDetalleDto>().TwoWays();

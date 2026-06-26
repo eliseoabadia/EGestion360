@@ -43,7 +43,7 @@ public partial class Clc
 
     public virtual ICollection<Clcfactura> Clcfacturas { get; set; } = new List<Clcfactura>();
 
-    public virtual Contrato FkidContratoPresNavigation { get; set; }
+    public virtual Contrato1 FkidContratoPresNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

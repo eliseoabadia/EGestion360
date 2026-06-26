@@ -8,5 +8,29 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_Get_BalanzaResult
     {
+        public int? FKIdAnio_SIS { get; set; }
+        public int? FKIdMes_SIS { get; set; }
+        public int? Anio { get; set; }
+        [StringLength(50)]
+        public string Mes { get; set; }
+        [StringLength(64)]
+        public string Cuenta { get; set; }
+        [StringLength(264)]
+        public string EspaciosNivel { get; set; }
+        [Column("SaldoInicial", TypeName = "decimal(38,2)")]
+        public decimal? SaldoInicial { get; set; }
+        [Column("Cargos", TypeName = "decimal(38,2)")]
+        public decimal? Cargos { get; set; }
+        [Column("Abonos", TypeName = "decimal(38,2)")]
+        public decimal? Abonos { get; set; }
+        [Column("SaldoFinal", TypeName = "decimal(38,2)")]
+        public decimal? SaldoFinal { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public int? nivel { get; set; }
+        public int? anio { get; set; }
+        [StringLength(4000)]
+        public string NombreMes { get; set; }
+        [StringLength(30)]
+        public string FEcha { get; set; }
     }
 }

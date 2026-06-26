@@ -13,10 +13,10 @@ using Microsoft.EntityFrameworkCore;
 namespace EG.Application.Services.CuentasXPagar
 {
     public class ContratoAppService(
-        GenericService<Contrato, ContratoDto, ContratoResponse> service,
-        GenericService<VwContrato, ContratoDto, ContratoResponse> serviceView,
+        GenericService<Contrato1, ContratoDto, ContratoResponse> service,
+        GenericService<VwContrato2, ContratoDto, ContratoResponse> serviceView,
         EGestionContext context)
-        : StoredProcedureCrudAppService<Contrato, VwContrato, ContratoDto, ContratoResponse>(
+        : StoredProcedureCrudAppService<Contrato1, VwContrato2, ContratoDto, ContratoResponse>(
             service,
             serviceView,
             context,

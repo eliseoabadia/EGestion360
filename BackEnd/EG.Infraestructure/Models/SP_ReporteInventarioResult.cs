@@ -41,5 +41,39 @@ namespace EG.Infraestructure.Models
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public int? DetallePKIdInventarioDetalle { get; set; }
+        public int? DetalleFKIdInventario_ALMA { get; set; }
+        [StringLength(30)]
+        public string DetalleInventarioFolio { get; set; }
+        public int? DetalleFKIdBien_ALMA { get; set; }
+        [StringLength(50)]
+        public string DetalleBienClave { get; set; }
+        [StringLength(1000)]
+        public string DetalleBienDescripcion { get; set; }
+        [StringLength(50)]
+        public string DetalleModelo { get; set; }
+        [StringLength(1000)]
+        public string DetalleSerie { get; set; }
+        [Column("DetalleValorActual", TypeName = "decimal(20,4)")]
+        public decimal? DetalleValorActual { get; set; }
+        [StringLength(50)]
+        public string DetalleClaveBien { get; set; }
+        [StringLength(1000)]
+        public string DetalleDescripcionBien { get; set; }
+        [StringLength(1000)]
+        public string DetalleSerieCapturada { get; set; }
+        [StringLength(250)]
+        public string DetalleUbicacionSistema { get; set; }
+        [StringLength(250)]
+        public string DetalleUbicacionFisica { get; set; }
+        public bool? DetalleLocalizado { get; set; }
+        public bool? DetalleTieneDiferencia { get; set; }
+        [StringLength(1000)]
+        public string DetalleObservaciones { get; set; }
+        public bool? DetalleActivo { get; set; }
+        public DateTime? DetalleFechaCreacion { get; set; }
+        public int? DetalleUsuarioCreacion { get; set; }
+        public DateTime? DetalleFechaModificacion { get; set; }
+        public int? DetalleUsuarioModificacion { get; set; }
     }
 }

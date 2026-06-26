@@ -1,0 +1,135 @@
+@using EG.Domain.DTOs.Responses.Contratos
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using MudBlazor
+@inject IGenericCrudService<OrcoContratoResponse> Service
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="OrcoContratoResponse"
+                Title="@Title"
+                MaxWidth="MaxWidth.Large"
+                ActionText="@ActionText"
+                ProcessingText="@ProcessingText"
+                OnConfirm="SaveAsync">
+    <MudGrid Spacing="2">
+        <MudItem xs="12" md="4">
+            <MudTextField @bind-Value="item.Numero" Label="Numero" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudDatePicker Date="@item.FechaContrato" DateChanged="d => item.FechaContrato = d ?? DateTime.Today" Label="Fecha contrato" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int?" @bind-Value="item.FkidOrdenCompraOrco" Label="Orden de compra" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" Required="true" Lines="2" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int" @bind-Value="item.FkidTipoContratoOrco" Label="Tipo contrato" Variant="Variant.Outlined" Required="true" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int" @bind-Value="item.FkidTipoDocumentoOrco" Label="Tipo documento" Variant="Variant.Outlined" Required="true" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int?" @bind-Value="item.FkidAreaSis" Label="Area" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="decimal" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Format="0.00" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="decimal" @bind-Value="item.MontoMaximo" Label="Monto maximo" Variant="Variant.Outlined" Format="0.00" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="decimal?" @bind-Value="item.Penalizacion" Label="Penalizacion" Variant="Variant.Outlined" Format="0.00" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudDatePicker Date="@item.FechaRecepcion" DateChanged="d => item.FechaRecepcion = d" Label="Recepcion" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudDatePicker Date="@item.FechaFirmaContrato" DateChanged="d => item.FechaFirmaContrato = d" Label="Firma" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudDatePicker Date="@item.FechaVigenciaInicio" DateChanged="d => item.FechaVigenciaInicio = d" Label="Inicio vigencia" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudDatePicker Date="@item.FechaVigenciaFin" DateChanged="d => item.FechaVigenciaFin = d" Label="Fin vigencia" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int?" @bind-Value="item.FkidModalidadOrco" Label="Modalidad" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int?" @bind-Value="item.FkidProcedimientoContratacionOrco" Label="Procedimiento" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudNumericField T="int?" @bind-Value="item.FkidTipoGarantiaOrco" Label="Tipo garantia" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="item.SesionSubcomite" Label="Sesion subcomite" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="item.FundamentoJuridico" Label="Fundamento juridico" Variant="Variant.Outlined" Lines="2" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Variant="Variant.Outlined" Lines="2" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudSwitch T="bool" @bind-Value="item.IsSesionExtraordinaria" Label="Sesion extraordinaria" Color="Color.Primary" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudDatePicker Date="@item.FechaSesionSubcomite" DateChanged="d => item.FechaSesionSubcomite = d" Label="Fecha subcomite" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" />
+        </MudItem>
+    </MudGrid>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public int EmpresaId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private OrcoContratoResponse item = new() { Activo = true, FechaContrato = DateTime.Today, FkidEstatusContratoOrco = 1 };
+    private string Title => Id.HasValue ? "Editar Registro de Compromiso" : "Nuevo Registro de Compromiso";
+    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+            return;
+        }
+
+        item.FkidEmpresaSis = EmpresaId;
+    }
+
+    private async Task SaveAsync(bool _)
+    {
+        if (EmpresaId > 0)
+        {
+            item.FkidEmpresaSis = EmpresaId;
+        }
+
+        var response = Id.HasValue
+            ? await Service.UpdateAsync(item, Id.Value)
+            : await Service.CreateAsync(item);
+
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Registro guardado correctamente.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add(response?.Message ?? "No fue posible guardar el registro.", Severity.Error);
+    }
+}

@@ -43,7 +43,7 @@ public partial class AutorizacionSuficiencium
 
     public virtual Persona AutorizadoPorNomNavigation { get; set; }
 
-    public virtual ICollection<Contrato> Contratos { get; set; } = new List<Contrato>();
+    public virtual ICollection<Contrato1> Contrato1s { get; set; } = new List<Contrato1>();
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

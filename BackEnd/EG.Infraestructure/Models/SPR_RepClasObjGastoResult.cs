@@ -8,5 +8,40 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepClasObjGastoResult
     {
+        public int Fk_IdPartida__SIS { get; set; }
+        [StringLength(255)]
+        public string Concepto { get; set; }
+        [Column("Subejercicio", TypeName = "decimal(38,4)")]
+        public decimal? Subejercicio { get; set; }
+        [Column("Aprobado", TypeName = "decimal(38,2)")]
+        public decimal? Aprobado { get; set; }
+        [Column("AmplReduc", TypeName = "decimal(2,2)")]
+        public decimal AmplReduc { get; set; }
+        [Column("Modificado", TypeName = "decimal(38,4)")]
+        public decimal? Modificado { get; set; }
+        [Column("Devengado", TypeName = "decimal(38,4)")]
+        public decimal? Devengado { get; set; }
+        [Column("Pagado", TypeName = "decimal(38,4)")]
+        public decimal? Pagado { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }

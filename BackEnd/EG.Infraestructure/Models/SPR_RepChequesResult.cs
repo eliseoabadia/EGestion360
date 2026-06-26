@@ -8,5 +8,38 @@ namespace EG.Infraestructure.Models
 {
     public partial class SPR_RepChequesResult
     {
+        public int ID { get; set; }
+        [StringLength(50)]
+        public string nocheq { get; set; }
+        public DateOnly fechaem { get; set; }
+        [StringLength(128)]
+        public string bene { get; set; }
+        [Column("monto", TypeName = "decimal(20,4)")]
+        public decimal monto { get; set; }
+        public DateOnly? fechacobes { get; set; }
+        [StringLength(11)]
+        public string estado { get; set; }
+        [StringLength(500)]
+        public string obs { get; set; }
+        [StringLength(64)]
+        public string Funcion1 { get; set; }
+        [StringLength(64)]
+        public string Funcion2 { get; set; }
+        [StringLength(64)]
+        public string Funcion3 { get; set; }
+        [StringLength(254)]
+        public string Nombre1 { get; set; }
+        [StringLength(254)]
+        public string Nombre2 { get; set; }
+        [StringLength(254)]
+        public string Nombre3 { get; set; }
+        [StringLength(254)]
+        public string Puesto1 { get; set; }
+        [StringLength(254)]
+        public string Puesto2 { get; set; }
+        [StringLength(254)]
+        public string Puesto3 { get; set; }
+        [StringLength(128)]
+        public string Titulo { get; set; }
     }
 }
