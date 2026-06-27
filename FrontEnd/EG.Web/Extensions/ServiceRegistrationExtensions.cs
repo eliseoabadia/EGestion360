@@ -16,9 +16,11 @@ using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts;
+using EG.Web.Contracts.Configuration;
 using EG.Web.Contracts.SoporteDocumental;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
+using EG.Web.Services.Configuration;
 using EG.Web.Services.SoporteDocumental;
 using Microsoft.JSInterop;
 
@@ -228,6 +230,7 @@ public static class ApiServiceExtensions
         services.AddScoped<INotificacionService, NotificacionService>();
         services.AddScoped<IDocumentSupportService, DocumentSupportService>();
         services.AddScoped<IPbrDashboardService, PbrDashboardService>();
+        services.AddScoped<IAccessConfigurationService, AccessConfigurationService>();
 
         return services;
     }

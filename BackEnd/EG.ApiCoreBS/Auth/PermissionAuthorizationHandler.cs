@@ -78,9 +78,15 @@ namespace EG.ApiCoreBS.Auth
             PermissionRequirement requirement)
         {
             return permissions.Any(permission =>
-                string.Equals(permission.Group, requirement.Group, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(permission.SubGroup, requirement.SubGroup, StringComparison.OrdinalIgnoreCase)
+                IsSamePermissionKey(permission.Group, requirement.Group)
+                && IsSamePermissionKey(permission.SubGroup, requirement.SubGroup)
                 && HasAction(permission.Values, requirement.Action));
+        }
+
+        private static bool IsSamePermissionKey(string? left, string? right)
+        {
+            return string.Equals(left, right, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(NormalizePermissionKey(left), NormalizePermissionKey(right), StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool HasAction(string values, string action)
@@ -88,6 +94,19 @@ namespace EG.ApiCoreBS.Auth
             return values
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Any(value => string.Equals(value, action, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string NormalizePermissionKey(string? value)
+        {
+            var normalized = (value ?? string.Empty)
+                .Trim()
+                .Normalize(System.Text.NormalizationForm.FormD);
+
+            return new string(normalized
+                .Where(ch => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                .Where(char.IsLetterOrDigit)
+                .Select(char.ToLowerInvariant)
+                .ToArray());
         }
     }
 }

@@ -3,6 +3,7 @@ using EG.Web.Helpers;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -59,6 +60,7 @@ namespace EG.Web.Auth
 
             // 3. Cargar permisos guardados desde BD (localStorage) y fusionarlos
             await LoadPersistedDbPermissions();
+            await EnsureDbPermissionsLoadedAsync(jwtClaims);
 
             // 4. Construir identidad con todos los claims (los del JWT + los que necesitemos)
             var identity = new ClaimsIdentity(jwtClaims, "jwt");
@@ -126,15 +128,40 @@ namespace EG.Web.Auth
             var normalizedAction = action.Trim();
 
             if (!_permissions.TryGetValue(normalizedGroup, out var subDict))
-                return false;
+            {
+                subDict = _permissions
+                    .FirstOrDefault(permissionGroup =>
+                        string.Equals(
+                            NormalizePermissionKey(permissionGroup.Key),
+                            NormalizePermissionKey(normalizedGroup),
+                            StringComparison.OrdinalIgnoreCase))
+                    .Value;
+
+                if (subDict == null)
+                    return false;
+            }
 
             // Permiso exacto en subgrupo
-            if (subDict.TryGetValue(normalizedSubGroup, out var actions) && actions.Contains(normalizedAction))
+            if (subDict.TryGetValue(normalizedSubGroup, out var actions) && HasAction(actions, normalizedAction))
                 return true;
 
             // Permiso general del grupo (subgrupo vacío)
-            if (subDict.TryGetValue(string.Empty, out var generalActions) && generalActions.Contains(normalizedAction))
+            if (subDict.TryGetValue(string.Empty, out var generalActions) && HasAction(generalActions, normalizedAction))
                 return true;
+
+            var looseSubGroup = NormalizePermissionKey(normalizedSubGroup);
+            foreach (var permissionSubGroup in subDict)
+            {
+                if (!string.Equals(NormalizePermissionKey(permissionSubGroup.Key), looseSubGroup, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (HasAction(permissionSubGroup.Value, normalizedAction))
+                {
+                    return true;
+                }
+            }
 
             return false;
         }
@@ -299,6 +326,52 @@ namespace EG.Web.Auth
             }
         }
 
+        private async Task EnsureDbPermissionsLoadedAsync(IEnumerable<Claim> jwtClaims)
+        {
+            if (_permissions.Count > 0)
+            {
+                return;
+            }
+
+            var userId = GetUserIdFromClaims(jwtClaims);
+            if (!userId.HasValue)
+            {
+                return;
+            }
+
+            try
+            {
+                var claims = await _httpClient.GetFromJsonAsync<List<ClaimItemModel>>($"api/Navigate/claims/{userId.Value}")
+                             ?? new List<ClaimItemModel>();
+
+                if (claims.Count == 0)
+                {
+                    return;
+                }
+
+                await _js.SetInLocalStorage(DB_CLAIMS_KEY, JsonSerializer.Serialize(claims));
+                foreach (var item in claims)
+                {
+                    AddPermissionEntry(item.Group, item.SubGroup, item.Values);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing DB permissions: {ex.Message}");
+            }
+        }
+
+        private static int? GetUserIdFromClaims(IEnumerable<Claim> claims)
+        {
+            var idClaim = claims.FirstOrDefault(c => string.Equals(c.Type, ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase)
+                                                  || string.Equals(c.Type, "sub", StringComparison.OrdinalIgnoreCase)
+                                                  || string.Equals(c.Type, "nameid", StringComparison.OrdinalIgnoreCase)
+                                                  || string.Equals(c.Type, "id", StringComparison.OrdinalIgnoreCase)
+                                                  || string.Equals(c.Type, "Id", StringComparison.OrdinalIgnoreCase));
+
+            return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
+        }
+
         private void AddPermissionEntry(string group, string subgroup, string valuesRaw)
         {
             if (string.IsNullOrWhiteSpace(group)) return;
@@ -326,6 +399,46 @@ namespace EG.Web.Auth
 
             foreach (var action in actions)
                 actionSet.Add(action);
+        }
+
+        private static bool HasAction(HashSet<string> actions, string action)
+        {
+            return actions.Contains(action)
+                || actions.Any(value => string.Equals(NormalizeActionKey(value), NormalizeActionKey(action), StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string NormalizePermissionKey(string? value)
+        {
+            var normalized = (value ?? string.Empty)
+                .Trim()
+                .Normalize(System.Text.NormalizationForm.FormD);
+
+            return new string(normalized
+                .Where(ch => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                .Where(char.IsLetterOrDigit)
+                .Select(char.ToLowerInvariant)
+                .ToArray());
+        }
+
+        private static string NormalizeActionKey(string? action)
+        {
+            var key = (action ?? string.Empty)
+                .Trim()
+                .Replace("_", "-", StringComparison.Ordinal)
+                .Replace(" ", "-", StringComparison.Ordinal)
+                .ToLowerInvariant();
+
+            return key switch
+            {
+                "viewmenu" or "view-menu" or "menu" => "view-menu",
+                "canexporttoexcel" or "can-export-to-excel" or "export" or "export-excel" or "excel" => "excel",
+                "new" or "nuevo" or "create" or "crear" or "add" or "agregar" => "new",
+                "update" or "editar" or "edit" or "modify" or "modificar" => "update",
+                "delete" or "eliminar" or "remove" or "borrar" => "delete",
+                "authorize" or "autorizar" or "auth" => "authorize",
+                "view" or "ver" => "view",
+                _ => key
+            };
         }
 
         private static void EnsureNameIdentifier(ClaimsIdentity identity, IEnumerable<Claim> allClaims)

@@ -1,0 +1,1461 @@
+@page "/configuracion/sistema/Configurar_Accesos"
+@using EG.Common.GenericModel
+@using EG.Common.Enums
+@using EG.Domain.Platform.DTOs.Requests.AccessConfiguration
+@using EG.Domain.Platform.DTOs.Responses.AccessConfiguration
+@using EG.Web.Auth
+@using EG.Web.Contracts.Configuration
+@using EG.Web.Models
+@using MudBlazor
+
+@inject IAccessConfigurationService AccessService
+@inject AuthenticationProviderJWT AuthProvider
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.False" Class="access-page">
+    @if (_loading)
+    {
+        <div class="access-loading">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+            <MudText Typo="Typo.subtitle2">Cargando matriz de accesos...</MudText>
+        </div>
+    }
+    else if (!_hasAccess)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mt-4">
+            No tienes permisos para configurar accesos.
+        </MudAlert>
+    }
+    else
+    {
+        <section class="access-hero">
+            <div>
+                <MudText Typo="Typo.h4" Class="access-title">
+                    <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" />
+                    Configurar Accesos
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Roles, usuarios activos, claims y menus sincronizados en un solo guardado.
+                </MudText>
+            </div>
+            <MudSpacer />
+            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                    @_snapshot.Roles.Count roles
+                </MudChip>
+                <MudChip T="string" Color="Color.Success" Variant="Variant.Outlined" Size="Size.Small">
+                    @_snapshot.Users.Count usuarios activos
+                </MudChip>
+                <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small">
+                    @_snapshot.MenuRoleCount menu-role
+                </MudChip>
+                <MudTooltip Text="Sincronizar SIS.MenuRole con claims view-menu">
+                    <MudIconButton Icon="@Icons.Material.Filled.Sync"
+                                   Color="Color.Primary"
+                                   Disabled="@_saving"
+                                   OnClick="SynchronizeAsync" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="@(!CanSave)"
+                           OnClick="SaveAsync">
+                    @(_saving ? "Guardando..." : "Guardar")
+                </MudButton>
+            </MudStack>
+        </section>
+
+        <MudGrid Spacing="2" Class="access-grid">
+            <MudItem xs="12" lg="4" xl="3">
+                <section class="access-panel access-left-stack">
+                    <div class="panel-toolbar">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Roles y usuarios</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Selecciona un rol, despues un usuario activo</MudText>
+                        </div>
+                        <MudSpacer />
+                        <MudTooltip Text="Nuevo rol">
+                            <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                           Color="Color.Primary"
+                                           Disabled="@(!_canCreate || _saving)"
+                                           OnClick="NewRoleAsync" />
+                        </MudTooltip>
+                    </div>
+
+                    <PagedAutocomplete Value="@_selectedRoleLookup"
+                                       ValueChanged="OnRoleLookupChanged"
+                                       Label="Rol"
+                                       Clearable="true"
+                                       PageSize="30"
+                                       LoadingText="Cargando roles..."
+                                       NoItemsText="No hay roles"
+                                       LoadPage="LoadRolesPageAsync" />
+
+                    <MudDivider Class="my-3" />
+
+                    <MudText Typo="Typo.subtitle2">Rol seleccionado</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @(_isNewRole ? "Alta rapida de rol" : string.IsNullOrWhiteSpace(_selectedRoleId) ? "Sin rol seleccionado" : _selectedRoleId)
+                    </MudText>
+
+                    <MudTextField T="string"
+                                  Value="@_roleName"
+                                  ValueChanged="OnRoleNameChanged"
+                                  Label="Nombre del rol"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Immediate="true"
+                                  Disabled="@(!HasRoleContext || _saving)" />
+
+                    <MudTextField T="string"
+                                  Value="@_roleCode"
+                                  ValueChanged="OnRoleCodeChanged"
+                                  Label="Codigo"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Immediate="true"
+                                  Disabled="@(!HasRoleContext || _saving)" />
+
+                    <div class="metric-row">
+                        <div>
+                            <strong>@AssignedUsers.Count()</strong>
+                            <span>usuarios</span>
+                        </div>
+                        <div>
+                            <strong>@EnabledClaimCount</strong>
+                            <span>claims</span>
+                        </div>
+                        <div>
+                            <strong>@EnabledMenuCount</strong>
+                            <span>menus</span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-3" />
+
+                    <MudText Typo="Typo.subtitle2">Usuario activo</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Selecciona o agrega al rol</MudText>
+
+                    <PagedAutocomplete Value="@_selectedUserLookup"
+                                       @key="UserAutocompleteKey"
+                                       ValueChanged="OnUserLookupChanged"
+                                       Label="Usuario"
+                                       Clearable="true"
+                                       Disabled="@(!HasRoleContext || _saving)"
+                                       PageSize="25"
+                                       LoadingText="Buscando usuarios..."
+                                       NoItemsText="No hay usuarios activos"
+                                       LoadPage="LoadUsersPageAsync" />
+
+                    <div class="assigned-users-shell compact">
+                        <div class="drop-title">
+                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Small" />
+                            En el rol
+                            <MudSpacer />
+                            <span>@AssignedUsers.Count()</span>
+                        </div>
+
+                        <div class="assigned-users-list compact">
+                            @if (!HasRoleContext)
+                            {
+                                <div class="empty-state compact-empty">
+                                    <MudText Typo="Typo.body2">Selecciona un rol.</MudText>
+                                </div>
+                            }
+                            else if (!AssignedUsers.Any())
+                            {
+                                <div class="empty-state compact-empty">
+                                    <MudText Typo="Typo.body2">Sin usuarios asignados.</MudText>
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var user in AssignedUsers)
+                                {
+                                    <div class="@UserCardClass(user)" @onclick="@(() => SelectUserContext(user))">
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary">@Initials(user.DisplayName)</MudAvatar>
+                                        <div>
+                                            <MudText Typo="Typo.body2">@user.DisplayName</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@UserCaption(user)</MudText>
+                                        </div>
+                                        <MudSpacer />
+                                        <span @onclick:stopPropagation="true">
+                                            <MudTooltip Text="Quitar del rol">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                               Size="Size.Small"
+                                                               Color="Color.Error"
+                                                               Disabled="@_saving"
+                                                               OnClick="@(() => RemoveUser(user))" />
+                                            </MudTooltip>
+                                        </span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </section>
+            </MudItem>
+
+            <MudItem xs="12" lg="8" xl="9">
+                <section class="access-panel claims-panel">
+                    <div class="panel-toolbar">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Claims y menus</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Selecciona un menu raiz para cargar permisos relevantes</MudText>
+                        </div>
+                        <MudSpacer />
+                        <MudTooltip Text="Activar vista y menu en tabla">
+                            <MudIconButton Icon="@Icons.Material.Filled.PlaylistAddCheck"
+                                           Color="Color.Success"
+                                           Disabled="@(_saving || !HasMenuContext)"
+                                           OnClick="EnableVisibleMenus" />
+                        </MudTooltip>
+                        <MudTooltip Text="Limpiar acciones de tabla">
+                            <MudIconButton Icon="@Icons.Material.Filled.CleaningServices"
+                                           Color="Color.Warning"
+                                           Disabled="@(_saving || !HasMenuContext)"
+                                           OnClick="ClearVisibleClaims" />
+                        </MudTooltip>
+                    </div>
+
+                    @if (!HasRoleContext)
+                    {
+                        <div class="empty-state claim-empty">
+                            <MudIcon Icon="@Icons.Material.Filled.Rule" Color="Color.Info" />
+                            <MudText Typo="Typo.body2">Selecciona un rol para continuar.</MudText>
+                        </div>
+                    }
+                    else if (_loadingDetail)
+                    {
+                        <div class="empty-state claim-empty">
+                            <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                            <MudText Typo="Typo.body2">Cargando datos del rol...</MudText>
+                        </div>
+                    }
+                    else if (!HasClaimContext)
+                    {
+                        <div class="empty-state claim-empty">
+                            <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Color="Color.Info" />
+                            <MudText Typo="Typo.body2">Selecciona un usuario activo.</MudText>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="root-menu-row">
+                            <PagedAutocomplete Value="@_selectedRootMenuLookup"
+                                               ValueChanged="OnRootMenuLookupChanged"
+                                               Label="Menu raiz"
+                                               Clearable="true"
+                                               PageSize="20"
+                                               LoadingText="Cargando menus..."
+                                               NoItemsText="No hay menus raiz"
+                                               LoadPage="LoadRootMenusPageAsync" />
+                        </div>
+
+                        @if (!HasMenuContext)
+                        {
+                            <div class="empty-state claim-empty small">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Info" />
+                                <MudText Typo="Typo.body2">Selecciona un menu raiz para ver permisos.</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <GenericTable TItem="ClaimEditorItem"
+                                          @ref="_claimsTable"
+                                          Title="@ClaimsTableTitle"
+                                          SearchPlaceholder="Buscar menu, ruta o subgrupo"
+                                          PageSize="10"
+                                          PageSizeOptions="@(new[] { 10, 20, 50 })"
+                                          TableHeight="clamp(280px, calc(100dvh - 520px), 520px)"
+                                          ShowExportButton="false"
+                                          ShowAddButton="false"
+                                          EnableAutoColumnSelector="false"
+                                          ServerDataFunc="LoadClaimsTableAsync"
+                                          SearchString="@_claimFilter"
+                                          SearchStringChanged="OnClaimsSearchChanged"
+                                          OnSearch="ReloadClaimsTableAsync">
+                                <Header>
+                                    <MudTh><MudTableSortLabel SortLabel="DisplayName" T="ClaimEditorItem">Menu</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortLabel="Route" T="ClaimEditorItem">Ruta</MudTableSortLabel></MudTh>
+                                    @foreach (var action in _snapshot.PermissionActions)
+                                    {
+                                        <MudTh>@ActionLabel(action)</MudTh>
+                                    }
+                                </Header>
+                                <Row>
+                                    <MudTd DataLabel="Menu">
+                                        <MudText Typo="Typo.body2" Class="claim-title">@context.DisplayName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.SubGroup</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Ruta">
+                                        <MudText Typo="Typo.caption">@context.Route</MudText>
+                                    </MudTd>
+                                    @foreach (var action in _snapshot.PermissionActions)
+                                    {
+                                        <MudTd DataLabel="@ActionLabel(action)">
+                                            <MudCheckBox T="bool"
+                                                         Value="@context.HasAction(action)"
+                                                         ValueChanged="@((bool value) => ToggleAction(context, action, value))"
+                                                         Dense="true"
+                                                         Color="@ActionColor(action)"
+                                                         Disabled="@_saving" />
+                                        </MudTd>
+                                    }
+                                </Row>
+                            </GenericTable>
+                        }
+                    }
+                </section>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    .access-page {
+        min-height: 100vh;
+        padding: 12px;
+        background:
+            linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-primary) 9%, transparent), transparent 38%),
+            linear-gradient(45deg, color-mix(in srgb, var(--mud-palette-success) 7%, transparent), transparent 42%),
+            var(--mud-palette-background);
+    }
+
+    .access-loading {
+        min-height: 70vh;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 14px;
+    }
+
+    .access-hero,
+    .access-panel {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--mud-palette-surface) 96%, white);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .access-hero {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+
+    .access-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+    }
+
+    .access-grid {
+        align-items: stretch;
+    }
+
+    .access-panel {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+
+    .access-left-stack {
+        min-height: calc(100vh - 232px);
+    }
+
+    .panel-toolbar,
+    .drop-title,
+    .claim-head,
+    .user-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .panel-toolbar {
+        margin-bottom: 10px;
+    }
+
+    .selected-role-summary {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        margin-top: 10px;
+        padding: 10px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 5%, var(--mud-palette-surface));
+    }
+
+    .selected-role-summary > div {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .metric-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .metric-row div {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px;
+        background: color-mix(in srgb, var(--mud-palette-info) 5%, var(--mud-palette-surface));
+    }
+
+    .metric-row strong,
+    .metric-row span {
+        display: block;
+    }
+
+    .metric-row strong {
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    .metric-row span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .75rem;
+    }
+
+    .users-panel,
+    .claims-panel {
+        min-height: 540px;
+    }
+
+    .assigned-users-shell {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--mud-palette-surface);
+        margin-top: 10px;
+    }
+
+    .drop-title {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--mud-palette-lines-default);
+        font-weight: 700;
+    }
+
+    .assigned-users-list {
+        min-height: 386px;
+        max-height: 386px;
+        overflow-y: auto;
+        padding: 8px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 3%, var(--mud-palette-surface));
+    }
+
+    .assigned-users-shell.compact {
+        margin-top: 10px;
+    }
+
+    .assigned-users-list.compact {
+        min-height: 176px;
+        max-height: 268px;
+    }
+
+    .user-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+        background: var(--mud-palette-surface);
+        cursor: pointer;
+    }
+
+    .user-card.active {
+        border-color: var(--mud-palette-primary);
+        background: color-mix(in srgb, var(--mud-palette-primary) 9%, var(--mud-palette-surface));
+    }
+
+    .user-card > div:last-child,
+    .claim-head > div {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .claim-scroll {
+        height: calc(100vh - 252px);
+        min-height: 496px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .root-menu-row {
+        max-width: 460px;
+        margin-bottom: 10px;
+    }
+
+    .empty-state {
+        min-height: 160px;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 8px;
+        text-align: center;
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .claim-empty {
+        min-height: 496px;
+    }
+
+    .claim-empty.small {
+        min-height: 320px;
+    }
+
+    .compact-empty {
+        min-height: 128px;
+    }
+
+    .claims-panel .eg-generic-table {
+        padding: 10px !important;
+    }
+
+    .claim-group {
+        margin-bottom: 8px;
+    }
+
+    .claim-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .claim-title {
+        font-weight: 800;
+    }
+
+    .claim-advanced {
+        margin-top: 8px;
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(120px, 1fr));
+        gap: 2px 8px;
+        margin-top: 6px;
+    }
+
+    @@media (max-width: 960px) {
+        .access-hero {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .claim-scroll {
+            height: auto;
+            max-height: none;
+        }
+
+        .action-grid {
+            grid-template-columns: repeat(2, minmax(120px, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private const string AssignedZone = "assigned";
+
+    private AccessConfigurationSnapshotResponse _snapshot = new();
+    private AccessRoleDetailResponse? _detail;
+    private readonly List<UserDragItem> _userItems = new();
+    private readonly List<ClaimEditorItem> _claims = new();
+
+    private bool _loading = true;
+    private bool _loadingDetail;
+    private bool _saving;
+    private bool _hasAccess;
+    private bool _canCreate;
+    private bool _canUpdate;
+    private bool _dirty;
+    private bool _isNewRole;
+    private LookupItem? _selectedRoleLookup;
+    private LookupItem? _selectedUserLookup;
+    private LookupItem? _selectedRootMenuLookup;
+    private AccessRoleSummaryResponse? _selectedRoleSummary;
+    private int? _selectedUserContextId;
+    private int? _selectedRootMenuId;
+    private GenericTable<ClaimEditorItem>? _claimsTable;
+    private string? _selectedRoleId;
+    private string _roleName = string.Empty;
+    private string? _roleCode;
+    private string _claimFilter = string.Empty;
+
+    private bool HasRoleContext => _isNewRole || _detail != null;
+    private bool HasClaimContext => HasRoleContext && _selectedUserContextId.HasValue && _claims.Count > 0;
+    private bool HasMenuContext => HasClaimContext && _selectedRootMenuId.HasValue;
+    private IEnumerable<UserDragItem> AssignedUsers => _userItems.Where(x => x.Zone == AssignedZone);
+    private IEnumerable<ClaimEditorItem> VisibleClaims => _claims.Where(MatchesSelectedRootMenu).Where(MatchesClaimFilter);
+    private int EnabledClaimCount => _claims.Count(x => x.HasAnyAction);
+    private int EnabledMenuCount => _claims.Count(x => x.HasAction("view-menu"));
+    private bool CanSave => !_saving && _dirty && !string.IsNullOrWhiteSpace(_roleName) && (_isNewRole ? _canCreate : _canUpdate);
+    private string UserAutocompleteKey => _selectedRoleId ?? (_isNewRole ? "__new_role" : "__no_role");
+    private string ClaimsTableTitle => _selectedRootMenuLookup == null
+        ? "Permisos"
+        : $"Permisos - {_selectedRootMenuLookup.Text}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthProvider.GetAuthenticationStateAsync();
+        _hasAccess = AuthProvider.HasPermission("Sistema", "Configurar_Accesos", "view")
+                     || AuthProvider.HasPermission("Sistema", "Menu", "view")
+                     || AuthProvider.HasPermission("Sistema", "Usuario", "view");
+        _canCreate = AuthProvider.HasPermission("Sistema", "Configurar_Accesos", "new")
+                     || AuthProvider.HasPermission("Sistema", "Menu", "new");
+        _canUpdate = AuthProvider.HasPermission("Sistema", "Configurar_Accesos", "update")
+                     || AuthProvider.HasPermission("Sistema", "Menu", "update");
+
+        if (!_hasAccess)
+        {
+            _loading = false;
+            return;
+        }
+
+        await LoadSnapshotAsync();
+    }
+
+    private async Task LoadSnapshotAsync()
+    {
+        try
+        {
+            _loading = true;
+            var response = await AccessService.GetSnapshotAsync();
+            if (response?.Success != true || response.Data == null)
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo cargar la configuracion.", Severity.Error);
+                return;
+            }
+
+            _snapshot = response.Data;
+            if (_snapshot.PermissionActions.Count == 0)
+            {
+                _snapshot.PermissionActions.AddRange(PermissionActionExtensions.GetAllClaimValues());
+            }
+
+            if (_snapshot.Roles.Count == 0)
+            {
+                await NewRoleAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar accesos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SelectRoleAsync(string roleId, bool forceReload = false)
+    {
+        if (_saving && !forceReload)
+        {
+            return;
+        }
+
+        if (!forceReload && string.Equals(_selectedRoleId, roleId, StringComparison.OrdinalIgnoreCase))
+        {
+            ClearUserAndClaims();
+            return;
+        }
+
+        try
+        {
+            _loadingDetail = true;
+            ClearUserAndClaims();
+            _detail = null;
+            _selectedRoleSummary = null;
+            _userItems.Clear();
+            _roleName = string.Empty;
+            _roleCode = null;
+            _dirty = false;
+            var response = await AccessService.GetRoleDetailAsync(roleId);
+            if (response?.Success != true || response.Data == null)
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo cargar el rol.", Severity.Error);
+                return;
+            }
+
+            _detail = response.Data;
+            _selectedRoleId = roleId;
+            _selectedRoleSummary = _detail.Role;
+            _selectedRoleLookup = ToRoleLookupItem(_detail.Role);
+            _isNewRole = false;
+            _roleName = _detail.Role.Name;
+            _roleCode = _detail.Role.Code;
+            BuildUsers(_detail.AssignedUserIds);
+            _dirty = false;
+        }
+        finally
+        {
+            _loadingDetail = false;
+        }
+    }
+
+    private async Task NewRoleAsync()
+    {
+        try
+        {
+            _loadingDetail = true;
+            ClearUserAndClaims();
+            _detail = null;
+            _selectedRoleLookup = null;
+            _selectedRoleSummary = null;
+            _selectedRoleId = null;
+            _userItems.Clear();
+            var response = await AccessService.GetNewRoleTemplateAsync();
+            if (response?.Success != true || response.Data == null)
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo cargar la plantilla de rol.", Severity.Error);
+                return;
+            }
+
+            _detail = response.Data;
+            _selectedRoleLookup = null;
+            _selectedRoleSummary = null;
+            _selectedRoleId = null;
+            _isNewRole = true;
+            _roleName = "Nuevo rol";
+            _roleCode = null;
+            BuildUsers([]);
+            _dirty = true;
+        }
+        finally
+        {
+            _loadingDetail = false;
+        }
+    }
+
+    private void BuildUsers(IEnumerable<int> assignedUserIds)
+    {
+        var assigned = assignedUserIds.ToHashSet();
+        _userItems.Clear();
+        _userItems.AddRange(_snapshot.Users.Select(user => new UserDragItem
+        {
+            PkIdUsuario = user.PkIdUsuario,
+            AspNetUserId = user.AspNetUserId,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            PayrollId = user.PayrollId,
+            RoleCount = user.RoleCount,
+            Zone = assigned.Contains(user.PkIdUsuario) ? AssignedZone : string.Empty
+        }));
+    }
+
+    private void BuildClaims(IEnumerable<AccessClaimResponse> roleClaims, IEnumerable<AccessMenuSummaryResponse> menus)
+    {
+        var roleClaimList = roleClaims.ToList();
+        var existing = roleClaimList
+            .GroupBy(x => NormalizeLookupKey(x.SubGroup), StringComparer.OrdinalIgnoreCase)
+            .Where(x => !string.IsNullOrWhiteSpace(x.Key))
+            .ToDictionary(x => x.Key, x => x.First(), StringComparer.OrdinalIgnoreCase);
+
+        _claims.Clear();
+        var menuList = menus.ToList();
+        var menusById = menuList.ToDictionary(x => x.PkIdMenu);
+        var existingMenuSubGroups = menuList
+            .Select(x => x.LegacyName)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var matchedClaimIds = new HashSet<int>();
+
+        foreach (var menu in menuList.Where(x => !string.IsNullOrWhiteSpace(x.LegacyName)).OrderBy(x => x.ParentMenuId).ThenBy(x => x.Order).ThenBy(x => x.Name))
+        {
+            var claim = FindClaimForMenu(menu, roleClaimList, existing);
+            if (claim != null)
+            {
+                matchedClaimIds.Add(claim.Id);
+            }
+
+            _claims.Add(new ClaimEditorItem
+            {
+                Id = claim?.Id ?? 0,
+                Group = string.IsNullOrWhiteSpace(claim?.Group) ? InferGroup(menu) : claim!.Group,
+                SubGroup = menu.LegacyName,
+                DisplayName = menu.Name,
+                Route = menu.Route ?? string.Empty,
+                Icon = ResolveIcon(menu.Icon),
+                ReferenceId = menu.PkIdMenu,
+                RootMenuId = ResolveRootMenuId(menu, menusById),
+                MenuOrder = menu.Order ?? 0,
+                SelectedActions = BuildSelectedActions(claim)
+            });
+        }
+
+        foreach (var claim in roleClaimList.Where(x => !matchedClaimIds.Contains(x.Id) && !existingMenuSubGroups.Contains(x.SubGroup)))
+        {
+            _claims.Add(new ClaimEditorItem
+            {
+                Id = claim.Id,
+                Group = claim.Group,
+                SubGroup = claim.SubGroup,
+                DisplayName = string.IsNullOrWhiteSpace(claim.Name) ? claim.SubGroup : claim.Name,
+                Route = claim.Description ?? string.Empty,
+                Icon = Icons.Material.Filled.Key,
+                ReferenceId = claim.ReferenceId,
+                RootMenuId = claim.ReferenceId,
+                SelectedActions = BuildSelectedActions(claim),
+                ShowAdvanced = true
+            });
+        }
+    }
+
+    private async Task OnRoleLookupChanged(LookupItem? item)
+    {
+        if (item == null)
+        {
+            ClearSelection();
+            return;
+        }
+
+        var role = RoleFromLookup(item);
+        if (role == null)
+        {
+            ClearSelection();
+            return;
+        }
+
+        await SelectRoleAsync(role.Id);
+    }
+
+    private async Task<ComboLookupResult> LoadRolesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var items = _snapshot.Roles
+            .Where(role => MatchesRoleFilter(role, filter))
+            .Select(ToRoleLookupItem);
+
+        return await Task.FromResult(ToPagedComboResult(items, page, pageSize));
+    }
+
+    private Task OnUserLookupChanged(LookupItem? item)
+    {
+        if (item == null)
+        {
+            ClearUserAndClaims();
+            return Task.CompletedTask;
+        }
+
+        var user = _userItems.FirstOrDefault(x => x.PkIdUsuario == item.Id);
+        if (user != null)
+        {
+            if (user.Zone != AssignedZone)
+            {
+                user.Zone = AssignedZone;
+                _dirty = true;
+            }
+
+            SelectUserContext(user);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadUsersPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var items = _userItems
+            .Where(user => MatchesUserFilter(user, filter))
+            .OrderBy(user => user.DisplayName)
+            .Select(user => new LookupItem
+            {
+                Id = user.PkIdUsuario,
+                Text = UserLookupText(user)
+            });
+
+        return await Task.FromResult(ToPagedComboResult(items, page, pageSize));
+    }
+
+    private async Task OnRootMenuLookupChanged(LookupItem? item)
+    {
+        _selectedRootMenuLookup = item;
+        _selectedRootMenuId = item?.Id;
+        _claimFilter = string.Empty;
+        await ReloadClaimsTableAsync();
+    }
+
+    private async Task<ComboLookupResult> LoadRootMenusPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var items = (_detail?.Menus ?? [])
+            .Where(IsRootMenu)
+            .Where(menu => string.IsNullOrWhiteSpace(filter)
+                           || menu.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
+                           || menu.LegacyName.Contains(filter, StringComparison.OrdinalIgnoreCase)
+                           || (menu.Route?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true))
+            .OrderBy(menu => menu.Order)
+            .ThenBy(menu => menu.Name)
+            .Select(menu => new LookupItem
+            {
+                Id = menu.PkIdMenu,
+                Text = menu.Name
+            });
+
+        return await Task.FromResult(ToPagedComboResult(items, page, pageSize));
+    }
+
+    private Task<TableData<ClaimEditorItem>> LoadClaimsTableAsync(TableState state, CancellationToken ct)
+    {
+        var query = VisibleClaims;
+
+        query = state.SortLabel switch
+        {
+            "DisplayName" => state.SortDirection == SortDirection.Descending
+                ? query.OrderByDescending(x => x.DisplayName)
+                : query.OrderBy(x => x.DisplayName),
+            "Route" => state.SortDirection == SortDirection.Descending
+                ? query.OrderByDescending(x => x.Route)
+                : query.OrderBy(x => x.Route),
+            _ => query.OrderBy(x => x.MenuOrder).ThenBy(x => x.DisplayName)
+        };
+
+        var list = query.ToList();
+        var pageItems = list
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return Task.FromResult(new TableData<ClaimEditorItem>
+        {
+            Items = pageItems,
+            TotalItems = list.Count
+        });
+    }
+
+    private Task OnClaimsSearchChanged(string value)
+    {
+        _claimFilter = value ?? string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task ReloadClaimsTableAsync()
+    {
+        if (_claimsTable != null)
+        {
+            await _claimsTable.ReloadData();
+        }
+    }
+
+    private void RemoveUser(UserDragItem user)
+    {
+        user.Zone = string.Empty;
+        if (_selectedUserContextId == user.PkIdUsuario)
+        {
+            ClearUserAndClaims();
+        }
+
+        _dirty = true;
+    }
+
+    private void SelectUserContext(UserDragItem user)
+    {
+        _selectedUserContextId = user.PkIdUsuario;
+        _selectedUserLookup = ToUserLookupItem(user);
+        _claimFilter = string.Empty;
+        ClearRootMenuSelection();
+        BuildClaims(_detail?.Claims ?? [], _detail?.Menus ?? []);
+    }
+
+    private void ToggleAction(ClaimEditorItem claim, string action, bool value)
+    {
+        if (value)
+        {
+            claim.SelectedActions.Add(action);
+        }
+        else
+        {
+            claim.RemoveAction(action);
+        }
+
+        _dirty = true;
+    }
+
+    private void EnableVisibleMenus()
+    {
+        foreach (var claim in VisibleClaims)
+        {
+            claim.SelectedActions.Add("view");
+            claim.SelectedActions.Add("view-menu");
+        }
+
+        _dirty = true;
+    }
+
+    private void ClearVisibleClaims()
+    {
+        foreach (var claim in VisibleClaims)
+        {
+            claim.SelectedActions.Clear();
+        }
+
+        _dirty = true;
+    }
+
+    private void OnRoleNameChanged(string value)
+    {
+        _roleName = value;
+        _dirty = true;
+    }
+
+    private void OnRoleCodeChanged(string value)
+    {
+        _roleCode = value;
+        _dirty = true;
+    }
+
+    private void OnClaimGroupChanged(ClaimEditorItem claim, string value)
+    {
+        claim.Group = value;
+        _dirty = true;
+    }
+
+    private void OnClaimSubGroupChanged(ClaimEditorItem claim, string value)
+    {
+        claim.SubGroup = value;
+        _dirty = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!CanSave)
+        {
+            return;
+        }
+
+        try
+        {
+            _saving = true;
+            var request = new SaveAccessRoleRequest
+            {
+                Id = _selectedRoleId,
+                Name = _roleName,
+                Code = _roleCode,
+                AssignedUserIds = _userItems.Where(x => x.Zone == AssignedZone).Select(x => x.PkIdUsuario).ToList(),
+                ReplaceClaims = _claims.Count > 0,
+                Claims = _claims
+                    .Where(x => x.HasAnyAction && !string.IsNullOrWhiteSpace(x.Group) && !string.IsNullOrWhiteSpace(x.SubGroup))
+                    .Select(x => new SaveAccessClaimRequest
+                    {
+                        Id = x.Id,
+                        Group = x.Group,
+                        SubGroup = x.SubGroup,
+                        Name = x.DisplayName,
+                        Code = x.SubGroup,
+                        Description = x.Route,
+                        ReferenceId = x.ReferenceId,
+                        Values = x.SelectedActions.OrderBy(v => v).ToList()
+                    })
+                    .ToList()
+            };
+
+            var response = await AccessService.SaveRoleAsync(request);
+            if (response?.Success != true || response.Data == null)
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo guardar la configuracion.", Severity.Error);
+                return;
+            }
+
+            Snackbar.Add(response.Message, Severity.Success);
+            await LoadSnapshotAsync();
+            await SelectRoleAsync(response.Data.Role.Id, forceReload: true);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task SynchronizeAsync()
+    {
+        try
+        {
+            _saving = true;
+            var response = await AccessService.SynchronizeMenuRolesAsync();
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message, Severity.Success);
+                await LoadSnapshotAsync();
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo sincronizar MenuRole.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void ClearSelection()
+    {
+        _detail = null;
+        _selectedRoleLookup = null;
+        _selectedRoleSummary = null;
+        ClearUserAndClaims();
+        _selectedRoleId = null;
+        _isNewRole = false;
+        _roleName = string.Empty;
+        _roleCode = null;
+        _userItems.Clear();
+        _dirty = false;
+    }
+
+    private void ClearUserAndClaims()
+    {
+        _selectedUserLookup = null;
+        _selectedUserContextId = null;
+        ClearRootMenuSelection();
+        _claims.Clear();
+        _claimFilter = string.Empty;
+    }
+
+    private void ClearRootMenuSelection()
+    {
+        _selectedRootMenuLookup = null;
+        _selectedRootMenuId = null;
+    }
+
+    private static bool MatchesRoleFilter(AccessRoleSummaryResponse role, string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return true;
+        }
+
+        return role.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
+               || role.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)
+               || (role.Code?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true);
+    }
+
+    private static bool MatchesUserFilter(UserDragItem item, string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return true;
+        }
+
+        return item.DisplayName.Contains(filter, StringComparison.OrdinalIgnoreCase)
+               || (item.Email?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true)
+               || (item.PayrollId?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true);
+    }
+
+    private bool MatchesClaimFilter(ClaimEditorItem item)
+    {
+        if (string.IsNullOrWhiteSpace(_claimFilter))
+        {
+            return true;
+        }
+
+        return item.Group.Contains(_claimFilter, StringComparison.OrdinalIgnoreCase)
+               || item.SubGroup.Contains(_claimFilter, StringComparison.OrdinalIgnoreCase)
+               || item.DisplayName.Contains(_claimFilter, StringComparison.OrdinalIgnoreCase)
+               || item.Route.Contains(_claimFilter, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool MatchesSelectedRootMenu(ClaimEditorItem item) =>
+        !_selectedRootMenuId.HasValue || item.RootMenuId == _selectedRootMenuId.Value;
+
+    private static bool IsRootMenu(AccessMenuSummaryResponse menu) =>
+        !menu.ParentMenuId.HasValue || menu.ParentMenuId.Value == 0;
+
+    private static int ResolveRootMenuId(AccessMenuSummaryResponse menu, IReadOnlyDictionary<int, AccessMenuSummaryResponse> menusById)
+    {
+        var current = menu;
+        var guard = 0;
+        while (current.ParentMenuId.HasValue && current.ParentMenuId.Value > 0 && guard++ < 25)
+        {
+            if (!menusById.TryGetValue(current.ParentMenuId.Value, out var parent))
+            {
+                break;
+            }
+
+            current = parent;
+        }
+
+        return current.PkIdMenu;
+    }
+
+    private AccessRoleSummaryResponse? RoleFromLookup(LookupItem item) =>
+        _snapshot.Roles.FirstOrDefault(role => RoleLookupId(role) == item.Id);
+
+    private LookupItem ToRoleLookupItem(AccessRoleSummaryResponse role) => new()
+    {
+        Id = RoleLookupId(role),
+        Text = string.IsNullOrWhiteSpace(role.Code)
+            ? role.Name
+            : $"{role.Name} - {role.Code}"
+    };
+
+    private int RoleLookupId(AccessRoleSummaryResponse role)
+    {
+        var index = _snapshot.Roles.FindIndex(x => string.Equals(x.Id, role.Id, StringComparison.OrdinalIgnoreCase));
+        return index < 0 ? 0 : index + 1;
+    }
+
+    private static ComboLookupResult ToPagedComboResult(IEnumerable<LookupItem> source, int page, int pageSize)
+    {
+        var filtered = source.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList();
+        return new ComboLookupResult
+        {
+            Items = filtered.Skip(Math.Max(page - 1, 0) * pageSize).Take(pageSize),
+            TotalCount = filtered.Count
+        };
+    }
+
+    private LookupItem ToUserLookupItem(UserDragItem user) => new()
+    {
+        Id = user.PkIdUsuario,
+        Text = UserLookupText(user)
+    };
+
+    private string UserCardClass(UserDragItem user) =>
+        _selectedUserContextId == user.PkIdUsuario
+            ? "user-card active"
+            : "user-card";
+
+    private static List<string> SplitValues(string? values) =>
+        (values ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+    private static HashSet<string> BuildSelectedActions(AccessClaimResponse? claim)
+    {
+        if (claim == null)
+        {
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var values = new List<string>();
+        foreach (var value in claim.ValueList)
+        {
+            values.AddRange(SplitValues(value));
+        }
+
+        values.AddRange(SplitValues(claim.Values));
+        return values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static AccessClaimResponse? FindClaimForMenu(
+        AccessMenuSummaryResponse menu,
+        IReadOnlyCollection<AccessClaimResponse> claims,
+        IReadOnlyDictionary<string, AccessClaimResponse> claimsBySubGroup)
+    {
+        var legacyKey = NormalizeLookupKey(menu.LegacyName);
+        if (!string.IsNullOrWhiteSpace(legacyKey) && claimsBySubGroup.TryGetValue(legacyKey, out var byLegacy))
+        {
+            return byLegacy;
+        }
+
+        var menuKeys = BuildMenuMatchKeys(menu);
+        return claims.FirstOrDefault(claim =>
+        {
+            if (claim.ReferenceId == menu.PkIdMenu)
+            {
+                return true;
+            }
+
+            var claimKeys = new[]
+            {
+                claim.SubGroup,
+                claim.Code,
+                claim.Name,
+                claim.Description
+            }
+            .Select(NormalizeLooseKey)
+            .Where(key => !string.IsNullOrWhiteSpace(key));
+
+            return claimKeys.Any(menuKeys.Contains);
+        });
+    }
+
+    private static string NormalizeLookupKey(string? value) =>
+        (value ?? string.Empty)
+            .Trim()
+            .Replace(" ", "_", StringComparison.Ordinal)
+            .ToLowerInvariant();
+
+    private static HashSet<string> BuildMenuMatchKeys(AccessMenuSummaryResponse menu)
+    {
+        var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        AddLooseKey(keys, menu.LegacyName);
+        AddLooseKey(keys, menu.Name);
+        AddLooseKey(keys, menu.Route);
+
+        var routeSegments = (menu.Route ?? string.Empty)
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (routeSegments.Length > 0)
+        {
+            AddLooseKey(keys, routeSegments[^1]);
+            AddLooseKey(keys, routeSegments[0]);
+        }
+
+        if (routeSegments.Length > 1)
+        {
+            AddLooseKey(keys, $"{routeSegments[^1]}_{routeSegments[0]}");
+            AddLooseKey(keys, $"{routeSegments[0]}_{routeSegments[^1]}");
+        }
+
+        return keys;
+    }
+
+    private static void AddLooseKey(HashSet<string> keys, string? value)
+    {
+        var key = NormalizeLooseKey(value);
+        if (!string.IsNullOrWhiteSpace(key))
+        {
+            keys.Add(key);
+        }
+    }
+
+    private static string NormalizeLooseKey(string? value)
+    {
+        var normalized = (value ?? string.Empty)
+            .Trim()
+            .Normalize(System.Text.NormalizationForm.FormD);
+
+        return new string(normalized
+            .Where(ch => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray());
+    }
+
+    private static string Initials(string value)
+    {
+        var parts = (value ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+        {
+            return "?";
+        }
+
+        return string.Concat(parts.Take(2).Select(x => char.ToUpperInvariant(x[0])));
+    }
+
+    private static string UserCaption(UserDragItem item) =>
+        string.Join(" · ", new[] { item.Email, item.PayrollId, $"{item.RoleCount} roles" }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+    private static string UserLookupText(UserDragItem item) =>
+        string.Join(" - ", new[] { item.DisplayName, item.Email, item.PayrollId }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+    private static string RoleSecondaryText(AccessRoleSummaryResponse role) =>
+        $"{(string.IsNullOrWhiteSpace(role.Code) ? role.Id : role.Code)} - {role.UserCount} usuarios - {role.ClaimCount} claims";
+
+    private static string ActionLabel(string action) => NormalizeActionKey(action) switch
+    {
+        "view-menu" => "Menu",
+        "excel" => "Excel",
+        "new" => "Nuevo",
+        "update" => "Editar",
+        "delete" => "Eliminar",
+        "authorize" => "Autorizar",
+        "view" => "Ver",
+        _ => action
+    };
+
+    private static Color ActionColor(string action) => NormalizeActionKey(action) switch
+    {
+        "view-menu" => Color.Info,
+        "delete" => Color.Error,
+        "new" => Color.Success,
+        "update" => Color.Warning,
+        "excel" => Color.Tertiary,
+        "authorize" => Color.Secondary,
+        _ => Color.Primary
+    };
+
+    private static string NormalizeActionKey(string action)
+    {
+        var key = (action ?? string.Empty)
+            .Trim()
+            .Replace("_", "-", StringComparison.Ordinal)
+            .Replace(" ", "-", StringComparison.Ordinal)
+            .ToLowerInvariant();
+
+        return key switch
+        {
+            "viewmenu" or "view-menu" or "menu" => "view-menu",
+            "canexporttoexcel" or "can-export-to-excel" or "export" or "export-excel" or "excel" => "excel",
+            "new" or "nuevo" or "create" or "crear" or "add" or "agregar" => "new",
+            "update" or "editar" or "edit" or "modify" or "modificar" => "update",
+            "delete" or "eliminar" or "remove" or "borrar" => "delete",
+            "authorize" or "autorizar" or "auth" => "authorize",
+            "view" or "ver" => "view",
+            _ => key
+        };
+    }
+
+    private static string InferGroup(AccessMenuSummaryResponse menu)
+    {
+        var route = menu.Route ?? string.Empty;
+        if (route.Contains("contabilidad", StringComparison.OrdinalIgnoreCase)) return "Contabilidad";
+        if (route.Contains("presupuesto", StringComparison.OrdinalIgnoreCase)) return "Presupuesto";
+        if (route.Contains("adquisiciones", StringComparison.OrdinalIgnoreCase)) return "Adquisiciones";
+        if (route.Contains("patrimonio", StringComparison.OrdinalIgnoreCase)) return "Patrimonio";
+        if (route.Contains("tesoreria", StringComparison.OrdinalIgnoreCase)) return "Tesoreria";
+        if (route.Contains("nomina", StringComparison.OrdinalIgnoreCase)) return "Nomina";
+        return "Sistema";
+    }
+
+    private static string ResolveIcon(string? icon) =>
+        string.IsNullOrWhiteSpace(icon) ? Icons.Material.Filled.Article : icon;
+
+    private sealed class UserDragItem
+    {
+        public int PkIdUsuario { get; set; }
+        public string AspNetUserId { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string? Email { get; set; }
+        public string? PayrollId { get; set; }
+        public int RoleCount { get; set; }
+        public string Zone { get; set; } = string.Empty;
+    }
+
+    private sealed class ClaimEditorItem
+    {
+        public int Id { get; set; }
+        public string Group { get; set; } = string.Empty;
+        public string SubGroup { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string Route { get; set; } = string.Empty;
+        public string Icon { get; set; } = Icons.Material.Filled.Article;
+        public int ReferenceId { get; set; }
+        public int RootMenuId { get; set; }
+        public int MenuOrder { get; set; }
+        public bool ShowAdvanced { get; set; }
+        public HashSet<string> SelectedActions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public bool HasAnyAction => SelectedActions.Count > 0;
+        public bool HasAction(string action) =>
+            SelectedActions.Contains(action)
+            || SelectedActions.Any(selected => string.Equals(NormalizeActionKey(selected), NormalizeActionKey(action), StringComparison.OrdinalIgnoreCase));
+
+        public void RemoveAction(string action)
+        {
+            if (SelectedActions.Remove(action))
+            {
+                return;
+            }
+
+            var normalizedAction = NormalizeActionKey(action);
+            SelectedActions.RemoveWhere(selected => string.Equals(NormalizeActionKey(selected), normalizedAction, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+}

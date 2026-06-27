@@ -29,6 +29,7 @@ namespace EG.Application.Services
             // de cabeceras cuando un usuario tiene muchos accesos asignados.
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.UniqueName, userName ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Email, email ?? string.Empty)
@@ -61,7 +62,7 @@ namespace EG.Application.Services
                 var JWToken = new JwtSecurityToken(
                     issuer: jwtSettings.ValidIssuer,
                     audience: jwtSettings.ValidAudience,
-                    claims: GetClaims(userId, userName, email, empresaId),
+                    claims: GetClaims(pkIdUsuario.ToString(), userName, email, empresaId),
                     notBefore: DateTime.Now,
                     expires: new DateTimeOffset(expireTime).DateTime,
                     signingCredentials: new SigningCredentials(

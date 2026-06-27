@@ -43,7 +43,7 @@ namespace EG.Business.Services
                 return new List<spNodeMenuResponse>();
             }
 
-            var allowedLegacyNames = await _context.AspNetClaims
+            var allowedClaims = await _context.AspNetClaims
                 .AsNoTracking()
                 .Where(c =>
                     c.RoleId != null &&
@@ -54,11 +54,18 @@ namespace EG.Business.Services
                         (c.Values != null && c.Values.Contains("view-menu")) ||
                         c.AspNetClaimValues.Any(v => v.Value == "view-menu")
                     ))
-                .Select(c => c.SubGroup)
+                .Select(c => new MenuClaimKey
+                {
+                    SubGroup = c.SubGroup,
+                    Code = c.Code,
+                    Name = c.Name,
+                    Description = c.Description,
+                    ReferenceId = c.ReferenceId
+                })
                 .Distinct()
                 .ToListAsync();
 
-            if (allowedLegacyNames.Count == 0)
+            if (allowedClaims.Count == 0)
             {
                 return new List<spNodeMenuResponse>();
             }
@@ -71,8 +78,19 @@ namespace EG.Business.Services
                     m.LegacyName != null)
                 .ToListAsync();
 
+            var allowedClaimKeys = allowedClaims
+                .SelectMany(BuildClaimMatchKeys)
+                .Where(key => !string.IsNullOrWhiteSpace(key))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var allowedReferenceIds = allowedClaims
+                .Select(claim => claim.ReferenceId)
+                .Where(referenceId => referenceId > 0)
+                .ToHashSet();
+
             var allowed = menus
-                .Where(m => allowedLegacyNames.Contains(m.LegacyName))
+                .Where(menu => allowedReferenceIds.Contains(menu.PkidMenu)
+                               || BuildMenuMatchKeys(menu).Any(allowedClaimKeys.Contains))
                 .ToList();
 
             var result = new Dictionary<int, Menu>();
@@ -144,13 +162,123 @@ namespace EG.Business.Services
                     "[SIS].[spGetClaimsByUser]",
                     parameters);
 
-                return resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
+                var claims = resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
+                if (claims.Count > 0)
+                {
+                    return claims;
+                }
+
+                return await GetClaimsFromRolesAsync(usuarioId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error obteniendo claims para usuario {usuarioId}: {ex.Message}");
                 throw;
             }
+        }
+
+        private async Task<List<spGetClaimsByUserResult>> GetClaimsFromRolesAsync(int usuarioId)
+        {
+            var claims = await _context.AspNetClaims
+                .AsNoTracking()
+                .Include(claim => claim.AspNetClaimValues)
+                .Where(claim =>
+                    claim.Role != null &&
+                    claim.Role.AspNetUserRoles.Any(userRole =>
+                        userRole.User != null &&
+                        userRole.User.PkIdUsuario == usuarioId &&
+                        userRole.User.PkIdUsuarioNavigation != null &&
+                        userRole.User.PkIdUsuarioNavigation.Activo))
+                .Where(claim => claim.Group != null && claim.SubGroup != null)
+                .ToListAsync();
+
+            return claims
+                .Select(claim => new spGetClaimsByUserResult
+                {
+                    Group = claim.Group!,
+                    SubGroup = claim.SubGroup!,
+                    Values = BuildClaimValues(claim)
+                })
+                .DistinctBy(claim => $"{claim.Group}|{claim.SubGroup}|{claim.Values}")
+                .OrderBy(claim => claim.Group)
+                .ThenBy(claim => claim.SubGroup)
+                .ThenBy(claim => claim.Values)
+                .ToList();
+        }
+
+        private static string BuildClaimValues(AspNetClaim claim)
+        {
+            var values = claim.AspNetClaimValues
+                .Select(value => value.Value)
+                .Concat((claim.Values ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            return string.Join(",", values);
+        }
+
+        private static IEnumerable<string> BuildClaimMatchKeys(MenuClaimKey claim)
+        {
+            yield return NormalizeLooseKey(claim.SubGroup);
+            yield return NormalizeLooseKey(claim.Code);
+            yield return NormalizeLooseKey(claim.Name);
+            yield return NormalizeLooseKey(claim.Description);
+        }
+
+        private static HashSet<string> BuildMenuMatchKeys(Menu menu)
+        {
+            var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            AddLooseKey(keys, menu.LegacyName);
+            AddLooseKey(keys, menu.Nombre);
+            AddLooseKey(keys, menu.Ruta);
+
+            var routeSegments = (menu.Ruta ?? string.Empty)
+                .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (routeSegments.Length > 0)
+            {
+                AddLooseKey(keys, routeSegments[^1]);
+                AddLooseKey(keys, routeSegments[0]);
+            }
+
+            if (routeSegments.Length > 1)
+            {
+                AddLooseKey(keys, $"{routeSegments[^1]}_{routeSegments[0]}");
+                AddLooseKey(keys, $"{routeSegments[0]}_{routeSegments[^1]}");
+            }
+
+            return keys;
+        }
+
+        private static void AddLooseKey(HashSet<string> keys, string? value)
+        {
+            var key = NormalizeLooseKey(value);
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                keys.Add(key);
+            }
+        }
+
+        private static string NormalizeLooseKey(string? value)
+        {
+            var normalized = (value ?? string.Empty)
+                .Trim()
+                .Normalize(System.Text.NormalizationForm.FormD);
+
+            return new string(normalized
+                .Where(ch => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                .Where(char.IsLetterOrDigit)
+                .Select(char.ToLowerInvariant)
+                .ToArray());
+        }
+
+        private sealed class MenuClaimKey
+        {
+            public string? SubGroup { get; set; }
+            public string? Code { get; set; }
+            public string? Name { get; set; }
+            public string? Description { get; set; }
+            public int ReferenceId { get; set; }
         }
     }
 }

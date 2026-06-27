@@ -1,3 +1,4 @@
+using EG.Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
@@ -5,15 +6,7 @@ namespace EG.ApiCoreBS.Auth
 {
     public sealed class PermissionPolicyProvider : DefaultAuthorizationPolicyProvider
     {
-        private static readonly string[] KnownActions =
-        [
-            "CanExportToExcel",
-            "authorize",
-            "delete",
-            "update",
-            "view",
-            "new"
-        ];
+        private static readonly IReadOnlyList<string> KnownActions = PermissionActionExtensions.GetAllClaimValues();
 
         public PermissionPolicyProvider(IOptions<AuthorizationOptions> options)
             : base(options)

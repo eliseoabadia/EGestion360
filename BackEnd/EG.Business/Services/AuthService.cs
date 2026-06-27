@@ -6,6 +6,7 @@ using EG.Domain.DTOs.Requests;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace EG.Business.Services
@@ -15,17 +16,20 @@ namespace EG.Business.Services
         private readonly IRepository<Usuario> _repository;
         private readonly IRepositorySP<LoginInformationEmployeeResult> _repositorySP;
         private readonly IRepositorySP<spGetClaimsByUserResult> _repositoryClaimsSP;
+        private readonly EGestionContext _context;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IRepository<Usuario> userRepository,
             IRepositorySP<LoginInformationEmployeeResult> repositorySP,
             IRepositorySP<spGetClaimsByUserResult> repositoryClaimsSP,
+            EGestionContext context,
             ILogger<AuthService> logger)
         {
             _repository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _repositorySP = repositorySP ?? throw new ArgumentNullException(nameof(repositorySP));
             _repositoryClaimsSP = repositoryClaimsSP ?? throw new ArgumentNullException(nameof(repositoryClaimsSP));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -94,7 +98,13 @@ namespace EG.Business.Services
                     "[SIS].[spGetClaimsByUser]",
                     parameters);
 
-                return resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
+                var claims = resultClaims?.ToList() ?? new List<spGetClaimsByUserResult>();
+                if (claims.Count > 0)
+                {
+                    return claims;
+                }
+
+                return await GetClaimsFromRolesAsync(usuarioId);
             }
             catch (Exception ex)
             {
@@ -102,6 +112,46 @@ namespace EG.Business.Services
 
                 throw;
             }
+        }
+
+        private async Task<List<spGetClaimsByUserResult>> GetClaimsFromRolesAsync(int usuarioId)
+        {
+            var claims = await _context.AspNetClaims
+                .AsNoTracking()
+                .Include(claim => claim.AspNetClaimValues)
+                .Where(claim =>
+                    claim.Role != null &&
+                    claim.Role.AspNetUserRoles.Any(userRole =>
+                        userRole.User != null &&
+                        userRole.User.PkIdUsuario == usuarioId &&
+                        userRole.User.PkIdUsuarioNavigation != null &&
+                        userRole.User.PkIdUsuarioNavigation.Activo))
+                .Where(claim => claim.Group != null && claim.SubGroup != null)
+                .ToListAsync();
+
+            return claims
+                .Select(claim => new spGetClaimsByUserResult
+                {
+                    Group = claim.Group,
+                    SubGroup = claim.SubGroup,
+                    Values = BuildClaimValues(claim)
+                })
+                .DistinctBy(claim => $"{claim.Group}|{claim.SubGroup}|{claim.Values}")
+                .OrderBy(claim => claim.Group)
+                .ThenBy(claim => claim.SubGroup)
+                .ThenBy(claim => claim.Values)
+                .ToList();
+        }
+
+        private static string BuildClaimValues(AspNetClaim claim)
+        {
+            var values = claim.AspNetClaimValues
+                .Select(value => value.Value)
+                .Concat((claim.Values ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            return string.Join(",", values);
         }
     }
 }

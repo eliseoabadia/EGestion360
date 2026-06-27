@@ -448,6 +448,8 @@ VALUES
 (2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'General', 'CONSISS04', 'General', 'view,view-menu,delete,new,update,CanExportToExcel', 23),
 (2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Empresa', 'CONSISS05', 'Empresa', 'view,view-menu,delete,new,update,CanExportToExcel', 24),
 (2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Departamento', 'CONSISS06', 'Departamento', 'view,view-menu,delete,new,update,CanExportToExcel', 25),
+(2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'Configurar_Accesos', 'CONSISS07', 'Configurar_Accesos', 'view,view-menu,delete,new,update,CanExportToExcel', 25),
+
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Catalogos_presupuestales', 'CONCP01', 'Presupuestales', 'view,view-menu', 30),
 (2, 'Configuracion', 'Catalogos_presupuestales', NULL, 'app://{0}/{1}', GETDATE(), 'Programas_Presupuestales', 'CONCPS01', 'Programas Presupuestales', 'view,view-menu,delete,new,update,CanExportToExcel', 31),
@@ -826,6 +828,7 @@ EXEC spConfiguracionDeRolYClaims 'Sistema', 'Menu', '10000', 'view,view-menu,del
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'General', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Empresa', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Departamento', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Sistema', 'Configurar_Accesos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Catalogos_presupuestales', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'Programas_Presupuestales', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'ClavePrograma', '10000', 'view,view-menu';
@@ -1241,6 +1244,7 @@ USING (VALUES
     (23, N'General', 2, 20, N'General', N'/configuracion/sistema/general', N'FaGears', 1, N'ESP', 3, 1, GETDATE()),
     (24, N'Empresa', 2, 20, N'Empresa', N'/configuracion/sistema/empresa', N'FaHome', 1, N'ESP', 4, 1, GETDATE()),
     (25, N'Departamento', 2, 20, N'Departamento', N'/configuracion/sistema/departamento', N'FaUserGroup', 1, N'ESP', 5, 1, GETDATE()),
+    (26, N'Configurar Accesos', 2, 20, N'Configurar Accesos', N'/configuracion/sistema/Configurar_Accesos', N'FaGears', 1, N'ESP', 3, 1, GETDATE()),
 
     -- Configuración -> Presupuestales
     (30, N'Presupuestales', 1, 1, N'Presupuestales', N'/', N'FaChartBar', 1, N'ESP', 2, 1, GETDATE()),
