@@ -114,6 +114,57 @@
     font-weight: 700;
 }
 
+.eg-table-interactive-columns ::deep .mud-table-head .mud-table-cell {
+    position: relative;
+    user-select: none;
+}
+
+.eg-table-interactive-columns ::deep .eg-column-draggable {
+    cursor: grab;
+}
+
+.eg-table-interactive-columns.eg-column-resizing ::deep .mud-table-head .mud-table-cell,
+.eg-table-interactive-columns.eg-column-resizing ::deep .mud-table-body .mud-table-cell {
+    user-select: none;
+}
+
+.eg-table-interactive-columns ::deep .eg-column-drag-source {
+    opacity: .62;
+}
+
+.eg-table-interactive-columns ::deep .eg-column-drop-target {
+    box-shadow: inset 3px 0 0 var(--eg-primary);
+}
+
+.eg-table-interactive-columns ::deep .eg-column-resizer {
+    position: absolute;
+    top: 7px;
+    right: 0;
+    bottom: 7px;
+    width: 9px;
+    cursor: col-resize;
+    touch-action: none;
+    z-index: 2;
+}
+
+.eg-table-interactive-columns ::deep .eg-column-resizer::after {
+    position: absolute;
+    top: 0;
+    right: 3px;
+    bottom: 0;
+    width: 1px;
+    background: color-mix(in srgb, var(--eg-primary) 36%, transparent);
+    content: "";
+    opacity: 0;
+    transition: opacity .12s ease;
+}
+
+.eg-table-interactive-columns ::deep .mud-table-head .mud-table-cell:hover > .eg-column-resizer::after,
+.eg-table-interactive-columns ::deep .eg-column-resizer:hover::after,
+.eg-table-interactive-columns.eg-column-resizing ::deep .eg-column-resizer::after {
+    opacity: 1;
+}
+
 .themed-table ::deep .mud-table-body .mud-table-row:nth-child(even) {
     background-color: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
 }

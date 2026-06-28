@@ -165,6 +165,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<DetalleSolicitudSalidum> DetalleSolicitudSalida { get; set; }
 
+    public virtual DbSet<DiaSemana> DiaSemanas { get; set; }
+
     public virtual DbSet<Diagnostico> Diagnosticos { get; set; }
 
     public virtual DbSet<DigitoIdentificador> DigitoIdentificadors { get; set; }
@@ -200,6 +202,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<Entidad> Entidads { get; set; }
 
     public virtual DbSet<EntidadesExterna> EntidadesExternas { get; set; }
+
+    public virtual DbSet<Escolaridad> Escolaridads { get; set; }
 
     public virtual DbSet<Estado> Estados { get; set; }
 
@@ -324,6 +328,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<MatrizIngreso> MatrizIngresos { get; set; }
 
     public virtual DbSet<Me> Mes { get; set; }
+
+    public virtual DbSet<MedodoPago> MedodoPagos { get; set; }
 
     public virtual DbSet<Menu> Menus { get; set; }
 
@@ -761,8 +767,6 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwDetalleSolicitudSalidum> VwDetalleSolicitudSalida { get; set; }
 
-    public virtual DbSet<VwDiaSemana> VwDiaSemanas { get; set; }
-
     public virtual DbSet<VwDiagnostico> VwDiagnosticos { get; set; }
 
     public virtual DbSet<VwDocumentoAnotacion> VwDocumentoAnotacions { get; set; }
@@ -870,8 +874,6 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwMatrizIngresoColumna> VwMatrizIngresoColumnas { get; set; }
 
     public virtual DbSet<VwMenu> VwMenus { get; set; }
-
-    public virtual DbSet<VwMetodoPago> VwMetodoPagos { get; set; }
 
     public virtual DbSet<VwMirNivel> VwMirNivels { get; set; }
 
@@ -4183,6 +4185,25 @@ public partial class EGestionContext : DbContext
                 .HasConstraintName("FK_DetalleSolicitudSalida_TipoBien");
         });
 
+        modelBuilder.Entity<DiaSemana>(entity =>
+        {
+            entity.HasKey(e => e.PkidDiaSemana).HasName("PK_SIS_DiaSemana");
+
+            entity.ToTable("DiaSemana", "SIS");
+
+            entity.HasIndex(e => e.LegacyId, "UX_SIS_DiaSemana_LegacyId")
+                .IsUnique()
+                .HasFilter("([LegacyId] IS NOT NULL)");
+
+            entity.Property(e => e.PkidDiaSemana).HasColumnName("PKIdDiaSemana");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SIS_DiaSemana_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
+        });
+
         modelBuilder.Entity<Diagnostico>(entity =>
         {
             entity.HasKey(e => e.PkidDiagnostico).HasName("PK_PBR_Diagnostico");
@@ -4941,6 +4962,25 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("ORGANISMO_DESCENTRALIZADO", "DF_PBR_EntidadesExternas_Tipo");
+        });
+
+        modelBuilder.Entity<Escolaridad>(entity =>
+        {
+            entity.HasKey(e => e.PkidEscolaridad).HasName("PK_SIS_Escolaridad");
+
+            entity.ToTable("Escolaridad", "SIS");
+
+            entity.HasIndex(e => e.LegacyId, "UX_SIS_Escolaridad_LegacyId")
+                .IsUnique()
+                .HasFilter("([LegacyId] IS NOT NULL)");
+
+            entity.Property(e => e.PkidEscolaridad).HasColumnName("PKIdEscolaridad");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SIS_Escolaridad_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
         });
 
         modelBuilder.Entity<Estado>(entity =>
@@ -7157,6 +7197,25 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(10);
             entity.Property(e => e.PkidMes).HasColumnName("PKIdMes");
+        });
+
+        modelBuilder.Entity<MedodoPago>(entity =>
+        {
+            entity.HasKey(e => e.PkidMetodoPago).HasName("PK_SIS_MedodoPago");
+
+            entity.ToTable("MedodoPago", "SIS");
+
+            entity.HasIndex(e => e.LegacyId, "UX_SIS_MedodoPago_LegacyId")
+                .IsUnique()
+                .HasFilter("([LegacyId] IS NOT NULL)");
+
+            entity.Property(e => e.PkidMetodoPago).HasColumnName("PKIdMetodoPago");
+            entity.Property(e => e.Activo).HasDefaultValue(true, "DF_SIS_MedodoPago_Activo");
+            entity.Property(e => e.Descripcion)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaModificacion).HasPrecision(6);
         });
 
         modelBuilder.Entity<Menu>(entity =>
@@ -14657,28 +14716,6 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.UnidadDescripcion).HasMaxLength(50);
         });
 
-        modelBuilder.Entity<VwDiaSemana>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vw_DiaSemana", "NOM");
-
-            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
-            entity.Property(e => e.Clave).HasMaxLength(50);
-            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
-            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
-            entity.Property(e => e.Descripcion)
-                .IsRequired()
-                .HasMaxLength(250);
-            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
-            entity.Property(e => e.FechaCreacion).HasPrecision(6);
-            entity.Property(e => e.FechaModificacion).HasPrecision(6);
-            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
-            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
-            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
-            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
-        });
-
         modelBuilder.Entity<VwDiagnostico>(entity =>
         {
             entity
@@ -16339,28 +16376,6 @@ public partial class EGestionContext : DbContext
                 .IsRequired()
                 .HasMaxLength(46)
                 .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<VwMetodoPago>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vw_MetodoPago", "NOM");
-
-            entity.Property(e => e.CatalogoPadreDescripcion).HasMaxLength(250);
-            entity.Property(e => e.Clave).HasMaxLength(50);
-            entity.Property(e => e.DatoExtra1).HasMaxLength(500);
-            entity.Property(e => e.DatoExtra2).HasMaxLength(500);
-            entity.Property(e => e.Descripcion)
-                .IsRequired()
-                .HasMaxLength(250);
-            entity.Property(e => e.DescripcionCorta).HasMaxLength(120);
-            entity.Property(e => e.FechaCreacion).HasPrecision(6);
-            entity.Property(e => e.FechaModificacion).HasPrecision(6);
-            entity.Property(e => e.FkidCatalogoPadreNom).HasColumnName("FKIdCatalogoPadre_NOM");
-            entity.Property(e => e.PkidCatalogoSimple).HasColumnName("PKIdCatalogoSimple");
-            entity.Property(e => e.ValorDecimal1).HasColumnType("decimal(18, 4)");
-            entity.Property(e => e.ValorDecimal2).HasColumnType("decimal(18, 4)");
         });
 
         modelBuilder.Entity<VwMirNivel>(entity =>

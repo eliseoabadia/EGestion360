@@ -15,7 +15,10 @@ Este bloque migra la base operativa/catalogos de Nomina a la arquitectura modula
 - Scripts SQL manuales de estructura, datos, menu/claims, vistas y SPs de consulta.
 - Menu de Nomina compatible con el arbol Invea 610-930 mediante `16_Menu_Invea_NOM.sql`, con claims legacy y `SIS.MenuRole` para rol 10000.
 - Capa de procesos de compatibilidad en `17_Procesos_Compat_NOM.sql`: calculo via corrida migrada, cierre de periodo, aguinaldo, prima vacacional individual y marcas de comprometido/devengado/ejercido.
-- Catalogos simples `SIS_*` migrados a `NOM.CatalogoSimple` desde `BD_GRP_INVEA`: Sexo, Estado Civil, Escolaridad, Parentesco, Estado, Banco, Municipio, Base Pago, Metodo Pago, Tipo Regimen, Base Cotizacion, Zona Geografica, Dia Semana, Tipo Nomina, Cuotas IMSS, UMA, Tipo Contratacion, Tipo Descanso, Tipo Incidencia, Tipo Justificacion, Unidad Infonavit, Forma Calculo y Capitulos.
+- Catalogos simples `SIS_*` migrados a `NOM.CatalogoSimple` desde `BD_GRP_INVEA`: Sexo, Estado Civil, Estado, Banco, Municipio, Base Pago, Tipo Regimen, Base Cotizacion, Zona Geografica, Tipo Nomina, Cuotas IMSS, UMA, Tipo Descanso, Unidad Infonavit, Forma Calculo y Capitulos. Parentesco, Tipo Contratacion, Tipo Incidencia y Tipo Justificacion ya se migran como entidades directas `SIS.*`; su espejo en `NOM.CatalogoSimple` se conserva temporalmente por compatibilidad con FKs operativas.
+- `SIS_DiaSemana` migra como entidad directa a `SIS.DiaSemana`; no usa vista ni SP.
+- `SIS_MedodoPago` migra como entidad directa a `SIS.MedodoPago`; no usa vista ni SP.
+- Escolaridad se migra desde `BD_GRP_INVEA.dbo.SIS_Escolaridad` a la entidad directa `SIS.Escolaridad`.
 - Catalogos ampliados SIS/RH en `18_Catalogos_Ampliados_SIS_RH_NOM.sql`: Tipo Sangre, Profesion, Regimen Fiscal, Pais, Periodo Pago, Tipo Documento SIS, Tipo Documento RH, Tipo Expediente, Opcion Jubilacion, Situacion Persona, Situacion Plaza, Situacion Movimiento, Clase Movimiento y Movimiento RH, cada uno con vista `NOM.Vw_*` propia.
 - Vista `NOM.Vw_CatalogoSimple` y SP `NOM.spCatalogoSimplePorCatalogo` para consulta rapida de esos catalogos.
 - 30 vistas SQL NOM con IDs y columnas descriptivas para empresa, persona, concepto, periodos y movimientos.

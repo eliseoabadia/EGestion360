@@ -136,6 +136,8 @@
     [Parameter] public string Title { get; set; } = "Catalogo";
     [Parameter] public string ParentCatalogo { get; set; } = string.Empty;
     [Parameter] public string ParentLabel { get; set; } = "Catalogo padre";
+    [Parameter] public IReadOnlyDictionary<string, string> LabelOverrides { get; set; } =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     [Parameter] public string[] Fields { get; set; } =
     [
         nameof(NomCatalogoSimpleResponse.Clave),
@@ -277,7 +279,9 @@
             : 6;
 
     private string GetFieldLabel(string field)
-        => field switch
+        => LabelOverrides.TryGetValue(field, out var label)
+            ? label
+            : field switch
         {
             nameof(NomCatalogoSimpleResponse.Clave) => "Clave",
             nameof(NomCatalogoSimpleResponse.Descripcion) => "Descripcion",

@@ -15,53 +15,53 @@
             <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
         }
 
-        <MudButton Variant="@ButtonVariant("/PRB")"
+        <MudButton Variant="@ButtonVariant("/PBR")"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.InsertChart"
-                   OnClick="@(() => GoTo("/PRB"))">
+                   OnClick="@(() => GoTo("/PBR"))">
             Tablero
         </MudButton>
-        <MudButton Variant="@ButtonVariant("/PRB/MiTablero")"
+        <MudButton Variant="@ButtonVariant("/PBR/MiTablero")"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.DashboardCustomize"
-                   OnClick="@(() => GoTo("/PRB/MiTablero"))">
+                   OnClick="@(() => GoTo("/PBR/MiTablero"))">
             Mi Tablero
         </MudButton>
-        <MudButton Variant="@ButtonVariant("/PRB/MapaProcesos")"
+        <MudButton Variant="@ButtonVariant("/PBR/MapaProcesos")"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.Route"
-                   OnClick="@(() => GoTo("/PRB/MapaProcesos"))">
+                   OnClick="@(() => GoTo("/PBR/MapaProcesos"))">
             Mapa PBR
         </MudButton>
-        <MudButton Variant="@ButtonVariant("/PRB/Anteproyectos")"
+        <MudButton Variant="@ButtonVariant("/PBR/Anteproyectos")"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.AssignmentTurnedIn"
-                   OnClick="@(() => GoTo("/PRB/Anteproyectos"))">
+                   OnClick="@(() => GoTo("/PBR/Anteproyectos"))">
             Anteproyectos
         </MudButton>
-        <MudButton Variant="@ButtonVariant("/PRB/Presupuestos")"
+        <MudButton Variant="@ButtonVariant("/PBR/Presupuestos")"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.AccountBalanceWallet"
-                   OnClick="@(() => GoTo("/PRB/Presupuestos"))">
+                   OnClick="@(() => GoTo("/PBR/Presupuestos"))">
             Presupuestos
         </MudButton>
-        <MudButton Variant="@ButtonVariant("/PRB/MatrizIndicadores")"
+        <MudButton Variant="@ButtonVariant("/PBR/MatrizIndicadores")"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.AccountTree"
-                   OnClick="@(() => GoTo("/PRB/MatrizIndicadores"))">
+                   OnClick="@(() => GoTo("/PBR/MatrizIndicadores"))">
             Matriz MIR
         </MudButton>
     </MudStack>
 </MudPaper>
 
 @code {
-    [Parameter] public string BackHref { get; set; } = "/PRB";
+    [Parameter] public string BackHref { get; set; } = "/PBR";
     [Parameter] public EventCallback OnBack { get; set; }
 
     private string CurrentPath
@@ -74,7 +74,7 @@
     }
 
     private bool ShowBackButton
-        => !string.Equals(CurrentPath, "/PRB", StringComparison.OrdinalIgnoreCase)
+        => !string.Equals(CurrentPath, "/PBR", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(CurrentPath, "/PBR", StringComparison.OrdinalIgnoreCase);
 
     private Variant ButtonVariant(string route)

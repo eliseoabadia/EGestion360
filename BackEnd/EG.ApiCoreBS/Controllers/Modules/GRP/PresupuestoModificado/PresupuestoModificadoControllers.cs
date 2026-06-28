@@ -167,8 +167,10 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
         : ReadOnlyCatalogController<TipoMovimientoResponse>(service, "PkidTipoMovimiento");
 
     [Route("api/[controller]")]
-    public class EgresoDisponibleController(GenericService<VwEgresoDisponible, EgresoDisponibleDto, EgresoDisponibleResponse> service)
-        : ReadOnlyCatalogController<EgresoDisponibleResponse>(service, "PkidEgresoAutorizado");
+    public class EgresoDisponibleController(
+        IAdquisicionCrudAppService<EgresoDisponibleResponse> service,
+        IUserContextService userContext)
+        : PresupuestoModificadoControllerBase<EgresoDisponibleResponse>(service, userContext);
 
     [ApiController]
     [Authorize]

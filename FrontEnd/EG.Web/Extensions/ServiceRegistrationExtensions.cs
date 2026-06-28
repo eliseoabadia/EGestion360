@@ -197,6 +197,13 @@ public static class ApiServiceExtensions
         RegisterCrud<NomTipoPensionResponse>(services, "api/NomTipoPension");
         RegisterCrud<NomCatalogoSimpleResponse>(services, "api/NomCatalogoSimple");
         RegisterCrud<NomEstadoCivilResponse>(services, "api/NomEstadoCivil");
+        RegisterCrud<NomEscolaridadResponse>(services, "api/NomEscolaridad");
+        RegisterCrud<NomDiaSemanaResponse>(services, "api/NomDiaSemana");
+        RegisterCrud<NomMedodoPagoResponse>(services, "api/NomMedodoPago");
+        RegisterCrud<NomParentescoResponse>(services, "api/NomParentesco");
+        RegisterCrud<NomTipoContratacionResponse>(services, "api/NomTipoContratacion");
+        RegisterCrud<NomTipoIncidenciaResponse>(services, "api/NomTipoIncidencia");
+        RegisterCrud<NomTipoJustificacionResponse>(services, "api/NomTipoJustificacion");
         RegisterCrud<NominaProcesoResponse>(services, "api/NomProcesos");
         RegisterCrud<NominaOperacionResponse>(services, "api/NomOperacion");
         RegisterCrud<NominaRhEmpleadoResponse>(services, "api/NomRhEmpleado");

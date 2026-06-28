@@ -1,0 +1,271 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using MudBlazor
+
+@inject IGenericCrudService<NomTablaFiscalResponse> Service
+@inject IGenericCrudService<NomCatalogoSimpleResponse> CatalogoService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="NomTablaFiscalResponse"
+                Title="@DialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="Guardar"
+                ProcessingText="Guardando..."
+                LoadingMessage="Cargando tabla fiscal..."
+                OnConfirm="GuardarCambiosAsync">
+    <MudForm @ref="form">
+        <MudGrid GutterSize="2">
+            @foreach (var field in Fields)
+            {
+                <MudItem xs="12" sm="@GetFieldSize(field)">
+                    @switch (field)
+                    {
+                        case nameof(NomTablaFiscalResponse.Clave):
+                            <MudTextField @bind-Value="item.Clave"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Immediate="false"
+                                          MaxLength="50" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.Descripcion):
+                            <MudTextField @bind-Value="item.Descripcion"
+                                          Label="@GetFieldLabel(field)"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          RequiredError="La descripcion es requerida"
+                                          Immediate="false"
+                                          MaxLength="250" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.Valor1):
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="item.Valor1"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined"
+                                             Culture="@System.Globalization.CultureInfo.InvariantCulture" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.Valor2):
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="item.Valor2"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined"
+                                             Culture="@System.Globalization.CultureInfo.InvariantCulture" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.Valor3):
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="item.Valor3"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined"
+                                             Culture="@System.Globalization.CultureInfo.InvariantCulture" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.Valor4):
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="item.Valor4"
+                                             Label="@GetFieldLabel(field)"
+                                             Variant="Variant.Outlined"
+                                             Culture="@System.Globalization.CultureInfo.InvariantCulture" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.FechaInicio):
+                            <MudDatePicker Date="@item.FechaInicio"
+                                           DateChanged="value => item.FechaInicio = value"
+                                           Label="@GetFieldLabel(field)"
+                                           Variant="Variant.Outlined" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.FechaFin):
+                            <MudDatePicker Date="@item.FechaFin"
+                                           DateChanged="value => item.FechaFin = value"
+                                           Label="@GetFieldLabel(field)"
+                                           Variant="Variant.Outlined" />
+                            break;
+                        case nameof(NomTablaFiscalResponse.FkidCatalogoPadreNom):
+                            <PagedAutocomplete Value="@selectedParent"
+                                               ValueChanged="OnParentChanged"
+                                               Label="@ParentLabel"
+                                               Clearable="true"
+                                               LoadPage="LoadParentPageAsync" />
+                            break;
+                    }
+                </MudItem>
+            }
+
+            @if (Id.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
+                        <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Primary">
+                            <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
+                        </MudSwitch>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    [Parameter] public string Catalogo { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = "Tabla fiscal";
+    [Parameter] public string ParentCatalogo { get; set; } = string.Empty;
+    [Parameter] public string ParentLabel { get; set; } = "Catalogo padre";
+    [Parameter] public IReadOnlyDictionary<string, string> LabelOverrides { get; set; } =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    [Parameter] public string[] Fields { get; set; } =
+    [
+        nameof(NomTablaFiscalResponse.Clave),
+        nameof(NomTablaFiscalResponse.Descripcion),
+        nameof(NomTablaFiscalResponse.Valor1),
+        nameof(NomTablaFiscalResponse.Valor2),
+        nameof(NomTablaFiscalResponse.Valor3),
+        nameof(NomTablaFiscalResponse.Valor4),
+        nameof(NomTablaFiscalResponse.FechaInicio),
+        nameof(NomTablaFiscalResponse.FechaFin)
+    ];
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm form = null!;
+    private NomTablaFiscalResponse item = new();
+    private LookupItem? selectedParent;
+
+    private string DialogTitle => Id.HasValue ? $"Editar {Title}" : $"Nuevo {Title}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        item = new NomTablaFiscalResponse
+        {
+            Catalogo = Catalogo,
+            Activo = true
+        };
+
+        if (Id.HasValue)
+        {
+            var response = await Service.GetByIdAsync(Id.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+            }
+        }
+
+        item.Catalogo = Catalogo;
+        selectedParent = await LoadSelectedParentAsync();
+    }
+
+    private async Task<LookupItem?> LoadSelectedParentAsync()
+    {
+        if (item.FkidCatalogoPadreNom is not > 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var response = await CatalogoService.GetByIdAsync(item.FkidCatalogoPadreNom.Value);
+            return ToLookupItem(response?.Data);
+        }
+        catch
+        {
+            return new LookupItem { Id = item.FkidCatalogoPadreNom.Value, Text = $"{ParentLabel} {item.FkidCatalogoPadreNom.Value}" };
+        }
+    }
+
+    private void OnParentChanged(LookupItem? value)
+    {
+        selectedParent = value;
+        item.FkidCatalogoPadreNom = value?.Id;
+    }
+
+    private async Task<ComboLookupResult> LoadParentPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested || string.IsNullOrWhiteSpace(ParentCatalogo))
+        {
+            return new ComboLookupResult();
+        }
+
+        var filters = new Dictionary<string, object> { [nameof(NomCatalogoSimpleResponse.Catalogo)] = ParentCatalogo };
+        var response = await CatalogoService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            nameof(NomCatalogoSimpleResponse.Descripcion),
+            SortDirection.Ascending,
+            filters);
+
+        return new ComboLookupResult
+        {
+            Items = response.Items?.Select(ToLookupItem).Where(value => value is not null).Select(value => value!) ?? Enumerable.Empty<LookupItem>(),
+            TotalCount = response.TotalCount
+        };
+    }
+
+    private async Task GuardarCambiosAsync()
+    {
+        await form.Validate();
+        if (!form.IsValid)
+        {
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            NormalizeItem();
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Tabla fiscal guardada correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible guardar la tabla fiscal.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void NormalizeItem()
+    {
+        item.Catalogo = Catalogo.Trim();
+        item.Clave = item.Clave?.Trim() ?? string.Empty;
+        item.Descripcion = item.Descripcion?.Trim() ?? string.Empty;
+        item.LegacyTable = item.LegacyTable?.Trim() ?? string.Empty;
+        item.FkidCatalogoPadreNom = selectedParent?.Id ?? item.FkidCatalogoPadreNom;
+    }
+
+    private static LookupItem? ToLookupItem(NomCatalogoSimpleResponse? value)
+        => value == null
+            ? null
+            : new LookupItem
+            {
+                Id = value.PkidCatalogoSimple,
+                Text = value.ClaveNombre
+            };
+
+    private static int GetFieldSize(string field)
+        => field is nameof(NomTablaFiscalResponse.Descripcion) ? 12 : 6;
+
+    private string GetFieldLabel(string field)
+        => LabelOverrides.TryGetValue(field, out var label)
+            ? label
+            : field switch
+        {
+            nameof(NomTablaFiscalResponse.Clave) => "Clave",
+            nameof(NomTablaFiscalResponse.Descripcion) => "Descripcion",
+            nameof(NomTablaFiscalResponse.Valor1) => "Valor 1",
+            nameof(NomTablaFiscalResponse.Valor2) => "Valor 2",
+            nameof(NomTablaFiscalResponse.Valor3) => "Valor 3",
+            nameof(NomTablaFiscalResponse.Valor4) => "Valor 4",
+            nameof(NomTablaFiscalResponse.FechaInicio) => "Fecha inicial",
+            nameof(NomTablaFiscalResponse.FechaFin) => "Fecha final",
+            nameof(NomTablaFiscalResponse.FkidCatalogoPadreNom) => ParentLabel,
+            _ => field
+        };
+}

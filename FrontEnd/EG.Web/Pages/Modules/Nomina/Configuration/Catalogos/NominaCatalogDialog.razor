@@ -517,6 +517,9 @@
         }
 
         return property.Name is "ClaveNombre"
+            or "LegacyId"
+            or "TipoNomina"
+            or "FormaCalculoDescripcion"
             or "EmpresaNominaNombre"
             or "EmpresaNombre"
             or "AreaClave"
@@ -791,6 +794,7 @@
         => propertyName switch
         {
             "FkidFormaCalculoNom" => "Forma de cálculo",
+            "FkidEmpresaSis" when typeof(TItem) == typeof(NomConceptoTabularResponse) => "Tipo de nómina",
             "FkidEmpresaNominaNom" => "Empresa de nómina",
             "FkidPeriodoPagoSis" => "Periodo de pago",
             "FkidTipoPagoNom" => "Tipo de pago",
@@ -816,6 +820,7 @@
         {
             "Pkid" => "ID",
             "PkidConcepto" => "ID",
+            "FkidEmpresaSis" when typeof(TItem) == typeof(NomConceptoTabularResponse) => "Tipo de nómina",
             "FkidEmpresaSis" => "Empresa de nómina",
             "FkidAreaSis" => "Área",
             "FkidEmpresaNominaNom" => "Empresa de nómina",

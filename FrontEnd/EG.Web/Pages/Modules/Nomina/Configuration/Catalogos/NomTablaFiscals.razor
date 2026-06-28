@@ -1,0 +1,431 @@
+@page "/nomina/configuracion/isr/semanal"
+@page "/sis/isrsemanal"
+@page "/nomina/configuracion/isr/quincenal"
+@page "/sis/isrquincenal"
+@page "/nomina/configuracion/isr/mensual"
+@page "/sis/isrmensual"
+@page "/nomina/configuracion/tablas-isr/semanal"
+@page "/nomina/configuracion/tablas-isr/quincenal"
+@page "/nomina/configuracion/tablas-isr/mensual"
+@page "/nomina/configuracion/subsidios/semanal"
+@page "/sis/subsidiosemanal"
+@page "/nomina/configuracion/subsidios/quincenal"
+@page "/sis/subsidioquincenal"
+@page "/nomina/configuracion/subsidios/mensual"
+@page "/sis/subsidiomensual"
+@page "/nomina/configuracion/subsidios-isr/semanal"
+@page "/nomina/configuracion/subsidios-isr/quincenal"
+@page "/nomina/configuracion/subsidios-isr/mensual"
+@page "/nomina/configuracion/impuestos/base-gravable"
+@page "/sis/basegravable"
+@page "/nomina/configuracion/impuestos/locales"
+@page "/nomina/configuracion/imss/clase"
+@page "/sis/imssclase"
+@page "/nomina/configuracion/imss/clase-imss"
+@page "/nomina/configuracion/imss/fraccion"
+@page "/sis/imssfraccion"
+@page "/nomina/configuracion/imss/fraccion-imss"
+@page "/nomina/configuracion/imss/base-gravable"
+@page "/sis/basegravableimss"
+@using System.Globalization
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomTablaFiscalResponse, NomTablaFiscalResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="@CurrentItem.Title"
+                    Subtitle="@CurrentItem.Subtitle"
+                    Icon="@CurrentItem.Icon"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomTablaFiscalResponse"
+                      @ref="table"
+                      @key="loadedPath"
+                      Title="@($"Lista de {CurrentItem.Title}")"
+                      SearchPlaceholder="@($"Buscar {CurrentItem.Title.ToLowerInvariant()}...")"
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh>
+                        <MudTableSortLabel SortLabel="@column.Name" T="NomTablaFiscalResponse">
+                            @GetColumnLabel(column)
+                        </MudTableSortLabel>
+                    </MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidTablaFiscal))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidTablaFiscal))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private static readonly string[] FiscalFields =
+    [
+        nameof(NomTablaFiscalResponse.Clave),
+        nameof(NomTablaFiscalResponse.Descripcion),
+        nameof(NomTablaFiscalResponse.Valor1),
+        nameof(NomTablaFiscalResponse.Valor2),
+        nameof(NomTablaFiscalResponse.Valor3),
+        nameof(NomTablaFiscalResponse.Valor4),
+        nameof(NomTablaFiscalResponse.FechaInicio),
+        nameof(NomTablaFiscalResponse.FechaFin)
+    ];
+
+    private static readonly string[] FiscalColumns =
+    [
+        nameof(NomTablaFiscalResponse.PkidTablaFiscal),
+        nameof(NomTablaFiscalResponse.Clave),
+        nameof(NomTablaFiscalResponse.Descripcion),
+        nameof(NomTablaFiscalResponse.Valor1),
+        nameof(NomTablaFiscalResponse.Valor2),
+        nameof(NomTablaFiscalResponse.Valor3),
+        nameof(NomTablaFiscalResponse.Valor4),
+        nameof(NomTablaFiscalResponse.FechaInicio),
+        nameof(NomTablaFiscalResponse.FechaFin),
+        nameof(NomTablaFiscalResponse.Activo)
+    ];
+
+    private static readonly string[] ParentFiscalFields =
+    [
+        nameof(NomTablaFiscalResponse.Clave),
+        nameof(NomTablaFiscalResponse.Descripcion),
+        nameof(NomTablaFiscalResponse.FkidCatalogoPadreNom),
+        nameof(NomTablaFiscalResponse.Valor1),
+        nameof(NomTablaFiscalResponse.Valor2),
+        nameof(NomTablaFiscalResponse.Valor3),
+        nameof(NomTablaFiscalResponse.Valor4),
+        nameof(NomTablaFiscalResponse.FechaInicio),
+        nameof(NomTablaFiscalResponse.FechaFin)
+    ];
+
+    private static readonly string[] ParentFiscalColumns =
+    [
+        nameof(NomTablaFiscalResponse.PkidTablaFiscal),
+        nameof(NomTablaFiscalResponse.Clave),
+        nameof(NomTablaFiscalResponse.Descripcion),
+        nameof(NomTablaFiscalResponse.FkidCatalogoPadreNom),
+        nameof(NomTablaFiscalResponse.Valor1),
+        nameof(NomTablaFiscalResponse.Valor2),
+        nameof(NomTablaFiscalResponse.Valor3),
+        nameof(NomTablaFiscalResponse.Valor4),
+        nameof(NomTablaFiscalResponse.Activo)
+    ];
+
+    private static readonly IReadOnlyDictionary<string, string> IsrLabels =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [nameof(NomTablaFiscalResponse.Valor1)] = "Limite inferior",
+            [nameof(NomTablaFiscalResponse.Valor2)] = "Limite superior",
+            [nameof(NomTablaFiscalResponse.Valor3)] = "Cuota fija",
+            [nameof(NomTablaFiscalResponse.Valor4)] = "Porcentaje",
+            [nameof(NomTablaFiscalResponse.FechaInicio)] = "Desde",
+            [nameof(NomTablaFiscalResponse.FechaFin)] = "Hasta"
+        };
+
+    private static readonly IReadOnlyDictionary<string, string> BaseLabels =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [nameof(NomTablaFiscalResponse.FkidCatalogoPadreNom)] = "Relacion",
+            [nameof(NomTablaFiscalResponse.Valor1)] = "Porcentaje",
+            [nameof(NomTablaFiscalResponse.Valor2)] = "Tope semanal",
+            [nameof(NomTablaFiscalResponse.Valor3)] = "Tope quincenal",
+            [nameof(NomTablaFiscalResponse.Valor4)] = "Tope mensual"
+        };
+
+    private static readonly IReadOnlyDictionary<string, FiscalPageItem> ItemsByPath =
+        new Dictionary<string, FiscalPageItem>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["/nomina/configuracion/isr/semanal"] = Fiscal("ISR Semanal", "Tabla_ISR_Semanal", "ISR_Semanal", IsrLabels),
+            ["/sis/isrsemanal"] = Fiscal("ISR Semanal", "Tabla_ISR_Semanal", "ISR_Semanal", IsrLabels),
+            ["/nomina/configuracion/isr/quincenal"] = Fiscal("ISR Quincenal", "Tabla_ISR_Quincenal", "ISR_Quincenal", IsrLabels),
+            ["/sis/isrquincenal"] = Fiscal("ISR Quincenal", "Tabla_ISR_Quincenal", "ISR_Quincenal", IsrLabels),
+            ["/nomina/configuracion/isr/mensual"] = Fiscal("ISR Mensual", "Tabla_ISR_Mensual", "ISR_Mensual", IsrLabels),
+            ["/sis/isrmensual"] = Fiscal("ISR Mensual", "Tabla_ISR_Mensual", "ISR_Mensual", IsrLabels),
+            ["/nomina/configuracion/tablas-isr/semanal"] = Fiscal("ISR Semanal", "Tabla_ISR_Semanal", "ISR_Semanal", IsrLabels),
+            ["/nomina/configuracion/tablas-isr/quincenal"] = Fiscal("ISR Quincenal", "Tabla_ISR_Quincenal", "ISR_Quincenal", IsrLabels),
+            ["/nomina/configuracion/tablas-isr/mensual"] = Fiscal("ISR Mensual", "Tabla_ISR_Mensual", "ISR_Mensual", IsrLabels),
+
+            ["/nomina/configuracion/subsidios/semanal"] = Fiscal("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Subsidio_Semanal", IsrLabels),
+            ["/sis/subsidiosemanal"] = Fiscal("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Subsidio_Semanal", IsrLabels),
+            ["/nomina/configuracion/subsidios/quincenal"] = Fiscal("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Subsidio_Quincenal", IsrLabels),
+            ["/sis/subsidioquincenal"] = Fiscal("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Subsidio_Quincenal", IsrLabels),
+            ["/nomina/configuracion/subsidios/mensual"] = Fiscal("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Subsidio_Mensual", IsrLabels),
+            ["/sis/subsidiomensual"] = Fiscal("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Subsidio_Mensual", IsrLabels),
+            ["/nomina/configuracion/subsidios-isr/semanal"] = Fiscal("Subsidio ISR Semanal", "Subsidio_ISR_Semanal", "Subsidio_Semanal", IsrLabels),
+            ["/nomina/configuracion/subsidios-isr/quincenal"] = Fiscal("Subsidio ISR Quincenal", "Subsidio_ISR_Quincenal", "Subsidio_Quincenal", IsrLabels),
+            ["/nomina/configuracion/subsidios-isr/mensual"] = Fiscal("Subsidio ISR Mensual", "Subsidio_ISR_Mensual", "Subsidio_Mensual", IsrLabels),
+
+            ["/nomina/configuracion/impuestos/base-gravable"] = Fiscal("Base Gravable", "Base_Gravable", "Base_Gravable", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/sis/basegravable"] = Fiscal("Base Gravable", "Base_Gravable", "Base_Gravable", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/nomina/configuracion/impuestos/locales"] = Fiscal("Impuestos Locales", "Impuestos_Locales", "Impuesto_Local", BaseLabels, ParentFiscalFields, ParentFiscalColumns, "Estado", "Estado"),
+            ["/nomina/configuracion/imss/clase"] = Fiscal("Clase IMSS", "Clase_IMSS", "IMSS_Clase", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/sis/imssclase"] = Fiscal("Clase IMSS", "Clase_IMSS", "IMSS_Clase", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/nomina/configuracion/imss/clase-imss"] = Fiscal("Clase IMSS", "Clase_IMSS", "IMSS_Clase", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/nomina/configuracion/imss/fraccion"] = Fiscal("Fraccion IMSS", "Fraccion_IMSS", "IMSS_Fraccion", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/sis/imssfraccion"] = Fiscal("Fraccion IMSS", "Fraccion_IMSS", "IMSS_Fraccion", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/nomina/configuracion/imss/fraccion-imss"] = Fiscal("Fraccion IMSS", "Fraccion_IMSS", "IMSS_Fraccion", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/nomina/configuracion/imss/base-gravable"] = Fiscal("Base Gravable IMSS", "Base_Gravable_IMSS", "Base_Gravable_IMSS", BaseLabels, ParentFiscalFields, ParentFiscalColumns),
+            ["/sis/basegravableimss"] = Fiscal("Base Gravable IMSS", "Base_Gravable_IMSS", "Base_Gravable_IMSS", BaseLabels, ParentFiscalFields, ParentFiscalColumns)
+        };
+
+    private GenericTable<NomTablaFiscalResponse> table = null!;
+    private string loadedPath = string.Empty;
+    private bool pendingRouteReload;
+
+    protected override string ModuleName => CurrentItem.ModuleName;
+    protected override string SubModuleName => CurrentItem.SubModuleName;
+    protected override Type CreateDialogType => typeof(NomTablaFiscalDialog);
+    protected override Type EditDialogType => typeof(NomTablaFiscalDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomTablaFiscalResponse>);
+
+    private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+
+    private FiscalPageItem CurrentItem =>
+        ItemsByPath.TryGetValue(CurrentPath, out var item)
+            ? item
+            : Fiscal("Tabla Fiscal", "Tabla_Fiscal", "Tabla_Fiscal", IsrLabels);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomTablaFiscalResponse), CurrentItem.Columns);
+
+    protected override string GetDefaultSortLabel() => nameof(NomTablaFiscalResponse.Clave);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var path = CurrentPath;
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
+        loadedPath = path;
+
+        if (!isRouteChange)
+        {
+            return;
+        }
+
+        SearchString = string.Empty;
+        CurrentPage = 1;
+        SortLabel = GetDefaultSortLabel();
+        SortDirection = SortDirection.None;
+        Elements.Clear();
+        TotalCount = 0;
+        pendingRouteReload = true;
+
+        IsInitialized = false;
+        HasAccess = false;
+        await VerifyAccess();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (pendingRouteReload && table != null && HasAccess)
+        {
+            pendingRouteReload = false;
+            await table.ReloadData();
+        }
+    }
+
+    protected override async Task<TableData<NomTablaFiscalResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+        StateHasChanged();
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                BuildCatalogFilters());
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                Snackbar.Add(response?.Message ?? "No fue posible obtener la tabla fiscal.", Severity.Error);
+            }
+
+            return new TableData<NomTablaFiscalResponse>
+            {
+                Items = Elements,
+                TotalItems = TotalCount
+            };
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task CreateItem()
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            if (!CanCreate)
+            {
+                Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+                return;
+            }
+
+            var dialog = await DialogService.ShowAsync<NomTablaFiscalDialog>(
+                $"Crear {CurrentItem.Title}",
+                BuildDialogParameters(),
+                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+            var result = await dialog.Result;
+            if (result is { Canceled: false })
+            {
+                await ReloadData();
+            }
+        }, "Operacion en proceso...");
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            if (!CanUpdate)
+            {
+                Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+                return;
+            }
+
+            var parameters = BuildDialogParameters();
+            parameters["Id"] = id;
+
+            var dialog = await DialogService.ShowAsync<NomTablaFiscalDialog>(
+                $"Editar {CurrentItem.Title}",
+                parameters,
+                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+            var result = await dialog.Result;
+            if (result is { Canceled: false })
+            {
+                await ReloadData();
+            }
+        }, "Operacion en proceso...");
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomTablaFiscalResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(GetColumnLabel, column => FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "la tabla fiscal";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private DialogParameters BuildDialogParameters() => new()
+    {
+        ["Catalogo"] = CurrentItem.Catalogo,
+        ["Title"] = CurrentItem.Title,
+        ["Fields"] = CurrentItem.Fields,
+        ["ParentCatalogo"] = CurrentItem.ParentCatalogo,
+        ["ParentLabel"] = CurrentItem.ParentLabel,
+        ["LabelOverrides"] = CurrentItem.LabelOverrides
+    };
+
+    private Dictionary<string, object> BuildCatalogFilters()
+        => new() { [nameof(NomTablaFiscalResponse.Catalogo)] = CurrentItem.Catalogo };
+
+    private string GetColumnLabel(PropertyInfo column)
+        => CurrentItem.LabelOverrides.TryGetValue(column.Name, out var label)
+            ? label
+            : NominaCatalogUi.GetLabel(column);
+
+    private static string FormatValue(object? value)
+        => value switch
+        {
+            null => string.Empty,
+            DateTime date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            decimal number => number.ToString("0.####", CultureInfo.InvariantCulture),
+            bool flag => flag ? "Si" : "No",
+            _ => value.ToString() ?? string.Empty
+        };
+
+    private static FiscalPageItem Fiscal(
+        string title,
+        string subModuleName,
+        string catalogo,
+        IReadOnlyDictionary<string, string> labelOverrides,
+        string[]? fields = null,
+        string[]? columns = null,
+        string parentCatalogo = "",
+        string parentLabel = "Catalogo padre")
+        => new(
+            title,
+            "Tabla fiscal migrada desde BD_GRP_INVEA",
+            Icons.Material.Filled.Percent,
+            title.StartsWith("ISR", StringComparison.OrdinalIgnoreCase) ? "Tablas_ISR" :
+                title.StartsWith("Subsidio", StringComparison.OrdinalIgnoreCase) ? "Subsidios_ISR" :
+                title.Contains("IMSS", StringComparison.OrdinalIgnoreCase) ? "IMSS" : "Impuestos",
+            subModuleName,
+            catalogo,
+            parentCatalogo,
+            parentLabel,
+            fields ?? FiscalFields,
+            columns ?? FiscalColumns,
+            labelOverrides);
+
+    private sealed record FiscalPageItem(
+        string Title,
+        string Subtitle,
+        string Icon,
+        string ModuleName,
+        string SubModuleName,
+        string Catalogo,
+        string ParentCatalogo,
+        string ParentLabel,
+        string[] Fields,
+        string[] Columns,
+        IReadOnlyDictionary<string, string> LabelOverrides);
+}

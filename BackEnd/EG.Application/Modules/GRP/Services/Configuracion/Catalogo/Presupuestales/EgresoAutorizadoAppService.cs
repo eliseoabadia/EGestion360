@@ -4,29 +4,39 @@ using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 {
     public class EgresoAutorizadoAppService
-        : AdquisicionCrudAppService<EgresoAutorizado, VwEgresoAutorizado, EgresoAutorizadoDto, EgresoAutorizadoResponse>,
+        : StoredProcedureCrudAppService<EgresoAutorizado, VwEgresoAutorizado, EgresoAutorizadoDto, EgresoAutorizadoResponse>,
             IEgresoAutorizadoAppService
     {
+        private const string StoredProcedure = "PRES.SP_MantenimientoEgresoAutorizado";
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public EgresoAutorizadoAppService(
             GenericService<EgresoAutorizado, EgresoAutorizadoDto, EgresoAutorizadoResponse> service,
             GenericService<VwEgresoAutorizado, EgresoAutorizadoDto, EgresoAutorizadoResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
+                context,
                 "PkidEgresoAutorizado",
                 "Presupuesto autorizado",
-                (dto, id) => dto.PkidEgresoAutorizado = id)
+                (dto, id) => dto.PkidEgresoAutorizado = id,
+                StoredProcedure,
+                response => response.PkidEgresoAutorizado,
+                BuildParameters)
         {
             _context = context;
+            _userContext = userContext;
         }
 
         public override Task<PagedResult<EgresoAutorizadoResponse>> CreateAsync(EgresoAutorizadoResponse response, int usuarioActual)
@@ -97,9 +107,36 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 };
             }
 
-            var result = await base.DeleteAsync(id);
+            try
+            {
+                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
+                    _context,
+                    StoredProcedure,
+                    BuildParameters(3, id, null, _userContext.GetCurrentUserId()));
 
-            return result;
+                return new PagedResult<bool>
+                {
+                    Success = true,
+                    Message = string.IsNullOrWhiteSpace(spResult.Mensaje)
+                        ? "Presupuesto autorizado eliminado correctamente."
+                        : spResult.Mensaje,
+                    Code = "SUCCESS",
+                    Data = true,
+                    Items = new List<bool> { true },
+                    TotalCount = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<bool>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    Data = false,
+                    TotalCount = 0
+                };
+            }
         }
 
         public async Task<PagedResult<bool>> RegresarAProyectadoAsync(int pkidEgresoAutorizado, int usuarioActual)
@@ -318,6 +355,40 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             response.Noviembre = existing.Noviembre;
             response.Diciembre = existing.Diciembre;
             response.Total = existing.Total;
+        }
+
+        private static SqlParameter[] BuildParameters(int action, int? id, EgresoAutorizadoResponse? response, int? usuarioActual)
+        {
+            return new[]
+            {
+                StoredProcedureExecutor.Param("@Action", action),
+                StoredProcedureExecutor.Param("@PKIdEgresoAutorizado", id ?? response?.PkidEgresoAutorizado),
+                StoredProcedureExecutor.Param("@FKIdPrograma_PRES", response?.FkidProgramaPres),
+                StoredProcedureExecutor.Param("@FKIdFuenteFinanciamiento_PRES", response?.FkidFuenteFinanciamientoPres),
+                StoredProcedureExecutor.Param("@FKIdTipoGasto_PRES", response?.FkidTipoGastoPres),
+                StoredProcedureExecutor.Param("@FKIdDigitoIdentificador_PRES", response?.FkidDigitoIdentificadorPres),
+                StoredProcedureExecutor.Param("@FKIdDestinoGasto_PRES", response?.FkidDestinoGastoPres),
+                StoredProcedureExecutor.Param("@FKIdPY_PRES", response?.FkidPyPres),
+                StoredProcedureExecutor.Param("@FKIdPartida_CONTA", response?.FkidPartidaConta),
+                StoredProcedureExecutor.Param("@FKIdArea_SIS", response?.FkidAreaSis),
+                StoredProcedureExecutor.Param("@Descripcion", response?.Descripcion),
+                StoredProcedureExecutor.Param("@Fecha", response?.Fecha == default ? null : response?.Fecha.ToDateTime(TimeOnly.MinValue)),
+                StoredProcedureExecutor.Param("@FKIdPoliza_CONTA", response?.FkidPolizaConta),
+                StoredProcedureExecutor.Param("@Enero", response?.Enero),
+                StoredProcedureExecutor.Param("@Febrero", response?.Febrero),
+                StoredProcedureExecutor.Param("@Marzo", response?.Marzo),
+                StoredProcedureExecutor.Param("@Abril", response?.Abril),
+                StoredProcedureExecutor.Param("@Mayo", response?.Mayo),
+                StoredProcedureExecutor.Param("@Junio", response?.Junio),
+                StoredProcedureExecutor.Param("@Julio", response?.Julio),
+                StoredProcedureExecutor.Param("@Agosto", response?.Agosto),
+                StoredProcedureExecutor.Param("@Septiembre", response?.Septiembre),
+                StoredProcedureExecutor.Param("@Octubre", response?.Octubre),
+                StoredProcedureExecutor.Param("@Noviembre", response?.Noviembre),
+                StoredProcedureExecutor.Param("@Diciembre", response?.Diciembre),
+                StoredProcedureExecutor.Param("@IdUser", usuarioActual),
+                StoredProcedureExecutor.Param("@FKIdEgresoProyectado_PRES", response?.FkidEgresoProyectadoPres)
+            };
         }
     }
 }

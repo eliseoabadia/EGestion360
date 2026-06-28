@@ -1,0 +1,430 @@
+@page "/Presupuesto/Egreso/Presupuesto_Disponible"
+@using EG.Dommain.DTOs.Responses
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@using System.Globalization
+@implements IDisposable
+@inject AnioPresupuestalStateService AnioStateService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+@inject IJSRuntime JS
+@inherits BaseCrudPage<EgresoDisponibleResponse, EgresoDisponibleResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column presupuesto-disponible-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Presupuesto Disponible PEF"
+                    Subtitle="Saldo disponible por programa, partida y area"
+                    Icon="@Icons.Material.Filled.AccountBalanceWallet"
+                    CanCreate="false"
+                    OnRefresh="ReloadData" />
+
+        <section class="dashboard-strip">
+            <div class="hero-panel">
+                <div>
+                    <span class="metric-label">Disponible visible</span>
+                    <strong>@Money(VisibleTotal)</strong>
+                    <small>@TotalCount.ToString("N0", NumberCulture) partidas del ejercicio @TextOrDash(AnioStateService.AnioTexto)</small>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.Savings" Size="Size.Large" />
+            </div>
+            <div class="metric-panel">
+                <span class="metric-label">Promedio por partida</span>
+                <strong>@Money(AverageVisible)</strong>
+                <small>Lectura rapida del saldo por registro</small>
+            </div>
+            <div class="metric-panel">
+                <span class="metric-label">Mes con mayor saldo</span>
+                <strong>@PeakMonth.Label</strong>
+                <small>@Money(PeakMonth.Amount)</small>
+            </div>
+            <div class="metric-panel">
+                <span class="metric-label">Moneda base</span>
+                <strong>@_currencyName</strong>
+                <small>@_currencySymbol con separador decimal de punto</small>
+            </div>
+        </section>
+
+        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericTable TItem="EgresoDisponibleResponse"
+                          @ref="table"
+                          Title="Partidas disponibles"
+                          SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
+                          ShowExportButton="@CanExport"
+                          ServerDataFunc="LoadServerData"
+                          ExportFunc="ExportToExcel"
+                          SearchString="@SearchString"
+                          SearchStringChanged="value => SearchString = value"
+                          OnSearch="OnSearch"
+                          Loading="@Loading">
+                <Header>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoDisponibleResponse">Programa</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoDisponibleResponse">Partida</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoDisponibleResponse">Area</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="EgresoDisponibleResponse">Clasificacion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoDisponibleResponse">Descripcion</MudTableSortLabel></MudTh>
+                    <MudTh>Meses</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoDisponibleResponse">Disponible</MudTableSortLabel></MudTh>
+                </Header>
+
+                <Row Context="item">
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
+                        <span>@TextOrDash(item.ProgramaDescripcion)</span>
+                    </MudTd>
+                    <MudTd>
+                        <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
+                        <span>@TextOrDash(item.PartidaDescripcion)</span>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
+                    <MudTd>
+                        <span>FF: @TextOrDash(item.FuenteFinanciamientoClaveNombre)</span><br />
+                        <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span><br />
+                        <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span><br />
+                        <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
+                        <span>PY: @TextOrDash(item.PyClaveNombre)</span>
+                    </MudTd>
+                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
+                    <MudTd>
+                        <div class="month-spark">
+                            @foreach (var month in GetMonths(item))
+                            {
+                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
+                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
+                            }
+                        </div>
+                    </MudTd>
+                    <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .presupuesto-disponible-page .dashboard-strip {
+        display: grid;
+        grid-template-columns: minmax(280px, 1.35fr) repeat(3, minmax(180px, 1fr));
+        gap: 10px;
+        margin: 8px 0 12px;
+    }
+
+    .presupuesto-disponible-page .hero-panel,
+    .presupuesto-disponible-page .metric-panel {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 12px 14px;
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .presupuesto-disponible-page .hero-panel {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        border-left: 4px solid var(--mud-palette-info);
+    }
+
+    .presupuesto-disponible-page .metric-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .presupuesto-disponible-page .metric-label {
+        display: block;
+        font-size: .72rem;
+        color: var(--mud-palette-text-secondary);
+        text-transform: uppercase;
+    }
+
+    .presupuesto-disponible-page .dashboard-strip strong {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--mud-palette-text-primary);
+        font-size: 1.15rem;
+        line-height: 1.35;
+    }
+
+    .presupuesto-disponible-page .hero-panel strong {
+        font-size: 1.55rem;
+    }
+
+    .presupuesto-disponible-page .dashboard-strip small {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .presupuesto-disponible-page .main-cell {
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .presupuesto-disponible-page td span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .month-spark {
+        display: grid;
+        grid-template-columns: repeat(12, 6px);
+        align-items: end;
+        gap: 3px;
+        height: 32px;
+        min-width: 105px;
+    }
+
+    .month-spark span {
+        display: block;
+        min-height: 4px;
+        border-radius: 3px 3px 0 0;
+        background: var(--eg-primary);
+    }
+
+    @@media (max-width: 1100px) {
+        .presupuesto-disponible-page .dashboard-strip {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .presupuesto-disponible-page .dashboard-strip {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<EgresoDisponibleResponse> table = null!;
+    private string _currencySymbol = "$";
+    private string _currencyName = "Peso Mexicano";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+    private decimal VisibleTotal => Elements.Sum(x => x.Total ?? 0m);
+    private decimal AverageVisible => Elements.Count == 0 ? 0m : VisibleTotal / Elements.Count;
+    private (string Label, decimal Amount) PeakMonth => GetVisibleMonthTotals()
+        .OrderByDescending(x => x.Amount)
+        .FirstOrDefault();
+
+    protected override string ModuleName => "Egreso";
+    protected override string SubModuleName => "Presupuesto_Disponible";
+    protected override Type CreateDialogType => typeof(DeleteDialog<EgresoDisponibleResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<EgresoDisponibleResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<EgresoDisponibleResponse>);
+    protected override string GetDefaultSortLabel() => "ProgramaClave";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+        await LoadCurrencyAsync();
+    }
+
+    protected override async Task<TableData<EgresoDisponibleResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        Loading = true;
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            if (!AnioStateService.AnioId.HasValue)
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                return new TableData<EgresoDisponibleResponse> { Items = Elements, TotalItems = TotalCount };
+            }
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value });
+
+            Elements = response?.Success == true ? response.Items?.ToList() ?? [] : [];
+            TotalCount = response?.Success == true ? response.TotalCount : 0;
+
+            if (response?.Success == false && !string.IsNullOrWhiteSpace(response.Message))
+                Snackbar.Add(response.Message, Severity.Error);
+
+            return new TableData<EgresoDisponibleResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            return new TableData<EgresoDisponibleResponse> { Items = [], TotalItems = 0 };
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        if (!AnioStateService.AnioId.HasValue)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+
+        try
+        {
+            var response = await Service.GetAllPaginadoAsync(
+                1,
+                int.MaxValue,
+                SearchString,
+                string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel,
+                SortDirection,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value });
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"{SubModuleName}_{AnioStateService.AnioClave}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<EgresoDisponibleResponse> items) => items.Select(x => new
+    {
+        ID = x.PkidEgresoAutorizado,
+        Anio = x.AnioClave,
+        Programa = x.ProgramaClaveNombre,
+        Partida = x.PartidaClaveNombre,
+        Area = x.AreaNombre,
+        FuenteFinanciamiento = x.FuenteFinanciamientoClaveNombre,
+        TipoGasto = x.TipoGastoClaveNombre,
+        DigitoIdentificador = x.DigitoIdentificadorClaveNombre,
+        DestinoGasto = x.DestinoGastoClaveNombre,
+        PY = x.PyClaveNombre,
+        x.Descripcion,
+        Fecha = x.Fecha.ToString("dd/MM/yyyy", DateCulture),
+        x.Enero,
+        x.Febrero,
+        x.Marzo,
+        x.Abril,
+        x.Mayo,
+        x.Junio,
+        x.Julio,
+        x.Agosto,
+        x.Septiembre,
+        x.Octubre,
+        x.Noviembre,
+        x.Diciembre,
+        x.Total
+    });
+
+    protected override Task<string> GetItemNameForDelete(int id) =>
+        Task.FromResult(Elements.FirstOrDefault(x => x.PkidEgresoAutorizado == id)?.Descripcion ?? "el presupuesto disponible");
+
+    protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (!int.TryParse(userIdString, out var userId) || userId <= 0)
+                return;
+
+            var response = await UsuarioService.GetByIdAsync(userId);
+            if (response?.Success != true || response.Data == null)
+                return;
+
+            _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+            _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
+        }
+        catch
+        {
+        }
+    }
+
+    private string Money(decimal amount) => $"{_currencySymbol}{amount.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static int GetMonthHeight(decimal amount, decimal total) => amount <= 0 || total <= 0 ? 10 : Math.Clamp((int)Math.Round(amount / total * 300m), 12, 100);
+
+    private static IEnumerable<(string Label, decimal Amount)> GetMonths(EgresoDisponibleResponse item)
+    {
+        yield return ("Ene", item.Enero ?? 0m);
+        yield return ("Feb", item.Febrero ?? 0m);
+        yield return ("Mar", item.Marzo ?? 0m);
+        yield return ("Abr", item.Abril ?? 0m);
+        yield return ("May", item.Mayo ?? 0m);
+        yield return ("Jun", item.Junio ?? 0m);
+        yield return ("Jul", item.Julio ?? 0m);
+        yield return ("Ago", item.Agosto ?? 0m);
+        yield return ("Sep", item.Septiembre ?? 0m);
+        yield return ("Oct", item.Octubre ?? 0m);
+        yield return ("Nov", item.Noviembre ?? 0m);
+        yield return ("Dic", item.Diciembre ?? 0m);
+    }
+
+    private IEnumerable<(string Label, decimal Amount)> GetVisibleMonthTotals()
+    {
+        yield return ("Enero", Elements.Sum(x => x.Enero ?? 0m));
+        yield return ("Febrero", Elements.Sum(x => x.Febrero ?? 0m));
+        yield return ("Marzo", Elements.Sum(x => x.Marzo ?? 0m));
+        yield return ("Abril", Elements.Sum(x => x.Abril ?? 0m));
+        yield return ("Mayo", Elements.Sum(x => x.Mayo ?? 0m));
+        yield return ("Junio", Elements.Sum(x => x.Junio ?? 0m));
+        yield return ("Julio", Elements.Sum(x => x.Julio ?? 0m));
+        yield return ("Agosto", Elements.Sum(x => x.Agosto ?? 0m));
+        yield return ("Septiembre", Elements.Sum(x => x.Septiembre ?? 0m));
+        yield return ("Octubre", Elements.Sum(x => x.Octubre ?? 0m));
+        yield return ("Noviembre", Elements.Sum(x => x.Noviembre ?? 0m));
+        yield return ("Diciembre", Elements.Sum(x => x.Diciembre ?? 0m));
+    }
+
+    public void Dispose() => AnioStateService.OnAnioChanged -= OnAnioChanged;
+}

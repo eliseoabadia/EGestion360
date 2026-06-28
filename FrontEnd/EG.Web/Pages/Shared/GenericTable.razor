@@ -183,7 +183,8 @@
     [Parameter] public bool ShowAddButton { get; set; }
     [Parameter] public bool ShowBusyOverlay { get; set; } = true;
     [Parameter] public bool EnableAutoColumnSelector { get; set; } = true;
-    [Parameter] public int AutoColumnSelectorThreshold { get; set; } = 5;
+    [Parameter] public int AutoColumnSelectorThreshold { get; set; } = 0;
+    [Parameter] public bool EnableColumnInteractions { get; set; } = true;
     [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
     [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
     [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
@@ -228,17 +229,32 @@
     private bool actionInProgress = false;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
     private string CurrentBusyMessage => actionInProgress ? ActionLoadingMessage : LoadingMessage;
-    private bool ShowAutoColumnSelector => EnableAutoColumnSelector && autoColumnOptions.Count > AutoColumnSelectorThreshold;
+    private bool ShowAutoColumnSelector => EnableAutoColumnSelector && autoColumnOptions.Count > Math.Max(0, AutoColumnSelectorThreshold);
     private int VisibleAutoColumnCount => autoColumnOptions.Count(column => IsAutoColumnVisible(column.Index));
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!EnableAutoColumnSelector)
+        if (!EnableAutoColumnSelector && !EnableColumnInteractions)
         {
             return;
         }
 
-        await SyncAutoColumnOptionsAsync();
+        if (EnableAutoColumnSelector)
+        {
+            await SyncAutoColumnOptionsAsync();
+        }
+
+        if (EnableColumnInteractions)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("egestionTableColumns.setupInteractions", tableElementId);
+            }
+            catch (JSException)
+            {
+                // Optional browser enhancement; the table remains usable without it.
+            }
+        }
     }
 
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)

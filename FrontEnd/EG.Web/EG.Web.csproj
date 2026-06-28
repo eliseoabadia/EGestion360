@@ -5,11 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
-    <PublishTrimmed>false</PublishTrimmed>
-    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
+    <PublishTrimmed>true</PublishTrimmed>
+    <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
     <RunAOTCompilation>false</RunAOTCompilation>
-    <WasmInitialHeapSize>134217728</WasmInitialHeapSize>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <BlazorWebAssemblyLoadAllGlobalizationData>false</BlazorWebAssemblyLoadAllGlobalizationData>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <WasmInitialHeapSize>67108864</WasmInitialHeapSize>
   </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.Server" Value="false" />
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Services\Almacen\**" />
@@ -19,8 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise.Snackbar" Version="2.2.0" />
-    <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />

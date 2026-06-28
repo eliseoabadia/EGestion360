@@ -141,7 +141,7 @@
     opacity: 0.7;
 }
 
-.search-result-item i {
+.search-result-icon {
     width: 18px;
     flex: 0 0 18px;
     color: var(--mud-palette-primary);
@@ -155,7 +155,7 @@
     color: var(--eg-accent);
 }
 
-.bootstrap-sidebar.morena .search-result-item i {
+.bootstrap-sidebar.morena .search-result-icon {
     color: var(--eg-accent);
 }
 

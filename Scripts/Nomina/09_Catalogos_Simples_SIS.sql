@@ -7,6 +7,9 @@ SET QUOTED_IDENTIFIER ON;
 IF SCHEMA_ID(N'NOM') IS NULL
     EXEC(N'CREATE SCHEMA NOM');
 
+IF SCHEMA_ID(N'SIS') IS NULL
+    EXEC(N'CREATE SCHEMA SIS');
+
 IF OBJECT_ID(N'NOM.CatalogoSimple', N'U') IS NULL
 BEGIN
     CREATE TABLE NOM.CatalogoSimple
@@ -78,6 +81,240 @@ CREATE TABLE #CatalogoSimpleSeed
 
 DECLARE @Now DATETIME2(6) = SYSDATETIME();
 
+IF OBJECT_ID(N'SIS.Escolaridad', N'U') IS NULL
+BEGIN
+    CREATE TABLE SIS.Escolaridad
+    (
+        PKIdEscolaridad INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_SIS_Escolaridad PRIMARY KEY,
+        LegacyId INT NULL,
+        Descripcion NVARCHAR(50) NOT NULL,
+        UsuarioCreacion INT NULL,
+        FechaCreacion DATETIME2(6) NULL,
+        UsuarioModificacion INT NULL,
+        FechaModificacion DATETIME2(6) NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_SIS_Escolaridad_Activo DEFAULT (1)
+    );
+END;
+
+IF COL_LENGTH(N'SIS.Escolaridad', N'LegacyId') IS NULL
+BEGIN
+    ALTER TABLE SIS.Escolaridad ADD LegacyId INT NULL;
+END;
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_SIS_Escolaridad_LegacyId' AND object_id = OBJECT_ID(N'SIS.Escolaridad'))
+BEGIN
+    CREATE UNIQUE INDEX UX_SIS_Escolaridad_LegacyId
+        ON SIS.Escolaridad (LegacyId)
+        WHERE LegacyId IS NOT NULL;
+END;
+
+SET IDENTITY_INSERT SIS.Escolaridad ON;
+
+MERGE SIS.Escolaridad AS TARGET
+USING
+(
+    SELECT
+        Pk_IdEscolaridad AS PKIdEscolaridad,
+        Pk_IdEscolaridad AS LegacyId,
+        Descripcion,
+        CT_CreatedBy AS UsuarioCreacion,
+        COALESCE(CT_CreatedDate, @Now) AS FechaCreacion,
+        CT_ModifiedBy AS UsuarioModificacion,
+        CT_ModifiedDate AS FechaModificacion,
+        COALESCE(CT_LIVE, 1) AS Activo
+    FROM [BD_GRP_INVEA].dbo.SIS_Escolaridad
+) AS SOURCE
+ON TARGET.LegacyId = SOURCE.LegacyId
+WHEN MATCHED THEN
+    UPDATE SET
+        TARGET.Descripcion = SOURCE.Descripcion,
+        TARGET.UsuarioCreacion = COALESCE(TARGET.UsuarioCreacion, SOURCE.UsuarioCreacion),
+        TARGET.FechaCreacion = COALESCE(TARGET.FechaCreacion, SOURCE.FechaCreacion),
+        TARGET.UsuarioModificacion = SOURCE.UsuarioModificacion,
+        TARGET.FechaModificacion = SOURCE.FechaModificacion,
+        TARGET.Activo = SOURCE.Activo
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT
+    (
+        PKIdEscolaridad,
+        LegacyId,
+        Descripcion,
+        UsuarioCreacion,
+        FechaCreacion,
+        UsuarioModificacion,
+        FechaModificacion,
+        Activo
+    )
+    VALUES
+    (
+        SOURCE.PKIdEscolaridad,
+        SOURCE.LegacyId,
+        SOURCE.Descripcion,
+        SOURCE.UsuarioCreacion,
+        SOURCE.FechaCreacion,
+        SOURCE.UsuarioModificacion,
+        SOURCE.FechaModificacion,
+        SOURCE.Activo
+    );
+
+SET IDENTITY_INSERT SIS.Escolaridad OFF;
+
+IF OBJECT_ID(N'SIS.DiaSemana', N'U') IS NULL
+BEGIN
+    CREATE TABLE SIS.DiaSemana
+    (
+        PKIdDiaSemana INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_SIS_DiaSemana PRIMARY KEY,
+        LegacyId INT NULL,
+        Descripcion NVARCHAR(50) NOT NULL,
+        UsuarioCreacion INT NULL,
+        FechaCreacion DATETIME2(6) NULL,
+        UsuarioModificacion INT NULL,
+        FechaModificacion DATETIME2(6) NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_SIS_DiaSemana_Activo DEFAULT (1)
+    );
+END;
+
+IF COL_LENGTH(N'SIS.DiaSemana', N'LegacyId') IS NULL
+BEGIN
+    ALTER TABLE SIS.DiaSemana ADD LegacyId INT NULL;
+END;
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_SIS_DiaSemana_LegacyId' AND object_id = OBJECT_ID(N'SIS.DiaSemana'))
+BEGIN
+    CREATE UNIQUE INDEX UX_SIS_DiaSemana_LegacyId
+        ON SIS.DiaSemana (LegacyId)
+        WHERE LegacyId IS NOT NULL;
+END;
+
+SET IDENTITY_INSERT SIS.DiaSemana ON;
+
+MERGE SIS.DiaSemana AS TARGET
+USING
+(
+    SELECT
+        Pk_IdDiaSemana AS PKIdDiaSemana,
+        Pk_IdDiaSemana AS LegacyId,
+        COALESCE(Descripcion, N'') AS Descripcion,
+        CT_CreatedBy AS UsuarioCreacion,
+        COALESCE(CT_CreatedDate, @Now) AS FechaCreacion,
+        CT_ModifiedBy AS UsuarioModificacion,
+        CT_ModifiedDate AS FechaModificacion,
+        COALESCE(CT_LIVE, 1) AS Activo
+    FROM [BD_GRP_INVEA].dbo.SIS_DiaSemana
+) AS SOURCE
+ON TARGET.LegacyId = SOURCE.LegacyId
+WHEN MATCHED THEN
+    UPDATE SET
+        TARGET.Descripcion = SOURCE.Descripcion,
+        TARGET.UsuarioCreacion = COALESCE(TARGET.UsuarioCreacion, SOURCE.UsuarioCreacion),
+        TARGET.FechaCreacion = COALESCE(TARGET.FechaCreacion, SOURCE.FechaCreacion),
+        TARGET.UsuarioModificacion = SOURCE.UsuarioModificacion,
+        TARGET.FechaModificacion = SOURCE.FechaModificacion,
+        TARGET.Activo = SOURCE.Activo
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT
+    (
+        PKIdDiaSemana,
+        LegacyId,
+        Descripcion,
+        UsuarioCreacion,
+        FechaCreacion,
+        UsuarioModificacion,
+        FechaModificacion,
+        Activo
+    )
+    VALUES
+    (
+        SOURCE.PKIdDiaSemana,
+        SOURCE.LegacyId,
+        SOURCE.Descripcion,
+        SOURCE.UsuarioCreacion,
+        SOURCE.FechaCreacion,
+        SOURCE.UsuarioModificacion,
+        SOURCE.FechaModificacion,
+        SOURCE.Activo
+    );
+
+SET IDENTITY_INSERT SIS.DiaSemana OFF;
+
+IF OBJECT_ID(N'SIS.MedodoPago', N'U') IS NULL
+BEGIN
+    CREATE TABLE SIS.MedodoPago
+    (
+        PKIdMetodoPago INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_SIS_MedodoPago PRIMARY KEY,
+        LegacyId INT NULL,
+        Descripcion NVARCHAR(50) NOT NULL,
+        UsuarioCreacion INT NULL,
+        FechaCreacion DATETIME2(6) NULL,
+        UsuarioModificacion INT NULL,
+        FechaModificacion DATETIME2(6) NULL,
+        Activo BIT NOT NULL CONSTRAINT DF_SIS_MedodoPago_Activo DEFAULT (1)
+    );
+END;
+
+IF COL_LENGTH(N'SIS.MedodoPago', N'LegacyId') IS NULL
+BEGIN
+    ALTER TABLE SIS.MedodoPago ADD LegacyId INT NULL;
+END;
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_SIS_MedodoPago_LegacyId' AND object_id = OBJECT_ID(N'SIS.MedodoPago'))
+BEGIN
+    CREATE UNIQUE INDEX UX_SIS_MedodoPago_LegacyId
+        ON SIS.MedodoPago (LegacyId)
+        WHERE LegacyId IS NOT NULL;
+END;
+
+SET IDENTITY_INSERT SIS.MedodoPago ON;
+
+MERGE SIS.MedodoPago AS TARGET
+USING
+(
+    SELECT
+        Pk_IdMetodoPago AS PKIdMetodoPago,
+        Pk_IdMetodoPago AS LegacyId,
+        COALESCE(Descripcion, N'') AS Descripcion,
+        CT_CreatedBy AS UsuarioCreacion,
+        COALESCE(CT_CreatedDate, @Now) AS FechaCreacion,
+        CT_ModifiedBy AS UsuarioModificacion,
+        CT_ModifiedDate AS FechaModificacion,
+        COALESCE(CT_LIVE, 1) AS Activo
+    FROM [BD_GRP_INVEA].dbo.SIS_MedodoPago
+) AS SOURCE
+ON TARGET.LegacyId = SOURCE.LegacyId
+WHEN MATCHED THEN
+    UPDATE SET
+        TARGET.Descripcion = SOURCE.Descripcion,
+        TARGET.UsuarioCreacion = COALESCE(TARGET.UsuarioCreacion, SOURCE.UsuarioCreacion),
+        TARGET.FechaCreacion = COALESCE(TARGET.FechaCreacion, SOURCE.FechaCreacion),
+        TARGET.UsuarioModificacion = SOURCE.UsuarioModificacion,
+        TARGET.FechaModificacion = SOURCE.FechaModificacion,
+        TARGET.Activo = SOURCE.Activo
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT
+    (
+        PKIdMetodoPago,
+        LegacyId,
+        Descripcion,
+        UsuarioCreacion,
+        FechaCreacion,
+        UsuarioModificacion,
+        FechaModificacion,
+        Activo
+    )
+    VALUES
+    (
+        SOURCE.PKIdMetodoPago,
+        SOURCE.LegacyId,
+        SOURCE.Descripcion,
+        SOURCE.UsuarioCreacion,
+        SOURCE.FechaCreacion,
+        SOURCE.UsuarioModificacion,
+        SOURCE.FechaModificacion,
+        SOURCE.Activo
+    );
+
+SET IDENTITY_INSERT SIS.MedodoPago OFF;
+
 INSERT INTO #CatalogoSimpleSeed
     (Catalogo, LegacyTable, LegacyId, Clave, Descripcion, Orden, UsuarioCreacion, FechaCreacion, UsuarioModificacion, FechaModificacion, Activo)
 SELECT N'Sexo', N'SIS_Sexo', Pk_IdSexo, NULL, Descripcion, Pk_IdSexo, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
@@ -86,17 +323,11 @@ UNION ALL
 SELECT N'Estado_Civil', N'SIS_EstadoCivil', Pk_IdEstadoCivil, NULL, Descripcion, Pk_IdEstadoCivil, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
 FROM [BD_GRP_INVEA].dbo.SIS_EstadoCivil
 UNION ALL
-SELECT N'Escolaridad', N'SIS_Escolaridad', Pk_IdEscolaridad, NULL, Descripcion, Pk_IdEscolaridad, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
-FROM [BD_GRP_INVEA].dbo.SIS_Escolaridad
-UNION ALL
 SELECT N'Tipo_Parentesco', N'SIS_Parentesco', Pk_IdParentesco, NULL, Descripcion, Pk_IdParentesco, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
 FROM [BD_GRP_INVEA].dbo.SIS_Parentesco
 UNION ALL
 SELECT N'Base_Pago', N'SIS_BasePago', Pk_IdBasePago, NULL, COALESCE(Descripcion, N''), Pk_IdBasePago, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
 FROM [BD_GRP_INVEA].dbo.SIS_BasePago
-UNION ALL
-SELECT N'Metodo_Pago', N'SIS_MedodoPago', Pk_IdMetodoPago, NULL, Descripcion, Pk_IdMetodoPago, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
-FROM [BD_GRP_INVEA].dbo.SIS_MedodoPago
 UNION ALL
 SELECT N'Tipo_Regimen', N'SIS_TipoRegimen', Pk_IdTipoRegimen, NULL, Descripcion, Pk_IdTipoRegimen, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
 FROM [BD_GRP_INVEA].dbo.SIS_TipoRegimen
@@ -106,9 +337,6 @@ FROM [BD_GRP_INVEA].dbo.SIS_BaseCotizacion
 UNION ALL
 SELECT N'Zona_Geografica', N'SIS_ZonaGeografica', Pk_IdZonaGeografica, NULL, COALESCE(Descripcion, N''), Pk_IdZonaGeografica, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
 FROM [BD_GRP_INVEA].dbo.SIS_ZonaGeografica
-UNION ALL
-SELECT N'Dia_Semana', N'SIS_DiaSemana', Pk_IdDiaSemana, NULL, COALESCE(Descripcion, N''), Pk_IdDiaSemana, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
-FROM [BD_GRP_INVEA].dbo.SIS_DiaSemana
 UNION ALL
 SELECT N'Tipo_Nomina', N'SIS_TipoNominaEspecial', Pk_IdTipoNominaEspecial, NULL, Descripcion, Pk_IdTipoNominaEspecial, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, CT_LIVE
 FROM [BD_GRP_INVEA].dbo.SIS_TipoNominaEspecial
@@ -226,6 +454,28 @@ WHEN NOT MATCHED BY TARGET THEN
         SOURCE.FechaModificacion,
         SOURCE.Activo
     );
+
+DELETE FROM NOM.CatalogoSimple
+WHERE Catalogo = N'Escolaridad'
+  AND LegacyTable = N'SIS_Escolaridad';
+
+DELETE FROM NOM.CatalogoSimple
+WHERE Catalogo = N'Dia_Semana'
+  AND LegacyTable = N'SIS_DiaSemana';
+
+IF OBJECT_ID(N'NOM.Vw_DiaSemana', N'V') IS NOT NULL
+BEGIN
+    DROP VIEW NOM.Vw_DiaSemana;
+END;
+
+DELETE FROM NOM.CatalogoSimple
+WHERE Catalogo = N'Metodo_Pago'
+  AND LegacyTable = N'SIS_MedodoPago';
+
+IF OBJECT_ID(N'NOM.Vw_MetodoPago', N'V') IS NOT NULL
+BEGIN
+    DROP VIEW NOM.Vw_MetodoPago;
+END;
 
 UPDATE municipio
 SET FKIdCatalogoPadre_NOM = estado.PKIdCatalogoSimple

@@ -132,6 +132,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IIngresoAdecuacionAppService, IngreAdecuacionAppService>();
             services.AddScoped<IAdquisicionCrudAppService<IngreAdecuacionResponse>>(sp => sp.GetRequiredService<IIngresoAdecuacionAppService>());
             services.AddScoped<IAdquisicionCrudAppService<IngreAdecuacionDetalleResponse>, IngreAdecuacionDetalleAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<EgresoDisponibleResponse>, EgresoDisponibleAppService>();
 
             // Application services - Cuentas por pagar
             services.AddScoped<IAdquisicionCrudAppService<ContratoResponse>, ContratoAppService>();
@@ -207,6 +208,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INominaCrudAppService<NomDescuentoInfonavitResponse>, NomDescuentoInfonavitAppService>();
             services.AddScoped<INominaCrudAppService<NomEstatusPagoResponse>, NomEstatusPagoAppService>();
             services.AddScoped<INominaCrudAppService<NomFactorIntResponse>, NomFactorIntAppService>();
+            services.AddScoped<INominaCrudAppService<NomTablaFiscalResponse>, NomTablaFiscalAppService>();
             services.AddScoped<INominaCrudAppService<NomInfonavitResponse>, NomInfonavitAppService>();
             services.AddScoped<INominaCrudAppService<NomPeriodoActivoResponse>, NomPeriodoActivoAppService>();
             services.AddScoped<INominaCrudAppService<NomSalarioMinimoResponse>, NomSalarioMinimoAppService>();
@@ -220,6 +222,13 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INominaCrudAppService<NomTipoPensionResponse>, NomTipoPensionAppService>();
             services.AddScoped<INominaCrudAppService<NomCatalogoSimpleResponse>, NomCatalogoSimpleAppService>();
             services.AddScoped<INominaCrudAppService<NomEstadoCivilResponse>, NomEstadoCivilAppService>();
+            services.AddScoped<INominaCrudAppService<NomEscolaridadResponse>, NomEscolaridadAppService>();
+            services.AddScoped<INominaCrudAppService<NomDiaSemanaResponse>, NomDiaSemanaAppService>();
+            services.AddScoped<INominaCrudAppService<NomMedodoPagoResponse>, NomMedodoPagoAppService>();
+            services.AddScoped<INominaCrudAppService<NomParentescoResponse>, NomParentescoAppService>();
+            services.AddScoped<INominaCrudAppService<NomTipoContratacionResponse>, NomTipoContratacionAppService>();
+            services.AddScoped<INominaCrudAppService<NomTipoIncidenciaResponse>, NomTipoIncidenciaAppService>();
+            services.AddScoped<INominaCrudAppService<NomTipoJustificacionResponse>, NomTipoJustificacionAppService>();
             services.AddScoped<INominaProcesoAppService, NominaProcesoAppService>();
             services.AddScoped<INominaOperacionAppService, NominaOperacionAppService>();
             services.AddScoped<INominaRhEmpleadoAppService, NominaRhEmpleadoAppService>();

@@ -1,4 +1,3 @@
-@page "/PRB"
 @page "/PBR"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
@@ -14,7 +13,7 @@
 @inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
-    <PageHeader Title="PRB"
+    <PageHeader Title="PBR"
                 Subtitle="@($"Tablero ejecutivo de planeación basada en resultados - {anio}")"
                 Icon="@Icons.Material.Filled.InsertChart"
                 ShowCreateButton="false"
@@ -132,17 +131,17 @@
                         <div class="pbr-table-wrap">
                             <MudTable Items="@dashboard.Semaforo" Dense="true" Hover="true" Elevation="0">
                                 <HeaderContent>
-                                    <MudTh>Indicador</MudTh>
                                     <MudTh>Programa</MudTh>
+                                    <MudTh>Indicador</MudTh>
                                     <MudTh>Nivel</MudTh>
                                     <MudTh Class="text-end">%</MudTh>
                                     <MudTh>Estado</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
+                                    <MudTd DataLabel="Programa">@TextOrDash(context.Programa)</MudTd>
                                     <MudTd DataLabel="Indicador">
                                         <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(context.Nombre)</MudText>
                                     </MudTd>
-                                    <MudTd DataLabel="Programa">@TextOrDash(context.Programa)</MudTd>
                                     <MudTd DataLabel="Nivel">@TextOrDash(context.Nivel)</MudTd>
                                     <MudTd DataLabel="%" Class="text-end">@PctOrDash(context.Porcentaje)</MudTd>
                                     <MudTd DataLabel="Estado">
@@ -277,7 +276,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"No fue posible cargar el tablero PRB: {ex.Message}", Severity.Error);
+            Snackbar.Add($"No fue posible cargar el tablero PBR: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -293,8 +292,8 @@
     }
 
     private void GoTo(string route) => NavigationManager.NavigateTo(route);
-    private void OpenPresupuestos() => GoTo("/PRB/Presupuestos");
-    private void OpenMatriz() => GoTo("/PRB/MatrizIndicadores");
+    private void OpenPresupuestos() => GoTo("/PBR/Presupuestos");
+    private void OpenMatriz() => GoTo("/PBR/MatrizIndicadores");
 
     private static string TextOrDash(string? value)
     {

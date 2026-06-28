@@ -28,10 +28,6 @@
 @page "/rh/clasemovto"
 @page "/rh/configuracion/movimiento"
 @page "/rh/movimiento"
-@page "/rh/configuracion/escolaridad"
-@page "/sis/escolaridad"
-@page "/rh/configuracion/parentesco"
-@page "/sis/tipoparentesco"
 @page "/rh/configuracion/estado"
 @page "/sis/estado"
 @page "/rh/configuracion/banco"
@@ -40,31 +36,20 @@
 @page "/sis/municipio"
 @page "/rh/configuracion/contratos/base-pago"
 @page "/sis/basepago"
-@page "/rh/configuracion/contratos/metodo-pago"
-@page "/sis/metodopago"
-@page "/sis/medodopago"
 @page "/rh/configuracion/contratos/tipo-regimen"
 @page "/sis/tiporegimen"
 @page "/rh/configuracion/contratos/base-cotizacion"
 @page "/sis/basecotizacion"
 @page "/rh/configuracion/contratos/zona-geografica"
 @page "/sis/zonageografica"
-@page "/rh/configuracion/contratos/dia-semana"
-@page "/sis/diasemana"
 @page "/nomina/configuracion/catalogos/tipo-nomina"
 @page "/sis/tiponomina"
 @page "/nomina/configuracion/catalogos/cuotas-imss"
+@page "/sis/cuotasimss"
 @page "/nomina/configuracion/catalogos/uma"
 @page "/sis/uma"
-@page "/nomina/configuracion/catalogos/tipo-contratacion"
-@page "/sis/tipocontratacion"
 @page "/nomina/configuracion/catalogos/tipo-descanso"
 @page "/sis/tipodescanso"
-@page "/nomina/configuracion/catalogos/tipo-incidencia"
-@page "/nomina/configuracion/catalogos/tipos-incidencia"
-@page "/sis/tipoincidencia"
-@page "/nomina/configuracion/catalogos/tipo-justificacion"
-@page "/sis/tipojustificacion"
 @page "/nomina/configuracion/catalogos/unidad-infonavit"
 @page "/sis/unidadinfonavit"
 @page "/nomina/configuracion/catalogos/forma-calculo"
@@ -90,6 +75,7 @@
 
         <GenericTable TItem="NomCatalogoSimpleResponse"
                       @ref="table"
+                      @key="loadedPath"
                       Title="@($"Lista de {CurrentItem.Title}")"
                       SearchPlaceholder="@($"Buscar {CurrentItem.Title.ToLowerInvariant()}...")"
                       ShowExportButton="@CanExport"
@@ -102,7 +88,7 @@
                 <MudTh>Acciones</MudTh>
                 @foreach (var column in VisibleColumns)
                 {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomCatalogoSimpleResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomCatalogoSimpleResponse">@GetColumnLabel(column)</MudTableSortLabel></MudTh>
                 }
             </Header>
             <Row Context="item">
@@ -153,6 +139,17 @@
         nameof(NomCatalogoSimpleResponse.Orden),
         nameof(NomCatalogoSimpleResponse.Activo)
     ];
+
+    private static readonly IReadOnlyDictionary<string, string> CuotasImssLabels =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [nameof(NomCatalogoSimpleResponse.Descripcion)] = "Concepto",
+            [nameof(NomCatalogoSimpleResponse.DescripcionCorta)] = "Alias",
+            [nameof(NomCatalogoSimpleResponse.ValorDecimal1)] = "Valor Emp",
+            [nameof(NomCatalogoSimpleResponse.ValorDecimal2)] = "Valor Pat",
+            [nameof(NomCatalogoSimpleResponse.FechaInicio)] = "Desde",
+            [nameof(NomCatalogoSimpleResponse.FechaFin)] = "Hasta"
+        };
 
     private static readonly string[] DescriptionColumns =
     [
@@ -234,10 +231,6 @@
             ["/rh/clasemovto"] = Rh("Clase Movimiento", "Clase_Movimiento", DescriptionFields, DescriptionColumns, Icons.Material.Filled.AssignmentInd),
             ["/rh/configuracion/movimiento"] = Rh("Movimiento RH", "Movimiento_RH", MovimientoFields, MovimientoColumns, Icons.Material.Filled.AssignmentInd),
             ["/rh/movimiento"] = Rh("Movimiento RH", "Movimiento_RH", MovimientoFields, MovimientoColumns, Icons.Material.Filled.AssignmentInd),
-            ["/rh/configuracion/escolaridad"] = Rh("Escolaridad", "Escolaridad", DescriptionFields, DescriptionColumns, Icons.Material.Filled.School),
-            ["/sis/escolaridad"] = Rh("Escolaridad", "Escolaridad", DescriptionFields, DescriptionColumns, Icons.Material.Filled.School),
-            ["/rh/configuracion/parentesco"] = Rh("Tipo de Parentesco", "Tipo_Parentesco", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Groups),
-            ["/sis/tipoparentesco"] = Rh("Tipo de Parentesco", "Tipo_Parentesco", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Groups),
             ["/rh/configuracion/estado"] = Rh("Estado", "Estado", KeyDescriptionFields, DefaultColumns, Icons.Material.Filled.Map),
             ["/sis/estado"] = Rh("Estado", "Estado", KeyDescriptionFields, DefaultColumns, Icons.Material.Filled.Map),
             ["/rh/configuracion/banco"] = Rh("Banco", "Banco",
@@ -310,18 +303,12 @@
                 parentLabel: "Estado"),
             ["/rh/configuracion/contratos/base-pago"] = Rh("Base Pago", "Base_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Payments, moduleName: "Contratos"),
             ["/sis/basepago"] = Rh("Base Pago", "Base_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Payments, moduleName: "Contratos"),
-            ["/rh/configuracion/contratos/metodo-pago"] = Rh("Metodo de Pago", "Metodo_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.PointOfSale, moduleName: "Contratos"),
-            ["/sis/metodopago"] = Rh("Metodo de Pago", "Metodo_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.PointOfSale, moduleName: "Contratos"),
-            ["/sis/medodopago"] = Rh("Metodo de Pago", "Metodo_Pago", DescriptionFields, DescriptionColumns, Icons.Material.Filled.PointOfSale, moduleName: "Contratos"),
             ["/rh/configuracion/contratos/tipo-regimen"] = Rh("Tipo de Regimen", "Tipo_Regimen", DescriptionFields, DescriptionColumns, Icons.Material.Filled.AssignmentInd, moduleName: "Contratos"),
             ["/sis/tiporegimen"] = Rh("Tipo de Regimen", "Tipo_Regimen", DescriptionFields, DescriptionColumns, Icons.Material.Filled.AssignmentInd, moduleName: "Contratos"),
             ["/rh/configuracion/contratos/base-cotizacion"] = Rh("Base de Cotizacion", "Base_Cotizacion", DescriptionFields, DescriptionColumns, Icons.Material.Filled.RequestQuote, moduleName: "Contratos"),
             ["/sis/basecotizacion"] = Rh("Base de Cotizacion", "Base_Cotizacion", DescriptionFields, DescriptionColumns, Icons.Material.Filled.RequestQuote, moduleName: "Contratos"),
             ["/rh/configuracion/contratos/zona-geografica"] = Rh("Zona Geografica", "Zona_Geografica", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Public, moduleName: "Contratos"),
             ["/sis/zonageografica"] = Rh("Zona Geografica", "Zona_Geografica", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Public, moduleName: "Contratos"),
-            ["/rh/configuracion/contratos/dia-semana"] = Rh("Dia de la Semana", "Dia_Semana", DescriptionFields, DescriptionColumns, Icons.Material.Filled.CalendarMonth, moduleName: "Contratos"),
-            ["/sis/diasemana"] = Rh("Dia de la Semana", "Dia_Semana", DescriptionFields, DescriptionColumns, Icons.Material.Filled.CalendarMonth, moduleName: "Contratos"),
-
             ["/nomina/configuracion/catalogos/tipo-nomina"] = Nom("Tipo de Nomina", "Tipo_Nomina", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Badge),
             ["/sis/tiponomina"] = Nom("Tipo de Nomina", "Tipo_Nomina", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Badge),
             ["/nomina/configuracion/catalogos/cuotas-imss"] = Nom("Cuotas IMSS", "Cuotas_IMSS",
@@ -340,9 +327,34 @@
                     nameof(NomCatalogoSimpleResponse.DescripcionCorta),
                     nameof(NomCatalogoSimpleResponse.ValorDecimal1),
                     nameof(NomCatalogoSimpleResponse.ValorDecimal2),
+                    nameof(NomCatalogoSimpleResponse.FechaInicio),
+                    nameof(NomCatalogoSimpleResponse.FechaFin),
                     nameof(NomCatalogoSimpleResponse.Activo)
                 ],
-                Icons.Material.Filled.Percent),
+                Icons.Material.Filled.Percent,
+                CuotasImssLabels),
+            ["/sis/cuotasimss"] = Nom("Cuotas IMSS", "Cuotas_IMSS",
+                [
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DescripcionCorta),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal2),
+                    nameof(NomCatalogoSimpleResponse.FechaInicio),
+                    nameof(NomCatalogoSimpleResponse.FechaFin),
+                    nameof(NomCatalogoSimpleResponse.Orden)
+                ],
+                [
+                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
+                    nameof(NomCatalogoSimpleResponse.Descripcion),
+                    nameof(NomCatalogoSimpleResponse.DescripcionCorta),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
+                    nameof(NomCatalogoSimpleResponse.ValorDecimal2),
+                    nameof(NomCatalogoSimpleResponse.FechaInicio),
+                    nameof(NomCatalogoSimpleResponse.FechaFin),
+                    nameof(NomCatalogoSimpleResponse.Activo)
+                ],
+                Icons.Material.Filled.Percent,
+                CuotasImssLabels),
             ["/nomina/configuracion/catalogos/uma"] = Nom("UMA", "UMA", DateValueFields,
                 [
                     nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
@@ -361,69 +373,8 @@
                     nameof(NomCatalogoSimpleResponse.Activo)
                 ],
                 Icons.Material.Filled.PriceChange),
-            ["/nomina/configuracion/catalogos/tipo-contratacion"] = Nom("Tipo de Contratacion", "Tipo_Contratacion",
-                [
-                    nameof(NomCatalogoSimpleResponse.Clave),
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.DatoExtra1),
-                    nameof(NomCatalogoSimpleResponse.DatoExtra2),
-                    nameof(NomCatalogoSimpleResponse.Orden)
-                ],
-                DefaultColumns,
-                Icons.Material.Filled.Work),
-            ["/sis/tipocontratacion"] = Nom("Tipo de Contratacion", "Tipo_Contratacion",
-                [
-                    nameof(NomCatalogoSimpleResponse.Clave),
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.DatoExtra1),
-                    nameof(NomCatalogoSimpleResponse.DatoExtra2),
-                    nameof(NomCatalogoSimpleResponse.Orden)
-                ],
-                DefaultColumns,
-                Icons.Material.Filled.Work),
             ["/nomina/configuracion/catalogos/tipo-descanso"] = Nom("Tipo de Descanso", "Tipo_Descanso", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Weekend),
             ["/sis/tipodescanso"] = Nom("Tipo de Descanso", "Tipo_Descanso", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Weekend),
-            ["/nomina/configuracion/catalogos/tipo-incidencia"] = Nom("Tipo de Incidencia", "Tipo_Incidencia",
-                [
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
-                    nameof(NomCatalogoSimpleResponse.Orden)
-                ],
-                [
-                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
-                    nameof(NomCatalogoSimpleResponse.Activo)
-                ],
-                Icons.Material.Filled.ReportProblem),
-            ["/sis/tipoincidencia"] = Nom("Tipo de Incidencia", "Tipo_Incidencia",
-                [
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
-                    nameof(NomCatalogoSimpleResponse.Orden)
-                ],
-                [
-                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
-                    nameof(NomCatalogoSimpleResponse.Activo)
-                ],
-                Icons.Material.Filled.ReportProblem),
-            ["/nomina/configuracion/catalogos/tipos-incidencia"] = Nom("Tipo de Incidencia", "Tipo_Incidencia",
-                [
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
-                    nameof(NomCatalogoSimpleResponse.Orden)
-                ],
-                [
-                    nameof(NomCatalogoSimpleResponse.PkidCatalogoSimple),
-                    nameof(NomCatalogoSimpleResponse.Descripcion),
-                    nameof(NomCatalogoSimpleResponse.ValorDecimal1),
-                    nameof(NomCatalogoSimpleResponse.Activo)
-                ],
-                Icons.Material.Filled.ReportProblem),
-            ["/nomina/configuracion/catalogos/tipo-justificacion"] = Nom("Tipo de Justificacion", "Tipo_Justificacion", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Rule),
-            ["/sis/tipojustificacion"] = Nom("Tipo de Justificacion", "Tipo_Justificacion", DescriptionFields, DescriptionColumns, Icons.Material.Filled.Rule),
             ["/nomina/configuracion/catalogos/unidad-infonavit"] = Nom("Unidad Infonavit", "Unidad_Infonavit",
                 [
                     nameof(NomCatalogoSimpleResponse.Descripcion),
@@ -481,6 +432,8 @@
         };
 
     private GenericTable<NomCatalogoSimpleResponse> table = null!;
+    private string loadedPath = string.Empty;
+    private bool pendingRouteReload;
 
     protected override string ModuleName => CurrentItem.ModuleName;
     protected override string SubModuleName => CurrentItem.SubModuleName;
@@ -498,6 +451,46 @@
     private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomCatalogoSimpleResponse), CurrentItem.Columns);
 
     protected override string GetDefaultSortLabel() => CurrentItem.DefaultSortLabel;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var path = CurrentPath;
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
+        loadedPath = path;
+
+        if (!isRouteChange)
+        {
+            return;
+        }
+
+        SearchString = string.Empty;
+        CurrentPage = 1;
+        SortLabel = GetDefaultSortLabel();
+        SortDirection = SortDirection.None;
+        Elements.Clear();
+        TotalCount = 0;
+        pendingRouteReload = true;
+
+        IsInitialized = false;
+        HasAccess = false;
+        await VerifyAccess();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (pendingRouteReload && table != null && HasAccess)
+        {
+            pendingRouteReload = false;
+            await table.ReloadData();
+        }
+    }
 
     protected override async Task<TableData<NomCatalogoSimpleResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -599,7 +592,7 @@
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<NomCatalogoSimpleResponse> items)
-        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+        => items.Select(item => VisibleColumns.ToDictionary(GetColumnLabel, column => NominaCatalogUi.FormatValue(column.GetValue(item))));
 
     protected override async Task<string> GetItemNameForDelete(int id)
         => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el catalogo";
@@ -618,11 +611,17 @@
         ["Title"] = CurrentItem.Title,
         ["Fields"] = CurrentItem.Fields,
         ["ParentCatalogo"] = CurrentItem.ParentCatalogo,
-        ["ParentLabel"] = CurrentItem.ParentLabel
+        ["ParentLabel"] = CurrentItem.ParentLabel,
+        ["LabelOverrides"] = CurrentItem.LabelOverrides
     };
 
     private Dictionary<string, object> BuildCatalogFilters()
         => new() { [nameof(NomCatalogoSimpleResponse.Catalogo)] = CurrentItem.Catalogo };
+
+    private string GetColumnLabel(PropertyInfo column)
+        => CurrentItem.LabelOverrides.TryGetValue(column.Name, out var label)
+            ? label
+            : NominaCatalogUi.GetLabel(column);
 
     private static CatalogPageItem Rh(
         string title,
@@ -644,14 +643,16 @@
             parentLabel,
             fields,
             columns,
-            fields.Contains(nameof(NomCatalogoSimpleResponse.Clave)) ? nameof(NomCatalogoSimpleResponse.Clave) : nameof(NomCatalogoSimpleResponse.Descripcion));
+            fields.Contains(nameof(NomCatalogoSimpleResponse.Clave)) ? nameof(NomCatalogoSimpleResponse.Clave) : nameof(NomCatalogoSimpleResponse.Descripcion),
+            new Dictionary<string, string>());
 
     private static CatalogPageItem Nom(
         string title,
         string catalogo,
         string[] fields,
         string[] columns,
-        string icon)
+        string icon,
+        IReadOnlyDictionary<string, string>? labelOverrides = null)
         => new(
             title,
             "Catalogo de nomina migrado desde BD_GRP_INVEA",
@@ -663,7 +664,8 @@
             "Catalogo padre",
             fields,
             columns,
-            fields.Contains(nameof(NomCatalogoSimpleResponse.Clave)) ? nameof(NomCatalogoSimpleResponse.Clave) : nameof(NomCatalogoSimpleResponse.Descripcion));
+            fields.Contains(nameof(NomCatalogoSimpleResponse.Clave)) ? nameof(NomCatalogoSimpleResponse.Clave) : nameof(NomCatalogoSimpleResponse.Descripcion),
+            labelOverrides ?? new Dictionary<string, string>());
 
     private sealed record CatalogPageItem(
         string Title,
@@ -676,5 +678,6 @@
         string ParentLabel,
         string[] Fields,
         string[] Columns,
-        string DefaultSortLabel);
+        string DefaultSortLabel,
+        IReadOnlyDictionary<string, string> LabelOverrides);
 }

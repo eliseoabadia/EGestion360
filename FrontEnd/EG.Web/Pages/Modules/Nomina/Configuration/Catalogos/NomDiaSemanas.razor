@@ -1,0 +1,87 @@
+@page "/rh/configuracion/contratos/dia-semana"
+@page "/sis/diasemana"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomDiaSemanaResponse, NomDiaSemanaResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Dia de la Semana"
+                    Subtitle="Catalogo directo SIS.DiaSemana"
+                    Icon="@Icons.Material.Filled.CalendarMonth"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomDiaSemanaResponse"
+                      @ref="table"
+                      Title="Lista de Dias de la Semana"
+                      SearchPlaceholder="Buscar dia..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomDiaSemanaResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidDiaSemana))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidDiaSemana))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomDiaSemanaResponse> table = null!;
+    private static readonly string[] Columns =
+    [
+        nameof(NomDiaSemanaResponse.PkidDiaSemana),
+        nameof(NomDiaSemanaResponse.Descripcion),
+        nameof(NomDiaSemanaResponse.Activo)
+    ];
+
+    protected override string ModuleName => "Contratos";
+    protected override string SubModuleName => "Dia_Semana";
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomDiaSemanaResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomDiaSemanaResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomDiaSemanaResponse>);
+    protected override string GetDefaultSortLabel() => nameof(NomDiaSemanaResponse.PkidDiaSemana);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomDiaSemanaResponse), Columns);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomDiaSemanaResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el dia de la semana";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

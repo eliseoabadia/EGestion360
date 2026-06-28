@@ -29,20 +29,33 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <div class="summary-strip">
-            <div>
-                <span class="summary-label">Total autorizado</span>
-                <strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong>
+        <section class="dashboard-strip">
+            <div class="hero-panel">
+                <div>
+                    <span class="metric-label">Total autorizado visible</span>
+                    <strong>@Money(VisibleTotal)</strong>
+                    <small>@TotalCount.ToString("N0", NumberCulture) partidas del ejercicio @TextOrDash(AnioStateService.AnioTexto)</small>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.AssuredWorkload" Size="Size.Large" />
             </div>
-            <div>
-                <span class="summary-label">Registros</span>
-                <strong>@TotalCount.ToString("N0")</strong>
+            <div class="metric-panel">
+                <span class="metric-label">Con poliza</span>
+                <strong>@WithPolizaCount.ToString("N0", NumberCulture)</strong>
+                <small>@WithPolizaPercent.ToString("0.#", NumberCulture)% de lo visible</small>
+                <MudProgressLinear Color="Color.Success" Value="@WithPolizaPercent" Rounded="true" Size="Size.Small" />
             </div>
-            <div>
-                <span class="summary-label">Moneda base</span>
-                <strong>@_currencyName (@_currencySymbol)</strong>
+            <div class="metric-panel">
+                <span class="metric-label">Desde anteproyecto</span>
+                <strong>@FromAnteproyectoCount.ToString("N0", NumberCulture)</strong>
+                <small>Bloqueado al flujo de origen</small>
+                <MudProgressLinear Color="Color.Info" Value="@FromAnteproyectoPercent" Rounded="true" Size="Size.Small" />
             </div>
-        </div>
+            <div class="metric-panel">
+                <span class="metric-label">Moneda base</span>
+                <strong>@_currencyName</strong>
+                <small>@_currencySymbol con separador decimal de punto</small>
+            </div>
+        </section>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
             <GenericTable TItem="EgresoAutorizadoResponse"
@@ -62,6 +75,7 @@
                     <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoAutorizadoResponse">Partida</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoAutorizadoResponse">Area</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="EgresoAutorizadoResponse">Clasificacion</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="FkidPolizaConta" T="EgresoAutorizadoResponse">Poliza</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoAutorizadoResponse">Descripcion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="EgresoAutorizadoResponse">Autorizacion</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoAutorizadoResponse">Total</MudTableSortLabel></MudTh>
@@ -106,6 +120,11 @@
                         <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
                         <span>PY: @TextOrDash(item.PyClaveNombre)</span>
                     </MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small" Color="@(item.FkidPolizaConta.HasValue ? Color.Success : Color.Default)" Variant="Variant.Filled">
+                            @(item.FkidPolizaConta.HasValue ? $"Poliza {item.FkidPolizaConta}" : "Sin poliza")
+                        </MudChip>
+                    </MudTd>
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd>
                     <MudTd>@(item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</MudTd>
                     <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
@@ -116,39 +135,67 @@
 </AccessVerification>
 
 <style>
-    .presupuesto-autorizado-page .summary-strip {
+    .presupuesto-autorizado-page .dashboard-strip {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: minmax(280px, 1.35fr) repeat(3, minmax(180px, 1fr));
         gap: 10px;
         margin: 8px 0 12px;
     }
 
-    .presupuesto-autorizado-page .summary-strip > div {
+    .presupuesto-autorizado-page .hero-panel,
+    .presupuesto-autorizado-page .metric-panel {
         min-width: 0;
         border: 1px solid var(--mud-palette-lines-default);
         border-radius: 8px;
-        padding: 10px 12px;
+        padding: 12px 14px;
         background: var(--mud-palette-surface);
         color: var(--mud-palette-text-primary);
         box-shadow: var(--mud-elevation-1);
     }
 
-    .presupuesto-autorizado-page .summary-label {
+    .presupuesto-autorizado-page .hero-panel {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        border-left: 4px solid var(--mud-palette-success);
+    }
+
+    .presupuesto-autorizado-page .metric-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .presupuesto-autorizado-page .metric-label {
         display: block;
         font-size: .72rem;
         color: var(--mud-palette-text-secondary);
         text-transform: uppercase;
     }
 
-    .presupuesto-autorizado-page .summary-strip strong {
+    .presupuesto-autorizado-page .dashboard-strip strong {
         display: block;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--mud-palette-text-primary);
-        font-size: 1.05rem;
+        font-size: 1.15rem;
         line-height: 1.35;
+    }
+
+    .presupuesto-autorizado-page .hero-panel strong {
+        font-size: 1.55rem;
+    }
+
+    .presupuesto-autorizado-page .dashboard-strip small {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .presupuesto-autorizado-page .main-cell {
@@ -160,12 +207,29 @@
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
     }
+
+    @@media (max-width: 1100px) {
+        .presupuesto-autorizado-page .dashboard-strip {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .presupuesto-autorizado-page .dashboard-strip {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 @code {
     private GenericTable<EgresoAutorizadoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
+    private decimal VisibleTotal => Elements.Sum(x => x.Total ?? 0m);
+    private int WithPolizaCount => Elements.Count(x => x.FkidPolizaConta.HasValue);
+    private int FromAnteproyectoCount => Elements.Count(x => x.FkidEgresoProyectadoPres.HasValue);
+    private double WithPolizaPercent => Percent(WithPolizaCount);
+    private double FromAnteproyectoPercent => Percent(FromAnteproyectoCount);
 
     protected override string ModuleName => "Egreso";
     protected override string SubModuleName => "Presupuesto_Autorizado";
@@ -483,6 +547,9 @@
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     private string Money(decimal amount) => $"{_currencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    private double Percent(int value) =>
+        Elements.Count == 0 ? 0d : (double)Math.Round((decimal)value / Elements.Count * 100m, 2);
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;

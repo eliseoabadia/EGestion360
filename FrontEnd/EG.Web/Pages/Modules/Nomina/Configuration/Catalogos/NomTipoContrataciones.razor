@@ -1,0 +1,89 @@
+@page "/nomina/configuracion/catalogos/tipo-contratacion"
+@page "/sis/tipocontratacion"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomTipoContratacionResponse, NomTipoContratacionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipo de Contratacion"
+                    Subtitle="Catalogo directo SIS.TipoContratacion"
+                    Icon="@Icons.Material.Filled.Assignment"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomTipoContratacionResponse"
+                      @ref="table"
+                      Title="Lista de Tipos de Contratacion"
+                      SearchPlaceholder="Buscar tipo..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomTipoContratacionResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidTipoContratacion))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidTipoContratacion))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomTipoContratacionResponse> table = null!;
+    private static readonly string[] Columns =
+    [
+        nameof(NomTipoContratacionResponse.PkidTipoContratacion),
+        nameof(NomTipoContratacionResponse.Tipo),
+        nameof(NomTipoContratacionResponse.Descripcion),
+        nameof(NomTipoContratacionResponse.RelacionLaboral),
+        nameof(NomTipoContratacionResponse.Activo)
+    ];
+
+    protected override string ModuleName => "Catalogos";
+    protected override string SubModuleName => "Tipo_Contratacion";
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomTipoContratacionResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomTipoContratacionResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomTipoContratacionResponse>);
+    protected override string GetDefaultSortLabel() => nameof(NomTipoContratacionResponse.PkidTipoContratacion);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomTipoContratacionResponse), Columns);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomTipoContratacionResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el tipo de contratacion";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

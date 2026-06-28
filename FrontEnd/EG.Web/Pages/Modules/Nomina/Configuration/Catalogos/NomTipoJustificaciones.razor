@@ -1,0 +1,87 @@
+@page "/nomina/configuracion/catalogos/tipo-justificacion"
+@page "/sis/tipojustificacion"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomTipoJustificacionResponse, NomTipoJustificacionResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Tipo de Justificacion"
+                    Subtitle="Catalogo directo SIS.TipoJustificacion"
+                    Icon="@Icons.Material.Filled.Rule"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomTipoJustificacionResponse"
+                      @ref="table"
+                      Title="Lista de Tipos de Justificacion"
+                      SearchPlaceholder="Buscar justificacion..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomTipoJustificacionResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidTipoJustificacion))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidTipoJustificacion))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomTipoJustificacionResponse> table = null!;
+    private static readonly string[] Columns =
+    [
+        nameof(NomTipoJustificacionResponse.PkidTipoJustificacion),
+        nameof(NomTipoJustificacionResponse.Descripcion),
+        nameof(NomTipoJustificacionResponse.Activo)
+    ];
+
+    protected override string ModuleName => "Catalogos";
+    protected override string SubModuleName => "Tipo_Justificacion";
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomTipoJustificacionResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomTipoJustificacionResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomTipoJustificacionResponse>);
+    protected override string GetDefaultSortLabel() => nameof(NomTipoJustificacionResponse.PkidTipoJustificacion);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomTipoJustificacionResponse), Columns);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomTipoJustificacionResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el tipo de justificacion";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

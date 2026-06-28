@@ -1,5 +1,4 @@
 @page "/PBR/Anteproyectos"
-@page "/PRB/Anteproyectos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
@@ -40,9 +39,9 @@
                       OnSearch="() => table.ReloadData()">
             <Header>
                 <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrAnteproyectoResponse">Programa</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidAnteproyecto" T="PbrAnteproyectoResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Anio" T="PbrAnteproyectoResponse">Año</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrAnteproyectoResponse">Programa</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="MontoSolicitado" T="PbrAnteproyectoResponse">Solicitado</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="MontoAutorizado" T="PbrAnteproyectoResponse">Autorizado</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Estatus" T="PbrAnteproyectoResponse">Estatus</MudTableSortLabel></MudTh>
@@ -78,12 +77,12 @@
                                        OnClick="@(() => DeleteAsync(item))" />
                     </MudTooltip>
                 </MudTd>
-                <MudTd>@item.PkidAnteproyecto</MudTd>
-                <MudTd>@item.Anio</MudTd>
                 <MudTd>
                     <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.ProgramaDescripcion)</MudText>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">PBR @item.FkidProgramaPresupuestarioPbr</MudText>
                 </MudTd>
+                <MudTd>@item.PkidAnteproyecto</MudTd>
+                <MudTd>@item.Anio</MudTd>
                 <MudTd>@Money(item.MontoSolicitado)</MudTd>
                 <MudTd>@Money(item.MontoAutorizado ?? 0m)</MudTd>
                 <MudTd>
@@ -114,7 +113,7 @@
             Math.Max(1, state.Page + 1),
             state.PageSize,
             search,
-            state.SortLabel ?? "PkidAnteproyecto",
+            state.SortLabel ?? "ProgramaDescripcion",
             state.SortDirection);
 
         return new TableData<PbrAnteproyectoResponse>

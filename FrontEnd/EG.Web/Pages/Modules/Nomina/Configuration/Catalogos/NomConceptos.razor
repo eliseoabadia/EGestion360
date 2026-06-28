@@ -78,9 +78,16 @@
 
     protected override string GetDefaultSortLabel() => "Clave";
 
-    private IEnumerable<PropertyInfo> VisibleColumns => typeof(NomConceptoResponse).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-        .Where(p => p.CanRead && !IsHiddenColumn(p))
-        .Take(7);
+    private static readonly string[] Columns =
+    [
+        nameof(NomConceptoResponse.Clave),
+        nameof(NomConceptoResponse.SubClave),
+        nameof(NomConceptoResponse.PerDed),
+        nameof(NomConceptoResponse.Nombre),
+        nameof(NomConceptoResponse.FormaCalculoDescripcion)
+    ];
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomConceptoResponse), Columns);
 
     private static bool IsHiddenColumn(PropertyInfo property)
         => property.Name is "ClaveNombre" or "FechaCreacion" or "UsuarioCreacion" or "FechaModificacion" or "UsuarioModificacion";
@@ -122,6 +129,7 @@
             "FkidContratoTerceroNom" => "Contrato de tercero",
             "FkidConceptoProporcionalNom" => "Concepto proporcional",
             "FkidFormaCalculoNom" => "Forma de cálculo",
+            "FormaCalculoDescripcion" => "Forma de cálculo",
             "FkidUnidadInfonavitNom" => "Unidad Infonavit",
             "FkidNominaEspecialNom" => "Nómina especial",
             "FkidContratoPres" => "Contrato",

@@ -280,6 +280,8 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public int FkidFormaCalculoNom { get; set; }
 
+        public string FormaCalculoDescripcion { get; set; } = string.Empty;
+
         public int? UsuarioCreacion { get; set; }
 
         public DateTime? FechaCreacion { get; set; }
@@ -460,6 +462,8 @@ namespace EG.Domain.DTOs.Responses.Nomina
         public int FkidEmpresaSis { get; set; }
 
         public string EmpresaNominaNombre { get; set; } = string.Empty;
+
+        public string TipoNomina { get; set; } = string.Empty;
 
         public int FkidConceptoNom { get; set; }
 
@@ -739,6 +743,55 @@ namespace EG.Domain.DTOs.Responses.Nomina
         public bool Activo { get; set; }
 
         public string ClaveNombre => PkidFactor.ToString();
+    }
+
+    public class NomTablaFiscalResponse
+    {
+        public int PkidTablaFiscal { get; set; }
+
+        public int PkidNomTablaFiscal
+        {
+            get => PkidTablaFiscal;
+            set => PkidTablaFiscal = value;
+        }
+
+        public string Catalogo { get; set; } = string.Empty;
+
+        public string LegacyTable { get; set; } = string.Empty;
+
+        public int? LegacyId { get; set; }
+
+        public string Clave { get; set; } = string.Empty;
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public decimal? Valor1 { get; set; }
+
+        public decimal? Valor2 { get; set; }
+
+        public decimal? Valor3 { get; set; }
+
+        public decimal? Valor4 { get; set; }
+
+        public DateTime? FechaInicio { get; set; }
+
+        public DateTime? FechaFin { get; set; }
+
+        public int? FkidCatalogoPadreNom { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => string.IsNullOrWhiteSpace(Clave)
+            ? Descripcion
+            : $"{Clave} - {Descripcion}".Trim(' ', '-');
     }
 
     public class NomInfonavitResponse
@@ -1176,6 +1229,163 @@ namespace EG.Domain.DTOs.Responses.Nomina
     public class NomEstadoCivilResponse
     {
         public int PkidEstadoCivil { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => Descripcion ?? string.Empty;
+    }
+
+    public class NomEscolaridadResponse
+    {
+        public int PkidEscolaridad { get; set; }
+
+        public int? LegacyId { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => Descripcion ?? string.Empty;
+    }
+
+    public class NomDiaSemanaResponse
+    {
+        public int PkidDiaSemana { get; set; }
+
+        public int? LegacyId { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => Descripcion ?? string.Empty;
+    }
+
+    public class NomMedodoPagoResponse
+    {
+        public int PkidMetodoPago { get; set; }
+
+        public int? LegacyId { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => Descripcion ?? string.Empty;
+    }
+
+    public class NomParentescoResponse
+    {
+        public int PkidParentesco { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => Descripcion ?? string.Empty;
+    }
+
+    public class NomTipoContratacionResponse
+    {
+        public int PkidTipoContratacion { get; set; }
+
+        public string Tipo { get; set; } = string.Empty;
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public string Explicacion { get; set; } = string.Empty;
+
+        public string DoctoComprobacion { get; set; } = string.Empty;
+
+        public string Normatividad { get; set; } = string.Empty;
+
+        public string Deducciones { get; set; } = string.Empty;
+
+        public string DoctoComprob { get; set; } = string.Empty;
+
+        public string RelacionLaboral { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => string.IsNullOrWhiteSpace(Tipo)
+            ? Descripcion
+            : $"{Tipo} - {Descripcion}".Trim(' ', '-');
+    }
+
+    public class NomTipoIncidenciaResponse
+    {
+        public int PkidTipoIncidencia { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public double? DiasPenalizacion { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+
+        public string ClaveNombre => Descripcion ?? string.Empty;
+    }
+
+    public class NomTipoJustificacionResponse
+    {
+        public int PkidTipoJustificacion { get; set; }
 
         public string Descripcion { get; set; } = string.Empty;
 

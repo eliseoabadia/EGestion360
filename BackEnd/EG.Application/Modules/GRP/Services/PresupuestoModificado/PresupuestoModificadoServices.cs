@@ -276,4 +276,32 @@ namespace EG.Application.Services.PresupuestoModificado
             };
         }
     }
+
+    public class EgresoDisponibleAppService(
+        GenericService<VwEgresoDisponible, EgresoDisponibleDto, EgresoDisponibleResponse> service,
+        GenericService<VwEgresoDisponible, EgresoDisponibleDto, EgresoDisponibleResponse> serviceView)
+        : AdquisicionCrudAppService<VwEgresoDisponible, VwEgresoDisponible, EgresoDisponibleDto, EgresoDisponibleResponse>(
+            service,
+            serviceView,
+            "PkidEgresoAutorizado",
+            "Presupuesto disponible",
+            (dto, id) => dto.PkidEgresoAutorizado = id)
+    {
+        public override Task<PagedResult<EgresoDisponibleResponse>> CreateAsync(EgresoDisponibleResponse response, int usuarioActual) =>
+            Task.FromResult(ReadOnlyFailure<EgresoDisponibleResponse>());
+
+        public override Task<PagedResult<EgresoDisponibleResponse>> UpdateAsync(int id, EgresoDisponibleResponse response, int usuarioActual) =>
+            Task.FromResult(ReadOnlyFailure<EgresoDisponibleResponse>());
+
+        public override Task<PagedResult<bool>> DeleteAsync(int id) =>
+            Task.FromResult(ReadOnlyFailure<bool>());
+
+        private static PagedResult<T> ReadOnlyFailure<T>() => new()
+        {
+            Success = false,
+            Message = "El presupuesto disponible es solo lectura.",
+            Code = "READ_ONLY",
+            TotalCount = 0
+        };
+    }
 }

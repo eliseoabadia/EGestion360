@@ -971,6 +971,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[DiaSemana]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Documento]",
          "ObjectType": 0
       },
@@ -999,6 +1003,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[Escolaridad]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Estados]",
          "ObjectType": 0
       },
@@ -1012,6 +1020,10 @@
       },
       {
          "Name": "[SIS].[Idioma]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[MedodoPago]",
          "ObjectType": 0
       },
       {
@@ -1403,10 +1415,6 @@
          "ObjectType": 3
       },
       {
-         "Name": "[NOM].[Vw_DiaSemana]",
-         "ObjectType": 3
-      },
-      {
          "Name": "[NOM].[Vw_EmpleadoExpediente]",
          "ObjectType": 3
       },
@@ -1460,10 +1468,6 @@
       },
       {
          "Name": "[NOM].[Vw_Infonavit]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[NOM].[Vw_MetodoPago]",
          "ObjectType": 3
       },
       {
@@ -2751,6 +2755,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[PRES].[SP_MantenimientoEgresoAutorizado]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[PRES].[SP_MantenimientoFactura]",
          "ObjectType": 1
       },
@@ -2788,6 +2796,10 @@
       },
       {
          "Name": "[SIS].[LoginInformationEmployee]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[SP_MantenimientoNotificacion]",
          "ObjectType": 1
       },
       {

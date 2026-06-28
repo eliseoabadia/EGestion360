@@ -160,7 +160,7 @@ USING (VALUES
     (605, N'Créditos Trabajadores', 2, 600, N'Creditos_Trabajadores', N'/nomina/creditos', N'FaMoneyBillWave', 1, N'ESP', 5, 1, GETDATE()),
 
     -- Nómina -> Cálculo
-    (610, N'Cálculo', 1, 7, N'Nomina_Calculo', N'/nom/calcnomina', N'FaCalculate', 1, N'ESP', 2, 1, GETDATE()),
+    (610, N'Cálculo', 1, 7, N'Calculo_2050', N'/nom/calcnomina', N'FaCalculate', 1, N'ESP', 2, 1, GETDATE()),
 
     -- Nómina -> Auxiliares
     (620, N'Auxiliares', 1, 7, N'Nomina_Auxiliares', N'/', N'FaFolderOpen', 1, N'ESP', 3, 1, GETDATE()),
@@ -172,11 +172,11 @@ USING (VALUES
 
     -- Nómina -> Productos
     (630, N'Productos', 1, 7, N'Nomina_Productos', N'/', N'FaFolderOpen', 1, N'ESP', 4, 1, GETDATE()),
-    (631, N'Resumen', 2, 630, N'Resumen_Nomina', N'/nom/resumennomina', N'FaChartPie', 1, N'ESP', 1, 1, GETDATE()),
-    (632, N'Recibos', 2, 630, N'Recibos_Nomina', N'/nom/recibonomina', N'FaReceiptLong', 1, N'ESP', 2, 1, GETDATE()),
+    (631, N'Resumen', 2, 630, N'Resumen', N'/nom/resumennomina', N'FaChartPie', 1, N'ESP', 1, 1, GETDATE()),
+    (632, N'Recibos', 2, 630, N'Recibos', N'/nom/recibonomina', N'FaReceiptLong', 1, N'ESP', 2, 1, GETDATE()),
     (633, N'Archivos de Dispersión', 2, 630, N'Archivos_Dispersion', N'/nom/archivodispercion', N'FaFile', 1, N'ESP', 3, 1, GETDATE()),
     (634, N'Archivos de Timbrado', 2, 630, N'Archivos_Timbrado', N'/nom/timbradopercepciones', N'FaVerified', 1, N'ESP', 4, 1, GETDATE()),
-    (635, N'Reporte Cuotas IMSS', 2, 630, N'Reporte_IMSS', N'/aux/imssquincenal_rep', N'FaChartBar', 1, N'ESP', 5, 1, GETDATE()),
+    (635, N'Reporte Cuotas IMSS', 2, 630, N'Reporte_Cuotas_IMSS', N'/aux/imssquincenal_rep', N'FaChartBar', 1, N'ESP', 5, 1, GETDATE()),
     (636, N'Reporte Nómina Actual', 2, 630, N'Reporte_Nomina', N'/nom/reportenomina', N'FaDocument', 1, N'ESP', 6, 1, GETDATE()),
 
     -- Nómina -> Incidencias
@@ -186,13 +186,13 @@ USING (VALUES
     (643, N'Reporte de Incidencias', 2, 640, N'Reporte_Incidencias', N'/rh/incidenciareport', N'FaChartLine', 1, N'ESP', 3, 1, GETDATE()),
 
     -- Nómina -> Pagos Extraordinarios
-    (650, N'Pagos Extraordinarios', 1, 7, N'Concepto_Variable', N'/nom/conceptovariable', N'FaAttachMoney', 1, N'ESP', 6, 1, GETDATE()),
+    (650, N'Pagos Extraordinarios', 1, 7, N'Conceptos_Variables', N'/nom/conceptovariable', N'FaAttachMoney', 1, N'ESP', 6, 1, GETDATE()),
 
     -- Nómina -> Cierre de Periodo
-    (660, N'Cierre de Periodo', 1, 7, N'Nomina_Cierre_Periodo', N'/nom/cierraperiodo', N'FaLock', 1, N'ESP', 7, 1, GETDATE()),
+    (660, N'Cierre de Periodo', 1, 7, N'Cierre_Periodo', N'/nom/cierraperiodo', N'FaLock', 1, N'ESP', 7, 1, GETDATE()),
 
     -- Nómina -> Finiquito/Liquidación
-    (670, N'Finiquito/Liquidación', 1, 7, N'Nomina_Finiquito_Liquidacion', N'/rh/liquidacion', N'FaReceiptLong', 1, N'ESP', 8, 1, GETDATE()),
+    (670, N'Finiquito/Liquidación', 1, 7, N'Liquidacion', N'/rh/liquidacion', N'FaReceiptLong', 1, N'ESP', 8, 1, GETDATE()),
 
     -- Nómina -> Nóminas Especiales
     (680, N'Nominas Especiales', 1, 7, N'Nominas_Especiales', N'/', N'FaCog', 1, N'ESP', 9, 1, GETDATE()),
@@ -224,7 +224,7 @@ USING (VALUES
     (731, N'Acumulado Mensual ISR', 2, 730, N'Acumulado_Mensual_ISR', N'/nomina/historicos/isr_mensual', N'FaPercent', 1, N'ESP', 1, 1, GETDATE()),
     (732, N'Acumulados de ISR', 2, 730, N'Acumulados_ISR', N'/nomina/historicos/isr_acumulados', N'FaChartLine', 1, N'ESP', 2, 1, GETDATE()),
 
-    (740, N'Impuestos sobre Nómina locales', 1, 700, N'Impuestos_Locales_Historicos', N'/nomina/historicos/impuestoslocales', N'FaHouse', 1, N'ESP', 4, 1, GETDATE()),
+    (740, N'Impuestos sobre Nómina locales', 1, 700, N'Impuestos_Locales', N'/nomina/historicos/impuestoslocales', N'FaHouse', 1, N'ESP', 4, 1, GETDATE()),
 
     -- Nómina -> Configuración Nóminas
     (800, N'Configuración Nóminas', 0, 7, N'Configuracion_Nominas', N'/', N'FaCog', 1, N'ESP', 11, 1, GETDATE()),

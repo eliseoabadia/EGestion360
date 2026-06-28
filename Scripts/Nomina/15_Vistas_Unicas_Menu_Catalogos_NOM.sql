@@ -217,17 +217,14 @@ VALUES
     (N'Vw_CapituloNomina', N'Capitulos'),
     (N'Vw_Sexo', N'Sexo'),
     (N'Vw_EstadoCivil', N'Estado_Civil'),
-    (N'Vw_Escolaridad', N'Escolaridad'),
     (N'Vw_TipoParentesco', N'Tipo_Parentesco'),
     (N'Vw_Estado', N'Estado'),
     (N'Vw_NOM_Banco', N'Banco'),
     (N'Vw_Municipio', N'Municipio'),
     (N'Vw_BasePago', N'Base_Pago'),
-    (N'Vw_MetodoPago', N'Metodo_Pago'),
     (N'Vw_TipoRegimen', N'Tipo_Regimen'),
     (N'Vw_BaseCotizacion', N'Base_Cotizacion'),
-    (N'Vw_ZonaGeografica', N'Zona_Geografica'),
-    (N'Vw_DiaSemana', N'Dia_Semana');
+    (N'Vw_ZonaGeografica', N'Zona_Geografica');
 
 DECLARE @Vista sysname;
 DECLARE @Catalogo nvarchar(80);
@@ -280,6 +277,37 @@ END;
 CLOSE vistas_catalogo_cursor;
 DEALLOCATE vistas_catalogo_cursor;
 DROP TABLE #VistasCatalogoSimple;
+
+IF OBJECT_ID(N'SIS.Escolaridad', N'U') IS NULL
+    THROW 51000, 'Falta SIS.Escolaridad. Ejecute primero 09_Catalogos_Simples_SIS.sql.', 1;
+
+EXEC(N'
+CREATE OR ALTER VIEW NOM.Vw_Escolaridad
+AS
+SELECT
+    e.PKIdEscolaridad AS PKIdCatalogoSimple,
+    e.LegacyId,
+    CAST(NULL AS nvarchar(50)) AS Clave,
+    e.Descripcion,
+    CAST(NULL AS nvarchar(120)) AS DescripcionCorta,
+    CAST(NULL AS int) AS FKIdCatalogoPadre_NOM,
+    CAST(NULL AS nvarchar(250)) AS CatalogoPadreDescripcion,
+    CAST(NULL AS decimal(18,4)) AS ValorDecimal1,
+    CAST(NULL AS decimal(18,4)) AS ValorDecimal2,
+    CAST(NULL AS int) AS ValorEntero1,
+    CAST(NULL AS int) AS ValorEntero2,
+    CAST(NULL AS date) AS FechaInicio,
+    CAST(NULL AS date) AS FechaFin,
+    CAST(NULL AS nvarchar(500)) AS DatoExtra1,
+    CAST(NULL AS nvarchar(500)) AS DatoExtra2,
+    e.PKIdEscolaridad AS Orden,
+    e.UsuarioCreacion,
+    e.FechaCreacion,
+    e.UsuarioModificacion,
+    e.FechaModificacion,
+    e.Activo
+FROM SIS.Escolaridad AS e;
+');
 
 /*
     Periodos: cada frecuencia del menu tiene su propia vista.
@@ -543,11 +571,19 @@ VALUES
     (910, N'Municipio', N'Vw_Municipio'),
     (911, N'Contratos', N'Vw_ContratoLaboral'),
     (912, N'Base_Pago', N'Vw_BasePago'),
-    (913, N'Metodo_Pago', N'Vw_MetodoPago'),
     (914, N'Tipo_Regimen', N'Vw_TipoRegimen'),
     (915, N'Base_Cotizacion', N'Vw_BaseCotizacion'),
-    (916, N'Zona_Geografica', N'Vw_ZonaGeografica'),
-    (917, N'Dia_Semana', N'Vw_DiaSemana');
+    (916, N'Zona_Geografica', N'Vw_ZonaGeografica');
+
+IF OBJECT_ID(N'NOM.Vw_DiaSemana', N'V') IS NOT NULL
+BEGIN
+    DROP VIEW NOM.Vw_DiaSemana;
+END;
+
+IF OBJECT_ID(N'NOM.Vw_MetodoPago', N'V') IS NOT NULL
+BEGIN
+    DROP VIEW NOM.Vw_MetodoPago;
+END;
 
 IF EXISTS
 (

@@ -13,6 +13,59 @@ IF SCHEMA_ID(N'NOM') IS NULL
     EXEC(N'CREATE SCHEMA NOM');
 GO
 
+IF OBJECT_ID(N'[NOM].[Persona]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [NOM].[Persona] (
+        [PKIdPersona] int IDENTITY(1,1) NOT NULL CONSTRAINT [PK_NOM_Persona] PRIMARY KEY,
+        [Clave] nvarchar(15) NOT NULL,
+        [Iniciales] nvarchar(3) NULL,
+        [Nombre] nvarchar(50) NULL,
+        [Paterno] nvarchar(50) NULL,
+        [Materno] nvarchar(50) NULL,
+        [Sexo] nvarchar(10) NULL,
+        [FechaNacimiento] datetime NULL,
+        [ESTADO_CIVIL] nvarchar(20) NULL,
+        [RFC] nvarchar(15) NULL,
+        [Curp] nvarchar(18) NULL,
+        [REG_IMSS] nvarchar(12) NULL,
+        [NoCartilla] nvarchar(16) NULL,
+        [NoLicencia] nvarchar(16) NULL,
+        [NoPasaporte] nvarchar(16) NULL,
+        [NoCredencialElector] nvarchar(32) NULL,
+        [Gafete] nvarchar(11) NULL,
+        [CORREO_ELECTRONICO] nvarchar(250) NULL,
+        [Telefono_particular] nvarchar(15) NULL,
+        [Telefono_movil] nvarchar(15) NULL,
+        [Calle] nvarchar(40) NULL,
+        [Num_exterior] nvarchar(10) NULL,
+        [Num_interior] nvarchar(10) NULL,
+        [Colonia] nvarchar(40) NULL,
+        [CP] nvarchar(6) NULL,
+        [Municipio] nvarchar(20) NULL,
+        [Estado] nvarchar(30) NULL,
+        [Fecha_de_Inicio] datetime NULL,
+        [Fecha_Fin] datetime NULL,
+        [TIPO_CONTRATACION] nvarchar(50) NULL,
+        [PUESTO] nvarchar(100) NULL,
+        [SUELDO_BASE] float NULL,
+        [COMPENSACION_GARANTIZADA] float NULL,
+        [BANCO] nvarchar(100) NULL,
+        [NUMERO_CUENTA] nvarchar(25) NULL,
+        [CLABE] nvarchar(50) NULL,
+        [Activo] bit NOT NULL CONSTRAINT [DF_NOM_Persona_Activo] DEFAULT 1,
+        [FechaCreacion] datetime2(6) NULL CONSTRAINT [DF_NOM_Persona_FechaCreacion] DEFAULT SYSUTCDATETIME(),
+        [UsuarioCreacion] int NOT NULL CONSTRAINT [DF_NOM_Persona_UsuarioCreacion] DEFAULT 1,
+        [FechaModificacion] datetime2(6) NULL,
+        [UsuarioModificacion] int NULL,
+        [FKIdEmpresa_SIS] int NULL
+    );
+END;
+GO
+
+IF COL_LENGTH(N'NOM.Persona', N'FKIdEmpresa_SIS') IS NULL
+    ALTER TABLE [NOM].[Persona] ADD [FKIdEmpresa_SIS] int NULL;
+GO
+
 IF OBJECT_ID(N'[NOM].[PeriodoNomina]', N'U') IS NULL
 BEGIN
     CREATE TABLE [NOM].[PeriodoNomina] (
@@ -260,6 +313,12 @@ BEGIN
         [FKIdPersonaJefeValida_NOM] int NULL,
         [FKIdEmpresa_SIS] int NULL,
         [Dias] int NULL,
+        [EnviadoAAutorizar] bit NOT NULL CONSTRAINT [DF_NOM_Vacacion_EnviadoAAutorizar] DEFAULT 0,
+        [FechaEnvioAutorizacion] datetime2(6) NULL,
+        [UsuarioEnvioAutorizacion] int NULL,
+        [FechaAutorizacion] datetime2(6) NULL,
+        [UsuarioAutorizacion] int NULL,
+        [ComentarioAutorizacion] nvarchar(500) NULL,
         [UsuarioCreacion] int NULL,
         [FechaCreacion] datetime2(6) NULL,
         [UsuarioModificacion] int NULL,
@@ -267,6 +326,20 @@ BEGIN
         [Activo] bit NOT NULL CONSTRAINT [DF_NOM_Vacacion_Activo] DEFAULT 1
     );
 END;
+GO
+
+IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacion', N'EnviadoAAutorizar') IS NULL
+    ALTER TABLE [NOM].[Vacacion] ADD [EnviadoAAutorizar] bit NOT NULL CONSTRAINT [DF_NOM_Vacacion_EnviadoAAutorizar] DEFAULT 0;
+IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacion', N'FechaEnvioAutorizacion') IS NULL
+    ALTER TABLE [NOM].[Vacacion] ADD [FechaEnvioAutorizacion] datetime2(6) NULL;
+IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacion', N'UsuarioEnvioAutorizacion') IS NULL
+    ALTER TABLE [NOM].[Vacacion] ADD [UsuarioEnvioAutorizacion] int NULL;
+IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacion', N'FechaAutorizacion') IS NULL
+    ALTER TABLE [NOM].[Vacacion] ADD [FechaAutorizacion] datetime2(6) NULL;
+IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacion', N'UsuarioAutorizacion') IS NULL
+    ALTER TABLE [NOM].[Vacacion] ADD [UsuarioAutorizacion] int NULL;
+IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacion', N'ComentarioAutorizacion') IS NULL
+    ALTER TABLE [NOM].[Vacacion] ADD [ComentarioAutorizacion] nvarchar(500) NULL;
 GO
 
 IF OBJECT_ID(N'[NOM].[Liquidacion]', N'U') IS NULL
@@ -509,10 +582,19 @@ BEGIN
     LEFT JOIN [NOM].[CatalogoSimple] justi ON justi.Catalogo = N'Tipo_Justificacion' AND justi.LegacyId = src.Fk_IdTipoJustificacion__SIS
     WHERE NOT EXISTS (SELECT 1 FROM [NOM].[Incidencia] dst WHERE dst.PKIdIncidencia = src.Pk_IdIncidencia);
 
-    INSERT INTO [NOM].[Vacacion] ([PKIdVacacion], [FKIdPeriodoVacaciones_SIS], [FKIdPersona_NOM], [FechaInicio], [FechaFin], [FKIdPersonaJefeFirma_NOM], [Validado], [FKIdPersonaJefeValida_NOM], [FKIdEmpresa_SIS], [Dias], [UsuarioCreacion], [FechaCreacion], [UsuarioModificacion], [FechaModificacion], [Activo])
-    SELECT Pk_IdVacaciones, Fk_IdPeriodoVacaciones__SIS, Fk_IdPersona__RH, F_Inicio, F_Fin, Fk_IdPersonaJefeFirma, Validado, Fk_IdPersonaJefeValida, Fk_IdEmpresa__EMP, Dias, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, COALESCE(CT_LIVE, 1)
+    INSERT INTO [NOM].[Vacacion] ([PKIdVacacion], [FKIdPeriodoVacaciones_SIS], [FKIdPersona_NOM], [FechaInicio], [FechaFin], [FKIdPersonaJefeFirma_NOM], [Validado], [FKIdPersonaJefeValida_NOM], [FKIdEmpresa_SIS], [Dias], [EnviadoAAutorizar], [FechaEnvioAutorizacion], [UsuarioEnvioAutorizacion], [FechaAutorizacion], [UsuarioAutorizacion], [UsuarioCreacion], [FechaCreacion], [UsuarioModificacion], [FechaModificacion], [Activo])
+    SELECT Pk_IdVacaciones, Fk_IdPeriodoVacaciones__SIS, Fk_IdPersona__RH, F_Inicio, F_Fin, Fk_IdPersonaJefeFirma, Validado, Fk_IdPersonaJefeValida, Fk_IdEmpresa__EMP, Dias, 1, COALESCE(CT_CreatedDate, @Now), CT_CreatedBy, CASE WHEN Validado = 1 THEN COALESCE(CT_ModifiedDate, @Now) ELSE NULL END, CASE WHEN Validado = 1 THEN CT_ModifiedBy ELSE NULL END, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, COALESCE(CT_LIVE, 1)
     FROM [BD_GRP_INVEA].dbo.RH_Vacaciones src
     WHERE NOT EXISTS (SELECT 1 FROM [NOM].[Vacacion] dst WHERE dst.PKIdVacacion = src.Pk_IdVacaciones);
+
+    UPDATE [NOM].[Vacacion]
+    SET [EnviadoAAutorizar] = 1,
+        [FechaEnvioAutorizacion] = COALESCE([FechaEnvioAutorizacion], [FechaCreacion], @Now),
+        [UsuarioEnvioAutorizacion] = COALESCE([UsuarioEnvioAutorizacion], [UsuarioCreacion], 1),
+        [FechaAutorizacion] = CASE WHEN ISNULL([Validado], 0) = 1 THEN COALESCE([FechaAutorizacion], [FechaModificacion], @Now) ELSE [FechaAutorizacion] END,
+        [UsuarioAutorizacion] = CASE WHEN ISNULL([Validado], 0) = 1 THEN COALESCE([UsuarioAutorizacion], [UsuarioModificacion], [UsuarioCreacion], 1) ELSE [UsuarioAutorizacion] END
+    WHERE [EnviadoAAutorizar] = 0
+      AND ([Validado] = 1 OR [FKIdPersonaJefeFirma_NOM] IS NOT NULL OR [FKIdPersonaJefeValida_NOM] IS NOT NULL);
 
     INSERT INTO [NOM].[Liquidacion] ([PKIdLiquidacion], [FKIdContrato_PRES], [DiasPendientesPago], [FechaInicioParaAguinaldo], [FechaBaja], [DiasDeVacacionesParaCalculo], [SaldoPendienteVacaciones], [BasePorDisminuir], [SalarioDiarioBruto], [SalarioDiarioIntegrado], [FactorIntegracion], [VariableDiaria], [DiasAguinaldo], [DiasVacaciones], [PrimaVacacional], [FechaUltimoAniversario], [AnioAntiguedad], [DiasPrima], [SalarioDiarioIntegradoLiquidacion], [EsLiquidacion], [VacacionesEjercicioAnt], [DescuentosXFaltas], [UsuarioCreacion], [FechaCreacion], [UsuarioModificacion], [FechaModificacion], [Activo])
     SELECT Pk_IdLiquidacion, Fk_IdContrato__PRES, DiasPendientesPago, FechaInicioParaAguinaldo, FechaBaja, DiasDeVacacionesParaCalculo, SaldoPendientedeVacaciones, BaseporDisminuir, SalarioDiarioBruto, SalarioDiarioIntegrado, FactorIntegracion, VariableDiaria, DiasAguinaldo, DiasVacaciones, PrimaVacacional, FechaUltimoAniversario, AnioAntiguedad, DiasPrima, SalarioDiarioIntegradoLiquidacion, EsLiquidacion, VacacionesEjercicioAnt, DescuentosXFaltas, CT_CreatedBy, COALESCE(CT_CreatedDate, @Now), CT_ModifiedBy, CT_ModifiedDate, COALESCE(CT_LIVE, 1)
@@ -613,10 +695,14 @@ AS
         N'vacaciones', v.PKIdVacacion, CAST(v.PKIdVacacion AS nvarchar(50)),
         CONCAT_WS(N' ', p.Nombre, p.Paterno, p.Materno), p.Clave, CAST(v.FKIdEmpresa_SIS AS nvarchar(200)),
         CAST(v.FKIdPeriodoVacaciones_SIS AS nvarchar(100)), N'Vacaciones',
-        CASE WHEN v.Validado = 1 THEN N'Autorizada' ELSE N'Pendiente' END,
+        CASE
+            WHEN v.Validado = 1 THEN N'Autorizada'
+            WHEN v.EnviadoAAutorizar = 1 THEN N'Enviada a autorizar'
+            ELSE N'Capturada'
+        END,
         v.FechaInicio, v.FechaInicio, v.FechaFin, CAST(v.Dias AS decimal(19,4)), NULL, NULL, NULL,
         CAST(v.FKIdPersonaJefeFirma_NOM AS nvarchar(200)), N'Solicitud de vacaciones',
-        CONCAT(N'Jefe valida: ', COALESCE(CAST(v.FKIdPersonaJefeValida_NOM AS nvarchar(20)), N'')),
+        CONCAT(N'Jefe valida: ', COALESCE(CAST(v.FKIdPersonaJefeValida_NOM AS nvarchar(20)), N''), N' | Autoriza usuario: ', COALESCE(CAST(v.UsuarioAutorizacion AS nvarchar(20)), N'')),
         CONCAT(N'Dias: ', COALESCE(CAST(v.Dias AS nvarchar(20)), N'')), v.Activo
     FROM [NOM].[Vacacion] v
     LEFT JOIN [NOM].[Persona] p ON p.PKIdPersona = v.FKIdPersona_NOM
@@ -676,7 +762,7 @@ AS
         CAST(c.PKIdCorridaNomina AS nvarchar(200)), N'Corrida de nomina',
         c.Observaciones, CONCAT(N'Movimientos: ', c.TotalMovimientos), c.Activo
     FROM [NOM].[CorridaNomina] c
-    LEFT JOIN [NOM].[EmpresaNomina] en ON en.PKIdEmpresaNomina = c.FKIdEmpresaNomina_NOM;
+    LEFT JOIN [NOM].[EmpresaNomina] en ON en.PKIdEmpresaNomina = c.FKIdEmpresa_SIS;
 GO
 
 CREATE OR ALTER PROCEDURE [NOM].[spOperacionNomina_List]

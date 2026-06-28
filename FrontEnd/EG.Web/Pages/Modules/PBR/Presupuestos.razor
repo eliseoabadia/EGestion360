@@ -1,5 +1,4 @@
 @page "/PBR/Presupuestos"
-@page "/PRB/Presupuestos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
@@ -43,13 +42,12 @@
                           OnSearch="() => table.ReloadData()">
                 <Header>
                     <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrPresupuestoProgramaResponse">Programa</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PkidPresupuestoPrograma" T="PbrPresupuestoProgramaResponse">ID</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Anio" T="PbrPresupuestoProgramaResponse">Año</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrPresupuestoProgramaResponse">Programa</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PresupuestoAnual" T="PbrPresupuestoProgramaResponse">Anual</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PresupuestoModificado" T="PbrPresupuestoProgramaResponse">Modificado</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="UnidadResponsableDescripcion" T="PbrPresupuestoProgramaResponse">UR</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="PbrPresupuestoProgramaResponse">Estado</MudTableSortLabel></MudTh>
                 </Header>
                 <Row Context="item">
                     <MudTd>
@@ -72,20 +70,15 @@
                                            OnClick="@(() => OpenPresupuestoDialog(item.PkidPresupuestoPrograma))" />
                         </MudTooltip>
                     </MudTd>
-                    <MudTd>@item.PkidPresupuestoPrograma</MudTd>
-                    <MudTd>@item.Anio</MudTd>
                     <MudTd>
                         <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.ProgramaDescripcion)</MudText>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ProgramaClave)</MudText>
                     </MudTd>
+                    <MudTd>@item.PkidPresupuestoPrograma</MudTd>
+                    <MudTd>@item.Anio</MudTd>
                     <MudTd>@Money(item.PresupuestoAnual)</MudTd>
                     <MudTd>@Money(item.PresupuestoModificado ?? item.PresupuestoAnual)</MudTd>
                     <MudTd>@TextOrDash(item.UnidadResponsableDescripcion)</MudTd>
-                    <MudTd>
-                        <MudChip T="string" Size="Size.Small" Color="@(item.Activo ? Color.Success : Color.Default)">
-                            @(item.Activo ? "Activo" : "Inactivo")
-                        </MudChip>
-                    </MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -136,6 +129,7 @@
                           OnSearch="() => partidaTable.ReloadData()">
                 <Header>
                     <MudTh>Acciones</MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrPartidaGastoResponse">Programa</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PkidPartidaGasto" T="PbrPartidaGastoResponse">ID</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="PbrPartidaGastoResponse">Partida</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PbrPartidaGastoResponse">Descripcion</MudTableSortLabel></MudTh>
@@ -148,6 +142,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenPartidaDialog(item.PkidPartidaGasto))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeletePartidaAsync(item))" />
                     </MudTd>
+                    <MudTd>@TextOrDash(item.ProgramaDescripcion)</MudTd>
                     <MudTd>@item.PkidPartidaGasto</MudTd>
                     <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
                     <MudTd>@TextOrDash(item.Descripcion)</MudTd>
@@ -173,7 +168,7 @@
 
     private async Task<TableData<PbrPresupuestoProgramaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
-        var response = await Service.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, search, state.SortLabel ?? "PkidPresupuestoPrograma", state.SortDirection);
+        var response = await Service.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, search, state.SortLabel ?? "ProgramaDescripcion", state.SortDirection);
         return new TableData<PbrPresupuestoProgramaResponse> { Items = response?.Items ?? new List<PbrPresupuestoProgramaResponse>(), TotalItems = response?.TotalCount ?? 0 };
     }
 
@@ -188,7 +183,7 @@
             Math.Max(1, state.Page + 1),
             state.PageSize,
             partidaSearch,
-            state.SortLabel ?? "PkidPartidaGasto",
+            state.SortLabel ?? "ProgramaDescripcion",
             state.SortDirection,
             new Dictionary<string, object> { ["FkidPresupuestoProgramaPbr"] = selected.PkidPresupuestoPrograma });
 

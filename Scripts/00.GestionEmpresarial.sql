@@ -436,9 +436,9 @@ VALUES
 (2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Adquisiciones', 'ADQ001', 'Adquisiciones', 'view,view-menu', 4),
 (2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Patrimonio', 'PAT001', 'Patrimonio', 'view,view-menu', 5),
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Almacen', 'ALM001', 'Almacen', 'view,view-menu', 6),
-(2, 'Reportes CxC', 'Reportes CxC', NULL, 'app://{0}/{1}', GETDATE(), 'Reportes CxC', 'RPT001', 'Reportes CxC', 'view,view-menu', 7),
-(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Nomina', 'NOM001', 'Nomina', 'view,view-menu', 8),
-(2, 'PRB', 'PRB', NULL, 'app://{0}/{1}', GETDATE(), 'PRB', 'PRB001', 'PRB', 'view,view-menu', 9),
+(2, 'Nomina', 'Nomina', NULL, 'app://{0}/{1}', GETDATE(), 'Nomina', 'NOM001', 'Nomina', 'view,view-menu', 7),
+(2, 'Reportes CxC', 'Reportes CxC', NULL, 'app://{0}/{1}', GETDATE(), 'Reportes CxC', 'RPT001', 'Reportes CxC', 'view,view-menu', 8),
+(2, 'PBR', 'PBR', NULL, 'app://{0}/{1}', GETDATE(), 'PBR', 'PBR001', 'PBR', 'view,view-menu', 9),
 (2, 'Ayuda', 'Ayuda', NULL, 'app://{0}/{1}', GETDATE(), 'Ayuda', 'HLP001', 'Ayuda', 'view,view-menu', 10),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Sistema', 'CONSIS01', 'Sistema', 'view,view-menu', 20),
@@ -516,18 +516,6 @@ VALUES
 (2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_SolicitudCLC', 'CONTS06', 'Tipo Solicitud CLC', 'view,view-menu,delete,new,update,CanExportToExcel', 126),
 (2, 'Configuracion', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Tipo_DoctoCLC', 'CONTS07', 'Tipo Documento CLC', 'view,view-menu,delete,new,update,CanExportToExcel', 127),
 
---ESTAS NO VAN AQUI
-(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Programa_Anual_Adquisiciones', 'ADQPAA01', 'Adquisiciones', 'view,view-menu,delete,new,update', 0),
-(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Requisicion', 'ADQREQ01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
-(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Cotizacion', 'ADQCOT01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
-(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'SolicitudSuficiencia', 'ADQSUF01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
-(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'OrdenCompra', 'ADQORD01', 'Adquisiciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0),
-(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Contratos', 'ADQCON01', 'Adquisiciones', 'view,view-menu', 310),
-(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Registro_Compromiso', 'ADQCONRC01', 'Registro de Compromiso', 'view,view-menu,delete,new,update,CanExportToExcel',311),
-(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Saldos_Contratos', 'ADQCONSC01', 'Saldos de Contratos', 'view,view-menu,delete,new,update,CanExportToExcel', 312),
-(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Estado_Contrato', 'ADQCONEC01', 'Estado de Contratos', 'view,view-menu,delete,new,update,CanExportToExcel', 313),
---HASTA AQUI ESTA MAL
-
 (2, 'Presupuesto', 'Presupuesto', NULL, 'app://{0}/{1}', GETDATE(), 'Egreso', 'PREEG01', 'Egreso', 'view,view-menu', 140),
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion', 'PREEGP01', 'Planeación', 'view,view-menu', 141),
 
@@ -538,7 +526,7 @@ VALUES
 (2, 'Egreso', 'Planeacion', NULL, 'app://{0}/{1}', GETDATE(), 'Anteproyecto_Egresos', 'PREEGPS01', 'Anteproyecto de Egresos', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 145),
 --falta autorizacion/desautorizacion de anteproyecto
 
-(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Disponible', 'PREEGS01', 'Presupuesto Autorizado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 146),
+(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Autorizado', 'PREEGS01', 'Presupuesto Autorizado', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 146),
 
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Modificado', 'PREEGPM01', 'Presupuesto Modificado', 'view,view-menu', 147),
 (2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Adecuaciones_Compensadas', 'PREEGPMS01', 'Adecuaciones Compensadas', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 148),
@@ -546,7 +534,7 @@ VALUES
 (2, 'Egreso', 'Presupuesto_Modificado', NULL, 'app://{0}/{1}', GETDATE(), 'Reducciones', 'PREEGPMS03', 'Reducciones', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 150),
 
 
-(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Comprometido', 'PREEGS02', 'Presupuesto Disponible PEF', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 151),
+(2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Disponible', 'PREEGS02', 'Presupuesto Disponible PEF', 'view,view-menu,CanExportToExcel', 151),
 
 (2, 'Presupuesto', 'Egreso', NULL, 'app://{0}/{1}', GETDATE(), 'Presupuesto_Comprometido', 'PREEGPC01', 'Presupuesto Comprometido', 'view,view-menu', 152),
 (2, 'Egreso', 'Presupuesto_Comprometido', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Suficiencia', 'PREEGPCS01', 'Solicitud Suficiencia', 'view,view-menu,new,update,delete,CanExportToExcel,authorize', 153),
@@ -650,33 +638,49 @@ VALUES
 (2, 'Contabilidad', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'EI_Programaticos', 'CTBS06', 'Estados e Informes Programaticos', 'view,view-menu,delete,new,update,CanExportToExcel', 261),
 (2, 'Contabilidad', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Indicadores_Postura_Fiscal', 'CTBS07', 'Indicadores de Postura Fiscal', 'view,view-menu,delete,new,update,CanExportToExcel', 262),
 (2, 'Contabilidad', 'Contabilidad', NULL, 'app://{0}/{1}', GETDATE(), 'Cierre_Mensual', 'CTBS08', 'Cierre Mensual', 'view,view-menu,delete,new,update,CanExportToExcel', 263),
+
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Programa_Anual_Adquisiciones', 'ADQS01', 'Programa Anual', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 300),
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Requisicion', 'ADQS02', 'Requisición', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 301),
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Cotizacion', 'ADQS03', 'Cotización', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 302),
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'SolicitudSuficiencia', 'ADQS04', 'Solicitud Suficiencia', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 303),
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'OrdenCompra', 'ADQS05', 'Orden de Compra', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 304),
+
+(2, 'Adquisiciones', 'Adquisiciones', NULL, 'app://{0}/{1}', GETDATE(), 'Contratos', 'ADQCON01', 'Contratos', 'view,view-menu', 310),
+(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Registro_Compromiso', 'ADQCONS01', 'Registro de Compromiso', 'view,view-menu,delete,new,update,CanExportToExcel',311),
+(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Saldos_Contratos', 'ADQCONS02', 'Saldos de Contratos', 'view,view-menu,delete,new,update,CanExportToExcel', 312),
+(2, 'Adquisiciones', 'Contratos', NULL, 'app://{0}/{1}', GETDATE(), 'Estado_Contrato', 'ADQCONS03', 'Estado de Contratos', 'view,view-menu,delete,new,update,CanExportToExcel', 313),
+
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bienes', 'PATS01', 'Bienes', 'view,view-menu,delete,new,update,CanExportToExcel', 400),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Clasificacion_Bienes_Muebles', 'PATS02', 'Clasificación de Bienes Muebles', 'view,view-menu,delete,new,update,CanExportToExcel', 401),
+--Falta bienes no pertenecientes al instituto
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bajas', 'PATS04', 'Bajas', 'view,view-menu,delete,new,update,CanExportToExcel', 403),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Calendario_Inventarios', 'PATS05', 'Calendario de Inventarios', 'view,view-menu,delete,new,update,CanExportToExcel', 404),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Inventarios', 'PATS06', 'Inventarios', 'view,view-menu,delete,new,update,CanExportToExcel', 405),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Cedula_Diferencia', 'PATS07', 'Cédula de Diferencia', 'view,view-menu,delete,new,update,CanExportToExcel', 406),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardos', 'PATS08', 'Resguardos', 'view,view-menu,delete,new,update,CanExportToExcel', 407),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Firma_Resguardos', 'PATS09', 'Firma Resguardos', 'view,view-menu,delete,new,update,CanExportToExcel', 408),
+(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardo_Historico', 'PATS10', 'Resguardo Histórico', 'view,view-menu,delete,new,update,CanExportToExcel', 409),
+
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Recepcion_Pedidos', 'ALMS01', 'Recepción de Pedidos', 'view,view-menu,delete,new,update,CanExportToExcel', 500),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Entradas_Ajuste', 'ALMS02', 'Entradas por Ajuste', 'view,view-menu,delete,new,update,CanExportToExcel', 501),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitudes_Salida', 'ALMS03', 'Solicitudes de Salida', 'view,view-menu,delete,new,update,CanExportToExcel', 502),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Suministros_Salida', 'ALMS04', 'Suministros de Salida', 'view,view-menu,delete,new,update,CanExportToExcel', 503),
+--Falta salidas por ajuste
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Existencias_Registradas', 'ALMS06', 'Existencias Registradas', 'view,view-menu,delete,new,update,CanExportToExcel', 505),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Conteo_ciclico', 'ALMS07', 'Conteo Cí­clico', 'view,view-menu,delete,new,update,CanExportToExcel', 506),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_Conteo', 'ALMS08', 'Reporte de Diferencias de Conteo', 'view,view-menu,delete,new,update,CanExportToExcel', 507),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Conteo_ciclico_anual', 'ALMS09', 'Conteo Cí­clico Anual', 'view,view-menu,delete,new,update,CanExportToExcel', 508),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_conteo_anual', 'ALMS10', 'Reporte de Diferencias de Conteo Anual', 'view,view-menu,delete,new,update,CanExportToExcel', 509),
+--Falta Estadisticas -> cierre de invertario
+--Falta Autorizacion de solicitudes de salida
 --HASTA AQUI VOY BIEN
-
-
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bienes', 'PATBIEN001', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Clasificacion_Bienes_Muebles', 'PATBIEN002', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Bajas', 'PATBIEN003', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Calendario_Inventarios', 'PATBIEN004', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Inventarios', 'PATBIEN005', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Cedula_Diferencia', 'PATBIEN006', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardos', 'PATBIEN007', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Firma_Resguardos', 'PATBIEN008', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-(2, 'Patrimonio', 'Patrimonio', NULL, 'app://{0}/{1}', GETDATE(), 'Resguardo_Historico', 'PATBIEN008', 'Patrimonio', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
-
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Recepcion_Pedidos', 'AL0001', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Entradas_Ajuste', 'AL0002', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitudes_Salida', 'AL0003', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Suministros_Salida', 'AL0004', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Existencias_Registradas', 'AL0005', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'conteo_ciclico', 'AL0006', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_Conteo', 'AL0007', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'conteo_ciclico_anual', 'AL0008', 'Almacen', 'view,view-menu', 0),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Reporte_diferencias_conteo_anual', 'AL0009', 'Almacen', 'view,view-menu', 0),
 
 (2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina', N'NOM001', N'Nomina', 'view,view-menu', 0),
 (2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina_Calculo', N'NOM002', N'Calculo', 'view,view-menu,delete,new,update', 0),
 (2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Infonavit', N'NOM004', N'Infonavit', 'view,view-menu,delete,new,update', 0),
 (2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Procesos', N'NOM005', N'Procesos', 'view,view-menu,delete,new,update', 0),
+
+
 
 (2, N'Nomina', N'Configuracion_Nominas', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina_Catalogos', N'NOM100', N'Catalogos', 'view,view-menu', 0),
 (2, N'Nomina', N'Configuracion_Nominas', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina_Periodos', N'NOM101', N'Periodos', 'view,view-menu', 0),
@@ -684,12 +688,16 @@ VALUES
 (2, N'Nomina', N'Configuracion_Nominas', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina_Subsidios_ISR', N'NOM103', N'Subsidios ISR', 'view,view-menu', 0),
 (2, N'Nomina', N'Configuracion_Nominas', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina_IMSS', N'NOM104', N'IMSS', 'view,view-menu', 0),
 
+
+
 (2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Recursos_Humanos', N'NOMRH001', N'Nomina', 'view,view-menu', 0),
-(2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Empleados', N'NOMRH001', N'Nomina', 'view,view-menu,delete,new,update', 0),
-(2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Movimientos_Personal', N'NOMRHMOV1', N'Nomina', 'view,view-menu', 0),
-(2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'De_Personal', N'NOMRHMOV2', N'Nomina', 'view,view-menu,delete,new,update', 0),
-(2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Reporte Quincenal MP', N'NOMRHMOV3', N'Nomina', 'view,view-menu,delete,new,update', 0),
-(2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Creditos_Trabajadores', N'NOMRH002', N'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, N'Nomina', N'Recursos_Humanos', NULL, N'app://{0}/{1}', GETDATE(), N'Empleados', N'NOMRH001', N'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, N'Nomina', N'Recursos_Humanos', NULL, N'app://{0}/{1}', GETDATE(), N'Movimientos_Personal', N'NOMRHMOV1', N'Nomina', 'view,view-menu', 0),
+(2, N'Nomina', N'Recursos_Humanos', NULL, N'app://{0}/{1}', GETDATE(), N'De_Personal', N'NOMRHMOV2', N'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, N'Nomina', N'Recursos_Humanos', NULL, N'app://{0}/{1}', GETDATE(), N'Reporte Quincenal MP', N'NOMRHMOV3', N'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, N'Nomina', N'Recursos_Humanos', NULL, N'app://{0}/{1}', GETDATE(), N'Creditos_Trabajadores', N'NOMRH002', N'Nomina', 'view,view-menu,delete,new,update', 0),
+
+
 
 (2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Nomina_Nomina', N'NOM001', N'Nomina', 'view,view-menu', 0),
 (2, N'Nomina', N'Calculo', NULL, N'app://{0}/{1}', GETDATE(), N'Calculo_2050', N'NOM002', N'Calculo', 'view,view-menu,delete,new,update', 0),
@@ -700,6 +708,8 @@ VALUES
 (2, N'Nomina', N'Auxiliares', NULL, N'app://{0}/{1}', GETDATE(), N'Calculo_FOVISSSTE_4136', N'NOMAUX004', N'Auxiliares', 'view,view-menu,delete,new,update', 0),
 (2, N'Nomina', N'Auxiliares', NULL, N'app://{0}/{1}', GETDATE(), N'Calculo_Infonavit_139', N'NOMAUX005', N'Auxiliares', 'view,view-menu,delete,new,update', 0),
 (2, N'Nomina', N'Auxiliares', NULL, N'app://{0}/{1}', GETDATE(), N'Calculo_IMSS_3084', N'NOMAUX006', N'Auxiliares', 'view,view-menu,delete,new,update', 0),
+
+
 
 (2, N'Nomina', N'Productos', NULL, N'app://{0}/{1}', GETDATE(), N'Resumen', N'NOMPROD001', N'Productos', 'view,view-menu', 0),
 (2, N'Nomina', N'Productos', NULL, N'app://{0}/{1}', GETDATE(), N'Recibos', N'NOMPROD002', N'Productos', 'view,view-menu,delete,new,update', 0),
@@ -784,7 +794,7 @@ VALUES
 (2, N'Nomina', N'IMSS', NULL, N'app://{0}/{1}', GETDATE(), N'Clase_IMSS', N'NOMCFG031', N'Clase IMSS', 'view,view-menu,delete,new,update', 0),
 (2, N'Nomina', N'IMSS', NULL, N'app://{0}/{1}', GETDATE(), N'Fraccion_IMSS', N'NOMCFG032', N'Fracción IMSS', 'view,view-menu,delete,new,update', 0),
 (2, N'Nomina', N'IMSS', NULL, N'app://{0}/{1}', GETDATE(), N'Base_Gravable_IMSS', N'NOMCFG033', N'Base Gravable IMSS', 'view,view-menu,delete,new,update', 0),
-
+---
 (2, N'RecursosHumanos', N'Configuracion_RH', NULL, N'app://{0}/{1}', GETDATE(), N'Configuracion_RH', N'RHCFG001', N'Configuración RH', 'view,view-menu', 0),
 (2, N'RecursosHumanos', N'Plazas_Autorizadas', NULL, N'app://{0}/{1}', GETDATE(), N'Plazas_Autorizadas', N'RHCFG002', N'Plazas Autorizadas', 'view,view-menu,delete,new,update', 0),
 (2, N'RecursosHumanos', N'Universo', NULL, N'app://{0}/{1}', GETDATE(), N'Universo', N'RHCFG003', N'Universo', 'view,view-menu,delete,new,update', 0),
@@ -802,10 +812,29 @@ VALUES
 (2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Tipo_Regimen', N'RHCFG015', N'Tipo de Régimen', 'view,view-menu,delete,new,update', 0),
 (2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Base_Cotizacion', N'RHCFG016', N'Base de Cotización', 'view,view-menu,delete,new,update', 0),
 (2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Zona_Geografica', N'RHCFG017', N'Zona Geográfica', 'view,view-menu,delete,new,update', 0),
-(2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Dia_Semana', N'RHCFG018', N'Día de la Semana', 'view,view-menu,delete,new,update', 0)
+(2, N'RecursosHumanos', N'Contratos', NULL, N'app://{0}/{1}', GETDATE(), N'Dia_Semana', N'RHCFG018', N'Día de la Semana', 'view,view-menu,delete,new,update', 0),
 
+(2, N'RecursosHumanos', N'Tipo_Sangre', NULL, N'app://{0}/{1}', GETDATE(), N'Tipo_Sangre', N'RHCFG019', N'Tipo de Sangre', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Profesion', NULL, N'app://{0}/{1}', GETDATE(), N'Profesion', N'RHCFG020', N'Profesion', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Regimen_Fiscal', NULL, N'app://{0}/{1}', GETDATE(), N'Regimen_Fiscal', N'RHCFG021', N'Regimen Fiscal', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Pais', NULL, N'app://{0}/{1}', GETDATE(), N'Pais', N'RHCFG022', N'Pais', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Periodo_Pago', NULL, N'app://{0}/{1}', GETDATE(), N'Periodo_Pago', N'RHCFG023', N'Periodo de Pago', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Tipo_Documento_RH', NULL, N'app://{0}/{1}', GETDATE(), N'Tipo_Documento_RH', N'RHCFG024', N'Tipo Documento RH', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Tipo_Expediente', NULL, N'app://{0}/{1}', GETDATE(), N'Tipo_Expediente', N'RHCFG025', N'Tipo Expediente', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Opcion_Jubilacion', NULL, N'app://{0}/{1}', GETDATE(), N'Opcion_Jubilacion', N'RHCFG026', N'Opcion Jubilacion', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Situacion_Persona', NULL, N'app://{0}/{1}', GETDATE(), N'Situacion_Persona', N'RHCFG027', N'Situacion Persona', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Situacion_Plaza', NULL, N'app://{0}/{1}', GETDATE(), N'Situacion_Plaza', N'RHCFG028', N'Situacion Plaza', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Situacion_Movimiento', NULL, N'app://{0}/{1}', GETDATE(), N'Situacion_Movimiento', N'RHCFG029', N'Situacion Movimiento', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Clase_Movimiento', NULL, N'app://{0}/{1}', GETDATE(), N'Clase_Movimiento', N'RHCFG030', N'Clase Movimiento', 'view,view-menu,delete,new,update', 0),
+(2, N'RecursosHumanos', N'Movimiento_RH', NULL, N'app://{0}/{1}', GETDATE(), N'Movimiento_RH', N'RHCFG032', N'Movimiento RH', 'view,view-menu,delete,new,update', 0),
+
+(2, N'Nomina', N'Nomina', NULL, N'app://{0}/{1}', GETDATE(), N'Vacaciones', N'NOM005', N'Nomina', 'view,view-menu,delete,new,update', 0),
+(2, N'Nomina', N'Vacaciones', NULL, N'app://{0}/{1}', GETDATE(), N'Solicitud_Vacaciones', N'NOM002', N'Vacaciones', 'view,view-menu,delete,new,update', 0),
+(2, N'Nomina', N'Vacaciones', NULL, N'app://{0}/{1}', GETDATE(), N'Autorizacion_Vacaciones', N'NOM002', N'Vacaciones', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 0)
 ;
  
+
+
 
 SELECT 'EXEC spConfiguracionDeRolYClaims ''' + [Group] + ''', ''' + [SubGroup] + ''', ''10000'', ''' + [Values] + ''';'
 from dbo.AspNetClaims
@@ -817,9 +846,9 @@ EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Contabilidad', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Adquisiciones', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Patrimonio', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Almacen', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes CxC', 'Reportes CxC', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'PRB', 'PRB', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Reportes CxC', 'Reportes CxC', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'PBR', 'PBR', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Ayuda', 'Ayuda', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Sistema', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'MiPerfil', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -888,27 +917,18 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Pago', '10000', 'view,view-m
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_PagoSF', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Programa_Anual_Adquisiciones', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'OrdenCompra', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Contratos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Catalogos_Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_Planeacion', 'Indicadores', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_Planeacion', 'Resumen_Narrativo', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Disponible', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Modificado', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Ampliaciones', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reducciones', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Comprometido', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Disponible', '10000', 'view,view-menu,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Comprometido', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficiencia', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Autorizacion_Suficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
@@ -996,6 +1016,15 @@ EXEC spConfiguracionDeRolYClaims 'EI_Presupuestarios', 'Resultados_Egresos', '10
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'EI_Programaticos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Indicadores_Postura_Fiscal', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Cierre_Mensual', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Programa_Anual_Adquisiciones', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'OrdenCompra', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Contratos', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bienes', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Clasificacion_Bienes_Muebles', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bajas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1005,15 +1034,15 @@ EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Cedula_Diferencia', '10000', 'vi
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Firma_Resguardos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Resguardo_Historico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Recepcion_Pedidos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Entradas_Ajuste', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Solicitudes_Salida', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Suministros_Salida', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Existencias_Registradas', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'conteo_ciclico', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_Conteo', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'conteo_ciclico_anual', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_conteo_anual', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Recepcion_Pedidos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Entradas_Ajuste', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Solicitudes_Salida', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Suministros_Salida', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Existencias_Registradas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Conteo_ciclico', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_Conteo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Conteo_ciclico_anual', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_conteo_anual', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina_Calculo', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Infonavit', '10000', 'view,view-menu,delete,new,update';
@@ -1024,11 +1053,11 @@ EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_Tablas_ISR', '
 EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_Subsidios_ISR', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_IMSS', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Recursos_Humanos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Empleados', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Movimientos_Personal', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'De_Personal', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Reporte Quincenal MP', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Creditos_Trabajadores', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Empleados', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Movimientos_Personal', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'De_Personal', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Reporte Quincenal MP', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Creditos_Trabajadores', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina_Nomina', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Calculo', 'Calculo_2050', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Auxiliares', '10000', 'view,view-menu';
@@ -1124,6 +1153,22 @@ EXEC spConfiguracionDeRolYClaims 'Contratos', 'Tipo_Regimen', '10000', 'view,vie
 EXEC spConfiguracionDeRolYClaims 'Contratos', 'Base_Cotizacion', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Contratos', 'Zona_Geografica', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Contratos', 'Dia_Semana', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Tipo_Sangre', 'Tipo_Sangre', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Profesion', 'Profesion', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Regimen_Fiscal', 'Regimen_Fiscal', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Pais', 'Pais', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Periodo_Pago', 'Periodo_Pago', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Tipo_Documento_RH', 'Tipo_Documento_RH', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Tipo_Expediente', 'Tipo_Expediente', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Opcion_Jubilacion', 'Opcion_Jubilacion', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Situacion_Persona', 'Situacion_Persona', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Situacion_Plaza', 'Situacion_Plaza', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Situacion_Movimiento', 'Situacion_Movimiento', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Clase_Movimiento', 'Clase_Movimiento', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Movimiento_RH', 'Movimiento_RH', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Nomina', 'Vacaciones', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Vacaciones', 'Solicitud_Vacaciones', '10000', 'view,view-menu,delete,new,update';
+EXEC spConfiguracionDeRolYClaims 'Vacaciones', 'Autorizacion_Vacaciones', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 -- Tabla AspNetUsers
 CREATE TABLE dbo.AspNetUsers (
     Id NVARCHAR(128) NOT NULL,
@@ -1226,6 +1271,7 @@ SET IDENTITY_INSERT SIS.Menu ON;
 MERGE INTO SIS.Menu AS TARGET
 USING (VALUES
       -- Módulos principales
+      -- Módulos principales
     (1, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaCog', 1, N'ESP', 1, 1, GETDATE()),
     (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaChartPie', 1, N'ESP', 2, 1, GETDATE()),
     (3, N'Contabilidad', 1, NULL, N'Contabilidad', N'/', N'FaTable', 1, N'ESP', 3, 1, GETDATE()),
@@ -1234,7 +1280,7 @@ USING (VALUES
     (6, N'Almacén', 1, NULL, N'Almacén', N'/', N'FaFolderOpen', 1, N'ESP', 6, 1, GETDATE()),
     (7, N'Nómina', 1, NULL, N'Nómina', N'/', N'FaMoneyBillWave', 1, N'ESP', 7, 1, GETDATE()),
     (8, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaChartLine', 1, N'ESP', 8, 1, GETDATE()),
-    (9, N'PRB', 2, NULL, N'PRB', N'/PRB', N'FaDashboard', 1, N'ESP', 9, 1, GETDATE()),
+    (9, N'PBR', 2, NULL, N'PBR', N'/PBR', N'FaDashboard', 1, N'ESP', 9, 1, GETDATE()),
     (10, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaInfo', 1, N'ESP', 10, 1, GETDATE()),
 
     -- Configuración -> Sistema
@@ -1442,7 +1488,6 @@ USING (VALUES
 	(261, N'Estados e Informes Programaticos', 2, 3, N'Estados e Informes Programaticos', N'/Contabilidad/EI_Programaticos', N'FaDocument', 1, N'ESP', 9, 1, GETDATE()),
 	(262, N'Indicadores de Postura Fiscal', 2, 3, N'Indicadores de Postura Fiscal', N'/Contabilidad/Indicadores_Postura_Fiscal', N'FaDocument', 1, N'ESP', 10, 1, GETDATE()),
 	(263, N'Cierre Mensual', 2, 3, N'Cierre Mensual', N'/Contabilidad/Cierre_Mensual', N'FaDocument', 1, N'ESP', 11, 1, GETDATE()),
-	--Aqui voy bien
 
     -- Adquisiciones
     (300, N'Programa Anual', 2, 4, N'Programa Anual', N'/Adquisiciones/Programa_Anual', N'FaCalendar', 1, N'ESP', 1, 1, GETDATE()),
@@ -1459,24 +1504,29 @@ USING (VALUES
     -- Patrimonio
     (400, N'Bienes', 2, 5, N'Bienes', N'/Patrimonio/Bienes', N'FaFolderOpen', 1, N'ESP', 6, 1, GETDATE()),
     (401, N'Clasificación de Bienes Muebles', 2, 5, N'Clasificación de Bienes Muebles', N'/Patrimonio/Clasificacion_Bienes_Muebles', N'FaFolder', 1, N'ESP', 2, 1, GETDATE()),
-    (402, N'Bajas', 2, 5, N'Bajas', N'/Patrimonio/Bajas', N'FaTrash', 1, N'ESP', 3, 1, GETDATE()),
-    (403, N'Calendario de Inventarios', 2, 5, N'Calendario de Inventarios', N'/Patrimonio/Calendario_Inventarios', N'FaCalendar', 1, N'ESP', 4, 1, GETDATE()),
-    (404, N'Inventarios', 2, 5, N'Inventarios', N'/Patrimonio/Inventarios', N'RiListCheck2', 1, N'ESP', 5, 1, GETDATE()),
-    (405, N'Cédula de Diferencia', 2, 5, N'Cédula de Diferencia', N'/Patrimonio/Cedula_Diferencia', N'FaDocument', 1, N'ESP', 6, 1, GETDATE()),
-    (406, N'Resguardos', 2, 5, N'Resguardos', N'/Patrimonio/Resguardos', N'FaLock', 1, N'ESP', 7, 1, GETDATE()),
-    (407, N'Firma Resguardos', 2, 5, N'Firma Resguardos', N'/Patrimonio/Firma_Resguardos', N'FaEdit', 1, N'ESP', 8, 1, GETDATE()),
-    (408, N'Resguardo Histórico', 2, 5, N'Resguardo Histórico', N'/Patrimonio/Resguardo_Historico', N'FaFile', 1, N'ESP', 9, 1, GETDATE()),
+    --Falta bienes no pertenecientes al instituto
+	(403, N'Bajas', 2, 5, N'Bajas', N'/Patrimonio/Bajas', N'FaTrash', 1, N'ESP', 4, 1, GETDATE()),
+    (404, N'Calendario de Inventarios', 2, 5, N'Calendario de Inventarios', N'/Patrimonio/Calendario_Inventarios', N'FaCalendar', 1, N'ESP', 5, 1, GETDATE()),
+    (405, N'Inventarios', 2, 5, N'Inventarios', N'/Patrimonio/Inventarios', N'RiListCheck2', 1, N'ESP', 6, 1, GETDATE()),
+    (406, N'Cédula de Diferencia', 2, 5, N'Cédula de Diferencia', N'/Patrimonio/Cedula_Diferencia', N'FaDocument', 1, N'ESP', 7, 1, GETDATE()),
+    (407, N'Resguardos', 2, 5, N'Resguardos', N'/Patrimonio/Resguardos', N'FaLock', 1, N'ESP', 8, 1, GETDATE()),
+    (408, N'Firma Resguardos', 2, 5, N'Firma Resguardos', N'/Patrimonio/Firma_Resguardos', N'FaEdit', 1, N'ESP', 9, 1, GETDATE()),
+    (409, N'Resguardo Histórico', 2, 5, N'Resguardo Histórico', N'/Patrimonio/Resguardo_Historico', N'FaFile', 1, N'ESP', 10, 1, GETDATE()),
 
     -- Almacén
     (500, N'Recepción de Pedidos', 2, 6, N'Recepción de Pedidos', N'/Almacen/Recepcion_Pedidos', N'FaFolderOpen', 1, N'ESP', 1, 1, GETDATE()),
     (501, N'Entradas por Ajuste', 2, 6, N'Entradas por Ajuste', N'/Almacen/Entradas_Ajuste', N'FaPlus', 1, N'ESP', 2, 1, GETDATE()),
     (502, N'Solicitudes de Salida', 2, 6, N'Solicitudes de Salida', N'/Almacen/Solicitudes_Salida', N'RiListCheck2', 1, N'ESP', 3, 1, GETDATE()),
     (503, N'Suministros de Salida', 2, 6, N'Suministros de Salida', N'/Almacen/Suministros_Salida', N'FaFile', 1, N'ESP', 4, 1, GETDATE()),
-    (504, N'Existencias Registradas', 2, 6, N'Existencias Registradas', N'/Almacen/Existencias_Registradas', N'FaTable', 1, N'ESP', 5, 1, GETDATE()),
-    (505, N'Conteo Cí­clico', 2, 6, N'Conteo Cí­clico', N'/Almacen/Conteo_ciclico', N'RiListCheck2', 1, N'ESP', 6, 1, GETDATE()),
-    (506, N'Reporte de Diferencias de Conteo', 2, 6, N'Reporte de Diferencias de Conteo', N'/Almacen/Reporte_diferencias_Conteo', N'FaChartBar', 1, N'ESP', 7, 1, GETDATE()),
-    (507, N'Conteo Cí­clico Anual', 2, 6, N'Conteo Cí­clico Anual', N'/Almacen/Conteo_ciclico_anual', N'FaCalendar', 1, N'ESP', 8, 1, GETDATE()),
-    (508, N'Reporte de Diferencias de Conteo Anual', 2, 6, N'Reporte de Diferencias de Conteo Anual', N'/Almacen/Reporte_diferencias_Conteo_anual', N'FaChartLine', 1, N'ESP', 9, 1, GETDATE()),
+    --Falta salidas por ajuste
+	(505, N'Existencias Registradas', 2, 6, N'Existencias Registradas', N'/Almacen/Existencias_Registradas', N'FaTable', 1, N'ESP', 6, 1, GETDATE()),
+    (506, N'Conteo Cí­clico', 2, 6, N'Conteo Cí­clico', N'/Almacen/Conteo_ciclico', N'RiListCheck2', 1, N'ESP', 7, 1, GETDATE()),
+    (507, N'Reporte de Diferencias de Conteo', 2, 6, N'Reporte de Diferencias de Conteo', N'/Almacen/Reporte_diferencias_Conteo', N'FaChartBar', 1, N'ESP', 8, 1, GETDATE()),
+    (508, N'Conteo Cí­clico Anual', 2, 6, N'Conteo Cí­clico Anual', N'/Almacen/Conteo_ciclico_anual', N'FaCalendar', 1, N'ESP', 9, 1, GETDATE()),
+    (509, N'Reporte de Diferencias de Conteo Anual', 2, 6, N'Reporte de Diferencias de Conteo Anual', N'/Almacen/Reporte_diferencias_Conteo_anual', N'FaChartLine', 1, N'ESP', 10, 1, GETDATE()),
+	--Falta Estadisticas -> cierre de invertario
+	--Falta Autorizacion de solicitudes de salida
+	--Aqui voy bien
 
     -- Nómina -> Recursos Humanos
     (600, N'Recursos Humanos', 1, 7, N'Nomina_Recursos_Humanos', N'/', N'FaUsers', 1, N'ESP', 1, 1, GETDATE()),
@@ -1527,6 +1577,11 @@ USING (VALUES
     (682, N'Configura Aguinaldo', 2, 680, N'Configura_Aguinaldo', N'/sis/nominaespecial', N'FaCog', 1, N'ESP', 2, 1, GETDATE()),
     (683, N'Aguinaldo', 2, 680, N'Aguinaldo', N'/sis/vwnominaespecial', N'FaStar', 1, N'ESP', 3, 1, GETDATE()),
     (684, N'Faltas Especiales', 2, 680, N'Faltas_Especial', N'/emp/faltasxempresa', N'FaClock', 1, N'ESP', 4, 1, GETDATE()),
+
+    (690, N'Vacaciones', 1, 7, N'Nomina_Vacaciones', N'/', N'FaEventAvailable', 1, N'ESP', 10, 1, GETDATE()),
+    (691, N'Solicitud de Vacaciones', 2, 690, N'Solicitud_Vacaciones', N'/sis/solicitudvacaciones', N'FaCalendar', 1, N'ESP', 1, 1, GETDATE()),
+    (692, N'Autorizacion de Vacaciones', 2, 690, N'Autorizacion_Vacaciones', N'/sis/autorizacionvacaciones', N'FaVerified', 1, N'ESP', 2, 1, GETDATE()),
+
 
     -- Nómina -> Históricos
     (700, N'Históricos de Nómina', 0, 7, N'Nomina_Historicos', N'/', N'FaClock', 1, N'ESP', 10, 1, GETDATE()),
@@ -1618,7 +1673,21 @@ USING (VALUES
     (914, N'Tipo de Régimen', 2, 911, N'Tipo_Regimen', N'/rh/configuracion/contratos/tipo-regimen', N'FaDocument', 1, N'ESP', 3, 1, GETDATE()),
     (915, N'Base de Cotización', 2, 911, N'Base_Cotizacion', N'/rh/configuracion/contratos/base-cotizacion', N'FaPercent', 1, N'ESP', 4, 1, GETDATE()),
     (916, N'Zona Geográfica', 2, 911, N'Zona_Geografica', N'/rh/configuracion/contratos/zona-geografica', N'FaHouse', 1, N'ESP', 5, 1, GETDATE()),
-    (917, N'Dí­a de la Semana', 2, 911, N'Dia_Semana', N'/rh/configuracion/contratos/dia-semana', N'FaCalendar', 1, N'ESP', 6, 1, GETDATE())--,
+    (917, N'Dí­a de la Semana', 2, 911, N'Dia_Semana', N'/rh/configuracion/contratos/dia-semana', N'FaCalendar', 1, N'ESP', 6, 1, GETDATE()),
+
+	(918, N'Tipo de Sangre', 1, 900, N'Tipo_Sangre', N'/rh/configuracion/tipo-sangre', N'FaUsers', 1, N'ESP', 12, 1, GETDATE()),
+    (919, N'Profesion', 1, 900, N'Profesion', N'/rh/configuracion/profesion', N'FaDocument', 1, N'ESP', 13, 1, GETDATE()),
+    (920, N'Regimen Fiscal', 1, 900, N'Regimen_Fiscal', N'/rh/configuracion/regimen-fiscal', N'FaDocument', 1, N'ESP', 14, 1, GETDATE()),
+    (921, N'Pais', 1, 900, N'Pais', N'/rh/configuracion/pais', N'FaHouse', 1, N'ESP', 15, 1, GETDATE()),
+    (922, N'Periodo de Pago', 1, 900, N'Periodo_Pago', N'/rh/configuracion/periodo-pago', N'FaCalendar', 1, N'ESP', 16, 1, GETDATE()),
+    (923, N'Tipo Documento RH', 1, 900, N'Tipo_Documento_RH', N'/rh/configuracion/tipo-documento', N'FaDocument', 1, N'ESP', 17, 1, GETDATE()),
+    (924, N'Tipo Expediente', 1, 900, N'Tipo_Expediente', N'/rh/configuracion/tipo-expediente', N'FaDocument', 1, N'ESP', 18, 1, GETDATE()),
+    (925, N'Opcion Jubilacion', 1, 900, N'Opcion_Jubilacion', N'/rh/configuracion/opcion-jubilacion', N'FaDocument', 1, N'ESP', 19, 1, GETDATE()),
+    (926, N'Situacion Persona', 1, 900, N'Situacion_Persona', N'/rh/configuracion/situacion-persona', N'FaUsers', 1, N'ESP', 20, 1, GETDATE()),
+    (927, N'Situacion Plaza', 1, 900, N'Situacion_Plaza', N'/rh/configuracion/situacion-plaza', N'FaVerified', 1, N'ESP', 21, 1, GETDATE()),
+    (928, N'Situacion Movimiento', 1, 900, N'Situacion_Movimiento', N'/rh/configuracion/situacion-movimiento', N'FaDocument', 1, N'ESP', 22, 1, GETDATE()),
+    (929, N'Clase Movimiento', 1, 900, N'Clase_Movimiento', N'/rh/configuracion/clase-movimiento', N'FaDocument', 1, N'ESP', 23, 1, GETDATE()),
+    (930, N'Movimiento RH', 1, 900, N'Movimiento_RH', N'/rh/configuracion/movimiento', N'FaDocument', 1, N'ESP', 24, 1, GETDATE())--,
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON TARGET.PKIdMenu = SOURCE.PKIdMenu
 WHEN MATCHED THEN

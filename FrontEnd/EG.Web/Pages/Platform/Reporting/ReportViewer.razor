@@ -1,4 +1,5 @@
 @page "/Reporting/Viewer"
+@implements IAsyncDisposable
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
@@ -18,6 +19,12 @@
     {
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-3" />
     }
+    else if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mt-3">
+            @_errorMessage
+        </MudAlert>
+    }
     else if (string.IsNullOrWhiteSpace(ResolvedReportName))
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mt-3">
@@ -26,12 +33,7 @@
     }
     else
     {
-        <div class="reporting-viewer-shell">
-            <DxWasmDocumentViewer ReportName="@ResolvedReportName" Height="calc(100vh - 108px)">
-                <DxWasmDocumentViewerRequestOptions Host="@ApiHost" InvokeAction="DXXRDV" />
-                <DxDocumentViewerExportSettings UseSameTab="false" />
-            </DxWasmDocumentViewer>
-        </div>
+        <div class="reporting-viewer-shell" id="@ViewerContainerId"></div>
     }
 </MudContainer>
 
@@ -64,6 +66,15 @@
         min-height: 0;
         overflow: hidden;
         border: 1px solid var(--mud-palette-lines-default);
+        background: #f5f7fb;
+    }
+
+    .reporting-pdf-frame {
+        width: 100%;
+        height: calc(100vh - 108px);
+        border: 0;
+        display: block;
+        background: #fff;
     }
 </style>
 
@@ -76,20 +87,47 @@
     [SupplyParameterFromQuery(Name = "title")]
     public string? Title { get; set; }
 
+    private string ViewerContainerId { get; } = $"reporting-pdf-{Guid.NewGuid():N}";
     private string? ResolvedReportName { get; set; }
     private string? ResolvedTitle { get; set; }
+    private string? _errorMessage;
+    private string? _renderedReportName;
     private bool _isResolvingReport = true;
 
     private string ViewerTitle => string.IsNullOrWhiteSpace(ResolvedTitle) ? "Reporte" : ResolvedTitle;
 
-    private string ApiHost => ResolveApiHost();
-
     protected override async Task OnParametersSetAsync()
     {
         _isResolvingReport = true;
+        _errorMessage = null;
+        _renderedReportName = null;
         ResolvedReportName = await ResolveReportNameAsync();
         ResolvedTitle = await ResolveReportTitleAsync();
         _isResolvingReport = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_isResolvingReport ||
+            string.IsNullOrWhiteSpace(ResolvedReportName) ||
+            string.Equals(_renderedReportName, ResolvedReportName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _renderedReportName = ResolvedReportName;
+        var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+        var result = await JS.InvokeAsync<ReportRenderResult>(
+            "egReportingPdf.render",
+            ViewerContainerId,
+            BuildPdfUrl(ResolvedReportName),
+            token);
+
+        if (!result.Ok)
+        {
+            _errorMessage = result.Message;
+            StateHasChanged();
+        }
     }
 
     private async Task GoBack()
@@ -128,6 +166,13 @@
         return await JS.InvokeAsync<string?>("sessionStorage.getItem", BuildReportTitleStorageKey(Name));
     }
 
+    private string BuildPdfUrl(string reportName)
+    {
+        var apiBase = ResolveApiHost();
+        var separator = apiBase.EndsWith("/", StringComparison.Ordinal) ? string.Empty : "/";
+        return $"{apiBase}{separator}api/Reporting/pdf?report={Uri.EscapeDataString(reportName)}";
+    }
+
     private string ResolveApiHost()
     {
         var configured = Configuration.GetSection("ApiSetting:baseUrl").Value;
@@ -148,4 +193,22 @@
     private static string BuildReportStorageKey(string token) => $"eg.report.{token}";
 
     private static string BuildReportTitleStorageKey(string token) => $"eg.report.title.{token}";
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("egReportingPdf.clear", ViewerContainerId);
+        }
+        catch
+        {
+            // Ignore cleanup failures during navigation.
+        }
+    }
+
+    private sealed class ReportRenderResult
+    {
+        public bool Ok { get; set; }
+        public string Message { get; set; } = string.Empty;
+    }
 }

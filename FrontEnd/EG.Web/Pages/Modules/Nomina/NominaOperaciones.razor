@@ -33,7 +33,6 @@
 @page "/emp/faltasxempresa"
 @page "/sis/solicitudvacaciones"
 @page "/sis/autorizacionvacaciones"
-@page "/sis/cuotasimss"
 @page "/nomina/historicos/consulta"
 @page "/nomina/historicos/analisis"
 @page "/nomina/historicos/recibos"
@@ -67,13 +66,16 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
 @inherits BaseCrudPage<NominaOperacionResponse, NominaOperacionResponse>
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="px-2 d-flex flex-column nomina-operaciones-page" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="@CurrentItem.Title"
                     Subtitle="@CurrentItem.Subtitle"
                     Icon="@CurrentItem.Icon"
@@ -87,8 +89,27 @@
             </MudAlert>
         }
 
+        @if (CurrentItem.IsVacation)
+        {
+            <div class="vacation-flow-strip">
+                <div>
+                    <span>Solicitudes visibles</span>
+                    <strong>@VisibleVacationCount.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                </div>
+                <div>
+                    <span>En autorizacion</span>
+                    <strong>@PendingVacationCount.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                </div>
+                <div>
+                    <span>Autorizadas</span>
+                    <strong>@AuthorizedVacationCount.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                </div>
+            </div>
+        }
+
         <GenericTable TItem="NominaOperacionResponse"
                       @ref="table"
+                      @key="TableKey"
                       Title="@($"Lista de {CurrentItem.Title}")"
                       SearchPlaceholder="@($"Buscar {CurrentItem.Title.ToLowerInvariant()}...")"
                       ShowExportButton="@CanExport"
@@ -98,6 +119,10 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
             <Header>
+                @if (CurrentItem.IsVacation)
+                {
+                    <MudTh>Flujo</MudTh>
+                }
                 @foreach (var column in CurrentItem.Columns)
                 {
                     <MudTh>
@@ -108,9 +133,55 @@
                 }
             </Header>
             <Row Context="item">
+                @if (CurrentItem.IsVacation)
+                {
+                    <MudTd Class="vacation-actions">
+                        <DocumentSupportButton Modulo="Vacaciones"
+                                               SubModulo="@CurrentItem.SubModuleName"
+                                               Controlador="NomOperacion"
+                                               Servicio="Vacaciones"
+                                               EntidadId="@item.Id"
+                                               FkidEmpresaSis="@TryParseInt(item.Empresa)"
+                                               RegistroTitulo="@BuildVacationTitle(item)"
+                                               RegistroDescripcion="@BuildVacationDescription(item)"
+                                               CanManage="@CanUpdate"
+                                               Disabled="@IsBusy" />
+
+                        @if (IsVacationRequestRoute)
+                        {
+                            <MudTooltip Text="Enviar a autorizar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               Disabled="@(!CanSendVacation(item) || IsBusy)"
+                                               OnClick="@(() => SendVacationToAuthorize(item))" />
+                            </MudTooltip>
+                        }
+
+                        @if (IsVacationAuthorizationRoute)
+                        {
+                            <MudTooltip Text="Autorizar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               Disabled="@(!CanAuthorizeVacation(item) || IsBusy)"
+                                               OnClick="@(() => AuthorizeVacation(item))" />
+                            </MudTooltip>
+                        }
+                    </MudTd>
+                }
                 @foreach (var column in CurrentItem.Columns)
                 {
-                    <MudTd>@FormatValue(GetValue(item, column.Property), column.Kind)</MudTd>
+                    <MudTd>
+                        @if (CurrentItem.IsVacation && column.Property == nameof(NominaOperacionResponse.Estatus))
+                        {
+                            <span class="@GetVacationStatusClass(item.Estatus)">@FormatValue(GetValue(item, column.Property), column.Kind)</span>
+                        }
+                        else
+                        {
+                            @FormatValue(GetValue(item, column.Property), column.Kind)
+                        }
+                    </MudTd>
                 }
             </Row>
         </GenericTable>
@@ -119,6 +190,9 @@
 
 @code {
     private GenericTable<NominaOperacionResponse> table = null!;
+    private string loadedPath = string.Empty;
+    private bool pendingRouteReload;
+    private bool disposed;
 
     protected override string ModuleName => CurrentItem.ModuleName;
     protected override string SubModuleName => CurrentItem.SubModuleName;
@@ -128,6 +202,13 @@
     protected override int ExportPageSize => 2500;
 
     private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+    private string TableKey => $"nomina-operacion-table:{CurrentPath}";
+    private bool IsVacationRequestRoute => CurrentItem.IsVacation && !IsVacationAuthorizationRoute;
+    private bool IsVacationAuthorizationRoute => CurrentItem.IsVacation &&
+        string.Equals(CurrentItem.SubModuleName, "Autorizacion_Vacaciones", StringComparison.OrdinalIgnoreCase);
+    private int VisibleVacationCount => Elements.Count;
+    private int PendingVacationCount => Elements.Count(item => IsVacationPendingAuthorization(item));
+    private int AuthorizedVacationCount => Elements.Count(item => IsVacationAuthorized(item));
 
     private OperacionPageItem CurrentItem
     {
@@ -144,6 +225,75 @@
                 "Nomina",
                 "Operacion",
                 "Ruta operativa conectada al visor de operaciones NOM.");
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        loadedPath = CurrentPath;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (await PrepareRouteChangeAsync(CurrentPath, verifyAccess: true))
+        {
+            return;
+        }
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            var path = "/" + NavigationManager.ToBaseRelativePath(e.Location).Split('?', '#')[0].Trim('/');
+            if (await PrepareRouteChangeAsync(path, verifyAccess: true))
+            {
+                StateHasChanged();
+            }
+        });
+    }
+
+    private async Task<bool> PrepareRouteChangeAsync(string path, bool verifyAccess)
+    {
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        loadedPath = path;
+        SearchString = string.Empty;
+        CurrentPage = 1;
+        SortLabel = GetDefaultSortLabel();
+        SortDirection = SortDirection.None;
+        Elements.Clear();
+        TotalCount = 0;
+        pendingRouteReload = true;
+
+        IsInitialized = false;
+        HasAccess = false;
+
+        if (verifyAccess)
+        {
+            await VerifyAccess();
+        }
+
+        return true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (pendingRouteReload && table != null && HasAccess)
+        {
+            pendingRouteReload = false;
+            await table.ReloadData();
         }
     }
 
@@ -271,7 +421,6 @@
             ["/aux/auxcalcimssquincenal"] = Fiscal("Calculo Cuotas IMSS", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
             ["/aux/auxcalcimssmensual"] = Fiscal("Calculo Cuotas IMSS Mensual", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
             ["/aux/auxcalcimsssemanal"] = Fiscal("Calculo Cuotas IMSS Semanal", "Tablas IMSS migradas", "Calculo_IMSS_3084"),
-            ["/sis/cuotasimss"] = Fiscal("Cuotas IMSS", "Alias legacy SIS_CuotasImss y tablas IMSS", "Cuotas_IMSS"),
 
             ["/nom/resumennomina"] = Productos("Resumen", "Resumen de corridas de nomina", "Resumen"),
             ["/nom/resnommen"] = Productos("Resumen", "Alias legacy de resumen de nomina", "Resumen"),
@@ -426,6 +575,97 @@
         }
     }
 
+    public void Dispose()
+    {
+        disposed = true;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private async Task SendVacationToAuthorize(NominaOperacionResponse item)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para enviar solicitudes.", Severity.Warning);
+            return;
+        }
+
+        await RunExclusiveAsync(async () =>
+        {
+            var response = await Service.PostActionAsync($"{item.Id}/vacaciones/enviar-autorizar");
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Solicitud enviada a autorizacion.", Severity.Success);
+                await ReloadData();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible enviar la solicitud.", Severity.Error);
+        }, "Ya hay una operacion de vacaciones en proceso...");
+    }
+
+    private async Task AuthorizeVacation(NominaOperacionResponse item)
+    {
+        if (!CanUpdate && !CanAuthorize)
+        {
+            Snackbar.Add("No tienes permisos para autorizar solicitudes.", Severity.Warning);
+            return;
+        }
+
+        await RunExclusiveAsync(async () =>
+        {
+            var response = await Service.PostActionAsync($"{item.Id}/vacaciones/autorizar");
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Solicitud autorizada correctamente.", Severity.Success);
+                await ReloadData();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible autorizar la solicitud.", Severity.Error);
+        }, "Ya hay una autorizacion en proceso...");
+    }
+
+    private bool CanSendVacation(NominaOperacionResponse item)
+        => CanUpdate && item.Id > 0 && !IsVacationAuthorized(item) && !IsVacationPendingAuthorization(item);
+
+    private bool CanAuthorizeVacation(NominaOperacionResponse item)
+        => (CanUpdate || CanAuthorize) && item.Id > 0 && !IsVacationAuthorized(item);
+
+    private static bool IsVacationAuthorized(NominaOperacionResponse item)
+        => ContainsStatus(item.Estatus, "Autorizada");
+
+    private static bool IsVacationPendingAuthorization(NominaOperacionResponse item)
+        => ContainsStatus(item.Estatus, "autorizar") || ContainsStatus(item.Estatus, "Pendiente");
+
+    private static bool ContainsStatus(string value, string expected)
+        => (value ?? string.Empty).Contains(expected, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetVacationStatusClass(string status)
+    {
+        if (ContainsStatus(status, "Autorizada"))
+        {
+            return "vacation-status vacation-status-authorized";
+        }
+
+        if (ContainsStatus(status, "autorizar") || ContainsStatus(status, "Pendiente"))
+        {
+            return "vacation-status vacation-status-pending";
+        }
+
+        return "vacation-status vacation-status-draft";
+    }
+
+    private static string BuildVacationTitle(NominaOperacionResponse item)
+        => string.IsNullOrWhiteSpace(item.Persona)
+            ? $"Vacacion #{item.Id}"
+            : $"{item.Empleado} - {item.Persona}".Trim(' ', '-');
+
+    private static string BuildVacationDescription(NominaOperacionResponse item)
+        => $"{FormatDate(item.FechaInicio)} al {FormatDate(item.FechaFin)} | {FormatValue(item.Importe, ColumnKind.Number)} dias | {item.Estatus}";
+
+    private static int? TryParseInt(string value)
+        => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : null;
+
     private Dictionary<string, object> BuildFilters()
         => new() { ["Operacion"] = CurrentItem.Operation };
 
@@ -474,6 +714,9 @@
         };
     }
 
+    private static string FormatDate(DateTime? value)
+        => value.HasValue ? value.Value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) : "-";
+
     private static OperacionPageItem Empleados(string title, string subtitle, string subModule)
         => new(title, subtitle, Icons.Material.Filled.Badge, "Nomina", subModule, "empleados", EmployeeColumns, "Persona", string.Empty, Severity.Info);
 
@@ -484,7 +727,7 @@
         => new(title, subtitle, Icons.Material.Filled.ReportProblem, "Incidencias", subModule, "incidencias", IncidenceColumns, "Fecha", string.Empty, Severity.Info);
 
     private static OperacionPageItem Vacaciones(string title, string subtitle, string subModule)
-        => new(title, subtitle, Icons.Material.Filled.EventAvailable, "Nomina_Vacaciones", subModule, "vacaciones", VacationColumns, "FechaInicio", string.Empty, Severity.Info);
+        => new(title, subtitle, Icons.Material.Filled.EventAvailable, "Vacaciones", subModule, "vacaciones", VacationColumns, "FechaInicio", string.Empty, Severity.Info, true);
 
     private static OperacionPageItem Liquidaciones(string title, string subtitle, string subModule)
         => new(title, subtitle, Icons.Material.Filled.ReceiptLong, "Finiquito_Liquidacion", subModule, "liquidaciones", LiquidationColumns, "Fecha", string.Empty, Severity.Info);
@@ -516,7 +759,8 @@
         OperationColumn[] Columns,
         string DefaultSortLabel,
         string Note,
-        Severity Severity);
+        Severity Severity,
+        bool IsVacation = false);
 
     private sealed record OperationColumn(string Property, string Label, ColumnKind Kind = ColumnKind.Text);
 

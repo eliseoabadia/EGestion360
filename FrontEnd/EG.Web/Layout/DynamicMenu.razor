@@ -22,7 +22,7 @@
                 <section class="sidebar-search-section" aria-label="Busqueda de menu">
                     <div class="input-group input-group-sm sidebar-search-box">
                         <span class="input-group-text" aria-hidden="true">
-                            <i class="bi bi-search"></i>
+                            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" />
                         </span>
                         <input type="search"
                                class="form-control"
@@ -37,7 +37,7 @@
                                     type="button"
                                     aria-label="Limpiar busqueda"
                                     @onclick="ClearSearch">
-                                <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                <MudIcon Icon="@Icons.Material.Filled.Close" Size="Size.Small" />
                             </button>
                         }
                     </div>
@@ -54,7 +54,7 @@
             else if (!string.IsNullOrWhiteSpace(_loadError))
             {
                 <div class="sidebar-state sidebar-state-error" role="alert">
-                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                    <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Size="Size.Small" />
                     <span>@_loadError</span>
                 </div>
             }
@@ -62,7 +62,7 @@
             {
                 <section class="sidebar-search-results" aria-label="Resultados de busqueda">
                     <div class="results-header">
-                        <i class="bi bi-funnel" aria-hidden="true"></i>
+                        <MudIcon Icon="@Icons.Material.Filled.FilterAlt" Size="Size.Small" />
                         <span>@_searchResults.Count resultado(s)</span>
                     </div>
 
@@ -75,7 +75,7 @@
                                         class="search-result-item"
                                         @onclick="@(() => NavigateToSearchResultAsync(result))"
                                         disabled="@_navigationLocked">
-                                    <i class="bi @result.IconClass" aria-hidden="true"></i>
+                                    <MudIcon Icon="@result.IconClass" Class="search-result-icon" Size="Size.Small" />
                                     <span class="result-info">
                                         <span class="result-name">@result.Name</span>
                                         @if (!string.IsNullOrWhiteSpace(result.Breadcrumb))
@@ -90,7 +90,7 @@
                     else
                     {
                         <div class="no-results">
-                            <i class="bi bi-search" aria-hidden="true"></i>
+                            <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Small" />
                             <span>Sin resultados</span>
                         </div>
                     }
@@ -116,7 +116,7 @@
             else if (!IsCollapsed)
             {
                 <div class="sidebar-state">
-                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <MudIcon Icon="@Icons.Material.Filled.Inbox" Size="Size.Small" />
                     <span>No hay opciones disponibles.</span>
                 </div>
             }
@@ -476,6 +476,18 @@
             return;
 
         _navigationLocked = true;
+        _currentPath = NormalizeRoute(route);
+        var activeItem = FindItemByRoute(_currentPath);
+        if (activeItem != null)
+        {
+            foreach (var group in _groups)
+            {
+                _expandedStates[group.PkidMenu] = false;
+            }
+
+            ExpandPathToItem(activeItem);
+        }
+
         await InvokeAsync(StateHasChanged);
 
         try
@@ -560,7 +572,7 @@
     }
 
     private string GetIconClass(string? imageUrl) =>
-        IconosDisponibles.GetBootstrapIconClass(imageUrl);
+        IconosDisponibles.GetMaterialIcon(imageUrl);
 
     private bool IsActiveRoute(string? route) =>
         RouteMatches(_currentPath, NormalizeRoute(route));

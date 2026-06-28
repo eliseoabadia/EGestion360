@@ -4,6 +4,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Nomina;
 using EG.Domain.DTOs.Responses.Nomina;
 using EG.Infraestructure.Models;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.Nomina
@@ -192,27 +193,302 @@ namespace EG.Application.Services.Nomina
 
     public class NomConceptoAppService : NominaCrudAppService<Concepto1, NomConceptoDto, NomConceptoResponse>
     {
-        public NomConceptoAppService(GenericService<Concepto1, NomConceptoDto, NomConceptoResponse> service)
+        private static readonly IReadOnlyDictionary<int, string> FormaCalculoFallback = new Dictionary<int, string>
+        {
+            [1] = "Concepto proporción de otros conceptos",
+            [2] = "Conceptos de Importe Fijo",
+            [3] = "Concepto Variable",
+            [4] = "Deducción ISR",
+            [5] = "Aportaciones al IMSS",
+            [6] = "Deducción Importe Fijo",
+            [7] = "Deducción Variable",
+            [8] = "Aguinaldo",
+            [9] = "Descuento por pago a terceros",
+            [10] = "Conceptos que aplican un Tabulador",
+            [12] = "Aportaciones al fondo de vivienda del INFONAVIT",
+            [13] = "Conceptos ISSSTE"
+        };
+
+        private readonly GenericService<VwNomConcepto, NomConceptoDto, NomConceptoResponse> _readService;
+        private readonly EGestionContext _context;
+
+        public NomConceptoAppService(
+            GenericService<Concepto1, NomConceptoDto, NomConceptoResponse> service,
+            GenericService<VwNomConcepto, NomConceptoDto, NomConceptoResponse> readService,
+            EGestionContext context)
             : base(service, "PkidConcepto", "Concepto", (dto, id) => dto.PkidConcepto = id)
         {
+            _readService = readService;
+            _context = context;
+            readService.DisableEmpresaFilter();
         }
+
+        public override async Task<PagedResult<NomConceptoResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                await SetFormaCalculoDescriptionsAsync(items);
+                return Success("Conceptos obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomConceptoResponse>(UserFacingMessages.OperationFailed("obtener conceptos"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var viewItem = await _context.VwNomConceptos
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(item => item.PkidConcepto == id);
+
+                if (viewItem == null)
+                {
+                    return Failure<NomConceptoResponse>($"Concepto con ID {id} no encontrado", "NOT_FOUND");
+                }
+
+                var item = viewItem.Adapt<NomConceptoResponse>();
+                await SetFormaCalculoDescriptionsAsync([item]);
+                return Success("Concepto encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomConceptoResponse>(UserFacingMessages.OperationFailed("obtener el concepto"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(MapViewRequest(request));
+                if (result.Items != null)
+                {
+                    await SetFormaCalculoDescriptionsAsync(result.Items);
+                }
+
+                result.Message = result.Success
+                    ? "Conceptos obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener conceptos");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomConceptoResponse>(UserFacingMessages.OperationFailed("obtener conceptos"));
+            }
+        }
+
+        private async Task SetFormaCalculoDescriptionsAsync(IList<NomConceptoResponse> items)
+        {
+            var ids = items
+                .Select(item => item.FkidFormaCalculoNom)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            var descriptions = await _context.CatalogoSimples
+                .AsNoTracking()
+                .Where(item => item.Catalogo == "Forma_Calculo" && item.LegacyId.HasValue && ids.Contains(item.LegacyId.Value))
+                .Select(item => new { Id = item.LegacyId!.Value, item.Descripcion })
+                .ToDictionaryAsync(item => item.Id, item => item.Descripcion);
+
+            foreach (var item in items)
+            {
+                item.FormaCalculoDescripcion = descriptions.TryGetValue(item.FkidFormaCalculoNom, out var description)
+                    ? description
+                    : FormaCalculoFallback.GetValueOrDefault(item.FkidFormaCalculoNom, item.FkidFormaCalculoNom.ToString());
+            }
+        }
+
+        private static PagedRequest MapViewRequest(PagedRequest request)
+            => NominaCatalogRequestMapper.MapPagedRequest(request, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [nameof(NomConceptoResponse.FkidFormaCalculoNom)] = nameof(VwNomConcepto.FormaCalculoId),
+                [nameof(NomConceptoResponse.FormaCalculoDescripcion)] = nameof(VwNomConcepto.FormaCalculoId)
+            });
+
+        private static PagedResult<NomConceptoResponse> Success(
+            string message,
+            NomConceptoResponse? data,
+            IList<NomConceptoResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public class NomConceptoFactorAppService : NominaCrudAppService<ConceptoFactor, NomConceptoFactorDto, NomConceptoFactorResponse>
     {
-        public NomConceptoFactorAppService(GenericService<ConceptoFactor, NomConceptoFactorDto, NomConceptoFactorResponse> service)
+        private readonly GenericService<VwConceptoFactor, NomConceptoFactorDto, NomConceptoFactorResponse> _readService;
+
+        public NomConceptoFactorAppService(
+            GenericService<ConceptoFactor, NomConceptoFactorDto, NomConceptoFactorResponse> service,
+            GenericService<VwConceptoFactor, NomConceptoFactorDto, NomConceptoFactorResponse> readService)
             : base(service, "PkidConceptoFactor", "Factor de concepto", (dto, id) => dto.PkidConceptoFactor = id)
         {
+            _readService = readService;
         }
+
+        public override async Task<PagedResult<NomConceptoFactorResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                return Success("Factores de concepto obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomConceptoFactorResponse>(UserFacingMessages.OperationFailed("obtener factores de concepto"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoFactorResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoFactor");
+                return item == null
+                    ? Failure<NomConceptoFactorResponse>($"Factor de concepto con ID {id} no encontrado", "NOT_FOUND")
+                    : Success("Factor de concepto encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomConceptoFactorResponse>(UserFacingMessages.OperationFailed("obtener el factor de concepto"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoFactorResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(MapViewRequest(request));
+                result.Message = result.Success
+                    ? "Factores de concepto obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener factores de concepto");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomConceptoFactorResponse>(UserFacingMessages.OperationFailed("obtener factores de concepto"));
+            }
+        }
+
+        private static PagedRequest MapViewRequest(PagedRequest request)
+            => NominaCatalogRequestMapper.MapPagedRequest(request, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [nameof(NomConceptoFactorResponse.FkidConceptoNom)] = nameof(VwConceptoFactor.ConceptoId)
+            });
+
+        private static PagedResult<NomConceptoFactorResponse> Success(
+            string message,
+            NomConceptoFactorResponse? data,
+            IList<NomConceptoFactorResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public class NomConceptoFijoAppService : NominaCrudAppService<ConceptoFijo, NomConceptoFijoDto, NomConceptoFijoResponse>
     {
-        public NomConceptoFijoAppService(GenericService<ConceptoFijo, NomConceptoFijoDto, NomConceptoFijoResponse> service)
+        private readonly GenericService<VwConceptoFijo, NomConceptoFijoDto, NomConceptoFijoResponse> _readService;
+
+        public NomConceptoFijoAppService(
+            GenericService<ConceptoFijo, NomConceptoFijoDto, NomConceptoFijoResponse> service,
+            GenericService<VwConceptoFijo, NomConceptoFijoDto, NomConceptoFijoResponse> readService)
             : base(service, "PkidConceptoFijo", "Concepto fijo", (dto, id) => dto.PkidConceptoFijo = id)
         {
+            _readService = readService;
             ConfigureConceptoPuestoService(service);
         }
+
+        public override async Task<PagedResult<NomConceptoFijoResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                return Success("Conceptos fijos obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomConceptoFijoResponse>(UserFacingMessages.OperationFailed("obtener conceptos fijos"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoFijoResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoFijo");
+                return item == null
+                    ? Failure<NomConceptoFijoResponse>($"Concepto fijo con ID {id} no encontrado", "NOT_FOUND")
+                    : Success("Concepto fijo encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomConceptoFijoResponse>(UserFacingMessages.OperationFailed("obtener el concepto fijo"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoFijoResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(request);
+                result.Message = result.Success
+                    ? "Conceptos fijos obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener conceptos fijos");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomConceptoFijoResponse>(UserFacingMessages.OperationFailed("obtener conceptos fijos"));
+            }
+        }
+
+        private static PagedResult<NomConceptoFijoResponse> Success(
+            string message,
+            NomConceptoFijoResponse? data,
+            IList<NomConceptoFijoResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
 
         private static void ConfigureConceptoPuestoService(GenericService<ConceptoFijo, NomConceptoFijoDto, NomConceptoFijoResponse> service)
         {
@@ -232,17 +508,96 @@ namespace EG.Application.Services.Nomina
 
     public class NomConceptoPorcentajeAppService : NominaCrudAppService<ConceptoPorcentaje, NomConceptoPorcentajeDto, NomConceptoPorcentajeResponse>
     {
-        public NomConceptoPorcentajeAppService(GenericService<ConceptoPorcentaje, NomConceptoPorcentajeDto, NomConceptoPorcentajeResponse> service)
+        private readonly GenericService<VwConceptoPorcentaje, NomConceptoPorcentajeDto, NomConceptoPorcentajeResponse> _readService;
+
+        public NomConceptoPorcentajeAppService(
+            GenericService<ConceptoPorcentaje, NomConceptoPorcentajeDto, NomConceptoPorcentajeResponse> service,
+            GenericService<VwConceptoPorcentaje, NomConceptoPorcentajeDto, NomConceptoPorcentajeResponse> readService)
             : base(service, "PkidConceptoPorcentaje", "Concepto porcentaje", (dto, id) => dto.PkidConceptoPorcentaje = id)
         {
+            _readService = readService;
         }
+
+        public override async Task<PagedResult<NomConceptoPorcentajeResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                return Success("Conceptos porcentaje obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomConceptoPorcentajeResponse>(UserFacingMessages.OperationFailed("obtener conceptos porcentaje"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoPorcentajeResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoPorcentaje");
+                return item == null
+                    ? Failure<NomConceptoPorcentajeResponse>($"Concepto porcentaje con ID {id} no encontrado", "NOT_FOUND")
+                    : Success("Concepto porcentaje encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomConceptoPorcentajeResponse>(UserFacingMessages.OperationFailed("obtener el concepto porcentaje"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoPorcentajeResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(MapViewRequest(request));
+                result.Message = result.Success
+                    ? "Conceptos porcentaje obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener conceptos porcentaje");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomConceptoPorcentajeResponse>(UserFacingMessages.OperationFailed("obtener conceptos porcentaje"));
+            }
+        }
+
+        private static PagedRequest MapViewRequest(PagedRequest request)
+            => NominaCatalogRequestMapper.MapPagedRequest(request, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [nameof(NomConceptoPorcentajeResponse.FkidConceptoNom)] = nameof(VwConceptoPorcentaje.ConceptoId),
+                [nameof(NomConceptoPorcentajeResponse.FkidConceptoProporcionalNom)] = nameof(VwConceptoPorcentaje.ConceptoProporcionalId)
+            });
+
+        private static PagedResult<NomConceptoPorcentajeResponse> Success(
+            string message,
+            NomConceptoPorcentajeResponse? data,
+            IList<NomConceptoPorcentajeResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public class NomConceptoProporcionalAppService : NominaCrudAppService<ConceptoProporcional, NomConceptoProporcionalDto, NomConceptoProporcionalResponse>
     {
-        public NomConceptoProporcionalAppService(GenericService<ConceptoProporcional, NomConceptoProporcionalDto, NomConceptoProporcionalResponse> service)
+        private readonly GenericService<VwConceptoProporcional, NomConceptoProporcionalDto, NomConceptoProporcionalResponse> _readService;
+
+        public NomConceptoProporcionalAppService(
+            GenericService<ConceptoProporcional, NomConceptoProporcionalDto, NomConceptoProporcionalResponse> service,
+            GenericService<VwConceptoProporcional, NomConceptoProporcionalDto, NomConceptoProporcionalResponse> readService)
             : base(service, "PkidConceptoProporcional", "Concepto proporcional", (dto, id) => dto.PkidConceptoProporcional = id)
         {
+            _readService = readService;
             service
                 .DisableEmpresaFilter()
                 .AddInclude(x => x.FkidEmpresaSisNavigation)
@@ -255,13 +610,80 @@ namespace EG.Application.Services.Nomina
                 .AddRelationFilter(nameof(ConceptoProporcional.FkidConceptoNomNavigation), new List<string> { nameof(Concepto1.Nombre) })
                 .AddRelationFilter(nameof(ConceptoProporcional.FkidPuestoNomNavigation), new List<string> { nameof(Puesto.Nombre) });
         }
+
+        public override async Task<PagedResult<NomConceptoProporcionalResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                return Success("Conceptos proporcionales obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomConceptoProporcionalResponse>(UserFacingMessages.OperationFailed("obtener conceptos proporcionales"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoProporcionalResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoProporcional");
+                return item == null
+                    ? Failure<NomConceptoProporcionalResponse>($"Concepto proporcional con ID {id} no encontrado", "NOT_FOUND")
+                    : Success("Concepto proporcional encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomConceptoProporcionalResponse>(UserFacingMessages.OperationFailed("obtener el concepto proporcional"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoProporcionalResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(request);
+                result.Message = result.Success
+                    ? "Conceptos proporcionales obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener conceptos proporcionales");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomConceptoProporcionalResponse>(UserFacingMessages.OperationFailed("obtener conceptos proporcionales"));
+            }
+        }
+
+        private static PagedResult<NomConceptoProporcionalResponse> Success(
+            string message,
+            NomConceptoProporcionalResponse? data,
+            IList<NomConceptoProporcionalResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public class NomConceptoTabularAppService : NominaCrudAppService<ConceptoTabular, NomConceptoTabularDto, NomConceptoTabularResponse>
     {
-        public NomConceptoTabularAppService(GenericService<ConceptoTabular, NomConceptoTabularDto, NomConceptoTabularResponse> service)
+        private readonly GenericService<VwConceptoTabular, NomConceptoTabularDto, NomConceptoTabularResponse> _readService;
+
+        public NomConceptoTabularAppService(
+            GenericService<ConceptoTabular, NomConceptoTabularDto, NomConceptoTabularResponse> service,
+            GenericService<VwConceptoTabular, NomConceptoTabularDto, NomConceptoTabularResponse> readService)
             : base(service, "PkidConceptoTabulador", "Concepto tabular", (dto, id) => dto.PkidConceptoTabulador = id)
         {
+            _readService = readService;
             service
                 .DisableEmpresaFilter()
                 .AddInclude(x => x.FkidEmpresaSisNavigation)
@@ -274,6 +696,68 @@ namespace EG.Application.Services.Nomina
                 .AddRelationFilter(nameof(ConceptoTabular.FkidConceptoNomNavigation), new List<string> { nameof(Concepto1.Nombre) })
                 .AddRelationFilter(nameof(ConceptoTabular.FkidPuestoNomNavigation), new List<string> { nameof(Puesto.Nombre) });
         }
+
+        public override async Task<PagedResult<NomConceptoTabularResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                return Success("Conceptos tabulares obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomConceptoTabularResponse>(UserFacingMessages.OperationFailed("obtener conceptos tabulares"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoTabularResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoTabulador");
+                return item == null
+                    ? Failure<NomConceptoTabularResponse>($"Concepto tabular con ID {id} no encontrado", "NOT_FOUND")
+                    : Success("Concepto tabular encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomConceptoTabularResponse>(UserFacingMessages.OperationFailed("obtener el concepto tabular"));
+            }
+        }
+
+        public override async Task<PagedResult<NomConceptoTabularResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(request);
+                result.Message = result.Success
+                    ? "Conceptos tabulares obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener conceptos tabulares");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomConceptoTabularResponse>(UserFacingMessages.OperationFailed("obtener conceptos tabulares"));
+            }
+        }
+
+        private static PagedResult<NomConceptoTabularResponse> Success(
+            string message,
+            NomConceptoTabularResponse? data,
+            IList<NomConceptoTabularResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public class NomConceptoVariableAppService : NominaCrudAppService<ConceptoVariable, NomConceptoVariableDto, NomConceptoVariableResponse>
@@ -399,6 +883,37 @@ namespace EG.Application.Services.Nomina
         }
     }
 
+    public class NomTablaFiscalAppService : NominaCrudAppService<TablaFiscal, NomTablaFiscalDto, NomTablaFiscalResponse>
+    {
+        private readonly EGestionContext _context;
+
+        public NomTablaFiscalAppService(
+            GenericService<TablaFiscal, NomTablaFiscalDto, NomTablaFiscalResponse> service,
+            EGestionContext context)
+            : base(service, "PkidTablaFiscal", "Tabla fiscal", (dto, id) => dto.PkidTablaFiscal = id)
+        {
+            _context = context;
+            service.DisableEmpresaFilter();
+        }
+
+        public override async Task<PagedResult<NomTablaFiscalResponse>> CreateAsync(NomTablaFiscalResponse response, int usuarioActual)
+        {
+            if (string.IsNullOrWhiteSpace(response.LegacyTable))
+            {
+                response.LegacyTable = "EGestion360";
+            }
+
+            if (response.LegacyId is not > 0)
+            {
+                response.LegacyId = (await _context.TablaFiscals
+                    .Where(item => item.LegacyTable == response.LegacyTable)
+                    .MaxAsync(item => (int?)item.LegacyId) ?? 0) + 1;
+            }
+
+            return await base.CreateAsync(response, usuarioActual);
+        }
+    }
+
     public class NomInfonavitAppService : NominaCrudAppService<Infonavit, NomInfonavitDto, NomInfonavitResponse>
     {
         public NomInfonavitAppService(GenericService<Infonavit, NomInfonavitDto, NomInfonavitResponse> service)
@@ -489,11 +1004,79 @@ namespace EG.Application.Services.Nomina
 
     public class NomCatalogoSimpleAppService : NominaCrudAppService<CatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse>
     {
-        public NomCatalogoSimpleAppService(GenericService<CatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> service)
+        private readonly GenericService<VwCatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> _readService;
+
+        public NomCatalogoSimpleAppService(
+            GenericService<CatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> service,
+            GenericService<VwCatalogoSimple, NomCatalogoSimpleDto, NomCatalogoSimpleResponse> readService)
             : base(service, "PkidCatalogoSimple", "Catalogo simple", (dto, id) => dto.PkidCatalogoSimple = id)
         {
+            _readService = readService;
             service.DisableEmpresaFilter();
+            readService.DisableEmpresaFilter();
         }
+
+        public override async Task<PagedResult<NomCatalogoSimpleResponse>> GetAllAsync()
+        {
+            try
+            {
+                var items = (await _readService.GetAllAsync()).ToList();
+                return Success("Catalogos simples obtenidos correctamente", items.FirstOrDefault(), items, items.Count);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener", ex);
+                return Failure<NomCatalogoSimpleResponse>(UserFacingMessages.OperationFailed("obtener catalogos simples"));
+            }
+        }
+
+        public override async Task<PagedResult<NomCatalogoSimpleResponse>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidCatalogoSimple");
+                return item == null
+                    ? Failure<NomCatalogoSimpleResponse>($"Catalogo simple con ID {id} no encontrado", "NOT_FOUND")
+                    : Success("Catalogo simple encontrado", item, [item], 1);
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener por id", ex);
+                return Failure<NomCatalogoSimpleResponse>(UserFacingMessages.OperationFailed("obtener el catalogo simple"));
+            }
+        }
+
+        public override async Task<PagedResult<NomCatalogoSimpleResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                var result = await _readService.GetAllPaginadoAsync(request);
+                result.Message = result.Success
+                    ? "Catalogos simples obtenidos correctamente"
+                    : UserFacingMessages.OperationFailed("obtener catalogos simples");
+                result.Code = result.Success ? "SUCCESS" : "ERROR";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException("obtener paginado", ex);
+                return Failure<NomCatalogoSimpleResponse>(UserFacingMessages.OperationFailed("obtener catalogos simples"));
+            }
+        }
+
+        private static PagedResult<NomCatalogoSimpleResponse> Success(
+            string message,
+            NomCatalogoSimpleResponse? data,
+            IList<NomCatalogoSimpleResponse> items,
+            int totalCount) => new()
+        {
+            Success = true,
+            Message = message,
+            Code = "SUCCESS",
+            Data = data,
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public class NomEstadoCivilAppService : NominaCrudAppService<SisEstadoCivil, NomEstadoCivilDto, NomEstadoCivilResponse>
@@ -503,5 +1086,95 @@ namespace EG.Application.Services.Nomina
         {
             service.DisableEmpresaFilter();
         }
+    }
+
+    public class NomEscolaridadAppService : NominaCrudAppService<Escolaridad, NomEscolaridadDto, NomEscolaridadResponse>
+    {
+        public NomEscolaridadAppService(GenericService<Escolaridad, NomEscolaridadDto, NomEscolaridadResponse> service)
+            : base(service, "PkidEscolaridad", "Escolaridad", (dto, id) => dto.PkidEscolaridad = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    public class NomDiaSemanaAppService : NominaCrudAppService<DiaSemana, NomDiaSemanaDto, NomDiaSemanaResponse>
+    {
+        public NomDiaSemanaAppService(GenericService<DiaSemana, NomDiaSemanaDto, NomDiaSemanaResponse> service)
+            : base(service, "PkidDiaSemana", "Dia de la semana", (dto, id) => dto.PkidDiaSemana = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    public class NomMedodoPagoAppService : NominaCrudAppService<MedodoPago, NomMedodoPagoDto, NomMedodoPagoResponse>
+    {
+        public NomMedodoPagoAppService(GenericService<MedodoPago, NomMedodoPagoDto, NomMedodoPagoResponse> service)
+            : base(service, "PkidMetodoPago", "Metodo de pago", (dto, id) => dto.PkidMetodoPago = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    public class NomParentescoAppService : NominaCrudAppService<Parentesco, NomParentescoDto, NomParentescoResponse>
+    {
+        public NomParentescoAppService(GenericService<Parentesco, NomParentescoDto, NomParentescoResponse> service)
+            : base(service, "PkidParentesco", "Parentesco", (dto, id) => dto.PkidParentesco = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    public class NomTipoContratacionAppService : NominaCrudAppService<TipoContratacion, NomTipoContratacionDto, NomTipoContratacionResponse>
+    {
+        public NomTipoContratacionAppService(GenericService<TipoContratacion, NomTipoContratacionDto, NomTipoContratacionResponse> service)
+            : base(service, "PkidTipoContratacion", "Tipo de contratacion", (dto, id) => dto.PkidTipoContratacion = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    public class NomTipoIncidenciaAppService : NominaCrudAppService<TipoIncidencium, NomTipoIncidenciaDto, NomTipoIncidenciaResponse>
+    {
+        public NomTipoIncidenciaAppService(GenericService<TipoIncidencium, NomTipoIncidenciaDto, NomTipoIncidenciaResponse> service)
+            : base(service, "PkidTipoIncidencia", "Tipo de incidencia", (dto, id) => dto.PkidTipoIncidencia = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    public class NomTipoJustificacionAppService : NominaCrudAppService<TipoJustificacion, NomTipoJustificacionDto, NomTipoJustificacionResponse>
+    {
+        public NomTipoJustificacionAppService(GenericService<TipoJustificacion, NomTipoJustificacionDto, NomTipoJustificacionResponse> service)
+            : base(service, "PkidTipoJustificacion", "Tipo de justificacion", (dto, id) => dto.PkidTipoJustificacion = id)
+        {
+            service.DisableEmpresaFilter();
+        }
+    }
+
+    internal static class NominaCatalogRequestMapper
+    {
+        public static PagedRequest MapPagedRequest(PagedRequest request, IReadOnlyDictionary<string, string> propertyMap)
+        {
+            return new PagedRequest
+            {
+                Page = request.Page,
+                PageSize = request.PageSize,
+                Filtro = request.Filtro,
+                SortLabel = MapProperty(request.SortLabel, propertyMap),
+                SortDirection = request.SortDirection,
+                SearchString = request.SearchString,
+                AdditionalFilters = request.AdditionalFilters?
+                    .ToDictionary(
+                        item => MapProperty(item.Key, propertyMap),
+                        item => item.Value,
+                        StringComparer.OrdinalIgnoreCase)
+                    ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            };
+        }
+
+        private static string MapProperty(string propertyName, IReadOnlyDictionary<string, string> propertyMap)
+            => !string.IsNullOrWhiteSpace(propertyName) && propertyMap.TryGetValue(propertyName, out var mapped)
+                ? mapped
+                : propertyName;
     }
 }

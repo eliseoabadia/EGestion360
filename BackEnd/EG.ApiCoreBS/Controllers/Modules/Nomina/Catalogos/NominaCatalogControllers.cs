@@ -247,6 +247,17 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.Catalogos
         }
     }
 
+    [Route("api/NomTablaFiscal")]
+    public class NomTablaFiscalController : NominaCatalogControllerBase<NomTablaFiscalResponse>
+    {
+        public NomTablaFiscalController(
+            INominaCrudAppService<NomTablaFiscalResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Tabla fiscal")
+        {
+        }
+    }
+
     [Route("api/NomInfonavit")]
     public class NomInfonavitController : NominaCatalogControllerBase<NomInfonavitResponse>
     {
@@ -386,6 +397,83 @@ namespace EG.ApiCoreBS.Controllers.Modules.Nomina.Catalogos
             INominaCrudAppService<NomEstadoCivilResponse> appService,
             IUserContextService userContext)
             : base(appService, userContext, "Estado civil")
+        {
+        }
+    }
+
+    [Route("api/NomEscolaridad")]
+    public class NomEscolaridadController : NominaCatalogControllerBase<NomEscolaridadResponse>
+    {
+        public NomEscolaridadController(
+            INominaCrudAppService<NomEscolaridadResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Escolaridad")
+        {
+        }
+    }
+
+    [Route("api/NomDiaSemana")]
+    public class NomDiaSemanaController : NominaCatalogControllerBase<NomDiaSemanaResponse>
+    {
+        public NomDiaSemanaController(
+            INominaCrudAppService<NomDiaSemanaResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Dia de la semana")
+        {
+        }
+    }
+
+    [Route("api/NomMedodoPago")]
+    public class NomMedodoPagoController : NominaCatalogControllerBase<NomMedodoPagoResponse>
+    {
+        public NomMedodoPagoController(
+            INominaCrudAppService<NomMedodoPagoResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Metodo de pago")
+        {
+        }
+    }
+
+    [Route("api/NomParentesco")]
+    public class NomParentescoController : NominaCatalogControllerBase<NomParentescoResponse>
+    {
+        public NomParentescoController(
+            INominaCrudAppService<NomParentescoResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Parentesco")
+        {
+        }
+    }
+
+    [Route("api/NomTipoContratacion")]
+    public class NomTipoContratacionController : NominaCatalogControllerBase<NomTipoContratacionResponse>
+    {
+        public NomTipoContratacionController(
+            INominaCrudAppService<NomTipoContratacionResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Tipo de contratacion")
+        {
+        }
+    }
+
+    [Route("api/NomTipoIncidencia")]
+    public class NomTipoIncidenciaController : NominaCatalogControllerBase<NomTipoIncidenciaResponse>
+    {
+        public NomTipoIncidenciaController(
+            INominaCrudAppService<NomTipoIncidenciaResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Tipo de incidencia")
+        {
+        }
+    }
+
+    [Route("api/NomTipoJustificacion")]
+    public class NomTipoJustificacionController : NominaCatalogControllerBase<NomTipoJustificacionResponse>
+    {
+        public NomTipoJustificacionController(
+            INominaCrudAppService<NomTipoJustificacionResponse> appService,
+            IUserContextService userContext)
+            : base(appService, userContext, "Tipo de justificacion")
         {
         }
     }

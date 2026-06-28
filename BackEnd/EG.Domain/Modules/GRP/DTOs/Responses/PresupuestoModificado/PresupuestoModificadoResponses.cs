@@ -88,14 +88,40 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
     public class EgresoDisponibleResponse
     {
         public int PkidEgresoAutorizado { get; set; }
+        public int? FkidEgresoProyectadoPres { get; set; }
         public int? FkidAnioSis { get; set; }
         public int? AnioClave { get; set; }
         public int FkidProgramaPres { get; set; }
+        public string? ProgramaClave { get; set; }
+        public string? ProgramaDescripcion { get; set; }
         public string? ProgramaClaveNombre { get; set; }
         public int FkidPartidaConta { get; set; }
+        public string? PartidaClave { get; set; }
+        public string? PartidaDescripcion { get; set; }
         public string? PartidaClaveNombre { get; set; }
         public int FkidAreaSis { get; set; }
+        public string? AreaClave { get; set; }
         public string? AreaNombre { get; set; }
+        public int? FkidFuenteFinanciamientoPres { get; set; }
+        public string? FuenteFinanciamientoClave { get; set; }
+        public string? FuenteFinanciamientoDescripcion { get; set; }
+        public string? FuenteFinanciamientoClaveNombre { get; set; }
+        public int? FkidTipoGastoPres { get; set; }
+        public int? TipoGastoClave { get; set; }
+        public string? TipoGastoDescripcion { get; set; }
+        public string? TipoGastoClaveNombre { get; set; }
+        public int? FkidDigitoIdentificadorPres { get; set; }
+        public string? DigitoIdentificadorClave { get; set; }
+        public string? DigitoIdentificadorDescripcion { get; set; }
+        public string? DigitoIdentificadorClaveNombre { get; set; }
+        public int? FkidDestinoGastoPres { get; set; }
+        public string? DestinoGastoClave { get; set; }
+        public string? DestinoGastoDescripcion { get; set; }
+        public string? DestinoGastoClaveNombre { get; set; }
+        public int? FkidPyPres { get; set; }
+        public string? PyClave { get; set; }
+        public string? PyDescripcion { get; set; }
+        public string? PyClaveNombre { get; set; }
         public string? Descripcion { get; set; }
         public DateOnly Fecha { get; set; }
         public decimal? Enero { get; set; }
@@ -111,6 +137,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public decimal? Noviembre { get; set; }
         public decimal? Diciembre { get; set; }
         public decimal? Total { get; set; }
+        public string? Message { get; set; }
         public string? DescripcionRequisicion { get; set; }
     }
 

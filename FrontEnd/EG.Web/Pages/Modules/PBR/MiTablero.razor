@@ -1,5 +1,4 @@
 @page "/PBR/MiTablero"
-@page "/PRB/MiTablero"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Web.Contracts
@@ -99,8 +98,8 @@
                             {
                                 <div class="pbr-mi-list-row">
                                     <div>
-                                        <MudText Typo="Typo.body2">@TextOrDash(item.Nombre)</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Programa)</MudText>
+                                        <MudText Typo="Typo.body2">@TextOrDash(item.Programa)</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Nombre)</MudText>
                                     </div>
                                     <MudChip T="string" Size="Size.Small" Color="@EstadoColor(item.Estado)">
                                         @PctOrDash(item.Porcentaje)
@@ -260,7 +259,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"No fue posible cargar Mi Tablero PRB: {ex.Message}", Severity.Error);
+            Snackbar.Add($"No fue posible cargar Mi Tablero PBR: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -276,10 +275,10 @@
     }
 
     private void GoTo(string route) => NavigationManager.NavigateTo(route);
-    private void OpenAnteproyectos() => GoTo("/PRB/Anteproyectos");
-    private void OpenPresupuestos() => GoTo("/PRB/Presupuestos");
-    private void OpenMatriz() => GoTo("/PRB/MatrizIndicadores");
-    private void OpenMapa() => GoTo("/PRB/MapaProcesos");
+    private void OpenAnteproyectos() => GoTo("/PBR/Anteproyectos");
+    private void OpenPresupuestos() => GoTo("/PBR/Presupuestos");
+    private void OpenMatriz() => GoTo("/PBR/MatrizIndicadores");
+    private void OpenMapa() => GoTo("/PBR/MapaProcesos");
 
     private static string TextOrDash(string? value)
     {

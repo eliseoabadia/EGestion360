@@ -4,13 +4,15 @@
     var hasChildren = Item.Children?.Any() == true;
     var level = Math.Min(Level, 2);
     var isExpanded = GetExpandedState(Item.PkidMenu);
-    var isActive = IsActiveRoute(Item.Ruta);
-    var groupCss = $"sidebar-group level-{level}-group{(isExpanded ? " expanded" : string.Empty)}";
+    var isDirectlyActive = IsActiveRoute(Item.Ruta);
+    var hasActiveDescendant = hasChildren && HasActiveDescendant(Item);
+    var isActive = isDirectlyActive || hasActiveDescendant;
+    var groupCss = $"sidebar-group level-{level}-group{(isExpanded ? " expanded" : string.Empty)}{(hasActiveDescendant ? " active-branch" : string.Empty)}";
     var linkCss = $"sidebar-link level-{level}{(isActive ? " active" : string.Empty)}";
-    var groupHeaderCss = $"sidebar-group-header level-{level}{(isExpanded ? " expanded" : string.Empty)}";
+    var groupHeaderCss = $"sidebar-group-header level-{level}{(isExpanded ? " expanded" : string.Empty)}{(isActive ? " active" : string.Empty)}";
     var childrenId = $"sidebar-children-{Item.PkidMenu}";
     var childrenCss = $"sidebar-children level-{level}-children {(isExpanded ? "expanded" : "collapsed")}";
-    var chevronCss = $"bi bi-chevron-right chevron {(isExpanded ? "expanded" : "")}";
+    var chevronCss = $"chevron {(isExpanded ? "expanded" : "")}";
     var iconClass = GetIcon(Item.ImageUrl);
 }
 
@@ -25,7 +27,7 @@
                 disabled="@IsNavigationLocked"
                 @onclick="ToggleExpand">
             <span class="group-left">
-                <i class="bi @iconClass sidebar-icon" aria-hidden="true"></i>
+                <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
                 @if (!IsCollapsed)
                 {
                     <span class="menu-label">@Item.Nombre</span>
@@ -34,7 +36,7 @@
 
             @if (!IsCollapsed)
             {
-                <i class="@chevronCss" aria-hidden="true"></i>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="@chevronCss" Size="Size.Small" />
             }
         </button>
 
@@ -68,11 +70,11 @@ else if (Item.AbrirEnNuevaVentana)
            rel="noopener noreferrer"
            aria-label="@Item.Nombre"
            aria-current="@(isActive ? "page" : null)">
-            <i class="bi @iconClass sidebar-icon" aria-hidden="true"></i>
+            <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
             @if (!IsCollapsed)
             {
                 <span class="menu-label">@Item.Nombre</span>
-                <i class="bi bi-box-arrow-up-right external-icon" aria-hidden="true"></i>
+                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Class="external-icon" Size="Size.Small" />
             }
         </a>
     </div>
@@ -84,9 +86,8 @@ else
            href="@Href"
            aria-label="@Item.Nombre"
            aria-current="@(isActive ? "page" : null)"
-           @onclick="HandleNavigateAsync"
-           @onclick:preventDefault="true">
-            <i class="bi @iconClass sidebar-icon" aria-hidden="true"></i>
+           @onclick="HandleNavigateAsync">
+            <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
             @if (!IsCollapsed)
             {
                 <span class="menu-label">@Item.Nombre</span>
@@ -123,4 +124,7 @@ else
 
         return OnNavigate.InvokeAsync(Item);
     }
+
+    private bool HasActiveDescendant(MenuItem item)
+        => item.Children?.Any(child => IsActiveRoute(child.Ruta) || HasActiveDescendant(child)) == true;
 }

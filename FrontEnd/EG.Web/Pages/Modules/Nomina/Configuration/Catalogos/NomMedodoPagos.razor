@@ -1,0 +1,88 @@
+@page "/rh/configuracion/contratos/metodo-pago"
+@page "/sis/metodopago"
+@page "/sis/medodopago"
+@using System.Reflection
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.Configuration.Catalogos
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<NomMedodoPagoResponse, NomMedodoPagoResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Metodo de Pago"
+                    Subtitle="Catalogo directo SIS.MedodoPago"
+                    Icon="@Icons.Material.Filled.PointOfSale"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="NomMedodoPagoResponse"
+                      @ref="table"
+                      Title="Lista de Metodos de Pago"
+                      SearchPlaceholder="Buscar metodo..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+            <Header>
+                <MudTh>Acciones</MudTh>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomMedodoPagoResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
+                }
+            </Header>
+            <Row Context="item">
+                <MudTd>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidMetodoPago))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidMetodoPago))" />
+                    </MudTooltip>
+                </MudTd>
+                @foreach (var column in VisibleColumns)
+                {
+                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
+                }
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<NomMedodoPagoResponse> table = null!;
+    private static readonly string[] Columns =
+    [
+        nameof(NomMedodoPagoResponse.PkidMetodoPago),
+        nameof(NomMedodoPagoResponse.Descripcion),
+        nameof(NomMedodoPagoResponse.Activo)
+    ];
+
+    protected override string ModuleName => "Contratos";
+    protected override string SubModuleName => "Metodo_Pago";
+    protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomMedodoPagoResponse>);
+    protected override Type EditDialogType => typeof(NominaCatalogDialog<NomMedodoPagoResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<NomMedodoPagoResponse>);
+    protected override string GetDefaultSortLabel() => nameof(NomMedodoPagoResponse.PkidMetodoPago);
+
+    private IEnumerable<PropertyInfo> VisibleColumns => NominaCatalogUi.VisibleColumns(typeof(NomMedodoPagoResponse), Columns);
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<NomMedodoPagoResponse> items)
+        => items.Select(item => VisibleColumns.ToDictionary(column => NominaCatalogUi.GetLabel(column), column => NominaCatalogUi.FormatValue(column.GetValue(item))));
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+        => (await Service.GetByIdAsync(id))?.Data?.ClaveNombre ?? "el metodo de pago";
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+}

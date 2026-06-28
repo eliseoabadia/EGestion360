@@ -28,6 +28,7 @@
 
         <GenericTable TItem="NomPeriodoActivoResponse"
                       @ref="table"
+                      @key="loadedPath"
                       Title="Lista de Periodos activos"
                       SearchPlaceholder="Buscar..."
                       ShowExportButton="@CanExport"
@@ -75,6 +76,8 @@
 
 @code {
     private GenericTable<NomPeriodoActivoResponse> table = null!;
+    private string loadedPath = string.Empty;
+    private bool pendingRouteReload;
 
     protected override string ModuleName => "Periodos";
     protected override string SubModuleName => CurrentPath switch
@@ -93,6 +96,46 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<NomPeriodoActivoResponse>);
 
     protected override string GetDefaultSortLabel() => "IdPeriodo";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var path = CurrentPath;
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
+        loadedPath = path;
+
+        if (!isRouteChange)
+        {
+            return;
+        }
+
+        SearchString = string.Empty;
+        CurrentPage = 1;
+        SortLabel = GetDefaultSortLabel();
+        SortDirection = SortDirection.None;
+        Elements.Clear();
+        TotalCount = 0;
+        pendingRouteReload = true;
+
+        IsInitialized = false;
+        HasAccess = false;
+        await VerifyAccess();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (pendingRouteReload && table != null && HasAccess)
+        {
+            pendingRouteReload = false;
+            await table.ReloadData();
+        }
+    }
 
     private IEnumerable<PropertyInfo> VisibleColumns => typeof(NomPeriodoActivoResponse).GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Where(p => p.CanRead && !IsHiddenColumn(p))

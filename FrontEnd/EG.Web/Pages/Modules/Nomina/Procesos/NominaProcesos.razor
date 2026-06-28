@@ -147,6 +147,7 @@
     private DateTime? fechaProceso = DateTime.Today;
     private string observaciones = string.Empty;
     private readonly List<NominaProcesoResponse> history = new();
+    private string loadedPath = string.Empty;
 
     protected override string ModuleName => CurrentPath switch
     {
@@ -189,6 +190,28 @@
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var path = CurrentPath;
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
+        loadedPath = path;
+
+        if (!isRouteChange)
+        {
+            return;
+        }
+
+        history.Clear();
+        IsInitialized = false;
+        HasAccess = false;
+        await VerifyAccess();
     }
 
     private bool CanRun(ProcessAction action)

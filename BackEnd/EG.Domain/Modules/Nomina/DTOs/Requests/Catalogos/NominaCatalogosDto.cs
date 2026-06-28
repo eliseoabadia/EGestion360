@@ -537,6 +537,45 @@ namespace EG.Domain.DTOs.Requests.Nomina
         public bool Activo { get; set; }
     }
 
+    public class NomTablaFiscalDto
+    {
+        public int PkidTablaFiscal { get; set; }
+
+        public string Catalogo { get; set; } = string.Empty;
+
+        public string LegacyTable { get; set; } = string.Empty;
+
+        public int? LegacyId { get; set; }
+
+        public string Clave { get; set; } = string.Empty;
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public decimal? Valor1 { get; set; }
+
+        public decimal? Valor2 { get; set; }
+
+        public decimal? Valor3 { get; set; }
+
+        public decimal? Valor4 { get; set; }
+
+        public DateTime? FechaInicio { get; set; }
+
+        public DateTime? FechaFin { get; set; }
+
+        public int? FkidCatalogoPadreNom { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
     public class NomInfonavitDto
     {
         public int PkidInfonavit { get; set; }
@@ -880,6 +919,147 @@ namespace EG.Domain.DTOs.Requests.Nomina
     public class NomEstadoCivilDto
     {
         public int PkidEstadoCivil { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomEscolaridadDto
+    {
+        public int PkidEscolaridad { get; set; }
+
+        public int? LegacyId { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomDiaSemanaDto
+    {
+        public int PkidDiaSemana { get; set; }
+
+        public int? LegacyId { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomMedodoPagoDto
+    {
+        public int PkidMetodoPago { get; set; }
+
+        public int? LegacyId { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomParentescoDto
+    {
+        public int PkidParentesco { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomTipoContratacionDto
+    {
+        public int PkidTipoContratacion { get; set; }
+
+        public string Tipo { get; set; } = string.Empty;
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public string Explicacion { get; set; } = string.Empty;
+
+        public string DoctoComprobacion { get; set; } = string.Empty;
+
+        public string Normatividad { get; set; } = string.Empty;
+
+        public string Deducciones { get; set; } = string.Empty;
+
+        public string DoctoComprob { get; set; } = string.Empty;
+
+        public string RelacionLaboral { get; set; } = string.Empty;
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomTipoIncidenciaDto
+    {
+        public int PkidTipoIncidencia { get; set; }
+
+        public string Descripcion { get; set; } = string.Empty;
+
+        public double? DiasPenalizacion { get; set; }
+
+        public int? UsuarioCreacion { get; set; }
+
+        public DateTime? FechaCreacion { get; set; }
+
+        public int? UsuarioModificacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public bool Activo { get; set; }
+    }
+
+    public class NomTipoJustificacionDto
+    {
+        public int PkidTipoJustificacion { get; set; }
 
         public string Descripcion { get; set; } = string.Empty;
 
