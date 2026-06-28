@@ -756,8 +756,12 @@
             return;
         }
 
-        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Autorizar el inventario {TextOrDash(item.Folio)}?");
-        if (!confirm)
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar inventario",
+                $"¿Seguro que deseas autorizar el inventario {TextOrDash(item.Folio)}?",
+                "Autorizar",
+                Severity.Success,
+                item.PkidInventario))
         {
             return;
         }

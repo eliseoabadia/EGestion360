@@ -405,6 +405,16 @@
             return;
         }
 
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar solicitud de suficiencia",
+                $"¿Seguro que deseas autorizar la solicitud {solicitud.PkidSolicitudSuficiencia}? Se generara la autorizacion con su detalle.",
+                "Autorizar",
+                Severity.Success,
+                solicitud.PkidSolicitudSuficiencia))
+        {
+            return;
+        }
+
         var authorization = new AutorizacionSuficienciaResponse
         {
             FkidEmpresaSis = solicitud.FkidEmpresaSis,

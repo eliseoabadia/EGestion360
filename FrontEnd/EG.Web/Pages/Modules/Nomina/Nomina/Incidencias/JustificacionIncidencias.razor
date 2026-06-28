@@ -244,54 +244,42 @@
 
 	private async Task AutorizarJustificacion(VwRhIncidenciaResponse item)
 	{
-		var parameters = new DialogParameters<DeleteDialog<VwRhIncidenciaResponse>>
+		if (!await ConfirmWorkflowAsync(
+				"Autorizar justificación",
+				$"¿Seguro que deseas autorizar la justificación de {TextOrDash(item.NombreCompleto)}?",
+				"Autorizar",
+				Severity.Success,
+				item.PkidIncidencia))
 		{
-			{ x => x.Id, item.PkidIncidencia },
-			{ x => x.ItemName, item.NombreCompleto },
-			{ x => x.DeleteFunc, async _ =>
+			return;
+		}
+
+		try
+		{
+			var fullResponse = await NominaIncidenciaService.GetByIdAsync(item.PkidIncidencia);
+			if (fullResponse?.Success == true && fullResponse.Data != null)
+			{
+				var fullItem = fullResponse.Data;
+				fullItem.Activo = true;
+
+				var updateResponse = await NominaIncidenciaService.UpdateAsync(fullItem, item.PkidIncidencia);
+				if (updateResponse?.Success == true)
 				{
-					try
-					{
-						var fullResponse = await NominaIncidenciaService.GetByIdAsync(item.PkidIncidencia);
-						if (fullResponse?.Success == true && fullResponse.Data != null)
-						{
-							var fullItem = fullResponse.Data;
-							fullItem.Activo = true;
-
-							var updateResponse = await NominaIncidenciaService.UpdateAsync(fullItem, item.PkidIncidencia);
-							if (updateResponse?.Success == true)
-							{
-								Snackbar.Add("Justificación autorizada correctamente", Severity.Success);
-								return true;
-							}
-
-							Snackbar.Add(updateResponse?.Message ?? "Error al autorizar la justificación", Severity.Error);
-						}
-						else
-						{
-							Snackbar.Add("No fue posible cargar la incidencia", Severity.Error);
-						}
-					}
-					catch (Exception ex)
-					{
-						Console.WriteLine($"Error al autorizar justificación: {ex}");
-						Snackbar.Add("Error al autorizar la justificación", Severity.Error);
-					}
-
-					return false;
+					Snackbar.Add("Justificación autorizada correctamente", Severity.Success);
+					await table.ReloadData();
+					return;
 				}
+
+				Snackbar.Add(updateResponse?.Message ?? "Error al autorizar la justificación", Severity.Error);
+				return;
 			}
-		};
 
-		var dialog = await DialogService.ShowAsync<DeleteDialog<VwRhIncidenciaResponse>>(
-			"Autorizar justificación",
-			parameters,
-			new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-
-		var result = await dialog.Result;
-		if (!result.Canceled)
+			Snackbar.Add("No fue posible cargar la incidencia", Severity.Error);
+		}
+		catch (Exception ex)
 		{
-			await table.ReloadData();
+			Console.WriteLine($"Error al autorizar justificación: {ex}");
+			Snackbar.Add("Error al autorizar la justificación", Severity.Error);
 		}
 	}
 

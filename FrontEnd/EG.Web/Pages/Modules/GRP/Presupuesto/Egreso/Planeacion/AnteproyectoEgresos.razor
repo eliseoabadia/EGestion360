@@ -542,6 +542,16 @@
             return;
         }
 
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar anteproyecto de egresos",
+                $"¿Seguro que deseas autorizar el anteproyecto {TextOrDash(item.Descripcion)}? Esto generara el presupuesto autorizado.",
+                "Autorizar",
+                Severity.Success,
+                item.PkidEgresoProyectado))
+        {
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             ["AnioId"] = AnioStateService.AnioId!.Value,

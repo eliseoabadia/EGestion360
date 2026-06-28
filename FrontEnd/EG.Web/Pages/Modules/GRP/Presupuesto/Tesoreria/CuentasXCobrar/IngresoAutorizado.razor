@@ -245,6 +245,16 @@
         {
             if (!CanAuthorize || item.EstaAutorizado) return;
 
+            if (!await ConfirmWorkflowAsync(
+                    "Autorizar ingreso estimado",
+                    $"¿Seguro que deseas autorizar el ingreso {TextOrDash(item.Descripcion)}? Se bloqueará para cambios posteriores.",
+                    "Autorizar",
+                    Severity.Success,
+                    item.PkidIngresoAutorizado))
+            {
+                return;
+            }
+
             var parameters = DialogParameters(item.PkidIngresoAutorizado);
             parameters["IsAuthorizationFlow"] = true;
 

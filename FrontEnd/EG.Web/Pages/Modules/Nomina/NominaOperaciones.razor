@@ -589,6 +589,16 @@
             return;
         }
 
+        if (!await ConfirmWorkflowAsync(
+                "Enviar solicitud de vacaciones",
+                $"¿Seguro que deseas enviar a autorización la solicitud de vacaciones de {BuildVacationTitle(item)}?",
+                "Enviar a autorización",
+                Severity.Info,
+                item.Id))
+        {
+            return;
+        }
+
         await RunExclusiveAsync(async () =>
         {
             var response = await Service.PostActionAsync($"{item.Id}/vacaciones/enviar-autorizar");
@@ -608,6 +618,16 @@
         if (!CanUpdate && !CanAuthorize)
         {
             Snackbar.Add("No tienes permisos para autorizar solicitudes.", Severity.Warning);
+            return;
+        }
+
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar vacaciones",
+                $"¿Seguro que deseas autorizar la solicitud de vacaciones de {BuildVacationTitle(item)}? Esta acción actualizará el estado de la solicitud.",
+                "Autorizar",
+                Severity.Success,
+                item.Id))
+        {
             return;
         }
 

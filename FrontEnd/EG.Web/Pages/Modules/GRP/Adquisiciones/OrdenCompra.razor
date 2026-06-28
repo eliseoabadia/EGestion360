@@ -907,8 +907,12 @@
             return;
         }
 
-        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"Autorizar la orden {TextOrDash(orden.NumeroOrdenCompra)}? Ya no podra editarse.");
-        if (!confirm)
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar orden de compra",
+                $"¿Seguro que deseas autorizar la orden {TextOrDash(orden.NumeroOrdenCompra)}? Ya no podrá editarse.",
+                "Autorizar",
+                Severity.Success,
+                orden.PkidOrdenCompra))
         {
             return;
         }

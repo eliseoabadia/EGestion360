@@ -398,8 +398,26 @@
 
     private async Task Workflow(IngreAdecuacionResponse item, string action)
     {
-        var verb = action switch { "autorizar" => "autorizar y bloquear", "rechazar" => "rechazar y reabrir", _ => "enviar a autorizacion" };
-        if (!await JS.InvokeAsync<bool>("confirm", $"Confirmas {verb} {item.Clave}?")) return;
+        var (title, message, confirmText, severity) = action switch
+        {
+            "autorizar" => (
+                "Autorizar adecuación de ingreso",
+                $"¿Seguro que deseas autorizar y bloquear la adecuación {item.Clave}?",
+                "Autorizar",
+                Severity.Success),
+            "rechazar" => (
+                "Rechazar adecuación de ingreso",
+                $"¿Seguro que deseas rechazar y reabrir la adecuación {item.Clave}?",
+                "Rechazar",
+                Severity.Warning),
+            _ => (
+                "Enviar solicitud de autorización",
+                $"¿Seguro que deseas enviar a autorización la adecuación {item.Clave}?",
+                "Enviar",
+                Severity.Info)
+        };
+
+        if (!await ConfirmWorkflowAsync(title, message, confirmText, severity, item.PkidIngreAdecuacion)) return;
 
         var response = await Http.PostAsync($"api/IngreAdecuacion/{item.PkidIngreAdecuacion}/{action}", null);
         var result = await response.Content.ReadFromJsonAsync<EG.Common.GenericModel.PagedResult<IngreAdecuacionResponse>>();

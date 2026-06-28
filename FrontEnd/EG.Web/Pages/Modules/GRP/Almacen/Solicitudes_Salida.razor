@@ -425,6 +425,16 @@
 
     private async Task AutorizarSolicitud(SolicitudSalidaResponse item)
     {
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar solicitud de salida",
+                $"¿Seguro que deseas autorizar la solicitud {TextOrDash(item.Folio)}? Al autorizarla quedará lista para surtirse.",
+                "Autorizar",
+                Severity.Success,
+                item.PkidSolicitudSalida))
+        {
+            return;
+        }
+
         var response = await Service.PostActionAsync($"{item.PkidSolicitudSalida}/autorizar");
         if (response?.Success == true)
         {

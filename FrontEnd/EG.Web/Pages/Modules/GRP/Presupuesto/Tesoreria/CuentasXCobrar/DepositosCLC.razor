@@ -233,6 +233,16 @@
         {
             if (!CanAuthorize || item.EstaAutorizado) return;
 
+            if (!await ConfirmWorkflowAsync(
+                    "Autorizar deposito CLC",
+                    $"¿Seguro que deseas autorizar el depósito {TextOrDash(item.NumeroReferencia)}? Se bloqueará para cambios posteriores.",
+                    "Autorizar",
+                    Severity.Success,
+                    item.PkidDeposito))
+            {
+                return;
+            }
+
             var parameters = DialogParameters(item.PkidDeposito);
             parameters["IsAuthorizationFlow"] = true;
 

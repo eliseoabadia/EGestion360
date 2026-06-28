@@ -1,5 +1,6 @@
 using EG.Web.Auth;
 using EG.Web.Contracts;
+using EG.Web.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MiniExcelLibs;
@@ -49,6 +50,24 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     protected abstract Type DeleteDialogType { get; }
     protected virtual int ExportPageSize => 1000;
     protected virtual int MaxExportRows => 50000;
+
+    protected Task<bool> ConfirmWorkflowAsync(
+        string title,
+        string message,
+        string confirmText = "Confirmar",
+        Severity severity = Severity.Info,
+        int? id = null)
+    {
+        var color = severity switch
+        {
+            Severity.Success => Color.Success,
+            Severity.Warning => Color.Warning,
+            Severity.Error => Color.Error,
+            _ => Color.Primary
+        };
+
+        return DialogService.ConfirmWorkflowAsync(title, message, confirmText, color, id);
+    }
 
     protected async Task<bool> RunExclusiveAsync(Func<Task> operation, string? busyMessage = null)
     {

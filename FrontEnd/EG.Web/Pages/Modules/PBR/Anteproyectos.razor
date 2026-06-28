@@ -3,6 +3,7 @@
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
 @using EG.Web.Contracts
+@using EG.Web.Extensions
 @using EG.Web.Pages.Modules.PBR.Shared
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
@@ -140,6 +141,16 @@
 
     private async Task AutorizarAsync(PbrAnteproyectoResponse item)
     {
+        if (!await DialogService.ConfirmWorkflowAsync(
+                "Autorizar anteproyecto",
+                $"¿Seguro que deseas autorizar el anteproyecto {item.PkidAnteproyecto}? Esta acción actualizará su estatus.",
+                "Autorizar",
+                Color.Success,
+                item.PkidAnteproyecto))
+        {
+            return;
+        }
+
         item.Estatus = "AUTORIZADO";
         item.MontoAutorizado ??= item.MontoSolicitado;
 

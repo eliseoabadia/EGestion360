@@ -1048,6 +1048,16 @@
             return;
         }
 
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar poliza",
+                $"¿Seguro que deseas autorizar la poliza {polizaId}? La inversion quedara bloqueada para edicion.",
+                "Autorizar",
+                Severity.Success,
+                polizaId))
+        {
+            return;
+        }
+
         poliza.Autorizado = true;
         poliza.PermitirModificar = false;
         poliza.FechaAutorizacion = DateTime.Now;

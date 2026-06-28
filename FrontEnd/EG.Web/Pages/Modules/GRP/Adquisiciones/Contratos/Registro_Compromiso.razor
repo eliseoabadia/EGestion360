@@ -224,6 +224,16 @@
             return;
         }
 
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar registro de compromiso",
+                $"¿Seguro que deseas autorizar el contrato {TextOrDash(item.Numero)}? El registro quedará bloqueado para edición operativa.",
+                "Autorizar",
+                Severity.Success,
+                item.PkidContrato))
+        {
+            return;
+        }
+
         var result = await Service.PostActionAsync($"{item.PkidContrato}/autorizar");
         Snackbar.Add(result?.Message ?? (result?.Success == true ? "Registro autorizado." : "No fue posible autorizar."), result?.Success == true ? Severity.Success : Severity.Error);
         if (result?.Success == true)

@@ -470,12 +470,15 @@
             return;
         }
 
-        var confirmText = isLinkedToProyectado
-            ? $"Regresar a proyectado el presupuesto de {TextOrDash(item.PartidaClaveNombre)}?"
-            : $"Eliminar presupuesto autorizado de {TextOrDash(item.PartidaClaveNombre)}?";
-        var confirm = await JS.InvokeAsync<bool>("confirm", confirmText);
-        if (!confirm)
+        if (!await ConfirmWorkflowAsync(
+                "Eliminar presupuesto autorizado",
+                $"¿Seguro que deseas eliminar el presupuesto autorizado de {TextOrDash(item.PartidaClaveNombre)}?",
+                "Eliminar",
+                Severity.Error,
+                item.PkidEgresoAutorizado))
+        {
             return;
+        }
 
         try
         {

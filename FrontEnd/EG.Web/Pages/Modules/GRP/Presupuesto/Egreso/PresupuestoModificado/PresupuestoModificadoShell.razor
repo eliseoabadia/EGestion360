@@ -433,6 +433,30 @@
 
     private async Task Workflow(EgreAdecuacionResponse item, string action)
     {
+        var (title, message, confirmText, severity) = action switch
+        {
+            "autorizar" => (
+                "Autorizar modificación presupuestal",
+                $"¿Seguro que deseas autorizar la modificación {item.Clave}? La modificación quedará bloqueada.",
+                "Autorizar",
+                Severity.Success),
+            "rechazar" => (
+                "Rechazar modificación presupuestal",
+                $"¿Seguro que deseas rechazar y reabrir la modificación {item.Clave}?",
+                "Rechazar",
+                Severity.Warning),
+            _ => (
+                "Enviar solicitud de autorización",
+                $"¿Seguro que deseas enviar a autorización la modificación {item.Clave}?",
+                "Enviar",
+                Severity.Info)
+        };
+
+        if (!await ConfirmWorkflowAsync(title, message, confirmText, severity, item.PkidEgreAdecuacion))
+        {
+            return;
+        }
+
         var response = await Http.PostAsync($"api/EgreAdecuacion/{item.PkidEgreAdecuacion}/{action}", null);
         var result = await response.Content.ReadFromJsonAsync<EG.Web.Models.ApiResponse<EgreAdecuacionResponse>>();
         Snackbar.Add(result?.Message ?? (response.IsSuccessStatusCode ? "Proceso realizado." : "No fue posible procesar."), response.IsSuccessStatusCode ? Severity.Success : Severity.Error);
