@@ -51,6 +51,7 @@ using EG.Domain.DTOs.Responses.PBR;
 using EG.Domain.DTOs.Requests.Nomina;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
+using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.DTOs.Responses.Tesoreria;
 using EG.Infraestructure.Models;
 using EG.Infrastructure;
@@ -158,6 +159,9 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<ITipoBienService, TipoBienService>();
             services.AddScoped<ITipoPatrimonioService, TipoPatrimonioService>();
             services.AddScoped<IBienAppService, BienAppService>();
+            services.AddScoped<IClasificacionBienesMueblesAppService, ClasificacionBienesMueblesAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<ClasificacionBienesMueblesResponse>>(sp =>
+                sp.GetRequiredService<IClasificacionBienesMueblesAppService>());
             services.AddScoped<IBajaAppService, BajaAppService>();
             services.AddScoped<ITipoBajaAppService, TipoBajaAppService>();
             services.AddScoped<IEstatusBajaAppService, EstatusBajaAppService>();

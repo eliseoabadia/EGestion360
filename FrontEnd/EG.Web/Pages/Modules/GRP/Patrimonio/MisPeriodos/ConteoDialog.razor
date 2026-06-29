@@ -238,7 +238,7 @@
 
             if (Id.HasValue)
             {
-                response = await _service.UpdateAsync(conteo, conteo.PkidConteo);
+                response = await _service.UpdateAsync(conteo, Id.Value);
             }
             else
             {

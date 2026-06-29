@@ -91,6 +91,21 @@
     font-weight: 700;
 }
 
+.sidebar-link.active-branch,
+.sidebar-group-header.active-branch {
+    background: color-mix(in srgb, var(--mud-palette-primary) 12%, transparent);
+    color: color-mix(in srgb, var(--mud-palette-primary) 82%, var(--mud-palette-drawer-text));
+}
+
+.sidebar-link.current,
+.sidebar-group-header.current {
+    background: linear-gradient(90deg, var(--eg-primary-active) 0%, color-mix(in srgb, var(--mud-palette-primary) 22%, transparent) 100%);
+    color: var(--mud-palette-primary);
+    box-shadow:
+        inset 3px 0 0 var(--mud-palette-primary),
+        inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 22%, transparent);
+}
+
 .sidebar-group-header.expanded {
     background: linear-gradient(90deg, var(--eg-primary-active) 0%, var(--eg-primary-soft) 54%, transparent 100%);
     color: var(--mud-palette-primary);
@@ -115,6 +130,8 @@
 
 .sidebar-link.active::before,
 .sidebar-group-header.active::before,
+.sidebar-link.current::before,
+.sidebar-group-header.current::before,
 .sidebar-link:hover::before,
 .sidebar-link:focus-visible::before,
 .sidebar-group-header:hover::before,
@@ -146,6 +163,16 @@
     white-space: nowrap;
 }
 
+.selected-indicator {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--mud-palette-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 18%, transparent);
+}
+
 .chevron {
     margin-left: 8px;
     flex: 0 0 auto;
@@ -173,6 +200,10 @@
     margin-left: auto;
     font-size: 0.72rem;
     opacity: 0.76;
+}
+
+.selected-indicator + .external-icon {
+    margin-left: 8px;
 }
 
 .level-1 {
@@ -299,6 +330,26 @@
     color: var(--eg-accent);
 }
 
+.bootstrap-sidebar.morena .sidebar-link.active-branch,
+.bootstrap-sidebar.morena .sidebar-group-header.active-branch {
+    background: color-mix(in srgb, var(--eg-accent) 14%, transparent);
+    color: color-mix(in srgb, var(--eg-accent) 86%, var(--mud-palette-drawer-text));
+}
+
+.bootstrap-sidebar.morena .sidebar-link.current,
+.bootstrap-sidebar.morena .sidebar-group-header.current {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 32%, transparent) 0%, color-mix(in srgb, var(--eg-accent) 16%, transparent) 100%);
+    color: var(--eg-accent);
+    box-shadow:
+        inset 3px 0 0 var(--eg-accent),
+        inset 0 0 0 1px color-mix(in srgb, var(--eg-accent) 28%, transparent);
+}
+
+.bootstrap-sidebar.morena .selected-indicator {
+    background: var(--eg-accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--eg-accent) 20%, transparent);
+}
+
 .bootstrap-sidebar.morena .sidebar-group-header.expanded {
     background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 30%, transparent) 0%, color-mix(in srgb, var(--eg-accent) 14%, transparent) 58%, transparent 100%);
     color: var(--eg-accent);
@@ -341,6 +392,13 @@
     display: none;
 }
 
+.bootstrap-sidebar.collapsed .sidebar-link.current,
+.bootstrap-sidebar.collapsed .sidebar-group-header.current {
+    box-shadow:
+        inset 0 -3px 0 var(--mud-palette-primary),
+        inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+}
+
 .bootstrap-sidebar.collapsed .group-left {
     justify-content: center;
 }
@@ -350,6 +408,7 @@
 }
 
 .bootstrap-sidebar.collapsed .menu-label,
+.bootstrap-sidebar.collapsed .selected-indicator,
 .bootstrap-sidebar.collapsed .chevron,
 .bootstrap-sidebar.collapsed .sidebar-children {
     display: none;

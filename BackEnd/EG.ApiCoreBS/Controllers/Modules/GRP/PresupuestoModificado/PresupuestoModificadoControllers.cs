@@ -14,13 +14,11 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
 {
     [ApiController]
     [Authorize]
-    public abstract class PresupuestoModificadoControllerBase<TResponse>(
-        IAdquisicionCrudAppService<TResponse> service,
-        IUserContextService userContext) : ControllerBase
+    public abstract class PresupuestoModificadoReadOnlyControllerBase<TResponse>(
+        IAdquisicionCrudAppService<TResponse> service) : ControllerBase
         where TResponse : class
     {
         protected readonly IAdquisicionCrudAppService<TResponse> Service = service;
-        protected readonly IUserContextService UserContext = userContext;
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<TResponse>>> GetAll() => Ok(await Service.GetAllAsync());
@@ -31,6 +29,18 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             var result = await Service.GetByIdAsync(id);
             return result.Success ? Ok(result) : NotFound(result);
         }
+
+        [HttpPost("GetAllPaginado")]
+        public async Task<ActionResult<PagedResult<TResponse>>> GetAllPaginado([FromBody] PagedRequest request) =>
+            Ok(await Service.GetAllPaginadoAsync(request));
+    }
+
+    public abstract class PresupuestoModificadoControllerBase<TResponse>(
+        IAdquisicionCrudAppService<TResponse> service,
+        IUserContextService userContext) : PresupuestoModificadoReadOnlyControllerBase<TResponse>(service)
+        where TResponse : class
+    {
+        protected readonly IUserContextService UserContext = userContext;
 
         [HttpPost]
         public async Task<ActionResult<PagedResult<TResponse>>> Create([FromBody] TResponse response)
@@ -52,10 +62,6 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             var result = await Service.DeleteAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
-
-        [HttpPost("GetAllPaginado")]
-        public async Task<ActionResult<PagedResult<TResponse>>> GetAllPaginado([FromBody] PagedRequest request) =>
-            Ok(await Service.GetAllPaginadoAsync(request));
     }
 
     [Route("api/[controller]")]
@@ -168,9 +174,8 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
 
     [Route("api/[controller]")]
     public class EgresoDisponibleController(
-        IAdquisicionCrudAppService<EgresoDisponibleResponse> service,
-        IUserContextService userContext)
-        : PresupuestoModificadoControllerBase<EgresoDisponibleResponse>(service, userContext);
+        IAdquisicionCrudAppService<EgresoDisponibleResponse> service)
+        : PresupuestoModificadoReadOnlyControllerBase<EgresoDisponibleResponse>(service);
 
     [ApiController]
     [Authorize]

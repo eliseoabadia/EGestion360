@@ -80,6 +80,16 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
             return Ok(result);
         }
 
+        [HttpPost("generar-desde-detalle/{detalleOrdenCompraId:int}")]
+        public async Task<ActionResult<PagedResult<BienResponse>>> GenerarDesdeDetalle(int detalleOrdenCompraId)
+        {
+            var result = await _appService.GenerarDesdeDetalleOrdenCompraAsync(
+                detalleOrdenCompraId,
+                _userContext.GetCurrentUserId());
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPost("buscar")]
         public async Task<ActionResult<PagedResult<BienResponse>>> Buscar([FromBody] BusquedaRequest request)
         {

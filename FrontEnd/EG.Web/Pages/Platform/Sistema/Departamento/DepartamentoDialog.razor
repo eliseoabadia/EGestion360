@@ -134,7 +134,7 @@
 
             if (Id.HasValue)
             {
-                response = await _service.UpdateAsync(departamento, departamento.PkidDepartamento);
+                response = await _service.UpdateAsync(departamento, Id.Value);
             }
             else
             {

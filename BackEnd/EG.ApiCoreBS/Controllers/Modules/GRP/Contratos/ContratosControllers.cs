@@ -11,13 +11,11 @@ namespace EG.ApiCoreBS.Controllers.Contratos
 {
     [ApiController]
     [Authorize]
-    public abstract class ContratosControllerBase<TResponse>(
-        IAdquisicionCrudAppService<TResponse> service,
-        IUserContextService userContext) : ControllerBase
+    public abstract class ContratosReadOnlyControllerBase<TResponse>(
+        IAdquisicionCrudAppService<TResponse> service) : ControllerBase
         where TResponse : class
     {
         protected readonly IAdquisicionCrudAppService<TResponse> Service = service;
-        protected readonly IUserContextService UserContext = userContext;
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<TResponse>>> GetAll() => Ok(await Service.GetAllAsync());
@@ -27,27 +25,6 @@ namespace EG.ApiCoreBS.Controllers.Contratos
         {
             var result = await Service.GetByIdAsync(id);
             return result.Success ? Ok(result) : NotFound(result);
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<PagedResult<TResponse>>> Create([FromBody] TResponse response)
-        {
-            var result = await Service.CreateAsync(response, UserContext.GetCurrentUserId());
-            return result.Success ? Ok(result) : BadRequest(result);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<TResponse>>> Update(int id, [FromBody] TResponse response)
-        {
-            var result = await Service.UpdateAsync(id, response, UserContext.GetCurrentUserId());
-            return result.Success ? Ok(result) : result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
-        {
-            var result = await Service.DeleteAsync(id);
-            return result.Success ? Ok(result) : result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
         }
 
         [HttpPost("GetAllPaginado")]
@@ -70,6 +47,41 @@ namespace EG.ApiCoreBS.Controllers.Contratos
         }
     }
 
+    public abstract class ContratosUpdateOnlyControllerBase<TResponse>(
+        IAdquisicionCrudAppService<TResponse> service,
+        IUserContextService userContext) : ContratosReadOnlyControllerBase<TResponse>(service)
+        where TResponse : class
+    {
+        protected readonly IUserContextService UserContext = userContext;
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PagedResult<TResponse>>> Update(int id, [FromBody] TResponse response)
+        {
+            var result = await Service.UpdateAsync(id, response, UserContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
+        }
+    }
+
+    public abstract class ContratosControllerBase<TResponse>(
+        IAdquisicionCrudAppService<TResponse> service,
+        IUserContextService userContext) : ContratosUpdateOnlyControllerBase<TResponse>(service, userContext)
+        where TResponse : class
+    {
+        [HttpPost]
+        public async Task<ActionResult<PagedResult<TResponse>>> Create([FromBody] TResponse response)
+        {
+            var result = await Service.CreateAsync(response, UserContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
+        {
+            var result = await Service.DeleteAsync(id);
+            return result.Success ? Ok(result) : result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
+        }
+    }
+
     [Route("api/[controller]")]
     public class RegistroCompromisoController(
         IRegistroCompromisoAppService service,
@@ -86,13 +98,12 @@ namespace EG.ApiCoreBS.Controllers.Contratos
 
     [Route("api/[controller]")]
     public class SaldosContratosController(
-        IAdquisicionCrudAppService<SaldosContratoResponse> service,
-        IUserContextService userContext)
-        : ContratosControllerBase<SaldosContratoResponse>(service, userContext);
+        IAdquisicionCrudAppService<SaldosContratoResponse> service)
+        : ContratosReadOnlyControllerBase<SaldosContratoResponse>(service);
 
     [Route("api/[controller]")]
     public class EstadoContratoController(
         IAdquisicionCrudAppService<EstadoContratoResponse> service,
         IUserContextService userContext)
-        : ContratosControllerBase<EstadoContratoResponse>(service, userContext);
+        : ContratosUpdateOnlyControllerBase<EstadoContratoResponse>(service, userContext);
 }

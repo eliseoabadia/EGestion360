@@ -43,16 +43,26 @@ namespace EG.Application.Services.ConteoCiclico
             dto.UsuarioCreacion = usuarioActual;
             dto.FechaCreacion = DateTime.Now;
             await _service.AddAsync(dto);
-            return await _serviceView.GetByIdAsync(dto.PkidConteo, idPropertyName: "PkidConteo");
+            return await _serviceView.GetByIdAsync(dto.PkidConteo, idPropertyName: "PkidConteo")
+                ?? MapFromDto(dto);
         }
 
         public async Task<ConteoResponse> UpdateAsync(int id, ConteoDto dto, int usuarioActual)
         {
+            var existing = await _service.GetByIdAsync(id);
+            if (existing == null)
+            {
+                throw new KeyNotFoundException($"Conteo con ID {id} no encontrado.");
+            }
+
             dto.PkidConteo = id;
+            dto.UsuarioCreacion = existing.UsuarioCreacion;
+            dto.FechaCreacion = existing.FechaCreacion;
             dto.UsuarioModificacion = usuarioActual;
             dto.FechaModificacion = DateTime.Now;
             await _service.UpdateAsync(id, dto);
-            return await _serviceView.GetByIdAsync(id, idPropertyName: "PkidConteo");
+            return await _serviceView.GetByIdAsync(id, idPropertyName: "PkidConteo")
+                ?? MapFromDto(dto);
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -73,5 +83,21 @@ namespace EG.Application.Services.ConteoCiclico
                 TotalCount = result.TotalCount
             };
         }
+
+        private static ConteoResponse MapFromDto(ConteoDto dto) => new()
+        {
+            PkidConteo = dto.PkidConteo,
+            IdTipoBien = dto.FkidTipoBienAlma,
+            IdPeriodoConteo = dto.FkidPeriodoConteoAlma,
+            CantidadInventario = dto.CantidadInventario,
+            Descripcion = dto.Descripcion,
+            FechaInicio = dto.FechaInicio,
+            FechaFin = dto.FechaFin,
+            Activo = dto.Activo,
+            FechaCreacion = dto.FechaCreacion,
+            UsuarioCreacion = dto.UsuarioCreacion,
+            FechaModificacion = dto.FechaModificacion,
+            UsuarioModificacion = dto.UsuarioModificacion
+        };
     }
 }

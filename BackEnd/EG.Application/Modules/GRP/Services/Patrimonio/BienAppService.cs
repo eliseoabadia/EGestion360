@@ -234,6 +234,122 @@ namespace EG.Application.Services.Patrimonio
             }
         }
 
+        public async Task<PagedResult<BienResponse>> GenerarDesdeDetalleOrdenCompraAsync(
+            int detalleOrdenCompraId,
+            int usuarioActual)
+        {
+            var detalle = await _context.OrdenCompraDetalles
+                .AsNoTracking()
+                .Include(x => x.FkidOrdenCompraOrcoNavigation)
+                .Include(x => x.FkidTipoBienAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidOrdenCompraDetalle == detalleOrdenCompraId && x.Activo);
+
+            if (detalle == null)
+            {
+                return Failure<BienResponse>("El detalle de orden de compra no existe o esta inactivo.", "NOT_FOUND");
+            }
+
+            var cantidadObjetivo = detalle.CantidadRecibida > 0
+                ? detalle.CantidadRecibida
+                : detalle.CantidadSolicitada;
+            var objetivo = Convert.ToInt32(Math.Truncate(cantidadObjetivo));
+
+            if (objetivo <= 0)
+            {
+                return Failure<BienResponse>("El detalle no tiene cantidad recibida o solicitada para generar bienes.");
+            }
+
+            var existentes = await _context.Biens
+                .AsNoTracking()
+                .CountAsync(x => x.FkidDetalleOrdenCompraOrco == detalleOrdenCompraId && x.Activo);
+            var faltantes = Math.Max(0, objetivo - existentes);
+
+            if (faltantes == 0)
+            {
+                return new PagedResult<BienResponse>
+                {
+                    Success = true,
+                    Message = "Los bienes de este detalle ya estan generados.",
+                    Code = "SUCCESS",
+                    Items = new List<BienResponse>(),
+                    TotalCount = existentes
+                };
+            }
+
+            var orden = detalle.FkidOrdenCompraOrcoNavigation;
+            var requisicion = orden == null
+                ? null
+                : await _context.Requisicions
+                    .AsNoTracking()
+                    .Include(x => x.FkidEgresoAutorizadoPresNavigation)
+                    .FirstOrDefaultAsync(x => x.PkidRequisicion == orden.FkidRequisicionOrco && x.Activo);
+
+            var precioUnitario = detalle.PrecioUnitario > 0
+                ? detalle.PrecioUnitario
+                : objetivo > 0
+                    ? (detalle.TotalDetalle ?? detalle.Importe ?? 0m) / objetivo
+                    : 0m;
+
+            if (precioUnitario <= 0)
+            {
+                return Failure<BienResponse>("El detalle no tiene precio unitario valido para generar bienes.");
+            }
+
+            var response = new BienResponse
+            {
+                FkidGrupoBienAlma = detalle.FkidTipoBienAlmaNavigation?.FkidGrupoBienAlma,
+                FkidTipoBienAlma = detalle.FkidTipoBienAlma,
+                FkidProveedorSis = orden?.FkidProveedorSis,
+                FkidPartidaConta = detalle.FkidTipoBienAlmaNavigation?.FkidPartidaConta
+                    ?? requisicion?.FkidEgresoAutorizadoPresNavigation?.FkidPartidaConta,
+                FkidDetalleOrdenCompraOrco = detalleOrdenCompraId,
+                Descripcion = detalle.FkidTipoBienAlmaNavigation?.Descripcion
+                    ?? detalle.Observaciones
+                    ?? $"Bien de detalle {detalleOrdenCompraId}",
+                Requisicion = requisicion?.PkidRequisicion.ToString() ?? string.Empty,
+                Costo = precioUnitario,
+                ValorActual = precioUnitario,
+                FechaAdq = orden?.FechaOrdenCompra.ToDateTime(TimeOnly.MinValue) ?? DateTime.Today,
+                Notas = $"Generado desde orden de compra {orden?.NumeroOrdenCompra ?? detalle.FkidOrdenCompraOrco.ToString()}",
+                Modelo = string.Empty,
+                Serie = string.Empty,
+                Factura = string.Empty,
+                Referencia = orden?.NumeroOrdenCompra ?? string.Empty,
+                Ubicacion = string.Empty,
+                Aadquisicion = string.Empty,
+                Rango = string.Empty,
+                Resolucion = string.Empty,
+                Estatus = string.Empty,
+                Caracteristicas = string.Empty,
+                Localizado = true,
+                EsContabilizado = false,
+                Activo = true
+            };
+
+            try
+            {
+                for (var index = 0; index < faltantes; index++)
+                {
+                    await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
+                }
+
+                return new PagedResult<BienResponse>
+                {
+                    Success = true,
+                    Message = faltantes == 1
+                        ? "Se genero 1 bien desde la orden de compra."
+                        : $"Se generaron {faltantes} bienes desde la orden de compra.",
+                    Code = "SUCCESS",
+                    Items = new List<BienResponse>(),
+                    TotalCount = existentes + faltantes
+                };
+            }
+            catch (Exception ex)
+            {
+                return Failure<BienResponse>($"Error al generar bienes desde la orden de compra: {ex.Message}");
+            }
+        }
+
         private async Task<PagedResult<BienResponse>?> NormalizeAndValidateAsync(BienResponse response, bool isCreate)
         {
             if (response.FkidTipoBienAlma <= 0)

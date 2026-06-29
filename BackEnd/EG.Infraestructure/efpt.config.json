@@ -1399,10 +1399,6 @@
          "ObjectType": 3
       },
       {
-         "Name": "[NOM].[Vw_InveaNominaActualCompat]",
-         "ObjectType": 3
-      },
-      {
          "Name": "[NOM].[Vw_Credito]",
          "ObjectType": 3
       },
@@ -1472,6 +1468,10 @@
       },
       {
          "Name": "[NOM].[Vw_Infonavit]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[NOM].[Vw_InveaNominaActualCompat]",
          "ObjectType": 3
       },
       {
@@ -1792,6 +1792,10 @@
       },
       {
          "Name": "[ORCO].[Vw_OrdenCompraDetalle]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ORCO].[Vw_OrdenCompraFromClasificacionBien]",
          "ObjectType": 3
       },
       {
@@ -2523,6 +2527,210 @@
          "ObjectType": 1
       },
       {
+         "Name": "[NOM].[NOM_FaltasActualXEmpresa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_FaltasAnualXEmpresa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_INVEA_EjecutaAguinaldo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_INVEA_EjecutaCalculo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_INVEA_EjecutaCierre]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_INVEA_EjecutaPrimaVacacional]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_INVEA_GetContext]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_INVEA_Resultado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SBC_ActualXEmpresa]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SD_IMSS_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SD_IMSS]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SD_ISR_LiqFiniq]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SD_ISR_Quincenal_Par]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SD_ISR_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SD_ISSSTE]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Actualiza_SBC]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_CalculaAguinaldo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_CalculaLiqFin]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Cierra_Mes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Cierra_Quincena]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Cierra_Semana]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_CierraPeriodo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Credito_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_DELETE_LiqFin]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Fijo_Mensual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Fijo_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Fijo_Semanal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Infonavit_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_LimpiaMes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_LimpiaQuincena]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_LimpiaSemana]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Nomina]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Pension_Quincenal_INVEA]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Pension_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_PreparaAguinaldo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_PrimaVac_Gral]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_PrimaVac_Ind]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Tabular_Mensual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Tabular_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Tabular_Semanal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Variable_Mensual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Variable_Quincenal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SP_Variable_Semanal]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SPR_AuxIMSSActual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SPR_ConceptoActual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SPR_ISRActual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SPR_NominaActual]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_SPR_ReciboNomina]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_UTIL_Borra_QuincenaCerrada]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_UTIL_Cierra_QuincenaEsp]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[NOM].[NOM_UTIL_LimpiaQuincena]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[NOM].[SP_MantenimientoContratoLaboral]",
          "ObjectType": 1
       },
@@ -2588,186 +2796,6 @@
       },
       {
          "Name": "[NOM].[spPeriodosActivos_List]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_FaltasActualXEmpresa]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_FaltasAnualXEmpresa]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SBC_ActualXEmpresa]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SD_IMSS]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SD_IMSS_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SD_ISR_LiqFiniq]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SD_ISR_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SD_ISR_Quincenal_Par]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SD_ISSSTE]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SPR_AuxIMSSActual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SPR_ConceptoActual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SPR_ISRActual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SPR_NominaActual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SPR_ReciboNomina]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Actualiza_SBC]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_CalculaAguinaldo]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_CalculaLiqFin]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_CierraPeriodo]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Cierra_Mes]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Cierra_Quincena]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Cierra_Semana]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Credito_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_DELETE_LiqFin]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Fijo_Mensual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Fijo_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Fijo_Semanal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Infonavit_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_LimpiaMes]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_LimpiaQuincena]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_LimpiaSemana]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Nomina]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Pension_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Pension_Quincenal_INVEA]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_PreparaAguinaldo]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_PrimaVac_Gral]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_PrimaVac_Ind]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Tabular_Mensual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Tabular_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Tabular_Semanal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Variable_Mensual]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Variable_Quincenal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_SP_Variable_Semanal]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_UTIL_Borra_QuincenaCerrada]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_UTIL_Cierra_QuincenaEsp]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[NOM].[NOM_UTIL_LimpiaQuincena]",
          "ObjectType": 1
       },
       {

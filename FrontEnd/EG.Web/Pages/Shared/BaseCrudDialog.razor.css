@@ -17,6 +17,10 @@
     color: var(--eg-primary, var(--mud-palette-primary));
 }
 
+::deep .mud-dialog.crud-dialog > .mud-dialog-title > .mud-button-root:not(.crud-dialog-close) {
+    display: none !important;
+}
+
 .crud-dialog-shell {
     margin: 0 0 8px;
     padding: 14px 16px 12px;

@@ -261,7 +261,7 @@
         {
             ApiResponse<EmpresaResponse> response;
             if (Id.HasValue)
-                response = await _service.UpdateAsync(empresa, empresa.PkidEmpresa);
+                response = await _service.UpdateAsync(empresa, Id.Value);
             else
                 response = await _service.CreateAsync(empresa);
 

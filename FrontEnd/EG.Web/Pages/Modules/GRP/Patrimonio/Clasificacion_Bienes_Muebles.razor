@@ -1,0 +1,687 @@
+@page "/Patrimonio/Clasificacion_Bienes_Muebles"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
+@using EG.Web.Shared
+@using MiniExcelLibs
+@using MudBlazor
+@implements IDisposable
+@inherits BaseCrudPage<ClasificacionBienesMueblesResponse, ClasificacionBienesMueblesResponse>
+
+@inject SucursalStateService SucursalStateService
+@inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenCompraDetalleService
+@inject IGenericCrudService<BienResponse> BienService
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column clasificacion-bienes-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+        <PageHeader Title="Clasificacion de Bienes Muebles"
+                    Subtitle="Ordenes de compra, recepcion patrimonial y soporte documental"
+                    Icon="@Icons.Material.Filled.Inventory"
+                    CanCreate="false"
+                    OnRefresh="ReloadData" />
+
+        <div class="dashboard-strip">
+            <div>
+                <span>Total visible</span>
+                <strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong>
+            </div>
+            <div>
+                <span>Ordenes</span>
+                <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
+            </div>
+            <div>
+                <span>Bienes generados</span>
+                <strong>@Elements.Sum(x => x.TotalBienes).ToString("N0", NumberCulture)</strong>
+            </div>
+            <div>
+                <span>Pendiente por surtir</span>
+                <strong>@Quantity(Elements.Sum(x => x.Faltante ?? 0m))</strong>
+            </div>
+        </div>
+
+        <div class="quick-strip">
+            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                Empresa: @TextOrDash(SucursalStateService.EmpresaNombre)
+            </MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">
+                @(Elements.Count(x => x.Color == 1)) con bienes
+            </MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                @(Elements.Count(x => x.Color != 1)) pendientes
+            </MudChip>
+            <MudSpacer />
+            @if (SelectedOrden != null)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Clear"
+                           OnClick="ClearSelection">
+                    Limpiar seleccion
+                </MudButton>
+            }
+        </div>
+
+        <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
+            <MudItem xs="12" lg="@(SelectedOrden == null ? 12 : 7)" Class="d-flex flex-column" Style="min-height: 0;">
+                <GenericTable TItem="ClasificacionBienesMueblesResponse"
+                              @ref="table"
+                              Title="Ordenes de compra para clasificacion"
+                              SearchPlaceholder="Buscar orden, requisicion, proveedor, justificacion o estado..."
+                              ShowExportButton="@CanExport"
+                              ShowBusyOverlay="false"
+                              ServerDataFunc="LoadServerData"
+                              ExportFunc="ExportToExcel"
+                              SearchString="@SearchString"
+                              SearchStringChanged="(s) => SearchString = s"
+                              OnSearch="OnSearch"
+                              PageSize="10">
+                    <Header>
+                        <MudTh>Acciones</MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="PkidOrdenCompra" T="ClasificacionBienesMueblesResponse">ID</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Numero" T="ClasificacionBienesMueblesResponse">Orden</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Requisicion" T="ClasificacionBienesMueblesResponse">Requisicion</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Proveedor" T="ClasificacionBienesMueblesResponse">Proveedor</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="FechaOrdenCompra" T="ClasificacionBienesMueblesResponse">Fecha</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Estado" T="ClasificacionBienesMueblesResponse">Estado</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Faltante" T="ClasificacionBienesMueblesResponse">Avance</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Total" T="ClasificacionBienesMueblesResponse">Total</MudTableSortLabel></MudTh>
+                    </Header>
+
+                    <Row Context="item">
+                        <MudTd>
+                            <MudTooltip Text="Ver detalle">
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => SelectOrden(item))" />
+                            </MudTooltip>
+                            <DocumentSupportButton Modulo="Patrimonio"
+                                                   @key="@($"clasificacion-doc-{item.PkidOrdenCompra}")"
+                                                   SubModulo="Clasificacion_Bienes_Muebles"
+                                                   Controlador="ClasificacionBienesMuebles"
+                                                   EntidadId="@item.PkidOrdenCompra"
+                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
+                                                   RegistroTitulo="@TextOrDash(item.Numero)"
+                                                   RegistroDescripcion="@($"{TextOrDash(item.Requisicion)} | {TextOrDash(item.Proveedor)}")" />
+                        </MudTd>
+                        <MudTd>@item.PkidOrdenCompra</MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(item.Numero)</div>
+                            <span>@TextOrDash(item.Justificacion)</span>
+                        </MudTd>
+                        <MudTd>@TextOrDash(item.Requisicion)</MudTd>
+                        <MudTd>@TextOrDash(item.Proveedor)</MudTd>
+                        <MudTd>
+                            <div class="main-cell">@DateOrDash(item.FechaOrdenCompra)</div>
+                            <span>Vig. @DateOrDash(item.FechaVigencia)</span>
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@GetStateColor(item)"
+                                     Variant="Variant.Outlined">
+                                @TextOrDash(item.Estado)
+                            </MudChip>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@(item.Color == 1 ? Color.Success : Color.Warning)"
+                                     Variant="Variant.Text"
+                                     Class="ml-1">
+                                @(item.Color == 1 ? "Clasificada" : "Pendiente")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <div class="progress-cell">
+                                <MudProgressLinear Value="@((double)item.PorcentajeRecibido)"
+                                                   Color="@GetStateColor(item)"
+                                                   Rounded="true"
+                                                   Size="Size.Small" />
+                                <span>@Quantity(item.Recibido ?? 0m) / @Quantity(item.Solicitado ?? 0m)</span>
+                            </div>
+                        </MudTd>
+                        <MudTd>
+                            <strong>@Money(item.Total ?? 0m)</strong>
+                            <span>@item.TotalBienes.ToString("N0", NumberCulture) bienes</span>
+                        </MudTd>
+                    </Row>
+                </GenericTable>
+            </MudItem>
+
+            @if (SelectedOrden != null)
+            {
+                <MudItem xs="12" lg="5" Class="d-flex flex-column detail-pane" Style="min-height: 0;">
+                    <MudPaper Elevation="1" Class="selected-panel">
+                        <div class="selected-heading">
+                            <div>
+                                <span>Orden seleccionada</span>
+                                <strong>@TextOrDash(SelectedOrden.Numero)</strong>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Color="@GetStateColor(SelectedOrden)" Variant="Variant.Outlined">
+                                @TextOrDash(SelectedOrden.Estado)
+                            </MudChip>
+                        </div>
+                        <div class="selected-metrics">
+                            <div><span>Solicitado</span><strong>@Quantity(SelectedOrden.Solicitado ?? 0m)</strong></div>
+                            <div><span>Recibido</span><strong>@Quantity(SelectedOrden.Recibido ?? 0m)</strong></div>
+                            <div><span>Faltante</span><strong>@Quantity(SelectedOrden.Faltante ?? 0m)</strong></div>
+                            <div><span>Total</span><strong>@Money(SelectedOrden.Total ?? 0m)</strong></div>
+                        </div>
+                    </MudPaper>
+
+                    <GenericTable TItem="OrdenCompraDetalleResponse"
+                                  @ref="detalleTable"
+                                  Title="Detalle de orden"
+                                  SearchPlaceholder="Buscar tipo, unidad u observaciones..."
+                                  ShowExportButton="false"
+                                  ShowBusyOverlay="false"
+                                  PageSize="5"
+                                  ServerDataFunc="LoadDetallesServerData"
+                                  SearchString="@detalleSearch"
+                                  SearchStringChanged="(s) => detalleSearch = s"
+                                  OnSearch="ReloadDetalles">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidOrdenCompraDetalle" T="OrdenCompraDetalleResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="OrdenCompraDetalleResponse">Tipo bien</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="CantidadPendiente" T="OrdenCompraDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="TotalDetalle" T="OrdenCompraDetalleResponse">Importe</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="detalle">
+                            <MudTd>
+                                <MudTooltip Text="Ver bienes generados">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Inventory2"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => SelectDetalle(detalle))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Generar bienes desde este detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   Disabled="@IsBusy"
+                                                   OnClick="@(() => GenerarBienes(detalle))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>@detalle.PkidOrdenCompraDetalle</MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(detalle.TipoBienDescripcion)</div>
+                                <span>@TextOrDash(detalle.BienClaveNombre)</span>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@Quantity(detalle.CantidadRecibida) / @Quantity(detalle.CantidadSolicitada)</div>
+                                <span>Faltan @Quantity(detalle.CantidadPendiente ?? 0m)</span>
+                            </MudTd>
+                            <MudTd>
+                                <strong>@Money(detalle.TotalDetalle ?? detalle.Importe ?? 0m)</strong>
+                                <span>PU @Money(detalle.PrecioUnitario)</span>
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+
+                    <GenericTable TItem="BienResponse"
+                                  @ref="bienesTable"
+                                  Title="@BienesTitle"
+                                  SearchPlaceholder="Buscar clave, descripcion, serie o factura..."
+                                  ShowExportButton="false"
+                                  ShowBusyOverlay="false"
+                                  PageSize="5"
+                                  ServerDataFunc="LoadBienesServerData"
+                                  SearchString="@bienesSearch"
+                                  SearchStringChanged="(s) => bienesSearch = s"
+                                  OnSearch="ReloadBienes">
+                        <Header>
+                            <MudTh><MudTableSortLabel SortLabel="Clave" T="BienResponse">Clave</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Descripcion" T="BienResponse">Bien</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Serie" T="BienResponse">Serie</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ValorActual" T="BienResponse">Valor</MudTableSortLabel></MudTh>
+                        </Header>
+                        <Row Context="bien">
+                            <MudTd>@TextOrDash(bien.Clave)</MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(bien.Descripcion)</div>
+                                <span>@TextOrDash(bien.TipoBienDescripcion)</span>
+                            </MudTd>
+                            <MudTd>
+                                <div class="main-cell">@TextOrDash(bien.Serie)</div>
+                                <span>Factura @TextOrDash(bien.Factura)</span>
+                            </MudTd>
+                            <MudTd><strong>@Money(bien.ValorActual ?? 0m)</strong></MudTd>
+                        </Row>
+                    </GenericTable>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .clasificacion-bienes-page .dashboard-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0;
+    }
+
+    .clasificacion-bienes-page .dashboard-strip > div,
+    .clasificacion-bienes-page .selected-panel {
+        min-width: 0;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--mud-elevation-1);
+    }
+
+    .clasificacion-bienes-page .dashboard-strip > div {
+        padding: 10px 12px;
+    }
+
+    .clasificacion-bienes-page .dashboard-strip span,
+    .clasificacion-bienes-page td span,
+    .clasificacion-bienes-page .selected-heading span,
+    .clasificacion-bienes-page .selected-metrics span,
+    .clasificacion-bienes-page .progress-cell span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .76rem;
+    }
+
+    .clasificacion-bienes-page .dashboard-strip span,
+    .clasificacion-bienes-page .selected-metrics span,
+    .clasificacion-bienes-page .selected-heading span {
+        display: block;
+        text-transform: uppercase;
+    }
+
+    .clasificacion-bienes-page .dashboard-strip strong,
+    .clasificacion-bienes-page .main-cell,
+    .clasificacion-bienes-page .selected-panel strong {
+        font-weight: 800;
+        line-height: 1.15;
+    }
+
+    .clasificacion-bienes-page .quick-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 10px;
+        flex-wrap: wrap;
+    }
+
+    .clasificacion-bienes-page .progress-cell {
+        min-width: 150px;
+        display: grid;
+        gap: 4px;
+    }
+
+    .clasificacion-bienes-page .detail-pane {
+        gap: 8px;
+    }
+
+    .clasificacion-bienes-page .selected-panel {
+        padding: 12px;
+    }
+
+    .clasificacion-bienes-page .selected-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .clasificacion-bienes-page .selected-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    @@media (max-width: 960px) {
+        .clasificacion-bienes-page .dashboard-strip,
+        .clasificacion-bienes-page .selected-metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<ClasificacionBienesMueblesResponse> table = null!;
+    private GenericTable<OrdenCompraDetalleResponse>? detalleTable;
+    private GenericTable<BienResponse>? bienesTable;
+    private ClasificacionBienesMueblesResponse? SelectedOrden;
+    private OrdenCompraDetalleResponse? SelectedDetalle;
+    private string detalleSearch = string.Empty;
+    private string bienesSearch = string.Empty;
+
+    protected override string ModuleName => "Patrimonio";
+    protected override string SubModuleName => "Clasificacion_Bienes_Muebles";
+    protected override Type CreateDialogType => typeof(object);
+    protected override Type EditDialogType => typeof(object);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<ClasificacionBienesMueblesResponse>);
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private string BienesTitle => SelectedDetalle == null ? "Bienes generados" : $"Bienes del detalle {SelectedDetalle.PkidOrdenCompraDetalle}";
+
+    protected override string GetDefaultSortLabel() => "PkidOrdenCompra";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    protected override async Task<TableData<ClasificacionBienesMueblesResponse>> LoadServerData(
+        TableState state,
+        CancellationToken cancellationToken)
+    {
+        Loading = true;
+
+        try
+        {
+            CurrentPage = Math.Max(1, state.Page + 1);
+            PageSize = state.PageSize;
+            SortLabel = state.SortLabel ?? GetDefaultSortLabel();
+            SortDirection = state.SortDirection;
+
+            var filters = new Dictionary<string, object>();
+            if (SucursalStateService.EmpresaId is > 0)
+            {
+                filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+            }
+
+            var response = await Service.GetAllPaginadoAsync(
+                CurrentPage,
+                PageSize,
+                SearchString,
+                SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success == true && response.Items != null)
+            {
+                Elements = response.Items.ToList();
+                TotalCount = response.TotalCount;
+            }
+            else
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                if (!string.IsNullOrWhiteSpace(response?.Message))
+                {
+                    Snackbar.Add(response.Message, Severity.Error);
+                }
+            }
+
+            return new TableData<ClasificacionBienesMueblesResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar clasificacion de bienes: {ex.Message}", Severity.Error);
+            return new TableData<ClasificacionBienesMueblesResponse>
+            {
+                Items = new List<ClasificacionBienesMueblesResponse>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private async Task<TableData<OrdenCompraDetalleResponse>> LoadDetallesServerData(
+        TableState state,
+        CancellationToken cancellationToken)
+    {
+        if (SelectedOrden == null)
+        {
+            return new TableData<OrdenCompraDetalleResponse> { Items = new List<OrdenCompraDetalleResponse>(), TotalItems = 0 };
+        }
+
+        var response = await OrdenCompraDetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            detalleSearch,
+            state.SortLabel ?? "PkidOrdenCompraDetalle",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = SelectedOrden.PkidOrdenCompra });
+
+        return new TableData<OrdenCompraDetalleResponse>
+        {
+            Items = response?.Items ?? new List<OrdenCompraDetalleResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task<TableData<BienResponse>> LoadBienesServerData(
+        TableState state,
+        CancellationToken cancellationToken)
+    {
+        if (SelectedDetalle == null)
+        {
+            return new TableData<BienResponse> { Items = new List<BienResponse>(), TotalItems = 0 };
+        }
+
+        var response = await BienService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            bienesSearch,
+            state.SortLabel ?? "Clave",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidDetalleOrdenCompraOrco"] = SelectedDetalle.PkidOrdenCompraDetalle });
+
+        return new TableData<BienResponse>
+        {
+            Items = response?.Items ?? new List<BienResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+
+        await ReloadDetalles();
+        await ReloadBienes();
+    }
+
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        Loading = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var filters = new Dictionary<string, object>();
+            if (SucursalStateService.EmpresaId is > 0)
+            {
+                filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+            }
+
+            var response = await Service.GetAllPaginadoAsync(
+                1,
+                MaxExportRows,
+                SearchString,
+                string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel,
+                SortDirection,
+                filters);
+
+            if (response?.Success != true || response.Items == null || !response.Items.Any())
+            {
+                Snackbar.Add(response?.Message ?? "No hay datos para exportar", Severity.Warning);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            await JsRuntime.InvokeVoidAsync(
+                "downloadFile",
+                base64,
+                $"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add($"Exportacion exitosa: {response.Items.Count()} registros", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            Loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<ClasificacionBienesMueblesResponse> items)
+    {
+        return items.Select(item => new
+        {
+            ID = item.PkidOrdenCompra,
+            Empresa = item.FkidEmpresaSis,
+            Orden = item.Numero,
+            item.Requisicion,
+            item.Proveedor,
+            item.Justificacion,
+            FechaOrdenCompra = DateOrDash(item.FechaOrdenCompra),
+            FechaVigencia = DateOrDash(item.FechaVigencia),
+            item.Estado,
+            Solicitado = Quantity(item.Solicitado ?? 0m),
+            Recibido = Quantity(item.Recibido ?? 0m),
+            Faltante = Quantity(item.Faltante ?? 0m),
+            PrecioUnitario = Money(item.PrecioUnitario ?? 0m),
+            Total = Money(item.Total ?? 0m),
+            Detalles = item.TotalDetalles,
+            Bienes = item.TotalBienes,
+            Clasificada = item.Color == 1 ? "Si" : "No"
+        });
+    }
+
+    private async Task SelectOrden(ClasificacionBienesMueblesResponse item)
+    {
+        SelectedOrden = item;
+        SelectedDetalle = null;
+        detalleSearch = string.Empty;
+        bienesSearch = string.Empty;
+        await InvokeAsync(StateHasChanged);
+        await ReloadDetalles();
+        await ReloadBienes();
+    }
+
+    private async Task SelectDetalle(OrdenCompraDetalleResponse detalle)
+    {
+        SelectedDetalle = detalle;
+        bienesSearch = string.Empty;
+        await InvokeAsync(StateHasChanged);
+        await ReloadBienes();
+    }
+
+    private async Task GenerarBienes(OrdenCompraDetalleResponse detalle)
+    {
+        await RunExclusiveAsync(async () =>
+        {
+            var response = await BienService.PostActionAsync($"generar-desde-detalle/{detalle.PkidOrdenCompraDetalle}");
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Bienes generados correctamente", Severity.Success);
+                SelectedDetalle = detalle;
+                await ReloadBienes();
+                await ReloadData();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible generar los bienes", Severity.Error);
+        }, "Generacion en proceso...");
+    }
+
+    private async Task ClearSelection()
+    {
+        SelectedOrden = null;
+        SelectedDetalle = null;
+        detalleSearch = string.Empty;
+        bienesSearch = string.Empty;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ReloadDetalles()
+    {
+        if (detalleTable != null)
+        {
+            await detalleTable.ReloadData();
+        }
+    }
+
+    private async Task ReloadBienes()
+    {
+        if (bienesTable != null)
+        {
+            await bienesTable.ReloadData();
+        }
+    }
+
+    private async void OnEmpresaChanged(int _)
+    {
+        SelectedOrden = null;
+        SelectedDetalle = null;
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static Color GetStateColor(ClasificacionBienesMueblesResponse item)
+    {
+        var estado = item.Estado ?? string.Empty;
+        if (estado.Contains("TOTAL", StringComparison.OrdinalIgnoreCase))
+        {
+            return Color.Success;
+        }
+
+        if (estado.Contains("PARCIAL", StringComparison.OrdinalIgnoreCase))
+        {
+            return Color.Warning;
+        }
+
+        if (estado.Contains("CERRADO", StringComparison.OrdinalIgnoreCase))
+        {
+            return Color.Info;
+        }
+
+        return Color.Error;
+    }
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string DateOrDash(DateTime? value) =>
+        value.HasValue ? value.Value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) : "-";
+
+    private static string Money(decimal value) =>
+        $"${value.ToString("0.00", NumberCulture)}";
+
+    private static string Quantity(decimal value) =>
+        value.ToString("0.####", NumberCulture);
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        SearchCts?.Cancel();
+        SearchCts?.Dispose();
+    }
+}

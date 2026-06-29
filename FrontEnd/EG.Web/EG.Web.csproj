@@ -8,15 +8,15 @@
     <PublishTrimmed>true</PublishTrimmed>
     <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
     <RunAOTCompilation>false</RunAOTCompilation>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <BlazorWebAssemblyLoadAllGlobalizationData>false</BlazorWebAssemblyLoadAllGlobalizationData>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <WasmInitialHeapSize>67108864</WasmInitialHeapSize>
   </PropertyGroup>
 
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.GC.Server" Value="false" />
-    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,8 +31,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
-    <PackageReference Include="MiniExcel" Version="1.44.1" />
-    <PackageReference Include="MudBlazor" Version="9.5.0" />
+    <PackageReference Include="MiniExcel" Version="1.45.0" />
+    <PackageReference Include="MudBlazor" Version="9.6.0" />
   </ItemGroup>
 
   <ItemGroup>

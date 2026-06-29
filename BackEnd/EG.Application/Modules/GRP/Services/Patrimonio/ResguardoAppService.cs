@@ -66,22 +66,27 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
-                var result = await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
-                var id = result.GetId();
-                if (id.HasValue)
-                {
-                    var refreshed = await GetByIdAsync(id.Value);
-                    refreshed.Message = result.Mensaje;
-                    return refreshed;
-                }
+                _service.ApplyCurrentEmpresaIfPresent(response);
 
-                return new PagedResult<ResguardoResponse>
+                var resguardo = new Resguardo
                 {
-                    Success = true,
-                    Message = result.Mensaje,
-                    Code = "SUCCESS",
-                    TotalCount = 0
+                    Folio = await GenerateFolioAsync(response),
+                    FkidEmpresaSis = response.FkidEmpresaSis,
+                    FkidAreaSis = response.FkidAreaSis,
+                    Responsable = await ResolveResponsableAsync(response),
+                    Fecha = DateOnly.FromDateTime(response.FechaResguardo.Date),
+                    Observaciones = response.Observaciones,
+                    Activo = true,
+                    FechaCreacion = DateTime.Now,
+                    UsuarioCreacion = usuarioActual
                 };
+
+                _context.Resguardos.Add(resguardo);
+                await _context.SaveChangesAsync();
+
+                var refreshed = await GetByIdAsync(resguardo.PkidResguardo);
+                refreshed.Message = "Resguardo creado correctamente.";
+                return refreshed;
             }
             catch (Exception ex)
             {
@@ -104,9 +109,22 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
-                var result = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
+                _service.ApplyCurrentEmpresaIfPresent(response);
+
+                var resguardo = await _context.Resguardos.FirstAsync(x => x.PkidResguardo == id && x.Activo);
+                resguardo.Folio = string.IsNullOrWhiteSpace(response.Folio) ? resguardo.Folio : response.Folio.Trim();
+                resguardo.FkidEmpresaSis = response.FkidEmpresaSis;
+                resguardo.FkidAreaSis = response.FkidAreaSis;
+                resguardo.Responsable = await ResolveResponsableAsync(response);
+                resguardo.Fecha = DateOnly.FromDateTime(response.FechaResguardo.Date);
+                resguardo.Observaciones = response.Observaciones;
+                resguardo.FechaModificacion = DateTime.Now;
+                resguardo.UsuarioModificacion = usuarioActual;
+
+                await _context.SaveChangesAsync();
+
                 var refreshed = await GetByIdAsync(id);
-                refreshed.Message = result.Mensaje;
+                refreshed.Message = "Resguardo actualizado correctamente.";
                 return refreshed;
             }
             catch (Exception ex)
@@ -119,17 +137,42 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var result = await StoredProcedureExecutor.ExecuteResultAsync(
-                    _context,
-                    "[ALMA].[SP_MantenimientoResguardo]",
-                    StoredProcedureExecutor.Param("@Action", 3),
-                    StoredProcedureExecutor.Param("@PKIdResguardo", id),
-                    StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
+                var resguardo = await _context.Resguardos.FirstOrDefaultAsync(x => x.PkidResguardo == id && x.Activo);
+                if (resguardo == null)
+                {
+                    return new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"Resguardo con ID {id} no encontrado.",
+                        Code = "NOT_FOUND",
+                        Data = false,
+                        TotalCount = 0
+                    };
+                }
+
+                var tieneBienesActivos = await _context.ResguardoDetalles
+                    .AnyAsync(x => x.FkidResguardoAlma == id && x.Activo);
+                if (tieneBienesActivos)
+                {
+                    return new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = "No se puede eliminar un resguardo con bienes activos. Libera los bienes primero.",
+                        Code = "ERROR",
+                        Data = false,
+                        TotalCount = 0
+                    };
+                }
+
+                resguardo.Activo = false;
+                resguardo.FechaModificacion = DateTime.Now;
+                resguardo.UsuarioModificacion = _userContext.GetCurrentUserId();
+                await _context.SaveChangesAsync();
 
                 return new PagedResult<bool>
                 {
                     Success = true,
-                    Message = result.Mensaje,
+                    Message = "Resguardo eliminado correctamente.",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -196,26 +239,53 @@ namespace EG.Application.Services.Patrimonio
             }
         }
 
-        private Task<StoredProcedureResult> ExecuteMantenimientoAsync(
-            int action,
-            int? id,
-            ResguardoResponse response,
-            int usuarioActual)
+        private async Task<string> GenerateFolioAsync(ResguardoResponse response)
         {
-            _service.ApplyCurrentEmpresaIfPresent(response);
+            if (!string.IsNullOrWhiteSpace(response.Folio))
+            {
+                return response.Folio.Trim();
+            }
 
-            return StoredProcedureExecutor.ExecuteResultAsync(
-                _context,
-                "[ALMA].[SP_MantenimientoResguardo]",
-                StoredProcedureExecutor.Param("@Action", action),
-                StoredProcedureExecutor.Param("@PKIdResguardo", id),
-                StoredProcedureExecutor.Param("@Folio", response.Folio),
-                StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
-                StoredProcedureExecutor.Param("@FKIdArea_SIS", response.FkidAreaSis),
-                StoredProcedureExecutor.Param("@FKIdPersona_NOM", response.FkidPersonaNom),
-                StoredProcedureExecutor.Param("@FechaResguardo", response.FechaResguardo.Date),
-                StoredProcedureExecutor.Param("@Observaciones", response.Observaciones),
-                StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+            var year = response.FechaResguardo == default ? DateTime.Today.Year : response.FechaResguardo.Year;
+            var prefix = $"RES-{year}-";
+            var folios = await _context.Resguardos
+                .Where(x => x.FkidEmpresaSis == response.FkidEmpresaSis && x.Folio.StartsWith(prefix))
+                .Select(x => x.Folio)
+                .ToListAsync();
+            var next = folios
+                .Select(x => int.TryParse(x.Substring(prefix.Length), out var value) ? value : 0)
+                .DefaultIfEmpty(0)
+                .Max() + 1;
+
+            return $"{prefix}{next:00000}";
+        }
+
+        private async Task<string> ResolveResponsableAsync(ResguardoResponse response)
+        {
+            var persona = await _context.Personas
+                .AsNoTracking()
+                .Where(x => x.PkidPersona == response.FkidPersonaNom && x.Activo)
+                .Select(x => new { x.Clave, x.Nombre, x.Paterno, x.Materno })
+                .FirstOrDefaultAsync();
+
+            if (persona != null)
+            {
+                var nombre = string.Join(" ", new[] { persona.Nombre, persona.Paterno, persona.Materno }
+                    .Where(x => !string.IsNullOrWhiteSpace(x)));
+                return string.IsNullOrWhiteSpace(nombre) ? persona.Clave : nombre;
+            }
+
+            if (!string.IsNullOrWhiteSpace(response.PersonaNombre))
+            {
+                return response.PersonaNombre.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(response.PersonaClave))
+            {
+                return response.PersonaClave.Trim();
+            }
+
+            return response.FkidPersonaNom.ToString();
         }
 
         private static PagedResult<ResguardoResponse>? Validate(ResguardoResponse response)

@@ -94,6 +94,7 @@
                                                    OnClick="@(() => SelectBien(item))" />
                                 </MudTooltip>
                                 <DocumentSupportButton Modulo="Patrimonio"
+                                                       @key="@($"bien-doc-{item.PkidBien}")"
                                                        SubModulo="Bienes"
                                                        Controlador="Bien"
                                                        EntidadId="@item.PkidBien"
@@ -166,13 +167,14 @@
         }
         else
         {
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div class="d-flex flex-column" style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
-                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
-                                   Color="Color.Primary"
-                                   Size="Size.Medium"
-                                   OnClick="BackToTable"
-                                   Tooltip="Volver al listado" />
+                    <MudTooltip Text="Volver al listado">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                       Color="Color.Primary"
+                                       Size="Size.Medium"
+                                       OnClick="BackToTable" />
+                    </MudTooltip>
                     <div class="selected-title ml-2">
                         <MudText Typo="Typo.h6">@TextOrDash(SelectedBien.Clave)</MudText>
                         <span>@TextOrDash(SelectedBien.Descripcion)</span>
@@ -219,6 +221,7 @@
                                        Class="ml-1" />
                     </MudTooltip>
                     <DocumentSupportButton Modulo="Patrimonio"
+                                           @key="@($"bien-detail-doc-{SelectedBien.PkidBien}")"
                                            SubModulo="Bienes"
                                            Controlador="Bien"
                                            EntidadId="@SelectedBien.PkidBien"
@@ -440,7 +443,6 @@
     protected override async Task<TableData<BienResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         Loading = true;
-        StateHasChanged();
 
         try
         {
@@ -481,7 +483,6 @@
         finally
         {
             Loading = false;
-            StateHasChanged();
         }
     }
 

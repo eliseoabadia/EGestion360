@@ -219,8 +219,8 @@
     [Parameter] public Func<Task> ExportFunc { get; set; } = null!;
     [Parameter] public EventCallback OnAdd { get; set; }
 
-    private MudTable<TItem> mudTableRef = new();
-    private MudTextField<string> searchField = new();
+    private MudTable<TItem>? mudTableRef;
+    private MudTextField<string>? searchField;
     private readonly string tableElementId = $"eg-generic-table-{Guid.NewGuid():N}";
     private readonly HashSet<int> hiddenAutoColumnIndexes = new();
     private List<AutoColumnOption> autoColumnOptions = new();
@@ -260,7 +260,6 @@
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
         isLoading = true;
-        await InvokeAsync(StateHasChanged);
 
         try
         {
@@ -273,7 +272,6 @@
         finally
         {
             isLoading = false;
-            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -291,7 +289,10 @@
                 return;
             }
 
-            await mudTableRef.ReloadServerData();
+            if (mudTableRef is not null)
+            {
+                await mudTableRef.ReloadServerData();
+            }
         }
     }
 
@@ -318,7 +319,7 @@
 
     public async Task ReloadData()
     {
-        if (isLoading)
+        if (isLoading || mudTableRef is null)
         {
             return;
         }

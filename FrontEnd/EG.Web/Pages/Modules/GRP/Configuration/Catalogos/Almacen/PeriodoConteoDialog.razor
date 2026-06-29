@@ -270,7 +270,7 @@
 
             if (Id.HasValue)
             {
-                response = await _service.UpdateAsync(periodo, periodo.PkidPeriodoConteo);
+                response = await _service.UpdateAsync(periodo, Id.Value);
             }
             else
             {

@@ -66,22 +66,64 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
-                var result = await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
-                var id = result.GetId();
-                if (id.HasValue)
+                var resguardo = await _context.Resguardos
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.PkidResguardo == response.FkidResguardoAlma && x.Activo);
+                if (resguardo == null)
                 {
-                    var refreshed = await GetByIdAsync(id.Value);
-                    refreshed.Message = result.Mensaje;
-                    return refreshed;
+                    return Failure<ResguardoDetalleResponse>("El resguardo no existe o está inactivo.", "NOT_FOUND");
                 }
 
-                return new PagedResult<ResguardoDetalleResponse>
+                var bien = await _context.Biens
+                    .FirstOrDefaultAsync(x => x.PkidBien == response.FkidBienAlma && x.Activo);
+                if (bien == null)
                 {
-                    Success = true,
-                    Message = result.Mensaje,
-                    Code = "SUCCESS",
-                    TotalCount = 0
+                    return Failure<ResguardoDetalleResponse>("El bien no existe o está inactivo.", "NOT_FOUND");
+                }
+
+                var yaAsignado = await _context.ResguardoDetalles
+                    .AnyAsync(x => x.FkidBienAlma == response.FkidBienAlma && x.Activo);
+                if (yaAsignado)
+                {
+                    return Failure<ResguardoDetalleResponse>("El bien ya tiene un resguardo activo.");
+                }
+
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                var estadoBien = response.FkidEstadoBienAlma ?? bien.FkidEstadoBienAlma;
+                var detalle = new ResguardoDetalle
+                {
+                    FkidResguardoAlma = response.FkidResguardoAlma,
+                    FkidBienAlma = response.FkidBienAlma,
+                    FkidEstadoBienAlma = estadoBien,
+                    FechaAsignacion = DateTime.Now,
+                    ImprimeEtiqueta = response.ImprimeEtiqueta,
+                    Observaciones = response.Observaciones,
+                    Activo = true,
+                    FechaCreacion = DateTime.Now,
+                    UsuarioCreacion = usuarioActual
                 };
+
+                _context.ResguardoDetalles.Add(detalle);
+                await _context.SaveChangesAsync();
+
+                var resguardoAnterior = bien.Resguardo;
+                bien.ResguardoAnterior = resguardoAnterior;
+                bien.Resguardo = response.FkidResguardoAlma;
+                bien.EstaResguardado = true;
+                bien.FechaResguardado = DateTime.Now;
+                bien.FkidAreaSis = resguardo.FkidAreaSis ?? bien.FkidAreaSis;
+                bien.FkidEstadoBienAlma = estadoBien ?? bien.FkidEstadoBienAlma;
+                bien.FechaModificacion = DateTime.Now;
+                bien.UsuarioModificacion = usuarioActual;
+
+                AddMovimiento(detalle.PkidResguardoDetalle, bien.PkidBien, resguardoAnterior, response.FkidResguardoAlma, "ASIGNACION", response.Observaciones, usuarioActual);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                var refreshed = await GetByIdAsync(detalle.PkidResguardoDetalle);
+                refreshed.Message = "Bien asignado al resguardo correctamente.";
+                return refreshed;
             }
             catch (Exception ex)
             {
@@ -104,9 +146,27 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
-                var result = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
+                var detalle = await _context.ResguardoDetalles
+                    .FirstAsync(x => x.PkidResguardoDetalle == id && x.Activo);
+
+                detalle.FkidEstadoBienAlma = response.FkidEstadoBienAlma ?? detalle.FkidEstadoBienAlma;
+                detalle.ImprimeEtiqueta = response.ImprimeEtiqueta;
+                detalle.Observaciones = response.Observaciones;
+                detalle.FechaModificacion = DateTime.Now;
+                detalle.UsuarioModificacion = usuarioActual;
+
+                var bien = await _context.Biens.FirstOrDefaultAsync(x => x.PkidBien == detalle.FkidBienAlma && x.Activo);
+                if (bien != null && response.FkidEstadoBienAlma.HasValue)
+                {
+                    bien.FkidEstadoBienAlma = response.FkidEstadoBienAlma;
+                    bien.FechaModificacion = DateTime.Now;
+                    bien.UsuarioModificacion = usuarioActual;
+                }
+
+                await _context.SaveChangesAsync();
+
                 var refreshed = await GetByIdAsync(id);
-                refreshed.Message = result.Mensaje;
+                refreshed.Message = "Detalle de resguardo actualizado correctamente.";
                 return refreshed;
             }
             catch (Exception ex)
@@ -119,17 +179,49 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var result = await StoredProcedureExecutor.ExecuteResultAsync(
-                    _context,
-                    "[ALMA].[SP_MantenimientoResguardoDetalle]",
-                    StoredProcedureExecutor.Param("@Action", 3),
-                    StoredProcedureExecutor.Param("@PKIdResguardoDetalle", id),
-                    StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
+                var detalle = await _context.ResguardoDetalles
+                    .FirstOrDefaultAsync(x => x.PkidResguardoDetalle == id && x.Activo);
+                if (detalle == null)
+                {
+                    return new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"Detalle de resguardo con ID {id} no encontrado.",
+                        Code = "NOT_FOUND",
+                        Data = false,
+                        TotalCount = 0
+                    };
+                }
+
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var bien = await _context.Biens.FirstOrDefaultAsync(x => x.PkidBien == detalle.FkidBienAlma && x.Activo);
+                var resguardoOrigen = detalle.FkidResguardoAlma;
+
+                detalle.Activo = false;
+                detalle.FechaLiberacion = DateTime.Now;
+                detalle.FechaModificacion = DateTime.Now;
+                detalle.UsuarioModificacion = usuarioActual;
+
+                if (bien != null)
+                {
+                    bien.ResguardoAnterior = bien.Resguardo;
+                    bien.Resguardo = null;
+                    bien.EstaResguardado = false;
+                    bien.FechaResguardado = null;
+                    bien.FechaModificacion = DateTime.Now;
+                    bien.UsuarioModificacion = usuarioActual;
+                }
+
+                AddMovimiento(detalle.PkidResguardoDetalle, detalle.FkidBienAlma, resguardoOrigen, null, "LIBERACION", detalle.Observaciones, usuarioActual);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return new PagedResult<bool>
                 {
                     Success = true,
-                    Message = result.Mensaje,
+                    Message = "Bien liberado del resguardo correctamente.",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -192,23 +284,28 @@ namespace EG.Application.Services.Patrimonio
             }
         }
 
-        private Task<StoredProcedureResult> ExecuteMantenimientoAsync(
-            int action,
-            int? id,
-            ResguardoDetalleResponse response,
+        private void AddMovimiento(
+            int detalleId,
+            int bienId,
+            int? resguardoOrigenId,
+            int? resguardoDestinoId,
+            string tipoMovimiento,
+            string? observaciones,
             int usuarioActual)
         {
-            return StoredProcedureExecutor.ExecuteResultAsync(
-                _context,
-                "[ALMA].[SP_MantenimientoResguardoDetalle]",
-                StoredProcedureExecutor.Param("@Action", action),
-                StoredProcedureExecutor.Param("@PKIdResguardoDetalle", id),
-                StoredProcedureExecutor.Param("@FKIdResguardo_ALMA", response.FkidResguardoAlma),
-                StoredProcedureExecutor.Param("@FKIdBien_ALMA", response.FkidBienAlma),
-                StoredProcedureExecutor.Param("@FKIdEstadoBien_ALMA", response.FkidEstadoBienAlma),
-                StoredProcedureExecutor.Param("@ImprimeEtiqueta", response.ImprimeEtiqueta),
-                StoredProcedureExecutor.Param("@Observaciones", response.Observaciones),
-                StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+            _context.ResguardoMovimientos.Add(new ResguardoMovimiento
+            {
+                FkidResguardoDetalleAlma = detalleId,
+                FkidBienAlma = bienId,
+                FkidResguardoOrigenAlma = resguardoOrigenId,
+                FkidResguardoDestinoAlma = resguardoDestinoId,
+                TipoMovimiento = tipoMovimiento,
+                FechaMovimiento = DateTime.Now,
+                Observaciones = observaciones,
+                Activo = true,
+                FechaCreacion = DateTime.Now,
+                UsuarioCreacion = usuarioActual
+            });
         }
 
         private static PagedResult<ResguardoDetalleResponse>? Validate(ResguardoDetalleResponse response, bool isCreate)

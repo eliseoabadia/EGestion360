@@ -2,6 +2,7 @@ using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,10 +14,12 @@ namespace EG.ApiCoreBS.Controllers.General
     public class EstadoController : ControllerBase
     {
         private readonly IEstadoAppService _appService;
+        private readonly IUserContextService _userContext;
 
-        public EstadoController(IEstadoAppService appService)
+        public EstadoController(IEstadoAppService appService, IUserContextService userContext)
         {
             _appService = appService;
+            _userContext = userContext;
         }
 
         [HttpGet]
@@ -69,13 +72,15 @@ namespace EG.ApiCoreBS.Controllers.General
                     CodigoEstado = response.CodigoEstado,
                     Activo = response.Activo
                 };
-                var result = await _appService.CreateAsync(dto, response.UsuarioCreacion);
+                var result = await _appService.CreateAsync(dto, _userContext.GetCurrentUserId());
                 return CreatedAtAction(nameof(GetById), new { id = result.PkidEstado },
                     new PagedResult<EstadoResponse>
                     {
                         Success = true,
                         Message = "Estado creado correctamente",
                         Code = "SUCCESS",
+                        Data = result,
+                        Items = new List<EstadoResponse> { result },
                         TotalCount = 1
                     });
             }
@@ -103,12 +108,14 @@ namespace EG.ApiCoreBS.Controllers.General
                     CodigoEstado = response.CodigoEstado,
                     Activo = response.Activo
                 };
-                var result = await _appService.UpdateAsync(id, dto, response.UsuarioModificacion ?? 0);
+                var result = await _appService.UpdateAsync(id, dto, _userContext.GetCurrentUserId());
                 return Ok(new PagedResult<EstadoResponse>
                 {
                     Success = true,
                     Message = "Estado actualizado correctamente",
                     Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<EstadoResponse> { result },
                     TotalCount = 1
                 });
             }

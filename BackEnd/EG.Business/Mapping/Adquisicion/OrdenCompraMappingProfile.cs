@@ -1,5 +1,7 @@
 using EG.Domain.DTOs.Requests.Adquisicion;
+using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
 using Mapster;
 
@@ -47,6 +49,11 @@ namespace EG.Business.Mapping.Adquisicion
             config.NewConfig<OrdenCompraPartidaResponse, OrdenCompraPartidaDto>().IgnoreNullValues(true);
             config.NewConfig<OrdenCompraPartidaDto, OrdenCompraPartidum>()
                 .Ignore(dest => dest.PkidOrdenCompraPartida);
+
+            config.NewConfig<VwOrdenCompraFromClasificacionBien, ClasificacionBienesMueblesResponse>()
+                .Map(dest => dest.FechaOrdenCompra, src => src.FechaOrdenCompra.ToDateTime(TimeOnly.MinValue))
+                .Map(dest => dest.FechaVigencia, src => ToDateTime(src.FechaVigencia));
+            config.NewConfig<ClasificacionBienesMueblesResponse, ClasificacionBienesMueblesDto>().IgnoreNullValues(true);
         }
 
         private static DateTime? ToDateTime(DateOnly? value) =>

@@ -307,7 +307,7 @@
 
             if (Id.HasValue)
             {
-                response = await usuarioService.UpdateAsync(usuario, usuario.PkIdUsuario);
+                response = await usuarioService.UpdateAsync(usuario, Id.Value);
             }
             else
             {

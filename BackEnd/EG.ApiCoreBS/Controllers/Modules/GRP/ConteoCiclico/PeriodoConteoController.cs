@@ -2,19 +2,24 @@ using EG.Application.Interfaces.ConteoCiclico;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
+using EG.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EG.ApiCoreBS.Controllers.ConteoCiclico
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class PeriodoConteoController : ControllerBase
     {
         private readonly IPeriodoConteoAppService _appService;
+        private readonly IUserContextService _userContext;
 
-        public PeriodoConteoController(IPeriodoConteoAppService appService)
+        public PeriodoConteoController(IPeriodoConteoAppService appService, IUserContextService userContext)
         {
             _appService = appService;
+            _userContext = userContext;
         }
 
         [HttpGet]
@@ -89,13 +94,15 @@ namespace EG.ApiCoreBS.Controllers.ConteoCiclico
                     FkidSupervisorSis = response.IdSupervisor,
                     Activo = response.Activo
                 };
-                var result = await _appService.CreateAsync(dto, response.UsuarioCreacion);
+                var result = await _appService.CreateAsync(dto, _userContext.GetCurrentUserId());
                 return CreatedAtAction(nameof(GetById), new { id = result.PkidPeriodoConteo },
                     new PagedResult<PeriodoConteoResponse>
                     {
                         Success = true,
                         Message = "Período de conteo creado correctamente",
                         Code = "SUCCESS",
+                        Data = result,
+                        Items = new List<PeriodoConteoResponse> { result },
                         TotalCount = 1
                     });
             }
@@ -131,12 +138,14 @@ namespace EG.ApiCoreBS.Controllers.ConteoCiclico
                     FkidSupervisorSis = response.IdSupervisor,
                     Activo = response.Activo
                 };
-                await _appService.UpdateAsync(id, dto, response.UsuarioModificacion ?? 0);
+                var result = await _appService.UpdateAsync(id, dto, _userContext.GetCurrentUserId());
                 return Ok(new PagedResult<PeriodoConteoResponse>
                 {
                     Success = true,
                     Message = "Período de conteo actualizado correctamente",
                     Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<PeriodoConteoResponse> { result },
                     TotalCount = 1
                 });
             }

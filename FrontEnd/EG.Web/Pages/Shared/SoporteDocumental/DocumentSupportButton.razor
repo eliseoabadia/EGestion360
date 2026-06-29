@@ -3,6 +3,7 @@
 @using MudBlazor
 @inject IDocumentSupportService DocumentService
 @inject IDialogService DialogService
+@implements IDisposable
 
 <MudTooltip Text="@TooltipText">
     <MudBadge Content="@_count"
@@ -33,11 +34,21 @@
     [Parameter] public Size Size { get; set; } = Size.Small;
 
     private int _count;
+    private int _loadVersion;
+    private bool _disposed;
+    private string? _summaryKey;
     private string TooltipText => _count == 0 ? "Agregar soporte documental" : $"Soporte documental ({_count})";
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadSummary();
+        var key = BuildSummaryKey();
+        if (key == _summaryKey)
+        {
+            return;
+        }
+
+        _summaryKey = key;
+        await LoadSummary(++_loadVersion);
     }
 
     private DocumentoEntidadRequest BuildRequest() => new()
@@ -50,13 +61,34 @@
         FkidEmpresaSis = FkidEmpresaSis
     };
 
-    private async Task LoadSummary()
+    private string BuildSummaryKey() =>
+        string.Join("|", Modulo, SubModulo, Controlador, Servicio, EntidadId, FkidEmpresaSis);
+
+    private async Task LoadSummary(int version)
     {
         if (EntidadId <= 0 || string.IsNullOrWhiteSpace(Modulo))
+        {
+            _count = 0;
             return;
+        }
 
-        var response = await DocumentService.GetSummaryAsync(BuildRequest());
-        _count = response?.Data?.TotalDocumentos ?? response?.Items?.FirstOrDefault()?.TotalDocumentos ?? 0;
+        try
+        {
+            var response = await DocumentService.GetSummaryAsync(BuildRequest());
+            if (_disposed || version != _loadVersion)
+            {
+                return;
+            }
+
+            _count = response?.Data?.TotalDocumentos ?? response?.Items?.FirstOrDefault()?.TotalDocumentos ?? 0;
+        }
+        catch
+        {
+            if (!_disposed && version == _loadVersion)
+            {
+                _count = 0;
+            }
+        }
     }
 
     private async Task OpenDialog()
@@ -86,6 +118,12 @@
             });
 
         await dialog.Result;
-        await LoadSummary();
+        await LoadSummary(++_loadVersion);
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _loadVersion++;
     }
 }

@@ -2,7 +2,6 @@ using EG.Application.Interfaces.Patrimonio;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Patrimonio;
-using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +13,10 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     public class BienDisponibleBajaController : ControllerBase
     {
         private readonly IBienDisponibleBajaAppService _appService;
-        private readonly IUserContextService _userContext;
 
-        public BienDisponibleBajaController(IBienDisponibleBajaAppService appService, IUserContextService userContext)
+        public BienDisponibleBajaController(IBienDisponibleBajaAppService appService)
         {
             _appService = appService;
-            _userContext = userContext;
         }
 
         [HttpGet]
@@ -34,27 +31,6 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             var result = await _appService.GetByIdAsync(id);
             return result.Success ? Ok(result) : NotFound(result);
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<PagedResult<BienDisponibleBajaResponse>>> Create([FromBody] BienDisponibleBajaResponse response)
-        {
-            var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
-            return BadRequest(result);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<PagedResult<BienDisponibleBajaResponse>>> Update(int id, [FromBody] BienDisponibleBajaResponse response)
-        {
-            var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
-            return BadRequest(result);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
-        {
-            var result = await _appService.DeleteAsync(id);
-            return BadRequest(result);
         }
 
         [HttpPost("GetAllPaginado")]

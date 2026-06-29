@@ -37,5 +37,17 @@ public partial class Vacacion
 
     public bool Activo { get; set; }
 
+    public bool EnviadoAautorizar { get; set; }
+
+    public DateTime? FechaEnvioAutorizacion { get; set; }
+
+    public int? UsuarioEnvioAutorizacion { get; set; }
+
+    public DateTime? FechaAutorizacion { get; set; }
+
+    public int? UsuarioAutorizacion { get; set; }
+
+    public string ComentarioAutorizacion { get; set; }
+
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 }

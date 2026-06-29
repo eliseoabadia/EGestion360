@@ -2,6 +2,7 @@
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,10 +14,12 @@ namespace EG.ApiCoreBS.Controllers.General
     public class SucursalController : ControllerBase
     {
         private readonly ISucursalAppService _appService;
+        private readonly IUserContextService _userContext;
 
-        public SucursalController(ISucursalAppService appService)
+        public SucursalController(ISucursalAppService appService, IUserContextService userContext)
         {
             _appService = appService;
+            _userContext = userContext;
         }
 
         [HttpGet]
@@ -102,13 +105,15 @@ namespace EG.ApiCoreBS.Controllers.General
                     Longitud = response.Longitud,
                     Activo = response.Activo
                 };
-                var result = await _appService.CreateAsync(dto, response.UsuarioCreacion);
+                var result = await _appService.CreateAsync(dto, _userContext.GetCurrentUserId());
                 return CreatedAtAction(nameof(GetById), new { id = result.PkidSucursal },
                     new PagedResult<SucursalResponse>
                     {
                         Success = true,
                         Message = "Sucursal creada correctamente",
                         Code = "SUCCESS",
+                        Data = result,
+                        Items = new List<SucursalResponse> { result },
                         TotalCount = 1
                     });
             }
@@ -153,12 +158,14 @@ namespace EG.ApiCoreBS.Controllers.General
                     Longitud = response.Longitud,
                     Activo = response.Activo
                 };
-                await _appService.UpdateAsync(id, dto, response.UsuarioModificacion ?? 0);
+                var result = await _appService.UpdateAsync(id, dto, _userContext.GetCurrentUserId());
                 return Ok(new PagedResult<SucursalResponse>
                 {
                     Success = true,
                     Message = "Sucursal actualizada correctamente",
                     Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<SucursalResponse> { result },
                     TotalCount = 1
                 });
             }

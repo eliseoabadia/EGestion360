@@ -7,9 +7,10 @@
     var isDirectlyActive = IsActiveRoute(Item.Ruta);
     var hasActiveDescendant = hasChildren && HasActiveDescendant(Item);
     var isActive = isDirectlyActive || hasActiveDescendant;
+    var selectedCss = isDirectlyActive ? " current" : hasActiveDescendant ? " active-branch" : string.Empty;
     var groupCss = $"sidebar-group level-{level}-group{(isExpanded ? " expanded" : string.Empty)}{(hasActiveDescendant ? " active-branch" : string.Empty)}";
-    var linkCss = $"sidebar-link level-{level}{(isActive ? " active" : string.Empty)}";
-    var groupHeaderCss = $"sidebar-group-header level-{level}{(isExpanded ? " expanded" : string.Empty)}{(isActive ? " active" : string.Empty)}";
+    var linkCss = $"sidebar-link level-{level}{(isActive ? " active" : string.Empty)}{selectedCss}";
+    var groupHeaderCss = $"sidebar-group-header level-{level}{(isExpanded ? " expanded" : string.Empty)}{(isActive ? " active" : string.Empty)}{selectedCss}";
     var childrenId = $"sidebar-children-{Item.PkidMenu}";
     var childrenCss = $"sidebar-children level-{level}-children {(isExpanded ? "expanded" : "collapsed")}";
     var chevronCss = $"chevron {(isExpanded ? "expanded" : "")}";
@@ -31,6 +32,10 @@
                 @if (!IsCollapsed)
                 {
                     <span class="menu-label">@Item.Nombre</span>
+                    @if (isDirectlyActive)
+                    {
+                        <span class="selected-indicator" aria-hidden="true"></span>
+                    }
                 }
             </span>
 
@@ -74,6 +79,10 @@ else if (Item.AbrirEnNuevaVentana)
             @if (!IsCollapsed)
             {
                 <span class="menu-label">@Item.Nombre</span>
+                @if (isDirectlyActive)
+                {
+                    <span class="selected-indicator" aria-hidden="true"></span>
+                }
                 <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Class="external-icon" Size="Size.Small" />
             }
         </a>
@@ -91,6 +100,10 @@ else
             @if (!IsCollapsed)
             {
                 <span class="menu-label">@Item.Nombre</span>
+                @if (isDirectlyActive)
+                {
+                    <span class="selected-indicator" aria-hidden="true"></span>
+                }
             }
         </a>
     </div>

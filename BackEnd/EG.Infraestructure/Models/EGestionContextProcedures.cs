@@ -90,6 +90,1612 @@ namespace EG.Infraestructure.Models
             return _;
         }
 
+        public virtual async Task<List<NOM_FaltasActualXEmpresaResult>> NOM_FaltasActualXEmpresaAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_FaltasActualXEmpresaResult>("EXEC @returnValue = [NOM].[NOM_FaltasActualXEmpresa] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_FaltasAnualXEmpresaResult>> NOM_FaltasAnualXEmpresaAsync(int? p_Fk_IdEmpresa, int? p_Anio, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_Anio",
+                    Value = p_Anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_FaltasAnualXEmpresaResult>("EXEC @returnValue = [NOM].[NOM_FaltasAnualXEmpresa] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_Anio = @p_Anio", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_INVEA_EjecutaAguinaldoResult>> NOM_INVEA_EjecutaAguinaldoAsync(int? empresaId, int? periodoId, DateOnly? fechaProceso, string proceso, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "FechaProceso",
+                    Value = fechaProceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 400,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_INVEA_EjecutaAguinaldoResult>("EXEC @returnValue = [NOM].[NOM_INVEA_EjecutaAguinaldo] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @FechaProceso = @FechaProceso, @Proceso = @Proceso", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_INVEA_EjecutaCalculoResult>> NOM_INVEA_EjecutaCalculoAsync(int? empresaId, string proceso, int? periodoId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 400,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_INVEA_EjecutaCalculoResult>("EXEC @returnValue = [NOM].[NOM_INVEA_EjecutaCalculo] @EmpresaId = @EmpresaId, @Proceso = @Proceso, @PeriodoId = @PeriodoId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_INVEA_EjecutaCierreResult>> NOM_INVEA_EjecutaCierreAsync(int? empresaId, string proceso, int? periodoId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 400,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_INVEA_EjecutaCierreResult>("EXEC @returnValue = [NOM].[NOM_INVEA_EjecutaCierre] @EmpresaId = @EmpresaId, @Proceso = @Proceso, @PeriodoId = @PeriodoId", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_INVEA_EjecutaPrimaVacacionalResult>> NOM_INVEA_EjecutaPrimaVacacionalAsync(int? empresaId, int? periodoId, string proceso, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 400,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_INVEA_EjecutaPrimaVacacionalResult>("EXEC @returnValue = [NOM].[NOM_INVEA_EjecutaPrimaVacacional] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @Proceso = @Proceso", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<int> NOM_INVEA_GetContextAsync(int? empresaId, OutputParameter<int?> periodoId, OutputParameter<int?> anio, OutputParameter<DateOnly?> fechaProceso, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterPeriodoId = new SqlParameter
+            {
+                ParameterName = "PeriodoId",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = periodoId?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterAnio = new SqlParameter
+            {
+                ParameterName = "Anio",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = anio?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+            var parameterFechaProceso = new SqlParameter
+            {
+                ParameterName = "FechaProceso",
+                Direction = System.Data.ParameterDirection.InputOutput,
+                Value = fechaProceso?._value ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.Date,
+            };
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterPeriodoId,
+                parameterAnio,
+                parameterFechaProceso,
+                parameterreturnValue,
+            };
+            var _ = await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [NOM].[NOM_INVEA_GetContext] @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId OUTPUT, @Anio = @Anio OUTPUT, @FechaProceso = @FechaProceso OUTPUT", sqlParameters, cancellationToken);
+
+            periodoId?.SetValue(parameterPeriodoId.Value);
+            anio?.SetValue(parameterAnio.Value);
+            fechaProceso?.SetValue(parameterFechaProceso.Value);
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_INVEA_ResultadoResult>> NOM_INVEA_ResultadoAsync(string proceso, string codigo, bool? ejecutado, string mensaje, int? corridaId, int? empresaId, int? periodoId, int? anio, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "Proceso",
+                    Size = 400,
+                    Value = proceso ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Codigo",
+                    Size = 160,
+                    Value = codigo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Ejecutado",
+                    Value = ejecutado ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Mensaje",
+                    Size = 2000,
+                    Value = mensaje ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "CorridaId",
+                    Value = corridaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "EmpresaId",
+                    Value = empresaId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "PeriodoId",
+                    Value = periodoId ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "Anio",
+                    Value = anio ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_INVEA_ResultadoResult>("EXEC @returnValue = [NOM].[NOM_INVEA_Resultado] @Proceso = @Proceso, @Codigo = @Codigo, @Ejecutado = @Ejecutado, @Mensaje = @Mensaje, @CorridaId = @CorridaId, @EmpresaId = @EmpresaId, @PeriodoId = @PeriodoId, @Anio = @Anio", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SBC_ActualXEmpresaResult>> NOM_SBC_ActualXEmpresaAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SBC_ActualXEmpresaResult>("EXEC @returnValue = [NOM].[NOM_SBC_ActualXEmpresa] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SD_IMSSResult>> NOM_SD_IMSSAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SD_IMSSResult>("EXEC @returnValue = [NOM].[NOM_SD_IMSS] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SD_IMSS_QuincenalResult>> NOM_SD_IMSS_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SD_IMSS_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SD_IMSS_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SD_ISR_LiqFiniqResult>> NOM_SD_ISR_LiqFiniqAsync(int? p_idContrato, int? p_IdConcepto, DateOnly? p_FechaFinContrato, double? p_BaseGravable, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_idContrato",
+                    Value = p_idContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_IdConcepto",
+                    Value = p_IdConcepto ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_FechaFinContrato",
+                    Value = p_FechaFinContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_BaseGravable",
+                    Value = p_BaseGravable ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Float,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SD_ISR_LiqFiniqResult>("EXEC @returnValue = [NOM].[NOM_SD_ISR_LiqFiniq] @p_idContrato = @p_idContrato, @p_IdConcepto = @p_IdConcepto, @p_FechaFinContrato = @p_FechaFinContrato, @p_BaseGravable = @p_BaseGravable", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SD_ISR_QuincenalResult>> NOM_SD_ISR_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SD_ISR_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SD_ISR_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SD_ISR_Quincenal_ParResult>> NOM_SD_ISR_Quincenal_ParAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SD_ISR_Quincenal_ParResult>("EXEC @returnValue = [NOM].[NOM_SD_ISR_Quincenal_Par] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SD_ISSSTEResult>> NOM_SD_ISSSTEAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SD_ISSSTEResult>("EXEC @returnValue = [NOM].[NOM_SD_ISSSTE] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Actualiza_SBCResult>> NOM_SP_Actualiza_SBCAsync(int? p_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_IdEmpresa",
+                    Value = p_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Actualiza_SBCResult>("EXEC @returnValue = [NOM].[NOM_SP_Actualiza_SBC] @p_IdEmpresa = @p_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_CalculaAguinaldoResult>> NOM_SP_CalculaAguinaldoAsync(int? p_idNominaEspecial, int? p_Fk_IdEmpresa__EMP, DateOnly? p_FechaPagoAguinaldo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_idNominaEspecial",
+                    Value = p_idNominaEspecial ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa__EMP",
+                    Value = p_Fk_IdEmpresa__EMP ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_FechaPagoAguinaldo",
+                    Value = p_FechaPagoAguinaldo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_CalculaAguinaldoResult>("EXEC @returnValue = [NOM].[NOM_SP_CalculaAguinaldo] @p_idNominaEspecial = @p_idNominaEspecial, @p_Fk_IdEmpresa__EMP = @p_Fk_IdEmpresa__EMP, @p_FechaPagoAguinaldo = @p_FechaPagoAguinaldo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_CalculaLiqFinResult>> NOM_SP_CalculaLiqFinAsync(int? p_idContrato, int? p_DiasPendientesPago, DateOnly? p_FechaInicioParaAguinaldo, DateOnly? p_FechaBaja, int? p_DiasDeVacacionesParaCalculo, double? p_SaldoPendientedeVacaciones, bool? p_EsLiquidacion, double? p_VacacionesEjercicioAnt, int? p_DescuentosXFaltas, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_idContrato",
+                    Value = p_idContrato ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_DiasPendientesPago",
+                    Value = p_DiasPendientesPago ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_FechaInicioParaAguinaldo",
+                    Value = p_FechaInicioParaAguinaldo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_FechaBaja",
+                    Value = p_FechaBaja ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_DiasDeVacacionesParaCalculo",
+                    Value = p_DiasDeVacacionesParaCalculo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_SaldoPendientedeVacaciones",
+                    Value = p_SaldoPendientedeVacaciones ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Float,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_EsLiquidacion",
+                    Value = p_EsLiquidacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Bit,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_VacacionesEjercicioAnt",
+                    Value = p_VacacionesEjercicioAnt ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Float,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_DescuentosXFaltas",
+                    Value = p_DescuentosXFaltas ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_CalculaLiqFinResult>("EXEC @returnValue = [NOM].[NOM_SP_CalculaLiqFin] @p_idContrato = @p_idContrato, @p_DiasPendientesPago = @p_DiasPendientesPago, @p_FechaInicioParaAguinaldo = @p_FechaInicioParaAguinaldo, @p_FechaBaja = @p_FechaBaja, @p_DiasDeVacacionesParaCalculo = @p_DiasDeVacacionesParaCalculo, @p_SaldoPendientedeVacaciones = @p_SaldoPendientedeVacaciones, @p_EsLiquidacion = @p_EsLiquidacion, @p_VacacionesEjercicioAnt = @p_VacacionesEjercicioAnt, @p_DescuentosXFaltas = @p_DescuentosXFaltas", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Cierra_MesResult>> NOM_SP_Cierra_MesAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Cierra_MesResult>("EXEC @returnValue = [NOM].[NOM_SP_Cierra_Mes] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Cierra_QuincenaResult>> NOM_SP_Cierra_QuincenaAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Cierra_QuincenaResult>("EXEC @returnValue = [NOM].[NOM_SP_Cierra_Quincena] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Cierra_SemanaResult>> NOM_SP_Cierra_SemanaAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Cierra_SemanaResult>("EXEC @returnValue = [NOM].[NOM_SP_Cierra_Semana] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_CierraPeriodoResult>> NOM_SP_CierraPeriodoAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_CierraPeriodoResult>("EXEC @returnValue = [NOM].[NOM_SP_CierraPeriodo] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Credito_QuincenalResult>> NOM_SP_Credito_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Credito_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SP_Credito_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_DELETE_LiqFinResult>> NOM_SP_DELETE_LiqFinAsync(int? p_idLiquidacion, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_idLiquidacion",
+                    Value = p_idLiquidacion ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_DELETE_LiqFinResult>("EXEC @returnValue = [NOM].[NOM_SP_DELETE_LiqFin] @p_idLiquidacion = @p_idLiquidacion", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Fijo_MensualResult>> NOM_SP_Fijo_MensualAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Fijo_MensualResult>("EXEC @returnValue = [NOM].[NOM_SP_Fijo_Mensual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Fijo_QuincenalResult>> NOM_SP_Fijo_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Fijo_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SP_Fijo_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Fijo_SemanalResult>> NOM_SP_Fijo_SemanalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Fijo_SemanalResult>("EXEC @returnValue = [NOM].[NOM_SP_Fijo_Semanal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Infonavit_QuincenalResult>> NOM_SP_Infonavit_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Infonavit_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SP_Infonavit_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_LimpiaMesResult>> NOM_SP_LimpiaMesAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_LimpiaMesResult>("EXEC @returnValue = [NOM].[NOM_SP_LimpiaMes] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_LimpiaQuincenaResult>> NOM_SP_LimpiaQuincenaAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_LimpiaQuincenaResult>("EXEC @returnValue = [NOM].[NOM_SP_LimpiaQuincena] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_LimpiaSemanaResult>> NOM_SP_LimpiaSemanaAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_LimpiaSemanaResult>("EXEC @returnValue = [NOM].[NOM_SP_LimpiaSemana] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_NominaResult>> NOM_SP_NominaAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_NominaResult>("EXEC @returnValue = [NOM].[NOM_SP_Nomina] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Pension_QuincenalResult>> NOM_SP_Pension_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Pension_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SP_Pension_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Pension_Quincenal_INVEAResult>> NOM_SP_Pension_Quincenal_INVEAAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Pension_Quincenal_INVEAResult>("EXEC @returnValue = [NOM].[NOM_SP_Pension_Quincenal_INVEA] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_PreparaAguinaldoResult>> NOM_SP_PreparaAguinaldoAsync(int? p_idNominaEspecial, int? p_Fk_IdEmpresa__EMP, DateOnly? p_FechaPagoAguinaldo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_idNominaEspecial",
+                    Value = p_idNominaEspecial ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa__EMP",
+                    Value = p_Fk_IdEmpresa__EMP ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_FechaPagoAguinaldo",
+                    Value = p_FechaPagoAguinaldo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Date,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_PreparaAguinaldoResult>("EXEC @returnValue = [NOM].[NOM_SP_PreparaAguinaldo] @p_idNominaEspecial = @p_idNominaEspecial, @p_Fk_IdEmpresa__EMP = @p_Fk_IdEmpresa__EMP, @p_FechaPagoAguinaldo = @p_FechaPagoAguinaldo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_PrimaVac_GralResult>> NOM_SP_PrimaVac_GralAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_PrimaVac_GralResult>("EXEC @returnValue = [NOM].[NOM_SP_PrimaVac_Gral] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_PrimaVac_IndResult>> NOM_SP_PrimaVac_IndAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_PrimaVac_IndResult>("EXEC @returnValue = [NOM].[NOM_SP_PrimaVac_Ind] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Tabular_MensualResult>> NOM_SP_Tabular_MensualAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Tabular_MensualResult>("EXEC @returnValue = [NOM].[NOM_SP_Tabular_Mensual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Tabular_QuincenalResult>> NOM_SP_Tabular_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Tabular_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SP_Tabular_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Tabular_SemanalResult>> NOM_SP_Tabular_SemanalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Tabular_SemanalResult>("EXEC @returnValue = [NOM].[NOM_SP_Tabular_Semanal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Variable_MensualResult>> NOM_SP_Variable_MensualAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Variable_MensualResult>("EXEC @returnValue = [NOM].[NOM_SP_Variable_Mensual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Variable_QuincenalResult>> NOM_SP_Variable_QuincenalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Variable_QuincenalResult>("EXEC @returnValue = [NOM].[NOM_SP_Variable_Quincenal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SP_Variable_SemanalResult>> NOM_SP_Variable_SemanalAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SP_Variable_SemanalResult>("EXEC @returnValue = [NOM].[NOM_SP_Variable_Semanal] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SPR_AuxIMSSActualResult>> NOM_SPR_AuxIMSSActualAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SPR_AuxIMSSActualResult>("EXEC @returnValue = [NOM].[NOM_SPR_AuxIMSSActual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SPR_ConceptoActualResult>> NOM_SPR_ConceptoActualAsync(int? p_Fk_IdEmpresa, int? p_Fk_IdConcepto, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdConcepto",
+                    Value = p_Fk_IdConcepto ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SPR_ConceptoActualResult>("EXEC @returnValue = [NOM].[NOM_SPR_ConceptoActual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_Fk_IdConcepto = @p_Fk_IdConcepto", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SPR_ISRActualResult>> NOM_SPR_ISRActualAsync(int? p_Fk_IdEmpresa, int? p_Fk_IdConceptoISR, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdConceptoISR",
+                    Value = p_Fk_IdConceptoISR ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SPR_ISRActualResult>("EXEC @returnValue = [NOM].[NOM_SPR_ISRActual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_Fk_IdConceptoISR = @p_Fk_IdConceptoISR", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SPR_NominaActualResult>> NOM_SPR_NominaActualAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SPR_NominaActualResult>("EXEC @returnValue = [NOM].[NOM_SPR_NominaActual] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_SPR_ReciboNominaResult>> NOM_SPR_ReciboNominaAsync(int? p_Fk_IdEmpresa, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_SPR_ReciboNominaResult>("EXEC @returnValue = [NOM].[NOM_SPR_ReciboNomina] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_UTIL_Borra_QuincenaCerradaResult>> NOM_UTIL_Borra_QuincenaCerradaAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_UTIL_Borra_QuincenaCerradaResult>("EXEC @returnValue = [NOM].[NOM_UTIL_Borra_QuincenaCerrada] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_UTIL_Cierra_QuincenaEspResult>> NOM_UTIL_Cierra_QuincenaEspAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_UTIL_Cierra_QuincenaEspResult>("EXEC @returnValue = [NOM].[NOM_UTIL_Cierra_QuincenaEsp] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<NOM_UTIL_LimpiaQuincenaResult>> NOM_UTIL_LimpiaQuincenaAsync(int? p_Fk_IdEmpresa, int? p_NumPeriodo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "p_Fk_IdEmpresa",
+                    Value = p_Fk_IdEmpresa ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "p_NumPeriodo",
+                    Value = p_NumPeriodo ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<NOM_UTIL_LimpiaQuincenaResult>("EXEC @returnValue = [NOM].[NOM_UTIL_LimpiaQuincena] @p_Fk_IdEmpresa = @p_Fk_IdEmpresa, @p_NumPeriodo = @p_NumPeriodo", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
         public virtual async Task<List<SP_CalcularInteresesResult>> SP_CalcularInteresesAsync(int? pKIdInversion, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter

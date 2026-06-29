@@ -126,6 +126,7 @@ public static class ApiServiceExtensions
         RegisterCrud<MarcaResponse>(services, "api/Marca");
         RegisterCrud<PersonaResponse>(services, "api/Persona");
         RegisterCrud<EG.Domain.DTOs.Responses.Patrimonio.BienResponse>(services, "api/Bien");
+        RegisterCrud<ClasificacionBienesMueblesResponse>(services, "api/ClasificacionBienesMuebles");
         RegisterCrud<BajaResponse>(services, "api/Baja");
         RegisterCrud<TipoBajaResponse>(services, "api/TipoBaja");
         RegisterCrud<EstatusBajaResponse>(services, "api/EstatusBaja");

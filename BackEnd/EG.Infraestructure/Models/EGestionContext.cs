@@ -763,8 +763,6 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwDescuentoInfonavit> VwDescuentoInfonavits { get; set; }
 
-    public virtual DbSet<VwInveaNominaActualCompat> VwInveaNominaActualCompats { get; set; }
-
     public virtual DbSet<VwDetalleRequisicion> VwDetalleRequisicions { get; set; }
 
     public virtual DbSet<VwDetalleSolicitudSalidum> VwDetalleSolicitudSalida { get; set; }
@@ -865,6 +863,8 @@ public partial class EGestionContext : DbContext
 
     public virtual DbSet<VwIntermediarioFinanciero> VwIntermediarioFinancieros { get; set; }
 
+    public virtual DbSet<VwInveaNominaActualCompat> VwInveaNominaActualCompats { get; set; }
+
     public virtual DbSet<VwInventario> VwInventarios { get; set; }
 
     public virtual DbSet<VwInventarioDetalle> VwInventarioDetalles { get; set; }
@@ -906,6 +906,8 @@ public partial class EGestionContext : DbContext
     public virtual DbSet<VwOrdenCompra> VwOrdenCompras { get; set; }
 
     public virtual DbSet<VwOrdenCompraDetalle> VwOrdenCompraDetalles { get; set; }
+
+    public virtual DbSet<VwOrdenCompraFromClasificacionBien> VwOrdenCompraFromClasificacionBiens { get; set; }
 
     public virtual DbSet<VwOrdenCompraPartidum> VwOrdenCompraPartida { get; set; }
 
@@ -12725,7 +12727,11 @@ public partial class EGestionContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("PKIdVacacion");
             entity.Property(e => e.Activo).HasDefaultValue(true, "DF_NOM_Vacacion_Activo");
+            entity.Property(e => e.ComentarioAutorizacion).HasMaxLength(500);
+            entity.Property(e => e.EnviadoAautorizar).HasColumnName("EnviadoAAutorizar");
+            entity.Property(e => e.FechaAutorizacion).HasPrecision(6);
             entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FechaEnvioAutorizacion).HasPrecision(6);
             entity.Property(e => e.FechaFin).HasPrecision(6);
             entity.Property(e => e.FechaInicio).HasPrecision(6);
             entity.Property(e => e.FechaModificacion).HasPrecision(6);
@@ -14371,48 +14377,6 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TipoMovimiento)
                 .IsRequired()
                 .HasMaxLength(20);
-        });
-
-        modelBuilder.Entity<VwInveaNominaActualCompat>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("Vw_InveaNominaActualCompat", "NOM");
-
-            entity.Property(e => e.Aportacion).HasColumnType("decimal(19, 4)");
-            entity.Property(e => e.Clave).HasMaxLength(40);
-            entity.Property(e => e.Concepto).HasMaxLength(1000);
-            entity.Property(e => e.Deduccion).HasColumnType("decimal(19, 4)");
-            entity.Property(e => e.Empleado).HasMaxLength(170);
-            entity.Property(e => e.Estatus)
-                .IsRequired()
-                .HasMaxLength(60);
-            entity.Property(e => e.FFin).HasColumnName("F_Fin");
-            entity.Property(e => e.FInicio).HasColumnName("F_Inicio");
-            entity.Property(e => e.FechaCreacion).HasPrecision(6);
-            entity.Property(e => e.FkIdConceptoNom).HasColumnName("Fk_IdConcepto__NOM");
-            entity.Property(e => e.FkIdContrato).HasColumnName("Fk_IdContrato");
-            entity.Property(e => e.FkIdEmpresaEmp).HasColumnName("Fk_IdEmpresa__EMP");
-            entity.Property(e => e.FkIdPeriodo).HasColumnName("Fk_IdPeriodo");
-            entity.Property(e => e.FkIdPersonaRh).HasColumnName("Fk_IdPersona__RH");
-            entity.Property(e => e.FkIdPuesto).HasColumnName("Fk_IdPuesto");
-            entity.Property(e => e.Neto).HasColumnType("decimal(19, 4)");
-            entity.Property(e => e.Origen)
-                .IsRequired()
-                .HasMaxLength(80);
-            entity.Property(e => e.PerDed)
-                .IsRequired()
-                .HasMaxLength(2)
-                .IsFixedLength();
-            entity.Property(e => e.Percepcion).HasColumnType("decimal(19, 4)");
-            entity.Property(e => e.PkIdSueldo).HasColumnName("Pk_IdSueldo");
-            entity.Property(e => e.PuestoNombre).HasMaxLength(150);
-            entity.Property(e => e.RazonSocial).HasMaxLength(255);
-            entity.Property(e => e.Referencia).HasMaxLength(500);
-            entity.Property(e => e.SubClave).HasMaxLength(40);
-            entity.Property(e => e.TipoCorrida)
-                .IsRequired()
-                .HasMaxLength(60);
         });
 
         modelBuilder.Entity<VwCotizacion>(entity =>
@@ -16223,6 +16187,51 @@ public partial class EGestionContext : DbContext
                 .HasColumnName("RFC");
         });
 
+        modelBuilder.Entity<VwInveaNominaActualCompat>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_InveaNominaActualCompat", "NOM");
+
+            entity.Property(e => e.Aportacion).HasColumnType("decimal(19, 4)");
+            entity.Property(e => e.Clave)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.Concepto)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.Deduccion).HasColumnType("decimal(19, 4)");
+            entity.Property(e => e.Empleado).HasMaxLength(170);
+            entity.Property(e => e.Estatus)
+                .IsRequired()
+                .HasMaxLength(30);
+            entity.Property(e => e.FFin).HasColumnName("F_Fin");
+            entity.Property(e => e.FInicio).HasColumnName("F_Inicio");
+            entity.Property(e => e.FechaCreacion).HasPrecision(6);
+            entity.Property(e => e.FkIdConceptoNom).HasColumnName("Fk_IdConcepto__NOM");
+            entity.Property(e => e.FkIdContrato).HasColumnName("Fk_IdContrato");
+            entity.Property(e => e.FkIdEmpresaEmp).HasColumnName("Fk_IdEmpresa__EMP");
+            entity.Property(e => e.FkIdPeriodo).HasColumnName("Fk_IdPeriodo");
+            entity.Property(e => e.FkIdPersonaRh).HasColumnName("Fk_IdPersona__RH");
+            entity.Property(e => e.FkIdPuesto).HasColumnName("Fk_IdPuesto");
+            entity.Property(e => e.Neto).HasColumnType("decimal(19, 4)");
+            entity.Property(e => e.Origen)
+                .IsRequired()
+                .HasMaxLength(40);
+            entity.Property(e => e.PerDed)
+                .HasMaxLength(2)
+                .IsFixedLength();
+            entity.Property(e => e.Percepcion).HasColumnType("decimal(19, 4)");
+            entity.Property(e => e.PkIdSueldo).HasColumnName("Pk_IdSueldo");
+            entity.Property(e => e.PuestoNombre).HasMaxLength(150);
+            entity.Property(e => e.RazonSocial).HasMaxLength(255);
+            entity.Property(e => e.Referencia).HasMaxLength(250);
+            entity.Property(e => e.SubClave).HasMaxLength(40);
+            entity.Property(e => e.TipoCorrida)
+                .IsRequired()
+                .HasMaxLength(30);
+        });
+
         modelBuilder.Entity<VwInventario>(entity =>
         {
             entity
@@ -16799,6 +16808,36 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.TipoBienDescripcion).HasMaxLength(1200);
             entity.Property(e => e.TotalDetalle).HasColumnType("decimal(38, 7)");
             entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<VwOrdenCompraFromClasificacionBien>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_OrdenCompraFromClasificacionBien", "ORCO");
+
+            entity.Property(e => e.Estado)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.Faltante).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.FkidCotizacionOrco).HasColumnName("FKIdCotizacion_ORCO");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEstatusOrdenCompraOrco).HasColumnName("FKIdEstatusOrdenCompra_ORCO");
+            entity.Property(e => e.Justificacion).HasMaxLength(500);
+            entity.Property(e => e.Numero)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.PkidOrdenCompra).HasColumnName("PKIdOrdenCompra");
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Proveedor)
+                .IsRequired()
+                .HasMaxLength(500);
+            entity.Property(e => e.Recibido).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Requisicion)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.Solicitado).HasColumnType("decimal(38, 4)");
+            entity.Property(e => e.Total).HasColumnType("decimal(38, 7)");
         });
 
         modelBuilder.Entity<VwOrdenCompraPartidum>(entity =>
