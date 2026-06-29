@@ -1,7 +1,7 @@
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using MudBlazor
 
-<MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true" CloseOnEscapeKey="true" Class="detail-dialog">
+<MudDialog MaxWidth="MaxWidth.ExtraLarge" FullWidth="true" CloseOnEscapeKey="true" Class="detail-dialog">
     <TitleContent>
         <div class="detail-dialog-title">
             <div class="header-left">
@@ -161,19 +161,39 @@
 }
 
 <style>
+    .mud-dialog.detail-dialog,
+    .detail-dialog {
+        display: flex !important;
+        flex-direction: column !important;
+        width: min(1520px, calc(100vw - 80px)) !important;
+        max-width: calc(100vw - 80px) !important;
+        height: min(88dvh, 900px) !important;
+        max-height: calc(100dvh - 64px) !important;
+    }
+
+    .mud-dialog.detail-dialog .mud-dialog-content,
+    .detail-dialog .mud-dialog-content {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
     .detail-container {
+        height: 100%;
+        min-height: 0;
         width: 100%;
         background: transparent;
     }
 
     .detail-scroll {
-        max-height: calc(82vh - 76px);
+        height: 100%;
+        max-height: none;
         overflow-y: auto;
         overflow-x: hidden;
     }
 
     .detail-body {
-        padding: 12px 0 4px;
+        padding: 14px 0 6px;
     }
 
     .detail-dialog-title {
@@ -189,6 +209,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
     }
 
     .header-icon {
@@ -220,6 +241,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-shrink: 0;
     }
 
     .close-btn {
@@ -243,11 +265,12 @@
 
     .info-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 
     .info-item {
+        min-width: 0;
         padding: 14px 16px;
         background: var(--mud-palette-background);
         border-radius: 8px;
@@ -267,11 +290,14 @@
         font-size: 0.92rem;
         font-weight: 600;
         color: var(--mud-palette-text-primary);
+        min-width: 0;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
     .cuentas-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 
@@ -279,6 +305,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
         padding: 12px 14px;
         background: var(--mud-palette-background);
         border-radius: 8px;
@@ -327,9 +354,9 @@
         font-size: 0.82rem;
         font-weight: 500;
         color: var(--mud-palette-text-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
     @@media (max-width: 760px) {

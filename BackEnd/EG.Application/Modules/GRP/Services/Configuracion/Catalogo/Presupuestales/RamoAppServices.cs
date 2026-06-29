@@ -12,11 +12,14 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class RamoAppServices : IRamoAppServices
     {
         private readonly GenericService<Ramo, RamoDto, RamoResponse> _service;
+        private readonly EGestionContext _context;
 
         public RamoAppServices(
-            GenericService<Ramo, RamoDto, RamoResponse> service)
+            GenericService<Ramo, RamoDto, RamoResponse> service,
+            EGestionContext context)
         {
             _service = service;
+            _context = context;
             ConfigureValidations();
         }
 
@@ -125,16 +128,15 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (id <= 0)
                 throw new ArgumentException("ID de Ramo inválido", nameof(id));
 
-            var entity = await _service.GetByIdAsync(id, idPropertyName: "PkidRamo");
+            var entity = await _context.Ramos.FirstOrDefaultAsync(r => r.PkidRamo == id && r.Activo);
             if (entity == null)
                 return false;
 
-            var dto = entity.Adapt<RamoDto>();
-            dto.Activo = false;
-            dto.FechaModificacion = DateTime.Now;
-            dto.UsuarioModificacion = usuarioActual;
+            entity.Activo = false;
+            entity.FechaModificacion = DateTime.Now;
+            entity.UsuarioModificacion = usuarioActual;
 
-            await _service.UpdateAsync(id, dto);
+            await _context.SaveChangesAsync();
             return true;
         }
 

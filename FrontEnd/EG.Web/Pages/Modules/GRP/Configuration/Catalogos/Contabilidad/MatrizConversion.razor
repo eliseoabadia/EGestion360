@@ -15,12 +15,13 @@
             OnCreate="CreateItem"
             OnRefresh="() => table.ReloadData()" />
 
-        <div style="overflow-x: auto; flex: 1;" class="custom-matriz-table">
+        <div class="custom-matriz-table">
             <GenericTable TItem="MatrizConversionResponse"
                 @ref="table"
                 Title="Lista de Matriz de Conversión"
                 SearchPlaceholder="Buscar por programa o partida..."
                 ShowExportButton="@CanExport"
+                EnableColumnInteractions="false"
                 ServerDataFunc="LoadServerData"
                 ExportFunc="ExportToExcel"
                 SearchString="@SearchString"
@@ -113,7 +114,7 @@
     private async Task OpenDetail(MatrizConversionResponse item)
     {
         var parameters = new DialogParameters { ["Item"] = item };
-        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true };
         var dialog = await DialogService.ShowAsync<MatrizConversionPersonalizado>(string.Empty, parameters, options);
         await dialog.Result;
     }
@@ -139,38 +140,63 @@
 }
 
 <style>
+    .custom-matriz-table {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .custom-matriz-table .eg-generic-table,
+    .custom-matriz-table .mud-table {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .custom-matriz-table .mud-table-container {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    .custom-matriz-table table.mud-table-root {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed;
+    }
+
+    .custom-matriz-table .mud-table-cell {
+        box-sizing: border-box;
+        min-width: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .custom-matriz-table .mud-table-sort-label {
+        min-width: 0;
+    }
+
     .custom-matriz-table .col-acciones {
-        min-width: 120px;
-        max-width: 120px;
+        width: 76px;
         text-align: center;
     }
 
     .custom-matriz-table .col-id {
-        min-width: 60px;
-        max-width: 60px;
+        width: 54px;
         text-align: center;
     }
 
     .custom-matriz-table .col-programa {
-        min-width: 120px;
-        max-width: 150px;
+        width: 7%;
     }
 
     .custom-matriz-table .col-partida {
-        min-width: 150px;
-        max-width: 180px;
-    }
-
-    .custom-matriz-table .col-cuenta {
-        min-width: 150px;
-        max-width: 180px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .custom-matriz-table .mud-table-container {
-        min-width: 2000px;
+        width: 13%;
     }
 
     .mud-table-row {

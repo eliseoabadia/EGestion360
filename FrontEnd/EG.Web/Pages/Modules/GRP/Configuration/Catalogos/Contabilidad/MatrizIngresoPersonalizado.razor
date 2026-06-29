@@ -138,6 +138,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
     }
 
     .header-icon {
@@ -159,12 +160,17 @@
     .header-subtitle {
         font-size: 0.82rem;
         opacity: 0.75;
+        max-width: 420px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .header-right {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-shrink: 0;
     }
 
     .close-btn {
@@ -187,11 +193,12 @@
 
     .info-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 
     .info-item {
+        min-width: 0;
         padding: 14px 16px;
         background: var(--mud-palette-background);
         border-radius: 8px;
@@ -211,11 +218,15 @@
         font-size: 0.92rem;
         font-weight: 600;
         color: var(--mud-palette-text-primary);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .cuentas-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 
@@ -223,6 +234,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
         padding: 12px 14px;
         background: var(--mud-palette-background);
         border-radius: 8px;
