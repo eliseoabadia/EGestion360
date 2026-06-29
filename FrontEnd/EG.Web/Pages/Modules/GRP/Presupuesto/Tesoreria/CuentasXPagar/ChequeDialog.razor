@@ -11,11 +11,12 @@
 @inject IGenericCrudService<ChequePartidaResponse> PartidaService
 @inject IGenericCrudService<CuentaBancariaResponse> CuentaBancariaService
 @inject ISnackbar Snackbar
+@inject SucursalStateService SucursalStateService
 
 <BaseCrudDialog TItem="ChequeResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="ChequeResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidClcPres" Label="CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="3"><PagedAutocomplete Value="@cuentaBancaria" ValueChanged="value => cuentaBancaria = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasBancariasPageAsync" /></MudItem>
             <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -68,6 +69,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await EnsureEmpresaAsync();
+
         if (!Id.HasValue)
         {
             if (PrefillItem != null)
@@ -92,6 +95,8 @@
 
     private async Task SaveAsync()
     {
+        await EnsureEmpresaAsync();
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
@@ -212,4 +217,25 @@
 
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => $"${value.ToString("0.00", Culture)}";
+    private string EmpresaText => item.FkidEmpresaSis > 0
+        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
+            ? item.FkidEmpresaSis.ToString()
+            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        : "Sin empresa seleccionada";
+
+    private async Task EnsureEmpresaAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        if (item.FkidEmpresaSis > 0)
+        {
+            return;
+        }
+
+        var empresaId = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+        if (empresaId is > 0)
+        {
+            item.FkidEmpresaSis = empresaId.Value;
+        }
+    }
+
 }

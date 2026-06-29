@@ -133,6 +133,7 @@ public static class ApiServiceExtensions
         RegisterCrud<BienDisponibleBajaResponse>(services, "api/BienDisponibleBaja");
         RegisterCrud<ResguardoResponse>(services, "api/Resguardo");
         RegisterCrud<ResguardoDetalleResponse>(services, "api/ResguardoDetalle");
+        RegisterCrud<ResguardoMovimientoResponse>(services, "api/ResguardoMovimiento");
         RegisterCrud<CalendarioInventarioResponse>(services, "api/CalendarioInventario");
         RegisterCrud<InventarioResponse>(services, "api/Inventario");
         RegisterCrud<InventarioDetalleResponse>(services, "api/InventarioDetalle");

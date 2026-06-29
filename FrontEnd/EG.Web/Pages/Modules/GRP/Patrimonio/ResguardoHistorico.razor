@@ -1,0 +1,129 @@
+@page "/Patrimonio/Resguardo_Historico"
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+
+@inject IGenericCrudService<ResguardoMovimientoResponse> Service
+@inject SucursalStateService SucursalStateService
+
+<MudContainer Class="px-3 d-flex flex-column resguardo-historico-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <PageHeader Title="Resguardo Historico"
+                Subtitle="Movimientos de asignacion y liberacion de bienes"
+                Icon="@Icons.Material.Filled.History"
+                ShowCreateButton="false"
+                OnRefresh="ReloadData" />
+
+    <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+        <GenericTable TItem="ResguardoMovimientoResponse"
+                      @ref="table"
+                      Title="Movimientos de resguardo"
+                      SearchPlaceholder="Buscar por bien, folio, responsable o movimiento..."
+                      ShowExportButton="false"
+                      ServerDataFunc="LoadServerData"
+                      SearchString="@search"
+                      SearchStringChanged="value => search = value"
+                      OnSearch="ReloadData"
+                      PageSize="20"
+                      PageSizeOptions="new[] { 10, 20, 50, 100 }"
+                      TableHeight="calc(100vh - 250px)">
+            <Header>
+                <MudTh><MudTableSortLabel SortLabel="FechaMovimiento" T="ResguardoMovimientoResponse">Fecha</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="TipoMovimiento" T="ResguardoMovimientoResponse">Movimiento</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="BienClave" T="ResguardoMovimientoResponse">Bien</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ResguardoOrigenFolio" T="ResguardoMovimientoResponse">Origen</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ResguardoDestinoFolio" T="ResguardoMovimientoResponse">Destino</MudTableSortLabel></MudTh>
+                <MudTh>Observaciones</MudTh>
+            </Header>
+            <Row Context="item">
+                <MudTd>@item.FechaMovimiento.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@MovementColor(item.TipoMovimiento)" Variant="Variant.Outlined">
+                        @TextOrDash(item.TipoMovimiento)
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(item.BienClave)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.BienDescripcion)</MudText>
+                    @if (!string.IsNullOrWhiteSpace(item.BienSerie))
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Serie @item.BienSerie</MudText>
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudText Typo="Typo.body2">@TextOrDash(item.ResguardoOrigenFolio)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ResguardoOrigenResponsable)</MudText>
+                </MudTd>
+                <MudTd>
+                    <MudText Typo="Typo.body2">@TextOrDash(item.ResguardoDestinoFolio)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ResguardoDestinoResponsable)</MudText>
+                </MudTd>
+                <MudTd>@TextOrDash(item.Observaciones)</MudTd>
+            </Row>
+        </GenericTable>
+    </div>
+</MudContainer>
+
+@code {
+    private GenericTable<ResguardoMovimientoResponse> table = null!;
+    private string search = string.Empty;
+
+    private Dictionary<string, object>? EmpresaFilters =>
+        SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
+            : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+    }
+
+    private async Task<TableData<ResguardoMovimientoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var response = await Service.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            search,
+            state.SortLabel ?? "FechaMovimiento",
+            state.SortDirection,
+            EmpresaFilters);
+
+        return new TableData<ResguardoMovimientoResponse>
+        {
+            Items = response?.Items ?? new List<ResguardoMovimientoResponse>(),
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static Color MovementColor(string? movement) =>
+        movement?.Contains("LIBER", StringComparison.OrdinalIgnoreCase) == true ? Color.Warning :
+        movement?.Contains("ASIGN", StringComparison.OrdinalIgnoreCase) == true ? Color.Success :
+        Color.Info;
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private async void OnEmpresaChanged(int _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+    }
+}

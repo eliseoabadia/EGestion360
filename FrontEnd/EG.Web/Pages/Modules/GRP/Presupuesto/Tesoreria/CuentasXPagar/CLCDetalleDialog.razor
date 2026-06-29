@@ -5,12 +5,13 @@
 
 @inject IGenericCrudService<CLCDetalleResponse> Service
 @inject ISnackbar Snackbar
+@inject SucursalStateService SucursalStateService
 
 <BaseCrudDialog TItem="CLCDetalleResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="CLCDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid GutterSize="2">
             <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ClcNombre</MudText></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidContratoDetallePres" Label="Detalle contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
             @foreach (var month in MonthFields)
@@ -45,6 +46,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await EnsureEmpresaAsync();
+
         if (!Id.HasValue)
         {
             item.FkidClcPres = ClcId;
@@ -64,6 +67,8 @@
 
     private async Task SaveAsync()
     {
+        await EnsureEmpresaAsync();
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
@@ -79,4 +84,25 @@
         }
         Snackbar.Add(result?.Message ?? "No fue posible guardar el detalle.", Severity.Error);
     }
+    private string EmpresaText => item.FkidEmpresaSis > 0
+        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
+            ? item.FkidEmpresaSis.ToString()
+            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        : "Sin empresa seleccionada";
+
+    private async Task EnsureEmpresaAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        if (item.FkidEmpresaSis > 0)
+        {
+            return;
+        }
+
+        var empresaId = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+        if (empresaId is > 0)
+        {
+            item.FkidEmpresaSis = empresaId.Value;
+        }
+    }
+
 }

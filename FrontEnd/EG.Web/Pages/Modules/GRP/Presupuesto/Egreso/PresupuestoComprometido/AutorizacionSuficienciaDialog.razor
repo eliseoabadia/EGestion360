@@ -7,11 +7,12 @@
 @inject IGenericCrudService<AutorizacionSuficienciaResponse> Service
 @inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> DetalleService
 @inject ISnackbar Snackbar
+@inject SucursalStateService SucursalStateService
 
 <BaseCrudDialog TItem="AutorizacionSuficienciaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="AutorizacionSuficienciaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando autorización..." LoadingSkeletonRows="8">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidEmpresaSis" Label="Empresa" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -68,6 +69,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await EnsureEmpresaAsync();
+
         try
         {
             if (!Id.HasValue)
@@ -97,6 +100,8 @@
 
     private async Task SaveAsync()
     {
+        await EnsureEmpresaAsync();
+
         if (_formLoading || form == null)
         {
             return;
@@ -229,4 +234,25 @@
         item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
         item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
         item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+    private string EmpresaText => item.FkidEmpresaSis > 0
+        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
+            ? item.FkidEmpresaSis.ToString()
+            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        : "Sin empresa seleccionada";
+
+    private async Task EnsureEmpresaAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        if (item.FkidEmpresaSis > 0)
+        {
+            return;
+        }
+
+        var empresaId = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+        if (empresaId is > 0)
+        {
+            item.FkidEmpresaSis = empresaId.Value;
+        }
+    }
+
 }

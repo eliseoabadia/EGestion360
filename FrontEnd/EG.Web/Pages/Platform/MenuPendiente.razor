@@ -1,8 +1,10 @@
 @page "/ayuda"
 @page "/configuracion/presupuestales/programa-presupuestal"
-@page "/configuracion/almacen/Numero_Conteo"
-@page "/Patrimonio/Cedula_Diferencia"
-@page "/Patrimonio/Resguardo_Historico"
+@page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Otros_Ingresos"
+@page "/Presupuesto/Tesoreria/Planeacion_Gastos"
+@page "/Presupuesto/Tesoreria/Solicitud_Reintegros"
+@page "/Presupuesto/Tesoreria/Autorizar_Solicitud_Reingresos"
+@page "/Presupuesto/Tesoreria/Inversiones/Simulador"
 @page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Analisis_Saldos"
 @page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Antiguedad_Saldos"
 @page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Consulta_Documentos"
@@ -61,27 +63,11 @@
                 "Contenedor",
                 "Este menu funciona como agrupador; usa sus opciones hijas para operar el catalogo correspondiente.",
                 Severity.Info),
-            ["/configuracion/almacen/Numero_Conteo"] = new(
-                "Numero Conteo",
-                "Catalogo de almacen",
-                "Almacen",
-                "Pendiente de migracion",
-                "No se encontro pagina CRUD migrada para esta opcion del menu.",
-                Severity.Warning),
-            ["/Patrimonio/Cedula_Diferencia"] = new(
-                "Cedula de Diferencia",
-                "Operacion de patrimonio",
-                "Patrimonio",
-                "Pendiente de migracion",
-                "No se encontro pagina operativa migrada para esta opcion del menu.",
-                Severity.Warning),
-            ["/Patrimonio/Resguardo_Historico"] = new(
-                "Resguardo Historico",
-                "Operacion de patrimonio",
-                "Patrimonio",
-                "Pendiente de migracion",
-                "No se encontro pagina operativa migrada para esta opcion del menu.",
-                Severity.Warning),
+            ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Otros_Ingresos"] = PendingCuentasPorCobrar("Otros Ingresos"),
+            ["/Presupuesto/Tesoreria/Planeacion_Gastos"] = PendingTesoreria("Planeacion de Gastos"),
+            ["/Presupuesto/Tesoreria/Solicitud_Reintegros"] = PendingTesoreria("Solicitud de Reintegros"),
+            ["/Presupuesto/Tesoreria/Autorizar_Solicitud_Reingresos"] = PendingTesoreria("Autorizar Solicitud de Reingresos"),
+            ["/Presupuesto/Tesoreria/Inversiones/Simulador"] = PendingInversiones("Simulador"),
             ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Analisis_Saldos"] = PendingCuentasPorCobrar("Analisis de Saldos"),
             ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Antiguedad_Saldos"] = PendingCuentasPorCobrar("Antiguedad de Saldos"),
             ["/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Consulta_Documentos"] = PendingCuentasPorCobrar("Consulta de Documentos"),
@@ -93,6 +79,33 @@
         new(
             title,
             "Operacion de cuentas por cobrar",
+            "Presupuesto / Tesoreria",
+            "Pendiente de migracion",
+            "La opcion ya es navegable, pero su vista operativa aun no esta implementada.",
+            Severity.Warning);
+
+    private static PendingMenuItem PendingPlaneacion(string title) =>
+        new(
+            title,
+            "Catalogo de planeacion",
+            "Presupuesto / Egreso",
+            "Pendiente de migracion",
+            "La opcion ya es navegable, pero su vista operativa aun no esta implementada.",
+            Severity.Warning);
+
+    private static PendingMenuItem PendingTesoreria(string title) =>
+        new(
+            title,
+            "Operacion de tesoreria",
+            "Presupuesto / Tesoreria",
+            "Pendiente de migracion",
+            "La opcion ya es navegable, pero su vista operativa aun no esta implementada.",
+            Severity.Warning);
+
+    private static PendingMenuItem PendingInversiones(string title) =>
+        new(
+            title,
+            "Operacion de inversiones",
             "Presupuesto / Tesoreria",
             "Pendiente de migracion",
             "La opcion ya es navegable, pero su vista operativa aun no esta implementada.",
