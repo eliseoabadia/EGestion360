@@ -27,12 +27,14 @@
 @page "/nomina/configuracion/imss/fraccion-imss"
 @page "/nomina/configuracion/imss/base-gravable"
 @page "/sis/basegravableimss"
+@using Microsoft.AspNetCore.Components.Routing
 @using System.Globalization
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @inherits BaseCrudPage<NomTablaFiscalResponse, NomTablaFiscalResponse>
+@implements IDisposable
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
@@ -43,11 +45,11 @@
                     Icon="@CurrentItem.Icon"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
-                    OnRefresh="() => table.ReloadData()" />
+                    OnRefresh="ReloadData" />
 
         <GenericTable TItem="NomTablaFiscalResponse"
                       @ref="table"
-                      @key="loadedPath"
+                      @key="TableKey"
                       Title="@($"Lista de {CurrentItem.Title}")"
                       SearchPlaceholder="@($"Buscar {CurrentItem.Title.ToLowerInvariant()}...")"
                       ShowExportButton="@CanExport"
@@ -198,6 +200,7 @@
     private GenericTable<NomTablaFiscalResponse> table = null!;
     private string loadedPath = string.Empty;
     private bool pendingRouteReload;
+    private bool disposed;
 
     protected override string ModuleName => CurrentItem.ModuleName;
     protected override string SubModuleName => CurrentItem.SubModuleName;
@@ -206,6 +209,7 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<NomTablaFiscalResponse>);
 
     private string CurrentPath => "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].Trim('/');
+    private string TableKey => $"nom-tabla-fiscal-table:{CurrentPath}";
 
     private FiscalPageItem CurrentItem =>
         ItemsByPath.TryGetValue(CurrentPath, out var item)
@@ -216,33 +220,14 @@
 
     protected override string GetDefaultSortLabel() => nameof(NomTablaFiscalResponse.Clave);
 
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
-        var path = CurrentPath;
-        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
-        loadedPath = path;
-
-        if (!isRouteChange)
-        {
-            return;
-        }
-
-        SearchString = string.Empty;
-        CurrentPage = 1;
-        SortLabel = GetDefaultSortLabel();
-        SortDirection = SortDirection.None;
-        Elements.Clear();
-        TotalCount = 0;
-        pendingRouteReload = true;
-
-        IsInitialized = false;
-        HasAccess = false;
-        await VerifyAccess();
+        await PrepareRouteChangeAsync(CurrentPath, verifyAccess: true);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -362,6 +347,61 @@
         {
             await table.ReloadData();
         }
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            var path = "/" + NavigationManager.ToBaseRelativePath(e.Location).Split('?', '#')[0].Trim('/');
+            if (await PrepareRouteChangeAsync(path, verifyAccess: true))
+            {
+                StateHasChanged();
+            }
+        });
+    }
+
+    private async Task<bool> PrepareRouteChangeAsync(string path, bool verifyAccess)
+    {
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
+        loadedPath = path;
+
+        if (isRouteChange)
+        {
+            SearchString = string.Empty;
+            CurrentPage = 1;
+            SortLabel = GetDefaultSortLabel();
+            SortDirection = SortDirection.None;
+            Elements.Clear();
+            TotalCount = 0;
+            pendingRouteReload = true;
+        }
+
+        IsInitialized = false;
+        HasAccess = false;
+
+        if (verifyAccess)
+        {
+            await VerifyAccess();
+        }
+
+        return true;
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 
     private DialogParameters BuildDialogParameters() => new()

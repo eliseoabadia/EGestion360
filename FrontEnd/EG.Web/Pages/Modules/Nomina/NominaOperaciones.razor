@@ -71,6 +71,7 @@
 @using Microsoft.AspNetCore.Components.Routing
 @implements IDisposable
 @inherits BaseCrudPage<NominaOperacionResponse, NominaOperacionResponse>
+@inject AuthenticationProviderJWT PageAuthProvider
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
@@ -232,6 +233,31 @@
     {
         loadedPath = CurrentPath;
         NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task VerifyAccess()
+    {
+        IsInitialized = true;
+
+        CanView = HasAnyPermission("view") || HasAnyPermission("view-menu");
+        CanCreate = HasAnyPermission("new");
+        CanUpdate = HasAnyPermission("update");
+        CanDelete = HasAnyPermission("delete");
+        CanExport = HasAnyPermission("CanExportToExcel");
+        CanAuthorize = HasAnyPermission("authorize");
+
+        if (!CanView)
+        {
+            HasAccess = false;
+            StateHasChanged();
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/", replace: true);
+            return;
+        }
+
+        HasAccess = true;
+        Loading = false;
+        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -768,6 +794,34 @@
             module,
             subModule,
             "Los historicos se muestran con la corrida migrada disponible; los reportes finales dependen de adaptar los SP de timbrado, dispersion y recibos.");
+
+    private bool HasAnyPermission(string action)
+        => PermissionKeys().Any(key => PageAuthProvider.HasPermission(key.ModuleName, key.SubModuleName, action));
+
+    private IEnumerable<(string ModuleName, string SubModuleName)> PermissionKeys()
+    {
+        yield return (CurrentItem.ModuleName, CurrentItem.SubModuleName);
+
+        if (IsRecursosHumanosRoute())
+        {
+            yield return ("Nomina_Recursos_Humanos", CurrentItem.SubModuleName);
+            yield return ("Recursos_Humanos", CurrentItem.SubModuleName);
+        }
+
+        if (string.Equals(CurrentItem.SubModuleName, "Reporte Quincenal MP", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return (CurrentItem.ModuleName, "Reporte_Quincenal_MP");
+            yield return ("Nomina_Recursos_Humanos", "Reporte_Quincenal_MP");
+            yield return ("Recursos_Humanos", "Reporte_Quincenal_MP");
+        }
+    }
+
+    private bool IsRecursosHumanosRoute()
+        => CurrentPath is "/nomina/movimientos"
+            or "/rh/datormovto"
+            or "/rh/datosmovto"
+            or "/nomina/depersonal"
+            or "/nomina/reportequincenal";
 
     private sealed record OperacionPageItem(
         string Title,

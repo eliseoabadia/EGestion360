@@ -266,7 +266,8 @@ namespace EG.Application.Services.ConteoCiclico
                     };
                 }
 
-                _context.ConteoDetalles.Remove(detalle);
+                detalle.Activo = false;
+                detalle.FechaModificacion = DateTime.Now;
                 await _context.SaveChangesAsync();
 
                 return new PagedResult<bool>

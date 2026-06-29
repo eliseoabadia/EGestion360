@@ -14,5 +14,6 @@ namespace EG.Application.Interfaces.General
         Task<IList<UsuarioResponse>> GetAllUsersAsync();
         Task<PagedResult<UsuarioResponse>> GetAllUsersPaginadoAsync(PagedRequest _params);
         Task UploadImageAsync(PerfilUsuarioResponse fotografia);
+        Task<PagedResult<bool>> ChangePasswordAsync(int id, ChangePasswordDto request, int currentUserId);
     }
 }

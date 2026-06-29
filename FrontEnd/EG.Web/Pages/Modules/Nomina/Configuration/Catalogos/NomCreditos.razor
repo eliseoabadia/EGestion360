@@ -9,6 +9,7 @@
 @using EG.Web.Pages.Shared
 @using EG.Web.Shared
 @inherits BaseCrudPage<NomCreditoResponse, NomCreditoResponse>
+@inject AuthenticationProviderJWT PageAuthProvider
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
@@ -77,6 +78,31 @@
     protected override Type CreateDialogType => typeof(NominaCatalogDialog<NomCreditoResponse>);
     protected override Type EditDialogType => typeof(NominaCatalogDialog<NomCreditoResponse>);
     protected override Type DeleteDialogType => typeof(DeleteDialog<NomCreditoResponse>);
+
+    protected override async Task VerifyAccess()
+    {
+        IsInitialized = true;
+
+        CanView = HasAnyPermission("view") || HasAnyPermission("view-menu");
+        CanCreate = HasAnyPermission("new");
+        CanUpdate = HasAnyPermission("update");
+        CanDelete = HasAnyPermission("delete");
+        CanExport = HasAnyPermission("CanExportToExcel");
+        CanAuthorize = HasAnyPermission("authorize");
+
+        if (!CanView)
+        {
+            HasAccess = false;
+            StateHasChanged();
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/", replace: true);
+            return;
+        }
+
+        HasAccess = true;
+        Loading = false;
+        StateHasChanged();
+    }
 
     protected override string GetDefaultSortLabel() => "PkidCredito";
 
@@ -159,6 +185,11 @@
             .Replace(text, "([a-z])([A-Z])", "$1 $2")
             .Trim();
     }
+
+    private bool HasAnyPermission(string action)
+        => PageAuthProvider.HasPermission("Nomina", "Creditos_Trabajadores", action)
+           || PageAuthProvider.HasPermission("Nomina_Catalogos", "Creditos_Trabajadores", action)
+           || PageAuthProvider.HasPermission("Catalogos", "Creditos_Trabajadores", action);
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<NomCreditoResponse> items)
     {

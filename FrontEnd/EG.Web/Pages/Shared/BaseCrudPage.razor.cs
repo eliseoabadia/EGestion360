@@ -139,7 +139,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         try
         {
             Console.WriteLine($"🔷 VerifyAccess: Module={ModuleName}, SubModule={SubModuleName}");
-            CanView = AuthProvider.HasPermission(ModuleName, SubModuleName, "view");
+            CanView = AuthProvider.HasPermission(ModuleName, SubModuleName, "view")
+                || AuthProvider.HasPermission(ModuleName, SubModuleName, "view-menu");
             Console.WriteLine($"🔷 VerifyAccess: CanView={CanView}");
 
             if (!CanView)

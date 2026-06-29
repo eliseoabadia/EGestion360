@@ -3,6 +3,7 @@
 @page "/nom/cierraperiodo"
 @page "/nom/calcaguinaldo"
 @page "/nom/primavacacionalind"
+@using Microsoft.AspNetCore.Components.Routing
 @using System.Globalization
 @using EG.Domain.DTOs.Requests.Nomina
 @using EG.Domain.DTOs.Responses.Nomina
@@ -10,6 +11,7 @@
 @using EG.Web.Services
 @using EG.Web.Shared
 @inherits BaseCrudPage<NominaProcesoResponse, NominaProcesoResponse>
+@implements IDisposable
 
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
@@ -148,6 +150,7 @@
     private string observaciones = string.Empty;
     private readonly List<NominaProcesoResponse> history = new();
     private string loadedPath = string.Empty;
+    private bool disposed;
 
     protected override string ModuleName => CurrentPath switch
     {
@@ -187,6 +190,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        NavigationManager.LocationChanged += OnLocationChanged;
+
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
@@ -194,24 +199,56 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var path = CurrentPath;
-        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        await PrepareRouteChangeAsync(CurrentPath, verifyAccess: true);
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (disposed)
         {
             return;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            var path = "/" + NavigationManager.ToBaseRelativePath(e.Location).Split('?', '#')[0].Trim('/');
+            if (await PrepareRouteChangeAsync(path, verifyAccess: true))
+            {
+                StateHasChanged();
+            }
+        });
+    }
+
+    private async Task<bool> PrepareRouteChangeAsync(string path, bool verifyAccess)
+    {
+        if (string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
         }
 
         var isRouteChange = !string.IsNullOrWhiteSpace(loadedPath);
         loadedPath = path;
 
-        if (!isRouteChange)
+        if (isRouteChange)
         {
-            return;
+            history.Clear();
         }
 
-        history.Clear();
         IsInitialized = false;
         HasAccess = false;
-        await VerifyAccess();
+
+        if (verifyAccess)
+        {
+            await VerifyAccess();
+        }
+
+        return true;
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 
     private bool CanRun(ProcessAction action)

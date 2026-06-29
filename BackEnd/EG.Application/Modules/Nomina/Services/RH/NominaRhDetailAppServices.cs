@@ -52,6 +52,9 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
 
     protected abstract SqlParameter[] BuildParameters(int action, int? id, TDto dto, int usuarioActual, int? empresaId);
 
+    protected virtual Task<int?> ResolveMutationIdAsync(int action, int? id, TDto dto, int usuarioActual, int? empresaId)
+        => Task.FromResult(id);
+
     public Task<PagedResult<TResponse>> GetAllAsync(int? empresaId)
         => Task.FromResult(Failure<TResponse>("Selecciona un empleado para consultar el detalle.", "PERSON_REQUIRED"));
 
@@ -180,7 +183,8 @@ public abstract class NominaRhDetailAppService<TView, TDto, TResponse>
         try
         {
             var inheritedEmpresaId = await GetPersonaEmpresaIdAsync(dto.FkidPersonaNom);
-            var mutation = await ExecuteMutationAsync(action, id, dto, usuarioActual, inheritedEmpresaId);
+            var mutationId = await ResolveMutationIdAsync(action, id, dto, usuarioActual, inheritedEmpresaId);
+            var mutation = await ExecuteMutationAsync(action, mutationId, dto, usuarioActual, inheritedEmpresaId);
             if (!mutation.Success)
             {
                 LogMessage(LogLevelGRP.Warn, mutation.Message, SystemLogTypes.Warning);
@@ -419,6 +423,30 @@ public sealed class NominaRhIncidenciaAppService(
         service, context, "incidencia", nameof(VwIncidencium.PkidIncidencia), "[NOM].[SP_MantenimientoIncidencia]")
 {
     protected override int GetId(NominaRhIncidenciaResponse response) => response.PkidIncidencia;
+
+    protected override async Task<int?> ResolveMutationIdAsync(int action, int? id, NominaRhIncidenciaDto dto, int usuarioActual, int? empresaId)
+    {
+        if (action != 1)
+        {
+            return id;
+        }
+
+        if (id is > 0)
+        {
+            return id;
+        }
+
+        if (dto.PkidIncidencia > 0)
+        {
+            return dto.PkidIncidencia;
+        }
+
+        var currentMax = await Context.Incidencia
+            .AsNoTracking()
+            .MaxAsync(item => (int?)item.PkidIncidencia) ?? 0;
+        dto.PkidIncidencia = currentMax + 1;
+        return dto.PkidIncidencia;
+    }
 
     protected override SqlParameter[] BuildParameters(int action, int? id, NominaRhIncidenciaDto dto, int usuarioActual, int? empresaId) =>
     [

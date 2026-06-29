@@ -18,16 +18,16 @@ namespace EG.Application.Services.Nomina
         private readonly EGestionContext _context = context;
 
         public Task<PagedResult<NominaProcesoResponse>> CalcularNominaAsync(NominaProcesoRequest request, int usuarioActual)
-            => ExecuteProcesoAsync("Calcular nomina", "spProcesoNomina_Calcular", "NOM_SP_Nomina", request, usuarioActual, fallbackToDemo: true);
+            => ExecuteProcesoAsync("Calcular nomina", "spProcesoNomina_Calcular", "NOM_SP_Nomina", request, usuarioActual, preferLegacy: true, fallbackToDemo: true);
 
         public Task<PagedResult<NominaProcesoResponse>> CerrarPeriodoAsync(NominaProcesoRequest request, int usuarioActual)
-            => ExecuteProcesoAsync("Cerrar periodo", "spProcesoNomina_CerrarPeriodo", "NOM_SP_CierraPeriodo", request, usuarioActual);
+            => ExecuteProcesoAsync("Cerrar periodo", "spProcesoNomina_CerrarPeriodo", "NOM_SP_CierraPeriodo", request, usuarioActual, preferLegacy: true);
 
         public Task<PagedResult<NominaProcesoResponse>> CalcularAguinaldoAsync(NominaProcesoRequest request, int usuarioActual)
-            => ExecuteProcesoAsync("Calcular aguinaldo", "spProcesoNomina_CalcularAguinaldo", "NOM_SP_CalculaAguinaldo", request, usuarioActual);
+            => ExecuteProcesoAsync("Calcular aguinaldo", "spProcesoNomina_CalcularAguinaldo", "NOM_SP_CalculaAguinaldo", request, usuarioActual, preferLegacy: true);
 
         public Task<PagedResult<NominaProcesoResponse>> CalcularPrimaVacacionalIndividualAsync(NominaProcesoRequest request, int usuarioActual)
-            => ExecuteProcesoAsync("Calcular prima vacacional individual", "spProcesoNomina_PrimaVacacionalIndividual", "NOM_SP_PrimaVac_Ind", request, usuarioActual);
+            => ExecuteProcesoAsync("Calcular prima vacacional individual", "spProcesoNomina_PrimaVacacionalIndividual", "NOM_SP_PrimaVac_Ind", request, usuarioActual, preferLegacy: true);
 
         public Task<PagedResult<NominaProcesoResponse>> CrearComprometidoNominaAsync(NominaProcesoRequest request, int usuarioActual)
             => ExecuteProcesoAsync("Crear comprometido de nomina", "spProcesoNomina_CrearComprometido", "PRES_SP_CREATE_Comprometido_Nomina", request, usuarioActual);
@@ -44,27 +44,38 @@ namespace EG.Application.Services.Nomina
             string legacyStoredProcedure,
             NominaProcesoRequest request,
             int usuarioActual,
+            bool preferLegacy = false,
             bool fallbackToDemo = false)
         {
             request ??= new NominaProcesoRequest();
 
             try
             {
-                if (!await StoredProcedureExistsAsync(storedProcedure))
+                if (preferLegacy && await StoredProcedureExistsAsync(legacyStoredProcedure))
                 {
-                    if (fallbackToDemo)
-                    {
-                        return await EjecutarCorridaDemoAsync(request, usuarioActual);
-                    }
-
-                    return await MissingStoredProcedureAsync(
-                        processName,
-                        $"[{NominaSchema}].[{storedProcedure}] / {legacyStoredProcedure}",
-                        request,
-                        usuarioActual);
+                    return await ExecuteLegacyStoredProcedureAsync(processName, legacyStoredProcedure, request, usuarioActual);
                 }
 
-                return await ExecuteStoredProcedureAsync(processName, storedProcedure, request, usuarioActual);
+                if (await StoredProcedureExistsAsync(storedProcedure))
+                {
+                    return await ExecuteStoredProcedureAsync(processName, storedProcedure, request, usuarioActual);
+                }
+
+                if (await StoredProcedureExistsAsync(legacyStoredProcedure))
+                {
+                    return await ExecuteLegacyStoredProcedureAsync(processName, legacyStoredProcedure, request, usuarioActual);
+                }
+
+                if (fallbackToDemo)
+                {
+                    return await EjecutarCorridaDemoAsync(request, usuarioActual);
+                }
+
+                return await MissingStoredProcedureAsync(
+                    processName,
+                    $"[{NominaSchema}].[{storedProcedure}] / {legacyStoredProcedure}",
+                    request,
+                    usuarioActual);
             }
             catch (Exception ex)
             {
@@ -228,6 +239,41 @@ namespace EG.Application.Services.Nomina
             return BuildResult(response, response.Ejecutado);
         }
 
+        private async Task<PagedResult<NominaProcesoResponse>> ExecuteLegacyStoredProcedureAsync(
+            string processName,
+            string storedProcedure,
+            NominaProcesoRequest request,
+            int usuarioActual)
+        {
+            request ??= new NominaProcesoRequest();
+
+            await using var command = _context.Database.GetDbConnection().CreateCommand();
+            command.CommandText = $"[{NominaSchema}].[{storedProcedure}]";
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandTimeout = 120;
+
+            AddLegacyProcesoParameters(command, storedProcedure, request);
+
+            if (command.Connection?.State != ConnectionState.Open)
+            {
+                await _context.Database.OpenConnectionAsync();
+            }
+
+            await using var reader = await command.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                throw new InvalidOperationException($"El SP {NominaSchema}.{storedProcedure} no regreso resultado.");
+            }
+
+            var response = MapProcesoResult(reader);
+            if (string.IsNullOrWhiteSpace(response.Proceso))
+            {
+                response.Proceso = processName;
+            }
+
+            return BuildResult(response, response.Ejecutado);
+        }
+
         private async Task<bool> StoredProcedureExistsAsync(string storedProcedure)
         {
             await using var command = _context.Database.GetDbConnection().CreateCommand();
@@ -262,6 +308,34 @@ namespace EG.Application.Services.Nomina
                 Value = string.IsNullOrWhiteSpace(request.Observaciones) ? DBNull.Value : request.Observaciones.Trim()
             });
             command.Parameters.Add(Param("@UsuarioId", usuarioActual));
+        }
+
+        private static void AddLegacyProcesoParameters(IDbCommand command, string storedProcedure, NominaProcesoRequest request)
+        {
+            switch (storedProcedure)
+            {
+                case "NOM_SP_CalculaAguinaldo":
+                    command.Parameters.Add(Param("@p_idNominaEspecial", request.PeriodoId));
+                    command.Parameters.Add(Param("@p_Fk_IdEmpresa__EMP", request.EmpresaId));
+                    command.Parameters.Add(new SqlParameter("@p_FechaPagoAguinaldo", SqlDbType.Date)
+                    {
+                        Value = request.FechaProceso.HasValue ? request.FechaProceso.Value.Date : DBNull.Value
+                    });
+                    break;
+
+                case "NOM_SP_PrimaVac_Ind":
+                    command.Parameters.Add(Param("@p_Fk_IdEmpresa", request.EmpresaId));
+                    command.Parameters.Add(Param("@p_NumPeriodo", request.PeriodoId));
+                    break;
+
+                case "NOM_SP_Nomina":
+                case "NOM_SP_CierraPeriodo":
+                    command.Parameters.Add(Param("@p_Fk_IdEmpresa", request.EmpresaId));
+                    break;
+
+                default:
+                    throw new NotSupportedException($"No existe mapeo de parametros para el SP legacy {storedProcedure}.");
+            }
         }
 
         private static PagedResult<NominaProcesoResponse> BuildResult(NominaProcesoResponse response, bool success)
@@ -302,21 +376,36 @@ namespace EG.Application.Services.Nomina
         }
 
         private static string GetString(IDataRecord reader, string name)
-            => reader[name] == DBNull.Value ? string.Empty : Convert.ToString(reader[name]) ?? string.Empty;
+            => !TryGetOrdinal(reader, name, out var ordinal) || reader[ordinal] == DBNull.Value ? string.Empty : Convert.ToString(reader[ordinal]) ?? string.Empty;
 
         private static int GetInt(IDataRecord reader, string name)
-            => reader[name] == DBNull.Value ? 0 : Convert.ToInt32(reader[name]);
+            => !TryGetOrdinal(reader, name, out var ordinal) || reader[ordinal] == DBNull.Value ? 0 : Convert.ToInt32(reader[ordinal]);
 
         private static int? GetNullableInt(IDataRecord reader, string name)
-            => reader[name] == DBNull.Value ? null : Convert.ToInt32(reader[name]);
+            => !TryGetOrdinal(reader, name, out var ordinal) || reader[ordinal] == DBNull.Value ? null : Convert.ToInt32(reader[ordinal]);
 
         private static decimal GetDecimal(IDataRecord reader, string name)
-            => reader[name] == DBNull.Value ? 0 : Convert.ToDecimal(reader[name]);
+            => !TryGetOrdinal(reader, name, out var ordinal) || reader[ordinal] == DBNull.Value ? 0 : Convert.ToDecimal(reader[ordinal]);
 
         private static bool GetBool(IDataRecord reader, string name)
-            => reader[name] != DBNull.Value && Convert.ToBoolean(reader[name]);
+            => TryGetOrdinal(reader, name, out var ordinal) && reader[ordinal] != DBNull.Value && Convert.ToBoolean(reader[ordinal]);
 
         private static DateTime GetDateTime(IDataRecord reader, string name)
-            => reader[name] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(reader[name]);
+            => !TryGetOrdinal(reader, name, out var ordinal) || reader[ordinal] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(reader[ordinal]);
+
+        private static bool TryGetOrdinal(IDataRecord reader, string name, out int ordinal)
+        {
+            for (var index = 0; index < reader.FieldCount; index++)
+            {
+                if (string.Equals(reader.GetName(index), name, StringComparison.OrdinalIgnoreCase))
+                {
+                    ordinal = index;
+                    return true;
+                }
+            }
+
+            ordinal = -1;
+            return false;
+        }
     }
 }

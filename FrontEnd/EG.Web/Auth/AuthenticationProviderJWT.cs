@@ -22,6 +22,7 @@ namespace EG.Web.Auth
 
         // Almacén de permisos: Group -> SubGroup -> HashSet<Action>
         private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _permissions = new(StringComparer.OrdinalIgnoreCase);
+        private bool _dbPermissionsRefreshAttempted;
 
         public AuthenticationProviderJWT(IJSRuntime js, HttpClient httpClient)
         {
@@ -73,6 +74,7 @@ namespace EG.Web.Auth
         {
             var normalized = NormalizeToken(token);
             _permissions.Clear();
+            _dbPermissionsRefreshAttempted = false;
             await _js.RemoveItem(DB_CLAIMS_KEY);
             await _js.SetInLocalStorage(TOKEN_KEY, normalized);
             // Asegurar que el HttpClient tenga el header Authorization inmediatamente
@@ -271,6 +273,7 @@ namespace EG.Web.Auth
             await _js.RemoveItem(USER_ID_KEY);
             await _js.RemoveItem(USER_NAME_KEY);
             _permissions.Clear();
+            _dbPermissionsRefreshAttempted = false;
         }
 
         private static byte[] ParseBase64WithoutPadding(string base64)
@@ -328,10 +331,12 @@ namespace EG.Web.Auth
 
         private async Task EnsureDbPermissionsLoadedAsync(IEnumerable<Claim> jwtClaims)
         {
-            if (_permissions.Count > 0)
+            if (_dbPermissionsRefreshAttempted)
             {
                 return;
             }
+
+            _dbPermissionsRefreshAttempted = true;
 
             var userId = GetUserIdFromClaims(jwtClaims);
             if (!userId.HasValue)

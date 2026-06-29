@@ -8,6 +8,7 @@
 @inherits BaseCrudPage<NominaRhEmpleadoResponse, NominaRhEmpleadoResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AuthenticationProviderJWT PageAuthProvider
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column rh-empleados-page" MaxWidth="MaxWidth.False">
@@ -142,6 +143,31 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<NominaRhEmpleadoResponse>);
     protected override int ExportPageSize => 2000;
 
+    protected override async Task VerifyAccess()
+    {
+        IsInitialized = true;
+
+        CanView = HasAnyPermission("view") || HasAnyPermission("view-menu");
+        CanCreate = HasAnyPermission("new");
+        CanUpdate = HasAnyPermission("update");
+        CanDelete = HasAnyPermission("delete");
+        CanExport = HasAnyPermission("CanExportToExcel");
+        CanAuthorize = HasAnyPermission("authorize");
+
+        if (!CanView)
+        {
+            HasAccess = false;
+            StateHasChanged();
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/", replace: true);
+            return;
+        }
+
+        HasAccess = true;
+        Loading = false;
+        StateHasChanged();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -235,6 +261,11 @@
     private static string FormatDateTime(DateTime? value) => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "-";
     private static string FormatMoney(decimal? value) => value?.ToString("N2", CultureInfo.InvariantCulture) ?? "-";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private bool HasAnyPermission(string action)
+        => PageAuthProvider.HasPermission("Nomina", "Empleados", action)
+           || PageAuthProvider.HasPermission("Nomina_Recursos_Humanos", "Empleados", action)
+           || PageAuthProvider.HasPermission("Recursos_Humanos", "Empleados", action);
+
     private static string BuildEmployeeSubtitle(NominaRhEmpleadoResponse employee)
         => $"{TextOrDash(employee.Empresa)} | {TextOrDash(employee.Puesto)} | {TextOrDash(employee.TipoContratacion)}";
 }

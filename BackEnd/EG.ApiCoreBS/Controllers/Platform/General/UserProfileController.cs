@@ -1,6 +1,7 @@
 ﻿using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
+using EG.Domain.Interfaces;
 using EG.Dommain.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,17 +15,23 @@ namespace EG.ApiCoreBS.Controllers.General
     public class UserProfileController : ControllerBase
     {
         private readonly IUserProfileAppService _appService;
+        private readonly IUserContextService _userContext;
 
-        public UserProfileController(IUserProfileAppService appService)
+        public UserProfileController(IUserProfileAppService appService, IUserContextService userContext)
         {
             _appService = appService;
+            _userContext = userContext;
         }
 
         [HttpGet("GetProfileImage/{id}")]
         public async Task<ActionResult<PerfilUsuarioResponse>> GetProfileImage(int id)
         {
             var result = await _appService.GetProfileImageAsync(id);
-            return result == null ? NotFound() : Ok(result);
+            return Ok(result ?? new PerfilUsuarioResponse
+            {
+                FkidUsuarioSis = id,
+                Fotografia = Array.Empty<byte>()
+            });
         }
 
         [HttpPost("CreateProfile")]
@@ -38,6 +45,19 @@ namespace EG.ApiCoreBS.Controllers.General
         public async Task<IActionResult> SetProfile(int id, [FromBody] UsuarioDto user)
         {
             var result = await _appService.SetProfileAsync(id, user);
+            return Ok(result);
+        }
+
+        [HttpPost("ChangePassword/{id}")]
+        public async Task<ActionResult<PagedResult<bool>>> ChangePassword(int id, [FromBody] ChangePasswordDto request)
+        {
+            var result = await _appService.ChangePasswordAsync(id, request, _userContext.GetCurrentUserId());
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
             return Ok(result);
         }
 

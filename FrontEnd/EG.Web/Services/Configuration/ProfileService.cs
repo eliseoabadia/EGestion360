@@ -1,6 +1,7 @@
 using EG.Common.Helper;
 using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts.Configuration;
+using EG.Web.Models;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using SortDirection = MudBlazor.SortDirection;
@@ -188,6 +189,33 @@ namespace EG.Web.Services
                 Console.WriteLine($"Error al establecer imagen de perfil: {ex.Message}");
                 return false;
             }
+        }
+
+        public async Task<ApiResponse<bool>> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            if (!IsClientSide())
+            {
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "No disponible en servidor"
+                };
+            }
+
+            var payload = new
+            {
+                currentPassword,
+                newPassword
+            };
+
+            return await PostAsync<ApiResponse<bool>>(
+                $"api/UserProfile/ChangePassword/{userId}",
+                payload,
+                useBaseUrl: false) ?? new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "No fue posible cambiar la contrasena."
+                };
         }
     }
 

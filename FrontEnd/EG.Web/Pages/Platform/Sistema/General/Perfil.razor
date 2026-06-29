@@ -16,7 +16,7 @@
 @inject IJSRuntime _jsRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+<MudContainer Class="profile-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100vh;">
     @if (!_isInitialized)
     {
         <!-- Loading inicial -->
@@ -47,30 +47,26 @@
     }
     else
     {
-        <!-- Usando Card para el header -->
-        <MudCard Elevation="1" Class="mb-2">
-            <MudCardContent>
-                <MudGrid Spacing="2" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
-                    <MudItem>
-                        <MudStack Spacing="2">
-                            <MudText Typo="Typo.h4"
-                            Color="Color.Primary"
-                            Style="font-weight: 600; display: flex; align-items: center; gap: 12px;">
-                                <MudIcon Icon="@Icons.Material.Filled.PeopleAlt"
-                                Color="Color.Primary"
-                                Size="Size.Large" />
-                                Mi Perfil ...
-                            </MudText>
-                            <MudText Typo="Typo.body2"
-                            Color="Color.Tertiary"
-                            Class="mt-1" Style="opacity:0.85; max-width:56ch;">
-                                Administra la información de mi Perfil de Usuario
-                            </MudText>
-                        </MudStack>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
+        <div class="profile-header">
+            <div class="profile-heading">
+                <span class="profile-heading-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Medium" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.h5" Class="profile-title">Mi perfil</MudText>
+                    <MudText Typo="Typo.body2" Class="profile-subtitle">Datos personales, empresa y seguridad de acceso</MudText>
+                </div>
+            </div>
+
+            <div class="profile-header-meta">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Icon="@Icons.Material.Filled.Business">
+                    @SelectedEmpresaName
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Icon="@Icons.Material.Filled.VerifiedUser">
+                    @(userProfile.UsuarioActivo ? "Activo" : "Inactivo")
+                </MudChip>
+            </div>
+        </div>
 
         <!-- Indicador de carga global -->
         <MudOverlay Visible="@loading" Fixed="true" ZIndex="10">
@@ -80,158 +76,189 @@
             </div>
         </MudOverlay>
 
-        <MudPaper Elevation="2" Class="pa-4 rounded-lg">
-            <MudGrid GutterSize="3">
-                <!-- Foto de perfil -->
-                <MudItem xs="12" md="4">
-                    <MudCard Elevation="3" Class="pa-4">
-                        <MudText Typo="Typo.h6" Class="mb-2">Foto de Perfil</MudText>
-                        <MudDivider Class="mb-4" />
-                        <div class="d-flex justify-center">
-                            <MudAvatar Size="Size.Large">
-                                <img src="@userProfileFotografiaImg" style="width:100%; height:100%; object-fit:cover;" />
-                            </MudAvatar>
+        <div class="profile-layout">
+            <aside class="profile-panel profile-side-panel">
+                <section class="profile-identity">
+                    <MudAvatar Class="profile-avatar" Size="Size.Large">
+                        @if (!string.IsNullOrWhiteSpace(userProfileFotografiaImg))
+                        {
+                            <img src="@userProfileFotografiaImg" alt="Foto de perfil" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Large" />
+                        }
+                    </MudAvatar>
+
+                    <MudText Typo="Typo.subtitle1" Class="profile-name">@userProfile.Nombre</MudText>
+                    <MudText Typo="Typo.caption" Class="profile-email">@userProfile.Email</MudText>
+
+                    <MudFileUpload T="IBrowserFile"
+                                   Accept="image/*"
+                                   FilesChanged="OnFileUpload"
+                                   Disabled="@loading">
+                        <CustomContent Context="fileUpload">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.PhotoCamera"
+                                       OnClick="fileUpload.OpenFilePickerAsync"
+                                       Disabled="@loading">
+                                Cambiar foto
+                            </MudButton>
+                        </CustomContent>
+                    </MudFileUpload>
+                </section>
+
+                <section class="profile-security">
+                    <div class="profile-section-heading">
+                        <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">Cambiar contrasena</MudText>
+                    </div>
+
+                    <MudTextField Label="Contrasena actual"
+                                  @bind-Value="currentPassword"
+                                  InputType="@PasswordInputType"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@PasswordAdornmentIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility"
+                                  Disabled="@loading" />
+
+                    <MudTextField Label="Nueva contrasena"
+                                  @bind-Value="newPassword"
+                                  InputType="@PasswordInputType"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@PasswordAdornmentIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility"
+                                  Disabled="@loading" />
+
+                    <MudTextField Label="Confirmar contrasena"
+                                  @bind-Value="confirmPassword"
+                                  InputType="@PasswordInputType"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@PasswordAdornmentIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility"
+                                  Disabled="@loading" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.LockReset"
+                               OnClick="CambiarPasswordAsync"
+                               Disabled="@loading"
+                               FullWidth="true">
+                        Actualizar contrasena
+                    </MudButton>
+                </section>
+            </aside>
+
+            <section class="profile-panel profile-main-panel">
+                <MudForm @ref="form">
+                    <div class="profile-main-header">
+                        <div class="profile-section-heading">
+                            <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle1">Informacion del usuario</MudText>
                         </div>
-                        <div class="d-flex justify-center mt-4">
-                            <MudFileUpload T="IBrowserFile"
-                            Accept="image/*"
-                            FilesChanged="OnFileUpload"
-                            Disabled="@loading">
-                                    <MudButton Variant="Variant.Outlined"
-                                    Color="Color.Primary"
-                                    StartIcon="@Icons.Material.Filled.CameraAlt"
-                                    Disabled="@loading">
-                                        Cambiar foto
-                                    </MudButton>
-                            </MudFileUpload>
+                        <MudText Typo="Typo.caption" Class="profile-muted">ID @userProfile.PkIdUsuario</MudText>
+                    </div>
+
+                    <div class="profile-form-grid">
+                        <MudTextField Label="Nombre"
+                                      @bind-Value="userProfile.Nombre"
+                                      Required="true"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudSelect Label="Empresa"
+                                   @bind-Value="userProfile.PkidEmpresa"
+                                   Required="true"
+                                   Margin="Margin.Dense"
+                                   Disabled="@loading">
+                            <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                            @foreach (var empresa in empresas)
+                            {
+                                <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Label="Email"
+                                      @bind-Value="userProfile.Email"
+                                      InputType="InputType.Email"
+                                      Required="true"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Telefono"
+                                      @bind-Value="userProfile.TelefonoUsuario"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Direccion 1"
+                                      @bind-Value="userProfile.Direccion1"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Direccion 2"
+                                      @bind-Value="userProfile.Direccion2"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Codigo Postal"
+                                      @bind-Value="userProfile.CodigoPostalUsuario"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Payroll ID"
+                                      @bind-Value="userProfile.PayrollId"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Numero Social"
+                                      @bind-Value="userProfile.NumeroSocial"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+
+                        <MudTextField Label="Gafete"
+                                      @bind-Value="userProfile.Gafete"
+                                      Margin="Margin.Dense"
+                                      Disabled="@loading" />
+                    </div>
+
+                    <div class="profile-options">
+                        <div class="profile-option-group">
+                            <MudText Typo="Typo.caption" Class="profile-option-label">Estado del usuario</MudText>
+                            <MudRadioGroup @bind-Value="userProfile.UsuarioActivo" Disabled="@loading" Class="profile-radio-group">
+                                <MudRadio Value="true" Color="Color.Primary" Dense="true">Activo</MudRadio>
+                                <MudRadio Value="false" Color="Color.Secondary" Dense="true">Inactivo</MudRadio>
+                            </MudRadioGroup>
                         </div>
-                    </MudCard>
-                </MudItem>
 
-                <!-- Información del usuario -->
-                <MudItem xs="12" md="8">
-                    <MudForm @ref="form">
-                        <MudCard Elevation="3" Class="pa-4">
-                            <MudText Typo="Typo.h6" Class="mb-2">Información del Usuario</MudText>
-                            <MudDivider Class="mb-4" />
+                        <div class="profile-option-group">
+                            <MudText Typo="Typo.caption" Class="profile-option-label">Genero</MudText>
+                            <MudRadioGroup @bind-Value="userProfile.Sexo" Disabled="@loading" Class="profile-radio-group">
+                                <MudRadio Value="true" Color="Color.Primary" Dense="true">Femenino</MudRadio>
+                                <MudRadio Value="false" Color="Color.Secondary" Dense="true">Masculino</MudRadio>
+                            </MudRadioGroup>
+                        </div>
+                    </div>
 
-                            <MudGrid GutterSize="2">
-                                <!-- Nombre completo -->
-                                <MudItem xs="12" md="6">
-                                    <MudTextField Label="Nombre"
-                                    @bind-Value="userProfile.Nombre"
-                                    Required="true"
-                                    Disabled="@loading" />
-                                </MudItem>
-
-
-                                <!-- Empresa -->
-                                <MudItem xs="12" md="6">
-                                    <MudSelect Label="Empresa"
-                                               @bind-Value="userProfile.PkidEmpresa"
-                                               Required="true"
-                                               Disabled="@loading">
-                                        <MudSelectItem T="int?" Value="@((int?)null)">Seleccione una empresa</MudSelectItem>
-                                        @foreach (var empresa in empresas)
-                                        {
-                                            <MudSelectItem T="int?" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                    @* <MudSelect Label="Empresa"
-                                    @bind-Value="userProfile.PkidSucursal"
-                                    Required="true"
-                                    Disabled="@loading">
-                                        <MudSelectItem Value="0">Seleccione la sucursal</MudSelectItem>
-                                        @foreach (var empresa in listadoSucursales)
-                                        {
-                                            <MudSelectItem Value="@empresa.PkidSucursal">@empresa.Nombre</MudSelectItem>
-                                        }
-                                    </MudSelect> *@
-                                </MudItem>
-
-                                <!-- Contacto -->
-                                <MudItem xs="12" md="6">
-                                    <MudTextField Label="Email"
-                                    @bind-Value="userProfile.Email"
-                                    InputType="InputType.Email"
-                                    Required="true"
-                                    Disabled="@loading" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField Label="Teléfono"
-                                    @bind-Value="userProfile.TelefonoUsuario"
-                                    Disabled="@loading" />
-                                </MudItem>
-
-                                <!-- Dirección -->
-                                <MudItem xs="12" md="6">
-                                    <MudTextField Label="Dirección 1"
-                                    @bind-Value="userProfile.Direccion1"
-                                    Disabled="@loading" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField Label="Dirección 2"
-                                    @bind-Value="userProfile.Direccion2"
-                                    Disabled="@loading" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField Label="Código Postal"
-                                    @bind-Value="userProfile.CodigoPostalUsuario"
-                                    Disabled="@loading" />
-                                </MudItem>
-
-                                <!-- Campos adicionales -->
-                                <MudItem xs="12" md="4">
-                                    <MudTextField Label="Payroll ID"
-                                    @bind-Value="userProfile.PayrollId"
-                                    Disabled="@loading" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField Label="Número Social"
-                                    @bind-Value="userProfile.NumeroSocial"
-                                    Disabled="@loading" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField Label="Gafete"
-                                    @bind-Value="userProfile.Gafete"
-                                    Disabled="@loading" />
-                                </MudItem>
-
-                                <!-- Estado y Género -->
-                                <MudPaper Class="pa-4 mb-4" Elevation="2" Style="border-radius: 8px;">
-                                    <MudText Class="mb-2">Estado del Usuario</MudText>
-                                    <MudDivider Class="mb-3" />
-                                    <MudRadioGroup @bind-Value="userProfile.UsuarioActivo" Disabled="@loading">
-                                        <MudRadio Value="true" Color="Color.Primary" Dense="true">Activo</MudRadio>
-                                        <MudRadio Value="false" Color="Color.Secondary" Dense="false">Inactivo</MudRadio>
-                                    </MudRadioGroup>
-                                </MudPaper>
-                                <MudPaper Class="pa-4 mb-4" Elevation="2" Style="border-radius: 8px;">
-                                    <MudText Class="mb-2">Género</MudText>
-                                    <MudDivider Class="mb-3" />
-                                    <MudRadioGroup @bind-Value="userProfile.Sexo" Disabled="@loading">
-                                        <MudRadio Value="true" Color="Color.Primary" Dense="true">Femenino</MudRadio>
-                                        <MudRadio Value="false" Color="Color.Secondary" Dense="false">Masculino</MudRadio>
-                                    </MudRadioGroup>
-                                </MudPaper>
-                            </MudGrid>
-
-                            <!-- Botones -->
-                            <div class="d-flex justify-end mt-6">
-                                <MudButton Variant="Variant.Filled"
-                                Color="Color.Primary"
-                                StartIcon="@Icons.Material.Filled.Save"
-                                Visible="_canUpdate"
-                                OnClick="GuardarCambiosAsync"
-                                Disabled="@loading">
-                                    Guardar cambios
-                                </MudButton>
-                            </div>
-                        </MudCard>
-                    </MudForm>
-                </MudItem>
-            </MudGrid>
-        </MudPaper>
+                    <div class="profile-actions">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Size="Size.Medium"
+                                   StartIcon="@Icons.Material.Filled.Save"
+                                   Visible="_canUpdate"
+                                   OnClick="GuardarCambiosAsync"
+                                   Disabled="@loading">
+                            Guardar cambios
+                        </MudButton>
+                    </div>
+                </MudForm>
+            </section>
+        </div>
     }
     </MudContainer>
 
@@ -245,6 +272,10 @@
     public UsuarioResponse userProfile { get; set; } = new();
     public FotografiaUsuarioResponse userProfileFotografia { get; set; } = new();
     private string userProfileFotografiaImg = string.Empty;
+    private string currentPassword = string.Empty;
+    private string newPassword = string.Empty;
+    private string confirmPassword = string.Empty;
+    private bool showPassword = false;
     private bool _isInitialized = false;
     private bool _isClientSide = false;
     private int _userId;
@@ -263,6 +294,10 @@
     private bool hover = true;
     private bool ronly = true;
     private bool blockSwitch = false;
+    private const int EmpresaPageSize = 25;
+    private InputType PasswordInputType => showPassword ? InputType.Text : InputType.Password;
+    private string PasswordAdornmentIcon => showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility;
+    private string SelectedEmpresaName => empresas.FirstOrDefault(empresa => empresa.PkidEmpresa == userProfile.PkidEmpresa)?.EmpresaNombre ?? "Sin empresa";
 
     protected override async Task OnInitializedAsync()
     {
@@ -352,8 +387,8 @@
                     return;
                 }
 
-                await LoadEmpresas();
                 await LoadUserProfileData();
+                await LoadEmpresas();
             }
             catch (Exception ex)
             {
@@ -371,17 +406,36 @@
     {
         try
         {
-            var responseEmpresas = await empresaService.GetAllAsync();
+            var responseEmpresas = await empresaService.GetAllPaginadoAsync(
+                page: 1,
+                pageSize: EmpresaPageSize,
+                filtro: string.Empty,
+                sortLabel: "EmpresaNombre",
+                sortDirection: SortDirection.Ascending);
 
             if (responseEmpresas != null && responseEmpresas.Success && responseEmpresas.Items != null && responseEmpresas.Items.Any())
             {
-                empresas = responseEmpresas.Items;
-                Console.WriteLine($"✓ Se cargaron {empresas.Count} empresas");
+                empresas = responseEmpresas.Items.ToList();
+
+                if (userProfile.PkidEmpresa > 0 && !empresas.Any(empresa => empresa.PkidEmpresa == userProfile.PkidEmpresa))
+                {
+                    var selectedEmpresa = await empresaService.GetByIdAsync(userProfile.PkidEmpresa);
+                    if (selectedEmpresa?.Success == true && selectedEmpresa.Data != null)
+                    {
+                        empresas = empresas.Concat(new[] { selectedEmpresa.Data })
+                            .GroupBy(empresa => empresa.PkidEmpresa)
+                            .Select(group => group.First())
+                            .OrderBy(empresa => empresa.EmpresaNombre)
+                            .ToList();
+                    }
+                }
+
+                Console.WriteLine($"Se cargaron {empresas.Count} empresas desde consulta paginada");
             }
             else
             {
                 var errorMessage = responseEmpresas?.Message ?? "Error al cargar las empresas";
-                Console.WriteLine($"⚠️ {errorMessage}");
+                Console.WriteLine($"Advertencia: {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Warning);
                 empresas = new List<EmpresaResponse>();
             }
@@ -403,14 +457,14 @@
             if (responseUserById == null || !responseUserById.Success || responseUserById.Data == null)
             {
                 var errorMessage = responseUserById?.Message ?? "Error al cargar perfil";
-                Console.WriteLine($"⚠️ {errorMessage}");
+                Console.WriteLine($"Advertencia: {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Error);
                 return;
             }
             else
             {
                 userProfile = responseUserById.Data;
-                Console.WriteLine($"✅ Perfil cargado: ID {userProfile.PkIdUsuario}, " +
+                Console.WriteLine($"Perfil cargado: ID {userProfile.PkIdUsuario}, " +
                                   $"Nombre: {userProfile.NombreCompleto}, " +
                                   $"Iniciales: {userProfile.Iniciales}");
             }
@@ -456,7 +510,7 @@
             if (response == null || !response.Success)
             {
                 var errorMessage = response?.Message ?? "Error al guardar cambios: respuesta nula";
-                Console.WriteLine($"❌ {errorMessage}");
+                Console.WriteLine($"Error: {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Error);
                 return;
             }
@@ -465,7 +519,7 @@
 
             var successMessage = !string.IsNullOrEmpty(response.Message)
                 ? response.Message
-                : $"✅ Usuario actualizado: ID {userProfile.PkIdUsuario}, Nombre: {userProfile.NombreCompleto}, Iniciales: {userProfile.Iniciales}";
+                : $"Usuario actualizado: ID {userProfile.PkIdUsuario}, Nombre: {userProfile.NombreCompleto}, Iniciales: {userProfile.Iniciales}";
 
             Console.WriteLine(successMessage);
             Snackbar.Add(successMessage, Severity.Success);
@@ -507,6 +561,65 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error al subir archivo: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private async Task CambiarPasswordAsync()
+    {
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            Snackbar.Add("Captura la contrasena actual.", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            Snackbar.Add("Captura la nueva contrasena.", Severity.Warning);
+            return;
+        }
+
+        if (newPassword.Length < 6)
+        {
+            Snackbar.Add("La nueva contrasena debe tener al menos 6 caracteres.", Severity.Warning);
+            return;
+        }
+
+        if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
+        {
+            Snackbar.Add("La confirmacion no coincide con la nueva contrasena.", Severity.Warning);
+            return;
+        }
+
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await profileService.ChangePasswordAsync(_userId, currentPassword, newPassword);
+            if (response?.Success == true)
+            {
+                currentPassword = string.Empty;
+                newPassword = string.Empty;
+                confirmPassword = string.Empty;
+                Snackbar.Add(response.Message ?? "Contrasena actualizada correctamente.", Severity.Success);
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible cambiar la contrasena.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cambiar contrasena: {ex.Message}", Severity.Error);
         }
         finally
         {

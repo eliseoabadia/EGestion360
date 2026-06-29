@@ -1,7 +1,15 @@
 window.egestionComboScroll = (() => {
     const observers = new WeakMap();
 
+    function isElement(value) {
+        return value instanceof Element || value?.nodeType === Node.ELEMENT_NODE;
+    }
+
     function getScrollParent(element) {
+        if (!isElement(element)) {
+            return null;
+        }
+
         let current = element?.parentElement;
 
         while (current) {
@@ -19,7 +27,7 @@ window.egestionComboScroll = (() => {
     }
 
     function dispose(element) {
-        if (!element) {
+        if (!isElement(element)) {
             return;
         }
 
@@ -31,7 +39,7 @@ window.egestionComboScroll = (() => {
     }
 
     function observe(element, dotNetRef, methodName = "LoadNextPageFromScroll") {
-        if (!element || !dotNetRef) {
+        if (!isElement(element) || !dotNetRef) {
             return;
         }
 

@@ -1,6 +1,7 @@
 ﻿using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -25,12 +26,7 @@ namespace EG.Infrastructure
 
         public async Task DeleteAsync(int id)
         {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
-            {
-                _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
-            }
+            await SoftDeleteAsync(id);
         }
 
         public async Task SoftDeleteAsync(int id, string? activePropertyName = "Activo")
@@ -39,17 +35,21 @@ namespace EG.Infrastructure
             if (entity == null) return;
 
             var prop = typeof(T).GetProperty(activePropertyName ?? "Activo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
-            if (prop != null && prop.PropertyType == typeof(bool))
+            if (prop == null || !IsBooleanProperty(prop.PropertyType))
             {
-                prop.SetValue(entity, false);
-                _dbSet.Update(entity);
-                await _context.SaveChangesAsync();
+                throw new InvalidOperationException($"La entidad {typeof(T).Name} no soporta baja logica porque no tiene la propiedad {activePropertyName ?? "Activo"}.");
             }
-            else
+
+            if (IsInactive(entity, prop))
             {
-                _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
+                return;
             }
+
+            await EnsureNoActiveDependentsAsync(id);
+
+            prop.SetValue(entity, false);
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> HasActiveChildrenAsync<TChild>(string childForeignKeyProperty, int parentId, string? childActiveProperty = "Activo") where TChild : class
@@ -116,6 +116,12 @@ namespace EG.Infrastructure
                 _dbSet.Attach(entity);
                 entry.State = EntityState.Modified;
             }
+
+            if (TryGetInactiveEntityId(entity, out var id))
+            {
+                await EnsureNoActiveDependentsAsync(id);
+            }
+
             await _context.SaveChangesAsync();
         }
 
@@ -179,6 +185,135 @@ namespace EG.Infrastructure
             }
 
             return query.AsNoTracking();
+        }
+
+        private static bool IsBooleanProperty(Type propertyType)
+        {
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            return targetType == typeof(bool);
+        }
+
+        private static bool IsInactive(T entity, PropertyInfo activeProperty)
+        {
+            var value = activeProperty.GetValue(entity);
+            return value is bool active && !active;
+        }
+
+        private bool TryGetInactiveEntityId(T entity, out int id)
+        {
+            id = 0;
+            var activeProperty = typeof(T).GetProperty("Activo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (activeProperty == null || !IsBooleanProperty(activeProperty.PropertyType) || !IsInactive(entity, activeProperty))
+            {
+                return false;
+            }
+
+            var entityType = _context.Model.FindEntityType(typeof(T));
+            var primaryKeyProperty = entityType?.FindPrimaryKey()?.Properties.SingleOrDefault();
+            var keyValue = primaryKeyProperty?.PropertyInfo?.GetValue(entity);
+            if (keyValue == null)
+            {
+                return false;
+            }
+
+            id = Convert.ToInt32(keyValue);
+            return id > 0;
+        }
+
+        private async Task EnsureNoActiveDependentsAsync(int id)
+        {
+            var entityType = _context.Model.FindEntityType(typeof(T));
+            var primaryKey = entityType?.FindPrimaryKey();
+            if (entityType == null || primaryKey?.Properties.Count != 1)
+            {
+                return;
+            }
+
+            var principalKey = primaryKey.Properties[0];
+            var incomingForeignKeys = _context.Model
+                .GetEntityTypes()
+                .SelectMany(type => type.GetForeignKeys())
+                .Where(foreignKey =>
+                    foreignKey.PrincipalEntityType == entityType &&
+                    foreignKey.PrincipalKey.Properties.Count == 1 &&
+                    foreignKey.PrincipalKey.Properties[0] == principalKey &&
+                    foreignKey.Properties.Count == 1 &&
+                    !foreignKey.DeclaringEntityType.IsOwned());
+
+            foreach (var foreignKey in incomingForeignKeys)
+            {
+                var dependentType = foreignKey.DeclaringEntityType.ClrType;
+                var hasActiveDependent = await HasActiveDependentAsync(dependentType, foreignKey, id);
+                if (hasActiveDependent)
+                {
+                    throw new InvalidOperationException(
+                        $"No se puede dar de baja {entityType.ClrType.Name} porque existen registros activos en {dependentType.Name} que lo referencian.");
+                }
+            }
+        }
+
+        private async Task<bool> HasActiveDependentAsync(Type dependentType, IForeignKey foreignKey, int principalId)
+        {
+            var method = typeof(Repository<T>)
+                .GetMethod(nameof(HasActiveDependentGenericAsync), BindingFlags.Instance | BindingFlags.NonPublic)!
+                .MakeGenericMethod(dependentType);
+
+            var result = method.Invoke(this, [foreignKey, principalId]);
+            return result is Task<bool> task && await task;
+        }
+
+        private async Task<bool> HasActiveDependentGenericAsync<TDependent>(IForeignKey foreignKey, int principalId)
+            where TDependent : class
+        {
+            var parameter = Expression.Parameter(typeof(TDependent), "entity");
+            var foreignKeyProperty = foreignKey.Properties[0];
+            var foreignKeyAccess = CreatePropertyAccess(parameter, foreignKeyProperty);
+            var foreignKeyValue = ConvertToPropertyType(principalId, foreignKeyProperty.ClrType);
+            var foreignKeyConstant = Expression.Constant(foreignKeyValue, Nullable.GetUnderlyingType(foreignKeyProperty.ClrType) ?? foreignKeyProperty.ClrType);
+            Expression comparableForeignKeyValue = foreignKeyConstant;
+
+            if (foreignKeyAccess.Type != foreignKeyConstant.Type)
+            {
+                comparableForeignKeyValue = Expression.Convert(foreignKeyConstant, foreignKeyAccess.Type);
+            }
+
+            Expression predicate = Expression.Equal(foreignKeyAccess, comparableForeignKeyValue);
+
+            var activeProperty = foreignKey.DeclaringEntityType.FindProperty("Activo");
+            if (activeProperty != null && IsBooleanProperty(activeProperty.ClrType))
+            {
+                var activeAccess = CreatePropertyAccess(parameter, activeProperty);
+                var activeConstant = Expression.Constant(true, typeof(bool));
+                Expression comparableActiveValue = activeAccess.Type == typeof(bool)
+                    ? activeConstant
+                    : Expression.Convert(activeConstant, activeAccess.Type);
+
+                predicate = Expression.AndAlso(predicate, Expression.Equal(activeAccess, comparableActiveValue));
+            }
+
+            var lambda = Expression.Lambda<Func<TDependent, bool>>(predicate, parameter);
+            return await _context.Set<TDependent>().AnyAsync(lambda);
+        }
+
+        private static Expression CreatePropertyAccess(ParameterExpression parameter, IProperty property)
+        {
+            if (property.PropertyInfo != null)
+            {
+                return Expression.Property(parameter, property.PropertyInfo);
+            }
+
+            return Expression.Call(
+                typeof(EF),
+                nameof(EF.Property),
+                [property.ClrType],
+                parameter,
+                Expression.Constant(property.Name));
+        }
+
+        private static object ConvertToPropertyType(int value, Type propertyType)
+        {
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            return Convert.ChangeType(value, targetType);
         }
 
 

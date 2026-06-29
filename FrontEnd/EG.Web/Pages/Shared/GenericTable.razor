@@ -169,7 +169,7 @@
                            ShowFirstLastPage="true"
                            ShowPageSizeSelector="true"
                            ShowPaginationText="true"
-                           PaginationTextFormat="Página {0} de {1}"
+                           InfoFormat="{first_item}-{last_item} de {all_items}"
                            Disabled="@IsTableBusy" />
         </PagerContent>
     </MudTable>
@@ -285,7 +285,12 @@
                 return;
 
             await SearchStringChanged.InvokeAsync(SearchString);
-            await OnSearch.InvokeAsync();
+            if (OnSearch.HasDelegate)
+            {
+                await OnSearch.InvokeAsync();
+                return;
+            }
+
             await mudTableRef.ReloadServerData();
         }
     }

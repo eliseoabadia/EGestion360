@@ -1,6 +1,6 @@
 (() => {
     const tableStates = new Map();
-    const minColumnWidth = 56;
+    const minColumnWidth = 64;
 
     const getRoot = (elementId) => document.getElementById(elementId);
 
@@ -27,6 +27,7 @@
     const getColumnLabel = (cell, index) => {
         const clone = cell.cloneNode(true);
         clone.querySelectorAll(".eg-column-resizer").forEach((handle) => handle.remove());
+        clone.querySelectorAll(".eg-column-drag-handle").forEach((handle) => handle.remove());
         return normalizeLabel(clone.textContent) || `Columna ${index + 1}`;
     };
 
@@ -44,9 +45,6 @@
 
         return !label || normalized === "accion" || normalized === "acciones";
     };
-
-    const shouldIgnoreDrag = (event) =>
-        event.target.closest(".eg-column-resizer,button,a,input,textarea,select,.mud-button-root,.mud-input,.mud-checkbox");
 
     const setColumnWidth = (root, index, width) => {
         const normalizedWidth = `${Math.max(minColumnWidth, Math.round(width))}px`;
@@ -106,6 +104,7 @@
     const moveColumn = (root, fromIndex, toIndex, state) => {
         const headerRow = getHeaderRow(root);
 
+        saveWidths(root, state);
         moveChild(headerRow, fromIndex, toIndex);
         getBodyRows(root).forEach((row) => moveChild(row, fromIndex, toIndex));
         saveOrder(root, state);
@@ -114,7 +113,7 @@
     };
 
     const applyOrder = (root, state) => {
-        if (!state.order.length) {
+        if (!state.order.length || state.dragIndex !== null) {
             return;
         }
 
@@ -133,6 +132,7 @@
         });
 
         if (changed) {
+            applyWidths(root, state);
             setupHeaderInteractions(root, state);
         }
     };
@@ -151,13 +151,26 @@
             event.preventDefault();
             event.stopPropagation();
 
+            if (event.button !== 0) {
+                return;
+            }
+
+            saveWidths(root, state);
+
             const startX = event.clientX;
             const startWidth = cell.getBoundingClientRect().width;
             root.classList.add("eg-column-resizing");
             handle.setPointerCapture?.(event.pointerId);
 
             const onPointerMove = (moveEvent) => {
-                setColumnWidth(root, index, startWidth + moveEvent.clientX - startX);
+                const width = Math.max(minColumnWidth, startWidth + moveEvent.clientX - startX);
+                const key = getColumnKey(cell, index);
+
+                if (key) {
+                    state.widths.set(key, Math.round(width));
+                }
+
+                setColumnWidth(root, index, width);
             };
 
             const onPointerUp = () => {
@@ -172,26 +185,44 @@
         };
     };
 
+    const setupDragHandle = (root, state, cell, index) => {
+        let handle = cell.querySelector(":scope > .eg-column-drag-handle");
+
+        if (!handle) {
+            handle = document.createElement("span");
+            handle.className = "eg-column-drag-handle";
+            handle.title = "Arrastra para mover la columna";
+            handle.setAttribute("aria-hidden", "true");
+            cell.insertBefore(handle, cell.firstChild);
+        }
+
+        handle.draggable = true;
+
+        handle.ondragstart = (event) => {
+            saveWidths(root, state);
+            state.dragIndex = index;
+            cell.classList.add("eg-column-drag-source");
+            root.classList.add("eg-column-dragging");
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", String(index));
+        };
+
+        handle.ondragend = () => {
+            state.dragIndex = null;
+            root.classList.remove("eg-column-dragging");
+            getHeaderCells(root).forEach((item) => item.classList.remove("eg-column-drag-source", "eg-column-drop-target"));
+        };
+    };
+
     function setupHeaderInteractions(root, state) {
         const cells = getHeaderCells(root);
 
         cells.forEach((cell, index) => {
+            cell.classList.add("eg-column-resizable");
             cell.classList.add("eg-column-draggable");
-            cell.setAttribute("draggable", "true");
-            cell.title = cell.title || "Arrastra para mover la columna";
+            cell.removeAttribute("draggable");
+            setupDragHandle(root, state, cell, index);
             setupResizeHandle(root, state, cell, index);
-
-            cell.ondragstart = (event) => {
-                if (shouldIgnoreDrag(event)) {
-                    event.preventDefault();
-                    return;
-                }
-
-                state.dragIndex = index;
-                cell.classList.add("eg-column-drag-source");
-                event.dataTransfer.effectAllowed = "move";
-                event.dataTransfer.setData("text/plain", String(index));
-            };
 
             cell.ondragover = (event) => {
                 if (state.dragIndex === null || state.dragIndex === index) {
@@ -213,15 +244,11 @@
 
                 const fromIndex = state.dragIndex ?? Number(event.dataTransfer.getData("text/plain"));
                 state.dragIndex = null;
+                root.classList.remove("eg-column-dragging");
 
                 if (!Number.isNaN(fromIndex) && fromIndex !== index) {
                     moveColumn(root, fromIndex, index, state);
                 }
-            };
-
-            cell.ondragend = () => {
-                state.dragIndex = null;
-                cells.forEach((item) => item.classList.remove("eg-column-drag-source", "eg-column-drop-target"));
             };
         });
     }
@@ -232,7 +259,7 @@
             applyOrder(root, state);
             applyWidths(root, state);
             setupHeaderInteractions(root, state);
-        }, 50);
+        }, 80);
     };
 
     window.egestionTableColumns = {

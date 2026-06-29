@@ -74,8 +74,7 @@
     }
 
     private bool ShowBackButton
-        => !string.Equals(CurrentPath, "/PBR", StringComparison.OrdinalIgnoreCase)
-           && !string.Equals(CurrentPath, "/PBR", StringComparison.OrdinalIgnoreCase);
+        => !string.Equals(CurrentPath, "/PBR", StringComparison.OrdinalIgnoreCase);
 
     private Variant ButtonVariant(string route)
     {
@@ -96,7 +95,17 @@
         NavigationManager.NavigateTo(BackHref);
     }
 
-    private void GoTo(string route) => NavigationManager.NavigateTo(route);
+    private async Task GoTo(string route)
+    {
+        var cleanRoute = route.TrimEnd('/');
+        if (OnBack.HasDelegate && string.Equals(CurrentPath, cleanRoute, StringComparison.OrdinalIgnoreCase))
+        {
+            await OnBack.InvokeAsync();
+            return;
+        }
+
+        NavigationManager.NavigateTo(route);
+    }
 }
 
 <style>

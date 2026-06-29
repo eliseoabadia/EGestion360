@@ -128,7 +128,7 @@
                             </MudItem>
                         </MudGrid>
 
-                        <div class="pbr-table-wrap">
+                        <div class="pbr-table-wrap pbr-sticky-table">
                             <MudTable Items="@dashboard.Semaforo" Dense="true" Hover="true" Elevation="0">
                                 <HeaderContent>
                                     <MudTh>Programa</MudTh>
@@ -201,21 +201,23 @@
                             </MudButton>
                         </MudStack>
 
-                        <MudTable Items="@dashboard.TopPresupuestos" Dense="true" Hover="true" Elevation="0">
-                            <HeaderContent>
-                                <MudTh>Programa</MudTh>
-                                <MudTh Class="text-end">Anual</MudTh>
-                                <MudTh Class="text-end">Modificado</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Programa">@($"{context.ProgramaClave} {context.Programa}")</MudTd>
-                                <MudTd DataLabel="Anual" Class="text-end">@Money(context.PresupuestoAnual)</MudTd>
-                                <MudTd DataLabel="Modificado" Class="text-end">@Money(context.PresupuestoModificado)</MudTd>
-                            </RowTemplate>
-                            <NoRecordsContent>
-                                <MudText Color="Color.Secondary">No hay presupuestos capturados para el ejercicio.</MudText>
-                            </NoRecordsContent>
-                        </MudTable>
+                        <div class="pbr-table-wrap pbr-sticky-table">
+                            <MudTable Items="@dashboard.TopPresupuestos" Dense="true" Hover="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Programa</MudTh>
+                                    <MudTh Class="text-end">Anual</MudTh>
+                                    <MudTh Class="text-end">Modificado</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Programa">@($"{context.ProgramaClave} {context.Programa}")</MudTd>
+                                    <MudTd DataLabel="Anual" Class="text-end">@Money(context.PresupuestoAnual)</MudTd>
+                                    <MudTd DataLabel="Modificado" Class="text-end">@Money(context.PresupuestoModificado)</MudTd>
+                                </RowTemplate>
+                                <NoRecordsContent>
+                                    <MudText Color="Color.Secondary">No hay presupuestos capturados para el ejercicio.</MudText>
+                                </NoRecordsContent>
+                            </MudTable>
+                        </div>
                     </MudPaper>
                 </MudItem>
 
@@ -389,6 +391,14 @@
     .pbr-table-wrap {
         max-height: 430px;
         overflow: auto;
+    }
+
+    .pbr-sticky-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--mud-palette-surface);
+        box-shadow: inset 0 -1px 0 var(--mud-palette-lines-default);
     }
 
     .pbr-ranking-row,
