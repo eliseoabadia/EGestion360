@@ -5,9 +5,16 @@ public sealed class SaveAccessRoleRequest
     public string? Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
+    public bool ReplaceUsers { get; set; } = true;
     public List<int> AssignedUserIds { get; set; } = new();
     public bool ReplaceClaims { get; set; }
     public List<SaveAccessClaimRequest> Claims { get; set; } = new();
+}
+
+public sealed class SaveAccessUserRolesRequest
+{
+    public int PkIdUsuario { get; set; }
+    public List<string> RoleIds { get; set; } = new();
 }
 
 public sealed class SaveAccessClaimRequest

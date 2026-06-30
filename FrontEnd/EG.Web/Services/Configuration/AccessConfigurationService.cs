@@ -48,6 +48,17 @@ public sealed class AccessConfigurationService(
             ?? new ApiResponse<AccessRoleDetailResponse>();
     }
 
+    public async Task<ApiResponse<AccessUserRoleDetailResponse>> GetUserRoleDetailAsync(int pkIdUsuario)
+    {
+        if (!IsClientSide())
+        {
+            return new ApiResponse<AccessUserRoleDetailResponse>();
+        }
+
+        return await GetAsync<ApiResponse<AccessUserRoleDetailResponse>>($"{Endpoint}/users/{pkIdUsuario}/roles", useBaseUrl: false)
+            ?? new ApiResponse<AccessUserRoleDetailResponse>();
+    }
+
     public async Task<ApiResponse<AccessRoleDetailResponse>> SaveRoleAsync(SaveAccessRoleRequest request)
     {
         if (!IsClientSide())
@@ -57,6 +68,17 @@ public sealed class AccessConfigurationService(
 
         return await PostAsync<ApiResponse<AccessRoleDetailResponse>>($"{Endpoint}/roles/save", request, useBaseUrl: false)
             ?? new ApiResponse<AccessRoleDetailResponse>();
+    }
+
+    public async Task<ApiResponse<AccessUserRoleDetailResponse>> SaveUserRolesAsync(SaveAccessUserRolesRequest request)
+    {
+        if (!IsClientSide())
+        {
+            return new ApiResponse<AccessUserRoleDetailResponse>();
+        }
+
+        return await PostAsync<ApiResponse<AccessUserRoleDetailResponse>>($"{Endpoint}/users/save-roles", request, useBaseUrl: false)
+            ?? new ApiResponse<AccessUserRoleDetailResponse>();
     }
 
     public async Task<ApiResponse<int>> SynchronizeMenuRolesAsync()

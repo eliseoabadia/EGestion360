@@ -118,6 +118,11 @@
                          Color="Color.Inherit" 
                          AnchorOrigin="Origin.BottomRight" 
                          TransformOrigin="Origin.TopRight">
+                    <MudMenuItem OnClick="@NavigateToProfile">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Class="mr-2" />
+                        Perfil
+                    </MudMenuItem>
+                    <MudDivider />
                     <MudMenuItem OnClick="@Logout">
                         <MudIcon Icon="@Icons.Material.Filled.Logout" Class="mr-2" />
                         Cerrar sesión
@@ -341,6 +346,11 @@
         }
 
         NavigationManager.NavigateTo("/login", replace: true);
+    }
+
+    private void NavigateToProfile()
+    {
+        NavigationManager.NavigateTo("/perfil");
     }
 
     private async Task SelectThemeOption(AppThemeOption option)

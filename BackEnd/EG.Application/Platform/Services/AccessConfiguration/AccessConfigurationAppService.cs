@@ -103,6 +103,31 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
         }
     }
 
+    public async Task<AccessUserRoleDetailResponse> GetUserRoleDetailAsync(int pkIdUsuario)
+    {
+        if (pkIdUsuario <= 0)
+        {
+            throw new ArgumentException("El usuario es requerido.", nameof(pkIdUsuario));
+        }
+
+        await _context.Database.OpenConnectionAsync();
+        try
+        {
+            var user = (await QueryAsync(GetUserSql, MapUser, Param("@PkIdUsuario", pkIdUsuario))).FirstOrDefault()
+                ?? throw new KeyNotFoundException("Usuario activo no encontrado.");
+
+            return new AccessUserRoleDetailResponse
+            {
+                User = user,
+                AssignedRoleIds = await QueryAsync(GetUserRolesSql, reader => GetString(reader, "RoleId"), Param("@PkIdUsuario", pkIdUsuario))
+            };
+        }
+        finally
+        {
+            await _context.Database.CloseConnectionAsync();
+        }
+    }
+
     public async Task<AccessRoleDetailResponse> SaveRoleAsync(SaveAccessRoleRequest request, int operatorId)
     {
         if (request == null)
@@ -126,7 +151,11 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
                 ? await CreateRoleAsync(request, transaction)
                 : await UpdateRoleAsync(request, transaction);
 
-            await ReplaceRoleUsersAsync(roleId, request.AssignedUserIds, transaction);
+            if (request.ReplaceUsers)
+            {
+                await ReplaceRoleUsersAsync(roleId, request.AssignedUserIds, transaction);
+            }
+
             if (request.ReplaceClaims)
             {
                 var normalizedClaims = NormalizeClaims(request.Claims).ToList();
@@ -160,6 +189,82 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
         }
     }
 
+    public async Task<AccessUserRoleDetailResponse> SaveUserRolesAsync(SaveAccessUserRolesRequest request, int operatorId)
+    {
+        if (request == null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (request.PkIdUsuario <= 0)
+        {
+            throw new ArgumentException("El usuario es requerido.");
+        }
+
+        var roleIds = request.RoleIds
+            .Select(roleId => roleId?.Trim())
+            .Where(roleId => !string.IsNullOrWhiteSpace(roleId))
+            .Select(roleId => roleId!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        await _context.Database.OpenConnectionAsync();
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var aspNetUserId = await ScalarAsync<string>(
+                """
+                SELECT TOP (1) AU.Id
+                FROM dbo.AspNetUsers AS AU
+                INNER JOIN SIS.Usuario AS U ON U.PKIdUsuario = AU.PkIdUsuario
+                WHERE U.Activo = 1
+                  AND U.PKIdUsuario = @PkIdUsuario;
+                """,
+                transaction,
+                Param("@PkIdUsuario", request.PkIdUsuario));
+
+            if (string.IsNullOrWhiteSpace(aspNetUserId))
+            {
+                throw new KeyNotFoundException("Usuario activo no encontrado.");
+            }
+
+            if (roleIds.Count > 0)
+            {
+                var existingRoleCount = await ScalarAsync<int>(
+                    """
+                    SELECT COUNT(1)
+                    FROM dbo.AspNetRoles
+                    WHERE Id IN (
+                        SELECT [value]
+                        FROM STRING_SPLIT(@RoleIds, '|')
+                    );
+                    """,
+                    transaction,
+                    Param("@RoleIds", string.Join('|', roleIds)));
+
+                if (existingRoleCount != roleIds.Count)
+                {
+                    throw new ArgumentException("Uno o mas roles seleccionados no existen.");
+                }
+            }
+
+            await ReplaceUserRolesAsync(aspNetUserId, roleIds, transaction);
+            await SynchronizeMenuRolesInternalAsync(operatorId, transaction);
+
+            await transaction.CommitAsync();
+            return await GetUserRoleDetailAsync(request.PkIdUsuario);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        finally
+        {
+            await _context.Database.CloseConnectionAsync();
+        }
+    }
+
     public async Task<int> SynchronizeMenuRolesAsync(int operatorId)
     {
         await _context.Database.OpenConnectionAsync();
@@ -178,6 +283,25 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
         finally
         {
             await _context.Database.CloseConnectionAsync();
+        }
+    }
+
+    private async Task ReplaceUserRolesAsync(string aspNetUserId, IEnumerable<string> roleIds, IDbContextTransaction transaction)
+    {
+        await ExecuteAsync("DELETE FROM dbo.AspNetUserRoles WHERE UserId = @UserId;", transaction, Param("@UserId", aspNetUserId));
+
+        foreach (var roleId in roleIds)
+        {
+            await ExecuteAsync(
+                """
+                INSERT INTO dbo.AspNetUserRoles (UserId, RoleId, ExpireDate)
+                SELECT @UserId, R.Id, NULL
+                FROM dbo.AspNetRoles AS R
+                WHERE R.Id = @RoleId;
+                """,
+                transaction,
+                Param("@UserId", aspNetUserId),
+                Param("@RoleId", roleId));
         }
     }
 
@@ -500,14 +624,26 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
             R.Id,
             R.Name,
             R.Code,
-            COUNT(DISTINCT C.Id) AS ClaimCount,
-            COUNT(DISTINCT UR.UserId) AS UserCount,
-            COUNT(DISTINCT MR.FKIdMenu_SIS) AS MenuCount
+            ISNULL(C.ClaimCount, 0) AS ClaimCount,
+            ISNULL(UR.UserCount, 0) AS UserCount,
+            ISNULL(MR.MenuCount, 0) AS MenuCount
         FROM dbo.AspNetRoles AS R
-        LEFT JOIN dbo.AspNetClaims AS C ON C.RoleId = R.Id
-        LEFT JOIN dbo.AspNetUserRoles AS UR ON UR.RoleId = R.Id
-        LEFT JOIN SIS.MenuRole AS MR ON MR.RoleId = R.Id AND MR.Activo = 1
-        GROUP BY R.Id, R.Name, R.Code
+        LEFT JOIN (
+            SELECT RoleId, COUNT(1) AS ClaimCount
+            FROM dbo.AspNetClaims
+            GROUP BY RoleId
+        ) AS C ON C.RoleId = R.Id
+        LEFT JOIN (
+            SELECT RoleId, COUNT(DISTINCT UserId) AS UserCount
+            FROM dbo.AspNetUserRoles
+            GROUP BY RoleId
+        ) AS UR ON UR.RoleId = R.Id
+        LEFT JOIN (
+            SELECT RoleId, COUNT(DISTINCT FKIdMenu_SIS) AS MenuCount
+            FROM SIS.MenuRole
+            WHERE Activo = 1
+            GROUP BY RoleId
+        ) AS MR ON MR.RoleId = R.Id
         ORDER BY R.Name;
         """;
 
@@ -517,15 +653,27 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
             R.Id,
             R.Name,
             R.Code,
-            COUNT(DISTINCT C.Id) AS ClaimCount,
-            COUNT(DISTINCT UR.UserId) AS UserCount,
-            COUNT(DISTINCT MR.FKIdMenu_SIS) AS MenuCount
+            ISNULL(C.ClaimCount, 0) AS ClaimCount,
+            ISNULL(UR.UserCount, 0) AS UserCount,
+            ISNULL(MR.MenuCount, 0) AS MenuCount
         FROM dbo.AspNetRoles AS R
-        LEFT JOIN dbo.AspNetClaims AS C ON C.RoleId = R.Id
-        LEFT JOIN dbo.AspNetUserRoles AS UR ON UR.RoleId = R.Id
-        LEFT JOIN SIS.MenuRole AS MR ON MR.RoleId = R.Id AND MR.Activo = 1
-        WHERE R.Id = @RoleId
-        GROUP BY R.Id, R.Name, R.Code;
+        OUTER APPLY (
+            SELECT COUNT(1) AS ClaimCount
+            FROM dbo.AspNetClaims
+            WHERE RoleId = R.Id
+        ) AS C
+        OUTER APPLY (
+            SELECT COUNT(DISTINCT UserId) AS UserCount
+            FROM dbo.AspNetUserRoles
+            WHERE RoleId = R.Id
+        ) AS UR
+        OUTER APPLY (
+            SELECT COUNT(DISTINCT FKIdMenu_SIS) AS MenuCount
+            FROM SIS.MenuRole
+            WHERE Activo = 1
+              AND RoleId = R.Id
+        ) AS MR
+        WHERE R.Id = @RoleId;
         """;
 
     private const string GetUsersSql =
@@ -537,14 +685,39 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
             COALESCE(NULLIF(AU.Email, ''), P.CORREO_ELECTRONICO) AS Email,
             U.PayrollID AS PayrollId,
             AU.AccessNumber,
-            COUNT(DISTINCT UR.RoleId) AS RoleCount
+            ISNULL(UR.RoleCount, 0) AS RoleCount
         FROM SIS.Usuario AS U
         INNER JOIN dbo.AspNetUsers AS AU ON AU.PkIdUsuario = U.PKIdUsuario
         LEFT JOIN NOM.Persona AS P ON P.PKIdPersona = U.FKIdPersona_NOM
-        LEFT JOIN dbo.AspNetUserRoles AS UR ON UR.UserId = AU.Id
+        LEFT JOIN (
+            SELECT UserId, COUNT(DISTINCT RoleId) AS RoleCount
+            FROM dbo.AspNetUserRoles
+            GROUP BY UserId
+        ) AS UR ON UR.UserId = AU.Id
         WHERE U.Activo = 1
-        GROUP BY U.PKIdUsuario, AU.Id, AU.Email, U.PayrollID, AU.AccessNumber, P.Nombre, P.Paterno, P.Materno, P.CORREO_ELECTRONICO
         ORDER BY DisplayName;
+        """;
+
+    private const string GetUserSql =
+        """
+        SELECT
+            U.PKIdUsuario AS PkIdUsuario,
+            AU.Id AS AspNetUserId,
+            COALESCE(NULLIF(CONCAT(P.Nombre, ' ', P.Paterno, ' ', P.Materno), '  '), AU.Email, U.PayrollID, AU.Id) AS DisplayName,
+            COALESCE(NULLIF(AU.Email, ''), P.CORREO_ELECTRONICO) AS Email,
+            U.PayrollID AS PayrollId,
+            AU.AccessNumber,
+            ISNULL(UR.RoleCount, 0) AS RoleCount
+        FROM SIS.Usuario AS U
+        INNER JOIN dbo.AspNetUsers AS AU ON AU.PkIdUsuario = U.PKIdUsuario
+        LEFT JOIN NOM.Persona AS P ON P.PKIdPersona = U.FKIdPersona_NOM
+        OUTER APPLY (
+            SELECT COUNT(DISTINCT RoleId) AS RoleCount
+            FROM dbo.AspNetUserRoles
+            WHERE UserId = AU.Id
+        ) AS UR
+        WHERE U.Activo = 1
+          AND U.PKIdUsuario = @PkIdUsuario;
         """;
 
     private const string GetMenusSql =
@@ -571,6 +744,16 @@ public sealed class AccessConfigurationAppService(EGestionContext context) : IAc
         INNER JOIN dbo.AspNetUsers AS AU ON AU.Id = UR.UserId
         INNER JOIN SIS.Usuario AS U ON U.PKIdUsuario = AU.PkIdUsuario
         WHERE UR.RoleId = @RoleId
+          AND U.Activo = 1;
+        """;
+
+    private const string GetUserRolesSql =
+        """
+        SELECT DISTINCT UR.RoleId
+        FROM dbo.AspNetUserRoles AS UR
+        INNER JOIN dbo.AspNetUsers AS AU ON AU.Id = UR.UserId
+        INNER JOIN SIS.Usuario AS U ON U.PKIdUsuario = AU.PkIdUsuario
+        WHERE U.PKIdUsuario = @PkIdUsuario
           AND U.Activo = 1;
         """;
 

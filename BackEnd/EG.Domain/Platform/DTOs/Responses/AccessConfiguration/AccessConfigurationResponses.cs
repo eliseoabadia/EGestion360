@@ -30,6 +30,12 @@ public sealed class AccessUserSummaryResponse
     public int RoleCount { get; set; }
 }
 
+public sealed class AccessUserRoleDetailResponse
+{
+    public AccessUserSummaryResponse User { get; set; } = new();
+    public List<string> AssignedRoleIds { get; set; } = new();
+}
+
 public sealed class AccessMenuSummaryResponse
 {
     public int PkIdMenu { get; set; }

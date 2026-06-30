@@ -66,6 +66,28 @@ public sealed class AccessConfigurationController(
         }
     }
 
+    [HttpGet("users/{pkIdUsuario:int}/roles")]
+    public async Task<ActionResult<PagedResult<AccessUserRoleDetailResponse>>> GetUserRoleDetail(int pkIdUsuario)
+    {
+        try
+        {
+            var result = await _appService.GetUserRoleDetailAsync(pkIdUsuario);
+            return Ok(Success(result, "Roles del usuario cargados."));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(Error<AccessUserRoleDetailResponse>(ex.Message, ApiResponseCode.InvalidData));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(Error<AccessUserRoleDetailResponse>(ex.Message, ApiResponseCode.NotFound));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, Error<AccessUserRoleDetailResponse>(ex.Message));
+        }
+    }
+
     [HttpPost("roles/save")]
     public async Task<ActionResult<PagedResult<AccessRoleDetailResponse>>> SaveRole([FromBody] SaveAccessRoleRequest request)
     {
@@ -86,6 +108,29 @@ public sealed class AccessConfigurationController(
         catch (Exception ex)
         {
             return StatusCode(500, Error<AccessRoleDetailResponse>(ex.Message));
+        }
+    }
+
+    [HttpPost("users/save-roles")]
+    public async Task<ActionResult<PagedResult<AccessUserRoleDetailResponse>>> SaveUserRoles([FromBody] SaveAccessUserRolesRequest request)
+    {
+        try
+        {
+            var operatorId = _userContext.GetCurrentUserId();
+            var result = await _appService.SaveUserRolesAsync(request, operatorId);
+            return Ok(Success(result, "Roles del usuario actualizados."));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(Error<AccessUserRoleDetailResponse>(ex.Message, ApiResponseCode.InvalidData));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(Error<AccessUserRoleDetailResponse>(ex.Message, ApiResponseCode.NotFound));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, Error<AccessUserRoleDetailResponse>(ex.Message));
         }
     }
 

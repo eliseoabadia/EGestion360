@@ -1,4 +1,5 @@
 @page "/configuracion/sistema/general"
+@page "/perfil"
 @using EG.Web.Auth
 @using EG.Web.Helpers
 @using EG.Domain.DTOs.Responses.General
@@ -53,8 +54,8 @@
                     <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Medium" />
                 </span>
                 <div>
-                    <MudText Typo="Typo.h5" Class="profile-title">Mi perfil</MudText>
-                    <MudText Typo="Typo.body2" Class="profile-subtitle">Datos personales, empresa y seguridad de acceso</MudText>
+                    <MudText Typo="Typo.h5" Class="profile-title">@ProfileTitle</MudText>
+                    <MudText Typo="Typo.body2" Class="profile-subtitle">@ProfileSubtitle</MudText>
                 </div>
             </div>
 
@@ -65,6 +66,12 @@
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Icon="@Icons.Material.Filled.VerifiedUser">
                     @(userProfile.UsuarioActivo ? "Activo" : "Inactivo")
                 </MudChip>
+                @if (IsSelfProfileRoute)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info" Icon="@Icons.Material.Filled.Visibility">
+                        Solo lectura
+                    </MudChip>
+                }
             </div>
         </div>
 
@@ -93,21 +100,24 @@
                     <MudText Typo="Typo.subtitle1" Class="profile-name">@userProfile.Nombre</MudText>
                     <MudText Typo="Typo.caption" Class="profile-email">@userProfile.Email</MudText>
 
-                    <MudFileUpload T="IBrowserFile"
-                                   Accept="image/*"
-                                   FilesChanged="OnFileUpload"
-                                   Disabled="@loading">
-                        <CustomContent Context="fileUpload">
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       StartIcon="@Icons.Material.Filled.PhotoCamera"
-                                       OnClick="fileUpload.OpenFilePickerAsync"
+                    @if (!IsSelfProfileRoute)
+                    {
+                        <MudFileUpload T="IBrowserFile"
+                                       Accept="image/*"
+                                       FilesChanged="OnFileUpload"
                                        Disabled="@loading">
-                                Cambiar foto
-                            </MudButton>
-                        </CustomContent>
-                    </MudFileUpload>
+                            <CustomContent Context="fileUpload">
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.PhotoCamera"
+                                           OnClick="fileUpload.OpenFilePickerAsync"
+                                           Disabled="@loading">
+                                    Cambiar foto
+                                </MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                    }
                 </section>
 
                 <section class="profile-security">
@@ -170,13 +180,13 @@
                                       @bind-Value="userProfile.Nombre"
                                       Required="true"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudSelect Label="Empresa"
                                    @bind-Value="userProfile.PkidEmpresa"
                                    Required="true"
                                    Margin="Margin.Dense"
-                                   Disabled="@loading">
+                                   Disabled="@ProfileFieldsDisabled">
                             <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
                             @foreach (var empresa in empresas)
                             {
@@ -189,48 +199,78 @@
                                       InputType="InputType.Email"
                                       Required="true"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Telefono"
                                       @bind-Value="userProfile.TelefonoUsuario"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Direccion 1"
                                       @bind-Value="userProfile.Direccion1"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Direccion 2"
                                       @bind-Value="userProfile.Direccion2"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Codigo Postal"
                                       @bind-Value="userProfile.CodigoPostalUsuario"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Payroll ID"
                                       @bind-Value="userProfile.PayrollId"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Numero Social"
                                       @bind-Value="userProfile.NumeroSocial"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
 
                         <MudTextField Label="Gafete"
                                       @bind-Value="userProfile.Gafete"
                                       Margin="Margin.Dense"
-                                      Disabled="@loading" />
+                                      Disabled="@ProfileFieldsDisabled" />
+
+                        <MudTextField Label="Nombre NOM.Persona"
+                                      Value="@ProfilePersonaName"
+                                      Margin="Margin.Dense"
+                                      Disabled="true" />
+
+                        <MudTextField Label="Clave persona"
+                                      @bind-Value="userProfile.ClavePersona"
+                                      Margin="Margin.Dense"
+                                      Disabled="true" />
+
+                        <MudTextField Label="RFC"
+                                      @bind-Value="userProfile.Rfc"
+                                      Margin="Margin.Dense"
+                                      Disabled="true" />
+
+                        <MudTextField Label="CURP"
+                                      @bind-Value="userProfile.Curp"
+                                      Margin="Margin.Dense"
+                                      Disabled="true" />
+
+                        <MudTextField Label="Correo persona"
+                                      @bind-Value="userProfile.EmailPersona"
+                                      Margin="Margin.Dense"
+                                      Disabled="true" />
+
+                        <MudTextField Label="Telefono movil"
+                                      @bind-Value="userProfile.TelefonoMovil"
+                                      Margin="Margin.Dense"
+                                      Disabled="true" />
                     </div>
 
                     <div class="profile-options">
                         <div class="profile-option-group">
                             <MudText Typo="Typo.caption" Class="profile-option-label">Estado del usuario</MudText>
-                            <MudRadioGroup @bind-Value="userProfile.UsuarioActivo" Disabled="@loading" Class="profile-radio-group">
+                            <MudRadioGroup @bind-Value="userProfile.UsuarioActivo" Disabled="@ProfileFieldsDisabled" Class="profile-radio-group">
                                 <MudRadio Value="true" Color="Color.Primary" Dense="true">Activo</MudRadio>
                                 <MudRadio Value="false" Color="Color.Secondary" Dense="true">Inactivo</MudRadio>
                             </MudRadioGroup>
@@ -238,7 +278,7 @@
 
                         <div class="profile-option-group">
                             <MudText Typo="Typo.caption" Class="profile-option-label">Genero</MudText>
-                            <MudRadioGroup @bind-Value="userProfile.Sexo" Disabled="@loading" Class="profile-radio-group">
+                            <MudRadioGroup @bind-Value="userProfile.Sexo" Disabled="@ProfileFieldsDisabled" Class="profile-radio-group">
                                 <MudRadio Value="true" Color="Color.Primary" Dense="true">Femenino</MudRadio>
                                 <MudRadio Value="false" Color="Color.Secondary" Dense="true">Masculino</MudRadio>
                             </MudRadioGroup>
@@ -250,7 +290,7 @@
                                    Color="Color.Primary"
                                    Size="Size.Medium"
                                    StartIcon="@Icons.Material.Filled.Save"
-                                   Visible="_canUpdate"
+                                   Visible="@(!IsSelfProfileRoute && _canUpdate)"
                                    OnClick="GuardarCambiosAsync"
                                    Disabled="@loading">
                             Guardar cambios
@@ -297,12 +337,35 @@
     private const int EmpresaPageSize = 25;
     private InputType PasswordInputType => showPassword ? InputType.Text : InputType.Password;
     private string PasswordAdornmentIcon => showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility;
-    private string SelectedEmpresaName => empresas.FirstOrDefault(empresa => empresa.PkidEmpresa == userProfile.PkidEmpresa)?.EmpresaNombre ?? "Sin empresa";
+    private bool IsSelfProfileRoute => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/').Equals("perfil", StringComparison.OrdinalIgnoreCase);
+    private bool ProfileFieldsDisabled => loading || IsSelfProfileRoute;
+    private string ProfileTitle => IsSelfProfileRoute ? "Perfil" : "Mi perfil";
+    private string ProfileSubtitle => IsSelfProfileRoute
+        ? "Consulta tus datos basicos y cambia tu contrasena"
+        : "Datos personales, empresa y seguridad de acceso";
+    private string SelectedEmpresaName => empresas.FirstOrDefault(empresa => empresa.PkidEmpresa == userProfile.PkidEmpresa)?.EmpresaNombre
+        ?? userProfile.NombreEmpresa
+        ?? "Sin empresa";
+    private string ProfilePersonaName => string.IsNullOrWhiteSpace(userProfile.NombreCompletoPersona)
+        ? userProfile.NombreCompleto
+        : userProfile.NombreCompletoPersona;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            if (IsSelfProfileRoute)
+            {
+                _canView = true;
+                _canCreate = false;
+                _canUpdate = false;
+                _canDelete = false;
+                _canExport = false;
+                _hasAccess = true;
+                _isInitialized = true;
+                return;
+            }
+
             _canView = AuthProvider.HasPermission("Sistema", "General", "view");
 
             if (!_canView)

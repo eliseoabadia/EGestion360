@@ -9,6 +9,8 @@ public interface IAccessConfigurationService
     Task<ApiResponse<AccessConfigurationSnapshotResponse>> GetSnapshotAsync();
     Task<ApiResponse<AccessRoleDetailResponse>> GetNewRoleTemplateAsync();
     Task<ApiResponse<AccessRoleDetailResponse>> GetRoleDetailAsync(string roleId);
+    Task<ApiResponse<AccessUserRoleDetailResponse>> GetUserRoleDetailAsync(int pkIdUsuario);
     Task<ApiResponse<AccessRoleDetailResponse>> SaveRoleAsync(SaveAccessRoleRequest request);
+    Task<ApiResponse<AccessUserRoleDetailResponse>> SaveUserRolesAsync(SaveAccessUserRolesRequest request);
     Task<ApiResponse<int>> SynchronizeMenuRolesAsync();
 }

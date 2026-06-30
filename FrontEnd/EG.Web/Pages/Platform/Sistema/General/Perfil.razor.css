@@ -1,5 +1,6 @@
 .profile-page {
     gap: 10px;
+    color: var(--mud-palette-text-primary);
 }
 
 .profile-header {
@@ -9,10 +10,10 @@
     gap: 16px;
     padding: 14px 18px;
     margin-bottom: 10px;
-    border: 1px solid rgba(132, 156, 190, 0.18);
+    border: 1px solid var(--mud-palette-lines-default);
     border-radius: 8px;
-    background: #1d293c;
-    box-shadow: 0 8px 22px rgba(2, 8, 20, 0.16);
+    background: color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface));
+    box-shadow: var(--mud-elevation-2);
 }
 
 .profile-heading {
@@ -30,20 +31,21 @@
     height: 38px;
     flex: 0 0 38px;
     border-radius: 8px;
-    color: #6ba4ff;
-    background: rgba(56, 128, 255, 0.12);
-    border: 1px solid rgba(80, 146, 255, 0.28);
+    color: var(--eg-primary);
+    background: var(--eg-primary-soft);
+    border: 1px solid color-mix(in srgb, var(--eg-primary) 34%, var(--mud-palette-lines-default));
 }
 
 .profile-title {
     font-weight: 700;
     line-height: 1.1;
+    color: var(--mud-palette-text-primary);
 }
 
 .profile-subtitle,
 .profile-muted,
 .profile-email {
-    color: rgba(220, 230, 246, 0.68);
+    color: var(--mud-palette-text-secondary);
 }
 
 .profile-header-meta {
@@ -62,10 +64,10 @@
 }
 
 .profile-panel {
-    border: 1px solid rgba(132, 156, 190, 0.16);
+    border: 1px solid var(--mud-palette-lines-default);
     border-radius: 8px;
-    background: #1d293c;
-    box-shadow: 0 12px 30px rgba(2, 8, 20, 0.18);
+    background: var(--mud-palette-surface);
+    box-shadow: var(--mud-elevation-2);
 }
 
 .profile-side-panel {
@@ -79,15 +81,15 @@
     gap: 10px;
     padding: 24px 20px 22px;
     text-align: center;
-    border-bottom: 1px solid rgba(132, 156, 190, 0.14);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
 }
 
 ::deep .profile-avatar {
     width: 96px !important;
     height: 96px !important;
-    color: rgba(220, 230, 246, 0.86);
-    background: #536173;
-    border: 3px solid rgba(107, 164, 255, 0.28);
+    color: var(--eg-primary);
+    background: var(--eg-primary-soft);
+    border: 3px solid color-mix(in srgb, var(--eg-primary) 34%, var(--mud-palette-lines-default));
 }
 
 ::deep .profile-avatar img {
@@ -99,6 +101,7 @@
 .profile-name {
     max-width: 100%;
     font-weight: 700;
+    color: var(--mud-palette-text-primary);
     overflow-wrap: anywhere;
 }
 
@@ -118,7 +121,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgba(239, 244, 255, 0.92);
+    color: var(--mud-palette-text-primary);
 }
 
 .profile-main-panel {
@@ -131,7 +134,7 @@
     justify-content: space-between;
     gap: 12px;
     padding-bottom: 14px;
-    border-bottom: 1px solid rgba(132, 156, 190, 0.14);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
 }
 
 .profile-form-grid {
@@ -151,15 +154,15 @@
 
 .profile-option-group {
     padding: 12px 14px;
-    border: 1px solid rgba(132, 156, 190, 0.14);
+    border: 1px solid var(--mud-palette-lines-default);
     border-radius: 8px;
-    background: rgba(11, 20, 36, 0.22);
+    background: color-mix(in srgb, var(--eg-primary) 4%, var(--mud-palette-surface));
 }
 
 .profile-option-label {
     display: block;
     margin-bottom: 6px;
-    color: rgba(220, 230, 246, 0.72);
+    color: var(--mud-palette-text-secondary);
 }
 
 ::deep .profile-radio-group {
@@ -174,7 +177,7 @@
     justify-content: flex-end;
     margin-top: 22px;
     padding-top: 16px;
-    border-top: 1px solid rgba(132, 156, 190, 0.14);
+    border-top: 1px solid var(--mud-palette-lines-default);
 }
 
 @media (max-width: 960px) {
