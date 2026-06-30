@@ -23,9 +23,11 @@
                 ActionColor="@actionColor"
                 ActionIcon="@actionIcon"
                 ActionText="@actionText"
+                CancelText="@cancelText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando presupuesto autorizado..."
-                CanConfirm="@(!_formLoading)"
+                CanConfirm="@(!IsReadOnly && !_formLoading)"
+                ShowConfirmButton="@(!IsReadOnly)"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EgresoAutorizadoResponse"
@@ -59,7 +61,7 @@
                                    Label="Programa"
                                    Required="true"
                                    RequiredError="El programa es requerido"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadProgramasPageAsync" />
             </MudItem>
 
@@ -69,7 +71,7 @@
                                    Label="Partida"
                                    Required="true"
                                    RequiredError="La partida es requerida"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadPartidasPageAsync" />
             </MudItem>
 
@@ -79,7 +81,7 @@
                                    Label="Area"
                                    Required="true"
                                    RequiredError="El area es requerida"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadAreasPageAsync" />
             </MudItem>
 
@@ -91,7 +93,7 @@
                                Culture="@DateCulture"
                                Required="true"
                                RequiredError="La fecha es requerida"
-                               Disabled="@SourceFieldsLocked" />
+                               Disabled="@FormFieldsLocked" />
             </MudItem>
 
             <MudItem xs="12" md="8">
@@ -99,7 +101,7 @@
                               Label="Descripcion"
                               Variant="Variant.Outlined"
                               MaxLength="250"
-                              Disabled="@SourceFieldsLocked" />
+                              Disabled="@FormFieldsLocked" />
             </MudItem>
 
             <MudItem xs="12" md="4">
@@ -107,7 +109,7 @@
                                    ValueChanged="value => _selectedFuenteFinanciamiento = value"
                                    Label="Fuente de financiamiento"
                                    Clearable="true"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadFuentesFinanciamientoPageAsync" />
             </MudItem>
 
@@ -116,7 +118,7 @@
                                    ValueChanged="value => _selectedTipoGasto = value"
                                    Label="Tipo de gasto"
                                    Clearable="true"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadTiposGastoPageAsync" />
             </MudItem>
 
@@ -125,7 +127,7 @@
                                    ValueChanged="value => _selectedDigitoIdentificador = value"
                                    Label="Digito identificador"
                                    Clearable="true"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadDigitosIdentificadorPageAsync" />
             </MudItem>
 
@@ -134,7 +136,7 @@
                                    ValueChanged="value => _selectedDestinoGasto = value"
                                    Label="Destino de gasto"
                                    Clearable="true"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadDestinosGastoPageAsync" />
             </MudItem>
 
@@ -143,7 +145,7 @@
                                    ValueChanged="value => _selectedPy = value"
                                    Label="PY"
                                    Clearable="true"
-                                   Disabled="@SourceFieldsLocked"
+                                   Disabled="@FormFieldsLocked"
                                    LoadPage="LoadPyPageAsync" />
             </MudItem>
 
@@ -177,7 +179,7 @@
             @if (Id.HasValue)
             {
                 <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" Disabled="@SourceFieldsLocked" />
+                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" Disabled="@FormFieldsLocked" />
                 </MudItem>
             }
         </MudGrid>
@@ -268,6 +270,7 @@
     [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
     [Parameter] public EgresoAutorizadoResponse? PrefillItem { get; set; }
     [Parameter] public bool IsAuthorizationFlow { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -290,15 +293,17 @@
     private LookupItem? _selectedPy;
     private bool _formLoading = true;
 
-    private string dialogTitle => IsAuthorizationFlow ? "Autorizar Presupuesto de Egresos" : Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
+    private string dialogTitle => IsReadOnly ? "Ver Presupuesto Autorizado" : IsAuthorizationFlow ? "Autorizar Presupuesto de Egresos" : Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
     private string actionText => IsAuthorizationFlow ? "Firmar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
+    private string cancelText => IsReadOnly ? "Cerrar" : "Cancelar";
     private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
     private Color actionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
     private string actionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
     private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
     private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
-    private bool AmountsLocked => IsAuthorizationFlow || Id.HasValue;
+    private bool AmountsLocked => IsReadOnly || IsAuthorizationFlow || Id.HasValue;
     private bool SourceFieldsLocked => IsAuthorizationFlow || (Id.HasValue && item.FkidEgresoProyectadoPres.HasValue);
+    private bool FormFieldsLocked => IsReadOnly || SourceFieldsLocked;
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");
@@ -424,6 +429,12 @@
 
     private async Task GuardarCambiosAsync()
     {
+        if (IsReadOnly)
+        {
+            MudDialog.Close(DialogResult.Cancel());
+            return;
+        }
+
         if (_formLoading || form == null)
         {
             return;

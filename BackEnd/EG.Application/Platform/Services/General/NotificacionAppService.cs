@@ -1,4 +1,3 @@
-using System.Data;
 using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.General;
@@ -68,7 +67,9 @@ namespace EG.Application.Services.General
                     .Take(take)
                     .ToListAsync();
 
-                var items = rows.Select(Map).ToList();
+                var usuarios = await LoadUserNamesAsync(rows
+                    .SelectMany(x => new int?[] { x.FkIdUsuarioOrigen, x.FkIdUsuarioDestino }));
+                var items = rows.Select(x => Map(x, usuarioId, usuarios)).ToList();
 
                 return new PagedResult<NotificacionUsuarioResponse>
                 {
@@ -82,6 +83,52 @@ namespace EG.Application.Services.General
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener notificaciones para usuario {UsuarioId}", usuarioId);
+                return Error<NotificacionUsuarioResponse>(ex.Message);
+            }
+        }
+
+        public async Task<PagedResult<NotificacionUsuarioResponse>> GetConversacionAsync(long notificacionDestinoId, int usuarioId)
+        {
+            try
+            {
+                var origen = await QueryUsuario(usuarioId)
+                    .FirstOrDefaultAsync(x => x.PkIdNotificacionDestino == notificacionDestinoId);
+
+                if (origen == null)
+                {
+                    return Error<NotificacionUsuarioResponse>("La notificacion no existe o no pertenece al usuario actual.");
+                }
+
+                var notifications = await BuildConversationQuery(origen)
+                    .Include(x => x.FkIdNotificacionTipoNavigation)
+                    .Include(x => x.NotificacionDestinos)
+                    .Where(x =>
+                        x.FkIdUsuarioOrigen == usuarioId ||
+                        x.NotificacionDestinos.Any(d => d.CtLive && d.FkIdUsuarioDestino == usuarioId))
+                    .OrderBy(x => x.CtCreatedDate)
+                    .ThenBy(x => x.PkIdNotificacion)
+                    .ToListAsync();
+
+                var usuarios = await LoadUserNamesAsync(notifications
+                    .Select(x => x.FkIdUsuarioOrigen)
+                    .Concat(notifications.SelectMany(x => x.NotificacionDestinos.Select(d => (int?)d.FkIdUsuarioDestino))));
+
+                var items = notifications
+                    .Select(x => MapConversation(x, usuarioId, usuarios))
+                    .ToList();
+
+                return new PagedResult<NotificacionUsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Conversacion obtenida correctamente",
+                    Code = "SUCCESS",
+                    Items = items,
+                    TotalCount = items.Count
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener conversacion de notificacion {NotificacionDestinoId}", notificacionDestinoId);
                 return Error<NotificacionUsuarioResponse>(ex.Message);
             }
         }
@@ -116,30 +163,20 @@ namespace EG.Application.Services.General
                 return ErrorBool("La notificación no tiene usuario origen para responder.");
             }
 
+            if (origen.FkIdUsuarioOrigen.Value == usuarioId)
+            {
+                return ErrorBool("No se puede responder una notificacion propia.");
+            }
+
             try
             {
-                var usuarios = new DataTable();
-                usuarios.Columns.Add("Fk_IdUsuarioDestino", typeof(int));
-                usuarios.Rows.Add(origen.FkIdUsuarioOrigen.Value);
-
                 var idNotificacion = new OutputParameter<long?>();
-                await _context.Procedures.sp_NotificacionCrearAsync(
-                    claveTipo: "RESPUESTA_NOTIFICACION",
-                    fk_IdUsuarioOrigen: usuarioId,
-                    modulo: origen.Modulo ?? "Sistema",
-                    subModulo: origen.SubModulo,
-                    evento: "Respuesta",
-                    entidad: origen.Entidad,
-                    fk_IdEntidad: origen.FkIdEntidad,
-                    titulo: $"Respuesta: {origen.Titulo}",
+                await _context.Procedures.sp_NotificacionResponderAsync(
+                    pk_IdNotificacionDestino: notificacionDestinoId,
+                    fk_IdUsuarioResponde: usuarioId,
                     mensaje: mensaje.Trim(),
-                    url: origen.Url,
-                    jsonData: origen.JsonData,
-                    usuarios: usuarios,
                     idUser: usuarioId,
                     idNotificacion: idNotificacion);
-
-                await _context.Procedures.sp_NotificacionActualizarEstadoAsync(notificacionDestinoId, usuarioId, 3, usuarioId);
 
                 return SuccessBool("Respuesta enviada correctamente");
             }
@@ -157,8 +194,52 @@ namespace EG.Application.Services.General
                 .Where(x => x.FkIdUsuarioDestino == usuarioId);
         }
 
-        private static NotificacionUsuarioResponse Map(VwNotificacionUsuario row)
+        private IQueryable<Notificacion1> BuildConversationQuery(VwNotificacionUsuario origen)
         {
+            var query = _context.Notificacions1
+                .AsNoTracking()
+                .Where(x => x.CtLive);
+
+            if (origen.FkIdEntidad.HasValue)
+            {
+                var modulo = origen.Modulo ?? string.Empty;
+                var subModulo = origen.SubModulo ?? string.Empty;
+                var entidad = origen.Entidad ?? string.Empty;
+                var entidadId = origen.FkIdEntidad.Value;
+
+                return query.Where(x =>
+                    x.Modulo == modulo &&
+                    (x.SubModulo ?? string.Empty) == subModulo &&
+                    (x.Entidad ?? string.Empty) == entidad &&
+                    x.FkIdEntidad == entidadId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(origen.JsonData))
+            {
+                var modulo = origen.Modulo ?? string.Empty;
+                var subModulo = origen.SubModulo ?? string.Empty;
+                var entidad = origen.Entidad ?? string.Empty;
+                var jsonData = origen.JsonData;
+
+                return query.Where(x =>
+                    x.Modulo == modulo &&
+                    (x.SubModulo ?? string.Empty) == subModulo &&
+                    (x.Entidad ?? string.Empty) == entidad &&
+                    x.JsonData == jsonData);
+            }
+
+            return query.Where(x => x.PkIdNotificacion == origen.PkIdNotificacion);
+        }
+
+        private static NotificacionUsuarioResponse Map(
+            VwNotificacionUsuario row,
+            int usuarioActual,
+            IReadOnlyDictionary<int, string> usuarios)
+        {
+            var origenNombre = GetUserName(usuarios, row.FkIdUsuarioOrigen);
+            var destinoNombre = GetUserName(usuarios, row.FkIdUsuarioDestino);
+            var esRespuesta = IsReply(row.Tipo, row.Evento);
+
             return new NotificacionUsuarioResponse
             {
                 PkidNotificacionDestino = row.PkIdNotificacionDestino,
@@ -175,13 +256,153 @@ namespace EG.Application.Services.General
                 Mensaje = row.Mensaje,
                 Url = row.Url,
                 JsonData = row.JsonData,
+                UsuarioOrigenNombre = origenNombre,
+                UsuarioDestinoNombre = destinoNombre,
+                Destinatarios = destinoNombre,
                 Estado = row.Estado,
                 FkidNotificacionEstado = row.FkIdNotificacionEstado,
                 FechaLeido = row.FechaLeido,
                 FechaAtendido = row.FechaAtendido,
-                FechaNotificacion = row.FechaNotificacion
+                FechaNotificacion = row.FechaNotificacion,
+                FueCreadaPorMi = row.FkIdUsuarioOrigen == usuarioActual,
+                EsRespuesta = esRespuesta,
+                NivelConversacion = esRespuesta ? 1 : 0
             };
         }
+
+        private static NotificacionUsuarioResponse MapConversation(
+            Notificacion1 row,
+            int usuarioActual,
+            IReadOnlyDictionary<int, string> usuarios)
+        {
+            var destinos = row.NotificacionDestinos
+                .Where(x => x.CtLive)
+                .OrderBy(x => x.PkIdNotificacionDestino)
+                .ToList();
+            var destinoActual = destinos.FirstOrDefault(x => x.FkIdUsuarioDestino == usuarioActual);
+            var destinoPrincipal = destinoActual ?? destinos.FirstOrDefault();
+            var tipo = row.FkIdNotificacionTipoNavigation?.Clave;
+            var estadoId = destinoActual?.FkIdNotificacionEstado ?? 0;
+            var esRespuesta = IsReply(tipo, row.Evento);
+
+            return new NotificacionUsuarioResponse
+            {
+                PkidNotificacionDestino = destinoActual?.PkIdNotificacionDestino ?? 0,
+                PkidNotificacion = row.PkIdNotificacion,
+                FkidUsuarioOrigen = row.FkIdUsuarioOrigen,
+                FkidUsuarioDestino = destinoPrincipal?.FkIdUsuarioDestino ?? 0,
+                Tipo = tipo,
+                Modulo = row.Modulo,
+                SubModulo = row.SubModulo,
+                Evento = row.Evento,
+                Entidad = row.Entidad,
+                FkidEntidad = row.FkIdEntidad,
+                Titulo = row.Titulo,
+                Mensaje = row.Mensaje,
+                Url = row.Url,
+                JsonData = row.JsonData,
+                UsuarioOrigenNombre = GetUserName(usuarios, row.FkIdUsuarioOrigen),
+                UsuarioDestinoNombre = GetUserName(usuarios, destinoPrincipal?.FkIdUsuarioDestino),
+                Destinatarios = string.Join(", ", destinos
+                    .Select(x => GetUserName(usuarios, x.FkIdUsuarioDestino))
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct()),
+                Estado = destinoActual == null && row.FkIdUsuarioOrigen == usuarioActual
+                    ? "Enviada"
+                    : EstadoDescripcion(estadoId),
+                FkidNotificacionEstado = estadoId,
+                FechaLeido = destinoActual?.FechaLeido,
+                FechaAtendido = destinoActual?.FechaAtendido,
+                FechaNotificacion = row.CtCreatedDate,
+                FueCreadaPorMi = row.FkIdUsuarioOrigen == usuarioActual,
+                EsRespuesta = esRespuesta,
+                NivelConversacion = esRespuesta ? 1 : 0
+            };
+        }
+
+        private async Task<Dictionary<int, string>> LoadUserNamesAsync(IEnumerable<int?> ids)
+        {
+            var userIds = ids
+                .Where(x => x.HasValue && x.Value > 0)
+                .Select(x => x!.Value)
+                .Distinct()
+                .ToArray();
+
+            if (userIds.Length == 0)
+            {
+                return new Dictionary<int, string>();
+            }
+
+            var users = await (
+                from u in _context.Usuarios.AsNoTracking()
+                join p in _context.Personas.AsNoTracking()
+                    on u.FkidPersonaNom equals p.PkidPersona into personas
+                from p in personas.DefaultIfEmpty()
+                join au in _context.AspNetUsers.AsNoTracking()
+                    on (int?)u.PkIdUsuario equals au.PkIdUsuario into aspUsers
+                from au in aspUsers.DefaultIfEmpty()
+                where userIds.Contains(u.PkIdUsuario)
+                select new
+                {
+                    u.PkIdUsuario,
+                    u.PayrollId,
+                    Email = au.Email,
+                    Nombre = p.Nombre,
+                    Paterno = p.Paterno,
+                    Materno = p.Materno
+                })
+                .ToListAsync();
+
+            return users
+                .GroupBy(x => x.PkIdUsuario)
+                .ToDictionary(
+                x => x.Key,
+                x =>
+                {
+                    var user = x.First();
+                    var fullName = string.Join(" ", new[] { user.Nombre, user.Paterno, user.Materno }
+                        .Where(value => !string.IsNullOrWhiteSpace(value)));
+                    if (!string.IsNullOrWhiteSpace(fullName))
+                    {
+                        return fullName;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(user.Email))
+                    {
+                        return user.Email;
+                    }
+
+                    return string.IsNullOrWhiteSpace(user.PayrollId)
+                        ? $"Usuario {user.PkIdUsuario}"
+                        : user.PayrollId;
+                });
+        }
+
+        private static string GetUserName(IReadOnlyDictionary<int, string> usuarios, int? usuarioId)
+        {
+            if (!usuarioId.HasValue || usuarioId.Value <= 0)
+            {
+                return string.Empty;
+            }
+
+            return usuarios.TryGetValue(usuarioId.Value, out var nombre)
+                ? nombre
+                : $"Usuario {usuarioId.Value}";
+        }
+
+        private static bool IsReply(string? tipo, string? evento) =>
+            string.Equals(tipo, "RESPUESTA_NOTIFICACION", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(evento, "Respuesta", StringComparison.OrdinalIgnoreCase);
+
+        private static string EstadoDescripcion(int estadoId) =>
+            estadoId switch
+            {
+                1 => "Pendiente",
+                2 => "Leida",
+                3 => "Atendida",
+                4 => "Cancelada",
+                _ => "Enviada"
+            };
 
         private async Task<PagedResult<bool>> CambiarEstadoAsync(long notificacionDestinoId, int usuarioId, int estadoId, string mensaje)
         {

@@ -7,6 +7,7 @@ namespace EG.Application.Interfaces.General
     {
         Task<PagedResult<NotificacionResumenResponse>> GetResumenAsync(int usuarioId);
         Task<PagedResult<NotificacionUsuarioResponse>> GetMisNotificacionesAsync(int usuarioId, int take = 30, bool soloPendientes = false);
+        Task<PagedResult<NotificacionUsuarioResponse>> GetConversacionAsync(long notificacionDestinoId, int usuarioId);
         Task<PagedResult<bool>> MarcarLeidaAsync(long notificacionDestinoId, int usuarioId);
         Task<PagedResult<bool>> AtenderAsync(long notificacionDestinoId, int usuarioId);
         Task<PagedResult<bool>> ResponderAsync(long notificacionDestinoId, int usuarioId, string mensaje);

@@ -167,7 +167,8 @@ BEGIN
                 FROM SIS.Usuario u
                 WHERE u.PKIdUsuario = @Fk_IdUsuarioDestino
                   AND u.Activo = 1
-            );
+            )
+              AND (@Fk_IdUsuarioOrigen IS NULL OR @Fk_IdUsuarioDestino <> @Fk_IdUsuarioOrigen);
         END;
 
         IF NOT EXISTS (SELECT 1 FROM @Usuarios) AND @Fk_IdMenu IS NOT NULL
@@ -183,18 +184,6 @@ BEGIN
               AND mr.Activo = 1
               AND u.Activo = 1
               AND (@Fk_IdUsuarioOrigen IS NULL OR u.PKIdUsuario <> @Fk_IdUsuarioOrigen);
-        END;
-
-        IF NOT EXISTS (SELECT 1 FROM @Usuarios) AND @Fk_IdUsuarioOrigen IS NOT NULL
-        BEGIN
-            INSERT INTO @Usuarios (Fk_IdUsuarioDestino)
-            SELECT @Fk_IdUsuarioOrigen
-            WHERE EXISTS (
-                SELECT 1
-                FROM SIS.Usuario u
-                WHERE u.PKIdUsuario = @Fk_IdUsuarioOrigen
-                  AND u.Activo = 1
-            );
         END;
 
         BEGIN TRY

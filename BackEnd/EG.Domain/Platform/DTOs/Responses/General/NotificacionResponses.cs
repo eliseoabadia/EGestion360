@@ -25,11 +25,17 @@ namespace EG.Domain.DTOs.Responses.General
         public string? Mensaje { get; set; }
         public string? Url { get; set; }
         public string? JsonData { get; set; }
+        public string? UsuarioOrigenNombre { get; set; }
+        public string? UsuarioDestinoNombre { get; set; }
+        public string? Destinatarios { get; set; }
         public string? Estado { get; set; }
         public int FkidNotificacionEstado { get; set; }
         public DateTime? FechaLeido { get; set; }
         public DateTime? FechaAtendido { get; set; }
         public DateTime FechaNotificacion { get; set; }
+        public bool FueCreadaPorMi { get; set; }
+        public bool EsRespuesta { get; set; }
+        public int NivelConversacion { get; set; }
         public bool EstaPendiente => FkidNotificacionEstado == 1;
         public bool EstaAtendida => FkidNotificacionEstado == 3;
     }

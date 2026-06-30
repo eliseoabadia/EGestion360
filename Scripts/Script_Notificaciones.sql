@@ -229,7 +229,8 @@ BEGIN
             GETDATE(),
             1
         FROM @Usuarios u
-        WHERE u.Fk_IdUsuarioDestino IS NOT NULL;
+        WHERE u.Fk_IdUsuarioDestino IS NOT NULL
+          AND (@Fk_IdUsuarioOrigen IS NULL OR u.Fk_IdUsuarioDestino <> @Fk_IdUsuarioOrigen);
 
         COMMIT;
     END TRY
@@ -272,7 +273,8 @@ BEGIN
     SELECT DISTINCT Fk_IdUsuario
     FROM SIS.Vw_UsuarioPerfilNotificacion
     WHERE Perfil = @PerfilDestino
-      AND Activo = 1;
+      AND Activo = 1
+      AND (@Fk_IdUsuarioOrigen IS NULL OR Fk_IdUsuario <> @Fk_IdUsuarioOrigen);
 
     EXEC SIS.sp_NotificacionCrear
         @ClaveTipo = @ClaveTipo,

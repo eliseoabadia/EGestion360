@@ -37,6 +37,13 @@ namespace EG.ApiCoreBS.Controllers.General
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("{id:long}/conversacion")]
+        public async Task<ActionResult<PagedResult<NotificacionUsuarioResponse>>> GetConversacion(long id)
+        {
+            var result = await _service.GetConversacionAsync(id, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPost("{id:long}/leer")]
         public async Task<ActionResult<PagedResult<bool>>> MarcarLeida(long id)
         {

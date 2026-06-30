@@ -82,7 +82,7 @@
                         {
                             <button type="button"
                                     class="@GetCardClass(item)"
-                                    @onclick="@(() => Select(item))">
+                                    @onclick="@(() => SelectAsync(item))">
                                 <span class="notification-row-icon @GetIconTone(item)">
                                     <MudIcon Icon="@GetIcon(item)" />
                                 </span>
@@ -93,6 +93,10 @@
                                     </span>
                                     <span class="notification-row-message">@item.Mensaje</span>
                                     <span class="notification-row-meta">
+                                        @if (!string.IsNullOrWhiteSpace(item.UsuarioOrigenNombre))
+                                        {
+                                            <span>De @item.UsuarioOrigenNombre</span>
+                                        }
                                         <span>@item.Modulo</span>
                                         @if (!string.IsNullOrWhiteSpace(item.Evento))
                                         {
@@ -128,10 +132,48 @@
                             <MudText Typo="Typo.body2" Class="notification-detail-message">@_selected.Mensaje</MudText>
 
                             <div class="notification-detail-grid">
+                                <span>Creador</span><strong>@DisplayUser(_selected)</strong>
+                                <span>Para</span><strong>@DisplayRecipients(_selected)</strong>
                                 <span>Módulo</span><strong>@_selected.Modulo</strong>
                                 <span>Evento</span><strong>@_selected.Evento</strong>
                                 <span>Fecha</span><strong>@_selected.FechaNotificacion.ToString("dd/MM/yyyy HH:mm")</strong>
                                 <span>Entidad</span><strong>@_selected.Entidad @_selected.FkidEntidad</strong>
+                            </div>
+
+                            <div class="notification-thread">
+                                <div class="notification-thread-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.Forum" />
+                                    <span>Conversacion</span>
+                                </div>
+
+                                @if (_conversationLoading)
+                                {
+                                    <div class="notification-thread-loading">
+                                        <MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true" />
+                                        <span>Cargando hilo...</span>
+                                    </div>
+                                }
+                                else if (!_conversation.Any())
+                                {
+                                    <div class="notification-thread-empty">Sin respuestas todavia.</div>
+                                }
+                                else
+                                {
+                                    @foreach (var message in _conversation)
+                                    {
+                                        <article class="@GetThreadItemClass(message)">
+                                            <div class="notification-thread-top">
+                                                <strong>@DisplayUser(message)</strong>
+                                                <small>@message.FechaNotificacion.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </div>
+                                            <p>@message.Mensaje</p>
+                                            <div class="notification-thread-meta">
+                                                <span>Para @DisplayRecipients(message)</span>
+                                                <span>@(message.FueCreadaPorMi ? "Creada por mi" : "Recibida")</span>
+                                            </div>
+                                        </article>
+                                    }
+                                }
                             </div>
 
                             <div class="notification-reply">
@@ -141,7 +183,7 @@
                                               Lines="4"
                                               Variant="Variant.Outlined"
                                               Margin="Margin.Dense"
-                                              Disabled="@(!_selected.FkidUsuarioOrigen.HasValue || _saving)" />
+                                              Disabled="@(!_selected.FkidUsuarioOrigen.HasValue || _selected.FueCreadaPorMi || _saving)" />
                             </div>
 
                             <div class="notification-actions">
@@ -162,7 +204,7 @@
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.Send"
-                                           Disabled="@(!_selected.FkidUsuarioOrigen.HasValue || string.IsNullOrWhiteSpace(_reply) || _saving)"
+                                           Disabled="@(!_selected.FkidUsuarioOrigen.HasValue || _selected.FueCreadaPorMi || string.IsNullOrWhiteSpace(_reply) || _saving)"
                                            OnClick="ReplySelected">
                                     Responder
                                 </MudButton>
@@ -181,12 +223,14 @@
 
 @code {
     private List<NotificacionUsuarioModel> _items = new();
+    private List<NotificacionUsuarioModel> _conversation = new();
     private NotificacionUsuarioModel? _selected;
     private NotificacionResumenModel _resumen = new();
     private string _filter = string.Empty;
     private string _reply = string.Empty;
     private bool _onlyPending;
     private bool _loading;
+    private bool _conversationLoading;
     private bool _saving;
 
     private IEnumerable<NotificacionUsuarioModel> FilteredItems =>
@@ -195,6 +239,7 @@
             : _items.Where(x =>
                 Contains(x.Titulo, _filter) ||
                 Contains(x.Mensaje, _filter) ||
+                Contains(x.UsuarioOrigenNombre, _filter) ||
                 Contains(x.Modulo, _filter) ||
                 Contains(x.Evento, _filter));
 
@@ -215,6 +260,15 @@
             _resumen = summaryTask.Result.Success ? summaryTask.Result.Data ?? new NotificacionResumenModel() : new NotificacionResumenModel();
             _items = itemsTask.Result.Success ? itemsTask.Result.Items.ToList() : new List<NotificacionUsuarioModel>();
             _selected = _selected == null ? _items.FirstOrDefault() : _items.FirstOrDefault(x => x.PkidNotificacionDestino == _selected.PkidNotificacionDestino) ?? _items.FirstOrDefault();
+
+            if (_selected is null)
+            {
+                _conversation.Clear();
+            }
+            else
+            {
+                await LoadConversationAsync(_selected);
+            }
         }
         finally
         {
@@ -228,10 +282,33 @@
         await LoadAsync();
     }
 
-    private void Select(NotificacionUsuarioModel item)
+    private async Task SelectAsync(NotificacionUsuarioModel item)
     {
         _selected = item;
         _reply = string.Empty;
+        await LoadConversationAsync(item);
+    }
+
+    private async Task LoadConversationAsync(NotificacionUsuarioModel item)
+    {
+        if (item.PkidNotificacionDestino <= 0)
+        {
+            _conversation = new List<NotificacionUsuarioModel> { item };
+            return;
+        }
+
+        _conversationLoading = true;
+        try
+        {
+            var result = await NotificationService.GetConversacionAsync(item.PkidNotificacionDestino);
+            _conversation = result.Success
+                ? result.Items.ToList()
+                : new List<NotificacionUsuarioModel> { item };
+        }
+        finally
+        {
+            _conversationLoading = false;
+        }
     }
 
     private async Task MarkSelectedRead()
@@ -308,6 +385,29 @@
             4 => Color.Default,
             _ => Color.Default
         };
+
+    private static string GetThreadItemClass(NotificacionUsuarioModel item) =>
+        $"notification-thread-item {(item.FueCreadaPorMi ? "sent" : "received")} {(item.EsRespuesta ? "reply" : "root")}";
+
+    private static string DisplayUser(NotificacionUsuarioModel item) =>
+        string.IsNullOrWhiteSpace(item.UsuarioOrigenNombre)
+            ? "Sistema"
+            : item.UsuarioOrigenNombre;
+
+    private static string DisplayRecipients(NotificacionUsuarioModel item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.Destinatarios))
+        {
+            return item.Destinatarios;
+        }
+
+        if (!string.IsNullOrWhiteSpace(item.UsuarioDestinoNombre))
+        {
+            return item.UsuarioDestinoNombre;
+        }
+
+        return "Sin destinatario";
+    }
 
     private static string FormatDate(DateTime date)
     {
@@ -545,6 +645,96 @@
     .notification-detail-grid strong {
         min-width: 0;
         overflow-wrap: anywhere;
+    }
+
+    .notification-thread {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin: 16px 0;
+        padding: 12px;
+        border: 1px solid var(--mud-palette-divider);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--mud-palette-background) 70%, var(--mud-palette-surface));
+        max-height: 260px;
+        overflow-y: auto;
+    }
+
+    .notification-thread-title,
+    .notification-thread-loading,
+    .notification-thread-meta,
+    .notification-thread-top {
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-thread-title {
+        gap: 8px;
+        color: var(--mud-palette-primary);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .notification-thread-loading,
+    .notification-thread-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 72px;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.84rem;
+        text-align: center;
+    }
+
+    .notification-thread-loading {
+        gap: 8px;
+    }
+
+    .notification-thread-item {
+        width: min(92%, 520px);
+        padding: 10px 12px;
+        border: 1px solid var(--mud-palette-divider);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .notification-thread-item.sent {
+        align-self: flex-end;
+        border-color: color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+        background: color-mix(in srgb, var(--mud-palette-primary) 10%, var(--mud-palette-surface));
+    }
+
+    .notification-thread-item.received {
+        align-self: flex-start;
+    }
+
+    .notification-thread-top {
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .notification-thread-top strong,
+    .notification-thread-top small,
+    .notification-thread-meta {
+        min-width: 0;
+    }
+
+    .notification-thread-top small,
+    .notification-thread-meta {
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.72rem;
+    }
+
+    .notification-thread-item p {
+        margin: 8px 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .notification-thread-meta {
+        justify-content: space-between;
+        gap: 10px;
     }
 
     .notification-reply {

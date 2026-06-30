@@ -33,6 +33,12 @@ public class NotificacionService : BaseService, INotificacionService
             ?? new ApiResponse<NotificacionUsuarioModel>();
     }
 
+    public async Task<ApiResponse<NotificacionUsuarioModel>> GetConversacionAsync(long id)
+    {
+        return await GetAsync<ApiResponse<NotificacionUsuarioModel>>($"{Endpoint}/{id}/conversacion", useBaseUrl: false)
+            ?? new ApiResponse<NotificacionUsuarioModel>();
+    }
+
     public async Task<ApiResponse<bool>> MarcarLeidaAsync(long id)
     {
         return await PostAsync<ApiResponse<bool>>($"{Endpoint}/{id}/leer", new { }, useBaseUrl: false)

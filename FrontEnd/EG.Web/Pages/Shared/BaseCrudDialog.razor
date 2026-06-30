@@ -32,24 +32,27 @@
                                    Color="Color.Secondary"
                                    OnClick="@(() => { Console.WriteLine("🔔 Click en Cancelar"); Cancelar(); })"
                                    Disabled="@isProcessing">
-                            Cancelar
+                            @CancelText
                         </MudButton>
 
-                        <MudButton Variant="Variant.Filled"
-                                   Color="@ActionColor"
-                                   StartIcon="@ActionIcon"
-                                   OnClick="OnConfirmar"
-                                   Disabled="@(isProcessing || !CanConfirm)">
-                            @if (isProcessing)
-                            {
-                                <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
-                                <span class="ml-2">@ProcessingText</span>
-                            }
-                            else
-                            {
-                                @ActionText
-                            }
-                        </MudButton>
+                        @if (ShowConfirmButton)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="@ActionColor"
+                                       StartIcon="@ActionIcon"
+                                       OnClick="OnConfirmar"
+                                       Disabled="@(isProcessing || !CanConfirm)">
+                                @if (isProcessing)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
+                                    <span class="ml-2">@ProcessingText</span>
+                                }
+                                else
+                                {
+                                    @ActionText
+                                }
+                            </MudButton>
+                        }
                     </div>
                 </MudPaper>
             </CascadingValue>
@@ -64,9 +67,11 @@
     [Parameter] public Color ActionColor { get; set; } = Color.Primary;
     [Parameter] public string ActionIcon { get; set; } = Icons.Material.Filled.Save;
     [Parameter] public string ActionText { get; set; } = "Guardar";
+    [Parameter] public string CancelText { get; set; } = "Cancelar";
     [Parameter] public string ProcessingText { get; set; } = "Guardando...";
     [Parameter] public string LoadingMessage { get; set; } = "Cargando...";
     [Parameter] public bool CanConfirm { get; set; } = true;
+    [Parameter] public bool ShowConfirmButton { get; set; } = true;
     [Parameter] public EventCallback<bool> OnConfirm { get; set; }  // Señal de confirmación con resultado (bool)
     [Parameter] public EventCallback OnCancel { get; set; }
     // Nota: el cierre se notifica al padre mediante SignalClose(success)
