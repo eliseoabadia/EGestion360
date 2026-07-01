@@ -552,6 +552,28 @@ body,
         border-radius: 20px;
     }
 
+.eg-action-column {
+    width: var(--eg-action-column-width, 96px) !important;
+    min-width: var(--eg-action-column-width, 96px) !important;
+    max-width: var(--eg-action-column-width, 96px) !important;
+    overflow: visible !important;
+    text-align: center;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+}
+
+.eg-action-cell {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+}
+
+.eg-action-cell > * {
+    display: inline-flex;
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+
 /*param conteo clicliclo inicio*/
 
 /* Estilos para el gráfico de dona */

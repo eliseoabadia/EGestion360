@@ -234,6 +234,8 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await SetupActionColumnsAsync();
+
         if (!EnableAutoColumnSelector && !EnableColumnInteractions)
         {
             return;
@@ -254,6 +256,18 @@
             {
                 // Optional browser enhancement; the table remains usable without it.
             }
+        }
+    }
+
+    private async Task SetupActionColumnsAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("egestionTableColumns.setupActionColumns", tableElementId);
+        }
+        catch (JSException)
+        {
+            // Optional browser enhancement; the table remains usable without it.
         }
     }
 

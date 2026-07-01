@@ -84,6 +84,28 @@
     scrollbar-gutter: stable;
 }
 
+.eg-generic-table ::deep .eg-action-column {
+    width: var(--eg-action-column-width, 96px) !important;
+    min-width: var(--eg-action-column-width, 96px) !important;
+    max-width: var(--eg-action-column-width, 96px) !important;
+    overflow: visible !important;
+    text-align: center;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+}
+
+.eg-generic-table ::deep .eg-action-cell {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+}
+
+.eg-generic-table ::deep .eg-action-cell > * {
+    display: inline-flex;
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+
 .themed-table ::deep .mud-table-toolbar {
     background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 13%, var(--mud-palette-surface)) 0%, var(--mud-palette-surface) 72%);
     border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));

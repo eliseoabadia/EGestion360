@@ -1,12 +1,19 @@
 (() => {
     const tableStates = new Map();
     const minColumnWidth = 64;
+    const actionColumnClass = "eg-action-column";
+    const actionCellClass = "eg-action-cell";
 
     const getRoot = (elementId) => document.getElementById(elementId);
 
-    const getTable = (root) =>
-        root?.querySelector(".mud-table > .mud-table-container > table.mud-table-root") ||
-        root?.querySelector("table");
+    const getTable = (root) => {
+        if (root?.tagName?.toLowerCase() === "table") {
+            return root;
+        }
+
+        return root?.querySelector(".mud-table > .mud-table-container > table.mud-table-root") ||
+            root?.querySelector("table");
+    };
 
     const getHeaderRow = (root) =>
         getTable(root)?.querySelector("thead > tr") ||
@@ -18,6 +25,48 @@
 
     const getBodyRows = (root) =>
         Array.from(getTable(root)?.querySelectorAll("tbody > tr") || []);
+
+    const getColumnCells = (root, index) => [
+        getHeaderCells(root)[index],
+        ...getBodyRows(root).map((row) => row.children[index]).filter(Boolean)
+    ].filter(Boolean);
+
+    const getActionControls = (cell) => {
+        const candidates = Array.from(cell.querySelectorAll("button, a, .mud-button-root"));
+        const unique = candidates.filter((candidate, index) =>
+            candidates.findIndex((item) => item === candidate || item.contains(candidate)) === index);
+
+        return unique.filter((control) => {
+            const style = window.getComputedStyle(control);
+            return style.display !== "none" && style.visibility !== "hidden";
+        });
+    };
+
+    const getActionControlsWidth = (cell) => {
+        const controls = getActionControls(cell);
+        const controlsWidth = controls.reduce((total, control) =>
+            total + Math.ceil(control.getBoundingClientRect().width || 34), 0);
+
+        return controlsWidth + (Math.max(0, controls.length - 1) * 2);
+    };
+
+    const getState = (elementId) => {
+        let state = tableStates.get(elementId);
+
+        if (!state) {
+            state = {
+                dragIndex: null,
+                widths: new Map(),
+                order: [],
+                observer: null,
+                refreshTimer: null,
+                interactionsEnabled: false
+            };
+            tableStates.set(elementId, state);
+        }
+
+        return state;
+    };
 
     const normalizeLabel = (text) =>
         (text || "")
@@ -44,6 +93,41 @@
             .toLowerCase();
 
         return !label || normalized === "accion" || normalized === "acciones";
+    };
+
+    const applyActionColumnLayout = (root) => {
+        const headerCells = getHeaderCells(root);
+
+        headerCells.forEach((cell) => cell.classList.remove(actionColumnClass));
+        getBodyRows(root).forEach((row) => {
+            Array.from(row.children).forEach((cell) => {
+                cell.classList.remove(actionColumnClass, actionCellClass);
+            });
+        });
+
+        headerCells.forEach((cell, index) => {
+            if (!isActionColumn(getColumnLabel(cell, index))) {
+                return;
+            }
+
+            const maxControlsWidth = Math.max(
+                0,
+                ...getBodyRows(root).map((row) => getActionControlsWidth(row.children[index] ?? row)));
+            const compactWidth = Math.max(96, Math.min(360, 24 + maxControlsWidth));
+            const actionWidth = `${compactWidth}px`;
+
+            getColumnCells(root, index).forEach((columnCell) => {
+                columnCell.classList.add(actionColumnClass);
+                columnCell.style.setProperty("--eg-action-column-width", actionWidth);
+                columnCell.style.setProperty("width", actionWidth, "important");
+                columnCell.style.setProperty("min-width", actionWidth, "important");
+                columnCell.style.setProperty("max-width", actionWidth, "important");
+
+                if (columnCell.tagName?.toLowerCase() === "td") {
+                    columnCell.classList.add(actionCellClass);
+                }
+            });
+        });
     };
 
     const setColumnWidth = (root, index, width) => {
@@ -109,6 +193,7 @@
         getBodyRows(root).forEach((row) => moveChild(row, fromIndex, toIndex));
         saveOrder(root, state);
         applyWidths(root, state);
+        applyActionColumnLayout(root);
         setupHeaderInteractions(root, state);
     };
 
@@ -133,6 +218,7 @@
 
         if (changed) {
             applyWidths(root, state);
+            applyActionColumnLayout(root);
             setupHeaderInteractions(root, state);
         }
     };
@@ -256,10 +342,21 @@
     const scheduleRefresh = (root, state) => {
         window.clearTimeout(state.refreshTimer);
         state.refreshTimer = window.setTimeout(() => {
-            applyOrder(root, state);
-            applyWidths(root, state);
-            setupHeaderInteractions(root, state);
+            if (state.interactionsEnabled) {
+                applyOrder(root, state);
+                applyWidths(root, state);
+                setupHeaderInteractions(root, state);
+            }
+
+            applyActionColumnLayout(root);
         }, 80);
+    };
+
+    const ensureObserver = (root, table, state) => {
+        if (!state.observer) {
+            state.observer = new MutationObserver(() => scheduleRefresh(root, state));
+            state.observer.observe(table, { childList: true, subtree: true });
+        }
     };
 
     window.egestionTableColumns = {
@@ -281,6 +378,20 @@
             });
         },
 
+        setupActionColumns: function (elementId) {
+            const root = getRoot(elementId);
+            const table = getTable(root);
+
+            if (!root || !table) {
+                return;
+            }
+
+            const state = getState(elementId);
+
+            applyActionColumnLayout(root);
+            ensureObserver(root, table, state);
+        },
+
         setupInteractions: function (elementId) {
             const root = getRoot(elementId);
             const table = getTable(root);
@@ -289,28 +400,47 @@
                 return;
             }
 
-            let state = tableStates.get(elementId);
-
-            if (!state) {
-                state = {
-                    dragIndex: null,
-                    widths: new Map(),
-                    order: [],
-                    observer: null,
-                    refreshTimer: null
-                };
-                tableStates.set(elementId, state);
-            }
+            const state = getState(elementId);
+            state.interactionsEnabled = true;
 
             root.classList.add("eg-table-interactive-columns");
             applyOrder(root, state);
             applyWidths(root, state);
             setupHeaderInteractions(root, state);
+            applyActionColumnLayout(root);
 
-            if (!state.observer) {
-                state.observer = new MutationObserver(() => scheduleRefresh(root, state));
-                state.observer.observe(table, { childList: true, subtree: true });
-            }
+            ensureObserver(root, table, state);
         }
     };
+
+    const setupDocumentActionColumns = () => {
+        let refreshTimer = null;
+
+        const refresh = () => {
+            window.clearTimeout(refreshTimer);
+            refreshTimer = window.setTimeout(() => {
+                document
+                    .querySelectorAll("table.mud-table-root")
+                    .forEach((table) => applyActionColumnLayout(table));
+            }, 80);
+        };
+
+        const start = () => {
+            if (!document.body) {
+                return;
+            }
+
+            refresh();
+            new MutationObserver(refresh).observe(document.body, { childList: true, subtree: true });
+        };
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", start, { once: true });
+            return;
+        }
+
+        start();
+    };
+
+    setupDocumentActionColumns();
 })();
