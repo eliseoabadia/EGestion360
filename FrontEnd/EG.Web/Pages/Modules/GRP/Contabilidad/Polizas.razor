@@ -28,7 +28,17 @@
                             Icon="@Icons.Material.Filled.Description"
                             CanCreate="@CanCreate"
                             OnCreate="CreateItem"
-                            OnRefresh="() => table.ReloadData()" />
+                            OnRefresh="() => table.ReloadData()">
+                    <AdditionalButtons>
+                        <MudTooltip Text="Ayuda IA para subir una poliza">
+                            <MudButton StartIcon="@Icons.Material.Filled.AutoAwesome"
+                                       Visible="@CanCreate"
+                                       OnClick="OpenAiImport"
+                                       Disabled="@IsBusy"
+                                       Size="Size.Small" />
+                        </MudTooltip>
+                    </AdditionalButtons>
+                </PageHeader>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
                     <GenericTable TItem="PolizaResponse"
@@ -455,6 +465,38 @@
         if (result is { Canceled: false })
         {
             await RefreshSelectedAndDetails();
+        }
+    }
+
+    private async Task OpenAiImport()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear polizas.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var dialog = await DialogService.ShowAsync<PolizaAiImportDialog>(
+            "Ayuda IA para poliza",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            if (result.Data is PolizaResponse imported)
+            {
+                SelectedPoliza = imported;
+                await RefreshSelectedAndDetails();
+                return;
+            }
+
+            await ReloadData();
         }
     }
 

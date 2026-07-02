@@ -1,0 +1,634 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Requests.Contabilidad
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Contracts.Contabilidad
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+@inject IPolizaAiImportService ImportService
+@inject IGenericCrudService<AniosResponse> AnioService
+@inject IGenericCrudService<TipoPolizaResponse> TipoPolizaService
+@inject IGenericCrudService<CuentaContableResponse> CuentaService
+@inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<MudDialog Class="poliza-ai-dialog">
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Ayuda IA para poliza</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="Close" Disabled="@_busy" />
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedAnio"
+                                   ValueChanged="OnAnioChanged"
+                                   Label="Anio"
+                                   Required="true"
+                                   LoadPage="LoadAniosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int?" @bind-Value="_header.FkidMesSis" Label="Mes" Variant="Variant.Outlined">
+                    @foreach (var month in MonthOptions)
+                    {
+                        <MudSelectItem T="int?" Value="@month.Id">@month.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoPoliza"
+                                   ValueChanged="OnTipoPolizaChanged"
+                                   Label="Tipo de poliza"
+                                   Required="true"
+                                   LoadPage="LoadTiposPolizaPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="_header.ClavePoliza"
+                              Label="Clave sugerida"
+                              Variant="Variant.Outlined"
+                              MaxLength="10" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaPoliza"
+                               Label="Fecha"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField Value="@EmpresaText"
+                              Label="Empresa seleccionada"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_header.NombrePoliza"
+                              Label="Nombre de poliza"
+                              Variant="Variant.Outlined"
+                              Lines="2" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedCuentaDebe"
+                                   ValueChanged="OnCuentaDebeChanged"
+                                   Label="Cuenta debe"
+                                   Clearable="true"
+                                   LoadPage="LoadCuentasPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedCuentaHaber"
+                                   ValueChanged="OnCuentaHaberChanged"
+                                   Label="Cuenta haber"
+                                   Clearable="true"
+                                   LoadPage="LoadCuentasPageAsync" />
+            </MudItem>
+        </MudGrid>
+
+        <InputFile id="@_inputId"
+                   OnChange="OnFileSelected"
+                   accept=".xlsx,.csv,.txt"
+                   class="poliza-ai-file-input" />
+        <label for="@_inputId" class="poliza-ai-dropzone">
+            <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
+            <span>@(_file?.Name ?? "Seleccionar Excel, CSV o TXT")</span>
+            <small>Columnas esperadas: Cuenta, Concepto, Debe y Haber</small>
+        </label>
+
+        <div class="d-flex flex-wrap align-center gap-2 mt-3">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.PsychologyAlt"
+                       Disabled="@(_file == null || _busy)"
+                       OnClick="Analyze">
+                Analizar archivo
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
+                       StartIcon="@Icons.Material.Filled.PostAdd"
+                       Disabled="@(!CanImport)"
+                       OnClick="Import">
+                Importar poliza
+            </MudButton>
+            @if (_busy)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            }
+        </div>
+
+        @if (_preview != null)
+        {
+            <MudDivider Class="my-3" />
+            <div class="poliza-ai-summary">
+                <div><span>Debe</span><strong>@Money(_preview.TotalDebe)</strong></div>
+                <div><span>Haber</span><strong>@Money(_preview.TotalHaber)</strong></div>
+                <div><span>Diferencia</span><strong class="@(_preview.EstaCuadrada ? "ok" : "warn")">@Money(_preview.Diferencia)</strong></div>
+                <div><span>Movimientos</span><strong>@_preview.Details.Count</strong></div>
+            </div>
+
+            @if (_preview.Messages.Count > 0)
+            {
+                <MudAlert Severity="@(_preview.CanImport ? Severity.Warning : Severity.Error)" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    @foreach (var message in _preview.Messages)
+                    {
+                        <div>@FormatMessage(message)</div>
+                    }
+                </MudAlert>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    Validaciones correctas. La poliza esta cuadrada y lista para importar.
+                </MudAlert>
+            }
+
+            <MudTable Items="@_preview.Details" Dense="true" Hover="true" Class="mt-3" Height="300px" FixedHeader="true">
+                <HeaderContent>
+                    <MudTh>Fila</MudTh>
+                    <MudTh>Cuenta</MudTh>
+                    <MudTh>Concepto</MudTh>
+                    <MudTh>Debe</MudTh>
+                    <MudTh>Haber</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.RowNumber</MudTd>
+                    <MudTd>
+                        @if (IsDoubleAmount(context) && _selectedCuentaDebe != null && _selectedCuentaHaber != null)
+                        {
+                            <MudText Typo="Typo.body2">Debe: @_selectedCuentaDebe.Text</MudText>
+                            <MudText Typo="Typo.body2">Haber: @_selectedCuentaHaber.Text</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">@context.Cuenta</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CuentaDescripcion</MudText>
+                        }
+                    </MudTd>
+                    <MudTd>@context.Descripcion</MudTd>
+                    <MudTd>@Money(context.ImporteDebe ?? 0m)</MudTd>
+                    <MudTd>@Money(context.ImporteHaber ?? 0m)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </DialogContent>
+</MudDialog>
+
+<style>
+    .poliza-ai-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .poliza-ai-dropzone {
+        display: grid;
+        place-items: center;
+        gap: 4px;
+        min-height: 104px;
+        margin-top: 12px;
+        border: 1px dashed #7b8798;
+        border-radius: 8px;
+        background: #f8fafc;
+        color: #263445;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .poliza-ai-dropzone span {
+        font-weight: 650;
+    }
+
+    .poliza-ai-dropzone small {
+        color: #667085;
+    }
+
+    .poliza-ai-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 8px;
+    }
+
+    .poliza-ai-summary div {
+        border: 1px solid #d9dee8;
+        border-radius: 8px;
+        padding: 8px;
+        background: #ffffff;
+    }
+
+    .poliza-ai-summary span,
+    .poliza-ai-summary strong {
+        display: block;
+    }
+
+    .poliza-ai-summary span {
+        color: #667085;
+        font-size: 0.76rem;
+    }
+
+    .poliza-ai-summary .ok {
+        color: #28745b;
+    }
+
+    .poliza-ai-summary .warn {
+        color: #a35200;
+    }
+</style>
+
+@code {
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private readonly string _inputId = $"poliza-ai-upload-{Guid.NewGuid():N}";
+    private readonly PolizaAiImportHeaderRequest _header = new()
+    {
+        FechaPoliza = DateTime.Today,
+        FkidMesSis = DateTime.Today.Month,
+        PermitirModificar = true
+    };
+
+    private IBrowserFile? _file;
+    private PolizaAiImportPreviewResponse? _preview;
+    private LookupItem? _selectedAnio;
+    private LookupItem? _selectedTipoPoliza;
+    private LookupItem? _selectedCuentaDebe;
+    private LookupItem? _selectedCuentaHaber;
+    private List<PolizaAiImportDetailRequest> _baseDetails = [];
+    private List<PolizaAiImportValidationMessage> _baseMessages = [];
+    private DateTime? _fechaPoliza = DateTime.Today;
+    private bool _busy;
+
+    private bool CanImport => _preview?.CanImport == true && _preview.EstaCuadrada && !_busy;
+    private string EmpresaText => _header.FkidEmpresaSis is > 0
+        ? $"{_header.FkidEmpresaSis} - {SucursalStateService.EmpresaNombre}"
+        : "Sin empresa seleccionada";
+
+    private static readonly IReadOnlyList<MonthOption> MonthOptions =
+    [
+        new(1, "Enero"),
+        new(2, "Febrero"),
+        new(3, "Marzo"),
+        new(4, "Abril"),
+        new(5, "Mayo"),
+        new(6, "Junio"),
+        new(7, "Julio"),
+        new(8, "Agosto"),
+        new(9, "Septiembre"),
+        new(10, "Octubre"),
+        new(11, "Noviembre"),
+        new(12, "Diciembre")
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+        await SucursalStateService.InitializeAsync();
+
+        _header.FkidEmpresaSis = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
+
+        if (AnioStateService.AnioId.HasValue)
+        {
+            _header.FkidAnioSis = AnioStateService.AnioId.Value;
+            _header.Anio = AnioStateService.AnioClave;
+            _selectedAnio = new LookupItem
+            {
+                Id = AnioStateService.AnioId.Value,
+                Text = string.IsNullOrWhiteSpace(AnioStateService.AnioTexto)
+                    ? AnioStateService.AnioId.Value.ToString(CultureInfo.InvariantCulture)
+                    : AnioStateService.AnioTexto
+            };
+        }
+    }
+
+    private Task OnAnioChanged(LookupItem? value)
+    {
+        _selectedAnio = value;
+        _header.FkidAnioSis = value?.Id;
+        _header.Anio = TryParseYear(value?.Text);
+        return Task.CompletedTask;
+    }
+
+    private Task OnTipoPolizaChanged(LookupItem? value)
+    {
+        _selectedTipoPoliza = value;
+        _header.FkidTipoPolizaSis = value?.Id;
+        _header.TipoPoliza = value?.Text;
+        return Task.CompletedTask;
+    }
+
+    private Task OnCuentaDebeChanged(LookupItem? value)
+    {
+        _selectedCuentaDebe = value;
+        ApplyManualAccountsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnCuentaHaberChanged(LookupItem? value)
+    {
+        _selectedCuentaHaber = value;
+        ApplyManualAccountsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnFileSelected(InputFileChangeEventArgs args)
+    {
+        _file = args.GetMultipleFiles(1).FirstOrDefault();
+        _preview = null;
+        _baseDetails = [];
+        _baseMessages = [];
+        _selectedCuentaDebe = null;
+        _selectedCuentaHaber = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task Analyze()
+    {
+        if (_file == null)
+            return;
+
+        BuildHeader();
+        if (_header.FkidEmpresaSis.GetValueOrDefault() <= 0)
+        {
+            Snackbar.Add("Selecciona una empresa antes de importar la poliza.", Severity.Warning);
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var response = await ImportService.PreviewAsync(_header, _file);
+            if (response.Data != null)
+            {
+                _preview = response.Data;
+                _header.ClavePoliza = _preview.Header.ClavePoliza;
+                _header.NombrePoliza = _preview.Header.NombrePoliza;
+                _header.FkidMesSis = _preview.Header.FkidMesSis;
+                _fechaPoliza = _preview.Header.FechaPoliza;
+                _baseDetails = _preview.Details.Select(CloneDetail).ToList();
+                _baseMessages = _preview.Messages.ToList();
+                SelectAccountsFromPreview();
+                ApplyManualAccountsToPreview();
+            }
+
+            Snackbar.Add(response.Message, response.Data?.CanImport == true ? Severity.Success : Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task Import()
+    {
+        ApplyManualAccountsToPreview();
+        if (_preview == null || !CanImport)
+            return;
+
+        _busy = true;
+        try
+        {
+            _preview.Header.FkidEmpresaSis = _header.FkidEmpresaSis;
+            var details = BuildDetailsForImport();
+            var response = await ImportService.ConfirmAsync(new PolizaAiImportConfirmRequest
+            {
+                SourceFileName = _preview.SourceFileName,
+                Header = _preview.Header,
+                Details = details
+            });
+
+            if (response.Success)
+            {
+                Snackbar.Add(response.Message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(response.Data?.Poliza));
+                return;
+            }
+
+            _preview = response.Data ?? _preview;
+            _baseDetails = _preview.Details.Select(CloneDetail).ToList();
+            _baseMessages = _preview.Messages.ToList();
+            ApplyManualAccountsToPreview();
+            Snackbar.Add(response.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void BuildHeader()
+    {
+        _header.FechaPoliza = _fechaPoliza ?? DateTime.Today;
+        _header.FkidAnioSis = _selectedAnio?.Id ?? _header.FkidAnioSis;
+        _header.Anio = TryParseYear(_selectedAnio?.Text) ?? _header.Anio;
+        _header.FkidTipoPolizaSis = _selectedTipoPoliza?.Id ?? _header.FkidTipoPolizaSis;
+        _header.TipoPoliza = _selectedTipoPoliza?.Text ?? _header.TipoPoliza;
+        _header.FkidEmpresaSis ??= SucursalStateService.EmpresaId;
+    }
+
+    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AnioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Descending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = $"{x.Clave} - {x.Descripcion}".Trim(' ', '-') }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposPolizaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoPolizaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoPoliza, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadCuentasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await CuentaService.GetAllPaginadoAsync(page, pageSize, filter, "Cuenta", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidCuentaContable,
+            Text = $"{x.Cuenta} - {x.Descripcion}".Trim(' ', '-')
+        }), response?.TotalCount);
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", CultureInfo.InvariantCulture)}";
+
+    private void SelectAccountsFromPreview()
+    {
+        _selectedCuentaDebe ??= ToAccountLookup(_baseDetails.FirstOrDefault(x => IsDebitOnly(x) && HasAccount(x)));
+        _selectedCuentaHaber ??= ToAccountLookup(_baseDetails.FirstOrDefault(x => IsCreditOnly(x) && HasAccount(x)));
+    }
+
+    private void ApplyManualAccountsToPreview()
+    {
+        if (_preview == null)
+            return;
+
+        _preview.Details = _baseDetails.Select(CloneDetail).ToList();
+        foreach (var detail in _preview.Details)
+        {
+            if (HasAccount(detail))
+                continue;
+
+            if (IsDebitOnly(detail))
+                AssignAccount(detail, _selectedCuentaDebe);
+            else if (IsCreditOnly(detail))
+                AssignAccount(detail, _selectedCuentaHaber);
+        }
+
+        _preview.Messages = _baseMessages
+            .Where(message => !CanResolveWithManualAccounts(message))
+            .ToList();
+        _preview.CanImport = _preview.Details.Count > 0
+            && _preview.EstaCuadrada
+            && !_preview.Messages.Any(IsError);
+    }
+
+    private List<PolizaAiImportDetailRequest> BuildDetailsForImport()
+    {
+        var source = _baseDetails.Count > 0
+            ? _baseDetails
+            : (_preview?.Details ?? new List<PolizaAiImportDetailRequest>());
+        var details = new List<PolizaAiImportDetailRequest>();
+
+        foreach (var detail in source)
+        {
+            if (IsDoubleAmount(detail) && _selectedCuentaDebe != null && _selectedCuentaHaber != null)
+            {
+                var debitDetail = CloneDetail(detail);
+                AssignAccount(debitDetail, _selectedCuentaDebe);
+                debitDetail.ImporteHaber = null;
+                details.Add(debitDetail);
+
+                var creditDetail = CloneDetail(detail);
+                AssignAccount(creditDetail, _selectedCuentaHaber);
+                creditDetail.ImporteDebe = null;
+                details.Add(creditDetail);
+                continue;
+            }
+
+            var importedDetail = CloneDetail(detail);
+            if (!HasAccount(importedDetail))
+            {
+                if (IsDebitOnly(importedDetail))
+                    AssignAccount(importedDetail, _selectedCuentaDebe);
+                else if (IsCreditOnly(importedDetail))
+                    AssignAccount(importedDetail, _selectedCuentaHaber);
+            }
+
+            details.Add(importedDetail);
+        }
+
+        return details;
+    }
+
+    private bool CanResolveWithManualAccounts(PolizaAiImportValidationMessage message)
+    {
+        if (message.RowNumber == null
+            || (message.Code != "ACCOUNT_REQUIRED" && message.Code != "DOUBLE_AMOUNT"))
+            return false;
+
+        var detail = _baseDetails.FirstOrDefault(x => x.RowNumber == message.RowNumber);
+        if (detail == null)
+            return false;
+
+        if (message.Code == "DOUBLE_AMOUNT")
+            return IsDoubleAmount(detail) && _selectedCuentaDebe != null && _selectedCuentaHaber != null;
+
+        if (IsDoubleAmount(detail))
+            return _selectedCuentaDebe != null && _selectedCuentaHaber != null;
+
+        if (IsDebitOnly(detail))
+            return _selectedCuentaDebe != null;
+
+        if (IsCreditOnly(detail))
+            return _selectedCuentaHaber != null;
+
+        return false;
+    }
+
+    private static PolizaAiImportDetailRequest CloneDetail(PolizaAiImportDetailRequest detail) => new()
+    {
+        RowNumber = detail.RowNumber,
+        Cuenta = detail.Cuenta,
+        FkidCuentaContableConta = detail.FkidCuentaContableConta,
+        CuentaDescripcion = detail.CuentaDescripcion,
+        FkidTipoDetallePolizaSis = detail.FkidTipoDetallePolizaSis,
+        TipoDetallePoliza = detail.TipoDetallePoliza,
+        Descripcion = detail.Descripcion,
+        ImporteDebe = detail.ImporteDebe,
+        ImporteHaber = detail.ImporteHaber
+    };
+
+    private static LookupItem? ToAccountLookup(PolizaAiImportDetailRequest? detail)
+    {
+        if (detail?.FkidCuentaContableConta is not > 0)
+            return null;
+
+        var text = string.IsNullOrWhiteSpace(detail.CuentaDescripcion)
+            ? detail.Cuenta
+            : $"{detail.Cuenta} - {detail.CuentaDescripcion}";
+
+        return new LookupItem
+        {
+            Id = detail.FkidCuentaContableConta.Value,
+            Text = string.IsNullOrWhiteSpace(text)
+                ? detail.FkidCuentaContableConta.Value.ToString(CultureInfo.InvariantCulture)
+                : text
+        };
+    }
+
+    private static void AssignAccount(PolizaAiImportDetailRequest detail, LookupItem? account)
+    {
+        if (account == null)
+            return;
+
+        detail.FkidCuentaContableConta = account.Id;
+        detail.Cuenta = account.Text;
+        detail.CuentaDescripcion = null;
+    }
+
+    private static bool HasAccount(PolizaAiImportDetailRequest detail)
+        => detail.FkidCuentaContableConta.GetValueOrDefault() > 0;
+
+    private static bool IsDebitOnly(PolizaAiImportDetailRequest detail)
+        => detail.ImporteDebe.GetValueOrDefault() > 0m && detail.ImporteHaber.GetValueOrDefault() <= 0m;
+
+    private static bool IsCreditOnly(PolizaAiImportDetailRequest detail)
+        => detail.ImporteHaber.GetValueOrDefault() > 0m && detail.ImporteDebe.GetValueOrDefault() <= 0m;
+
+    private static bool IsDoubleAmount(PolizaAiImportDetailRequest detail)
+        => detail.ImporteDebe.GetValueOrDefault() > 0m && detail.ImporteHaber.GetValueOrDefault() > 0m;
+
+    private static bool IsError(PolizaAiImportValidationMessage message)
+        => message.Severity.Equals("Error", StringComparison.OrdinalIgnoreCase);
+
+    private static string FormatMessage(PolizaAiImportValidationMessage message)
+    {
+        var location = message.RowNumber.HasValue ? $"Fila {message.RowNumber}: " : string.Empty;
+        return $"{location}{message.Message}";
+    }
+
+    private static int? TryParseYear(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+
+        var first = text.Split('-', 2)[0].Trim();
+        return int.TryParse(first, out var year) ? year : null;
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+
+    private sealed record MonthOption(int Id, string Name);
+}

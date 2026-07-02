@@ -1,0 +1,437 @@
+@page "/asistente-documental"
+@attribute [Authorize]
+@implements IAsyncDisposable
+@using EG.Web.Contracts.DocumentRag
+@using EG.Web.Models.DocumentRag
+@using Microsoft.AspNetCore.Authorization
+@inject IDocumentRagService RagService
+@inject ISnackbar Snackbar
+
+<PageTitle>Asistente documental</PageTitle>
+
+<div class="rag-page">
+    <div class="rag-toolbar">
+        <div>
+            <MudText Typo="Typo.h5" Class="rag-title">Asistente documental</MudText>
+            <MudText Typo="Typo.caption" Class="rag-status">@SessionStatusText</MudText>
+        </div>
+        <div class="rag-toolbar-actions">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddCircleOutline"
+                       Disabled="@_busy"
+                       OnClick="StartNewSession">
+                Nueva sesion
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Warning"
+                       StartIcon="@Icons.Material.Filled.DeleteSweep"
+                       Disabled="@(_session == null || _busy)"
+                       OnClick="ReleaseSession">
+                Liberar memoria
+            </MudButton>
+        </div>
+    </div>
+
+    <div class="rag-layout">
+        <section class="rag-panel rag-documents-panel">
+            <div class="rag-panel-header">
+                <MudIcon Icon="@Icons.Material.Filled.FolderCopy" />
+                <MudText Typo="Typo.subtitle1">Documentos</MudText>
+            </div>
+
+            <MudTextField @bind-Value="_sessionRequest.Titulo"
+                          Label="Titulo de sesion"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
+            <MudTextField @bind-Value="_sessionRequest.Modulo"
+                          Label="Modulo"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
+            <div class="rag-context-grid">
+                <MudTextField @bind-Value="_sessionRequest.SubModulo"
+                              Label="Submodulo"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+                <MudTextField @bind-Value="_entityIdText"
+                              Label="EntidadId"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+            </div>
+            <MudTextField @bind-Value="_sessionRequest.Descripcion"
+                          Label="Descripcion"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Lines="2" />
+
+            <InputFile id="@_inputId"
+                       OnChange="UploadFiles"
+                       multiple
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.md,.png,.jpg,.jpeg,.webp,.tif,.tiff,.bmp"
+                       class="rag-file-input" />
+            <label for="@_inputId" class="rag-dropzone">
+                <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
+                <span>Seleccionar documentos</span>
+                <small>PDF, Word, Excel, texto y fotos</small>
+            </label>
+
+            @if (_uploading)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="rag-alert">
+                    Indexando documentos. Te avisare cuando puedas preguntar.
+                </MudAlert>
+            }
+            else if (!string.IsNullOrWhiteSpace(_uploadNotice))
+            {
+                <MudAlert Severity="@_uploadNoticeSeverity" Variant="Variant.Outlined" Dense="true" Class="rag-alert">
+                    @_uploadNotice
+                </MudAlert>
+            }
+
+            <div class="rag-doc-list">
+                @if (Documents.Count == 0)
+                {
+                    <div class="rag-empty">
+                        <MudIcon Icon="@Icons.Material.Filled.Description" />
+                        <span>No hay documentos cargados.</span>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var document in Documents)
+                    {
+                        <article class="rag-doc-item">
+                            <div class="rag-doc-icon">
+                                <MudIcon Icon="@GetDocumentIcon(document)" />
+                            </div>
+                            <div class="rag-doc-main">
+                                <strong title="@document.NombreOriginal">@document.NombreOriginal</strong>
+                                <span>@FormatSize(document.TamanoBytes) - @document.ChunkCount chunks - @document.CharacterCount caracteres</span>
+                                <small>@document.Message</small>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Color="@StatusColor(document.Status)" Variant="Variant.Filled">
+                                @StatusLabel(document.Status)
+                            </MudChip>
+                        </article>
+                    }
+                }
+            </div>
+        </section>
+
+        <section class="rag-panel rag-chat-panel">
+            <div class="rag-panel-header">
+                <MudIcon Icon="@Icons.Material.Filled.QuestionAnswer" />
+                <MudText Typo="Typo.subtitle1">Preguntas</MudText>
+            </div>
+
+            <div class="rag-chat-list">
+                @if (History.Count == 0)
+                {
+                    <div class="rag-empty rag-empty-chat">
+                        <MudIcon Icon="@Icons.Material.Filled.Search" />
+                        <span>Carga documentos indexables para preguntar sobre su contenido.</span>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var item in History.OrderBy(x => x.AskedAtUtc))
+                    {
+                        <article class="rag-message rag-question">
+                            <div class="rag-message-meta">Pregunta - @FormatDate(item.AskedAtUtc)</div>
+                            <p>@item.Question</p>
+                        </article>
+                        <article class="rag-message rag-answer @(item.AnsweredFromDocuments ? "" : "rag-answer-missing")">
+                            <div class="rag-message-meta">Respuesta</div>
+                            <p>@item.Answer</p>
+                            @if (item.Citations.Count > 0)
+                            {
+                                <div class="rag-citations">
+                                    @foreach (var citation in item.Citations)
+                                    {
+                                        <div class="rag-citation">
+                                            <strong>@citation.DocumentName</strong>
+                                            <span>chunk @citation.ChunkIndex - score @citation.Score.ToString("0.000")</span>
+                                            <p>@citation.Snippet</p>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </article>
+                    }
+                }
+            </div>
+
+            <div class="rag-question-box">
+                <MudTextField @bind-Value="_question"
+                              Placeholder="Pregunta sobre los documentos cargados..."
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              Disabled="@(_asking || _uploading)"
+                              Immediate="true" />
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Send"
+                           Disabled="@(!CanAsk)"
+                           OnClick="Ask">
+                    Preguntar
+                </MudButton>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private const long MaxClientFileSize = 50 * 1024 * 1024;
+    private readonly string _inputId = $"rag-upload-{Guid.NewGuid():N}";
+    private readonly DocumentRagSessionRequest _sessionRequest = new()
+    {
+        Modulo = "RAG",
+        Titulo = "Consulta documental"
+    };
+
+    private DocumentRagSessionResponse? _session;
+    private string _entityIdText = string.Empty;
+    private string _question = string.Empty;
+    private string _uploadNotice = string.Empty;
+    private Severity _uploadNoticeSeverity = Severity.Info;
+    private bool _busy;
+    private bool _uploading;
+    private bool _asking;
+    private bool _released;
+
+    private IReadOnlyList<DocumentRagDocumentResponse> Documents => _session?.Documents is { } documents
+        ? documents
+        : Array.Empty<DocumentRagDocumentResponse>();
+    private IReadOnlyList<DocumentRagHistoryItemResponse> History => _session?.History is { } history
+        ? history
+        : Array.Empty<DocumentRagHistoryItemResponse>();
+    private bool CanAsk => _session?.IndexedChunkCount > 0 && !_asking && !_uploading && !string.IsNullOrWhiteSpace(_question);
+
+    private string SessionStatusText => _session == null
+        ? "Sin sesion activa"
+        : $"{_session.DocumentCount} documento(s), {_session.IndexedChunkCount} chunk(s), expira {FormatDate(_session.ExpiresAtUtc)}";
+
+    private async Task StartNewSession()
+    {
+        if (_session != null)
+            await ReleaseSession(showSnackbar: false);
+
+        _session = null;
+        _question = string.Empty;
+        _uploadNotice = string.Empty;
+        _released = false;
+        Snackbar.Add("Sesion nueva lista para recibir documentos.", Severity.Info);
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs args)
+    {
+        if (_uploading)
+            return;
+
+        _uploading = true;
+        _busy = true;
+        _uploadNotice = string.Empty;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            if (!await EnsureSession())
+                return;
+
+            var uploaded = 0;
+            var indexed = 0;
+            foreach (var file in args.GetMultipleFiles(20))
+            {
+                if (file.Size > MaxClientFileSize)
+                {
+                    Snackbar.Add($"{file.Name} supera 50 MB.", Severity.Error);
+                    continue;
+                }
+
+                var response = await RagService.UploadAsync(BuildSessionRequest(), _session!.SessionId, file);
+                if (response.Success && response.Data != null)
+                {
+                    uploaded++;
+                    if (response.Data.ChunkCount > 0)
+                        indexed++;
+
+                    Snackbar.Add($"{file.Name}: {response.Data.Message}", response.Data.ChunkCount > 0 ? Severity.Success : Severity.Warning);
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? $"No se pudo subir {file.Name}.", Severity.Error);
+                }
+            }
+
+            await RefreshSession();
+            _uploadNoticeSeverity = indexed > 0 ? Severity.Success : Severity.Warning;
+            _uploadNotice = indexed > 0
+                ? $"Listo. {indexed} de {uploaded} documento(s) quedaron indexados para preguntar."
+                : "Los documentos se cargaron, pero no hay texto indexado para buscar.";
+        }
+        finally
+        {
+            _uploading = false;
+            _busy = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task Ask()
+    {
+        if (!CanAsk || _session == null)
+            return;
+
+        _asking = true;
+        _busy = true;
+        var question = _question.Trim();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var response = await RagService.AskAsync(new DocumentRagAskRequest
+            {
+                SessionId = _session.SessionId,
+                Question = question
+            });
+
+            if (response.Success && response.Data != null)
+            {
+                _question = string.Empty;
+                _session.History.Add(new DocumentRagHistoryItemResponse
+                {
+                    QuestionId = response.Data.QuestionId,
+                    Question = response.Data.Question,
+                    Answer = response.Data.Answer,
+                    AnsweredFromDocuments = response.Data.AnsweredFromDocuments,
+                    AskedAtUtc = response.Data.AskedAtUtc,
+                    Citations = response.Data.Citations
+                });
+
+                if (!response.Data.AnsweredFromDocuments)
+                    Snackbar.Add("No encontre esa informacion en los documentos cargados.", Severity.Warning);
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "No se pudo procesar la pregunta.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _asking = false;
+            _busy = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task<bool> EnsureSession()
+    {
+        if (_session != null)
+            return true;
+
+        var response = await RagService.CreateSessionAsync(BuildSessionRequest());
+        if (response.Success && response.Data != null)
+        {
+            _session = response.Data;
+            _released = false;
+            return true;
+        }
+
+        Snackbar.Add(response.Message ?? "No se pudo crear la sesion documental.", Severity.Error);
+        return false;
+    }
+
+    private async Task RefreshSession()
+    {
+        if (_session == null)
+            return;
+
+        var response = await RagService.GetSessionAsync(_session.SessionId);
+        if (response.Success && response.Data != null)
+            _session = response.Data;
+    }
+
+    private async Task ReleaseSession() => await ReleaseSession(showSnackbar: true);
+
+    private async Task ReleaseSession(bool showSnackbar)
+    {
+        if (_session == null)
+            return;
+
+        var sessionId = _session.SessionId;
+        var response = await RagService.ReleaseSessionAsync(sessionId);
+        _session = null;
+        _question = string.Empty;
+        _uploadNotice = string.Empty;
+        _released = true;
+
+        if (showSnackbar)
+            Snackbar.Add(response.Message ?? "Memoria liberada.", Severity.Success);
+    }
+
+    private DocumentRagSessionRequest BuildSessionRequest()
+    {
+        _sessionRequest.EntidadId = long.TryParse(_entityIdText, out var entityId) ? entityId : null;
+        return _sessionRequest;
+    }
+
+    private static string GetDocumentIcon(DocumentRagDocumentResponse document)
+    {
+        var extension = document.Extension.ToLowerInvariant();
+        return extension switch
+        {
+            ".pdf" => Icons.Material.Filled.PictureAsPdf,
+            ".doc" or ".docx" => Icons.Material.Filled.Article,
+            ".xls" or ".xlsx" or ".csv" => Icons.Material.Filled.TableChart,
+            ".png" or ".jpg" or ".jpeg" or ".webp" or ".tif" or ".tiff" or ".bmp" => Icons.Material.Filled.Image,
+            _ => Icons.Material.Filled.Description
+        };
+    }
+
+    private static Color StatusColor(string status)
+        => status switch
+        {
+            "INDEXED" => Color.Success,
+            "OCR_REQUIRED" or "OCR_TIMEOUT" or "OCR_ERROR" => Color.Warning,
+            "UNSUPPORTED" => Color.Error,
+            _ => Color.Info
+        };
+
+    private static string StatusLabel(string status)
+        => status switch
+        {
+            "INDEXED" => "Indexado",
+            "EMPTY" => "Sin texto",
+            "OCR_REQUIRED" => "Requiere OCR",
+            "OCR_TIMEOUT" => "OCR timeout",
+            "OCR_ERROR" => "OCR error",
+            "UNSUPPORTED" => "No soportado",
+            _ => status
+        };
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes >= 1024 * 1024)
+            return $"{bytes / 1024m / 1024m:N1} MB";
+        if (bytes >= 1024)
+            return $"{bytes / 1024m:N1} KB";
+        return $"{bytes:N0} B";
+    }
+
+    private static string FormatDate(DateTime date)
+        => date.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session == null || _released)
+            return;
+
+        try
+        {
+            await RagService.ReleaseSessionAsync(_session.SessionId);
+        }
+        catch
+        {
+        }
+    }
+}
