@@ -1,14 +1,12 @@
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using EG.Common.Helper;
-using EG.Web.Contracts.SoporteDocumental;
+using EG.Web.Contracts.Platform.SoporteDocumental;
 using EG.Web.Models;
-using EG.Web.Models.SoporteDocumental;
+using EG.Web.Models.Platform.SoporteDocumental;
+using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
-namespace EG.Web.Services.SoporteDocumental
+namespace EG.Web.Services.Platform.SoporteDocumental
 {
     public class DocumentSupportService(
         IConfiguration configuration,
@@ -34,37 +32,22 @@ namespace EG.Web.Services.SoporteDocumental
             {
                 var httpRequest = await CreateAuthenticatedRequestAsync(HttpMethod.Post, $"{_baseUrl}{Endpoint}/upload");
                 using var form = new MultipartFormDataContent();
-                AddString(form, "Modulo", request.Modulo);
-                AddString(form, "SubModulo", request.SubModulo);
-                AddString(form, "Controlador", request.Controlador);
-                AddString(form, "Servicio", request.Servicio);
-                AddString(form, "EntidadId", request.EntidadId.ToString());
-                AddString(form, "FkidEmpresaSis", request.FkidEmpresaSis?.ToString());
-                AddString(form, "Titulo", title);
-                AddString(form, "Descripcion", description);
-
-                var fileContent = new StreamContent(file.OpenReadStream(MaxClientFileSize));
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-                form.Add(fileContent, "File", file.Name);
+                MultipartApiHelper.AddString(form, "Modulo", request.Modulo);
+                MultipartApiHelper.AddString(form, "SubModulo", request.SubModulo);
+                MultipartApiHelper.AddString(form, "Controlador", request.Controlador);
+                MultipartApiHelper.AddString(form, "Servicio", request.Servicio);
+                MultipartApiHelper.AddString(form, "EntidadId", request.EntidadId.ToString());
+                MultipartApiHelper.AddString(form, "FkidEmpresaSis", request.FkidEmpresaSis?.ToString());
+                MultipartApiHelper.AddString(form, "Titulo", title);
+                MultipartApiHelper.AddString(form, "Descripcion", description);
+                MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;
 
-                var response = await _httpClient.SendAsync(httpRequest);
-                var body = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<DocumentoResponse>>(body, _jsonOptions)
-                    ?? new ApiResponse<DocumentoResponse>();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    result.Success = false;
-                    if (string.IsNullOrWhiteSpace(result.Message))
-                        result.Message = body;
-                }
-
-                return result;
+                return await MultipartApiHelper.SendAsync<DocumentoResponse>(_httpClient, httpRequest, _jsonOptions);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<DocumentoResponse> { Success = false, Message = ex.Message };
+                return MultipartApiHelper.Failure<DocumentoResponse>(ex);
             }
         }
 
@@ -112,10 +95,5 @@ namespace EG.Web.Services.SoporteDocumental
             => await DeleteAsync<ApiResponse<bool>>($"{Endpoint}/anotaciones/{annotationId}", useBaseUrl: false)
                 ?? new ApiResponse<bool>();
 
-        private static void AddString(MultipartFormDataContent form, string name, string? value)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-                form.Add(new StringContent(value, Encoding.UTF8), name);
-        }
     }
 }

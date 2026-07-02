@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using EG.Domain.DTOs.Requests.DocumentRag;
-using EG.Domain.Settings;
+using EG.Domain.Platform.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace EG.Application.Services.DocumentRag

@@ -1,6 +1,6 @@
 using EG.Web.Models;
 
-namespace EG.Web.Models.SoporteDocumental
+namespace EG.Web.Models.Platform.SoporteDocumental
 {
     public class DocumentoEntidadRequest
     {

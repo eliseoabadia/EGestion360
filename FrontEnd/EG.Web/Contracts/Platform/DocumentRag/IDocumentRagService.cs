@@ -1,8 +1,8 @@
 using EG.Web.Models;
-using EG.Web.Models.DocumentRag;
+using EG.Web.Models.Platform.DocumentRag;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace EG.Web.Contracts.DocumentRag
+namespace EG.Web.Contracts.Platform.DocumentRag
 {
     public interface IDocumentRagService
     {

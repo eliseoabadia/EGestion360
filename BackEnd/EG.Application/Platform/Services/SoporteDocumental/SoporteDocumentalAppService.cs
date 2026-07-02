@@ -4,7 +4,7 @@ using EG.Application.Interfaces.SoporteDocumental;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.SoporteDocumental;
 using EG.Domain.DTOs.Responses.SoporteDocumental;
-using EG.Domain.Settings;
+using EG.Domain.Platform.Settings;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;

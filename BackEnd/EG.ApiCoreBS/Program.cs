@@ -4,6 +4,7 @@ using EG.ApiCoreBS.Middleware;
 using EG.ApiCoreBS.Reporting;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
+using EG.Domain.Platform.Settings;
 using EG.Domain.Settings;
 using EG.Infrastructure;
 using EG.Logger;

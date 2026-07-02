@@ -1,8 +1,8 @@
 using EG.Web.Models;
-using EG.Web.Models.SoporteDocumental;
+using EG.Web.Models.Platform.SoporteDocumental;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace EG.Web.Contracts.SoporteDocumental
+namespace EG.Web.Contracts.Platform.SoporteDocumental
 {
     public interface IDocumentSupportService
     {

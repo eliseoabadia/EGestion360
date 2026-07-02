@@ -1,6 +1,6 @@
 using EG.Web.Models;
 
-namespace EG.Web.Models.DocumentRag
+namespace EG.Web.Models.Platform.DocumentRag
 {
     public class DocumentRagSessionRequest
     {

@@ -6,7 +6,7 @@ using EG.Application.Interfaces.DocumentRag;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.DocumentRag;
 using EG.Domain.DTOs.Responses.DocumentRag;
-using EG.Domain.Settings;
+using EG.Domain.Platform.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

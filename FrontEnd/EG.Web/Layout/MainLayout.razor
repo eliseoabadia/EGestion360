@@ -72,8 +72,8 @@
                     }
                 </MudSelect>
 
-                <MudChip T="string" 
-                         Color="Color.Secondary" 
+                <MudChip T="string"
+                         Color="Color.Secondary"
                          Variant="Variant.Outlined"
                          Size="Size.Small"
                          Icon="@Icons.Material.Filled.Store"
@@ -163,7 +163,7 @@
     }
 </div>
 
-    <div id="blazor-error-ui">
+<div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">??</a>
@@ -651,6 +651,8 @@
     }
 
     .layout-root {
+        --eg-appbar-height: 64px;
+        --eg-footer-height: 30px;
         --eg-sidebar-width: 320px;
         --eg-sidebar-collapsed-width: 64px;
         --eg-sidebar-min-width: 260px;
@@ -664,10 +666,13 @@
     .modern-app-bar {
         background: var(--mud-palette-appbar-background) !important;
         border-bottom: 1px solid var(--mud-palette-divider);
-        padding: 2px 16px;
-        min-height: 40px;
+        height: var(--eg-appbar-height);
+        min-height: var(--eg-appbar-height);
+        max-height: var(--eg-appbar-height);
+        align-items: center;
+        padding: 0 16px;
         flex-shrink: 0;
-        z-index: 10;
+        z-index: 1200;
     }
 
     .app-branding {
@@ -722,6 +727,7 @@
     .user-section {
         display: flex;
         align-items: center;
+        min-width: 0;
         gap: 12px;
     }
 
@@ -790,7 +796,7 @@
         flex: 1;
         min-height: 0;
         overflow: hidden;
-        padding-top: 40px;
+        padding-top: var(--eg-appbar-height);
     }
 
     .sidebar-container {
@@ -897,7 +903,7 @@
         height: 100%;
         min-height: 0;
         overflow: hidden;
-        padding: 14px 16px 10px 12px;
+        padding: 8px 16px 10px 12px;
     }
 
     .content-wrapper > .mud-container,
@@ -908,14 +914,16 @@
     .content-wrapper > .mud-container[style*="height: 100vh"],
     .content-wrapper > .mud-container[style*="height:100vh"],
     .content-wrapper > * > .mud-container[style*="height: 100vh"],
-    .content-wrapper > * > .mud-container[style*="height:100vh"] {
+    .content-wrapper > * > .mud-container[style*="height:100vh"],
+    .content-wrapper .mud-container[style*="height: 100vh"],
+    .content-wrapper .mud-container[style*="height:100vh"] {
         height: 100% !important;
         max-height: 100%;
         overflow: hidden;
     }
 
     .version-footer {
-        height: 30px;
+        height: var(--eg-footer-height);
         background-color: var(--mud-palette-surface);
         color: var(--mud-palette-text-secondary);
         font-size: 0.75rem;
@@ -937,10 +945,55 @@
         display: flex;
         justify-content: center;
         align-items: stretch;
-        height: calc(100vh - 40px);
+        height: calc(100dvh - var(--eg-appbar-height));
         width: 100%;
         flex: 1;
         min-height: 0;
         overflow-y: auto;
+    }
+
+    @@media (max-width: 960px) {
+        .layout-root {
+            --eg-appbar-height: 72px;
+        }
+
+        .modern-app-bar {
+            padding: 0 10px;
+        }
+
+        .user-section {
+            gap: 8px;
+        }
+
+        .app-title {
+            font-size: 1.2rem;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .layout-root {
+            --eg-appbar-height: 96px;
+        }
+
+        .modern-app-bar {
+            flex-wrap: wrap;
+            align-content: center;
+            row-gap: 4px;
+        }
+
+        .user-section {
+            flex: 1 1 100%;
+            justify-content: flex-end;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .user-section::-webkit-scrollbar {
+            display: none;
+        }
+
+        .content-wrapper {
+            padding: 8px 10px 10px;
+        }
     }
 </style>

@@ -1,14 +1,12 @@
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using EG.Common.Helper;
-using EG.Web.Contracts.DocumentRag;
+using EG.Web.Contracts.Platform.DocumentRag;
 using EG.Web.Models;
-using EG.Web.Models.DocumentRag;
+using EG.Web.Models.Platform.DocumentRag;
+using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
-namespace EG.Web.Services.DocumentRag
+namespace EG.Web.Services.Platform.DocumentRag
 {
     public class DocumentRagService(
         IConfiguration configuration,
@@ -37,44 +35,23 @@ namespace EG.Web.Services.DocumentRag
             {
                 var httpRequest = await CreateAuthenticatedRequestAsync(HttpMethod.Post, $"{_baseUrl}{Endpoint}/documents");
                 using var form = new MultipartFormDataContent();
-                AddString(form, "SessionId", sessionId.ToString());
-                AddString(form, "Modulo", request.Modulo);
-                AddString(form, "SubModulo", request.SubModulo);
-                AddString(form, "Controlador", request.Controlador);
-                AddString(form, "Servicio", request.Servicio);
-                AddString(form, "EntidadId", request.EntidadId?.ToString());
-                AddString(form, "FkidEmpresaSis", request.FkidEmpresaSis?.ToString());
-                AddString(form, "Titulo", request.Titulo);
-                AddString(form, "Descripcion", request.Descripcion);
-
-                var fileContent = new StreamContent(file.OpenReadStream(MaxClientFileSize));
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrWhiteSpace(file.ContentType)
-                    ? "application/octet-stream"
-                    : file.ContentType);
-                form.Add(fileContent, "File", file.Name);
+                MultipartApiHelper.AddString(form, "SessionId", sessionId.ToString());
+                MultipartApiHelper.AddString(form, "Modulo", request.Modulo);
+                MultipartApiHelper.AddString(form, "SubModulo", request.SubModulo);
+                MultipartApiHelper.AddString(form, "Controlador", request.Controlador);
+                MultipartApiHelper.AddString(form, "Servicio", request.Servicio);
+                MultipartApiHelper.AddString(form, "EntidadId", request.EntidadId?.ToString());
+                MultipartApiHelper.AddString(form, "FkidEmpresaSis", request.FkidEmpresaSis?.ToString());
+                MultipartApiHelper.AddString(form, "Titulo", request.Titulo);
+                MultipartApiHelper.AddString(form, "Descripcion", request.Descripcion);
+                MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;
 
-                var response = await _httpClient.SendAsync(httpRequest);
-                var body = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<DocumentRagDocumentResponse>>(body, _jsonOptions)
-                    ?? new ApiResponse<DocumentRagDocumentResponse>();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    result.Success = false;
-                    if (string.IsNullOrWhiteSpace(result.Message))
-                        result.Message = body;
-                }
-
-                return result;
+                return await MultipartApiHelper.SendAsync<DocumentRagDocumentResponse>(_httpClient, httpRequest, _jsonOptions);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<DocumentRagDocumentResponse>
-                {
-                    Success = false,
-                    Message = ex.Message
-                };
+                return MultipartApiHelper.Failure<DocumentRagDocumentResponse>(ex);
             }
         }
 
@@ -90,10 +67,5 @@ namespace EG.Web.Services.DocumentRag
             => await DeleteAsync<ApiResponse<bool>>($"{Endpoint}/sessions/{sessionId}", useBaseUrl: false)
                 ?? new ApiResponse<bool>();
 
-        private static void AddString(MultipartFormDataContent form, string name, string? value)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-                form.Add(new StringContent(value, Encoding.UTF8), name);
-        }
     }
 }

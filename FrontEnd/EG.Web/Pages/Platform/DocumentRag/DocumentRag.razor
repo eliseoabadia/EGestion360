@@ -1,8 +1,8 @@
 @page "/asistente-documental"
 @attribute [Authorize]
 @implements IAsyncDisposable
-@using EG.Web.Contracts.DocumentRag
-@using EG.Web.Models.DocumentRag
+@using EG.Web.Contracts.Platform.DocumentRag
+@using EG.Web.Models.Platform.DocumentRag
 @using Microsoft.AspNetCore.Authorization
 @inject IDocumentRagService RagService
 @inject ISnackbar Snackbar

@@ -1,4 +1,4 @@
-namespace EG.Domain.Settings
+namespace EG.Domain.Platform.Settings
 {
     public class DocumentRagSettings
     {
