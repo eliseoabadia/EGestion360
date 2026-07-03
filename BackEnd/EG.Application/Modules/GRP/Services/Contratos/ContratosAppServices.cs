@@ -135,9 +135,162 @@ namespace EG.Application.Services.Contratos
                 return Failure<OrcoContratoResponse>("Debe seleccionar un tipo de documento.");
             }
 
+            var tipoContratoExists = await _context.TipoContratos
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidTipoContrato == response.FkidTipoContratoOrco && x.Activo);
+
+            if (!tipoContratoExists)
+            {
+                return Failure<OrcoContratoResponse>("El tipo de contrato seleccionado no existe o esta inactivo.");
+            }
+
+            var tipoDocumentoExists = await _context.TipoDocumentos
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidTipoDocumento == response.FkidTipoDocumentoOrco && x.Activo);
+
+            if (!tipoDocumentoExists)
+            {
+                return Failure<OrcoContratoResponse>("El tipo de documento seleccionado no existe o esta inactivo.");
+            }
+
+            if (!response.FkidOrdenCompraOrco.HasValue || response.FkidOrdenCompraOrco.Value <= 0)
+            {
+                return Failure<OrcoContratoResponse>("Debe seleccionar una orden de compra autorizada.");
+            }
+
+            var ordenCompra = await _context.OrdenCompras
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidOrdenCompra == response.FkidOrdenCompraOrco.Value && x.Activo);
+
+            if (ordenCompra == null)
+            {
+                return Failure<OrcoContratoResponse>("La orden de compra seleccionada no existe o esta inactiva.");
+            }
+
+            if (ordenCompra.FkidEstatusOrdenCompraOrco <= 1)
+            {
+                return Failure<OrcoContratoResponse>("La orden de compra debe estar autorizada antes de registrar el compromiso.");
+            }
+
+            response.FkidEmpresaSis = ordenCompra.FkidEmpresaSis;
+
+            if (!response.FkidAreaSis.HasValue || response.FkidAreaSis.Value <= 0)
+            {
+                return Failure<OrcoContratoResponse>("Debe seleccionar un area.");
+            }
+
+            var areaExists = await _context.Areas
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidArea == response.FkidAreaSis.Value && x.Activo);
+
+            if (!areaExists)
+            {
+                return Failure<OrcoContratoResponse>("El area seleccionada no existe o esta inactiva.");
+            }
+
+            if (!response.FkidModalidadOrco.HasValue || response.FkidModalidadOrco.Value <= 0)
+            {
+                return Failure<OrcoContratoResponse>("Debe seleccionar una modalidad.");
+            }
+
+            var modalidadExists = await _context.Modalidads
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidModalidad == response.FkidModalidadOrco.Value && x.Activo);
+
+            if (!modalidadExists)
+            {
+                return Failure<OrcoContratoResponse>("La modalidad seleccionada no existe o esta inactiva.");
+            }
+
+            if (!response.FkidProcedimientoContratacionOrco.HasValue || response.FkidProcedimientoContratacionOrco.Value <= 0)
+            {
+                return Failure<OrcoContratoResponse>("Debe seleccionar un procedimiento de contratacion.");
+            }
+
+            var procedimientoExists = await _context.ProcedimientoContratacions
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidProcedimientoContratacion == response.FkidProcedimientoContratacionOrco.Value && x.Activo);
+
+            if (!procedimientoExists)
+            {
+                return Failure<OrcoContratoResponse>("El procedimiento de contratacion seleccionado no existe o esta inactivo.");
+            }
+
+            if (!response.FkidTipoGarantiaOrco.HasValue || response.FkidTipoGarantiaOrco.Value <= 0)
+            {
+                return Failure<OrcoContratoResponse>("Debe seleccionar un tipo de garantia.");
+            }
+
+            var garantiaExists = await _context.TipoGarantia
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidTipoGarantia == response.FkidTipoGarantiaOrco.Value && x.Activo);
+
+            if (!garantiaExists)
+            {
+                return Failure<OrcoContratoResponse>("El tipo de garantia seleccionado no existe o esta inactivo.");
+            }
+
+            if (response.FkidArticuloOrco.HasValue && response.FkidArticuloOrco.Value > 0)
+            {
+                var articuloExists = await _context.Articulos
+                    .AsNoTracking()
+                    .AnyAsync(x => x.PkidArticulo == response.FkidArticuloOrco.Value && x.Activo);
+
+                if (!articuloExists)
+                {
+                    return Failure<OrcoContratoResponse>("El articulo seleccionado no existe o esta inactivo.");
+                }
+            }
+
+            if (response.FkidFraccionOrco.HasValue && response.FkidFraccionOrco.Value > 0)
+            {
+                var fraccionExists = await _context.Fraccions
+                    .AsNoTracking()
+                    .AnyAsync(x => x.PkidFraccion == response.FkidFraccionOrco.Value && x.Activo);
+
+                if (!fraccionExists)
+                {
+                    return Failure<OrcoContratoResponse>("La fraccion seleccionada no existe o esta inactiva.");
+                }
+            }
+
             if (response.FechaContrato == default)
             {
                 response.FechaContrato = DateTime.Today;
+            }
+
+            var fechaOrden = ordenCompra.FechaOrdenCompra.ToDateTime(TimeOnly.MinValue);
+            if (response.FechaContrato.Date < fechaOrden.Date)
+            {
+                return Failure<OrcoContratoResponse>("La fecha del contrato debe ser igual o mayor a la fecha de la orden de compra.");
+            }
+
+            if (response.FechaVigenciaInicio.HasValue &&
+                response.FechaVigenciaFin.HasValue &&
+                response.FechaVigenciaFin.Value.Date < response.FechaVigenciaInicio.Value.Date)
+            {
+                return Failure<OrcoContratoResponse>("La fecha final de vigencia no puede ser menor a la fecha inicial.");
+            }
+
+            response.FechaRecepcion ??= response.FechaContrato;
+            if (response.MontoMaximo <= 0m && ordenCompra.Total > 0m)
+            {
+                response.MontoMaximo = ordenCompra.Total;
+            }
+
+            if (response.MontoMaximo <= 0m)
+            {
+                return Failure<OrcoContratoResponse>("El monto maximo debe ser mayor a cero.");
+            }
+
+            if (response.MontoMinimo <= 0m)
+            {
+                response.MontoMinimo = response.MontoMaximo;
+            }
+
+            if (response.MontoMinimo > response.MontoMaximo)
+            {
+                return Failure<OrcoContratoResponse>("El monto minimo no puede ser mayor al monto maximo.");
             }
 
             if (isCreate || response.FkidEstatusContratoOrco <= 0)

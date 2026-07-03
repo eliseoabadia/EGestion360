@@ -83,19 +83,12 @@
                                      AdornmentText="$" />
                 </MudItem>
 
-                <MudItem xs="12" md="9">
+                <MudItem xs="12" md="12">
                     <MudTextField @bind-Value="item.Referencia"
                                   Label="Referencia"
                                   Variant="Variant.Outlined"
                                   MaxLength="250"
                                   Required="true" />
-                </MudItem>
-                <MudItem xs="12" md="3">
-                    <MudPaper Class="switch-panel" Elevation="0">
-                        <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">
-                            Activo
-                        </MudSwitch>
-                    </MudPaper>
                 </MudItem>
 
                 @if (Id.HasValue)

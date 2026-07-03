@@ -86,12 +86,6 @@
                                Clearable="true" />
             </MudItem>
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12" md="6">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

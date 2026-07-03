@@ -162,8 +162,6 @@
                     <MudTh><MudTableSortLabel SortLabel="Cargos" T="CierreMensualResponse">Cargos</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="Abonos" T="CierreMensualResponse">Abonos</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortLabel="SaldoFinal" T="CierreMensualResponse">Saldo final</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="CierreMensualResponse">Generado</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="CierreMensualResponse">Usuario</MudTableSortLabel></MudTh>
                 </Header>
 
                 <Row Context="item">
@@ -175,8 +173,6 @@
                     <MudTd>@Money(item.Cargos)</MudTd>
                     <MudTd>@Money(item.Abonos)</MudTd>
                     <MudTd><strong>@Money(item.SaldoFinal)</strong></MudTd>
-                    <MudTd>@DateTimeOrDash(item.FechaCreacion)</MudTd>
-                    <MudTd>@item.UsuarioCreacion</MudTd>
                 </Row>
             </GenericTable>
         </div>

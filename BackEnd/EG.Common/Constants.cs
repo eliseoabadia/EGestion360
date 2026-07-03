@@ -8,7 +8,7 @@ namespace EG.Common
         public const string KEY_SECURITY = "ContraseñaSuperSecreta";
         public const string KEY_USERID = "UserId";
         public const string KEY_TOKEN = "Token";
-        public const string BD_CON = "BD_MatrixEntities";
+        public const string BD_CON = "GestionEmpresarialConn";
 
         #endregion
 

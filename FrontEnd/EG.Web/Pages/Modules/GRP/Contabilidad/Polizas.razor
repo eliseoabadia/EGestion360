@@ -233,18 +233,6 @@
                             <MudText Typo="Typo.caption" Color="Color.Tertiary">Movimientos</MudText>
                             <MudText Typo="Typo.body2" Style="font-weight: 600;">@SelectedPoliza.TotalDetalles</MudText>
                         </MudItem>
-                        <MudItem xs="6" sm="3" md="2">
-                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Usuario creación</MudText>
-                            <MudText Typo="Typo.body2" Style="font-weight: 600;">@SelectedPoliza.UsuarioCreacion</MudText>
-                        </MudItem>
-                        <MudItem xs="6" sm="3" md="3">
-                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha creación</MudText>
-                            <MudText Typo="Typo.body2" Style="font-weight: 600;">@DateTimeOrDash(SelectedPoliza.FechaCreacion)</MudText>
-                        </MudItem>
-                        <MudItem xs="12" sm="6" md="3">
-                            <MudText Typo="Typo.caption" Color="Color.Tertiary">Última modificación</MudText>
-                            <MudText Typo="Typo.body2" Style="font-weight: 600;">@DateTimeOrDash(SelectedPoliza.FechaModificacion)</MudText>
-                        </MudItem>
                     </MudGrid>
                 </MudPaper>
 
@@ -267,7 +255,6 @@
                             <MudTh><MudTableSortLabel SortLabel="TipoDetallePoliza" T="PolizaDetalleResponse">Tipo</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="ImporteDebe" T="PolizaDetalleResponse">Debe</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="ImporteHaber" T="PolizaDetalleResponse">Haber</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="PolizaDetalleResponse">Usuario</MudTableSortLabel></MudTh>
                         </Header>
                         <Row Context="detalle">
                             <MudTd>
@@ -295,10 +282,6 @@
                             <MudTd>@TextOrDash(detalle.TipoDetallePoliza)</MudTd>
                             <MudTd>@Money(detalle.ImporteDebe ?? 0m)</MudTd>
                             <MudTd>@Money(detalle.ImporteHaber ?? 0m)</MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2">@detalle.UsuarioCreacion</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@DateTimeOrDash(detalle.FechaCreacion)</MudText>
-                            </MudTd>
                         </Row>
                     </GenericTable>
                 </div>
@@ -597,9 +580,6 @@
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
-
-    private static string DateTimeOrDash(DateTime? value) =>
-        value.HasValue ? value.Value.ToString("dd/MM/yyyy HH:mm") : "-";
 
     private static Color DiferenciaColor(decimal? diferencia) =>
         decimal.Round(diferencia ?? 0m, 2) == 0m ? Color.Success : Color.Warning;

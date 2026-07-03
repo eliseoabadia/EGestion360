@@ -392,9 +392,15 @@
             1, 1, string.Empty, "PkidAutorizacionSuficiencia", SortDirection.Ascending,
             new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = solicitud.PkidSolicitudSuficiencia });
 
-        if (existing?.Items?.Any() == true)
+        if (existing?.Items?.Any(x => x.Estatus != 3) == true)
         {
             Snackbar.Add("Ya existe una autorización para esta solicitud.", Severity.Warning);
+            return;
+        }
+
+        if (details.Any(x => DetalleTotal(x) <= 0m))
+        {
+            Snackbar.Add("Todos los detalles deben tener importe antes de autorizar.", Severity.Warning);
             return;
         }
 
@@ -481,7 +487,14 @@
         }
 
         solicitud.Estatus = 3;
-        await Service.UpdateAsync(solicitud, solicitud.PkidSolicitudSuficiencia);
+        var updateResult = await Service.UpdateAsync(solicitud, solicitud.PkidSolicitudSuficiencia);
+        if (updateResult?.Success != true)
+        {
+            Snackbar.Add(updateResult?.Message ?? "La autorizacion se guardo, pero no se pudo actualizar el estatus de la solicitud.", Severity.Warning);
+            await ReloadData();
+            return;
+        }
+
         Snackbar.Add("Solicitud autorizada correctamente.", Severity.Success);
         await ReloadData();
     }

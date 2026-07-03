@@ -10,6 +10,7 @@ public sealed class GenericReportProvider : IReportProvider
     private readonly StoredProcedureReportRegistry _storedProcedureReports;
     private readonly StoredProcedureReportFactory _storedProcedureReportFactory;
     private readonly ReportConnectionConfigurator _reportConnectionConfigurator;
+    private readonly ReportContextParameterConfigurator _reportContextParameterConfigurator;
     private readonly ReportLogoConfigurator _reportLogoConfigurator;
 
     public GenericReportProvider(
@@ -17,12 +18,14 @@ public sealed class GenericReportProvider : IReportProvider
         StoredProcedureReportRegistry storedProcedureReports,
         StoredProcedureReportFactory storedProcedureReportFactory,
         ReportConnectionConfigurator reportConnectionConfigurator,
+        ReportContextParameterConfigurator reportContextParameterConfigurator,
         ReportLogoConfigurator reportLogoConfigurator)
     {
         _reportStorage = reportStorage;
         _storedProcedureReports = storedProcedureReports;
         _storedProcedureReportFactory = storedProcedureReportFactory;
         _reportConnectionConfigurator = reportConnectionConfigurator;
+        _reportContextParameterConfigurator = reportContextParameterConfigurator;
         _reportLogoConfigurator = reportLogoConfigurator;
     }
 
@@ -43,6 +46,7 @@ public sealed class GenericReportProvider : IReportProvider
             _ => throw ReportNotFound(request.Name)
         };
 
+        _reportContextParameterConfigurator.Apply(report, request);
         ApplyParameters(report, request);
         _reportConnectionConfigurator.Apply(report);
         _reportLogoConfigurator.Apply(report, request.Name);
@@ -58,6 +62,7 @@ public sealed class GenericReportProvider : IReportProvider
 
         using var stream = new MemoryStream(reportLayout);
         var report = XtraReport.FromXmlStream(stream, true);
+        _reportContextParameterConfigurator.Apply(report, request);
         ApplyParameters(report, request);
         _reportConnectionConfigurator.Apply(report);
         _reportLogoConfigurator.Apply(report, request.Name);

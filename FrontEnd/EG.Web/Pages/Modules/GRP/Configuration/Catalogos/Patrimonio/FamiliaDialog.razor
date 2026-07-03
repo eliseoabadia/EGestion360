@@ -34,7 +34,6 @@
             Required="true"
             For="@(() => item.Descripcion)" />
 
-        <MudSwitch T="bool" Value="item.Activo" ValueChanged="@(async (bool value) => { item.Activo = value; await Task.CompletedTask; })" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

@@ -10,7 +10,6 @@
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoPagoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
         <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 @code {

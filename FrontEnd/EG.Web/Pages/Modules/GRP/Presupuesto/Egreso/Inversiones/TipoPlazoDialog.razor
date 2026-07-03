@@ -10,7 +10,6 @@
     <BaseEntityForm TEntity="TipoPlazoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando tipo de plazo..." LoadingSkeletonRows="3">
         <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Required="true" />
         <MudNumericField T="int" @bind-Value="item.Dias" Label="Dias" Min="1" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

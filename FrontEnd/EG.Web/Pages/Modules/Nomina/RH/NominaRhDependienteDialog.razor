@@ -36,9 +36,6 @@
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="item.Parentesco" Label="Parentesco historico" Variant="Variant.Outlined" MaxLength="120" ReadOnly="true" />
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
-            </MudItem>
             <MudItem xs="12">
                 <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
                                    UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />

@@ -22,22 +22,14 @@ namespace EG.Application.Services.General
         {
             try
             {
-                var query = QueryUsuario(usuarioId);
-                var totalTask = query.CountAsync();
-                var pendientesTask = query.CountAsync(x => x.FkIdNotificacionEstado == 1);
-                var leidasTask = query.CountAsync(x => x.FkIdNotificacionEstado == 2);
-                var atendidasTask = query.CountAsync(x => x.FkIdNotificacionEstado == 3);
-                var accionTask = query.CountAsync(x => x.FkIdNotificacionEstado == 1 && x.Url != null && x.Url != string.Empty);
-
-                await Task.WhenAll(totalTask, pendientesTask, leidasTask, atendidasTask, accionTask);
-
                 var data = new NotificacionResumenResponse
                 {
-                    Total = totalTask.Result,
-                    Pendientes = pendientesTask.Result,
-                    Leidas = leidasTask.Result,
-                    Atendidas = atendidasTask.Result,
-                    RequierenAccion = accionTask.Result
+                    Total = await QueryUsuario(usuarioId).CountAsync(),
+                    Pendientes = await QueryUsuario(usuarioId).CountAsync(x => x.FkIdNotificacionEstado == 1),
+                    Leidas = await QueryUsuario(usuarioId).CountAsync(x => x.FkIdNotificacionEstado == 2),
+                    Atendidas = await QueryUsuario(usuarioId).CountAsync(x => x.FkIdNotificacionEstado == 3),
+                    RequierenAccion = await QueryUsuario(usuarioId)
+                        .CountAsync(x => x.FkIdNotificacionEstado == 1 && x.Url != null && x.Url != string.Empty)
                 };
 
                 return Success(data, "Resumen de notificaciones");

@@ -11,37 +11,37 @@
         <Item2 Ref="7" ControlType="XRPageInfo" Name="pageInfoPages" TextFormatString="Pagina {0} de {1}" TextAlignment="MiddleRight" SizeF="700,35" LocationFloat="1240.56,12" Dpi="254" Font="Arial, 7.5pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
       </Controls>
     </Item2>
-    <Item3 Ref="8" ControlType="ReportHeaderBand" Name="ReportHeader" HeightF="510.00003" Dpi="254">
+    <Item3 Ref="8" ControlType="ReportHeaderBand" Name="ReportHeader" HeightF="445" Dpi="254">
       <Controls>
-        <Item1 Ref="9" ControlType="XRPictureBox" Name="xrPictureBox1" Sizing="ZoomImage" SizeF="505.8589,270" LocationFloat="0,20" Dpi="254" />
-        <Item2 Ref="10" ControlType="XRLabel" Name="label1" CanGrow="false" Text="PLATAFORMA DE COMPRAS INTEGRAL" TextAlignment="MiddleCenter" SizeF="1345,34.999996" LocationFloat="595,26" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item3 Ref="11" ControlType="XRLabel" Name="xrLabel14" CanGrow="false" Text="DIRECCION DE ADMINISTRACION" TextAlignment="MiddleCenter" SizeF="1345,35" LocationFloat="595,68" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item4 Ref="12" ControlType="XRLabel" Name="xrLabel22" CanGrow="false" Text="SUBDIRECCION DE RECURSOS MATERIALES Y SERVICIOS GENERALES" TextAlignment="MiddleCenter" SizeF="1345,42" LocationFloat="595,110" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item5 Ref="13" ControlType="XRLabel" Name="xrLabel9" CanGrow="false" Text="REPORTE DE POLIZA" TextAlignment="MiddleCenter" SizeF="1345,61.999985" LocationFloat="595,177.00002" Dpi="254" Font="Arial, 13pt, style=Bold" ForeColor="255,32,62,92" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item6 Ref="14" ControlType="XRLabel" Name="labelReportMeta" CanGrow="false" Text="Documento contable generado desde EGestion360" TextAlignment="MiddleCenter" SizeF="1345,32" LocationFloat="595,238" Dpi="254" Font="Arial, 7.75pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item7 Ref="15" ControlType="XRLine" Name="lineHeader" SizeF="1940.5602,5.080017" LocationFloat="0,305" Dpi="254" ForeColor="255,203,213,225" />
-        <Item8 Ref="16" ControlType="XRPanel" Name="panelPolizaInfo" SizeF="1940.5602,175" LocationFloat="0,335.00003" Dpi="254" BackColor="255,245,248,252" BorderColor="255,203,213,225" Borders="All" BorderWidth="1">
+        <Item1 Ref="9" ControlType="XRPictureBox" Name="xrPictureBox1" Sizing="ZoomImage" SizeF="430,145" LocationFloat="0,25" Dpi="254" />
+        <Item2 Ref="10" ControlType="XRLabel" Name="label1" CanGrow="false" Text="PLATAFORMA DE COMPRAS INTEGRAL" TextAlignment="MiddleRight" SizeF="1420.5602,30" LocationFloat="520,22" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item3 Ref="11" ControlType="XRLabel" Name="xrLabel14" CanGrow="false" Text="DIRECCION DE ADMINISTRACION" TextAlignment="MiddleRight" SizeF="1420.5602,30" LocationFloat="520,55" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item4 Ref="12" ControlType="XRLabel" Name="xrLabel22" CanGrow="false" Text="SUBDIRECCION DE RECURSOS MATERIALES Y SERVICIOS GENERALES" TextAlignment="MiddleRight" SizeF="1420.5602,34" LocationFloat="520,88" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item5 Ref="13" ControlType="XRLabel" Name="xrLabel9" CanGrow="false" Text="REPORTE DE POLIZA" TextAlignment="MiddleRight" SizeF="1420.5602,58" LocationFloat="520,135" Dpi="254" Font="Arial, 15pt, style=Bold" ForeColor="255,32,62,92" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item6 Ref="14" ControlType="XRLabel" Name="labelReportMeta" CanGrow="false" Text="Documento contable generado desde EGestion360" TextAlignment="MiddleRight" SizeF="1420.5602,28" LocationFloat="520,198" Dpi="254" Font="Arial, 7.5pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item7 Ref="15" ControlType="XRLine" Name="lineHeader" SizeF="1940.5602,5.080017" LocationFloat="0,250" Dpi="254" ForeColor="255,203,213,225" />
+        <Item8 Ref="16" ControlType="XRPanel" Name="panelPolizaInfo" SizeF="1940.5602,150" LocationFloat="0,275" Dpi="254" BackColor="255,250,252,255" BorderColor="255,203,213,225" Borders="All" BorderWidth="1">
           <Controls>
-            <Item1 Ref="17" ControlType="XRLabel" Name="capPoliza" CanGrow="false" Text="Poliza" TextAlignment="MiddleLeft" SizeF="120,32" LocationFloat="25,22" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-            <Item2 Ref="18" ControlType="XRLabel" Name="xrLabel3" CanGrow="false" TextAlignment="MiddleLeft" SizeF="270.00003,32" LocationFloat="145,22" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+            <Item1 Ref="17" ControlType="XRLabel" Name="capPoliza" CanGrow="false" Text="Poliza" TextAlignment="MiddleLeft" SizeF="105,30" LocationFloat="25,20" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+            <Item2 Ref="18" ControlType="XRLabel" Name="xrLabel3" CanGrow="false" TextAlignment="MiddleLeft" SizeF="320,30" LocationFloat="130,20" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
               <ExpressionBindings>
                 <Item1 Ref="19" EventName="BeforePrint" PropertyName="Text" Expression="[ClavePoliza]" />
               </ExpressionBindings>
             </Item2>
-            <Item3 Ref="20" ControlType="XRLabel" Name="capTipo" CanGrow="false" Text="Tipo" TextAlignment="MiddleLeft" SizeF="100,32" LocationFloat="470,22" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-            <Item4 Ref="21" ControlType="XRLabel" Name="xrLabel12" CanGrow="false" TextAlignment="MiddleLeft" SizeF="380,32" LocationFloat="570,22" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+            <Item3 Ref="20" ControlType="XRLabel" Name="capTipo" CanGrow="false" Text="Tipo" TextAlignment="MiddleLeft" SizeF="100,30" LocationFloat="520,20" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+            <Item4 Ref="21" ControlType="XRLabel" Name="xrLabel12" CanGrow="false" TextAlignment="MiddleLeft" SizeF="420,30" LocationFloat="620,20" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
               <ExpressionBindings>
                 <Item1 Ref="22" EventName="BeforePrint" PropertyName="Text" Expression="[Descripcion]" />
               </ExpressionBindings>
             </Item4>
-            <Item5 Ref="23" ControlType="XRLabel" Name="capFecha" CanGrow="false" Text="Fecha" TextAlignment="MiddleLeft" SizeF="120,32" LocationFloat="1280,22" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-            <Item6 Ref="24" ControlType="XRLabel" Name="xrLabel11" CanGrow="false" TextAlignment="MiddleRight" SizeF="490,32" LocationFloat="1400,22" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+            <Item5 Ref="23" ControlType="XRLabel" Name="capFecha" CanGrow="false" Text="Fecha" TextAlignment="MiddleLeft" SizeF="120,30" LocationFloat="1370,20" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+            <Item6 Ref="24" ControlType="XRLabel" Name="xrLabel11" CanGrow="false" TextAlignment="MiddleRight" SizeF="400,30" LocationFloat="1490,20" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
               <ExpressionBindings>
                 <Item1 Ref="25" EventName="BeforePrint" PropertyName="Text" Expression="[FechaPoliza]" />
               </ExpressionBindings>
             </Item6>
-            <Item7 Ref="26" ControlType="XRLabel" Name="capConcepto" CanGrow="false" Text="Concepto" TextAlignment="MiddleLeft" SizeF="150,41.999992" LocationFloat="25,92.00001" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-            <Item8 Ref="27" ControlType="XRLabel" Name="xrLabel6" CanGrow="false" TextAlignment="MiddleLeft" SizeF="1715,41.999992" LocationFloat="175,92.00001" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+            <Item7 Ref="26" ControlType="XRLabel" Name="capConcepto" CanGrow="false" Text="Concepto" TextAlignment="MiddleLeft" SizeF="165,42" LocationFloat="25,82" Dpi="254" Font="Arial, 7.25pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+            <Item8 Ref="27" ControlType="XRLabel" Name="xrLabel6" CanGrow="false" TextAlignment="MiddleLeft" SizeF="1700,42" LocationFloat="190,82" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
               <ExpressionBindings>
                 <Item1 Ref="28" EventName="BeforePrint" PropertyName="Text" Expression="[NombrePoliza]" />
               </ExpressionBindings>
@@ -52,25 +52,25 @@
     </Item3>
     <Item4 Ref="29" ControlType="GroupHeaderBand" Name="GroupHeader1" GroupUnion="WithFirstDetail" Level="1" HeightF="0" Dpi="254" Visible="false" />
     <Item5 Ref="30" ControlType="GroupHeaderBand" Name="GroupHeader2" GroupUnion="WithFirstDetail" Level="2" HeightF="0" Dpi="254" Visible="false" />
-    <Item6 Ref="31" ControlType="DetailBand" Name="Detail" HeightF="123.079994" Dpi="254">
+    <Item6 Ref="31" ControlType="DetailBand" Name="Detail" HeightF="112" Dpi="254">
       <HierarchyPrintOptions Ref="32" Indent="50.8" />
       <Controls>
-        <Item1 Ref="33" ControlType="XRLabel" Name="xrLabel28" CanGrow="false" TextAlignment="MiddleLeft" SizeF="250.00002,34" LocationFloat="0,10" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+        <Item1 Ref="33" ControlType="XRLabel" Name="xrLabel28" CanGrow="false" TextAlignment="MiddleLeft" SizeF="600,32" LocationFloat="0,10" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
           <ExpressionBindings>
             <Item1 Ref="34" EventName="BeforePrint" PropertyName="Text" Expression="[ClaveNombre]" />
           </ExpressionBindings>
         </Item1>
-        <Item2 Ref="35" ControlType="XRLabel" Name="labelCuentaOrd" CanGrow="false" TextAlignment="MiddleLeft" SizeF="540,32" LocationFloat="0,48" Dpi="254" Font="Arial, 7.25pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+        <Item2 Ref="35" ControlType="XRLabel" Name="labelCuentaOrd" CanGrow="false" TextAlignment="TopLeft" SizeF="600,44" LocationFloat="0,48" Dpi="254" Font="Arial, 7pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
           <ExpressionBindings>
             <Item1 Ref="36" EventName="BeforePrint" PropertyName="Text" Expression="[ClaveOrd]" />
           </ExpressionBindings>
         </Item2>
-        <Item3 Ref="37" ControlType="XRLabel" Name="xrLabel27" CanGrow="false" TextAlignment="MiddleLeft" SizeF="820.0001,34" LocationFloat="560,10" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+        <Item3 Ref="37" ControlType="XRLabel" Name="xrLabel27" CanGrow="false" TextAlignment="MiddleLeft" SizeF="760,32" LocationFloat="620,10" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
           <ExpressionBindings>
             <Item1 Ref="38" EventName="BeforePrint" PropertyName="Text" Expression="[DDetalle]" />
           </ExpressionBindings>
         </Item3>
-        <Item4 Ref="39" ControlType="XRLabel" Name="xrLabel26" CanGrow="false" TextAlignment="MiddleLeft" SizeF="820.0001,34.000008" LocationFloat="560,48" Dpi="254" Font="Arial, 7.75pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
+        <Item4 Ref="39" ControlType="XRLabel" Name="xrLabel26" CanGrow="false" TextAlignment="TopLeft" SizeF="760,44" LocationFloat="620,48" Dpi="254" Font="Arial, 7.75pt" ForeColor="255,100,116,139" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1">
           <ExpressionBindings>
             <Item1 Ref="40" EventName="BeforePrint" PropertyName="Text" Expression="[DescCuenta]" />
           </ExpressionBindings>
@@ -85,52 +85,52 @@
             <Item1 Ref="44" EventName="BeforePrint" PropertyName="Text" Expression="[ImporteHaber]" />
           </ExpressionBindings>
         </Item6>
-        <Item7 Ref="45" ControlType="XRLine" Name="lineDetail" SizeF="1940.5602,5.079994" LocationFloat="0,118" Dpi="254" ForeColor="255,203,213,225" />
+        <Item7 Ref="45" ControlType="XRLine" Name="lineDetail" SizeF="1940.5602,5.079994" LocationFloat="0,106" Dpi="254" ForeColor="255,203,213,225" />
       </Controls>
     </Item6>
     <Item7 Ref="46" ControlType="GroupFooterBand" Name="GroupFooter1" GroupUnion="WithLastDetail" HeightF="0" Dpi="254" Visible="false" />
     <Item8 Ref="47" ControlType="GroupFooterBand" Name="GroupFooter2" Level="1" HeightF="0" Dpi="254" Visible="false" />
     <Item9 Ref="48" ControlType="ReportFooterBand" Name="ReportFooter" HeightF="305" Dpi="254">
       <Controls>
-        <Item1 Ref="49" ControlType="XRLabel" Name="xrLabel16" CanGrow="false" Text="SUMAS IGUALES" TextAlignment="MiddleLeft" SizeF="900,78" LocationFloat="0,10" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Top, Bottom" BorderWidth="1" />
-        <Item2 Ref="50" ControlType="XRLabel" Name="label9" TextFormatString="{0:$#,##0.00;($#,##0.00);}" CanGrow="false" TextAlignment="MiddleRight" SizeF="269.99988,78" LocationFloat="1400,10" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="Top, Bottom" BorderWidth="1">
+        <Item1 Ref="49" ControlType="XRLabel" Name="xrLabel16" CanGrow="false" Text="SUMAS IGUALES" TextAlignment="MiddleRight" SizeF="1400,70" LocationFloat="0,10" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,31,41,55" BackColor="255,245,248,252" Padding="11,21,0,0,254" BorderColor="255,203,213,225" Borders="All" BorderWidth="1" />
+        <Item2 Ref="50" ControlType="XRLabel" Name="label9" TextFormatString="{0:$#,##0.00;($#,##0.00);}" CanGrow="false" TextAlignment="MiddleRight" SizeF="269.99988,70" LocationFloat="1400,10" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,17,24,39" BackColor="255,245,248,252" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="All" BorderWidth="1">
           <Summary Ref="51" Running="Report" />
           <ExpressionBindings>
             <Item1 Ref="52" EventName="BeforePrint" PropertyName="Text" Expression="sumSum([ImporteDebe])" />
           </ExpressionBindings>
         </Item2>
-        <Item3 Ref="53" ControlType="XRLabel" Name="label11" TextFormatString="{0:$#,##0.00;($#,##0.00);}" CanGrow="false" TextAlignment="MiddleRight" SizeF="270.55994,78" LocationFloat="1670.0001,10" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="Top, Bottom" BorderWidth="1">
+        <Item3 Ref="53" ControlType="XRLabel" Name="label11" TextFormatString="{0:$#,##0.00;($#,##0.00);}" CanGrow="false" TextAlignment="MiddleRight" SizeF="270.55994,70" LocationFloat="1670.0001,10" Dpi="254" Font="Arial, 9pt, style=Bold" ForeColor="255,17,24,39" BackColor="255,245,248,252" Padding="16,16,0,0,254" BorderColor="255,203,213,225" Borders="All" BorderWidth="1">
           <Summary Ref="54" Running="Report" />
           <ExpressionBindings>
             <Item1 Ref="55" EventName="BeforePrint" PropertyName="Text" Expression="sumSum([ImporteHaber])" />
           </ExpressionBindings>
         </Item3>
-        <Item4 Ref="56" ControlType="XRLabel" Name="signHecho" CanGrow="false" Text="Hecho por" TextAlignment="TopLeft" SizeF="360,50" LocationFloat="0,145" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
-        <Item5 Ref="57" ControlType="XRLabel" Name="signRevisado" CanGrow="false" Text="Revisado por" TextAlignment="TopLeft" SizeF="360,50" LocationFloat="360,145" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
-        <Item6 Ref="58" ControlType="XRLabel" Name="signAutorizado" CanGrow="false" Text="Autorizado por" TextAlignment="TopLeft" SizeF="430,50" LocationFloat="720,145" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
-        <Item7 Ref="59" ControlType="XRLabel" Name="xrLabel20" CanGrow="false" Text="Diario No." TextAlignment="TopLeft" SizeF="390,50" LocationFloat="1150,145" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
-        <Item8 Ref="60" ControlType="XRLabel" Name="xrLabel21" CanGrow="false" Text="Poliza No." TextAlignment="TopLeft" SizeF="400.56006,50" LocationFloat="1540,145" Dpi="254" Font="Arial, 7.75pt, style=Bold" ForeColor="255,100,116,139" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top, Right" BorderWidth="1" />
-        <Item9 Ref="61" ControlType="XRLabel" Name="signHechoLine" CanGrow="false" TextAlignment="MiddleCenter" SizeF="360,110" LocationFloat="0,195" Dpi="254" Font="Arial, 8pt" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1" />
-        <Item10 Ref="62" ControlType="XRLabel" Name="signRevisadoLine" CanGrow="false" TextAlignment="MiddleCenter" SizeF="360,110" LocationFloat="360,195" Dpi="254" Font="Arial, 8pt" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1" />
-        <Item11 Ref="63" ControlType="XRLabel" Name="signAutorizadoLine" CanGrow="false" TextAlignment="MiddleCenter" SizeF="430,110" LocationFloat="720,195" Dpi="254" Font="Arial, 8pt" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1" />
-        <Item12 Ref="64" ControlType="XRLabel" Name="xrLabel23" CanGrow="false" TextAlignment="MiddleCenter" SizeF="390,110" LocationFloat="1150,195" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1">
+        <Item4 Ref="56" ControlType="XRLabel" Name="signHecho" CanGrow="false" Text="Hecho por" TextAlignment="MiddleCenter" SizeF="360,42" LocationFloat="0,130" Dpi="254" Font="Arial, 7.5pt, style=Bold" ForeColor="255,100,116,139" BackColor="255,245,248,252" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
+        <Item5 Ref="57" ControlType="XRLabel" Name="signRevisado" CanGrow="false" Text="Revisado por" TextAlignment="MiddleCenter" SizeF="360,42" LocationFloat="360,130" Dpi="254" Font="Arial, 7.5pt, style=Bold" ForeColor="255,100,116,139" BackColor="255,245,248,252" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
+        <Item6 Ref="58" ControlType="XRLabel" Name="signAutorizado" CanGrow="false" Text="Autorizado por" TextAlignment="MiddleCenter" SizeF="430,42" LocationFloat="720,130" Dpi="254" Font="Arial, 7.5pt, style=Bold" ForeColor="255,100,116,139" BackColor="255,245,248,252" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
+        <Item7 Ref="59" ControlType="XRLabel" Name="xrLabel20" CanGrow="false" Text="Diario No." TextAlignment="MiddleCenter" SizeF="390,42" LocationFloat="1150,130" Dpi="254" Font="Arial, 7.5pt, style=Bold" ForeColor="255,100,116,139" BackColor="255,245,248,252" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top" BorderWidth="1" />
+        <Item8 Ref="60" ControlType="XRLabel" Name="xrLabel21" CanGrow="false" Text="Poliza No." TextAlignment="MiddleCenter" SizeF="400.56006,42" LocationFloat="1540,130" Dpi="254" Font="Arial, 7.5pt, style=Bold" ForeColor="255,100,116,139" BackColor="255,245,248,252" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Top, Right" BorderWidth="1" />
+        <Item9 Ref="61" ControlType="XRLabel" Name="signHechoLine" CanGrow="false" TextAlignment="MiddleCenter" SizeF="360,105" LocationFloat="0,172" Dpi="254" Font="Arial, 8pt" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1" />
+        <Item10 Ref="62" ControlType="XRLabel" Name="signRevisadoLine" CanGrow="false" TextAlignment="MiddleCenter" SizeF="360,105" LocationFloat="360,172" Dpi="254" Font="Arial, 8pt" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1" />
+        <Item11 Ref="63" ControlType="XRLabel" Name="signAutorizadoLine" CanGrow="false" TextAlignment="MiddleCenter" SizeF="430,105" LocationFloat="720,172" Dpi="254" Font="Arial, 8pt" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1" />
+        <Item12 Ref="64" ControlType="XRLabel" Name="xrLabel23" CanGrow="false" TextAlignment="MiddleCenter" SizeF="390,105" LocationFloat="1150,172" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Bottom" BorderWidth="1">
           <ExpressionBindings>
             <Item1 Ref="65" EventName="BeforePrint" PropertyName="Text" Expression="[Descripcion]" />
           </ExpressionBindings>
         </Item12>
-        <Item13 Ref="66" ControlType="XRLabel" Name="xrLabel13" CanGrow="false" TextAlignment="MiddleCenter" SizeF="400.56006,110" LocationFloat="1540,195" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,31,41,55" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Right, Bottom" BorderWidth="1">
+        <Item13 Ref="66" ControlType="XRLabel" Name="xrLabel13" CanGrow="false" TextAlignment="MiddleCenter" SizeF="400.56006,105" LocationFloat="1540,172" Dpi="254" Font="Arial, 8.75pt, style=Bold" ForeColor="255,17,24,39" BackColor="Transparent" Padding="11,11,0,0,254" BorderColor="255,203,213,225" Borders="Left, Right, Bottom" BorderWidth="1">
           <ExpressionBindings>
             <Item1 Ref="67" EventName="BeforePrint" PropertyName="Text" Expression="[ClavePoliza]" />
           </ExpressionBindings>
         </Item13>
       </Controls>
     </Item9>
-    <Item10 Ref="68" ControlType="PageHeaderBand" Name="PageHeader" HeightF="62" Dpi="254">
+    <Item10 Ref="68" ControlType="PageHeaderBand" Name="PageHeader" HeightF="66" Dpi="254">
       <Controls>
-        <Item1 Ref="69" ControlType="XRLabel" Name="xrLabel7" CanGrow="false" Text="No. cuenta" TextAlignment="MiddleLeft" SizeF="560,62" LocationFloat="0,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item2 Ref="70" ControlType="XRLabel" Name="xrLabel8" CanGrow="false" Text="Concepto o movimiento" TextAlignment="MiddleLeft" SizeF="840.0001,62" LocationFloat="560,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item3 Ref="71" ControlType="XRLabel" Name="xrLabel2" CanGrow="false" Text="Debe" TextAlignment="MiddleRight" SizeF="269.99988,62" LocationFloat="1400,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
-        <Item4 Ref="72" ControlType="XRLabel" Name="xrLabel10" CanGrow="false" Text="Haber" TextAlignment="MiddleRight" SizeF="270.55994,62" LocationFloat="1670.0001,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item1 Ref="69" ControlType="XRLabel" Name="xrLabel7" CanGrow="false" Text="Cuenta contable" TextAlignment="MiddleLeft" SizeF="620,66" LocationFloat="0,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item2 Ref="70" ControlType="XRLabel" Name="xrLabel8" CanGrow="false" Text="Concepto o movimiento" TextAlignment="MiddleLeft" SizeF="780.0001,66" LocationFloat="620,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item3 Ref="71" ControlType="XRLabel" Name="xrLabel2" CanGrow="false" Text="Debe" TextAlignment="MiddleRight" SizeF="269.99988,66" LocationFloat="1400,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
+        <Item4 Ref="72" ControlType="XRLabel" Name="xrLabel10" CanGrow="false" Text="Haber" TextAlignment="MiddleRight" SizeF="270.55994,66" LocationFloat="1670.0001,0" Dpi="254" Font="Arial, 8.25pt, style=Bold" ForeColor="White" BackColor="255,32,62,92" Padding="21,21,0,0,254" BorderColor="255,203,213,225" Borders="None" BorderWidth="1" />
       </Controls>
     </Item10>
   </Bands>

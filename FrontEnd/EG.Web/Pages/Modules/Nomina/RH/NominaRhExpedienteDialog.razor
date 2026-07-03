@@ -103,9 +103,6 @@
                                Disabled="@(item.NecesitaRenovacion != true)"
                                Required="@(item.NecesitaRenovacion == true)" />
             </MudItem>
-            <MudItem xs="12" md="4">
-                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
-            </MudItem>
             <MudItem xs="12">
                 <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion"
                                    FechaCreacion="@item.FechaCreacion"

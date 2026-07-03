@@ -29,8 +29,6 @@
                 <MudTh><MudTableSortLabel SortLabel="PkidEstatusSolicitud" T="EstatusSolicitudResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EstatusSolicitudResponse">Descripción</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Color" T="EstatusSolicitudResponse">Color</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="EstatusSolicitudResponse">Fecha Creación</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="EstatusSolicitudResponse">Usuario Creación</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -52,8 +50,6 @@
                 <MudTd>@item.PkidEstatusSolicitud</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
                 <MudTd>@item.Color</MudTd>
-                <MudTd>@(item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "")</MudTd>
-                <MudTd>@item.UsuarioCreacion</MudTd>
             </Row>
         </GenericTable>
     </MudContainer>

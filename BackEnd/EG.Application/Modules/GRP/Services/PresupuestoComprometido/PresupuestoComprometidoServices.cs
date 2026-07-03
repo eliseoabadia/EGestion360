@@ -1,9 +1,11 @@
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
+using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.PresupuestoComprometido
 {
@@ -22,6 +24,111 @@ namespace EG.Application.Services.PresupuestoComprometido
             response => response.PkidAutorizacionSuficiencia,
             BuildParameters)
     {
+        private readonly EGestionContext _context = context;
+
+        public override async Task<PagedResult<AutorizacionSuficienciaResponse>> CreateAsync(
+            AutorizacionSuficienciaResponse response,
+            int usuarioActual)
+        {
+            var validation = await NormalizeAndValidateAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<AutorizacionSuficienciaResponse>> UpdateAsync(
+            int id,
+            AutorizacionSuficienciaResponse response,
+            int usuarioActual)
+        {
+            var validation = await NormalizeAndValidateAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        private async Task<PagedResult<AutorizacionSuficienciaResponse>?> NormalizeAndValidateAsync(
+            AutorizacionSuficienciaResponse response,
+            int? currentId)
+        {
+            if (response == null)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("La autorizacion no contiene datos.");
+            }
+
+            if (response.FkidSolicitudSuficienciaPres <= 0)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("Debe seleccionar una solicitud de suficiencia.");
+            }
+
+            var solicitud = await _context.SolicitudSuficiencia
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSuficiencia == response.FkidSolicitudSuficienciaPres && x.Activo);
+
+            if (solicitud == null)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("La solicitud de suficiencia no existe o esta inactiva.");
+            }
+
+            if (solicitud.Estatus == 4)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("No se puede autorizar una solicitud rechazada.");
+            }
+
+            var duplicate = await _context.AutorizacionSuficiencia
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Activo &&
+                    x.FkidSolicitudSuficienciaPres == response.FkidSolicitudSuficienciaPres &&
+                    x.PkidAutorizacionSuficiencia != (currentId ?? response.PkidAutorizacionSuficiencia) &&
+                    x.Estatus != 3);
+
+            if (duplicate)
+            {
+                return Failure<AutorizacionSuficienciaResponse>(
+                    "Ya existe una autorizacion activa para esta solicitud de suficiencia.",
+                    "DUPLICATE");
+            }
+
+            var hasDetails = await _context.SolicitudSuficienciaDetalles
+                .AsNoTracking()
+                .AnyAsync(x => x.FkidSolicitudSuficienciaPres == solicitud.PkidSolicitudSuficiencia && x.Activo);
+
+            if (!hasDetails)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("La solicitud no tiene detalle para autorizar.");
+            }
+
+            if (response.AutorizadoPorNom <= 0)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("Debe indicar la persona autorizadora.");
+            }
+
+            var personaExists = await _context.Personas
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidPersona == response.AutorizadoPorNom && x.Activo);
+
+            if (!personaExists)
+            {
+                return Failure<AutorizacionSuficienciaResponse>("La persona autorizadora no existe o esta inactiva.");
+            }
+
+            response.FkidEmpresaSis = solicitud.FkidEmpresaSis;
+            response.FechaSolicitud = solicitud.FechaSolicitud;
+            response.FechaAutorizacion = response.FechaAutorizacion == default
+                ? DateOnly.FromDateTime(DateTime.Today)
+                : response.FechaAutorizacion;
+            response.Justificacion = string.IsNullOrWhiteSpace(response.Justificacion)
+                ? solicitud.Justificacion ?? string.Empty
+                : response.Justificacion.Trim();
+            response.GastoNoProgramable = string.IsNullOrWhiteSpace(response.GastoNoProgramable)
+                ? solicitud.GastoNoProgramable
+                : response.GastoNoProgramable.Trim();
+            response.IdGastoNoProgramable ??= solicitud.IdGastoNoProgramable;
+            response.IdCompromisoNomina ??= solicitud.IdCompromisoNomina;
+            response.Observaciones ??= string.Empty;
+            response.Estatus = response.Estatus <= 0 ? 2 : response.Estatus;
+            response.Activo = true;
+
+            return null;
+        }
+
         private static SqlParameter[] BuildParameters(int action, int? id, AutorizacionSuficienciaResponse? response, int? usuarioActual)
         {
             return new[]
@@ -65,9 +172,136 @@ namespace EG.Application.Services.PresupuestoComprometido
             response => response.PkidAutorizacionSuficienciaDetalle,
             BuildParameters)
     {
+        private readonly EGestionContext _context = context;
+
         protected override int CreateAction => 5;
         protected override int UpdateAction => 6;
         protected override int DeleteAction => 7;
+
+        public override async Task<PagedResult<AutorizacionSuficienciaDetalleResponse>> CreateAsync(
+            AutorizacionSuficienciaDetalleResponse response,
+            int usuarioActual)
+        {
+            var validation = await NormalizeAndValidateAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<AutorizacionSuficienciaDetalleResponse>> UpdateAsync(
+            int id,
+            AutorizacionSuficienciaDetalleResponse response,
+            int usuarioActual)
+        {
+            var validation = await NormalizeAndValidateAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        private async Task<PagedResult<AutorizacionSuficienciaDetalleResponse>?> NormalizeAndValidateAsync(
+            AutorizacionSuficienciaDetalleResponse response,
+            int? currentId)
+        {
+            if (response == null)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("El detalle de autorizacion no contiene datos.");
+            }
+
+            if (response.FkidAutorizacionSuficienciaPres <= 0)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("Debe existir una autorizacion de suficiencia.");
+            }
+
+            if (response.FkidSolicitudSuficienciaDetallePres <= 0)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("Debe seleccionar un detalle de solicitud de suficiencia.");
+            }
+
+            var autorizacion = await _context.AutorizacionSuficiencia
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x =>
+                    x.PkidAutorizacionSuficiencia == response.FkidAutorizacionSuficienciaPres &&
+                    x.Activo);
+
+            if (autorizacion == null)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("La autorizacion de suficiencia no existe o esta inactiva.");
+            }
+
+            if (autorizacion.Estatus == 3)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("No se pueden agregar detalles a una autorizacion cancelada.");
+            }
+
+            var solicitudDetalle = await _context.SolicitudSuficienciaDetalles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x =>
+                    x.PkidSolicitudSuficienciaDetalle == response.FkidSolicitudSuficienciaDetallePres &&
+                    x.Activo);
+
+            if (solicitudDetalle == null)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("El detalle de solicitud no existe o esta inactivo.");
+            }
+
+            if (solicitudDetalle.FkidSolicitudSuficienciaPres != autorizacion.FkidSolicitudSuficienciaPres)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("El detalle no pertenece a la solicitud autorizada.");
+            }
+
+            var duplicate = await _context.AutorizacionSuficienciaDetalles
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Activo &&
+                    x.FkidAutorizacionSuficienciaPres == response.FkidAutorizacionSuficienciaPres &&
+                    x.FkidSolicitudSuficienciaDetallePres == response.FkidSolicitudSuficienciaDetallePres &&
+                    x.PkidAutorizacionSuficienciaDetalle != (currentId ?? response.PkidAutorizacionSuficienciaDetalle));
+
+            if (duplicate)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>(
+                    "El detalle seleccionado ya esta agregado en esta autorizacion.",
+                    "DUPLICATE");
+            }
+
+            response.FkidEmpresaSis = autorizacion.FkidEmpresaSis;
+            response.FkidSolicitudSuficienciaPres = autorizacion.FkidSolicitudSuficienciaPres;
+            response.FkidPartidaConta = solicitudDetalle.FkidPartidaConta;
+            response.Observaciones ??= solicitudDetalle.Observaciones ?? string.Empty;
+            response.Enero ??= solicitudDetalle.Enero;
+            response.Febrero ??= solicitudDetalle.Febrero;
+            response.Marzo ??= solicitudDetalle.Marzo;
+            response.Abril ??= solicitudDetalle.Abril;
+            response.Mayo ??= solicitudDetalle.Mayo;
+            response.Junio ??= solicitudDetalle.Junio;
+            response.Julio ??= solicitudDetalle.Julio;
+            response.Agosto ??= solicitudDetalle.Agosto;
+            response.Septiembre ??= solicitudDetalle.Septiembre;
+            response.Octubre ??= solicitudDetalle.Octubre;
+            response.Noviembre ??= solicitudDetalle.Noviembre;
+            response.Diciembre ??= solicitudDetalle.Diciembre;
+            response.Activo = true;
+
+            if (MonthlyTotal(response) <= 0m)
+            {
+                return Failure<AutorizacionSuficienciaDetalleResponse>("El detalle autorizado debe tener importe mayor a cero.");
+            }
+
+            return null;
+        }
+
+        private static decimal MonthlyTotal(AutorizacionSuficienciaDetalleResponse response)
+        {
+            return response.Enero.GetValueOrDefault() +
+                   response.Febrero.GetValueOrDefault() +
+                   response.Marzo.GetValueOrDefault() +
+                   response.Abril.GetValueOrDefault() +
+                   response.Mayo.GetValueOrDefault() +
+                   response.Junio.GetValueOrDefault() +
+                   response.Julio.GetValueOrDefault() +
+                   response.Agosto.GetValueOrDefault() +
+                   response.Septiembre.GetValueOrDefault() +
+                   response.Octubre.GetValueOrDefault() +
+                   response.Noviembre.GetValueOrDefault() +
+                   response.Diciembre.GetValueOrDefault();
+        }
 
         private static SqlParameter[] BuildParameters(int action, int? id, AutorizacionSuficienciaDetalleResponse? response, int? usuarioActual)
         {

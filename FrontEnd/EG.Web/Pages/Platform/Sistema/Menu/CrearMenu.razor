@@ -11,7 +11,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Class="mr-2" />
-            Crear Nuevo Menú @(!string.IsNullOrEmpty(NombreMenuPadre) ? $"(Submenú de: {NombreMenuPadre})" : "(Menú Principal)")
+            Crear Nuevo Menï¿½ @(!string.IsNullOrEmpty(NombreMenuPadre) ? $"(Submenï¿½ de: {NombreMenuPadre})" : "(Menï¿½ Principal)")
         </MudText>
     </TitleContent>
 
@@ -19,7 +19,7 @@
         <MudGrid Spacing="3" Class="mt-2">
             <MudItem xs="12">
                 <MudTextField @bind-Value="menu.Nombre"
-                              Label="Nombre del Menú *"
+                              Label="Nombre del Menï¿½ *"
                               Variant="Variant.Outlined"
                               For="@(() => menu.Nombre)"
                               Required="true"
@@ -47,7 +47,7 @@
                                  Max="999"
                                  Required="true"
                                  RequiredError="El orden es requerido"
-                                 HelperText="Número de orden de visualización" />
+                                 HelperText="Nï¿½mero de orden de visualizaciï¿½n" />
             </MudItem>
 
             <MudItem xs="12">
@@ -86,22 +86,17 @@
                 </MudAutocomplete>
 
                 <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mt-1">
-                    Selecciona un icono para el menú
+                    Selecciona un icono para el menï¿½
                 </MudText>
             </MudItem>
 
-            <MudItem xs="12" sm="6">
-                <MudSwitch @bind-Value="menu.Activo"
-                           Color="Color.Success"
-                           Label="Activo" />
-            </MudItem>
 
             <MudItem xs="12">
                 <MudTextField @bind-Value="menu.ValidacionEstructura"
-                              Label="Validación"
+                              Label="Validaciï¿½n"
                               Variant="Variant.Outlined"
                               MaxLength="500"
-                              HelperText="Reglas de validación (opcional)" />
+                              HelperText="Reglas de validaciï¿½n (opcional)" />
             </MudItem>
         </MudGrid>
     </DialogContent>
@@ -178,7 +173,7 @@
         {
             if (string.IsNullOrWhiteSpace(menu.Nombre))
             {
-                Snackbar.Add("El nombre del menú es requerido", Severity.Warning);
+                Snackbar.Add("El nombre del menï¿½ es requerido", Severity.Warning);
                 return;
             }
 
@@ -191,12 +186,12 @@
             var response = await _service.CreateAsync(menu);
             if (response != null && response.Success)
             {
-                Snackbar.Add("Menú creado exitosamente", Severity.Success);
+                Snackbar.Add("Menï¿½ creado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al crear el menú", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al crear el menï¿½", Severity.Error);
             }
         }
         catch (Exception ex)

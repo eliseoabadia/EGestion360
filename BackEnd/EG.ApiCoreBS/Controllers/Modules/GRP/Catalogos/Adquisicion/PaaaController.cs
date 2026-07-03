@@ -132,6 +132,11 @@ private void ConfigureService()
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
 
+                if (!await ProyectoOrcoExistsAsync(dto.FkidProyectoOrco, dto.UsuarioCreacion))
+                {
+                    return BadRequest(InvalidProyectoResult(dto.FkidProyectoOrco));
+                }
+
                 if (!await _service.CanAddAsync(dto))
                 {
                     return Conflict(new PagedResult<PaaaResponse>
@@ -191,6 +196,11 @@ private void ConfigureService()
                 dto.PkidPaaas = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
+
+                if (!await ProyectoOrcoExistsAsync(dto.FkidProyectoOrco, dto.UsuarioModificacion ?? _userContext.GetCurrentUserId()))
+                {
+                    return BadRequest(InvalidProyectoResult(dto.FkidProyectoOrco));
+                }
 
                 if (!await _service.CanUpdateAsync(id, dto))
                 {
@@ -758,6 +768,24 @@ catch (Exception ex)
         }
 
         return int.TryParse(raw.ToString(), out value);
+    }
+
+    private Task<bool> ProyectoOrcoExistsAsync(int? proyectoId, int usuarioId)
+    {
+        return OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, proyectoId, usuarioId);
+    }
+
+    private static PagedResult<PaaaResponse> InvalidProyectoResult(int? proyectoId)
+    {
+        return new PagedResult<PaaaResponse>
+        {
+            Success = false,
+            Message = proyectoId.HasValue
+                ? $"El proyecto seleccionado ({proyectoId.Value}) no existe en ORCO.Proyecto o no esta activo."
+                : "El proyecto seleccionado no es valido.",
+            Code = "INVALID_ORCO_PROJECT",
+            TotalCount = 0
+        };
     }
 
     [HttpDelete("partida/{partidaId}")]

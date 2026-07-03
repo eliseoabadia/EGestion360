@@ -25,10 +25,6 @@
             <MudItem xs="12" md="6">
                 <MudNumericField T="decimal?" Value="@item.ImporteHaber" ValueChanged="OnHaberChanged" Label="Haber" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
             </MudItem>
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12"><MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" /></MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

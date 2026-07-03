@@ -96,23 +96,6 @@
                                DateFormat="dd/MM/yyyy" />
             </MudItem>
 
-            <!-- Toggle Activo (solo en edición) -->
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estado del Conteo</MudText>
-                        <MudDivider Class="mb-3" />
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="conteo.Activo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(conteo.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(conteo.Activo ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
-                    </MudPaper>
-                </MudItem>
-            }
 
         </MudGrid>
     </BaseEntityForm>

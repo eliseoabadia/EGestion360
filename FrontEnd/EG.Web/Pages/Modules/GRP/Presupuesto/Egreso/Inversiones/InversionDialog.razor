@@ -29,9 +29,6 @@
             <MudItem xs="12" md="6">
                 <MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12">
-                <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" />
-            </MudItem>
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

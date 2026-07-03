@@ -115,21 +115,6 @@
                            Label="Requiere Aprobación de Supervisor" />
             </MudItem>
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estado del Período</MudText>
-                        <MudDivider Class="mb-3" />
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="periodo.Activo"
-                                       Color="Color.Primary">
-                                <MudText>@(periodo.Activo ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
-                    </MudPaper>
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

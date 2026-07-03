@@ -33,10 +33,16 @@ namespace EG.Application.Services.Adquisicion
             SolicitudSuficienciaResponse response,
             int usuarioActual)
         {
-            var validation = await NormalizeAndValidateAsync(response);
+            var validation = await NormalizeAndValidateAsync(response, null);
             if (validation != null)
             {
                 return validation;
+            }
+
+            var readiness = await ValidateRequisicionReadyForSolicitudAsync(response.FkidRequisicionOrco, null);
+            if (readiness != null)
+            {
+                return readiness;
             }
 
             try
@@ -58,7 +64,8 @@ namespace EG.Application.Services.Adquisicion
             SolicitudSuficienciaResponse response,
             int usuarioActual)
         {
-            var validation = await NormalizeAndValidateAsync(response);
+            response.PkidSolicitudSuficiencia = id;
+            var validation = await NormalizeAndValidateAsync(response, id);
             if (validation != null)
             {
                 return validation;
@@ -130,6 +137,12 @@ namespace EG.Application.Services.Adquisicion
                     ? DateOnly.FromDateTime(DateTime.Today)
                     : request.FechaSolicitud;
 
+                var readiness = await ValidateRequisicionReadyForSolicitudAsync(request.FkidRequisicionOrco, null);
+                if (readiness != null)
+                {
+                    return readiness;
+                }
+
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
                     "[PRES].[SP_MantenimientoSolicitudSuficiencia]",
@@ -180,7 +193,8 @@ namespace EG.Application.Services.Adquisicion
         }
 
         private async Task<PagedResult<SolicitudSuficienciaResponse>?> NormalizeAndValidateAsync(
-            SolicitudSuficienciaResponse response)
+            SolicitudSuficienciaResponse response,
+            int? currentId)
         {
             if (response == null)
             {
@@ -201,6 +215,21 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<SolicitudSuficienciaResponse>("La requisicion no existe o esta inactiva.");
             }
 
+            var duplicate = await _context.SolicitudSuficiencia
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Activo &&
+                    x.FkidRequisicionOrco == response.FkidRequisicionOrco &&
+                    x.PkidSolicitudSuficiencia != (currentId ?? response.PkidSolicitudSuficiencia) &&
+                    x.Estatus != 4);
+
+            if (duplicate)
+            {
+                return Failure<SolicitudSuficienciaResponse>(
+                    "Ya existe una solicitud de suficiencia activa para esta requisicion.",
+                    "DUPLICATE");
+            }
+
             response.FkidEmpresaSis = requisicion.FkidEmpresaSis;
             response.FechaSolicitud = response.FechaSolicitud == default
                 ? DateOnly.FromDateTime(DateTime.Today)
@@ -210,6 +239,69 @@ namespace EG.Application.Services.Adquisicion
                 ? null
                 : response.GastoNoProgramable.Trim();
             response.Estatus = response.Estatus <= 0 ? 1 : response.Estatus;
+
+            return null;
+        }
+
+        private async Task<PagedResult<SolicitudSuficienciaResponse>?> ValidateRequisicionReadyForSolicitudAsync(
+            int requisicionId,
+            int? currentSolicitudId)
+        {
+            var requisicion = await _context.Requisicions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidRequisicion == requisicionId && x.Activo);
+
+            if (requisicion == null)
+            {
+                return Failure<SolicitudSuficienciaResponse>("La requisicion no existe o esta inactiva.");
+            }
+
+            var duplicate = await _context.SolicitudSuficiencia
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Activo &&
+                    x.FkidRequisicionOrco == requisicionId &&
+                    x.PkidSolicitudSuficiencia != (currentSolicitudId ?? 0) &&
+                    x.Estatus != 4);
+
+            if (duplicate)
+            {
+                return Failure<SolicitudSuficienciaResponse>(
+                    "Ya existe una solicitud de suficiencia activa para esta requisicion.",
+                    "DUPLICATE");
+            }
+
+            var detalles = await GetRequisicionDetallesAsync(requisicionId);
+            if (!detalles.Any())
+            {
+                return Failure<SolicitudSuficienciaResponse>(
+                    "La requisicion debe tener bienes o servicios antes de solicitar suficiencia.");
+            }
+
+            if (detalles.Any(x => x.PartidaId <= 0))
+            {
+                return Failure<SolicitudSuficienciaResponse>(
+                    "Todos los bienes de la requisicion deben tener partida presupuestal.");
+            }
+
+            var cotizaciones = await GetCotizacionesCapturadasAsync(requisicionId);
+            var cotizados = cotizaciones
+                .Select(x => x.RequisicionDetalleId)
+                .Distinct()
+                .ToHashSet();
+
+            var pendientes = detalles
+                .Where(x => !cotizados.Contains(x.RequisicionDetalleId))
+                .Select(x => x.BienDescripcion)
+                .Take(3)
+                .ToList();
+
+            if (pendientes.Any())
+            {
+                var ejemplo = string.Join(", ", pendientes);
+                return Failure<SolicitudSuficienciaResponse>(
+                    $"No se puede generar suficiencia: faltan montos cotizados en {ejemplo}.");
+            }
 
             return null;
         }

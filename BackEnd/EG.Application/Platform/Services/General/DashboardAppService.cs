@@ -22,31 +22,18 @@ namespace EG.Application.Services.General
         {
             try
             {
-                var proveedoresTask = _context.Set<Proveedor>().CountAsync(p => p.Activo);
-                var unidadesTask = _context.Set<Area>().CountAsync(a => a.Activo);
-                var fraccionesTask = _context.Set<Fraccion>().CountAsync(f => f.Activo);
-                var gruposBienTask = _context.Set<GrupoBien>().CountAsync(g => g.Activo);
-                var conceptosTask = _context.Set<Concepto>().CountAsync(c => c.Activo);
-                var articulosTask = _context.Set<Articulo>().CountAsync(a => a.Activo);
-                var tipoCambioTask = _context.Set<TipoCambio>().CountAsync(t => t.Activo);
-                var usuariosTask = _context.Set<Usuario>().CountAsync(u => u.Activo);
-
-                await Task.WhenAll(
-                    proveedoresTask, unidadesTask, fraccionesTask, gruposBienTask,
-                    conceptosTask, articulosTask, tipoCambioTask, usuariosTask);
-
                 var response = new DashboardResumenResponse
                 {
                     Conteos = new List<ConteoResumen>
                     {
-                        new() { Etiqueta = "Proveedores", Conteo = await proveedoresTask },
-                        new() { Etiqueta = "Unidades Responsables", Conteo = await unidadesTask },
-                        new() { Etiqueta = "Fracciones", Conteo = await fraccionesTask },
-                        new() { Etiqueta = "Grupos de Bien", Conteo = await gruposBienTask },
-                        new() { Etiqueta = "Conceptos", Conteo = await conceptosTask },
-                        new() { Etiqueta = "Artículos", Conteo = await articulosTask },
-                        new() { Etiqueta = "Tipos de Cambio", Conteo = await tipoCambioTask },
-                        new() { Etiqueta = "Usuarios", Conteo = await usuariosTask },
+                        new() { Etiqueta = "Proveedores", Conteo = await _context.Set<Proveedor>().CountAsync(p => p.Activo) },
+                        new() { Etiqueta = "Unidades Responsables", Conteo = await _context.Set<Area>().CountAsync(a => a.Activo) },
+                        new() { Etiqueta = "Fracciones", Conteo = await _context.Set<Fraccion>().CountAsync(f => f.Activo) },
+                        new() { Etiqueta = "Grupos de Bien", Conteo = await _context.Set<GrupoBien>().CountAsync(g => g.Activo) },
+                        new() { Etiqueta = "Conceptos", Conteo = await _context.Set<Concepto>().CountAsync(c => c.Activo) },
+                        new() { Etiqueta = "Articulos", Conteo = await _context.Set<Articulo>().CountAsync(a => a.Activo) },
+                        new() { Etiqueta = "Tipos de Cambio", Conteo = await _context.Set<TipoCambio>().CountAsync(t => t.Activo) },
+                        new() { Etiqueta = "Usuarios", Conteo = await _context.Set<Usuario>().CountAsync(u => u.Activo) },
                     }
                 };
 

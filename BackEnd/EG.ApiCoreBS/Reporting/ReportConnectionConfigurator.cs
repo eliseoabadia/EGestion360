@@ -1,6 +1,7 @@
 using DevExpress.DataAccess.ConnectionParameters;
 using DevExpress.DataAccess.Sql;
 using DevExpress.XtraReports.UI;
+using EG.Common;
 
 namespace EG.ApiCoreBS.Reporting;
 
@@ -21,8 +22,8 @@ public sealed class ReportConnectionConfigurator
                 ? dataSource.Name
                 : dataSource.ConnectionName;
 
-            var connectionString = _configuration.GetConnectionString(connectionName)
-                ?? _configuration.GetConnectionString("BD_MatrixEntities");
+            var connectionString = _configuration.GetConnectionString(Constants.BD_CON)
+                ?? _configuration.GetConnectionString(connectionName);
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
                 dataSource.ConnectionParameters = new CustomStringConnectionParameters(connectionString);

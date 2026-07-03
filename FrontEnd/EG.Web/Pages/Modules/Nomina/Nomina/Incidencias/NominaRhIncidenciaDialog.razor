@@ -104,20 +104,13 @@
                                           InitialText="@item.TipoJustificacionDescripcion"
                                           Disabled="@IsReadOnly" />
                 </MudItem>
-                <MudItem xs="12" md="4">
+                <MudItem xs="12" md="7">
                     <MudPaper Class="switch-panel" Elevation="0">
                         <MudSwitch T="bool" Value="@(item.AplicaDescuento ?? false)"
                                    ValueChanged="OnAplicaDescuentoChanged"
                                    Color="Color.Warning"
                                    Disabled="@IsReadOnly">
                             Aplica descuento
-                        </MudSwitch>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" md="3">
-                    <MudPaper Class="switch-panel" Elevation="0">
-                        <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success" Disabled="@IsReadOnly">
-                            Activo
                         </MudSwitch>
                     </MudPaper>
                 </MudItem>

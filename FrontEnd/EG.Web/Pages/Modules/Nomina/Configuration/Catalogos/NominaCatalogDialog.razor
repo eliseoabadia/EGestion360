@@ -83,20 +83,6 @@
                     }
                 </MudItem>
             }
-
-            @if (Id.HasValue && HasActivo)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
-                        <MudSwitch T="bool"
-                                   Value="@GetActivoValue()"
-                                   ValueChanged="@((bool value) => SetActivoValue(value))"
-                                   Color="Color.Primary">
-                            <MudText>@(GetActivoValue() ? "Activo" : "Inactivo")</MudText>
-                        </MudSwitch>
-                    </MudPaper>
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -115,10 +101,8 @@
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
     private IEnumerable<PropertyInfo> EditableProperties => typeof(TItem).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-        .Where(p => p.CanRead && p.CanWrite && !IsIgnoredProperty(p) && !(p.Name.Equals("Activo", StringComparison.OrdinalIgnoreCase) && Id.HasValue))
+        .Where(p => p.CanRead && p.CanWrite && !IsIgnoredProperty(p))
         .Take(18);
-
-    private bool HasActivo => typeof(TItem).GetProperty("Activo") is not null;
 
     private sealed record LookupConfig(string PropertyName);
 
@@ -517,6 +501,7 @@
         }
 
         return property.Name is "ClaveNombre"
+            or "Activo"
             or "LegacyId"
             or "TipoNomina"
             or "FormaCalculoDescripcion"
@@ -641,12 +626,6 @@
 
     private void SetBoolValue(PropertyInfo property, bool value)
         => property.SetValue(item, value);
-
-    private bool GetActivoValue()
-    {
-        var property = typeof(TItem).GetProperty("Activo");
-        return property?.GetValue(item) as bool? ?? true;
-    }
 
     private void SetActivoValue(bool value)
     {

@@ -43,22 +43,6 @@
                                 Max="99" />
             </MudItem>
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus del Departamento</MudText>
-                        <MudDivider Class="mb-3" />
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="departamento.DepartamentoActivo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(departamento.DepartamentoActivo == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(departamento.DepartamentoActivo == true ? "Activo" : "Inactivo")</MudText>
-                            </MudSwitch>
-                        </div>
-                    </MudPaper>
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

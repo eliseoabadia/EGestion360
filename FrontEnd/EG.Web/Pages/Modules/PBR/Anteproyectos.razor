@@ -46,7 +46,6 @@
                 <MudTh><MudTableSortLabel SortLabel="MontoSolicitado" T="PbrAnteproyectoResponse">Solicitado</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="MontoAutorizado" T="PbrAnteproyectoResponse">Autorizado</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Estatus" T="PbrAnteproyectoResponse">Estatus</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="PbrAnteproyectoResponse">Creacion</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -91,7 +90,6 @@
                         @TextOrDash(item.Estatus)
                     </MudChip>
                 </MudTd>
-                <MudTd>@DateOrDash(item.FechaCreacion)</MudTd>
             </Row>
         </GenericTable>
     </div>
@@ -191,8 +189,6 @@
 
     private string Money(decimal value) => $"{currencySymbol}{value.ToString("0.00", NumberCulture)}";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
-    private static string DateOrDash(DateTime? value) => value?.ToString("dd/MM/yyyy HH:mm") ?? "-";
-
     private async Task LoadCurrencyAsync()
     {
         try

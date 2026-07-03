@@ -27,7 +27,6 @@
             <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaEmision" DateChanged="OnFechaEmisionChanged" Label="Fecha emision" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
-            <MudItem xs="12"><MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" /></MudItem>
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

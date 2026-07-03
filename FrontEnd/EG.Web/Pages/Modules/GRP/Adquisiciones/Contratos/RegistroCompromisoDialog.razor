@@ -81,9 +81,6 @@
         <MudItem xs="12" md="4">
             <MudDatePicker Date="@item.FechaSesionSubcomite" DateChanged="d => item.FechaSesionSubcomite = d" Label="Fecha subcomite" Variant="Variant.Outlined" />
         </MudItem>
-        <MudItem xs="12" md="4">
-            <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" />
-        </MudItem>
     </MudGrid>
 </BaseCrudDialog>
 

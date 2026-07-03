@@ -9,6 +9,7 @@
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 
 <MudThemeProvider @ref="_themeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
@@ -17,27 +18,29 @@
 
 <div class="layout-root">
     <MudAppBar Elevation="0" Class="modern-app-bar">
-        @if (!esPaginaLogin)
-        {
-            <MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
-                           Color="Color.Inherit"
-                           Edge="Edge.Start"
-                           OnClick="@((e) => DrawerToggle())"
-                           class="menu-toggle" />
-        }
+        <div class="header-left">
+            @if (!esPaginaLogin)
+            {
+                <MudIconButton Icon="@(_drawerOpen? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
+                               Color="Color.Inherit"
+                               Edge="Edge.Start"
+                               OnClick="@((e) => DrawerToggle())"
+                               class="menu-toggle" />
+            }
 
-        <div class="app-branding">
-            <button type="button"
-                    class="brand-home-button"
-                    title="Ir a inicio"
-                    aria-label="Ir a inicio"
-                    @onclick="NavigateHome">
-                <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
-            </button>
-            <MudText Typo="Typo.h5" Class="app-title">EGestion<span class="title-accent">360</span></MudText>
+            <div class="app-branding">
+                <button type="button"
+                        class="brand-home-button"
+                        title="Ir a inicio"
+                        aria-label="Ir a inicio"
+                        @onclick="NavigateHome">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
+                </button>
+                <MudText Typo="Typo.h5" Class="app-title">@_headerCompanyName</MudText>
+            </div>
         </div>
 
-        <MudSpacer />
+        <div class="appbar-spacer" aria-hidden="true"></div>
         
         @if (!esPaginaLogin)
         {
@@ -178,6 +181,7 @@
     private string _selectedTheme = "default";
     private MudTheme _theme = new MudTheme();
     private string nombreUsuario = "Usuario";
+    private string _headerCompanyName = "EGestion360";
     private List<AniosResponse> _anios = new();
     private int? _selectedAnioId;
     private bool _aniosLoading;
@@ -189,6 +193,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        _headerCompanyName = GetHeaderCompanyName();
         await ThemeStateService.InitializeAsync();
         ApplyThemeFromState();
         ThemeStateService.OnThemeChanged += OnThemeChanged;
@@ -585,6 +590,14 @@
         NavigationManager.NavigateTo("/");
     }
 
+    private string GetHeaderCompanyName()
+    {
+        var configuredName = Configuration["Branding:NombreEmpresa"];
+        return string.IsNullOrWhiteSpace(configuredName)
+            ? "EGestion360"
+            : configuredName.Trim();
+    }
+
     private string _version = "1.0.0";
 
     private class VersionApiResult
@@ -669,16 +682,42 @@
         height: var(--eg-appbar-height);
         min-height: var(--eg-appbar-height);
         max-height: var(--eg-appbar-height);
+        display: flex;
         align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        width: 100%;
         padding: 0 16px;
         flex-shrink: 0;
         z-index: 1200;
+    }
+
+    .modern-app-bar .mud-toolbar {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        min-height: var(--eg-appbar-height);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 0;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 0 1 auto;
     }
 
     .app-branding {
         display: flex;
         align-items: center;
         gap: 8px;
+        min-width: 0;
+        max-width: 420px;
     }
 
     .brand-home-button {
@@ -714,14 +753,21 @@
     .app-title {
         font-weight: 700;
         color: var(--mud-palette-appbar-text);
-    }
-
-    .title-accent {
-        color: var(--mud-palette-drawer-icon);
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .menu-toggle {
         min-width: 36px;
+        flex-shrink: 0;
+    }
+
+    .appbar-spacer {
+        flex: 1 1 auto;
+        min-width: 16px;
     }
 
     .user-section {
@@ -729,6 +775,8 @@
         align-items: center;
         min-width: 0;
         gap: 12px;
+        flex: 0 1 auto;
+        justify-content: flex-end;
     }
 
     .anio-header-select {
@@ -777,6 +825,16 @@
         background: var(--eg-primary-soft);
         border: 1px solid color-mix(in srgb, var(--eg-accent) 70%, transparent);
         color: var(--mud-palette-appbar-text);
+        max-width: 220px;
+        min-width: 0;
+        flex-shrink: 1;
+    }
+
+    .user-chip .mud-chip-content {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .theme-option {
@@ -965,6 +1023,10 @@
             gap: 8px;
         }
 
+        .app-branding {
+            max-width: 260px;
+        }
+
         .app-title {
             font-size: 1.2rem;
         }
@@ -986,6 +1048,14 @@
             justify-content: flex-end;
             overflow-x: auto;
             scrollbar-width: none;
+        }
+
+        .header-left {
+            flex: 1 1 auto;
+        }
+
+        .app-branding {
+            max-width: calc(100vw - 96px);
         }
 
         .user-section::-webkit-scrollbar {

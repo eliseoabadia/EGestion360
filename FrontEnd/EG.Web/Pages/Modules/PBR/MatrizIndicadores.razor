@@ -45,7 +45,6 @@
                     <MudTh Style="width: 140px;"><MudTableSortLabel SortLabel="Nivel" T="PbrMirNivelResponse">Nivel</MudTableSortLabel></MudTh>
                     <MudTh Style="min-width: 560px;"><MudTableSortLabel SortLabel="Objetivo" T="PbrMirNivelResponse">Objetivo</MudTableSortLabel></MudTh>
                     <MudTh Style="width: 90px;"><MudTableSortLabel SortLabel="Orden" T="PbrMirNivelResponse">Orden</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="FechaCreacion" T="PbrMirNivelResponse">Creacion</MudTableSortLabel></MudTh>
                 </Header>
                 <Row Context="item">
                     <MudTd Style="width: 140px; white-space: nowrap;">
@@ -64,7 +63,6 @@
                     <MudTd Style="width: 140px;"><MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(item.Nivel)</MudChip></MudTd>
                     <MudTd Style="min-width: 560px;">@TextOrDash(item.Objetivo)</MudTd>
                     <MudTd Style="width: 90px;">@item.Orden</MudTd>
-                    <MudTd Style="width: 150px; white-space: nowrap;">@DateOrDash(item.FechaCreacion)</MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -217,5 +215,4 @@
 
     private Task ExportAsync() => Task.CompletedTask;
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
-    private static string DateOrDash(DateTime? value) => value?.ToString("dd/MM/yyyy HH:mm") ?? "-";
 }

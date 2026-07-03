@@ -9,7 +9,6 @@
 <BaseCrudDialog TItem="TipoRetiroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoRetiroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando tipo de retiro..." LoadingSkeletonRows="2">
         <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Required="true" />
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

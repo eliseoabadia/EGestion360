@@ -71,12 +71,6 @@
                                  RequiredError="El precio unitario es requerido" />
             </MudItem>
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12" md="6" Class="d-flex align-center">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" />
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

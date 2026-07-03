@@ -32,9 +32,6 @@
                               RequiredError="Captura la justificacion."
                               HelperText="Puedes usar saltos de linea, listas y marcas simples como **texto importante**." />
             </MudItem>
-            <MudItem xs="12">
-                <MudSwitch T="bool" Value="@(item.Activo)" ValueChanged="value => item.Activo = value" Label="Activo" Color="Color.Success" />
-            </MudItem>
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

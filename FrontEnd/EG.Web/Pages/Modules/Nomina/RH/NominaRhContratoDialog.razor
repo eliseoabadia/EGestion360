@@ -76,9 +76,6 @@
             <MudItem xs="12" md="5">
                 <MudTextField @bind-Value="item.Vigencia" Label="Vigencia" Variant="Variant.Outlined" MaxLength="100" />
             </MudItem>
-            <MudItem xs="12" md="3">
-                <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Success">Activo</MudSwitch>
-            </MudItem>
 
             <MudItem xs="12">
                 <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"

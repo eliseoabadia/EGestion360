@@ -71,6 +71,7 @@ try
     });
     builder.Services.AddScoped<IReportProvider, GenericReportProvider>();
     builder.Services.AddSingleton<ReportConnectionConfigurator>();
+    builder.Services.AddSingleton<ReportContextParameterConfigurator>();
     builder.Services.AddSingleton<StoredProcedureReportRegistry>();
     builder.Services.AddSingleton<StoredProcedureReportFactory>();
     builder.Services.AddSingleton<ReportLogoConfigurator>();

@@ -12,7 +12,6 @@
         <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Clave)" />
         <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Nombre)" />
         <MudTextField @bind-Value="item.TipoRecurso" Label="Tipo Recurso" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.TipoRecurso)" />
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 @code {

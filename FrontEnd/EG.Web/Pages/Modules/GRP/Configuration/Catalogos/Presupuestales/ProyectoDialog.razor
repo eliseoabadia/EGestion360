@@ -39,19 +39,6 @@
                               MaxLength="500" />
             </MudItem>
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
-                        <MudSwitch T="bool"
-                                   @bind-Value="item.Activo"
-                                   Color="Color.Primary"
-                                   ThumbIcon="@(item.Activo ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                            <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-                        </MudSwitch>
-                    </MudPaper>
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

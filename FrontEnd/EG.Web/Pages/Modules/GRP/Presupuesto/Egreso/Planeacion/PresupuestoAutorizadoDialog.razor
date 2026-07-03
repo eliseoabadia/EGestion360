@@ -176,12 +176,6 @@
                 </div>
             </MudItem>
 
-            @if (Id.HasValue)
-            {
-                <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro activo" Color="Color.Success" Disabled="@FormFieldsLocked" />
-                </MudItem>
-            }
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

@@ -28,8 +28,6 @@
                 <MudTh>Acciones</MudTh>
                 <MudTh><MudTableSortLabel SortLabel="PkidUnidades" T="UnidadeResponse">ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Descripcion" T="UnidadeResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="UnidadeResponse">Fecha Creación</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="UsuarioCreacion" T="UnidadeResponse">Usuario Creación</MudTableSortLabel></MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
@@ -50,8 +48,6 @@
                 </MudTd>
                 <MudTd>@item.PkidUnidades</MudTd>
                 <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@(item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "")</MudTd>
-                <MudTd>@item.UsuarioCreacion</MudTd>
             </Row>
         </GenericTable>
     </MudContainer>

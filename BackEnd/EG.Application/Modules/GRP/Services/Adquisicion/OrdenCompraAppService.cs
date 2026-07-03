@@ -228,12 +228,10 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<OrdenCompraResponse>("Solo se pueden autorizar ordenes de compra en estatus INICIAL.", "LOCKED");
             }
 
-            var tieneDetalles = await _context.OrdenCompraDetalles
-                .AnyAsync(x => x.FkidOrdenCompraOrco == id && x.Activo);
-
-            if (!tieneDetalles)
+            var readiness = await ValidateOrdenReadyToAuthorizeAsync(id);
+            if (readiness != null)
             {
-                return Failure<OrdenCompraResponse>("Agrega al menos un detalle antes de autorizar la orden de compra.");
+                return readiness;
             }
 
             orden.FkidEstatusOrdenCompraOrco = EstatusPorSurtir;
@@ -313,12 +311,106 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<OrdenCompraResponse>("La requisicion seleccionada no existe o esta inactiva.");
             }
 
+            if (requisicion.FkidEmpresaSis != response.FkidEmpresaSis)
+            {
+                return Failure<OrdenCompraResponse>("La requisicion seleccionada pertenece a otra empresa.");
+            }
+
+            var proveedorExists = await _context.Proveedors
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidProveedor == response.FkidProveedorSis && x.Activo);
+
+            if (!proveedorExists)
+            {
+                return Failure<OrdenCompraResponse>("El proveedor seleccionado no existe o esta inactivo.");
+            }
+
+            if (!await HasAuthorizedSuficienciaAsync(response.FkidRequisicionOrco))
+            {
+                return Failure<OrdenCompraResponse>(
+                    "La requisicion debe tener suficiencia autorizada antes de generar orden de compra.",
+                    "SUFICIENCIA_REQUIRED");
+            }
+
             if (response.FechaOrdenCompra.Date < requisicion.FechaRequisicion.Date)
             {
                 return Failure<OrdenCompraResponse>("La fecha de la orden de compra debe ser igual o mayor a la fecha de requisicion.");
             }
 
             return null;
+        }
+
+        private async Task<PagedResult<OrdenCompraResponse>?> ValidateOrdenReadyToAuthorizeAsync(int ordenCompraId)
+        {
+            var detalles = await _context.OrdenCompraDetalles
+                .AsNoTracking()
+                .Where(x => x.FkidOrdenCompraOrco == ordenCompraId && x.Activo)
+                .Select(x => new
+                {
+                    x.CantidadSolicitada,
+                    x.PrecioUnitario,
+                    x.Iva,
+                    x.TotalDetalle
+                })
+                .ToListAsync();
+
+            if (!detalles.Any())
+            {
+                return Failure<OrdenCompraResponse>("Agrega al menos un detalle antes de autorizar la orden de compra.");
+            }
+
+            if (detalles.Any(x => x.CantidadSolicitada <= 0m))
+            {
+                return Failure<OrdenCompraResponse>("Todos los detalles de la orden deben tener cantidad mayor a cero.");
+            }
+
+            if (detalles.Any(x => x.PrecioUnitario <= 0m))
+            {
+                return Failure<OrdenCompraResponse>("Todos los detalles de la orden deben tener precio unitario mayor a cero.");
+            }
+
+            var totalDetalles = detalles.Sum(x =>
+                x.TotalDetalle ?? (x.CantidadSolicitada * x.PrecioUnitario) + x.Iva);
+
+            var partidas = await _context.OrdenCompraPartida
+                .AsNoTracking()
+                .Where(x => x.FkidOrdenCompraOrco == ordenCompraId && x.Activo)
+                .Select(x => x.Importe)
+                .ToListAsync();
+
+            if (!partidas.Any())
+            {
+                return Failure<OrdenCompraResponse>("Agrega al menos una partida presupuestal antes de autorizar la orden de compra.");
+            }
+
+            if (partidas.Any(x => x <= 0m))
+            {
+                return Failure<OrdenCompraResponse>("Todas las partidas de la orden deben tener importe mayor a cero.");
+            }
+
+            var totalPartidas = partidas.Sum();
+            if (Math.Abs(totalDetalles - totalPartidas) > 0.01m)
+            {
+                return Failure<OrdenCompraResponse>(
+                    "El total de partidas debe coincidir con el total de detalles antes de autorizar.");
+            }
+
+            return null;
+        }
+
+        private Task<bool> HasAuthorizedSuficienciaAsync(int requisicionId)
+        {
+            return (
+                from solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking()
+                    on solicitud.PkidSolicitudSuficiencia equals autorizacion.FkidSolicitudSuficienciaPres
+                where solicitud.Activo &&
+                      autorizacion.Activo &&
+                      solicitud.FkidRequisicionOrco == requisicionId &&
+                      solicitud.Estatus == 3 &&
+                      autorizacion.Estatus == 2
+                select autorizacion.PkidAutorizacionSuficiencia)
+                .AnyAsync();
         }
 
         private Task<StoredProcedureResult> ExecuteMantenimientoAsync(

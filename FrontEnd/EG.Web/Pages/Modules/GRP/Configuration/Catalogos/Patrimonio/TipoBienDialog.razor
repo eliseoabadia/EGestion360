@@ -181,12 +181,6 @@
                     <MudCheckBox @bind-Value="item.CatalogoBasico" Label="Catálogo Básico" />
                 </MudItem>
 
-                @if (Id.HasValue)
-                {
-                    <MudItem xs="12" class="mt-2">
-                        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
-                    </MudItem>
-                }
 
             </MudGrid>
         </MudContainer>

@@ -1,4 +1,4 @@
-@if (FechaCreacion.HasValue || UsuarioCreacion is not null)
+@if (Visible && (FechaCreacion.HasValue || UsuarioCreacion is not null))
 {
     <MudPaper Class="rh-audit-info pa-2 mt-2" Elevation="0">
         <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Small" />
@@ -13,6 +13,7 @@
 }
 
 @code {
+    [Parameter] public bool Visible { get; set; }
     [Parameter] public object? UsuarioCreacion { get; set; }
     [Parameter] public DateTime? FechaCreacion { get; set; }
     [Parameter] public object? UsuarioModificacion { get; set; }

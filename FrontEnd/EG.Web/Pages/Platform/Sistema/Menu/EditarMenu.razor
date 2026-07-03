@@ -11,7 +11,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Class="mr-2" />
-            Editar Menú
+            Editar Menï¿½
         </MudText>
     </TitleContent>
 
@@ -25,7 +25,7 @@
             <MudGrid Spacing="3" Class="mt-2">
                 <MudItem xs="12">
                     <MudTextField @bind-Value="menu.Nombre"
-                                  Label="Nombre del Menú *"
+                                  Label="Nombre del Menï¿½ *"
                                   Variant="Variant.Outlined"
                                   For="@(() => menu.Nombre)"
                                   Required="true"
@@ -53,7 +53,7 @@
                                      Max="999"
                                      Required="true"
                                      RequiredError="El orden es requerido"
-                                     HelperText="Número de orden de visualización" />
+                                     HelperText="Nï¿½mero de orden de visualizaciï¿½n" />
                 </MudItem>
 
                 <MudItem xs="12">
@@ -92,22 +92,17 @@
                     </MudAutocomplete>
 
                     <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mt-1">
-                        Selecciona un icono para el menú
+                        Selecciona un icono para el menï¿½
                     </MudText>
                 </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudSwitch @bind-Value="menu.Activo"
-                               Color="Color.Success"
-                               Label="Activo" />
-                </MudItem>
 
                 <MudItem xs="12">
                     <MudTextField @bind-Value="menu.ValidacionEstructura"
-                                  Label="Validación"
+                                  Label="Validaciï¿½n"
                                   Variant="Variant.Outlined"
                                   MaxLength="500"
-                                  HelperText="Reglas de validación (opcional)" />
+                                  HelperText="Reglas de validaciï¿½n (opcional)" />
                 </MudItem>
             </MudGrid>
         }
@@ -160,7 +155,7 @@
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al cargar el menú", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al cargar el menï¿½", Severity.Error);
                 MudDialog.Cancel();
             }
         }
@@ -204,7 +199,7 @@
         {
             if (string.IsNullOrWhiteSpace(menu.Nombre))
             {
-                Snackbar.Add("El nombre del menú es requerido", Severity.Warning);
+                Snackbar.Add("El nombre del menï¿½ es requerido", Severity.Warning);
                 return;
             }
 
@@ -216,12 +211,12 @@
             var response = await _service.UpdateAsync(menu, MenuId);
             if (response != null && response.Success)
             {
-                Snackbar.Add("Menú actualizado exitosamente", Severity.Success);
+                Snackbar.Add("Menï¿½ actualizado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al actualizar el menú", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al actualizar el menï¿½", Severity.Error);
             }
         }
         catch (Exception ex)

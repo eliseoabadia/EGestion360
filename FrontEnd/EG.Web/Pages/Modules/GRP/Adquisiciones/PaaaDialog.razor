@@ -8,7 +8,7 @@
 @inject AnioPresupuestalStateService AnioStateService
 
 @inject IGenericCrudService<PaaaResponse> Service
-@inject IGenericCrudService<ProyectoResponse> proyectoService
+@inject IGenericCrudService<OrcoProyectoResponse> proyectoService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> fuenteService
 @inject IGenericCrudService<ProgramaResponse> programaService
 @inject IGenericCrudService<UsuarioAreaResponse> areaService
@@ -104,12 +104,6 @@ Variant="Variant.Outlined"
 Lines="3" />
 </MudItem>
 
-@if (Id.HasValue)
-{
-<MudItem xs="12">
-<MudSwitch T="bool" @bind-Value="item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
-</MudItem>
-}
 </MudGrid>
 </BaseEntityForm>
 }
@@ -170,7 +164,7 @@ Lines="3" />
     private async Task<ComboLookupResult> LoadProyectosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await proyectoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPy, Text = x.ClaveNombre }), response?.TotalCount);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidProyecto, Text = x.ClaveNombre }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)

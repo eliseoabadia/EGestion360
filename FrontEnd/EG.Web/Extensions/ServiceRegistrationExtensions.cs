@@ -91,6 +91,7 @@ public static class ApiServiceExtensions
         RegisterCrud<ArticuloResponse>(services, "api/Articulo");
         RegisterCrud<FraccionResponse>(services, "api/Fraccion");
         RegisterCrud<ProveedorResponse>(services, "api/Proveedor");
+        RegisterCrud<OrcoProyectoResponse>(services, "api/OrcoProyecto");
         RegisterCrud<PaaaResponse>(services, "api/Paaa");
         RegisterCrud<EstudioMercadoResponse>(services, "api/EstudioMercado");
         RegisterCrud<EstudioMercadoDetalleResponse>(services, "api/EstudioMercadoDetalle");

@@ -18,7 +18,6 @@
         <MudTextField @bind-Value="item.Simbolo" Label="Simbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Simbolo)" />
         <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
         <MudNumericField @bind-Value="item.Decimales" Label="Decimales" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Decimales)" />
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Primary" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

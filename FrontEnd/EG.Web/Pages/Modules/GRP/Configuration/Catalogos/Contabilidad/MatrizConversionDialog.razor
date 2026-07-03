@@ -123,12 +123,6 @@
                                        LoadPage="LoadGastoPageAsync" />
                 </MudItem>
 
-                @if (Id.HasValue)
-                {
-                    <MudItem xs="12" class="mt-2">
-                        <MudSwitch T="bool" @bind-Value="_item.Activo" Label="Registro Activo" Color="Color.Success" Dense="true" />
-                    </MudItem>
-                }
             </MudGrid>
         </MudContainer>
     }

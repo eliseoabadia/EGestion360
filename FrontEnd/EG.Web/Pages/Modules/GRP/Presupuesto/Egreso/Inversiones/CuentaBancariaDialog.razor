@@ -42,9 +42,6 @@
             <MudItem xs="12" md="4">
                 <MudDatePicker Date="@_fechaAperturaDate" DateChanged="OnFechaAperturaChanged" Label="Fecha de apertura" Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12">
-                <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" />
-            </MudItem>
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>

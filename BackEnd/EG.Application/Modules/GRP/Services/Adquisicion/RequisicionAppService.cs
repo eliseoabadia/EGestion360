@@ -4,6 +4,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.Adquisicion
 {
@@ -36,6 +37,11 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                if (!await OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, response.FkidProyectoOrco, usuarioActual))
+                {
+                    return InvalidProyectoResult(response.FkidProyectoOrco);
+                }
+
                 var spResult = await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
                 response.PkidRequisicion = spResult.GetId() ?? 0;
                 var result = await GetByIdAsync(response.PkidRequisicion);
@@ -95,6 +101,11 @@ namespace EG.Application.Services.Adquisicion
 
             try
             {
+                if (!await OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, response.FkidProyectoOrco, usuarioActual))
+                {
+                    return InvalidProyectoResult(response.FkidProyectoOrco);
+                }
+
                 var spResult = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
@@ -238,6 +249,19 @@ namespace EG.Application.Services.Adquisicion
                 Success = false,
                 Message = message,
                 Code = "LOCKED",
+                TotalCount = 0
+            };
+        }
+
+        private static PagedResult<RequisicionResponse> InvalidProyectoResult(int? proyectoId)
+        {
+            return new PagedResult<RequisicionResponse>
+            {
+                Success = false,
+                Message = proyectoId.HasValue
+                    ? $"El proyecto seleccionado ({proyectoId.Value}) no existe en ORCO.Proyecto o no esta activo."
+                    : "El proyecto seleccionado no es valido.",
+                Code = "INVALID_ORCO_PROJECT",
                 TotalCount = 0
             };
         }

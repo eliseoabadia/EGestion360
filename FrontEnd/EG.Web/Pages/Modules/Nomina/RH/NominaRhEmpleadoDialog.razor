@@ -161,13 +161,6 @@
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="50" />
             </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudPaper Class="pa-3" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-radius: 8px;">
-                    <MudSwitch T="bool" @bind-Value="item.Activo" Color="Color.Primary">
-                        <MudText>@(item.Activo ? "Activo" : "Inactivo")</MudText>
-                    </MudSwitch>
-                </MudPaper>
-            </MudItem>
 
             @if (Id.HasValue)
             {

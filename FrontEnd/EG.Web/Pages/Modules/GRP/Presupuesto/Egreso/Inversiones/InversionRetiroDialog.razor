@@ -15,7 +15,6 @@
         <PagedAutocomplete Value="@_tipoRetiro" ValueChanged="value => _tipoRetiro = value" Label="Tipo de retiro" Clearable="true" LoadPage="LoadTiposRetiroPageAsync" />
         <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" Class="mt-2" />
         <MudDatePicker Date="@_fechaRetiro" DateChanged="OnFechaChanged" Label="Fecha de retiro" Variant="Variant.Outlined" Class="mt-2" />
-        <MudSwitch T="bool" @bind-Value="item.Activo" Label="Activo" Color="Color.Success" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 
