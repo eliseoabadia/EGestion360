@@ -408,7 +408,7 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        private static PagedResult<T> Failure<T>(string message, string code = "VALIDATION") => new()
+        private static new PagedResult<T> Failure<T>(string message, string code = "VALIDATION") => new()
         {
             Success = false,
             Message = message,

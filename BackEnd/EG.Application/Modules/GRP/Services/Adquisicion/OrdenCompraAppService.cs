@@ -485,7 +485,7 @@ namespace EG.Application.Services.Adquisicion
 
         private static bool IsLocked(int estatusId) => estatusId > EstatusInicial;
 
-        private static PagedResult<T> Failure<T>(string message, string code = "ERROR")
+        private static new PagedResult<T> Failure<T>(string message, string code = "ERROR")
             where T : class
         {
             return new PagedResult<T>

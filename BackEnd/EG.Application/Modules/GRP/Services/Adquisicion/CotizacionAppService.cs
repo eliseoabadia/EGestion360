@@ -489,7 +489,7 @@ namespace EG.Application.Services.Adquisicion
 
         private static string FormatQuantity(decimal value) => value.ToString("0.00", NumberCulture);
 
-        private static PagedResult<T> Failure<T>(string message, string code = "VALIDATION") => new()
+        private static new PagedResult<T> Failure<T>(string message, string code = "VALIDATION") => new()
         {
             Success = false,
             Message = message,

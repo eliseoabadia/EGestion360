@@ -92,7 +92,7 @@ namespace EG.Infrastructure
                 var lambda = Expression.Lambda<Func<T, bool>>(condition, param);
                 query = query.Where(lambda);
             }
-            return await query.ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
@@ -139,7 +139,7 @@ namespace EG.Infrastructure
                 query = query.Include(include);
             }
 
-            return await query.ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<T>> GetAllWithIncludes2Async( Expression<Func<T, bool>> filter,  params Expression<Func<T, object>>[] includes)
@@ -158,14 +158,10 @@ namespace EG.Infrastructure
                     query = query.Where(filter);
                 }
 
-                var sql = query.ToQueryString();
-                Console.WriteLine($"SQL generado: {sql}");
-
                 return await query.AsNoTracking().ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error en GetAllWithIncludesAsync: {ex.Message}");
                 throw;
             }
         }

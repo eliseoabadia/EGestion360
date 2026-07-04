@@ -29,13 +29,10 @@ namespace EG.Web.Services
         {
             if (!IsClientSide())
             {
-                Console.WriteLine($"⚠️ GetByIdAsync: No es cliente-side");
                 return new ApiResponse<TResponse>();
             }
 
-            Console.WriteLine($"🔍 GetByIdAsync: Llamando GET {_endpoint}/{id}");
             var response = await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/{id}");
-            Console.WriteLine($"🔍 GetByIdAsync: Respuesta - Success={response?.Success}, Data es null={response?.Data == null}, Items count={response?.Items?.Count}");
             return response ?? new ApiResponse<TResponse>();
         }
 
@@ -118,13 +115,11 @@ namespace EG.Web.Services
         {
             if (!IsClientSide())
             {
-                Console.WriteLine($"⚠️ UpdateAsync: No es cliente-side, retornando error");
                 return new ApiResponse<TResponse>();
             }
 
             if (id <= 0)
             {
-                Console.WriteLine($"⚠️ UpdateAsync: ID inválido (id={id}), retornando error");
                 return new ApiResponse<TResponse>
                 {
                     Success = false,
@@ -133,12 +128,10 @@ namespace EG.Web.Services
                 };
             }
 
-            Console.WriteLine($"🔄 UpdateAsync: Llamando PUT {_endpoint}/{id} con entity");
             var response = await PutAsync<ApiResponse<TResponse>>(
                 $"{_endpoint}/{id}",
                 entity,
                 useBaseUrl: false);
-            Console.WriteLine($"🔄 UpdateAsync: Respuesta recibida - Success={response?.Success}, Message={response?.Message}");
 
             return response ?? new ApiResponse<TResponse>
             {

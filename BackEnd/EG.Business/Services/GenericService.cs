@@ -23,6 +23,8 @@ namespace EG.Business.Services
         protected readonly IRepository<TEntity> _repository = repository;
         protected readonly IUserContextService? _userContext = userContext;
         protected readonly ILogger<GenericService<TEntity, TDto, TResponse>>? _logger = logger;
+        private const int DefaultPageSize = 10;
+        private const int MaxPageSize = 250;
 
         private static readonly string[] EmpresaPropertyCandidates =
         [
@@ -451,6 +453,7 @@ namespace EG.Business.Services
         {
             try
             {
+                NormalizePaging(_params);
                 var query = GetQueryWithIncludes();
 
                 if (!string.IsNullOrWhiteSpace(_params.Filtro))
@@ -475,8 +478,6 @@ namespace EG.Business.Services
                 query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
                 var totalCount = await query.CountAsync();
-                if (_params.Page < 1)
-                    _params.Page = 1;
 
                 var pagedQuery = query
                     .Skip((_params.Page - 1) * _params.PageSize)
@@ -578,6 +579,7 @@ namespace EG.Business.Services
             PagedRequest _params,
             Expression<Func<TEntity, bool>> whereCondition)
         {
+            NormalizePaging(_params);
             var query = GetQueryWithIncludes(whereCondition);
 
             if (!string.IsNullOrWhiteSpace(_params.Filtro))
@@ -588,8 +590,6 @@ namespace EG.Business.Services
             query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
 
             var totalCount = await query.CountAsync();
-            if (_params.Page < 1)
-                _params.Page = 1;
 
             var pagedQuery = query
                 .Skip((_params.Page - 1) * _params.PageSize)
@@ -604,6 +604,17 @@ namespace EG.Business.Services
                 TotalCount = totalCount,
                 Success = true
             };
+        }
+
+        private static void NormalizePaging(PagedRequest request)
+        {
+            if (request.Page < 1)
+            {
+                request.Page = 1;
+            }
+
+            var requestedPageSize = request.PageSize <= 0 ? DefaultPageSize : request.PageSize;
+            request.PageSize = Math.Clamp(requestedPageSize, 1, MaxPageSize);
         }
 
         protected virtual IQueryable<TEntity> ApplyFilterWithRelations(IQueryable<TEntity> query, string filtro)

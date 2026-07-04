@@ -226,6 +226,7 @@
     private readonly HashSet<int> hiddenControlColumnIndexes = new();
     private List<AutoColumnOption> autoColumnOptions = new();
     private string autoColumnSignature = string.Empty;
+    private bool columnEnhancementsInitialized;
     private bool isLoading = false;
     private bool actionInProgress = false;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
@@ -236,6 +237,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (columnEnhancementsInitialized)
+        {
+            return;
+        }
+
         await SetupActionColumnsAsync();
 
         if (!EnableAutoColumnSelector && !EnableColumnInteractions)
@@ -259,6 +265,8 @@
                 // Optional browser enhancement; the table remains usable without it.
             }
         }
+
+        columnEnhancementsInitialized = true;
     }
 
     private async Task SetupActionColumnsAsync()

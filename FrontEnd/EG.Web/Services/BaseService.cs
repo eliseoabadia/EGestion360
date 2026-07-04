@@ -159,12 +159,12 @@ namespace EG.Web.Services
                     return errorResult;
                 }
 
-                Console.WriteLine($"Error: {response.StatusCode} - {responseBody}");
+                Console.Error.WriteLine($"Error: {response.StatusCode} - {TruncateForLog(responseBody)}");
                 return CreateErrorContract<T>(ExtractErrorMessage(responseBody, response.StatusCode), ApiResponseCode.Error);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error en {method} {endpoint}: {ex.Message}");
+                Console.Error.WriteLine($"Error en {method} {endpoint}: {ex.Message}");
                 return CreateErrorContract<T>(ex.Message, ApiResponseCode.Error);
             }
         }
@@ -271,6 +271,16 @@ namespace EG.Web.Services
             }
 
             return responseBody;
+        }
+
+        private static string TruncateForLog(string value, int maxLength = 600)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+            {
+                return value;
+            }
+
+            return $"{value[..maxLength]}...";
         }
 
         private static T? CreateErrorContract<T>(string message, ApiResponseCode code)

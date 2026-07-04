@@ -15,7 +15,9 @@ using DevExpress.XtraReports.Web.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
+using System.IO.Compression;
 using System.Text;
 
 var logger = LoggerFactory.Create(config =>
@@ -136,6 +138,21 @@ try
     });
 
     builder.Services.AddMemoryCache();
+    builder.Services.AddResponseCompression(options =>
+    {
+        options.EnableForHttps = true;
+        options.Providers.Add<BrotliCompressionProvider>();
+        options.Providers.Add<GzipCompressionProvider>();
+        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        [
+            "application/json",
+            "application/problem+json"
+        ]);
+    });
+    builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+        options.Level = CompressionLevel.Fastest);
+    builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+        options.Level = CompressionLevel.Fastest);
     builder.Services.AddAuthorization();
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
     builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
@@ -150,6 +167,7 @@ try
     }
 
     //app.UseHttpsRedirection();
+    app.UseResponseCompression();
     app.UseCors("AllowFrontend");
     app.UseMiddleware<ApiExceptionMiddleware>();
     app.UseDevExpressControls();
