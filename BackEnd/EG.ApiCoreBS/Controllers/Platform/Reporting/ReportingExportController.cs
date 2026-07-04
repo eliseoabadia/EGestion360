@@ -29,6 +29,7 @@ public sealed class ReportingExportController : ControllerBase
         var enrichedReport = AddRequestContextParameters(report);
         var document = _reportProvider.GetReport(enrichedReport, null!);
         using var stream = new MemoryStream();
+        document.CreateDocument();
         document.ExportToPdf(stream);
 
         var fileName = BuildFileName(report);

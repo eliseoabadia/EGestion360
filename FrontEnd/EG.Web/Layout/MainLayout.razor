@@ -1,15 +1,16 @@
 @inherits LayoutComponentBase
 @implements IDisposable
+@using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Presupuestales
 @inject NavigationManager NavigationManager
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ThemeStateService ThemeStateService
 @inject IGenericCrudService<AniosResponse> AnioService
+@inject IGenericCrudService<EmpresaResponse> EmpresaService
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 
 <MudThemeProvider @ref="_themeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
@@ -31,12 +32,12 @@
             <div class="app-branding">
                 <button type="button"
                         class="brand-home-button"
-                        title="Ir a inicio"
+                        title="@BrandTitle"
                         aria-label="Ir a inicio"
                         @onclick="NavigateHome">
                     <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="brand-icon" />
                 </button>
-                <MudText Typo="Typo.h5" Class="app-title">@_headerCompanyName</MudText>
+                <MudText Typo="Typo.h5" Class="app-title" title="@BrandTitle">@_headerCompanyName</MudText>
             </div>
         </div>
 
@@ -188,7 +189,11 @@
     private bool _shellInitialized;
     private bool _sidebarResizeInitialized;
     private bool _sucursalChangeSubscribed;
+    private bool _empresaChangeSubscribed;
     private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
+    private string BrandTitle => string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
+        ? _headerCompanyName
+        : SucursalStateService.EmpresaNombre;
 
     protected override async Task OnInitializedAsync()
     {
@@ -233,6 +238,7 @@
 
         await CargarUsuarioAsync();
         await SucursalStateService.InitializeAsync();
+        await RefreshHeaderCompanyNameAsync();
         await AnioStateService.InitializeAsync();
         await LoadAniosAsync();
         await LoadVersionAsync();
@@ -241,6 +247,12 @@
         {
             SucursalStateService.OnSucursalChanged += OnSucursalChanged;
             _sucursalChangeSubscribed = true;
+        }
+
+        if (!_empresaChangeSubscribed)
+        {
+            SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+            _empresaChangeSubscribed = true;
         }
 
         _shellInitialized = true;
@@ -267,7 +279,20 @@
 
     private void OnSucursalChanged(int sucursalId, string sucursalNombre)
     {
-        StateHasChanged();
+        _ = InvokeAsync(async () =>
+        {
+            await RefreshHeaderCompanyNameAsync();
+            StateHasChanged();
+        });
+    }
+
+    private void OnEmpresaChanged(int empresaId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await RefreshHeaderCompanyNameAsync();
+            StateHasChanged();
+        });
     }
 
     private async Task LoadAniosAsync()
@@ -350,7 +375,7 @@
             await authProvider.LogoutAsync();
         }
 
-        NavigationManager.NavigateTo("/login", replace: true);
+        NavigationManager.NavigateTo(BuildCacheBustedRoute("/login", "logout"), forceLoad: true, replace: true);
     }
 
     private void NavigateToProfile()
@@ -590,12 +615,58 @@
         NavigationManager.NavigateTo("/");
     }
 
+    private static string BuildCacheBustedRoute(string route, string reason)
+    {
+        var separator = route.Contains('?', StringComparison.Ordinal) ? "&" : "?";
+        return $"{route}{separator}{reason}=1&t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+    }
+
     private string GetHeaderCompanyName()
     {
-        var configuredName = Configuration["Branding:NombreEmpresa"];
-        return string.IsNullOrWhiteSpace(configuredName)
-            ? "EGestion360"
-            : configuredName.Trim();
+        return "EGestion360";
+    }
+
+    private async Task RefreshHeaderCompanyNameAsync()
+    {
+        var fallback = FirstText(SucursalStateService.EmpresaNombreCorto, SucursalStateService.EmpresaNombre, GetHeaderCompanyName());
+        _headerCompanyName = fallback;
+
+        if (SucursalStateService.EmpresaId is not > 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var response = await EmpresaService.GetByIdAsync(SucursalStateService.EmpresaId.Value);
+            var empresa = response?.Data ?? response?.Items?.FirstOrDefault();
+            if (empresa == null)
+            {
+                return;
+            }
+
+            var shortName = FirstText(empresa.NombreCorto, empresa.EmpresaNombre, empresa.RazonSocial, fallback);
+            var fullName = FirstText(empresa.EmpresaNombre, empresa.RazonSocial, shortName);
+            _headerCompanyName = shortName;
+            await SucursalStateService.SetEmpresaInfoAsync(empresa.PkidEmpresa, fullName, shortName, notify: false);
+        }
+        catch
+        {
+            _headerCompanyName = fallback;
+        }
+    }
+
+    private static string FirstText(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return string.Empty;
     }
 
     private string _version = "1.0.0";
@@ -629,6 +700,11 @@
         if (_sucursalChangeSubscribed)
         {
             SucursalStateService.OnSucursalChanged -= OnSucursalChanged;
+        }
+
+        if (_empresaChangeSubscribed)
+        {
+            SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
         }
     }
 }

@@ -1,8 +1,15 @@
-﻿@using MudBlazor
+@using MudBlazor
 @using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Contracts.Configuration
+@using Microsoft.AspNetCore.Components.Forms
 
 @inject IGenericCrudService<EstadoResponse> estadoService
+@inject IGenericCrudService<PeriodoPagoResponse> periodoPagoService
+@inject IGenericCrudService<NomTipoPagoResponse> tipoPagoNomService
 @inject IGenericCrudService<EmpresaResponse> _service
+@inject IEmpresaLogoService EmpresaLogoService
+@inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EmpresaResponse"
@@ -20,7 +27,7 @@
 
         <MudGrid GutterSize="2">
             <!-- Fila 1: Nombre y RFC -->
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="5">
                 <MudTextField @bind-Value="empresa.EmpresaNombre"
                               Label="Nombre de la Empresa"
                               Variant="Variant.Outlined"
@@ -29,7 +36,16 @@
                               Validation="@(new Func<string, IEnumerable<string>>(ValidarNombre))"
                               For="@(() => empresa.EmpresaNombre)" />
             </MudItem>
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="3">
+                <MudTextField @bind-Value="empresa.NombreCorto"
+                              Label="Nombre corto"
+                              Variant="Variant.Outlined"
+                              Counter="64"
+                              MaxLength="64"
+                              Validation="@(new Func<string?, IEnumerable<string>>(ValidarNombreCorto))"
+                              For="@(() => empresa.NombreCorto)" />
+            </MudItem>
+            <MudItem xs="12" md="4">
                 <MudTextField @bind-Value="empresa.Rfc"
                               Label="RFC"
                               Variant="Variant.Outlined"
@@ -49,6 +65,162 @@
                 <MudTextField @bind-Value="empresa.Giro"
                               Label="Giro"
                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <div class="empresa-logo-panel">
+                    <div class="empresa-logo-preview">
+                        @if (!string.IsNullOrWhiteSpace(logoPreviewUrl))
+                        {
+                            <img src="@logoPreviewUrl" alt="Logo de la empresa" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" />
+                        }
+                    </div>
+                    <div class="empresa-logo-content">
+                        <MudText Typo="Typo.subtitle2">Logo institucional</MudText>
+                        <MudText Typo="Typo.caption" Class="empresa-logo-file">
+                            @LogoStatusText
+                        </MudText>
+                        <div class="empresa-logo-actions">
+                            <MudFileUpload T="IBrowserFile"
+                                           Accept="image/png,image/jpeg,image/webp"
+                                           FilesChanged="OnLogoSelected">
+                                <CustomContent Context="fileUpload">
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Upload"
+                                               OnClick="fileUpload.OpenFilePickerAsync">
+                                        Seleccionar logo
+                                    </MudButton>
+                                </CustomContent>
+                            </MudFileUpload>
+                            @if (logoFile != null)
+                            {
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Close"
+                                           OnClick="ClearLogoSelection">
+                                    Quitar selección
+                                </MudButton>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </MudItem>
+
+            <MudItem xs="12">
+                <div class="empresa-section-panel">
+                    <div class="empresa-section-heading">
+                        <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">Registro patronal</MudText>
+                    </div>
+                    <MudGrid GutterSize="2">
+                        <MudItem xs="12" md="3">
+                            <MudTextField @bind-Value="empresa.RegImss"
+                                          Label="Registro IMSS"
+                                          Variant="Variant.Outlined"
+                                          MaxLength="25"
+                                          Counter="25"
+                                          Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "Registro IMSS")))" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField @bind-Value="empresa.RegInfonavit"
+                                          Label="Registro Infonavit"
+                                          Variant="Variant.Outlined"
+                                          MaxLength="25"
+                                          Counter="25"
+                                          Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "Registro Infonavit")))" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField @bind-Value="empresa.CedEmpadronam"
+                                          Label="Cédula empadronamiento"
+                                          Variant="Variant.Outlined"
+                                          MaxLength="25"
+                                          Counter="25"
+                                          Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "Cédula empadronamiento")))" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField @bind-Value="empresa.NoFonacot"
+                                          Label="No. Fonacot"
+                                          Variant="Variant.Outlined"
+                                          MaxLength="25"
+                                          Counter="25"
+                                          Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "No. Fonacot")))" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="empresa.UsAdmin"
+                                          Label="Usuario administrador"
+                                          Variant="Variant.Outlined"
+                                          MaxLength="100"
+                                          Counter="100"
+                                          Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 100, "Usuario administrador")))" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="empresa.EmailAdmin"
+                                          Label="Correo administrador"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.Email"
+                                          MaxLength="100"
+                                          Counter="100"
+                                          Validation="@(new Func<string?, IEnumerable<string>>(ValidarEmailAdmin))" />
+                        </MudItem>
+                    </MudGrid>
+                </div>
+            </MudItem>
+
+            <MudItem xs="12">
+                <div class="empresa-section-panel">
+                    <div class="empresa-section-heading">
+                        <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">Configuración de nómina</MudText>
+                    </div>
+                    <MudGrid GutterSize="2">
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="int?"
+                                       Label="Periodo de pago"
+                                       @bind-Value="empresa.FkidPeriodoPagoSis"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true">
+                                <MudSelectItem T="int?" Value="null">Sin periodo</MudSelectItem>
+                                @foreach (var periodo in periodosPago)
+                                {
+                                    <MudSelectItem T="int?" Value="@(periodo.LegacyId ?? periodo.PkidCatalogoSimple)">@periodo.Descripcion</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="int?"
+                                       Label="Tipo de pago"
+                                       @bind-Value="empresa.FkidTipoPagoNom"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true">
+                                <MudSelectItem T="int?" Value="null">Sin tipo</MudSelectItem>
+                                @foreach (var tipoPago in tiposPagoNom)
+                                {
+                                    <MudSelectItem T="int?" Value="@tipoPago.PkidTipoPago">@tipoPago.ClaveNombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudNumericField T="decimal?"
+                                             @bind-Value="empresa.PrimaRiesgoImss"
+                                             Label="Prima riesgo IMSS"
+                                             Variant="Variant.Outlined"
+                                             Min="0"
+                                             Format="F4" />
+                        </MudItem>
+                        <MudItem xs="12" md="3" Class="d-flex align-center">
+                            <MudSwitch @bind-Value="empresa.UsaSueldoTabular"
+                                       Color="Color.Primary"
+                                       Label="Usa sueldo tabular" />
+                        </MudItem>
+                    </MudGrid>
+                </div>
             </MudItem>
 
             <!-- Fila 3: Estado, Moneda e Idioma -->
@@ -83,31 +255,21 @@
                            Label="¿Es oficina principal?" />
             </MudItem>
 
-            <!-- Fila 5: Estatus (solo en edición) -->
+            <!-- Fila 5: Estatus informativo -->
             <MudItem xs="12">
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
                     <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus de la Empresa</MudText>
                     <MudDivider Class="mb-3" />
-                    @if (Id.HasValue)
-                    {
-                        <div class="d-flex align-center">
-                            <MudSwitch @bind-Value="empresa.EmpresaActivo"
-                                       Color="Color.Primary"
-                                       ThumbIcon="@(empresa.EmpresaActivo? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-                                <MudText>@(empresa.EmpresaActivo ? "Activa" : "Inactiva")</MudText>
-                            </MudSwitch>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="d-flex align-center">
-                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Activa</MudChip>
-                            <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
-                                (Las nuevas empresas se crean activas)
-                            </MudText>
-                        </div>
-                        <input type="hidden" @bind="empresa.EmpresaActivo" />
-                    }
+                    <div class="d-flex align-center">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="@(empresa.EmpresaActivo ? Color.Success : Color.Default)">
+                            @(empresa.EmpresaActivo ? "Activa" : "Inactiva")
+                        </MudChip>
+                        <MudText Typo="Typo.body2" Class="ml-2 text-secondary">
+                            La baja se realiza desde la acción eliminar para validar dependencias.
+                        </MudText>
+                    </div>
                 </MudPaper>
             </MudItem>
         </MudGrid>
@@ -121,8 +283,13 @@
     private BaseEntityForm<EmpresaResponse> form = null!;
     private EmpresaResponse empresa = new() { EmpresaActivo = true };
     private IList<EstadoResponse> estados = new List<EstadoResponse>();
+    private IList<PeriodoPagoResponse> periodosPago = new List<PeriodoPagoResponse>();
+    private IList<NomTipoPagoResponse> tiposPagoNom = new List<NomTipoPagoResponse>();
     // private IList<MonedaResponse> monedas = new List<MonedaResponse>();
     // private IList<IdiomaResponse> idiomas = new List<IdiomaResponse>();
+    private const long MaxLogoSize = 5 * 1024 * 1024;
+    private IBrowserFile? logoFile;
+    private string? logoPreviewUrl;
 
     private int? estadoSeleccionado;
     private DateTime? fechaApertura = DateTime.Today;
@@ -130,10 +297,13 @@
     private string dialogTitle => Id.HasValue ? "Editar Empresa" : "Nueva Empresa";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string LogoStatusText => logoFile?.Name
+        ?? (string.IsNullOrWhiteSpace(empresa.Logo) && !(empresa.LogoEmpresa?.Length > 0) ? "Sin logo" : "Logo actual");
 
     protected override async Task OnInitializedAsync()
     {
         await CargarEstados();
+        await CargarCatalogosNomina();
         // await CargarMonedas();
         // await CargarIdiomas();
 
@@ -147,6 +317,7 @@
             empresa.FkidMonedaBaseSis = 1; // Moneda por defecto (ajusta según tu catálogo)
             empresa.FkidIdiomaPreferidoSis = null;
             empresa.EsOficinaPrincipal = false;
+            empresa.UsaSueldoTabular = false;
         }
     }
 
@@ -189,6 +360,8 @@
                 {
                     fechaApertura = null;
                 }
+
+                SetLogoPreviewFromEmpresa();
             }
             else
             {
@@ -225,6 +398,31 @@
             yield return "El formato del RFC no es válido";
     }
 
+    private IEnumerable<string> ValidarNombreCorto(string? nombreCorto)
+    {
+        if (!string.IsNullOrWhiteSpace(nombreCorto) && nombreCorto.Trim().Length > 64)
+            yield return "El nombre corto no puede exceder 64 caracteres";
+    }
+
+    private IEnumerable<string> ValidarLongitud(string? value, int maxLength, string label)
+    {
+        if (!string.IsNullOrWhiteSpace(value) && value.Trim().Length > maxLength)
+            yield return $"{label} no puede exceder {maxLength} caracteres";
+    }
+
+    private IEnumerable<string> ValidarEmailAdmin(string? email)
+    {
+        foreach (var error in ValidarLongitud(email, 100, "Correo administrador"))
+            yield return error;
+
+        if (string.IsNullOrWhiteSpace(email))
+            yield break;
+
+        var value = email.Trim();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(value, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            yield return "El correo administrador no tiene un formato válido";
+    }
+
     private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
@@ -245,6 +443,11 @@
             Snackbar.Add("Debe seleccionar una moneda base", Severity.Warning);
             return;
         }
+
+        empresa.NombreCorto = string.IsNullOrWhiteSpace(empresa.NombreCorto)
+            ? empresa.EmpresaNombre?.Trim()
+            : empresa.NombreCorto.Trim();
+        NormalizeDatosPatronales();
 
         if (fechaApertura.HasValue)
             empresa.FechaApertura = DateOnly.FromDateTime(fechaApertura.Value);
@@ -267,6 +470,21 @@
 
             if (response?.Success == true)
             {
+                var savedEmpresa = response.Data ?? response.Items?.FirstOrDefault() ?? empresa;
+
+                if (logoFile != null)
+                {
+                    var logoSaved = await UploadLogoAsync(response);
+                    if (!logoSaved)
+                    {
+                        return;
+                    }
+
+                    savedEmpresa = empresa;
+                }
+
+                await SyncSelectedEmpresaStateAsync(savedEmpresa);
+
                 var message = response.Message ?? $"Empresa {(Id.HasValue ? "actualizada" : "creada")} exitosamente";
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
@@ -280,5 +498,210 @@
         {
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task SyncSelectedEmpresaStateAsync(EmpresaResponse? savedEmpresa)
+    {
+        if (savedEmpresa == null || savedEmpresa.PkidEmpresa <= 0)
+        {
+            return;
+        }
+
+        if (SucursalStateService.EmpresaId.HasValue &&
+            SucursalStateService.EmpresaId.Value != savedEmpresa.PkidEmpresa)
+        {
+            return;
+        }
+
+        await SucursalStateService.SetEmpresaInfoAsync(
+            savedEmpresa.PkidEmpresa,
+            savedEmpresa.EmpresaNombre,
+            savedEmpresa.NombreCorto);
+    }
+
+    private async Task CargarCatalogosNomina()
+    {
+        try
+        {
+            var periodosResponse = await periodoPagoService.GetAllAsync();
+            if (periodosResponse?.Success == true && periodosResponse.Items != null)
+            {
+                periodosPago = periodosResponse.Items.ToList();
+            }
+            else
+            {
+                Snackbar.Add(periodosResponse?.Message ?? "Error al cargar periodos de pago", Severity.Warning);
+            }
+
+            var tiposPagoResponse = await tipoPagoNomService.GetAllAsync();
+            if (tiposPagoResponse?.Success == true && tiposPagoResponse.Items != null)
+            {
+                tiposPagoNom = tiposPagoResponse.Items.Where(item => item.Activo).ToList();
+            }
+            else
+            {
+                Snackbar.Add(tiposPagoResponse?.Message ?? "Error al cargar tipos de pago", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar catálogos de nómina: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void NormalizeDatosPatronales()
+    {
+        empresa.RegImss = TrimOrNull(empresa.RegImss);
+        empresa.RegInfonavit = TrimOrNull(empresa.RegInfonavit);
+        empresa.CedEmpadronam = TrimOrNull(empresa.CedEmpadronam);
+        empresa.NoFonacot = TrimOrNull(empresa.NoFonacot);
+        empresa.UsAdmin = TrimOrNull(empresa.UsAdmin);
+        empresa.EmailAdmin = TrimOrNull(empresa.EmailAdmin);
+
+        if (empresa.PrimaRiesgoImss < 0)
+        {
+            empresa.PrimaRiesgoImss = 0;
+        }
+    }
+
+    private static string? TrimOrNull(string? value)
+    {
+        value = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        return value;
+    }
+
+    private async Task OnLogoSelected(IBrowserFile file)
+    {
+        if (file == null)
+        {
+            return;
+        }
+
+        var extension = Path.GetExtension(file.Name);
+        if (!IsAllowedLogoExtension(extension))
+        {
+            Snackbar.Add("El logo debe ser PNG, JPG, JPEG o WEBP.", Severity.Warning);
+            return;
+        }
+
+        if (file.Size > MaxLogoSize)
+        {
+            Snackbar.Add("El logo no puede exceder 5 MB.", Severity.Warning);
+            return;
+        }
+
+        logoFile = file;
+        await using var stream = file.OpenReadStream(MaxLogoSize);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        var bytes = memory.ToArray();
+        var contentType = string.IsNullOrWhiteSpace(file.ContentType)
+            ? DetectImageContentType(bytes)
+            : file.ContentType;
+
+        logoPreviewUrl = $"data:{contentType};base64,{Convert.ToBase64String(bytes)}";
+    }
+
+    private void ClearLogoSelection()
+    {
+        logoFile = null;
+        SetLogoPreviewFromEmpresa();
+    }
+
+    private async Task<bool> UploadLogoAsync(ApiResponse<EmpresaResponse> saveResponse)
+    {
+        var empresaId = Id
+            ?? saveResponse.Data?.PkidEmpresa
+            ?? saveResponse.Items?.FirstOrDefault()?.PkidEmpresa
+            ?? empresa.PkidEmpresa;
+
+        if (empresaId <= 0)
+        {
+            Snackbar.Add("La empresa se guardó, pero no se pudo identificar el ID para cargar el logo.", Severity.Error);
+            return false;
+        }
+
+        var logoResponse = await EmpresaLogoService.UploadAsync(empresaId, logoFile!);
+        if (logoResponse?.Success != true)
+        {
+            Snackbar.Add(logoResponse?.Message ?? "No se pudo cargar el logo.", Severity.Error);
+            return false;
+        }
+
+        if (logoResponse.Data != null)
+        {
+            empresa = logoResponse.Data;
+            SetLogoPreviewFromEmpresa();
+        }
+
+        logoFile = null;
+        Snackbar.Add("Logo actualizado correctamente", Severity.Success);
+        return true;
+    }
+
+    private void SetLogoPreviewFromEmpresa()
+    {
+        if (empresa.LogoEmpresa is { Length: > 0 })
+        {
+            var contentType = DetectImageContentType(empresa.LogoEmpresa);
+            logoPreviewUrl = $"data:{contentType};base64,{Convert.ToBase64String(empresa.LogoEmpresa)}";
+            return;
+        }
+
+        logoPreviewUrl = string.IsNullOrWhiteSpace(empresa.Logo)
+            ? null
+            : ToClientLogoUrl(empresa.Logo);
+    }
+
+    private static bool IsAllowedLogoExtension(string? extension)
+    {
+        return extension?.ToLowerInvariant() is ".png" or ".jpg" or ".jpeg" or ".webp";
+    }
+
+    private static string ToClientLogoUrl(string logo)
+    {
+        if (Uri.TryCreate(logo, UriKind.Absolute, out _))
+        {
+            return logo;
+        }
+
+        return logo.StartsWith('/')
+            ? logo
+            : $"/{logo.TrimStart('/')}";
+    }
+
+    private static string DetectImageContentType(byte[] content)
+    {
+        if (content.Length >= 8 &&
+            content[0] == 0x89 &&
+            content[1] == 0x50 &&
+            content[2] == 0x4E &&
+            content[3] == 0x47)
+        {
+            return "image/png";
+        }
+
+        if (content.Length >= 3 &&
+            content[0] == 0xFF &&
+            content[1] == 0xD8 &&
+            content[2] == 0xFF)
+        {
+            return "image/jpeg";
+        }
+
+        if (content.Length >= 12 &&
+            content[0] == 0x52 &&
+            content[1] == 0x49 &&
+            content[2] == 0x46 &&
+            content[3] == 0x46 &&
+            content[8] == 0x57 &&
+            content[9] == 0x45 &&
+            content[10] == 0x42 &&
+            content[11] == 0x50)
+        {
+            return "image/webp";
+        }
+
+        return "image/png";
     }
 }

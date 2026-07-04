@@ -1,5 +1,6 @@
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.Interfaces;
@@ -49,6 +50,51 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 return BadRequest(result);
 
             return CreatedAtAction(nameof(GetById), new { id = response.PkidEgresoProyectado }, result);
+        }
+
+        [HttpPost("ai-import/preview")]
+        [RequestSizeLimit(50 * 1024 * 1024)]
+        public async Task<ActionResult<PagedResult<EgresoProyectadoAiImportPreviewResponse>>> PreviewAiImport([FromForm] EgresoProyectadoAiImportUploadFormRequest request)
+        {
+            if (request.File == null || request.File.Length == 0)
+            {
+                return BadRequest(new PagedResult<EgresoProyectadoAiImportPreviewResponse>
+                {
+                    Success = false,
+                    Message = "El archivo es requerido.",
+                    Code = "INVALID_FILE"
+                });
+            }
+
+            await using var stream = request.File.OpenReadStream();
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+
+            var dto = new EgresoProyectadoAiImportUploadRequest
+            {
+                NombreOriginal = request.File.FileName,
+                TipoMime = string.IsNullOrWhiteSpace(request.File.ContentType)
+                    ? "application/octet-stream"
+                    : request.File.ContentType,
+                TamanoBytes = request.File.Length,
+                Contenido = memory.ToArray(),
+                HeaderFallback = new EgresoProyectadoAiImportHeaderRequest
+                {
+                    FkidAnioSis = request.FkidAnioSis,
+                    Anio = request.Anio,
+                    Fecha = request.Fecha
+                }
+            };
+
+            var result = await _appService.PreviewAiImportAsync(dto, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("ai-import/confirm")]
+        public async Task<ActionResult<PagedResult<EgresoProyectadoAiImportPreviewResponse>>> ConfirmAiImport([FromBody] EgresoProyectadoAiImportConfirmRequest request)
+        {
+            var result = await _appService.ConfirmAiImportAsync(request, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPut("{id}")]
@@ -138,5 +184,13 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
             var result = await _appService.GetAllPaginadoAsync(pagedRequest);
             return Ok(result);
         }
+    }
+
+    public class EgresoProyectadoAiImportUploadFormRequest
+    {
+        public int? FkidAnioSis { get; set; }
+        public int? Anio { get; set; }
+        public DateTime? Fecha { get; set; }
+        public IFormFile? File { get; set; }
     }
 }

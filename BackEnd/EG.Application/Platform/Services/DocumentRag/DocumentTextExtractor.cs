@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.ComponentModel;
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -441,7 +442,8 @@ namespace EG.Application.Services.DocumentRag
             DocumentRagSettings settings,
             ILogger logger)
         {
-            if (string.IsNullOrWhiteSpace(settings.TesseractExePath) || !File.Exists(settings.TesseractExePath))
+            var tesseractExePath = ResolveTesseractExePath(settings.TesseractExePath);
+            if (string.IsNullOrWhiteSpace(tesseractExePath))
             {
                 return new DocumentTextExtractionResult
                 {
@@ -460,18 +462,41 @@ namespace EG.Application.Services.DocumentRag
             {
                 await File.WriteAllBytesAsync(inputPath, request.Contenido);
 
+                var tessdataPrefixPath = ResolveTessdataPrefixPath(settings.TessdataPrefixPath, tesseractExePath);
+                var language = ResolveTesseractLanguage(settings.TesseractLanguage, tessdataPrefixPath, logger);
+
                 using var process = new Process();
                 process.StartInfo = new ProcessStartInfo
                 {
-                    FileName = settings.TesseractExePath,
-                    Arguments = $"\"{inputPath}\" stdout -l {settings.TesseractLanguage}",
+                    FileName = tesseractExePath,
+                    Arguments = $"\"{inputPath}\" stdout -l {language}",
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 };
 
-                process.Start();
+                var workingDirectory = GetTesseractWorkingDirectory(tesseractExePath);
+                if (!string.IsNullOrWhiteSpace(workingDirectory))
+                    process.StartInfo.WorkingDirectory = workingDirectory;
+
+                if (!string.IsNullOrWhiteSpace(tessdataPrefixPath))
+                    process.StartInfo.Environment["TESSDATA_PREFIX"] = tessdataPrefixPath;
+
+                try
+                {
+                    process.Start();
+                }
+                catch (Win32Exception ex)
+                {
+                    logger.LogWarning(ex, "No se pudo iniciar Tesseract OCR desde {TesseractExePath}.", tesseractExePath);
+                    return new DocumentTextExtractionResult
+                    {
+                        Status = "OCR_REQUIRED",
+                        Message = "Imagen cargada, pero no se indexo texto porque Tesseract OCR no esta disponible en el servidor."
+                    };
+                }
+
                 var outputTask = process.StandardOutput.ReadToEndAsync();
                 var errorTask = process.StandardError.ReadToEndAsync();
 
@@ -504,6 +529,117 @@ namespace EG.Application.Services.DocumentRag
                 if (File.Exists(inputPath))
                     File.Delete(inputPath);
             }
+        }
+
+        private static string? ResolveTesseractExePath(string? configuredPath)
+        {
+            var candidates = new List<string>();
+            if (!string.IsNullOrWhiteSpace(configuredPath))
+                candidates.Add(Environment.ExpandEnvironmentVariables(configuredPath.Trim()));
+
+            candidates.Add(@"C:\Program Files\Tesseract-OCR\tesseract.exe");
+            candidates.Add(@"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe");
+
+            foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (File.Exists(candidate))
+                    return Path.GetFullPath(candidate);
+            }
+
+            if (string.IsNullOrWhiteSpace(configuredPath))
+                return "tesseract";
+
+            var trimmedPath = Environment.ExpandEnvironmentVariables(configuredPath.Trim());
+            var hasDirectory = trimmedPath.Contains(Path.DirectorySeparatorChar)
+                || trimmedPath.Contains(Path.AltDirectorySeparatorChar);
+            return hasDirectory ? null : trimmedPath;
+        }
+
+        private static string? ResolveTessdataPrefixPath(string? configuredPath, string tesseractExePath)
+        {
+            var candidates = new List<string>();
+            if (!string.IsNullOrWhiteSpace(configuredPath))
+                candidates.Add(Environment.ExpandEnvironmentVariables(configuredPath.Trim()));
+
+            var executableDirectory = GetTesseractWorkingDirectory(tesseractExePath);
+            if (!string.IsNullOrWhiteSpace(executableDirectory))
+                candidates.Add(executableDirectory);
+
+            foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (Directory.Exists(Path.Combine(candidate, "tessdata")))
+                    return Path.GetFullPath(candidate);
+
+                if (string.Equals(Path.GetFileName(candidate.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)), "tessdata", StringComparison.OrdinalIgnoreCase))
+                {
+                    var parent = Directory.GetParent(candidate);
+                    if (parent != null && Directory.Exists(candidate))
+                        return parent.FullName;
+                }
+            }
+
+            return null;
+        }
+
+        private static string ResolveTesseractLanguage(string configuredLanguage, string? tessdataPrefixPath, ILogger logger)
+        {
+            var requestedLanguage = string.IsNullOrWhiteSpace(configuredLanguage)
+                ? "eng"
+                : configuredLanguage.Trim();
+
+            var availableLanguages = GetAvailableTesseractLanguages(tessdataPrefixPath);
+            if (availableLanguages.Count == 0)
+                return requestedLanguage;
+
+            var requestedLanguages = requestedLanguage.Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var installedRequestedLanguages = requestedLanguages
+                .Where(availableLanguages.Contains)
+                .ToArray();
+
+            if (installedRequestedLanguages.Length == requestedLanguages.Length)
+                return requestedLanguage;
+
+            if (installedRequestedLanguages.Length > 0)
+            {
+                var fallbackLanguage = string.Join('+', installedRequestedLanguages);
+                logger.LogWarning(
+                    "Tesseract OCR no tiene todos los idiomas solicitados ({RequestedLanguage}). Se usara {FallbackLanguage}.",
+                    requestedLanguage,
+                    fallbackLanguage);
+                return fallbackLanguage;
+            }
+
+            if (availableLanguages.Contains("eng"))
+            {
+                logger.LogWarning(
+                    "Tesseract OCR no tiene el idioma solicitado ({RequestedLanguage}). Se usara eng.",
+                    requestedLanguage);
+                return "eng";
+            }
+
+            return requestedLanguage;
+        }
+
+        private static HashSet<string> GetAvailableTesseractLanguages(string? tessdataPrefixPath)
+        {
+            if (string.IsNullOrWhiteSpace(tessdataPrefixPath))
+                return [];
+
+            var tessdataPath = Path.Combine(tessdataPrefixPath, "tessdata");
+            if (!Directory.Exists(tessdataPath))
+                return [];
+
+            return Directory.GetFiles(tessdataPath, "*.traineddata")
+                .Select(path => Path.GetFileNameWithoutExtension(path))
+                .Where(language => !string.IsNullOrWhiteSpace(language))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static string? GetTesseractWorkingDirectory(string tesseractExePath)
+        {
+            return Path.IsPathRooted(tesseractExePath)
+                ? Path.GetDirectoryName(tesseractExePath)
+                : null;
         }
 
         private static string GetTempRoot(string configuredPath)

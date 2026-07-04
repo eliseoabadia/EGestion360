@@ -16,6 +16,7 @@ namespace EG.Web.Services
         public string? SucursalNombre { get; private set; }
         public int? EmpresaId { get; private set; }
         public string? EmpresaNombre { get; private set; }
+        public string? EmpresaNombreCorto { get; private set; }
 
         public SucursalStateService(IJSRuntime jsRuntime)
         {
@@ -36,6 +37,7 @@ namespace EG.Web.Services
                         SucursalNombre = sucursal.Nombre;
                         EmpresaId = sucursal.EmpresaId;
                         EmpresaNombre = sucursal.EmpresaNombre;
+                        EmpresaNombreCorto = sucursal.EmpresaNombreCorto;
                     }
                 }
             }
@@ -45,19 +47,26 @@ namespace EG.Web.Services
             }
         }
 
-        public async Task SetSucursalAsync(int sucursalId, string sucursalNombre, int? empresaId = null, string? empresaNombre = null)
+        public async Task SetSucursalAsync(
+            int sucursalId,
+            string sucursalNombre,
+            int? empresaId = null,
+            string? empresaNombre = null,
+            string? empresaNombreCorto = null)
         {
             SucursalId = sucursalId;
             SucursalNombre = sucursalNombre;
             EmpresaId = empresaId;
             EmpresaNombre = empresaNombre;
+            EmpresaNombreCorto = empresaNombreCorto;
 
             var sucursal = new SucursalSeleccionada
             {
                 Id = sucursalId,
                 Nombre = sucursalNombre,
                 EmpresaId = empresaId ?? 0,
-                EmpresaNombre = empresaNombre ?? string.Empty
+                EmpresaNombre = empresaNombre ?? string.Empty,
+                EmpresaNombreCorto = empresaNombreCorto ?? string.Empty
             };
 
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", SUCURSAL_KEY, JsonSerializer.Serialize(sucursal));
@@ -71,12 +80,52 @@ namespace EG.Web.Services
             OnSucursalChanged?.Invoke(sucursalId, sucursalNombre);
         }
 
+        public async Task SetEmpresaInfoAsync(
+            int empresaId,
+            string? empresaNombre,
+            string? empresaNombreCorto,
+            bool notify = true)
+        {
+            EmpresaId = empresaId > 0 ? empresaId : EmpresaId;
+            EmpresaNombre = string.IsNullOrWhiteSpace(empresaNombre)
+                ? EmpresaNombre
+                : empresaNombre.Trim();
+            EmpresaNombreCorto = string.IsNullOrWhiteSpace(empresaNombreCorto)
+                ? EmpresaNombreCorto
+                : empresaNombreCorto.Trim();
+
+            if (EmpresaId.HasValue)
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", EMPRESA_KEY, EmpresaId.Value.ToString());
+            }
+
+            if (SucursalId.HasValue)
+            {
+                var sucursal = new SucursalSeleccionada
+                {
+                    Id = SucursalId.Value,
+                    Nombre = SucursalNombre ?? string.Empty,
+                    EmpresaId = EmpresaId ?? 0,
+                    EmpresaNombre = EmpresaNombre ?? string.Empty,
+                    EmpresaNombreCorto = EmpresaNombreCorto ?? string.Empty
+                };
+
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", SUCURSAL_KEY, JsonSerializer.Serialize(sucursal));
+            }
+
+            if (notify && EmpresaId.HasValue)
+            {
+                OnEmpresaChanged?.Invoke(EmpresaId.Value);
+            }
+        }
+
         public async Task ClearSucursalAsync()
         {
             SucursalId = null;
             SucursalNombre = null;
             EmpresaId = null;
             EmpresaNombre = null;
+            EmpresaNombreCorto = null;
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", SUCURSAL_KEY);
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", EMPRESA_KEY);
             OnSucursalChanged?.Invoke(0, string.Empty);
@@ -105,6 +154,7 @@ namespace EG.Web.Services
             public string Nombre { get; set; } = string.Empty;
             public int EmpresaId { get; set; }
             public string EmpresaNombre { get; set; } = string.Empty;
+            public string EmpresaNombreCorto { get; set; } = string.Empty;
         }
     }
 }

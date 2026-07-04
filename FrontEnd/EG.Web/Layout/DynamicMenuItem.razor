@@ -15,35 +15,52 @@
     var childrenCss = $"sidebar-children level-{level}-children {(isExpanded ? "expanded" : "collapsed")}";
     var chevronCss = $"chevron {(isExpanded ? "expanded" : "")}";
     var iconClass = GetIcon(Item.ImageUrl);
+    var dashboardRoute = Level == 0 ? GetDashboardRoute(Item) : null;
+    var hasDashboardShortcut = !string.IsNullOrWhiteSpace(dashboardRoute);
+    var dashboardCss = $"dashboard-shortcut{(hasDashboardShortcut && IsActiveRoute(dashboardRoute) ? " active" : string.Empty)}";
 }
 
 @if (hasChildren)
 {
     <div class="@groupCss">
-        <button type="button"
-                class="@groupHeaderCss"
-                title="@(IsCollapsed ? Item.Nombre : null)"
-                aria-expanded="@isExpanded"
-                aria-controls="@childrenId"
-                disabled="@IsNavigationLocked"
-                @onclick="ToggleExpand">
-            <span class="group-left">
-                <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
+        <div class="sidebar-group-row @(hasDashboardShortcut && !IsCollapsed ? "has-dashboard" : string.Empty)">
+            <button type="button"
+                    class="@groupHeaderCss"
+                    title="@(IsCollapsed ? Item.Nombre : null)"
+                    aria-expanded="@isExpanded"
+                    aria-controls="@childrenId"
+                    disabled="@IsNavigationLocked"
+                    @onclick="ToggleExpand">
+                <span class="group-left">
+                    <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
+                    @if (!IsCollapsed)
+                    {
+                        <span class="menu-label">@Item.Nombre</span>
+                        @if (isDirectlyActive)
+                        {
+                            <span class="selected-indicator" aria-hidden="true"></span>
+                        }
+                    }
+                </span>
+
                 @if (!IsCollapsed)
                 {
-                    <span class="menu-label">@Item.Nombre</span>
-                    @if (isDirectlyActive)
-                    {
-                        <span class="selected-indicator" aria-hidden="true"></span>
-                    }
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="@chevronCss" Size="Size.Small" />
                 }
-            </span>
+            </button>
 
-            @if (!IsCollapsed)
+            @if (hasDashboardShortcut && !IsCollapsed)
             {
-                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="@chevronCss" Size="Size.Small" />
+                <button type="button"
+                        class="@dashboardCss"
+                        title="@($"Dashboard {Item.Nombre}")"
+                        aria-label="@($"Abrir dashboard de {Item.Nombre}")"
+                        disabled="@IsNavigationLocked"
+                        @onclick="@(() => HandleDashboardNavigateAsync(dashboardRoute))">
+                    <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Size="Size.Small" />
+                </button>
             }
-        </button>
+        </div>
 
         @if (!IsCollapsed)
         {
@@ -59,7 +76,9 @@
                                          SetExpandedState="SetExpandedState"
                                          GetIcon="GetIcon"
                                          IsActiveRoute="IsActiveRoute"
-                                         OnNavigate="OnNavigate" />
+                                         GetDashboardRoute="GetDashboardRoute"
+                                         OnNavigate="OnNavigate"
+                                         OnDashboardNavigate="OnDashboardNavigate" />
                     }
                 </div>
             </div>
@@ -90,7 +109,7 @@ else if (Item.AbrirEnNuevaVentana)
 }
 else
 {
-    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty)" title="@(IsCollapsed ? Item.Nombre : null)">
+    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty) @(hasDashboardShortcut && !IsCollapsed ? "sidebar-item-with-dashboard" : string.Empty)" title="@(IsCollapsed ? Item.Nombre : null)">
         <a class="@linkCss"
            href="@Href"
            aria-label="@Item.Nombre"
@@ -106,6 +125,17 @@ else
                 }
             }
         </a>
+        @if (hasDashboardShortcut && !IsCollapsed)
+        {
+            <button type="button"
+                    class="@dashboardCss"
+                    title="@($"Dashboard {Item.Nombre}")"
+                    aria-label="@($"Abrir dashboard de {Item.Nombre}")"
+                    disabled="@IsNavigationLocked"
+                    @onclick="@(() => HandleDashboardNavigateAsync(dashboardRoute))">
+                <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Size="Size.Small" />
+            </button>
+        }
     </div>
 }
 
@@ -118,7 +148,9 @@ else
     [Parameter] public Action<int?, bool> SetExpandedState { get; set; } = default!;
     [Parameter] public Func<string?, string> GetIcon { get; set; } = default!;
     [Parameter] public Func<string?, bool> IsActiveRoute { get; set; } = _ => false;
+    [Parameter] public Func<MenuItem, string?> GetDashboardRoute { get; set; } = _ => null;
     [Parameter] public EventCallback<MenuItem> OnNavigate { get; set; }
+    [Parameter] public EventCallback<string> OnDashboardNavigate { get; set; }
 
     private string Href => string.IsNullOrWhiteSpace(Item.Ruta) ? "#" : Item.Ruta;
 
@@ -136,6 +168,14 @@ else
             return Task.CompletedTask;
 
         return OnNavigate.InvokeAsync(Item);
+    }
+
+    private Task HandleDashboardNavigateAsync(string? route)
+    {
+        if (IsNavigationLocked || string.IsNullOrWhiteSpace(route))
+            return Task.CompletedTask;
+
+        return OnDashboardNavigate.InvokeAsync(route);
     }
 
     private bool HasActiveDescendant(MenuItem item)

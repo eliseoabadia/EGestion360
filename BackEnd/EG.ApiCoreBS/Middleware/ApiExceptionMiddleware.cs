@@ -30,17 +30,37 @@ public sealed class ApiExceptionMiddleware
                 throw;
             }
 
-            LogUnhandledException(context, userIpService, ex);
+            var isBusinessRule = ex is InvalidOperationException;
+            var isInvalidRequest = ex is ArgumentException;
+
+            if (isBusinessRule || isInvalidRequest)
+            {
+                LogControlledException(context, userIpService, ex);
+            }
+            else
+            {
+                LogUnhandledException(context, userIpService, ex);
+            }
 
             context.Response.Clear();
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.StatusCode = isInvalidRequest
+                ? StatusCodes.Status400BadRequest
+                : isBusinessRule
+                    ? StatusCodes.Status409Conflict
+                    : StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
             var response = new
             {
                 success = false,
-                message = UserFacingMessages.UnexpectedError,
-                code = ApiResponseCode.Error.ToCode(),
+                message = isBusinessRule || isInvalidRequest
+                    ? ex.Message
+                    : UserFacingMessages.UnexpectedError,
+                code = isInvalidRequest
+                    ? ApiResponseCode.InvalidData.ToCode()
+                    : isBusinessRule
+                        ? "BUSINESS_RULE"
+                        : ApiResponseCode.Error.ToCode(),
                 traceId = context.TraceIdentifier
             };
 
@@ -62,6 +82,25 @@ public sealed class ApiExceptionMiddleware
             LogLevelGRP.Error,
             $"Excepcion no controlada. TraceId={context.TraceIdentifier}; Path={path}; Error={ex}",
             (byte)SystemLogTypes.Error,
+            "ApiExceptionMiddleware",
+            userId,
+            clientIp);
+    }
+
+    private void LogControlledException(HttpContext context, IUserIpService userIpService, Exception ex)
+    {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? context.User.FindFirstValue("Id")
+            ?? context.User.FindFirstValue("id")
+            ?? "0";
+
+        var clientIp = userIpService.GetUserIpAddress(context);
+        var path = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString}";
+
+        _logger.LogMessage(
+            LogLevelGRP.Warn,
+            $"Validacion controlada. TraceId={context.TraceIdentifier}; Path={path}; Error={ex.Message}",
+            (byte)SystemLogTypes.Warning,
             "ApiExceptionMiddleware",
             userId,
             clientIp);

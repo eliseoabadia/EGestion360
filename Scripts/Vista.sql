@@ -2395,6 +2395,7 @@ SELECT
     -- Campos de Empresa
     EM.PKIdEmpresa,
     EM.Nombre AS EmpresaNombre,
+    EM.NombreCorto,
     EM.RFC,
     EM.RazonSocial,
     EM.Giro,
@@ -2406,7 +2407,16 @@ SELECT
     EM.UsuarioCreacion AS EmpresaUsuarioCreacion,
     EM.FechaModificacion AS EmpresaFechaModificacion,
     EM.UsuarioModificacion AS EmpresaUsuarioModificacion,
-
+    EM.RegIMSS,
+    EM.RegInfonavit,
+    EM.CedEmpadronam,
+    EM.NoFonacot,
+    EM.UsAdmin,
+    EM.EmailAdmin,
+    EM.FKIdPeriodoPago_SIS,
+    EM.PrimaRiesgoIMSS,
+    EM.UsaSueldoTabular,
+    EM.FKIdTipoPago_NOM,
     -- Campos de Estado
     E.PKIdEstado,
     E.FKIdPais_SIS,

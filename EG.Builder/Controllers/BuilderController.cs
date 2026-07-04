@@ -194,23 +194,6 @@ namespace EG.Builder.Controllers
                 //        .Replace(Const.EDITDETAILPKFK, string.Empty);
                 //}
 
-                //if (saveTheCode)
-                //{
-                //    var pathController = Path.Combine(_configuration["PathController"], $"{controllerName}Controller.cs");
-                //    var pathView = Path.Combine(_configuration["PathView"], controllerName);
-
-                //    System.IO.File.WriteAllText(pathController, controllerTemplate);
-
-                //    if (!string.IsNullOrEmpty(controllerDetailTemplate))
-                //    {
-                //        var detailPath = Path.Combine(_configuration["PathController"], $"{controDetailllerName}Controller.cs");
-                //        System.IO.File.WriteAllText(detailPath, controllerDetailTemplate);
-                //    }
-
-                //    Directory.CreateDirectory(pathView);
-                //    System.IO.File.WriteAllText(Path.Combine(pathView, "Index.cshtml"), viewTemplate);
-                //}
-
                 message = saveTheCode ? "Código salvado correctamente" : "Código construido correctamente";
             });
             //itemService, iitemService, controllerTemplate, iControllerTemplate, viewTemplate, viewCrearTemplate, viewEdithTemplate, viewDeleteTemplate

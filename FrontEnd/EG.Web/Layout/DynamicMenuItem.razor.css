@@ -8,6 +8,14 @@
     border-radius: 8px;
 }
 
+.sidebar-group-row,
+.sidebar-item-with-dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 34px;
+    align-items: center;
+    gap: 4px;
+}
+
 .sidebar-link,
 .sidebar-group-header {
     position: relative;
@@ -34,6 +42,41 @@
 .sidebar-group-header {
     justify-content: space-between;
     gap: 8px;
+}
+
+.sidebar-group-row.has-dashboard .sidebar-group-header,
+.sidebar-item-with-dashboard .sidebar-link {
+    min-width: 0;
+}
+
+.dashboard-shortcut {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 22%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent);
+    color: color-mix(in srgb, var(--mud-palette-primary) 88%, var(--mud-palette-drawer-text));
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.dashboard-shortcut:hover,
+.dashboard-shortcut:focus-visible,
+.dashboard-shortcut.active {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 48%, transparent);
+    background: var(--eg-primary-active);
+    color: var(--mud-palette-primary);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.dashboard-shortcut:disabled {
+    cursor: progress;
+    opacity: 0.66;
+    transform: none;
 }
 
 .sidebar-group-header.level-1,
@@ -317,6 +360,20 @@
     color: var(--eg-accent);
 }
 
+.bootstrap-sidebar.morena .dashboard-shortcut {
+    border-color: color-mix(in srgb, var(--eg-accent) 28%, transparent);
+    background: color-mix(in srgb, var(--eg-accent) 11%, transparent);
+    color: var(--eg-accent);
+}
+
+.bootstrap-sidebar.morena .dashboard-shortcut:hover,
+.bootstrap-sidebar.morena .dashboard-shortcut:focus-visible,
+.bootstrap-sidebar.morena .dashboard-shortcut.active {
+    border-color: color-mix(in srgb, var(--eg-accent) 54%, transparent);
+    background: var(--eg-accent-soft);
+    color: var(--eg-accent);
+}
+
 .bootstrap-sidebar.morena .sidebar-link:hover,
 .bootstrap-sidebar.morena .sidebar-link:focus-visible,
 .bootstrap-sidebar.morena .sidebar-group-header:hover,
@@ -410,6 +467,7 @@
 .bootstrap-sidebar.collapsed .menu-label,
 .bootstrap-sidebar.collapsed .selected-indicator,
 .bootstrap-sidebar.collapsed .chevron,
+.bootstrap-sidebar.collapsed .dashboard-shortcut,
 .bootstrap-sidebar.collapsed .sidebar-children {
     display: none;
 }
@@ -419,6 +477,7 @@
     .sidebar-group-header,
     .sidebar-link::before,
     .sidebar-group-header::before,
+    .dashboard-shortcut,
     .chevron,
     .sidebar-children {
         transition-duration: 1ms;

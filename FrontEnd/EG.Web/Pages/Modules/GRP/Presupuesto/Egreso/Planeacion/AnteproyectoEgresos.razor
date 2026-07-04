@@ -28,7 +28,17 @@
                     Icon="@Icons.Material.Filled.StackedLineChart"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
-                    OnRefresh="() => table.ReloadData()" />
+                    OnRefresh="() => table.ReloadData()">
+            <AdditionalButtons>
+                <MudTooltip Text="Alta desde Excel">
+                    <MudButton StartIcon="@Icons.Material.Filled.AutoAwesome"
+                               Visible="@CanCreate"
+                               OnClick="OpenAiImport"
+                               Disabled="@IsBusy"
+                               Size="Size.Small" />
+                </MudTooltip>
+            </AdditionalButtons>
+        </PageHeader>
 
         <div class="summary-strip">
             <div>
@@ -626,6 +636,35 @@
         var dialog = await DialogService.ShowAsync<AnteproyectoEgresosDetalleDialog>(string.Empty, parameters, options);
         await dialog.Result;
         }, "Operacion en proceso...");
+    }
+
+    private async Task OpenAiImport()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear anteproyecto.", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var dialog = await DialogService.ShowAsync<AnteproyectoEgresosAiImportDialog>(
+            "Alta desde Excel",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await ReloadData();
     }
 
     private async Task LoadCurrencyAsync()

@@ -12,6 +12,7 @@ namespace EG.Application.Interfaces.General
         Task<PagedResult<EmpresaResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
         Task<EmpresaResponse> CreateAsync(EmpresaDto dto, int usuarioActual);
         Task<EmpresaResponse> UpdateAsync(int id, EmpresaDto dto, int usuarioActual);
+        Task<EmpresaResponse> UpdateLogoAsync(int id, string logo, byte[] logoEmpresa, int usuarioActual);
         Task<bool> DeleteAsync(int id, int usuarioActual);
         Task<PagedResult<EmpresaResponse>> BuscarAsync(BusquedaRequest request);
     }

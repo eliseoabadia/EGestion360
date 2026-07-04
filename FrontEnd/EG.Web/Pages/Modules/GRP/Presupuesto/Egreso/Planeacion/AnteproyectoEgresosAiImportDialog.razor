@@ -1,0 +1,775 @@
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Requests.Presupuestales
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using EG.Web.Contracts.Modules.GRP.Presupuestales
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+@using System.Globalization
+
+@inject IEgresoProyectadoAiImportService ImportService
+@inject IGenericCrudService<ProgramaResponse> ProgramaService
+@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject IGenericCrudService<UsuarioAreaResponse> AreaService
+@inject AnioPresupuestalStateService AnioStateService
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog Class="anteproyecto-ai-dialog">
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Alta desde Excel</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="Close" Disabled="@_busy" />
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudTextField Value="@BudgetYearText"
+                              Label="Anio presupuestal"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="_fecha"
+                               Label="Fecha inicial por defecto"
+                               DateFormat="dd/MM/yyyy"
+                               Culture="@DateCulture"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+
+        <InputFile id="@_inputId"
+                   OnChange="OnFileSelected"
+                   accept=".xlsx,.csv,.txt"
+                   class="anteproyecto-ai-file-input" />
+        <label for="@_inputId" class="anteproyecto-ai-dropzone">
+            <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
+            <span>@(_file?.Name ?? "Seleccionar Excel, CSV o TXT")</span>
+            <small>Columnas: Partida, Area, Descripcion, Fecha, Enero-Diciembre. Programa puede ir en ayuda.</small>
+        </label>
+
+        <MudExpansionPanels Elevation="0" Class="mt-3">
+            <MudExpansionPanel Text="Campos de ayuda" Expanded="@(_preview?.CanImport == false)">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedPrograma"
+                                           ValueChanged="OnProgramaChanged"
+                                           Label="Programa de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadProgramasPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedPartida"
+                                           ValueChanged="OnPartidaChanged"
+                                           Label="Partida de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadPartidasPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedArea"
+                                           ValueChanged="OnAreaChanged"
+                                           Label="Area de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadAreasPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
+                                           ValueChanged="OnFuenteFinanciamientoChanged"
+                                           Label="Fuente de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadFuentesFinanciamientoPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedTipoGasto"
+                                           ValueChanged="OnTipoGastoChanged"
+                                           Label="Tipo de gasto de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadTiposGastoPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedDigitoIdentificador"
+                                           ValueChanged="OnDigitoIdentificadorChanged"
+                                           Label="Digito de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadDigitosIdentificadorPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <PagedAutocomplete Value="@_selectedDestinoGasto"
+                                           ValueChanged="OnDestinoGastoChanged"
+                                           Label="Destino de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadDestinosGastoPageAsync" />
+                    </MudItem>
+                    <MudItem xs="12" md="8">
+                        <PagedAutocomplete Value="@_selectedPy"
+                                           ValueChanged="OnPyChanged"
+                                           Label="PY de ayuda"
+                                           Clearable="true"
+                                           LoadPage="LoadPyPageAsync" />
+                    </MudItem>
+                </MudGrid>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+
+        <div class="d-flex flex-wrap align-center gap-2 mt-3">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.PsychologyAlt"
+                       Disabled="@(_file == null || _busy || !HasSelectedAnio)"
+                       OnClick="Analyze">
+                Analizar archivo
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
+                       StartIcon="@Icons.Material.Filled.PostAdd"
+                       Disabled="@(!CanImport)"
+                       OnClick="Import">
+                Importar altas
+            </MudButton>
+            @if (_busy)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            }
+        </div>
+
+        @if (_preview != null)
+        {
+            <MudDivider Class="my-3" />
+            <div class="anteproyecto-ai-summary">
+                <div><span>Filas</span><strong>@_preview.Rows.Count</strong></div>
+                <div><span>Total</span><strong>@Money(_preview.Total)</strong></div>
+                <div><span>Columnas</span><strong>@_preview.DetectedColumns.Count</strong></div>
+                <div><span>Estado</span><strong class="@(_preview.CanImport ? "ok" : "warn")">@(_preview.CanImport ? "Listo" : "Con errores")</strong></div>
+            </div>
+
+            @if (_preview.Messages.Count > 0)
+            {
+                <MudAlert Severity="@(_preview.CanImport ? Severity.Warning : Severity.Error)" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    @foreach (var message in _preview.Messages.Take(20))
+                    {
+                        <div>@FormatMessage(message)</div>
+                    }
+                    @if (_preview.Messages.Count > 20)
+                    {
+                        <div>... @(_preview.Messages.Count - 20) mensajes adicionales.</div>
+                    }
+                </MudAlert>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    Validaciones correctas. El archivo esta listo para importar.
+                </MudAlert>
+            }
+
+            <MudTable Items="@_preview.Rows" Dense="true" Hover="true" Class="mt-3" Height="360px" FixedHeader="true">
+                <HeaderContent>
+                    <MudTh>Fila</MudTh>
+                    <MudTh>Programa</MudTh>
+                    <MudTh>Partida</MudTh>
+                    <MudTh>Area</MudTh>
+                    <MudTh>Descripcion</MudTh>
+                    <MudTh>Clasificacion</MudTh>
+                    <MudTh>Total</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.RowNumber</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">@TextOrDash(context.Programa)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.ProgramaDescripcion)</MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">@TextOrDash(context.Partida)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.PartidaDescripcion)</MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">@TextOrDash(context.Area)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.AreaDescripcion)</MudText>
+                    </MudTd>
+                    <MudTd>@TextOrDash(context.Descripcion)</MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.caption">FF: @TextOrDash(context.FuenteFinanciamiento)</MudText><br />
+                        <MudText Typo="Typo.caption">TG: @TextOrDash(context.TipoGasto)</MudText><br />
+                        <MudText Typo="Typo.caption">DI: @TextOrDash(context.DigitoIdentificador)</MudText><br />
+                        <MudText Typo="Typo.caption">DG: @TextOrDash(context.DestinoGasto)</MudText><br />
+                        <MudText Typo="Typo.caption">PY: @TextOrDash(context.Py)</MudText>
+                    </MudTd>
+                    <MudTd><strong>@Money(context.Total)</strong></MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </DialogContent>
+</MudDialog>
+
+<style>
+    .anteproyecto-ai-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .anteproyecto-ai-dropzone {
+        display: grid;
+        place-items: center;
+        gap: 4px;
+        min-height: 104px;
+        margin-top: 12px;
+        border: 1px dashed #7b8798;
+        border-radius: 8px;
+        background: #f8fafc;
+        color: #263445;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .anteproyecto-ai-dropzone span {
+        font-weight: 650;
+    }
+
+    .anteproyecto-ai-dropzone small {
+        color: #667085;
+    }
+
+    .anteproyecto-ai-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 8px;
+    }
+
+    .anteproyecto-ai-summary div {
+        border: 1px solid #d9dee8;
+        border-radius: 8px;
+        padding: 8px;
+        background: #ffffff;
+    }
+
+    .anteproyecto-ai-summary span,
+    .anteproyecto-ai-summary strong {
+        display: block;
+    }
+
+    .anteproyecto-ai-summary span {
+        color: #667085;
+        font-size: 0.76rem;
+    }
+
+    .anteproyecto-ai-summary .ok {
+        color: #28745b;
+    }
+
+    .anteproyecto-ai-summary .warn {
+        color: #a35200;
+    }
+</style>
+
+@code {
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private readonly string _inputId = $"anteproyecto-ai-upload-{Guid.NewGuid():N}";
+    private IBrowserFile? _file;
+    private EgresoProyectadoAiImportPreviewResponse? _preview;
+    private List<EgresoProyectadoAiImportRowRequest> _baseRows = [];
+    private List<EgresoProyectadoAiImportValidationMessage> _baseMessages = [];
+    private LookupItem? _selectedPrograma;
+    private LookupItem? _selectedPartida;
+    private LookupItem? _selectedArea;
+    private LookupItem? _selectedFuenteFinanciamiento;
+    private LookupItem? _selectedTipoGasto;
+    private LookupItem? _selectedDigitoIdentificador;
+    private LookupItem? _selectedDestinoGasto;
+    private LookupItem? _selectedPy;
+    private DateTime? _fecha = DateTime.Today;
+    private bool _busy;
+
+    private bool HasSelectedAnio => AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
+    private bool CanImport => _preview?.CanImport == true && !_busy;
+    private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioStateService.AnioId?.ToString() ?? "Sin anio";
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static readonly CultureInfo DateCulture = new("es-MX");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AnioStateService.InitializeAsync();
+    }
+
+    private Task OnFileSelected(InputFileChangeEventArgs args)
+    {
+        _file = args.GetMultipleFiles(1).FirstOrDefault();
+        _preview = null;
+        _baseRows = [];
+        _baseMessages = [];
+        ClearHelpFields();
+        return Task.CompletedTask;
+    }
+
+    private async Task Analyze()
+    {
+        if (_file == null)
+            return;
+
+        if (!HasSelectedAnio)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var response = await ImportService.PreviewAsync(BuildHeader(), _file);
+            _preview = response.Data;
+            if (_preview != null)
+            {
+                _baseRows = _preview.Rows.Select(CloneRow).ToList();
+                _baseMessages = _preview.Messages.ToList();
+                SelectHelpFieldsFromPreview();
+                ApplyHelpFieldsToPreview();
+            }
+
+            Snackbar.Add(response.Message, response.Data?.CanImport == true ? Severity.Success : Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task Import()
+    {
+        if (_preview == null || !CanImport)
+            return;
+
+        _busy = true;
+        try
+        {
+            var response = await ImportService.ConfirmAsync(new EgresoProyectadoAiImportConfirmRequest
+            {
+                SourceFileName = _preview.SourceFileName,
+                Header = _preview.Header,
+                Rows = BuildRowsForImport()
+            });
+
+            if (response.Success)
+            {
+                Snackbar.Add(response.Message, Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            _preview = response.Data ?? _preview;
+            Snackbar.Add(response.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private EgresoProyectadoAiImportHeaderRequest BuildHeader() => new()
+    {
+        FkidAnioSis = AnioStateService.AnioId,
+        Anio = AnioStateService.AnioClave,
+        Fecha = _fecha ?? DateTime.Today
+    };
+
+    private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (!HasSelectedAnio)
+            return new ComboLookupResult();
+
+        var filters = new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId!.Value };
+        var response = await ProgramaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, filters);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPrograma, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPartida, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllAsync();
+        var items = FilterUsuarioAreas(response?.Items, filter)
+            .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
+
+        return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private Task<ComboLookupResult> LoadFuentesFinanciamientoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetFuenteFinanciamientoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadTiposGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetTipoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDigitosIdentificadorPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetDigitoIdentificadorLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDestinosGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetDestinoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadPyPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/EgresoProyectado/GetPyLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(string url, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
+    }
+
+    private Task OnProgramaChanged(LookupItem? value)
+    {
+        _selectedPrograma = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPartidaChanged(LookupItem? value)
+    {
+        _selectedPartida = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnAreaChanged(LookupItem? value)
+    {
+        _selectedArea = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnFuenteFinanciamientoChanged(LookupItem? value)
+    {
+        _selectedFuenteFinanciamiento = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnTipoGastoChanged(LookupItem? value)
+    {
+        _selectedTipoGasto = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnDigitoIdentificadorChanged(LookupItem? value)
+    {
+        _selectedDigitoIdentificador = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnDestinoGastoChanged(LookupItem? value)
+    {
+        _selectedDestinoGasto = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPyChanged(LookupItem? value)
+    {
+        _selectedPy = value;
+        ApplyHelpFieldsToPreview();
+        return Task.CompletedTask;
+    }
+
+    private void ApplyHelpFieldsToPreview()
+    {
+        if (_preview == null)
+            return;
+
+        _preview.Rows = _baseRows.Select(CloneRow).ToList();
+        foreach (var row in _preview.Rows)
+        {
+            if (NeedsHelp(row.FkidProgramaPres, row.Programa))
+                AssignPrograma(row, _selectedPrograma);
+            if (NeedsHelp(row.FkidPartidaConta, row.Partida))
+                AssignPartida(row, _selectedPartida);
+            if (NeedsHelp(row.FkidAreaSis, row.Area))
+                AssignArea(row, _selectedArea);
+            if (NeedsHelp(row.FkidFuenteFinanciamientoPres, row.FuenteFinanciamiento))
+                AssignFuente(row, _selectedFuenteFinanciamiento);
+            if (NeedsHelp(row.FkidTipoGastoPres, row.TipoGasto))
+                AssignTipoGasto(row, _selectedTipoGasto);
+            if (NeedsHelp(row.FkidDigitoIdentificadorPres, row.DigitoIdentificador))
+                AssignDigito(row, _selectedDigitoIdentificador);
+            if (NeedsHelp(row.FkidDestinoGastoPres, row.DestinoGasto))
+                AssignDestino(row, _selectedDestinoGasto);
+            if (NeedsHelp(row.FkidPyPres, row.Py))
+                AssignPy(row, _selectedPy);
+        }
+
+        _preview.Messages = _baseMessages
+            .Where(message => !CanResolveWithHelpField(message))
+            .ToList();
+        _preview.CanImport = _preview.Rows.Count > 0
+            && !_preview.Messages.Any(IsError);
+    }
+
+    private List<EgresoProyectadoAiImportRowRequest> BuildRowsForImport()
+    {
+        ApplyHelpFieldsToPreview();
+        return _preview?.Rows.Select(CloneRow).ToList() ?? [];
+    }
+
+    private void SelectHelpFieldsFromPreview()
+    {
+        _selectedPrograma ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidProgramaPres is > 0), x => x.FkidProgramaPres, x => BuildText(x.Programa, x.ProgramaDescripcion));
+        _selectedPartida ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidPartidaConta is > 0), x => x.FkidPartidaConta, x => BuildText(x.Partida, x.PartidaDescripcion));
+        _selectedArea ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidAreaSis is > 0), x => x.FkidAreaSis, x => BuildText(x.Area, x.AreaDescripcion));
+        _selectedFuenteFinanciamiento ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidFuenteFinanciamientoPres is > 0), x => x.FkidFuenteFinanciamientoPres, x => BuildText(x.FuenteFinanciamiento, x.FuenteFinanciamientoDescripcion));
+        _selectedTipoGasto ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidTipoGastoPres is > 0), x => x.FkidTipoGastoPres, x => BuildText(x.TipoGasto, x.TipoGastoDescripcion));
+        _selectedDigitoIdentificador ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidDigitoIdentificadorPres is > 0), x => x.FkidDigitoIdentificadorPres, x => BuildText(x.DigitoIdentificador, x.DigitoIdentificadorDescripcion));
+        _selectedDestinoGasto ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidDestinoGastoPres is > 0), x => x.FkidDestinoGastoPres, x => BuildText(x.DestinoGasto, x.DestinoGastoDescripcion));
+        _selectedPy ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidPyPres is > 0), x => x.FkidPyPres, x => BuildText(x.Py, x.PyDescripcion));
+    }
+
+    private bool CanResolveWithHelpField(EgresoProyectadoAiImportValidationMessage message)
+    {
+        if (!message.RowNumber.HasValue)
+            return false;
+
+        return message.Code switch
+        {
+            "PROGRAMA_REQUIRED" => _selectedPrograma != null,
+            "PARTIDA_REQUIRED" => _selectedPartida != null,
+            "AREA_REQUIRED" => _selectedArea != null,
+            "FUENTE_NOT_FOUND" => _selectedFuenteFinanciamiento != null,
+            "TIPO_GASTO_NOT_FOUND" => _selectedTipoGasto != null,
+            "DIGITO_NOT_FOUND" => _selectedDigitoIdentificador != null,
+            "DESTINO_NOT_FOUND" => _selectedDestinoGasto != null,
+            "PY_NOT_FOUND" => _selectedPy != null,
+            _ => false
+        };
+    }
+
+    private static EgresoProyectadoAiImportRowRequest CloneRow(EgresoProyectadoAiImportRowRequest row) => new()
+    {
+        RowNumber = row.RowNumber,
+        Programa = row.Programa,
+        FkidProgramaPres = row.FkidProgramaPres,
+        ProgramaDescripcion = row.ProgramaDescripcion,
+        Partida = row.Partida,
+        FkidPartidaConta = row.FkidPartidaConta,
+        PartidaDescripcion = row.PartidaDescripcion,
+        Area = row.Area,
+        FkidAreaSis = row.FkidAreaSis,
+        AreaDescripcion = row.AreaDescripcion,
+        Descripcion = row.Descripcion,
+        Fecha = row.Fecha,
+        FuenteFinanciamiento = row.FuenteFinanciamiento,
+        FkidFuenteFinanciamientoPres = row.FkidFuenteFinanciamientoPres,
+        FuenteFinanciamientoDescripcion = row.FuenteFinanciamientoDescripcion,
+        TipoGasto = row.TipoGasto,
+        FkidTipoGastoPres = row.FkidTipoGastoPres,
+        TipoGastoDescripcion = row.TipoGastoDescripcion,
+        DigitoIdentificador = row.DigitoIdentificador,
+        FkidDigitoIdentificadorPres = row.FkidDigitoIdentificadorPres,
+        DigitoIdentificadorDescripcion = row.DigitoIdentificadorDescripcion,
+        DestinoGasto = row.DestinoGasto,
+        FkidDestinoGastoPres = row.FkidDestinoGastoPres,
+        DestinoGastoDescripcion = row.DestinoGastoDescripcion,
+        Py = row.Py,
+        FkidPyPres = row.FkidPyPres,
+        PyDescripcion = row.PyDescripcion,
+        Enero = row.Enero,
+        Febrero = row.Febrero,
+        Marzo = row.Marzo,
+        Abril = row.Abril,
+        Mayo = row.Mayo,
+        Junio = row.Junio,
+        Julio = row.Julio,
+        Agosto = row.Agosto,
+        Septiembre = row.Septiembre,
+        Octubre = row.Octubre,
+        Noviembre = row.Noviembre,
+        Diciembre = row.Diciembre,
+        Total = row.Total
+    };
+
+    private static void AssignPrograma(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidProgramaPres = value.Id;
+        row.Programa = value.Text;
+        row.ProgramaDescripcion = null;
+    }
+
+    private static void AssignPartida(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidPartidaConta = value.Id;
+        row.Partida = value.Text;
+        row.PartidaDescripcion = null;
+    }
+
+    private static void AssignArea(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidAreaSis = value.Id;
+        row.Area = value.Text;
+        row.AreaDescripcion = null;
+    }
+
+    private static void AssignFuente(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidFuenteFinanciamientoPres = value.Id;
+        row.FuenteFinanciamiento = value.Text;
+        row.FuenteFinanciamientoDescripcion = null;
+    }
+
+    private static void AssignTipoGasto(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidTipoGastoPres = value.Id;
+        row.TipoGasto = value.Text;
+        row.TipoGastoDescripcion = null;
+    }
+
+    private static void AssignDigito(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidDigitoIdentificadorPres = value.Id;
+        row.DigitoIdentificador = value.Text;
+        row.DigitoIdentificadorDescripcion = null;
+    }
+
+    private static void AssignDestino(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidDestinoGastoPres = value.Id;
+        row.DestinoGasto = value.Text;
+        row.DestinoGastoDescripcion = null;
+    }
+
+    private static void AssignPy(EgresoProyectadoAiImportRowRequest row, LookupItem? value)
+    {
+        if (value == null)
+            return;
+
+        row.FkidPyPres = value.Id;
+        row.Py = value.Text;
+        row.PyDescripcion = null;
+    }
+
+    private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
+
+    private static string TextOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string FormatMessage(EgresoProyectadoAiImportValidationMessage message)
+    {
+        var location = message.RowNumber.HasValue ? $"Fila {message.RowNumber}: " : string.Empty;
+        return $"{location}{message.Message}";
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static IEnumerable<UsuarioAreaResponse> FilterUsuarioAreas(IEnumerable<UsuarioAreaResponse>? items, string filter)
+    {
+        var query = (items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidArea > 0);
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(x => x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return query.OrderBy(x => x.UsuarioAreaDescripcion);
+    }
+
+    private static ComboLookupResult ToPagedComboResult(IEnumerable<LookupItem> items, int page, int pageSize)
+    {
+        var list = items.ToList();
+        var currentPage = Math.Max(1, page);
+        var currentPageSize = pageSize <= 0 ? 10 : pageSize;
+
+        return new ComboLookupResult
+        {
+            Items = list.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
+            TotalCount = list.Count
+        };
+    }
+
+    private static bool NeedsHelp(int? id, string? text) =>
+        id.GetValueOrDefault() <= 0 || string.IsNullOrWhiteSpace(text);
+
+    private static bool IsError(EgresoProyectadoAiImportValidationMessage message)
+        => message.Severity.Equals("Error", StringComparison.OrdinalIgnoreCase);
+
+    private static LookupItem? ToLookup(
+        EgresoProyectadoAiImportRowRequest? row,
+        Func<EgresoProyectadoAiImportRowRequest, int?> idSelector,
+        Func<EgresoProyectadoAiImportRowRequest, string> textSelector)
+    {
+        if (row == null)
+            return null;
+
+        var id = idSelector(row);
+        if (id.GetValueOrDefault() <= 0)
+            return null;
+
+        var text = textSelector(row);
+        return new LookupItem
+        {
+            Id = id!.Value,
+            Text = string.IsNullOrWhiteSpace(text) ? id.Value.ToString(CultureInfo.InvariantCulture) : text
+        };
+    }
+
+    private static string BuildText(string? key, string? description)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return description ?? string.Empty;
+
+        return string.IsNullOrWhiteSpace(description)
+            ? key
+            : $"{key} - {description}";
+    }
+
+    private void ClearHelpFields()
+    {
+        _selectedPrograma = null;
+        _selectedPartida = null;
+        _selectedArea = null;
+        _selectedFuenteFinanciamiento = null;
+        _selectedTipoGasto = null;
+        _selectedDigitoIdentificador = null;
+        _selectedDestinoGasto = null;
+        _selectedPy = null;
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+}

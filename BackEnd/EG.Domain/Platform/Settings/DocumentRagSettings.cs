@@ -17,6 +17,7 @@ namespace EG.Domain.Platform.Settings
             ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp"
         ];
         public string? TesseractExePath { get; set; }
+        public string? TessdataPrefixPath { get; set; }
         public string TesseractLanguage { get; set; } = "spa+eng";
         public string TempPath { get; set; } = "RagTemp";
     }

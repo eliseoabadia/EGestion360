@@ -83,3 +83,4 @@ Desktop.ini
 /BackEnd/EG.Logger/obj/Debug/net10.0/EG.Logger.csproj.FileListAbsolute.txt
 /BackEnd/EG.Logger/obj/Debug/net10.0/EG.Logger.GeneratedMSBuildEditorConfig.editorconfig
 /BackEnd/EG.Logger/obj/EG.Logger.csproj.nuget.g.props
+/.codex/tmp

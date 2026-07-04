@@ -48,7 +48,8 @@ Valores clave:
   "TopK": 6,
   "MinScore": 0.08,
   "AllowedExtensions": [ ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".md", ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp" ],
-  "TesseractExePath": "",
+  "TesseractExePath": "C:/Program Files (x86)/Tesseract-OCR/tesseract.exe",
+  "TessdataPrefixPath": "C:/Program Files (x86)/Tesseract-OCR",
   "TesseractLanguage": "spa+eng",
   "TempPath": "C:/inetpub/wwwroot/GE_Back/RagTemp"
 }
@@ -59,16 +60,17 @@ Valores clave:
 Para que fotos y documentos escaneados puedan indexarse:
 
 1. Instalar Tesseract OCR en el servidor.
-2. Instalar paquetes de idioma `spa` y `eng`.
-3. Configurar `DocumentRag:TesseractExePath`, por ejemplo:
+2. Instalar paquetes de idioma `spa` y `eng`, o copiar `spa.traineddata` y `eng.traineddata` dentro de `tessdata`.
+3. Configurar `DocumentRag:TesseractExePath` y `DocumentRag:TessdataPrefixPath`, por ejemplo:
 
 ```json
-"TesseractExePath": "C:/Program Files/Tesseract-OCR/tesseract.exe"
+"TesseractExePath": "C:/Program Files (x86)/Tesseract-OCR/tesseract.exe",
+"TessdataPrefixPath": "C:/Program Files (x86)/Tesseract-OCR"
 ```
 
 4. Dar permisos de escritura al usuario de la app sobre `DocumentRag:TempPath`.
 
-Si no se configura OCR, la app carga la imagen, avisa en front que requiere OCR y no inventa respuestas.
+Si no se configura OCR, la app carga la imagen, avisa en front que requiere OCR y no inventa respuestas. Si se solicita `spa+eng` pero en `tessdata` solo existe `eng.traineddata`, la app usa `eng` como respaldo y registra una advertencia en logs.
 
 ## Ruta de menu
 

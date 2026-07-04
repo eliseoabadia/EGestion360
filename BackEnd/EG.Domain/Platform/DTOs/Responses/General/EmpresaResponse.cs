@@ -7,6 +7,8 @@ namespace EG.Domain.DTOs.Responses.General
 
         public string EmpresaNombre { get; set; }
 
+        public string NombreCorto { get; set; }
+
         public string Rfc { get; set; }
 
         public string RazonSocial { get; set; }
@@ -17,7 +19,9 @@ namespace EG.Domain.DTOs.Responses.General
 
         public int? FkidIdiomaPreferidoSis { get; set; }
 
-        public byte[] Logo { get; set; }
+        public string Logo { get; set; }
+
+        public byte[] LogoEmpresa { get; set; }
 
         public bool EmpresaActivo { get; set; }
 
@@ -44,5 +48,25 @@ namespace EG.Domain.DTOs.Responses.General
         public bool EsOficinaPrincipal { get; set; }
 
         public bool RelacionActiva { get; set; }
+
+        public string RegImss { get; set; }
+
+        public string RegInfonavit { get; set; }
+
+        public string CedEmpadronam { get; set; }
+
+        public string NoFonacot { get; set; }
+
+        public string UsAdmin { get; set; }
+
+        public string EmailAdmin { get; set; }
+
+        public int? FkidPeriodoPagoSis { get; set; }
+
+        public decimal? PrimaRiesgoImss { get; set; }
+
+        public bool UsaSueldoTabular { get; set; }
+
+        public int? FkidTipoPagoNom { get; set; }
     }
 }

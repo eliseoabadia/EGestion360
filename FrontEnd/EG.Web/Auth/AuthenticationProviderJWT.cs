@@ -23,6 +23,8 @@ namespace EG.Web.Auth
         // Almacén de permisos: Group -> SubGroup -> HashSet<Action>
         private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _permissions = new(StringComparer.OrdinalIgnoreCase);
         private bool _dbPermissionsRefreshAttempted;
+        private string? _activeToken;
+        private AuthenticationState? _activeAuthenticationState;
 
         public AuthenticationProviderJWT(IJSRuntime js, HttpClient httpClient)
         {
@@ -45,29 +47,27 @@ namespace EG.Web.Auth
                 return ANONYMOUS;
             }
 
+            if (_activeAuthenticationState != null &&
+                string.Equals(_activeToken, normalizedToken, StringComparison.Ordinal))
+            {
+                return _activeAuthenticationState;
+            }
+
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", normalizedToken);
 
-            // 1. Obtener claims del JWT
-            var jwtClaims = ParseClaimsFromJwt(normalizedToken);
-            if (jwtClaims.Count == 0 || IsTokenExpired(jwtClaims))
+            var authState = BuildAuthenticationState(normalizedToken);
+            if (authState == null)
             {
                 await ClearStoredSessionAsync();
                 return ANONYMOUS;
             }
 
-            // 2. Limpiar y cargar permisos desde el JWT (si trae Group/SubGroup/Values)
-            _permissions.Clear();
-            LoadPermissionsFromClaims(jwtClaims);
-
-            // 3. Cargar permisos guardados desde BD (localStorage) y fusionarlos
+            var jwtClaims = authState.User.Claims.ToList();
             await LoadPersistedDbPermissions();
             await EnsureDbPermissionsLoadedAsync(jwtClaims);
 
-            // 4. Construir identidad con todos los claims (los del JWT + los que necesitemos)
-            var identity = new ClaimsIdentity(jwtClaims, "jwt");
-            EnsureNameIdentifier(identity, jwtClaims);
-
-            return new AuthenticationState(new ClaimsPrincipal(identity));
+            SetActiveAuthenticationState(normalizedToken, authState);
+            return authState;
         }
 
         public async Task LoginAsync(string token)
@@ -77,6 +77,17 @@ namespace EG.Web.Auth
             _dbPermissionsRefreshAttempted = false;
             await _js.RemoveItem(DB_CLAIMS_KEY);
             await _js.SetInLocalStorage(TOKEN_KEY, normalized);
+
+            var authState = BuildAuthenticationState(normalized);
+            if (authState == null)
+            {
+                await ClearStoredSessionAsync();
+                NotifyAuthenticationStateChanged(Task.FromResult(ANONYMOUS));
+                return;
+            }
+
+            SetActiveAuthenticationState(normalized, authState);
+
             // Asegurar que el HttpClient tenga el header Authorization inmediatamente
             try
             {
@@ -87,7 +98,7 @@ namespace EG.Web.Auth
                 // Ignorar fallos al establecer el header para no romper el flujo de login
             }
 
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            NotifyAuthenticationStateChanged(Task.FromResult(authState));
         }
 
         public async Task LogoutAsync()
@@ -115,7 +126,7 @@ namespace EG.Web.Auth
                 AddPermissionEntry(item.Group, item.SubGroup, item.Values);
 
             // Opcional: notificar cambio de estado si quieres que los componentes se actualicen
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            NotifyAuthenticationStateChanged(Task.FromResult(_activeAuthenticationState ?? ANONYMOUS));
         }
 
         #region Métodos públicos de permisos
@@ -274,6 +285,31 @@ namespace EG.Web.Auth
             await _js.RemoveItem(USER_NAME_KEY);
             _permissions.Clear();
             _dbPermissionsRefreshAttempted = false;
+            _activeToken = null;
+            _activeAuthenticationState = null;
+        }
+
+        private AuthenticationState? BuildAuthenticationState(string normalizedToken)
+        {
+            var jwtClaims = ParseClaimsFromJwt(normalizedToken);
+            if (jwtClaims.Count == 0 || IsTokenExpired(jwtClaims))
+            {
+                return null;
+            }
+
+            _permissions.Clear();
+            LoadPermissionsFromClaims(jwtClaims);
+
+            var identity = new ClaimsIdentity(jwtClaims, "jwt");
+            EnsureNameIdentifier(identity, jwtClaims);
+
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+
+        private void SetActiveAuthenticationState(string normalizedToken, AuthenticationState authState)
+        {
+            _activeToken = normalizedToken;
+            _activeAuthenticationState = authState;
         }
 
         private static byte[] ParseBase64WithoutPadding(string base64)

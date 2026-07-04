@@ -11,6 +11,8 @@ public partial class Empresa
 
     public string Nombre { get; set; }
 
+    public string NombreCorto { get; set; }
+
     public string Rfc { get; set; }
 
     public string RazonSocial { get; set; }
@@ -21,7 +23,9 @@ public partial class Empresa
 
     public int? FkidIdiomaPreferidoSis { get; set; }
 
-    public byte[] Logo { get; set; }
+    public string Logo { get; set; }
+
+    public byte[] LogoEmpresa { get; set; }
 
     public bool Activo { get; set; }
 

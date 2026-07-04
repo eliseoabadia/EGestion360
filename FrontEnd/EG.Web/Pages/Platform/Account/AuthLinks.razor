@@ -59,7 +59,10 @@
             await customProvider.LogoutAsync();
         }
 
-        NavigationManager.NavigateTo("/login");
+        NavigationManager.NavigateTo(
+            $"/login?logout=1&t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+            forceLoad: true,
+            replace: true);
     }
 
     private void EditUser()

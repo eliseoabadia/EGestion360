@@ -109,7 +109,9 @@
                                          SetExpandedState="SetExpandedState"
                                          GetIcon="GetIconClass"
                                          IsActiveRoute="IsActiveRoute"
-                                         OnNavigate="NavigateToMenuItemAsync" />
+                                         GetDashboardRoute="GetDashboardRoute"
+                                         OnNavigate="NavigateToMenuItemAsync"
+                                         OnDashboardNavigate="NavigateToDashboardAsync" />
                     }
                 </nav>
             }
@@ -470,6 +472,9 @@
         await NavigateToRouteAsync(item.Ruta);
     }
 
+    private Task NavigateToDashboardAsync(string route) =>
+        NavigateToRouteAsync(route);
+
     private async Task NavigateToRouteAsync(string route)
     {
         if (_navigationLocked)
@@ -573,6 +578,42 @@
 
     private string GetIconClass(string? imageUrl) =>
         IconosDisponibles.GetMaterialIcon(imageUrl);
+
+    private static string? GetDashboardRoute(MenuItem item)
+    {
+        var key = NormalizeText($"{item.Nombre} {item.LegacyName} {item.Ruta}");
+
+        if (key.Contains("presupuesto", StringComparison.Ordinal))
+            return "/Presupuesto/Dashboard";
+
+        if (key.Contains("contabilidad", StringComparison.Ordinal))
+            return "/Contabilidad/Dashboard";
+
+        if (key.Contains("adquisicion", StringComparison.Ordinal))
+            return "/Adquisiciones/Dashboard";
+
+        if (key.Contains("patrimonio", StringComparison.Ordinal))
+            return "/Patrimonio/Dashboard";
+
+        if (key.Contains("almacen", StringComparison.Ordinal))
+            return "/Almacen/Dashboard";
+
+        if (key.Contains("nomina", StringComparison.Ordinal))
+            return "/Nomina/Dashboard";
+
+        if (key.Contains("reportes cxc", StringComparison.Ordinal) ||
+            key.Contains("cuentasxcobrar", StringComparison.Ordinal) ||
+            key.Contains("cuentas por cobrar", StringComparison.Ordinal))
+            return "/ReportesCxC/Dashboard";
+
+        if (key == "pbr" || key.Contains(" pbr", StringComparison.Ordinal))
+            return "/PBR/Dashboard";
+
+        if (key.Contains("configuracion", StringComparison.Ordinal))
+            return "/Configuracion/Dashboard";
+
+        return null;
+    }
 
     private bool IsActiveRoute(string? route) =>
         RouteMatches(_currentPath, NormalizeRoute(route));

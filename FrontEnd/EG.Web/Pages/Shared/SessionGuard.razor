@@ -109,7 +109,37 @@ else
         }
 
         _redirecting = true;
-        await Task.Delay(900);
+        await Task.Delay(250);
+
+        if (_disposed || version != _validationVersion)
+        {
+            return;
+        }
+
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            _redirecting = false;
+            _showGate = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        await Task.Delay(650);
+
+        if (_disposed || version != _validationVersion)
+        {
+            return;
+        }
+
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            _redirecting = false;
+            _showGate = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
 
         if (!_disposed && !IsPublicPath(GetCurrentPath()))
         {

@@ -31,6 +31,7 @@
                                        Size="Size.Small"
                                        Color="@(ThemeStateService.SelectedOption == option ? Color.Primary : Color.Default)"
                                        Class="@GetLoginThemeButtonClass(option)"
+                                       Disabled="@isLoading"
                                        OnClick="@(() => SelectThemeAsync(option))" />
                     </MudTooltip>
                 }
@@ -78,11 +79,28 @@
                 </div>
 
                 <MudForm @ref="loginForm" Class="login-form">
+                    @if (isLoading)
+                    {
+                        <div class="login-progress-state" role="status" aria-live="polite">
+                            <div class="login-progress-header">
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="login-progress-title">@LoginStatusText</MudText>
+                                    <MudText Typo="Typo.caption" Class="login-progress-caption">Espera un momento, estamos preparando tu sesion.</MudText>
+                                </div>
+                            </div>
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Rounded="true" Class="mt-2" />
+                        </div>
+                    }
+
                     <MudTextField @bind-Value="login.Usuario"
                                   Label="Usuario o correo"
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
                                   Margin="Margin.Dense"
+                                  Disabled="@isLoading"
+                                  InputId="@UserInputId"
+                                  Immediate="true"
                                   Required="true"
                                   RequiredError="El usuario es requerido"
                                   Adornment="Adornment.Start"
@@ -94,6 +112,9 @@
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
                                   Margin="Margin.Dense"
+                                  InputId="@PasswordInputId"
+                                  Immediate="true"
+                                  Disabled="@isLoading"
                                   InputType="@passwordInputType"
                                   Required="true"
                                   RequiredError="La contrasena es requerida"
@@ -103,7 +124,12 @@
                                   Class="login-field" />
 
                     <div class="form-actions-row">
-                        <MudLink Href="/resetPassword" Typo="Typo.body2" Color="Color.Primary">Recuperar acceso</MudLink>
+                        <MudLink Href="/resetPassword"
+                                 Typo="Typo.body2"
+                                 Color="Color.Primary"
+                                 Class="@(isLoading ? "login-disabled-link" : null)">
+                            Recuperar acceso
+                        </MudLink>
                     </div>
 
                     <MudButton Variant="Variant.Filled"
@@ -117,7 +143,7 @@
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="mr-2" />
                         }
-                        Acceder
+                        @(isLoading ? LoginButtonText : "Acceder")
                     </MudButton>
                 </MudForm>
 
@@ -308,6 +334,28 @@
         gap: 14px;
     }
 
+    .login-progress-state {
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 24%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        padding: 12px;
+        background: color-mix(in srgb, var(--mud-palette-primary) 7%, var(--mud-palette-surface));
+    }
+
+    .login-progress-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .login-progress-title {
+        font-weight: 700;
+        color: var(--mud-palette-text-primary);
+    }
+
+    .login-progress-caption {
+        color: var(--mud-palette-text-secondary);
+    }
+
     .login-field .mud-input-root {
         min-height: 44px;
     }
@@ -331,6 +379,15 @@
     .login-button:hover {
         transform: translateY(-1px);
         filter: brightness(1.02);
+    }
+
+    .login-button:disabled {
+        transform: none;
+    }
+
+    .login-disabled-link {
+        pointer-events: none;
+        opacity: .55;
     }
 
     .form-footer {
@@ -392,11 +449,16 @@
 @code {
     private LoginDTO login = new();
     private MudForm? loginForm;
+    private const string UserInputId = "login-usuario";
+    private const string PasswordInputId = "login-password";
 
     private bool isShow;
     private bool isLoading;
+    private string loginStatus = "Validando credenciales";
     private InputType passwordInputType = InputType.Password;
     private string passwordIcon = Icons.Material.Filled.VisibilityOff;
+    private string LoginStatusText => string.IsNullOrWhiteSpace(loginStatus) ? "Validando credenciales" : loginStatus;
+    private string LoginButtonText => LoginStatusText.EndsWith("...", StringComparison.Ordinal) ? LoginStatusText : $"{LoginStatusText}...";
 
     [Inject] private HttpClient HttpClient { get; set; } = null!;
 
@@ -444,6 +506,8 @@
         if (isLoading)
             return;
 
+        await SyncBrowserCredentialValuesAsync();
+
         if (loginForm != null)
         {
             await loginForm.Validate();
@@ -455,27 +519,47 @@
         }
 
         isLoading = true;
+        SetLoginStatus("Validando credenciales");
+        await InvokeAsync(StateHasChanged);
 
         try
         {
-            UserResult result = await LoginService.LoginAsync(login.Usuario, login.Password);
+            UserResult result = await LoginService.LoginAsync(login.Usuario.Trim(), login.Password);
 
             if (result != null && !string.Equals(result.PayrollId, "0", StringComparison.Ordinal))
             {
+                SetLoginStatus("Activando sesion");
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.AccessToken);
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", result.PkIdUsuario);
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userName", result.NombreUsuario);
-                var authProvider = (AuthenticationProviderJWT)AuthenticationStateProvider;
+                if (AuthenticationStateProvider is not AuthenticationProviderJWT authProvider)
+                {
+                    Snackbar.Add("No se pudo inicializar la sesion local.", Severity.Error);
+                    return;
+                }
+
                 await authProvider.LoginAsync(result.AccessToken);
+                if (!await WaitForAuthenticatedSessionAsync())
+                {
+                    Snackbar.Add("La sesion se valido en el servidor, pero no pudo activarse en el navegador.", Severity.Error);
+                    return;
+                }
 
                 // Los permisos se cargan fuera del JWT para mantener pequena la
                 // cabecera Authorization aunque el usuario tenga muchos accesos.
+                SetLoginStatus("Cargando permisos y sucursales");
                 var permissionClaimsTask = _navigateService.GetAllClaimsByUserAsync(result.PkIdUsuario);
                 var sucursalesTask = LoadSucursalesUsuarioAsync(result.PkIdUsuario, result.AccessToken);
                 await Task.WhenAll(permissionClaimsTask, sucursalesTask);
 
                 var permissionClaims = await permissionClaimsTask;
+                SetLoginStatus("Aplicando permisos");
                 await authProvider.LoadClaimsFromDbAsync(permissionClaims);
+                if (!await WaitForAuthenticatedSessionAsync())
+                {
+                    Snackbar.Add("No se pudo confirmar la sesion despues de cargar permisos.", Severity.Error);
+                    return;
+                }
 
                 var sucursalesUsuario = await sucursalesTask;
 
@@ -496,19 +580,21 @@
                     var selectedSucursal = dialogResult.Data as UsuarioSucursalResponse;
                     if (selectedSucursal != null)
                     {
+                        SetLoginStatus("Abriendo inicio");
                         Snackbar.Add($"Sucursal seleccionada: {selectedSucursal.NombreSucursal}", Severity.Info);
-                        NavigationManager.NavigateTo("/", replace: true);
+                        NavigateToAuthenticatedHome();
                     }
                 }
                 else if (sucursalesUsuario.Items.Count == 1)
                 {
+                    SetLoginStatus("Abriendo inicio");
                     await SucursalStateService.SetSucursalAsync(
                         sucursalesUsuario.Items[0].IdSucursal,
                         sucursalesUsuario.Items[0].NombreSucursal,
                         sucursalesUsuario.Items[0].IdEmpresaPersona,
                         sucursalesUsuario.Items[0].NombreEmpresa);
                     Snackbar.Add("Bienvenido.", Severity.Success);
-                    NavigationManager.NavigateTo("/", replace: true);
+                    NavigateToAuthenticatedHome();
                 }
                 else
                 {
@@ -527,7 +613,68 @@
         finally
         {
             isLoading = false;
+            loginStatus = "Validando credenciales";
         }
+    }
+
+    private void SetLoginStatus(string status)
+    {
+        loginStatus = status;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SyncBrowserCredentialValuesAsync()
+    {
+        try
+        {
+            var credentials = await _jsRuntime.InvokeAsync<LoginBrowserCredentials>(
+                "egestionLogin.getCredentials",
+                UserInputId,
+                PasswordInputId);
+
+            if (credentials == null)
+            {
+                return;
+            }
+
+            login.Usuario = credentials.Usuario?.Trim() ?? string.Empty;
+            login.Password = credentials.Password ?? string.Empty;
+        }
+        catch
+        {
+            login.Usuario ??= string.Empty;
+            login.Password ??= string.Empty;
+        }
+    }
+
+    private sealed class LoginBrowserCredentials
+    {
+        public string? Usuario { get; set; }
+        public string? Password { get; set; }
+    }
+
+    private async Task<bool> WaitForAuthenticatedSessionAsync()
+    {
+        for (var attempt = 0; attempt < 6; attempt++)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                return true;
+            }
+
+            await Task.Delay(100);
+        }
+
+        return false;
+    }
+
+    private void NavigateToAuthenticatedHome()
+    {
+        NavigationManager.NavigateTo(
+            $"/?login=1&t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+            forceLoad: true,
+            replace: true);
     }
 
     private async Task<ApiResponse<UsuarioSucursalResponse>> LoadSucursalesUsuarioAsync(int usuarioId, string? accessToken)

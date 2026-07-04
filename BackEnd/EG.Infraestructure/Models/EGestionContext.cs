@@ -4870,10 +4870,13 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidPeriodoPagoSis).HasColumnName("FKIdPeriodoPago_SIS");
             entity.Property(e => e.FkidTipoPagoNom).HasColumnName("FKIdTipoPago_NOM");
             entity.Property(e => e.Giro).HasMaxLength(100);
+            entity.Property(e => e.Logo).HasMaxLength(1024);
+            entity.Property(e => e.LogoEmpresa).HasColumnType("varbinary(max)");
             entity.Property(e => e.NoFonacot).HasMaxLength(25);
             entity.Property(e => e.Nombre)
                 .IsRequired()
                 .HasMaxLength(128);
+            entity.Property(e => e.NombreCorto).HasMaxLength(64);
             entity.Property(e => e.PrimaRiesgoImss)
                 .HasColumnType("decimal(18, 4)")
                 .HasColumnName("PrimaRiesgoIMSS");
@@ -15306,13 +15309,28 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidMonedaBaseSis).HasColumnName("FKIdMonedaBase_SIS");
             entity.Property(e => e.FkidPaisSis).HasColumnName("FKIdPais_SIS");
             entity.Property(e => e.Giro).HasMaxLength(100);
+            entity.Property(e => e.Logo).HasMaxLength(1024);
+            entity.Property(e => e.NombreCorto).HasMaxLength(64);
             entity.Property(e => e.PkidEmpresa).HasColumnName("PKIdEmpresa");
             entity.Property(e => e.PkidEstado).HasColumnName("PKIdEstado");
+            entity.Property(e => e.CedEmpadronam).HasMaxLength(25);
+            entity.Property(e => e.EmailAdmin).HasMaxLength(100);
+            entity.Property(e => e.FkidPeriodoPagoSis).HasColumnName("FKIdPeriodoPago_SIS");
+            entity.Property(e => e.FkidTipoPagoNom).HasColumnName("FKIdTipoPago_NOM");
+            entity.Property(e => e.NoFonacot).HasMaxLength(25);
+            entity.Property(e => e.PrimaRiesgoImss)
+                .HasColumnType("decimal(18, 4)")
+                .HasColumnName("PrimaRiesgoIMSS");
             entity.Property(e => e.RazonSocial).HasMaxLength(255);
+            entity.Property(e => e.RegImss)
+                .HasMaxLength(25)
+                .HasColumnName("RegIMSS");
+            entity.Property(e => e.RegInfonavit).HasMaxLength(25);
             entity.Property(e => e.Rfc)
                 .IsRequired()
                 .HasMaxLength(13)
                 .HasColumnName("RFC");
+            entity.Property(e => e.UsAdmin).HasMaxLength(100);
         });
 
         modelBuilder.Entity<VwEstatusPago>(entity =>

@@ -1,0 +1,1027 @@
+@page "/{ModuleSlug}/Dashboard"
+@using System.Globalization
+@using System.Text
+@inject NavigationManager NavigationManager
+@inject AuthenticationProviderJWT AuthProvider
+
+<MudContainer MaxWidth="MaxWidth.False" Class="module-dashboard">
+    <section class="module-shell" style="@AccentStyle(Current.Accent)">
+        <header class="module-hero">
+            <div class="hero-title">
+                <button type="button" class="back-button" aria-label="Regresar" @onclick="GoHome">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small" />
+                </button>
+                <span class="module-icon">
+                    <MudIcon Icon="@Current.Icon" Size="Size.Medium" />
+                </span>
+                <div>
+                    <span class="eyebrow">@Current.Owner</span>
+                    <h1>@Current.Title</h1>
+                    <p>@Current.Summary</p>
+                </div>
+            </div>
+
+            <div class="hero-status">
+                <span>@Current.Signal</span>
+                <strong>@AccessibleStageCount de @Current.Stages.Count accesos</strong>
+            </div>
+        </header>
+
+        <section class="metric-strip" aria-label="Indicadores del modulo">
+            @foreach (var metric in Current.Metrics)
+            {
+                <article class="module-metric" style="@ToneStyle(metric.Tone)">
+                    <MudIcon Icon="@metric.Icon" Size="Size.Small" />
+                    <div>
+                        <span>@metric.Label</span>
+                        <strong>@metric.Value</strong>
+                        <small>@metric.Detail</small>
+                    </div>
+                </article>
+            }
+        </section>
+
+        <section class="module-grid">
+            <article class="workflow-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span>Workflow</span>
+                        <strong>@Current.FlowName</strong>
+                    </div>
+                    <button type="button" class="next-button" @onclick="OpenNextAction" disabled="@(!Current.Stages.Any(CanOpenStage))">
+                        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" />
+                        <span>@Current.NextAction</span>
+                    </button>
+                </div>
+
+                <div class="stage-lane">
+                    @for (var index = 0; index < Current.Stages.Count; index++)
+                    {
+                        var stage = Current.Stages[index];
+                        <article class="stage-card" style="@ToneStyle(stage.Tone)">
+                            <span class="stage-number">@((index + 1).ToString("00"))</span>
+                            <div class="stage-body">
+                                <div class="stage-title">
+                                    <MudIcon Icon="@stage.Icon" Size="Size.Small" />
+                                    <strong>@stage.Title</strong>
+                                </div>
+                                <p>@stage.Detail</p>
+                                <div class="stage-meta">
+                                    <span>@stage.Status</span>
+                                    <span>@stage.Document</span>
+                                </div>
+                                @if (CanOpenStage(stage))
+                                {
+                                    <button type="button" class="stage-action" @onclick="@(() => OpenStage(stage))">
+                                        <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" Size="Size.Small" />
+                                        Abrir
+                                    </button>
+                                }
+                            </div>
+                        </article>
+
+                        @if (index < Current.Stages.Count - 1)
+                        {
+                            <span class="stage-connector" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                            </span>
+                        }
+                    }
+                </div>
+            </article>
+
+            <aside class="side-rail">
+                <article class="focus-panel">
+                    <div class="panel-heading compact">
+                        <span>Cuellos de botella</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Troubleshoot" Size="Size.Small" />
+                    </div>
+                    <div class="insight-list">
+                        @foreach (var insight in Current.Insights)
+                        {
+                            <div class="insight-row" style="@ToneStyle(insight.Tone)">
+                                <span class="dot"></span>
+                                <div>
+                                    <strong>@insight.Title</strong>
+                                    <small>@insight.Detail</small>
+                                </div>
+                                <em>@insight.Count</em>
+                            </div>
+                        }
+                    </div>
+                </article>
+
+                <article class="focus-panel">
+                    <div class="panel-heading compact">
+                        <span>Expediente digital</span>
+                        <MudIcon Icon="@Icons.Material.Filled.FolderCopy" Size="Size.Small" />
+                    </div>
+                    <div class="document-stack">
+                        @foreach (var document in Current.Documents)
+                        {
+                            <span style="@ToneStyle(document.Tone)">
+                                <MudIcon Icon="@document.Icon" Size="Size.Small" />
+                                @document.Title
+                            </span>
+                        }
+                    </div>
+                </article>
+
+                <article class="assistant-card" style="@ToneStyle(Current.AssistantTone)">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
+                    <div>
+                        <span>Asistente de proceso</span>
+                        <strong>@Current.AssistantMessage</strong>
+                    </div>
+                </article>
+            </aside>
+        </section>
+    </section>
+</MudContainer>
+
+@code {
+    [Parameter] public string? ModuleSlug { get; set; }
+
+    private ModuleModel Current { get; set; } = Catalog["default"];
+
+    private int AccessibleStageCount => Current.Stages.Count(CanOpenStage);
+
+    protected override void OnParametersSet()
+    {
+        Current = ResolveModule(ModuleSlug);
+    }
+
+    private void GoHome() => NavigationManager.NavigateTo("/");
+
+    private void OpenNextAction()
+    {
+        var stage = Current.Stages.FirstOrDefault(CanOpenStage);
+        if (stage != null)
+        {
+            OpenStage(stage);
+        }
+    }
+
+    private void OpenStage(StageModel stage)
+    {
+        if (!string.IsNullOrWhiteSpace(stage.Route))
+        {
+            NavigationManager.NavigateTo(stage.Route);
+        }
+    }
+
+    private bool CanOpenStage(StageModel? stage)
+    {
+        if (stage == null || string.IsNullOrWhiteSpace(stage.Route))
+            return false;
+
+        if (stage.PermissionModules.Count == 0 || string.IsNullOrWhiteSpace(stage.PermissionSubModule))
+            return true;
+
+        return stage.PermissionModules.Any(module =>
+            HasPermission(module, stage.PermissionSubModule, "view") ||
+            HasPermission(module, stage.PermissionSubModule, "view-menu") ||
+            HasPermission(module, stage.PermissionSubModule, "authorize") ||
+            HasPermission(module, stage.PermissionSubModule, "CanExportToExcel"));
+    }
+
+    private bool HasPermission(string module, string subModule, string action) =>
+        AuthProvider.HasPermission(module, subModule, action);
+
+    private static ModuleModel ResolveModule(string? slug)
+    {
+        var key = NormalizeKey(slug);
+        return Catalog.TryGetValue(key, out var module) ? module : Catalog["default"];
+    }
+
+    private static string AccentStyle(string accent) => $"--module-accent:{accent};";
+
+    private static string ToneStyle(string tone)
+    {
+        var color = tone switch
+        {
+            "success" => "#198754",
+            "warning" => "#D8A13A",
+            "error" => "#D71920",
+            "info" => "#2563EB",
+            "neutral" => "#64748B",
+            _ => "var(--module-accent)"
+        };
+
+        return $"--tone-color:{color};";
+    }
+
+    private static string NormalizeKey(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        var normalized = text.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+
+        foreach (var c in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(char.ToLowerInvariant(c));
+            }
+        }
+
+        return builder.ToString()
+            .Normalize(NormalizationForm.FormC)
+            .Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal);
+    }
+
+    private static readonly Dictionary<string, ModuleModel> Catalog = BuildCatalog();
+
+    private static Dictionary<string, ModuleModel> BuildCatalog()
+    {
+        var modules = new Dictionary<string, ModuleModel>
+        {
+            ["presupuesto"] = new(
+                "Presupuesto",
+                "GRP / recurso publico",
+                Icons.Material.Filled.AccountBalance,
+                "#2563EB",
+                "Semaforo amarillo",
+                "Del autorizado al comprometido, ejercido y pagado.",
+                "Momentos presupuestales",
+                "Revisar suficiencias",
+                "Falta suficiencia en solicitudes listas para comprometer.",
+                "warning",
+                [
+                    new("Disponible", "$12.45 M", "Recurso para nuevas solicitudes", Icons.Material.Filled.AccountBalanceWallet, "info"),
+                    new("Comprometido", "$4.82 M", "Contratos y ordenes en curso", Icons.Material.Filled.FactCheck, "success"),
+                    new("Por autorizar", "5", "Suficiencias pendientes", Icons.Material.Filled.AssignmentTurnedIn, "warning")
+                ],
+                [
+                    Stage("Autorizado", "Presupuesto autorizado por ejercicio.", "Normal", "Techo presupuestal", Icons.Material.Filled.AccountBalance, "success", "/Presupuesto/Egreso/Presupuesto_Autorizado", ["Egreso", "Presupuesto"], "Presupuesto_Autorizado"),
+                    Stage("Modificado", "Adecuaciones, ampliaciones y reducciones.", "Control", "Adecuacion", Icons.Material.Filled.Tune, "info", "/Presupuesto/Egreso/Presupesto_Modificado/Ampliaciones", ["Egreso", "Presupuesto"], "Ampliaciones"),
+                    Stage("Suficiencia", "Solicitud y autorizacion antes del compromiso.", "Atencion", "Suficiencia", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia", ["Egreso", "Presupuesto"], "Solicitud_Suficiencia"),
+                    Stage("Comprometido", "Registro del compromiso presupuestal.", "Normal", "Compromiso", Icons.Material.Filled.FactCheck, "success", "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido", ["Egreso", "Presupuesto"], "Registro_Comprometido"),
+                    Stage("Pago", "Provision, cheque o transferencia.", "Salida", "Comprobante", Icons.Material.Filled.Payments, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["CuentasXPagar", "Tesoreria"], "Cheque_Transferencia")
+                ],
+                [
+                    new("Solicitudes esperando suficiencia", "Listas para autorizacion", "5", "warning"),
+                    new("Contratos pendientes", "Sin compromiso completo", "3", "error"),
+                    new("Pagos en salida", "Con soporte documental", "9", "success")
+                ],
+                StandardDocuments(["Suficiencia", "Compromiso", "Poliza", "Comprobante"])),
+
+            ["adquisiciones"] = new(
+                "Adquisiciones",
+                "ORCO / compras",
+                Icons.Material.Filled.ShoppingCartCheckout,
+                "#7C3AED",
+                "Flujo activo",
+                "De la requisicion al contrato, factura y pago.",
+                "Compra integral",
+                "Solicitar suficiencia",
+                "La orden no avanza si falta autorizacion presupuestal.",
+                "warning",
+                [
+                    new("Requisiciones", "14", "Procesos activos", Icons.Material.Filled.Article, "info"),
+                    new("Sin cotizar", "8", "Requieren mercado", Icons.Material.Filled.RequestQuote, "warning"),
+                    new("Ordenes", "6", "En preparacion", Icons.Material.Filled.ShoppingCart, "success")
+                ],
+                [
+                    Stage("Requisicion", "Necesidad operativa capturada por area.", "Entrada", "Requisicion", Icons.Material.Filled.Article, "info", "/Adquisiciones/Requisicion", ["Adquisiciones"], "requisicion"),
+                    Stage("Cotizacion", "Comparativo de proveedor y vigencia.", "Mercado", "Cotizaciones", Icons.Material.Filled.RequestQuote, "warning", "/Adquisiciones/Cotizacion", ["Adquisiciones"], "Cotizacion"),
+                    Stage("Suficiencia", "Solicitud de control presupuestal.", "Control", "Suficiencia", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/Adquisiciones/Solicitud_Suficiencia", ["Adquisiciones"], "SolicitudSuficiencia"),
+                    Stage("Orden compra", "Emision con proveedor, partidas y total.", "Operacion", "Orden", Icons.Material.Filled.ShoppingCart, "success", "/Adquisiciones/Orden_Compra", ["Adquisiciones"], "OrdenCompra"),
+                    Stage("Contrato", "Compromiso contractual y soporte.", "Cierre", "Contrato", Icons.Material.Filled.FactCheck, "info", "/Contratos/Registro_Compromiso", ["Contratos", "Adquisiciones"], "Registro_Compromiso")
+                ],
+                [
+                    new("Requisiciones sin cotizar", "Mercado detenido", "8", "warning"),
+                    new("Facturas sin soporte", "Expediente incompleto", "6", "error"),
+                    new("Contratos listos", "Con suficiencia autorizada", "4", "success")
+                ],
+                StandardDocuments(["Requisicion", "Cotizaciones", "Suficiencia", "Contrato", "Factura"])),
+
+            ["contabilidad"] = new(
+                "Contabilidad",
+                "CONTA / cierre",
+                Icons.Material.Filled.ReceiptLong,
+                "#0F766E",
+                "Auditoria lista",
+                "Polizas, auxiliares, libros y estados financieros.",
+                "Ciclo contable",
+                "Revisar polizas",
+                "La evidencia debe cuadrar antes de cerrar el periodo.",
+                "info",
+                [
+                    new("Polizas", "27", "Por validar", Icons.Material.Filled.ReceiptLong, "info"),
+                    new("Auxiliares", "12", "Consultas activas", Icons.Material.Filled.Summarize, "success"),
+                    new("Cierre", "1", "Periodo en revision", Icons.Material.Filled.LockClock, "warning")
+                ],
+                [
+                    Stage("Polizas", "Registro contable con debe y haber.", "Registro", "Poliza", Icons.Material.Filled.ReceiptLong, "info", "/Contabilidad/Polizas", ["Contabilidad"], "Polizas"),
+                    Stage("Autorizacion", "Revision y aprobacion contable.", "Control", "Autorizacion", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/Contabilidad/Autorizacion_Polizas", ["Contabilidad"], "Autorizacion_Polizas"),
+                    Stage("Balanza", "Cuadre de saldos del periodo.", "Validacion", "Balanza", Icons.Material.Filled.AccountBalance, "success", "/Contabilidad/Balanza_Comprobacion", ["Contabilidad"], "Balanza_Comprobacion"),
+                    Stage("Reportes", "Libros y auxiliares contables.", "Consulta", "Libro", Icons.Material.Filled.Summarize, "info", "/Contabilidad/Reportes_Contabilidad/Libro_Diario", ["Contabilidad"], "Reportes_Contabilidad"),
+                    Stage("Cierre", "Bloqueo y cierre mensual.", "Cierre", "Periodo", Icons.Material.Filled.LockClock, "warning", "/Contabilidad/Cierre_Mensual", ["Contabilidad"], "Cierre_Mensual")
+                ],
+                [
+                    new("Polizas por autorizar", "Pendientes de firma", "7", "warning"),
+                    new("Movimientos sin soporte", "Requieren evidencia", "3", "error"),
+                    new("Reportes listos", "Con rango de fechas", "11", "success")
+                ],
+                StandardDocuments(["Poliza", "Auxiliar", "Factura", "Evidencia", "Estado financiero"])),
+
+            ["patrimonio"] = new(
+                "Patrimonio",
+                "SICOP / activos",
+                Icons.Material.Filled.Inventory2,
+                "#B45309",
+                "Inventario activo",
+                "Bienes, resguardos, bajas e inventarios fisicos.",
+                "Control patrimonial",
+                "Revisar resguardos",
+                "Los bienes sin resguardo deben asignarse antes del inventario.",
+                "warning",
+                [
+                    new("Bienes", "342", "Registrados", Icons.Material.Filled.Inventory2, "success"),
+                    new("Resguardos", "18", "Pendientes", Icons.Material.Filled.FactCheck, "warning"),
+                    new("Bajas", "4", "En revision", Icons.Material.Filled.DeleteSweep, "error")
+                ],
+                [
+                    Stage("Bienes", "Alta y clasificacion patrimonial.", "Entrada", "Activo", Icons.Material.Filled.Inventory2, "success", "/Patrimonio/Bienes", ["Patrimonio"], "Bienes"),
+                    Stage("Resguardo", "Asignacion a responsable.", "Control", "Resguardo", Icons.Material.Filled.FactCheck, "warning", "/Patrimonio/Resguardos", ["Patrimonio"], "Resguardos"),
+                    Stage("Inventario", "Conteo y conciliacion fisica.", "Operacion", "Inventario", Icons.Material.Filled.PlaylistAddCheck, "info", "/Patrimonio/Inventarios", ["Patrimonio"], "Inventarios"),
+                    Stage("Baja", "Retiro y soporte documental.", "Cierre", "Baja", Icons.Material.Filled.DeleteSweep, "error", "/Patrimonio/Bajas", ["Patrimonio"], "Bajas")
+                ],
+                [
+                    new("Bienes sin resguardo", "Asignacion pendiente", "18", "warning"),
+                    new("Diferencias inventario", "Requieren conciliacion", "6", "error"),
+                    new("Altas completas", "Con clasificacion", "31", "success")
+                ],
+                StandardDocuments(["Factura", "Resguardo", "Evidencia", "Acta baja"])),
+
+            ["almacen"] = new(
+                "Almacen",
+                "ALMA / suministros",
+                Icons.Material.Filled.Warehouse,
+                "#047857",
+                "Operacion normal",
+                "Entradas, existencias, pedidos y salidas.",
+                "Control de almacen",
+                "Recibir pedidos",
+                "La salida requiere existencia registrada y solicitud activa.",
+                "success",
+                [
+                    new("Existencias", "1,248", "Articulos controlados", Icons.Material.Filled.Inventory2, "success"),
+                    new("Pedidos", "9", "Por recibir", Icons.Material.Filled.ReceiptLong, "warning"),
+                    new("Salidas", "21", "Solicitudes abiertas", Icons.Material.Filled.ExitToApp, "info")
+                ],
+                [
+                    Stage("Recepcion", "Entrada de pedidos y evidencia.", "Entrada", "Recepcion", Icons.Material.Filled.ReceiptLong, "warning", "/Almacen/Recepcion_Pedidos", ["Almacen"], "Recepcion_Pedidos"),
+                    Stage("Existencias", "Disponibilidad por articulo.", "Control", "Existencia", Icons.Material.Filled.Inventory2, "success", "/Almacen/Existencias_Registradas", ["Almacen"], "Existencias_Registradas"),
+                    Stage("Solicitud salida", "Peticion de suministro.", "Operacion", "Solicitud", Icons.Material.Filled.Article, "info", "/Almacen/Solicitudes_Salida", ["Almacen"], "Solicitudes_Salida"),
+                    Stage("Salida", "Entrega y comprobante.", "Cierre", "Vale", Icons.Material.Filled.ExitToApp, "success", "/Almacen/Suministros_Salida", ["Almacen"], "Suministros_Salida")
+                ],
+                [
+                    new("Pedidos por recibir", "Entrada pendiente", "9", "warning"),
+                    new("Solicitudes sin surtir", "Inventario insuficiente", "5", "error"),
+                    new("Entradas completas", "Con evidencia", "16", "success")
+                ],
+                StandardDocuments(["Pedido", "Entrada", "Vale salida", "Evidencia"])),
+
+            ["nomina"] = new(
+                "Nomina",
+                "NOM / personas",
+                Icons.Material.Filled.Payments,
+                "#9333EA",
+                "Periodo abierto",
+                "Empleados, incidencias, calculo, timbrado y pago.",
+                "Ciclo de nomina",
+                "Validar incidencias",
+                "La nomina no debe calcularse con incidencias abiertas.",
+                "warning",
+                [
+                    new("Empleados", "128", "Plantilla activa", Icons.Material.Filled.Groups, "success"),
+                    new("Incidencias", "11", "Por validar", Icons.Material.Filled.AssignmentTurnedIn, "warning"),
+                    new("Procesos", "3", "Listos", Icons.Material.Filled.Payments, "info")
+                ],
+                [
+                    Stage("Empleados", "Ficha laboral y expediente.", "Base", "Empleado", Icons.Material.Filled.Groups, "success", "/nomina/empleados", ["Nomina", "Nomina_Recursos_Humanos", "Recursos_Humanos"], "Empleados"),
+                    Stage("Incidencias", "Movimientos del periodo.", "Control", "Incidencia", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/nomina/movimientos", ["Nomina"], "Movimientos"),
+                    Stage("Procesos", "Calculo, cierre y dispersion.", "Operacion", "Nomina", Icons.Material.Filled.Payments, "info", "/nomina/procesos", ["Nomina"], "Procesos"),
+                    Stage("Reportes", "Recibos y resumen del periodo.", "Salida", "Recibo", Icons.Material.Filled.ReceiptLong, "success", "/nom/resumennomina", ["Nomina"], "Resumen_Nomina")
+                ],
+                [
+                    new("Incidencias abiertas", "Antes del calculo", "11", "warning"),
+                    new("Expedientes incompletos", "Soporte pendiente", "4", "error"),
+                    new("Procesos listos", "Con periodo activo", "3", "success")
+                ],
+                StandardDocuments(["Contrato", "Incidencia", "Recibo", "Timbrado"])),
+
+            ["reportescxc"] = new(
+                "Reportes CxC",
+                "Cuentas por cobrar",
+                Icons.Material.Filled.RequestQuote,
+                "#0EA5E9",
+                "Consulta ejecutiva",
+                "Ingreso estimado, devengado, recaudado y conciliado.",
+                "Seguimiento de ingreso",
+                "Revisar depositos",
+                "Los depositos deben conciliarse contra CLC y poliza.",
+                "info",
+                [
+                    new("Estimado", "$3.8 M", "Ingreso autorizado", Icons.Material.Filled.AccountBalance, "info"),
+                    new("Devengado", "$1.4 M", "En proceso", Icons.Material.Filled.RequestQuote, "warning"),
+                    new("Recaudado", "$980 K", "Depositado", Icons.Material.Filled.Payments, "success")
+                ],
+                [
+                    Stage("Estimado", "Ingreso autorizado por fuente.", "Entrada", "Estimado", Icons.Material.Filled.AccountBalance, "info", "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Estimados", ["CuentasXCobrar", "Tesoreria"], "Ingresos_Estimados"),
+                    Stage("Devengado", "Derecho de cobro reconocido.", "Control", "Devengado", Icons.Material.Filled.RequestQuote, "warning", "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos_Propios", ["CuentasXCobrar", "Tesoreria"], "Ingresos_Propios"),
+                    Stage("Depositos", "Recaudacion y comprobante.", "Salida", "Deposito", Icons.Material.Filled.Payments, "success", "/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC", ["CuentasXCobrar", "Tesoreria"], "Depositos_CLC")
+                ],
+                [
+                    new("Depositos sin conciliar", "CLC pendiente", "5", "warning"),
+                    new("Polizas faltantes", "Ingreso sin cierre", "2", "error"),
+                    new("Ingresos aplicados", "Con evidencia", "14", "success")
+                ],
+                StandardDocuments(["CLC", "Deposito", "Poliza", "Comprobante"])),
+
+            ["pbr"] = new(
+                "PBR",
+                "Planeacion y resultados",
+                Icons.Material.Filled.DashboardCustomize,
+                "#4F46E5",
+                "Seguimiento estrategico",
+                "Anteproyectos, MIR, indicadores y presupuesto por programa.",
+                "Ciclo PBR",
+                "Revisar indicadores",
+                "Los indicadores deben mantener meta, avance y evidencia.",
+                "info",
+                [
+                    new("Programas", "8", "En seguimiento", Icons.Material.Filled.AccountTree, "info"),
+                    new("Indicadores", "24", "Con medicion", Icons.Material.Filled.QueryStats, "success"),
+                    new("Alertas", "3", "Sin evidencia", Icons.Material.Filled.WarningAmber, "warning")
+                ],
+                [
+                    Stage("Tablero", "Resumen estrategico del ejercicio.", "Vista", "Dashboard", Icons.Material.Filled.DashboardCustomize, "info", "/PBR", ["PBR"], "Dashboard"),
+                    Stage("Anteproyectos", "Planeacion de iniciativas.", "Entrada", "Anteproyecto", Icons.Material.Filled.Article, "warning", "/PBR/Anteproyectos", ["PBR"], "Anteproyectos"),
+                    Stage("MIR", "Resumen narrativo e indicadores.", "Control", "Indicador", Icons.Material.Filled.AccountTree, "success", "/PBR/MatrizIndicadores", ["PBR"], "MatrizIndicadores"),
+                    Stage("Presupuestos", "Asignacion por programa.", "Salida", "Presupuesto", Icons.Material.Filled.AccountBalanceWallet, "info", "/PBR/Presupuestos", ["PBR"], "Presupuestos")
+                ],
+                [
+                    new("Indicadores sin evidencia", "Carga pendiente", "3", "warning"),
+                    new("Metas fuera de rango", "Requieren ajuste", "2", "error"),
+                    new("Programas actualizados", "Con avance", "6", "success")
+                ],
+                StandardDocuments(["MIR", "Indicador", "Evidencia", "Presupuesto"])),
+
+            ["configuracion"] = new(
+                "Configuracion",
+                "Sistema / catalogos",
+                Icons.Material.Filled.Settings,
+                "#64748B",
+                "Gobierno de datos",
+                "Usuarios, menus, catalogos y permisos del sistema.",
+                "Administracion",
+                "Revisar accesos",
+                "Los permisos deben seguir el menu operativo visible.",
+                "neutral",
+                [
+                    new("Menus", "327", "Opciones sincronizadas", Icons.Material.Filled.Menu, "info"),
+                    new("Usuarios", "42", "Con perfil asignado", Icons.Material.Filled.ManageAccounts, "success"),
+                    new("Catalogos", "18", "Activos", Icons.Material.Filled.SettingsApplications, "neutral")
+                ],
+                [
+                    Stage("Menus", "Estructura de navegacion.", "Base", "Menu", Icons.Material.Filled.Menu, "info", "/Sistema/Menu", ["Sistema"], "Menu"),
+                    Stage("Usuarios", "Cuentas, perfil y sucursal.", "Control", "Usuario", Icons.Material.Filled.ManageAccounts, "success", "/Sistema/Usuario", ["Sistema"], "Usuario"),
+                    Stage("Accesos", "Claims por rol y menu.", "Seguridad", "Claims", Icons.Material.Filled.AdminPanelSettings, "warning", "/Sistema/Configurar_Accesos", ["Sistema"], "Configurar_Accesos"),
+                    Stage("Catalogos", "Datos base de operacion.", "Soporte", "Catalogo", Icons.Material.Filled.SettingsApplications, "neutral", "/configuracion/presupuestales/clave-programa/anios", ["Sistema", "Configuracion"], "Catalogos")
+                ],
+                [
+                    new("Menus sin claim", "Revisar perfiles", "6", "warning"),
+                    new("Usuarios sin sucursal", "Operacion bloqueada", "2", "error"),
+                    new("Catalogos activos", "Listos para uso", "18", "success")
+                ],
+                StandardDocuments(["Rol", "Menu", "Claim", "Catalogo"]))
+        };
+
+        modules["default"] = new(
+            "Dashboard de modulo",
+            "Centro operativo",
+            Icons.Material.Filled.SpaceDashboard,
+            "#2563EB",
+            "Vista conceptual",
+            "Selecciona un dashboard desde el icono del menu principal.",
+            "Workflow",
+            "Volver al inicio",
+            "Sin modulo reconocido para esta ruta.",
+            "neutral",
+            [new("Modulo", "N/D", "Ruta no configurada", Icons.Material.Filled.Info, "neutral")],
+            [Stage("Inicio", "Centro de mando general.", "Vista", "Dashboard", Icons.Material.Filled.Home, "neutral", "/", [], string.Empty)],
+            [new("Sin datos", "Configura el modulo", "0", "neutral")],
+            StandardDocuments(["Dashboard"]));
+
+        return modules;
+    }
+
+    private static StageModel Stage(
+        string title,
+        string detail,
+        string status,
+        string document,
+        string icon,
+        string tone,
+        string route,
+        IReadOnlyList<string> permissionModules,
+        string permissionSubModule) =>
+        new(title, detail, status, document, icon, tone, route, permissionModules, permissionSubModule);
+
+    private static IReadOnlyList<DocumentModel> StandardDocuments(IReadOnlyList<string> titles) =>
+        titles.Select((title, index) => new DocumentModel(
+            title,
+            index % 3 == 0 ? Icons.Material.Filled.Article : index % 3 == 1 ? Icons.Material.Filled.FolderCopy : Icons.Material.Filled.ReceiptLong,
+            index % 3 == 0 ? "success" : index % 3 == 1 ? "info" : "warning"))
+        .ToList();
+
+    private sealed record ModuleModel(
+        string Title,
+        string Owner,
+        string Icon,
+        string Accent,
+        string Signal,
+        string Summary,
+        string FlowName,
+        string NextAction,
+        string AssistantMessage,
+        string AssistantTone,
+        IReadOnlyList<MetricModel> Metrics,
+        IReadOnlyList<StageModel> Stages,
+        IReadOnlyList<InsightModel> Insights,
+        IReadOnlyList<DocumentModel> Documents);
+
+    private sealed record MetricModel(string Label, string Value, string Detail, string Icon, string Tone);
+
+    private sealed record StageModel(
+        string Title,
+        string Detail,
+        string Status,
+        string Document,
+        string Icon,
+        string Tone,
+        string Route,
+        IReadOnlyList<string> PermissionModules,
+        string PermissionSubModule);
+
+    private sealed record InsightModel(string Title, string Detail, string Count, string Tone);
+
+    private sealed record DocumentModel(string Title, string Icon, string Tone);
+}
+
+<style>
+    .module-dashboard {
+        height: 100%;
+        min-height: 0;
+        overflow: auto;
+        padding: 12px !important;
+    }
+
+    .module-shell {
+        min-height: 100%;
+        display: grid;
+        align-content: start;
+        gap: 12px;
+    }
+
+    .module-hero,
+    .metric-strip,
+    .workflow-panel,
+    .focus-panel,
+    .assistant-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+    }
+
+    .module-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px;
+        border-left: 4px solid var(--module-accent);
+    }
+
+    .hero-title,
+    .hero-status,
+    .stage-title,
+    .panel-heading,
+    .assistant-card {
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-title {
+        min-width: 0;
+        gap: 12px;
+    }
+
+    .back-button,
+    .module-icon,
+    .next-button,
+    .stage-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 28%, var(--mud-palette-lines-default));
+        background: color-mix(in srgb, var(--module-accent) 8%, transparent);
+        color: var(--module-accent);
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .back-button,
+    .module-icon {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+        border-radius: 8px;
+    }
+
+    .back-button:hover,
+    .next-button:hover,
+    .stage-action:hover {
+        background: color-mix(in srgb, var(--module-accent) 14%, transparent);
+    }
+
+    .eyebrow,
+    .module-metric span,
+    .panel-heading span,
+    .stage-meta span,
+    .assistant-card span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        font-weight: 850;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        margin: 2px 0 3px;
+        color: var(--mud-palette-text-primary);
+        font-size: 1.55rem;
+        font-weight: 850;
+        letter-spacing: 0;
+    }
+
+    p {
+        margin: 0;
+        color: var(--mud-palette-text-secondary);
+        line-height: 1.35;
+    }
+
+    .hero-status {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .hero-status span,
+    .hero-status strong {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 7px 10px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 26%, var(--mud-palette-lines-default));
+        border-radius: 999px;
+        color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 7%, transparent);
+        font-size: .78rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .metric-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        overflow: hidden;
+    }
+
+    .module-metric {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 13px;
+        border-left: 3px solid var(--tone-color);
+    }
+
+    .module-metric + .module-metric {
+        border-left-width: 1px;
+        border-left-color: var(--mud-palette-lines-default);
+    }
+
+    .module-metric .mud-icon-root {
+        width: 34px;
+        height: 34px;
+        padding: 7px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--tone-color) 10%, transparent);
+        color: var(--tone-color);
+    }
+
+    .module-metric div,
+    .insight-row div,
+    .assistant-card div {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+    }
+
+    .module-metric strong {
+        color: var(--mud-palette-text-primary);
+        font-size: 1.05rem;
+        line-height: 1.1;
+    }
+
+    .module-metric small {
+        color: var(--mud-palette-text-secondary);
+        font-size: .74rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .module-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 330px;
+        gap: 12px;
+        align-items: start;
+    }
+
+    .workflow-panel,
+    .focus-panel {
+        min-width: 0;
+        display: grid;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .panel-heading {
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .panel-heading div {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+    }
+
+    .panel-heading strong {
+        color: var(--mud-palette-text-primary);
+        font-size: 1.02rem;
+        line-height: 1.2;
+    }
+
+    .panel-heading.compact {
+        color: var(--module-accent);
+    }
+
+    .next-button {
+        min-width: 0;
+        gap: 8px;
+        min-height: 34px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: .82rem;
+        font-weight: 850;
+    }
+
+    .next-button:disabled {
+        cursor: default;
+        opacity: .55;
+    }
+
+    .stage-lane {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--module-accent) transparent;
+    }
+
+    .stage-card {
+        width: 218px;
+        min-height: 222px;
+        flex: 0 0 218px;
+        display: grid;
+        grid-template-rows: 30px 1fr;
+        gap: 8px;
+    }
+
+    .stage-number {
+        width: 36px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--module-accent);
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 900;
+    }
+
+    .stage-body {
+        min-height: 184px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        padding: 11px;
+        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--tone-color) 4%, var(--mud-palette-surface));
+    }
+
+    .stage-title {
+        min-width: 0;
+        gap: 8px;
+        color: var(--tone-color);
+    }
+
+    .stage-title strong {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--mud-palette-text-primary);
+        font-size: .96rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .stage-body p {
+        flex: 1 1 auto;
+        font-size: .78rem;
+    }
+
+    .stage-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .stage-meta span {
+        max-width: 100%;
+        padding: 5px 7px;
+        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
+        border-radius: 999px;
+        color: var(--tone-color);
+        background: color-mix(in srgb, var(--tone-color) 5%, transparent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .stage-action {
+        gap: 6px;
+        align-self: flex-start;
+        min-height: 30px;
+        padding: 6px 9px;
+        border-radius: 8px;
+        font-size: .78rem;
+        font-weight: 850;
+    }
+
+    .stage-connector {
+        width: 34px;
+        flex: 0 0 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 38px;
+        color: var(--module-accent);
+    }
+
+    .side-rail {
+        min-width: 0;
+        display: grid;
+        gap: 12px;
+    }
+
+    .insight-list,
+    .document-stack {
+        display: grid;
+        gap: 8px;
+    }
+
+    .insight-row {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 9px;
+        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--tone-color) 5%, transparent);
+    }
+
+    .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--tone-color);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone-color) 16%, transparent);
+    }
+
+    .insight-row strong,
+    .assistant-card strong {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--mud-palette-text-primary);
+        font-size: .86rem;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .insight-row small {
+        color: var(--mud-palette-text-secondary);
+        font-size: .74rem;
+    }
+
+    .insight-row em {
+        color: var(--tone-color);
+        font-style: normal;
+        font-weight: 900;
+    }
+
+    .document-stack span {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 9px;
+        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        color: var(--mud-palette-text-primary);
+        background: color-mix(in srgb, var(--tone-color) 5%, transparent);
+        font-size: .8rem;
+        font-weight: 750;
+    }
+
+    .document-stack .mud-icon-root {
+        color: var(--tone-color);
+    }
+
+    .assistant-card {
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px;
+        border-color: color-mix(in srgb, var(--tone-color) 28%, var(--mud-palette-lines-default));
+        background: color-mix(in srgb, var(--tone-color) 6%, var(--mud-palette-surface));
+    }
+
+    .assistant-card > .mud-icon-root {
+        width: 34px;
+        height: 34px;
+        padding: 7px;
+        border-radius: 8px;
+        color: var(--tone-color);
+        background: color-mix(in srgb, var(--tone-color) 12%, transparent);
+    }
+
+    @@media (max-width: 1180px) {
+        .module-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .side-rail {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 820px) {
+        .module-hero {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .hero-status {
+            justify-content: flex-start;
+        }
+
+        .metric-strip,
+        .side-rail {
+            grid-template-columns: 1fr;
+        }
+
+        .module-metric + .module-metric {
+            border-left-width: 3px;
+            border-left-color: var(--tone-color);
+            border-top: 1px solid var(--mud-palette-lines-default);
+        }
+    }
+</style>

@@ -49,7 +49,7 @@ public sealed class GenericReportProvider : IReportProvider
         _reportContextParameterConfigurator.Apply(report, request);
         ApplyParameters(report, request);
         _reportConnectionConfigurator.Apply(report);
-        _reportLogoConfigurator.Apply(report, request.Name);
+        _reportLogoConfigurator.Apply(report, request);
         return report;
     }
 
@@ -60,12 +60,12 @@ public sealed class GenericReportProvider : IReportProvider
             return null;
         }
 
+        reportLayout = _reportLogoConfigurator.ApplyToLayout(reportLayout, request);
         using var stream = new MemoryStream(reportLayout);
         var report = XtraReport.FromXmlStream(stream, true);
         _reportContextParameterConfigurator.Apply(report, request);
         ApplyParameters(report, request);
         _reportConnectionConfigurator.Apply(report);
-        _reportLogoConfigurator.Apply(report, request.Name);
         return report;
     }
 
