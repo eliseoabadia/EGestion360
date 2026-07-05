@@ -60,6 +60,7 @@ try
     builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     builder.Services.Configure<DocumentStorageSettings>(builder.Configuration.GetSection("DocumentStorage"));
     builder.Services.Configure<DocumentRagSettings>(builder.Configuration.GetSection("DocumentRag"));
+    builder.Services.Configure<FirmaDocumentalSettings>(builder.Configuration.GetSection("FirmaDocumental"));
     builder.Services.AddLoggerGRP(builder.Configuration);
     builder.Services.AddDbContextGRP(builder.Configuration);
     builder.Services.AddApplicationServices(typeof(Program).Assembly);

@@ -1,4 +1,5 @@
 using EG.ApiCoreBS.Services;
+using EG.Application.Interfaces.FirmaDocumental;
 using EG.Application.Interfaces.SoporteDocumental;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.SoporteDocumental;
@@ -14,13 +15,16 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
     [Authorize]
     public class SoporteDocumentalController(
         ISoporteDocumentalAppService service,
+        IFirmaDocumentalStore firmaStore,
         IUserContextService userContext) : ControllerBase
     {
         [HttpPost("entidad")]
         public async Task<ActionResult<PagedResult<DocumentoResponse>>> ObtenerPorEntidad([FromBody] DocumentoEntidadRequest request)
         {
             request.FkidEmpresaSis ??= userContext.TryGetCurrentEmpresaId();
-            return Ok(await service.ObtenerPorEntidadAsync(request));
+            var result = await service.ObtenerPorEntidadAsync(request);
+            await MarcarDocumentosProtegidosAsync(result);
+            return Ok(result);
         }
 
         [HttpPost("resumen")]
@@ -89,7 +93,23 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
 
         [HttpDelete("{id:long}")]
         public async Task<ActionResult<PagedResult<bool>>> Eliminar(long id)
-            => Ok(await service.EliminarAsync(id, userContext.GetCurrentUserId()));
+        {
+            var protectedDocument = await firmaStore.GetProtectedDocumentAsync(id);
+            if (protectedDocument != null)
+            {
+                return BadRequest(new PagedResult<bool>
+                {
+                    Success = false,
+                    Code = "DOCUMENT_LOCKED_FOR_SIGNATURE",
+                    Message = "Este documento es oficial para firma y no se puede eliminar.",
+                    Data = false,
+                    Items = [false],
+                    TotalCount = 1
+                });
+            }
+
+            return Ok(await service.EliminarAsync(id, userContext.GetCurrentUserId()));
+        }
 
         [HttpGet("{id:long}/anotaciones")]
         public async Task<ActionResult<PagedResult<DocumentoAnotacionResponse>>> ObtenerAnotaciones(long id, [FromQuery] bool incluirInactivos = false)
@@ -102,6 +122,29 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
         [HttpDelete("anotaciones/{id:long}")]
         public async Task<ActionResult<PagedResult<bool>>> EliminarAnotacion(long id)
             => Ok(await service.EliminarAnotacionAsync(id, userContext.GetCurrentUserId()));
+
+        private async Task MarcarDocumentosProtegidosAsync(PagedResult<DocumentoResponse> result)
+        {
+            if (result.Items == null || result.Items.Count == 0)
+                return;
+
+            var protectedDocuments = await firmaStore.GetProtectedDocumentsAsync(result.Items.Select(x => x.PkidDocumento));
+            foreach (var document in result.Items)
+            {
+                if (!protectedDocuments.TryGetValue(document.PkidDocumento, out var protection))
+                    continue;
+
+                document.EsDocumentoFirma = true;
+                document.Protegido = true;
+                document.TipoProteccion = protection.TipoProteccion;
+                document.EtiquetaProteccion = protection.Etiqueta;
+            }
+
+            result.Items = result.Items
+                .OrderByDescending(x => x.EsDocumentoFirma)
+                .ThenByDescending(x => x.CT_CreatedDate)
+                .ToList();
+        }
     }
 
     public class DocumentoUploadFormRequest

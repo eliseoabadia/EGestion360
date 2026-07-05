@@ -5,6 +5,7 @@
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Web.Contracts
 @using EG.Web.Models
+@using EG.Web.Models.Platform.SoporteDocumental
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.Reporting
 @using EG.Web.Pages.Shared.SoporteDocumental
@@ -80,6 +81,13 @@
                                                        EntidadId="@item.PkidPoliza"
                                                        RegistroTitulo="@TextOrDash(item.ClavePoliza)"
                                                        RegistroDescripcion="@TextOrDash(item.NombrePoliza)" />
+                                <MudTooltip Text="Enviar a firma">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   Disabled="@(_preparingFirmaPolizaId == item.PkidPoliza)"
+                                                   OnClick="@(() => PrepararPolizaParaFirma(item, true))" />
+                                </MudTooltip>
                                 <ReportOpenButton ReportName="@PolizaReportName"
                                                   EntityId="@item.PkidPoliza"
                                                   Title="@($"Reporte poliza {item.ClavePoliza}")"
@@ -165,6 +173,14 @@
                                            EntidadId="@SelectedPoliza.PkidPoliza"
                                            RegistroTitulo="@TextOrDash(SelectedPoliza.ClavePoliza)"
                                            RegistroDescripcion="@TextOrDash(SelectedPoliza.NombrePoliza)" />
+                    <MudTooltip Text="Generar reporte oficial y enviarlo a firma">
+                        <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza)"
+                                       OnClick="@(() => PrepararPolizaParaFirma(SelectedPoliza, true))"
+                                       Class="ml-1" />
+                    </MudTooltip>
                     <ReportOpenButton ReportName="@PolizaReportName"
                                       EntityId="@SelectedPoliza.PkidPoliza"
                                       Title="@($"Reporte poliza {SelectedPoliza.ClavePoliza}")"
@@ -296,6 +312,7 @@
     private PolizaResponse? SelectedPoliza;
     private string detalleSearchString = string.Empty;
     private string _currencySymbol = "$";
+    private int? _preparingFirmaPolizaId;
     private const string PolizaReportName = "Report_Polizas";
 
     protected override string ModuleName => "Contabilidad";
@@ -549,6 +566,73 @@
     {
         await RefreshSelectedPoliza();
         await ReloadDetalles();
+    }
+
+    private async Task PrepararPolizaParaFirma(PolizaResponse poliza, bool abrirSoporte)
+    {
+        if (poliza.PkidPoliza <= 0)
+            return;
+
+        if (!poliza.EstaBalanceado)
+        {
+            Snackbar.Add("La poliza debe estar balanceada antes de enviarla a firma.", Severity.Warning);
+            return;
+        }
+
+        _preparingFirmaPolizaId = poliza.PkidPoliza;
+        try
+        {
+            var response = await Http.PostAsync($"api/FirmaDocumental/polizas/{poliza.PkidPoliza}/preparar-firma", null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<DocumentoResponse>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add("Reporte oficial generado y enviado a firma.", Severity.Success);
+                if (abrirSoporte)
+                {
+                    await OpenPolizaSupportDialog(poliza);
+                }
+
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudo enviar la poliza a firma.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al preparar firma: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _preparingFirmaPolizaId = null;
+        }
+    }
+
+    private async Task OpenPolizaSupportDialog(PolizaResponse poliza)
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(DocumentSupportDialog.Modulo)] = "Contabilidad",
+            [nameof(DocumentSupportDialog.SubModulo)] = "Polizas",
+            [nameof(DocumentSupportDialog.Controlador)] = "Poliza",
+            [nameof(DocumentSupportDialog.EntidadId)] = (long)poliza.PkidPoliza,
+            [nameof(DocumentSupportDialog.RegistroTitulo)] = TextOrDash(poliza.ClavePoliza),
+            [nameof(DocumentSupportDialog.RegistroDescripcion)] = TextOrDash(poliza.NombrePoliza),
+            [nameof(DocumentSupportDialog.CanManage)] = CanUpdate || CanCreate
+        };
+
+        var dialog = await DialogService.ShowAsync<DocumentSupportDialog>(
+            "Soporte documental",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraLarge,
+                FullWidth = false,
+                BackgroundClass = "document-support-backdrop",
+                CloseOnEscapeKey = true
+            });
+
+        await dialog.Result;
     }
 
     private async Task RefreshSelectedPoliza()

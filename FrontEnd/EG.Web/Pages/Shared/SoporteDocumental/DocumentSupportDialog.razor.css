@@ -168,8 +168,28 @@
 }
 
 .doc-item strong,
-.doc-item small {
+.doc-item small,
+.doc-official-chip {
     display: block;
+}
+
+.doc-official-chip {
+    width: fit-content;
+    margin-bottom: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--mud-palette-success) 16%, transparent);
+    color: var(--mud-palette-success);
+    font-size: .68rem;
+    font-style: normal;
+    font-weight: 850;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.doc-item:has(.doc-official-chip) {
+    border-color: color-mix(in srgb, var(--mud-palette-success) 48%, var(--mud-palette-lines-default));
+    background: color-mix(in srgb, var(--mud-palette-success) 6%, transparent);
 }
 
 .doc-item strong {

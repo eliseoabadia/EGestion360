@@ -71,8 +71,12 @@
                             <button type="button"
                                     class="doc-item @(SelectedDocument?.PkidDocumento == document.PkidDocumento ? "is-selected" : "")"
                                     @onclick="() => SelectDocument(document)">
-                                <MudIcon Icon="@(document.EsPdf ? Icons.Material.Filled.PictureAsPdf : Icons.Material.Filled.Image)" />
+                                <MudIcon Icon="@(document.EsDocumentoFirma ? Icons.Material.Filled.Verified : document.EsPdf ? Icons.Material.Filled.PictureAsPdf : Icons.Material.Filled.Image)" />
                                 <span>
+                                    @if (document.EsDocumentoFirma)
+                                    {
+                                        <em class="doc-official-chip">@OfficialLabel(document)</em>
+                                    }
                                     <strong>@document.NombreOriginal</strong>
                                     <small>@FormatSize(document.TamanoBytes) · @document.CT_CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
                                 </span>
@@ -131,10 +135,12 @@
                                    OnClick="DownloadSelected">
                             Descargar
                         </MudButton>
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       Disabled="@(SelectedDocument == null || !CanManage)"
-                                       OnClick="DeleteSelected" />
+                        <MudTooltip Text="@DeleteTooltip">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Disabled="@(SelectedDocument == null || !CanManage || IsSelectedProtected)"
+                                           OnClick="DeleteSelected" />
+                        </MudTooltip>
                     </div>
                 </div>
 
@@ -277,10 +283,10 @@
     private string ImageZoomStyle => FormattableString.Invariant($"width: {_imageZoom * 100:0.##}%; height: {_imageZoom * 100:0.##}%;");
 
     private IEnumerable<DocumentoResponse> FilteredDocuments => string.IsNullOrWhiteSpace(_search)
-        ? Documents
-        : Documents.Where(x => x.NombreOriginal.Contains(_search, StringComparison.OrdinalIgnoreCase)
+        ? OrderedDocuments(Documents)
+        : OrderedDocuments(Documents.Where(x => x.NombreOriginal.Contains(_search, StringComparison.OrdinalIgnoreCase)
             || (x.Titulo?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (x.Descripcion?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            || (x.Descripcion?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)));
 
     private IEnumerable<DocumentoAnotacionResponse> HighlightAnnotations => Annotations
         .Where(x => x.TipoAnotacion == "RESALTADO" && x.PosicionX.HasValue && x.PosicionY.HasValue);
@@ -288,6 +294,12 @@
     private string SelectedMeta => SelectedDocument == null
         ? RegistroDescripcion
         : $"{SelectedDocument.Extension.ToUpperInvariant()} · {FormatSize(SelectedDocument.TamanoBytes)} · {SelectedDocument.CT_CreatedDate:dd/MM/yyyy HH:mm}";
+
+    private bool IsSelectedProtected => SelectedDocument?.Protegido == true || SelectedDocument?.EsDocumentoFirma == true;
+
+    private string DeleteTooltip => IsSelectedProtected
+        ? "Documento oficial para firma: no se puede eliminar"
+        : "Eliminar documento";
 
     protected override async Task OnInitializedAsync()
     {
@@ -313,7 +325,7 @@
         try
         {
             var response = await DocumentService.GetDocumentsAsync(BuildRequest());
-            Documents = response?.Items?.ToList() ?? [];
+            Documents = OrderedDocuments(response?.Items ?? []).ToList();
 
             var nextSelection = selectedId.HasValue
                 ? Documents.FirstOrDefault(x => x.PkidDocumento == selectedId.Value)
@@ -429,6 +441,12 @@
         if (!CanManage || SelectedDocument == null)
             return;
 
+        if (IsSelectedProtected)
+        {
+            Snackbar.Add("Este documento oficial para firma no se puede eliminar.", Severity.Warning);
+            return;
+        }
+
         var response = await DocumentService.DeleteAsync(SelectedDocument.PkidDocumento);
         if (response?.Success == true)
         {
@@ -531,6 +549,14 @@
             return $"{bytes / 1024m:N1} KB";
         return $"{bytes:N0} B";
     }
+
+    private static IEnumerable<DocumentoResponse> OrderedDocuments(IEnumerable<DocumentoResponse> documents)
+        => documents
+            .OrderByDescending(x => x.EsDocumentoFirma)
+            .ThenByDescending(x => x.CT_CreatedDate);
+
+    private static string OfficialLabel(DocumentoResponse document)
+        => string.IsNullOrWhiteSpace(document.EtiquetaProteccion) ? "Oficial para firma" : document.EtiquetaProteccion!;
 
     private void Close() => MudDialog.Close(DialogResult.Ok(true));
 

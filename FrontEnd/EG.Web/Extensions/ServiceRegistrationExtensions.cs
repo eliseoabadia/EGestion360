@@ -20,6 +20,7 @@ using EG.Web.Contracts.Configuration;
 using EG.Web.Contracts.Modules.GRP.Contabilidad;
 using EG.Web.Contracts.Modules.GRP.Presupuestales;
 using EG.Web.Contracts.Platform.DocumentRag;
+using EG.Web.Contracts.Platform.FirmaDocumental;
 using EG.Web.Contracts.Platform.SoporteDocumental;
 using EG.Web.Models.ConteoCiclico;
 using EG.Web.Services;
@@ -27,6 +28,7 @@ using EG.Web.Services.Configuration;
 using EG.Web.Services.Modules.GRP.Contabilidad;
 using EG.Web.Services.Modules.GRP.Presupuestales;
 using EG.Web.Services.Platform.DocumentRag;
+using EG.Web.Services.Platform.FirmaDocumental;
 using EG.Web.Services.Platform.SoporteDocumental;
 using Microsoft.JSInterop;
 
@@ -247,6 +249,7 @@ public static class ApiServiceExtensions
         services.AddScoped<INotificacionService, NotificacionService>();
         services.AddScoped<IDocumentSupportService, DocumentSupportService>();
         services.AddScoped<IDocumentRagService, DocumentRagService>();
+        services.AddScoped<IFirmaDocumentalService, FirmaDocumentalService>();
         services.AddScoped<IPolizaAiImportService, PolizaAiImportService>();
         services.AddScoped<IEgresoProyectadoAiImportService, EgresoProyectadoAiImportService>();
         services.AddScoped<IPbrDashboardService, PbrDashboardService>();

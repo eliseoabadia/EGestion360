@@ -1,0 +1,247 @@
+@page "/firma-documental/control"
+@attribute [Authorize]
+@using EG.Web.Contracts.Platform.FirmaDocumental
+@using EG.Web.Models.Platform.FirmaDocumental
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@inject IFirmaDocumentalService FirmaService
+@inject ISnackbar Snackbar
+
+<PageTitle>Centro de firma documental</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 py-3">
+    <MudPaper Elevation="1" Class="pa-4 mb-3" Style="border-radius: 8px;">
+        <div class="d-flex align-center flex-wrap gap-3">
+            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.h5" Style="font-weight: 800;">Centro de firma documental</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Boveda de certificados, proveedores y preparacion SAT/e.firma</MudText>
+            </div>
+            <MudSpacer />
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       Disabled="@_loading"
+                       OnClick="LoadDataAsync">
+                Actualizar
+            </MudButton>
+        </div>
+    </MudPaper>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" lg="4">
+            <MudPaper Elevation="1" Class="pa-4" Style="border-radius: 8px;">
+                <MudText Typo="Typo.subtitle1" Style="font-weight: 800;">Alta SAT / PFX</MudText>
+                <MudTextField @bind-Value="_alias"
+                              Label="Alias"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Placeholder="e.firma principal" />
+                <MudTextField @bind-Value="_password"
+                              Label="Contrasena del PFX"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              InputType="InputType.Password" />
+
+                <InputFile id="@_inputId"
+                           OnChange="SelectCertificate"
+                           accept=".pfx,.p12"
+                           class="firma-file-input" />
+                <label for="@_inputId" class="firma-dropzone">
+                    <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
+                    <span>@SelectedFileLabel</span>
+                    <small>PFX/P12 max. 5 MB</small>
+                </label>
+
+                <MudButton FullWidth="true"
+                           Variant="Variant.Filled"
+                           Color="Color.Success"
+                           StartIcon="@Icons.Material.Filled.EnhancedEncryption"
+                           Disabled="@(!CanUpload)"
+                           OnClick="UploadCertificateAsync">
+                    Guardar en boveda
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" lg="8">
+            <MudPaper Elevation="1" Class="pa-4" Style="border-radius: 8px;">
+                <div class="d-flex align-center mb-2">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 800;">Certificados del usuario</MudText>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Color="@(_certificates.Any(x => !x.Vencido) ? Color.Success : Color.Warning)">
+                        @_certificates.Count registrados
+                    </MudChip>
+                </div>
+
+                <MudTable Items="_certificates" Dense="true" Hover="true" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Alias</MudTh>
+                        <MudTh>RFC</MudTh>
+                        <MudTh>Titular</MudTh>
+                        <MudTh>Vigencia</MudTh>
+                        <MudTh>Estado</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Alias</MudTd>
+                        <MudTd>@TextOrDash(context.RFC)</MudTd>
+                        <MudTd>@TextOrDash(context.Titular)</MudTd>
+                        <MudTd>@context.VigenteDesde.ToString("dd/MM/yyyy") - @context.VigenteHasta.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@(context.Vencido ? Color.Error : Color.Success)">
+                                @(context.Vencido ? "Vencido" : "Vigente")
+                            </MudChip>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Color="Color.Secondary">Sin certificados registrados.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            </MudPaper>
+
+            <MudPaper Elevation="1" Class="pa-4 mt-3" Style="border-radius: 8px;">
+                <MudText Typo="Typo.subtitle1" Style="font-weight: 800;">Proveedores</MudText>
+                <MudGrid Spacing="2" Class="mt-1">
+                    @foreach (var provider in _providers)
+                    {
+                        <MudItem xs="12" md="6">
+                            <MudPaper Elevation="0" Class="pa-3 firma-provider">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@ProviderIcon(provider)" Color="@(provider.Disponible ? Color.Success : Color.Default)" />
+                                    <MudText Typo="Typo.body1" Class="ml-2" Style="font-weight: 750;">@provider.Nombre</MudText>
+                                    <MudSpacer />
+                                    <MudChip T="string" Size="Size.Small" Color="@(provider.Disponible ? Color.Success : Color.Default)">
+                                        @(provider.Disponible ? "Activo" : "Pendiente")
+                                    </MudChip>
+                                </div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Codigo</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .firma-file-input {
+        display: none;
+    }
+
+    .firma-dropzone {
+        border: 1px dashed color-mix(in srgb, var(--mud-palette-success) 55%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        padding: 18px 12px;
+        margin: 8px 0 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        color: var(--mud-palette-success);
+        background: color-mix(in srgb, var(--mud-palette-success) 7%, transparent);
+        text-align: center;
+    }
+
+    .firma-dropzone span {
+        color: var(--mud-palette-text-primary);
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .firma-dropzone small {
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .firma-provider {
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+    }
+</style>
+
+@code {
+    private readonly string _inputId = $"firma-pfx-{Guid.NewGuid():N}";
+    private List<FirmaProveedorResponse> _providers = [];
+    private List<FirmaCertificadoUsuarioResponse> _certificates = [];
+    private IBrowserFile? _selectedFile;
+    private string _alias = string.Empty;
+    private string _password = string.Empty;
+    private bool _loading;
+    private bool _uploading;
+
+    private bool CanUpload => !_uploading
+        && _selectedFile != null
+        && !string.IsNullOrWhiteSpace(_password);
+
+    private string SelectedFileLabel => _selectedFile == null
+        ? "Seleccionar PFX del usuario"
+        : _selectedFile.Name;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        try
+        {
+            var providers = await FirmaService.GetProvidersAsync();
+            _providers = providers?.Items?.ToList() ?? [];
+
+            var certificates = await FirmaService.GetCertificatesAsync();
+            _certificates = certificates?.Items?.ToList() ?? [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SelectCertificate(InputFileChangeEventArgs args)
+    {
+        _selectedFile = args.File;
+        if (string.IsNullOrWhiteSpace(_alias) && _selectedFile != null)
+        {
+            _alias = Path.GetFileNameWithoutExtension(_selectedFile.Name);
+        }
+    }
+
+    private async Task UploadCertificateAsync()
+    {
+        if (_selectedFile == null)
+            return;
+
+        _uploading = true;
+        try
+        {
+            var response = await FirmaService.UploadCertificateAsync(_alias, _password, null, _selectedFile);
+            if (response?.Success == true)
+            {
+                Snackbar.Add("Certificado PFX guardado en boveda.", Severity.Success);
+                _password = string.Empty;
+                _selectedFile = null;
+                await LoadDataAsync();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No se pudo guardar el PFX.", Severity.Error);
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    private static string TextOrDash(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string ProviderIcon(FirmaProveedorResponse provider)
+        => provider.Codigo.Equals("SAT_PFX", StringComparison.OrdinalIgnoreCase)
+            ? Icons.Material.Filled.Badge
+            : provider.Codigo.Equals("INTERNA", StringComparison.OrdinalIgnoreCase)
+                ? Icons.Material.Filled.VerifiedUser
+                : Icons.Material.Filled.Extension;
+}

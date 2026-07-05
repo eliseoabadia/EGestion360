@@ -1,0 +1,6 @@
+Generacion completada: 2026-07-05 10:43:35
+Base origen: DESKTOP-B2UQJB2.GestionEmpresarial
+Script final BD: C:\Temp\GE_Script Final\01_GestionEmpresarial_Script_Final_BD.sql
+Script catalogos: C:\Temp\GE_Script Final\02_GestionEmpresarial_Catalogos_Necesarios.sql
+Tablas de catalogo incluidas: 168
+Nota: la generacion se hizo leyendo directamente la BD mediante metadatos sys.* y datos actuales; no concatena scripts existentes del repo.

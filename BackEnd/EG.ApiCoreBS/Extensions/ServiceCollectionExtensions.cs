@@ -17,6 +17,7 @@ using EG.Application.Interfaces.Contabilidad;
 using EG.Application.Interfaces.Contratos;
 using EG.Application.Interfaces.CuentasXPagar;
 using EG.Application.Interfaces.DocumentRag;
+using EG.Application.Interfaces.FirmaDocumental;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Interfaces.Nomina;
@@ -41,6 +42,8 @@ using EG.Application.Services.Configuracion.Catalogo.ClavePrograma;
 using EG.Application.Services.Configuracion.Catalogo.Presupuestales;
 using EG.Application.Services.Configuracion.Catalogo.Patrimonio;
 using EG.Application.Services.DocumentRag;
+using EG.Application.Services.FirmaDocumental;
+using EG.Application.Services.FirmaDocumental.Providers;
 using EG.Application.Services.Patrimonio;
 using EG.Business.Interfaces;
 using EG.Business.Services;
@@ -94,6 +97,21 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
             services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();
             services.AddSingleton<IDocumentRagAppService, DocumentRagAppService>();
+            services.AddSingleton<IFirmaCertificateProtector, AesFirmaCertificateProtector>();
+            services.AddSingleton<IFirmaDocumentalStore, FileFirmaDocumentalStore>();
+            services.AddScoped<IFirmaDocumentalProvider, SatPfxFirmaProvider>();
+            services.AddScoped<IFirmaDocumentalProvider, FirmaSimpleInternaProvider>();
+            services.AddScoped<IFirmaDocumentalProvider>(_ => new PlaceholderFirmaProvider(
+                "PROVEEDOR_PAGO",
+                "Proveedor comercial",
+                "Adaptador reservado para proveedores comerciales con webhooks, evidencias avanzadas y validaciones externas.",
+                requiereCertificado: false));
+            services.AddScoped<IFirmaDocumentalProvider>(_ => new PlaceholderFirmaProvider(
+                "OPEN_SOURCE_PDF",
+                "Firma PDF open source",
+                "Adaptador reservado para estampado PDF local con certificados propios o librerias open source.",
+                requiereCertificado: true));
+            services.AddScoped<IFirmaDocumentalAppService, FirmaDocumentalAppService>();
 
             // Application services - Adquisicion
             services.AddScoped<IPaaaAppService, PaaaAppService>();

@@ -22,6 +22,10 @@ namespace EG.Domain.DTOs.Responses.SoporteDocumental
         public int VersionDocumento { get; set; }
         public bool EsImagen { get; set; }
         public bool EsPdf { get; set; }
+        public bool EsDocumentoFirma { get; set; }
+        public bool Protegido { get; set; }
+        public string? TipoProteccion { get; set; }
+        public string? EtiquetaProteccion { get; set; }
         public bool Activo { get; set; }
         public int CT_CreatedBy { get; set; }
         public DateTime CT_CreatedDate { get; set; }
