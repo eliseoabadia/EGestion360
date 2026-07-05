@@ -127,12 +127,34 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
         {
             try
             {
+                var blockReason = await _fnService.GetDeleteBlockReasonAsync(id);
+                if (!string.IsNullOrWhiteSpace(blockReason))
+                {
+                    return new PagedResult<FnResponse>
+                    {
+                        Success = false,
+                        Message = blockReason,
+                        Code = "BUSINESS_RULE",
+                        TotalCount = 0
+                    };
+                }
+
                 await _fnService.DeleteAsync(id);
                 return new PagedResult<FnResponse>
                 {
                     Success = true,
                     Message = "Registro eliminado correctamente",
                     Code = "SUCCESS",
+                    TotalCount = 0
+                };
+            }
+            catch (InvalidOperationException ex)
+            {
+                return new PagedResult<FnResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "BUSINESS_RULE",
                     TotalCount = 0
                 };
             }

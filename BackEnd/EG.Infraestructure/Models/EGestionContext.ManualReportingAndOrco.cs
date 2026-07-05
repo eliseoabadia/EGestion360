@@ -12,10 +12,6 @@ public partial class EGestionContext
         set => SaldoMensuals = value;
     }
 
-    public virtual DbSet<VwResguardo> VwResguardos { get; set; }
-
-    public virtual DbSet<VwResguardoDetalle> VwResguardoDetalles { get; set; }
-
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Nivel1>(entity =>
@@ -124,33 +120,6 @@ public partial class EGestionContext
             entity.HasOne(d => d.UsuarioModificacionNavigation)
                 .WithMany()
                 .HasForeignKey(d => d.UsuarioModificacion);
-        });
-
-        modelBuilder.Entity<VwResguardo>(entity =>
-        {
-            entity.HasNoKey();
-            entity.ToView("Vw_Resguardo", "ALMA");
-            entity.Property(e => e.PkidResguardo).HasColumnName("PKIdResguardo");
-            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
-            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
-            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
-            entity.Property(e => e.ValorActualResguardado).HasColumnType("decimal(20, 4)");
-        });
-
-        modelBuilder.Entity<VwResguardoDetalle>(entity =>
-        {
-            entity.HasNoKey();
-            entity.ToView("Vw_ResguardoDetalle", "ALMA");
-            entity.Property(e => e.PkidResguardoDetalle).HasColumnName("PKIdResguardoDetalle");
-            entity.Property(e => e.FkidResguardoAlma).HasColumnName("FKIdResguardo_ALMA");
-            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
-            entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
-            entity.Property(e => e.FkidPersonaNom).HasColumnName("FKIdPersona_NOM");
-            entity.Property(e => e.FkidBienAlma).HasColumnName("FKIdBien_ALMA");
-            entity.Property(e => e.FkidTipoBienAlma).HasColumnName("FKIdTipoBien_ALMA");
-            entity.Property(e => e.FkidEstadoBienAlma).HasColumnName("FKIdEstadoBien_ALMA");
-            entity.Property(e => e.Costo).HasColumnType("decimal(20, 4)");
-            entity.Property(e => e.ValorActual).HasColumnType("decimal(20, 4)");
         });
 
     }

@@ -11,8 +11,6 @@ public partial class Empresa
 
     public string Nombre { get; set; }
 
-    public string NombreCorto { get; set; }
-
     public string Rfc { get; set; }
 
     public string RazonSocial { get; set; }
@@ -24,8 +22,6 @@ public partial class Empresa
     public int? FkidIdiomaPreferidoSis { get; set; }
 
     public string Logo { get; set; }
-
-    public byte[] LogoEmpresa { get; set; }
 
     public bool Activo { get; set; }
 
@@ -56,6 +52,10 @@ public partial class Empresa
     public bool UsaSueldoTabular { get; set; }
 
     public int? FkidTipoPagoNom { get; set; }
+
+    public byte[] LogoEmpresa { get; set; }
+
+    public string NombreCorto { get; set; }
 
     public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
 

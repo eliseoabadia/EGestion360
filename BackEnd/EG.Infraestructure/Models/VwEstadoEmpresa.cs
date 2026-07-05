@@ -35,22 +35,6 @@ public partial class VwEstadoEmpresa
 
     public int? EmpresaUsuarioModificacion { get; set; }
 
-    public int PkidEstado { get; set; }
-
-    public int FkidPaisSis { get; set; }
-
-    public string EstadoNombre { get; set; }
-
-    public string CodigoEstado { get; set; }
-
-    public bool EstadoActivo { get; set; }
-
-    public DateOnly? FechaApertura { get; set; }
-
-    public bool EsOficinaPrincipal { get; set; }
-
-    public bool RelacionActiva { get; set; }
-
     public string RegImss { get; set; }
 
     public string RegInfonavit { get; set; }
@@ -70,4 +54,20 @@ public partial class VwEstadoEmpresa
     public bool UsaSueldoTabular { get; set; }
 
     public int? FkidTipoPagoNom { get; set; }
+
+    public int PkidEstado { get; set; }
+
+    public int FkidPaisSis { get; set; }
+
+    public string EstadoNombre { get; set; }
+
+    public string CodigoEstado { get; set; }
+
+    public bool EstadoActivo { get; set; }
+
+    public DateOnly? FechaApertura { get; set; }
+
+    public bool EsOficinaPrincipal { get; set; }
+
+    public bool RelacionActiva { get; set; }
 }

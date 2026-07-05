@@ -11,6 +11,7 @@ namespace EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma
         Task<FnResponse> AddAsync(FnDto dto, int usuarioId);
         Task UpdateAsync(int id, FnDto dto, int usuarioId);
         Task DeleteAsync(int id);
+        Task<string?> GetDeleteBlockReasonAsync(int id);
         Task<PagedResult<FnResponse>> GetAllPaginadoAsync(PagedRequest request);
         Task<bool> CanAddAsync(FnDto dto);
         Task<bool> CanUpdateAsync(int id, FnDto dto);

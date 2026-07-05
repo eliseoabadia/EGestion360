@@ -1271,6 +1271,14 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[Vw_Resguardo]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[ALMA].[Vw_ResguardoDetalle]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[ALMA].[Vw_SolicitudSalida]",
          "ObjectType": 3
       },
@@ -2255,6 +2263,10 @@
          "ObjectType": 1
       },
       {
+         "Name": "[ALMA].[SP_MantenimientoBien]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[ALMA].[SP_MantenimientoCalendarioInventario]",
          "ObjectType": 1
       },
@@ -2916,6 +2928,18 @@
       },
       {
          "Name": "[ORCO].[SP_MantenimientoEstudioMercado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoOrdenCompra]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoOrdenCompraDetalle]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SP_MantenimientoOrdenCompraPartida]",
          "ObjectType": 1
       },
       {

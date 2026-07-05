@@ -94,6 +94,30 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
             await _service.UpdateAsync(id, dto);
         }
 
+        public async Task<string?> GetDeleteBlockReasonAsync(int id)
+        {
+            var usage = await _service.GetQueryWithIncludes(e => e.PkidFn == id)
+                .Select(e => new
+                {
+                    HasSubFunciones = e.Sfs.Any(sf => sf.Activo),
+                    HasProgramas = e.Programas.Any(programa => programa.Activo)
+                })
+                .FirstOrDefaultAsync();
+
+            if (usage == null)
+            {
+                return null;
+            }
+
+            return (usage.HasSubFunciones, usage.HasProgramas) switch
+            {
+                (true, true) => "No se puede eliminar la funcion porque tiene subfunciones y programas activos asociados.",
+                (true, false) => "No se puede eliminar la funcion porque tiene subfunciones activas asociadas.",
+                (false, true) => "No se puede eliminar la funcion porque tiene programas activos asociados.",
+                _ => null
+            };
+        }
+
         public async Task<PagedResult<FnResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
             var query = _serviceView.GetQueryWithIncludes();
