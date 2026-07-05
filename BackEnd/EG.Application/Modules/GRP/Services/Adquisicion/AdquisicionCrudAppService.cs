@@ -178,6 +178,11 @@ namespace EG.Application.Services.Adquisicion
                 LogUserVisibleMessage("eliminar", ex);
                 return Failure<bool>(ex.UserMessage, ex.Code);
             }
+            catch (InvalidOperationException ex)
+            {
+                LogUserVisibleMessage("eliminar", new UserVisibleException(ex.Message, "BUSINESS_RULE"));
+                return Failure<bool>(ex.Message, "BUSINESS_RULE");
+            }
             catch (Exception ex)
             {
                 LogException("eliminar", ex);

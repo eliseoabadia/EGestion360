@@ -149,6 +149,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                     TotalCount = 0
                 });
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new PagedResult<MatrizIngresoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "BUSINESS_RULE",
+                    TotalCount = 0
+                });
+            }
         }
 
         [HttpPost("GetAllPaginado")]

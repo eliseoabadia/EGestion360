@@ -161,6 +161,16 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
                     TotalCount = 0
                 };
             }
+            catch (InvalidOperationException ex)
+            {
+                return new PagedResult<GfResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "BUSINESS_RULE",
+                    TotalCount = 0
+                };
+            }
             catch (Exception ex)
             {
                 return new PagedResult<GfResponse>

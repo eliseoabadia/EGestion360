@@ -82,6 +82,10 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             {
                 return NotFound();
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { Success = false, Message = ex.Message, Code = "BUSINESS_RULE" });
+            }
         }
 
         [HttpGet("GetLookup")]

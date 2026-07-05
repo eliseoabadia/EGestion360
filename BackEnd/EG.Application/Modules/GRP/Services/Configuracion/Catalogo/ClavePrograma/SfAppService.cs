@@ -146,6 +146,16 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
                     TotalCount = 0
                 };
             }
+            catch (InvalidOperationException ex)
+            {
+                return new PagedResult<SubFuncionResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "BUSINESS_RULE",
+                    TotalCount = 0
+                };
+            }
         }
 
         public async Task<PagedResult<SubFuncionResponse>> BuscarAsync(BusquedaRequest request)

@@ -62,6 +62,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.ClavePrograma
         public async Task<ActionResult<PagedResult<SubFuncionResponse>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);
+            if (result.Code == "BUSINESS_RULE")
+                return Conflict(result);
+            if (result.Code == "NOT_FOUND")
+                return NotFound(result);
             return Ok(result);
         }
 

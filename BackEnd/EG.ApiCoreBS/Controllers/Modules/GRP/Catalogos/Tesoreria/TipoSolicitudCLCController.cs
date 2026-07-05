@@ -66,6 +66,10 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
             {
                 return NotFound();
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { Success = false, Message = ex.Message, Code = "BUSINESS_RULE" });
+            }
         }
     }
 }
