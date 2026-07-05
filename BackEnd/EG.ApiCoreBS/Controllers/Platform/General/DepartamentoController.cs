@@ -75,7 +75,15 @@ namespace EG.ApiCoreBS.Controllers.General
             {
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.CreateAsync(response, usuarioActual);
-                return CreatedAtAction(nameof(GetById), new { id = result.PkidDepartamento }, result);
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidDepartamento }, new PagedResult<DepartamentoResponse>
+                {
+                    Success = true,
+                    Message = "Departamento creado correctamente",
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<DepartamentoResponse> { result },
+                    TotalCount = 1
+                });
             }
             catch (InvalidOperationException ex)
             {
@@ -106,7 +114,15 @@ namespace EG.ApiCoreBS.Controllers.General
             {
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var result = await _appService.UpdateAsync(id, response, usuarioActual);
-                return Ok(result);
+                return Ok(new PagedResult<DepartamentoResponse>
+                {
+                    Success = true,
+                    Message = "Departamento actualizado correctamente",
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<DepartamentoResponse> { result },
+                    TotalCount = 1
+                });
             }
             catch (InvalidOperationException ex)
             {

@@ -1,12 +1,9 @@
-using Mapster;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
-using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.General
@@ -15,16 +12,16 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _service;
         private readonly GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> _serviceView;
-        private readonly IRepositorySP<spEliminarUsuarioSucursalResult> _repositorySP;
+        private readonly EGestionContext _context;
 
         public UsuarioSucursalAppService(
             GenericService<UsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> service,
             GenericService<VwUsuarioSucursal, UsuarioSucursalDto, UsuarioSucursalResponse> serviceView,
-            IRepositorySP<spEliminarUsuarioSucursalResult> repositorySP)
+            EGestionContext context)
         {
             _service = service;
             _serviceView = serviceView;
-            _repositorySP = repositorySP;
+            _context = context;
             ConfigureService();
         }
 
@@ -177,46 +174,99 @@ namespace EG.Application.Services.General
 
         public async Task<UsuarioSucursalResponse> AddAsync(UsuarioSucursalResponse _dto, int usuarioActual)
         {
-            var result = await _serviceView.GetByIdAsync(_dto.PkIdUsuario);
+            if (_dto == null)
+                throw new ArgumentNullException(nameof(_dto), "Los datos de la asignacion son requeridos");
 
-            // Mapear y preparar el DTO
-            var dto = result.Adapt<UsuarioSucursalDto>();
+            if (_dto.PkIdUsuario <= 0)
+                throw new ArgumentException("Debe seleccionar un usuario valido");
 
-            // Establecer valores por defecto
-            dto.FkidSucursalSis = _dto.IdSucursal;
-            dto.FechaAsignacion = DateTime.Now;
-            dto.Activo = true;
+            if (_dto.IdSucursal <= 0)
+                throw new ArgumentException("Debe seleccionar una sucursal valida");
 
-            await _service.AddAsync(dto);
+            var now = DateTime.Now;
+            var entity = await _context.UsuarioSucursals
+                .FirstOrDefaultAsync(x => x.FkidUsuarioSis == _dto.PkIdUsuario && x.FkidSucursalSis == _dto.IdSucursal);
 
-            // Mapear y devolver el DTO
-            return dto.Adapt<UsuarioSucursalResponse>();
+            if (entity == null)
+            {
+                entity = new UsuarioSucursal
+                {
+                    FkidUsuarioSis = _dto.PkIdUsuario,
+                    FkidSucursalSis = _dto.IdSucursal,
+                    FechaAsignacion = now,
+                    FechaCreacion = now,
+                    UsuarioCreacion = usuarioActual
+                };
+
+                _context.UsuarioSucursals.Add(entity);
+            }
+            else
+            {
+                entity.FechaModificacion = now;
+                entity.UsuarioModificacion = usuarioActual;
+            }
+
+            entity.Activo = true;
+            entity.FechaFinAsignacion = null;
+            entity.PuedeAcceder = true;
+            entity.PuedeOperar = _dto.PuedeOperar || (!_dto.PuedeConfigurar && !_dto.PuedeReportes);
+            entity.PuedeConfigurar = _dto.PuedeConfigurar;
+            entity.PuedeReportes = _dto.PuedeReportes;
+            entity.EsGerente = _dto.EsGerente;
+            entity.EsSupervisor = _dto.EsSupervisor;
+
+            var affected = await _context.SaveChangesAsync();
+            if (affected <= 0)
+                throw new InvalidOperationException("No se guardo la asignacion del usuario a la sucursal");
+
+            var isActive = await _context.UsuarioSucursals
+                .AsNoTracking()
+                .AnyAsync(x => x.FkidUsuarioSis == _dto.PkIdUsuario && x.FkidSucursalSis == _dto.IdSucursal && x.Activo);
+
+            if (!isActive)
+                throw new InvalidOperationException("La asignacion no quedo activa en la base de datos");
+
+            return await GetByUsuarioAndSucursalAsync(_dto.PkIdUsuario, _dto.IdSucursal)
+                ?? new UsuarioSucursalResponse
+                {
+                    PkIdUsuario = _dto.PkIdUsuario,
+                    IdSucursal = _dto.IdSucursal,
+                    AsignacionActiva = true,
+                    PuedeAcceder = true,
+                    PuedeOperar = entity.PuedeOperar,
+                    PuedeConfigurar = entity.PuedeConfigurar,
+                    PuedeReportes = entity.PuedeReportes,
+                    EsGerente = entity.EsGerente,
+                    EsSupervisor = entity.EsSupervisor
+                };
         }
 
         public async Task<bool> DeleteAsync(int usuarioId, int sucursalId, int usuarioActual)
         {
-            var _resultListUserSuc = await _serviceView.GetAllPaginadoAsync(
-                new PagedRequest { Page = 1, PageSize = 1000 },
-                u => u.PkIdUsuario == usuarioId && u.IdSucursal == sucursalId);
+            var entity = await _context.UsuarioSucursals
+                .FirstOrDefaultAsync(x => x.FkidUsuarioSis == usuarioId && x.FkidSucursalSis == sucursalId);
 
-            var _result = _resultListUserSuc.Items.FirstOrDefault();
+            if (entity == null || !entity.Activo)
+                throw new Exception("Asignacion no encontrada o ya se encuentra inactiva");
 
-            if (_result == null)
-            {
-                throw new Exception("Asignación no encontrada");
-            }
+            entity.Activo = false;
+            entity.FechaFinAsignacion = DateTime.Now;
+            entity.FechaModificacion = DateTime.Now;
+            entity.UsuarioModificacion = usuarioActual;
 
-            var parameters = new[]
-            {
-                new SqlParameter("@FkidUsuarioSis", usuarioId),
-                new SqlParameter("@FkidSucursalSis", sucursalId),
-                new SqlParameter("@UsuarioModificacion", usuarioActual)
-            };
+            var affected = await _context.SaveChangesAsync();
+            if (affected <= 0)
+                throw new InvalidOperationException("No se actualizo la asignacion en la base de datos");
 
-            var result = await _repositorySP.ExecuteStoredProcedureAsync<spEliminarUsuarioSucursalResult>(
-                "SIS.spEliminarUsuarioSucursal", parameters);
+            var stillActive = await _context.UsuarioSucursals
+                .AsNoTracking()
+                .AnyAsync(x => x.FkidUsuarioSis == usuarioId && x.FkidSucursalSis == sucursalId && x.Activo);
 
-            return result != null && result.Count() > 0;
+            if (stillActive)
+                throw new InvalidOperationException("La asignacion sigue activa en la base de datos");
+
+            return true;
+
         }
 
         public async Task<PagedResult<UsuarioSucursalResponse>> GetAllPaginadoAsync(PagedRequest _params)

@@ -7,6 +7,8 @@
 @inject IGenericCrudService<EmpresaResponse> empresaService
 @inject IGenericCrudService<UsuarioResponse> usuarioService
 @inject IGenericCrudService<PersonaResponse> personaService
+@inject IGenericCrudService<SucursalResponse> sucursalService
+@inject IGenericCrudService<UsuarioSucursalResponse> usuarioSucursalService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="UsuarioResponse"
@@ -22,6 +24,8 @@
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
 
+        <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+            <MudTabPanel Text="Datos" Icon="@Icons.Material.Filled.Person">
         <MudGrid GutterSize="2">
             <!-- Empresa -->
             <MudItem xs="12" md="6">
@@ -47,7 +51,7 @@
                               Variant="Variant.Outlined" />
             </MudItem>
 
-            <!-- Persona (requerido) -->
+            <!-- Persona (opcional) -->
             <MudItem xs="12">
                 <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
                     <span>Persona vinculada</span>
@@ -55,8 +59,6 @@
                 <PagedAutocomplete Value="@_selectedPersona"
                                    ValueChanged="OnPersonaChanged"
                                    Label="Seleccione una persona"
-                                   Required="true"
-                                   RequiredError="Debe seleccionar una persona"
                                    LoadPage="LoadPersonasPageAsync" />
             </MudItem>
 
@@ -145,6 +147,42 @@
                 </MudPaper>
             </MudItem>
         </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Empresas" Icon="@Icons.Material.Filled.Business">
+                @if (!Id.HasValue)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        Guarda el usuario para asignarle empresas adicionales.
+                    </MudAlert>
+                }
+                else if (_loadingEmpresasUsuario)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+                else
+                {
+                    <MudTable Items="@_empresasUsuario" Dense="true" Hover="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Empresa</MudTh>
+                            <MudTh>Sucursal de acceso</MudTh>
+                            <MudTh>Acceso</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="empresa">
+                            <MudTd DataLabel="Empresa">@empresa.NombreEmpresa</MudTd>
+                            <MudTd DataLabel="Sucursal de acceso">@empresa.NombreSucursal</MudTd>
+                            <MudTd DataLabel="Acceso">
+                                <MudSwitch T="bool"
+                                           Value="@empresa.Asignada"
+                                           ValueChanged="@((bool value) => ToggleEmpresaAsync(empresa, value))"
+                                           Color="Color.Success"
+                                           Disabled="@(!empresa.PuedeAsignarse || empresa.Procesando)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudTabPanel>
+        </MudTabs>
     </BaseEntityForm>
 </BaseCrudDialog>
 
@@ -156,6 +194,9 @@
     private BaseEntityForm<UsuarioResponse> form = null!;
     private UsuarioResponse usuario = new() { UsuarioActivo = true };
     private IList<EmpresaResponse> listadoEmpresas = new List<EmpresaResponse>();
+    private IList<SucursalResponse> listadoSucursales = new List<SucursalResponse>();
+    private List<EmpresaUsuarioAsignacion> _empresasUsuario = new();
+    private bool _loadingEmpresasUsuario;
 
     private string dialogTitle => Id.HasValue ? "Editar Usuario" : "Nuevo Usuario";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -175,6 +216,7 @@
         if (Id.HasValue)
         {
             await CargarUsuario();
+            await CargarEmpresasUsuario();
         }
     }
 
@@ -190,6 +232,14 @@
             else
             {
                 Snackbar.Add(response?.Message ?? "Error al cargar empresas", Severity.Warning);
+            }
+
+            var sucursalesResponse = await sucursalService.GetAllAsync();
+            if (sucursalesResponse?.Success == true && sucursalesResponse.Items != null)
+            {
+                listadoSucursales = sucursalesResponse.Items
+                    .Where(x => x.Activo || x.EsActiva)
+                    .ToList();
             }
         }
         catch (Exception ex)
@@ -279,6 +329,104 @@
         };
     }
 
+    private async Task CargarEmpresasUsuario()
+    {
+        if (!Id.HasValue)
+            return;
+
+        _loadingEmpresasUsuario = true;
+        try
+        {
+            var asignacionesResponse = await usuarioSucursalService.GetActionAsync($"usuario/{Id.Value}");
+            var sucursalesAsignadas = asignacionesResponse?.Items?
+                .Where(x => x.AsignacionActiva)
+                .Select(x => x.IdSucursal)
+                .ToHashSet() ?? new HashSet<int>();
+
+            _empresasUsuario = listadoEmpresas
+                .Select(empresa =>
+                {
+                    var sucursal = listadoSucursales
+                        .Where(x => x.FkidEmpresaSis == empresa.PkidEmpresa)
+                        .OrderByDescending(x => x.EsMatriz)
+                        .ThenBy(x => x.Nombre)
+                        .FirstOrDefault();
+
+                    return new EmpresaUsuarioAsignacion
+                    {
+                        IdEmpresa = empresa.PkidEmpresa,
+                        NombreEmpresa = empresa.EmpresaNombre ?? empresa.RazonSocial ?? $"Empresa {empresa.PkidEmpresa}",
+                        IdSucursal = sucursal?.PkidSucursal ?? 0,
+                        NombreSucursal = sucursal?.Nombre ?? "Sin sucursal activa",
+                        Asignada = sucursal != null && sucursalesAsignadas.Contains(sucursal.PkidSucursal),
+                        PuedeAsignarse = sucursal != null
+                    };
+                })
+                .OrderBy(x => x.NombreEmpresa)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar empresas del usuario: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingEmpresasUsuario = false;
+        }
+    }
+
+    private async Task ToggleEmpresaAsync(EmpresaUsuarioAsignacion empresa, bool asignar)
+    {
+        if (!Id.HasValue || empresa.IdSucursal <= 0)
+        {
+            Snackbar.Add("La empresa no tiene una sucursal activa para asignar", Severity.Warning);
+            return;
+        }
+
+        empresa.Procesando = true;
+        try
+        {
+            ApiResponse<UsuarioSucursalResponse> response;
+            if (asignar)
+            {
+                response = await usuarioSucursalService.CreateAsync(new UsuarioSucursalResponse
+                {
+                    PkIdUsuario = Id.Value,
+                    IdSucursal = empresa.IdSucursal,
+                    PuedeAcceder = true,
+                    PuedeOperar = true,
+                    AsignacionActiva = true
+                });
+            }
+            else
+            {
+                response = await usuarioSucursalService.DeleteActionAsync($"{Id.Value}/{empresa.IdSucursal}");
+            }
+
+            if (response?.Success == true)
+            {
+                empresa.Asignada = asignar;
+                Snackbar.Add(asignar
+                    ? "Empresa asignada al usuario"
+                    : "Empresa retirada del usuario",
+                    Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo actualizar la asignacion", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al actualizar asignacion: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            empresa.Procesando = false;
+            StateHasChanged();
+        }
+    }
+
     private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
@@ -293,13 +441,7 @@
             return;
         }
 
-        if (_selectedPersona == null)
-        {
-            Snackbar.Add("Debe seleccionar una persona vinculada", Severity.Warning);
-            return;
-        }
-
-        usuario.IdPersona = _selectedPersona.Id;
+        usuario.IdPersona = _selectedPersona?.Id;
 
         try
         {
@@ -329,6 +471,17 @@
         {
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
         }
+    }
+
+    private sealed class EmpresaUsuarioAsignacion
+    {
+        public int IdEmpresa { get; set; }
+        public string NombreEmpresa { get; set; } = string.Empty;
+        public int IdSucursal { get; set; }
+        public string NombreSucursal { get; set; } = string.Empty;
+        public bool Asignada { get; set; }
+        public bool PuedeAsignarse { get; set; }
+        public bool Procesando { get; set; }
     }
 
 }

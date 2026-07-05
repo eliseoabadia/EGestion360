@@ -3,6 +3,8 @@
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.General
 @inject IGenericCrudService<DepartamentoResponse> _service
+@inject IGenericCrudService<EmpresaResponse> empresaService
+@inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="DepartamentoResponse"
@@ -19,6 +21,21 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <MudSelect Label="Empresa"
+                           @bind-Value="departamento.PkidEmpresa"
+                           T="int"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar una empresa">
+                    <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                    @foreach (var empresa in empresas)
+                    {
+                        <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
             <MudItem xs="12">
                 <MudTextField @bind-Value="departamento.DepartamentoNombre"
                               Label="Nombre del Departamento"
@@ -54,6 +71,7 @@
 
     private BaseEntityForm<DepartamentoResponse> form = null!;
     private DepartamentoResponse departamento = new() { DepartamentoActivo = true };
+    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
 
     private string dialogTitle => Id.HasValue ? "Editar Departamento" : "Nuevo Departamento";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -61,9 +79,38 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarEmpresas();
+
         if (Id.HasValue)
         {
             await CargarDepartamento();
+        }
+        else if (SucursalStateService.EmpresaId.HasValue)
+        {
+            departamento.PkidEmpresa = SucursalStateService.EmpresaId.Value;
+        }
+    }
+
+    private async Task CargarEmpresas()
+    {
+        try
+        {
+            var response = await empresaService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                empresas = response.Items
+                    .Where(e => e.EmpresaActivo)
+                    .OrderBy(e => e.EmpresaNombre)
+                    .ToList();
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al cargar empresas", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
         }
     }
 
@@ -109,6 +156,12 @@
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            return;
+        }
+
+        if (departamento.PkidEmpresa <= 0)
+        {
+            Snackbar.Add("Debe seleccionar la empresa del departamento.", Severity.Warning);
             return;
         }
 

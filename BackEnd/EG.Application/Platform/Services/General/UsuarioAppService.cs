@@ -58,7 +58,7 @@ namespace EG.Application.Services.General
             {
                 var usuarioDto = dto as UsuarioDto;
                 if (usuarioDto == null || string.IsNullOrWhiteSpace(usuarioDto.Email))
-                    return false;
+                    return true;
 
                 var exists = await _service.GetQueryWithIncludes()
                     .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
@@ -117,14 +117,7 @@ namespace EG.Application.Services.General
                 return !exists;
             });
 
-            // REGLA 5: Persona vinculada obligatoria
-            _service.AddValidationRule("ValidPersona", async (dto) =>
-            {
-                var usuarioDto = dto as UsuarioDto;
-                return usuarioDto?.FkidPersonaNom.HasValue == true && usuarioDto.FkidPersonaNom.Value > 0;
-            });
-
-            // REGLA 6: Empresa válida
+            // REGLA 5: Empresa válida
             _service.AddValidationRule("ValidCompany", async (dto) =>
             {
                 var usuarioDto = dto as UsuarioDto;
@@ -248,20 +241,21 @@ namespace EG.Application.Services.General
                     throw new ArgumentNullException(nameof(dto), "Los datos del usuario son requeridos");
 
                 // Validar campos obligatorios mínimos
-                if (!dto.FkidPersonaNom.HasValue || dto.FkidPersonaNom.Value <= 0)
-                    throw new ArgumentException("Debe seleccionar una persona vinculada");
+                if (dto.FkidEmpresaSis <= 0)
+                    throw new ArgumentException("Debe seleccionar una empresa");
 
                 // Preparar DTO
                 dto.FechaCreacion = DateTime.Now;
                 dto.UsuarioCreacion = usuarioActual;
                 dto.Activo = true;
-                dto.Email = dto.Email.ToLower().Trim();
+                dto.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.ToLower().Trim();
+                dto.FkidPersonaNom = dto.FkidPersonaNom.GetValueOrDefault() > 0 ? dto.FkidPersonaNom : null;
 
                 // Validar todas las reglas de negocio
                 if (!await _service.CanAddAsync(dto))
                 {
                     // Validar email único
-                    var emailExists = await _service.GetQueryWithIncludes()
+                    var emailExists = !string.IsNullOrWhiteSpace(dto.Email) && await _service.GetQueryWithIncludes()
                         .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
                                        u.FkidPersonaNomNavigation.CorreoElectronico != null &&
                                        u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == dto.Email.ToLower() &&
@@ -282,7 +276,7 @@ namespace EG.Application.Services.General
                             throw new InvalidOperationException($"El Payroll ID '{dto.PayrollId}' ya está registrado para otro usuario activo en esta empresa");
                     }
 
-                    throw new InvalidOperationException("El email o payroll ID ya existe para un usuario activo");
+                    throw new InvalidOperationException("No se pudo crear el usuario con los datos capturados");
                 }
 
                 // Guardar usuario
@@ -310,20 +304,21 @@ namespace EG.Application.Services.General
                     throw new ArgumentException("ID de usuario inválido", nameof(id));
 
                 // Validar campos obligatorios
-                if (!dto.FkidPersonaNom.HasValue || dto.FkidPersonaNom.Value <= 0)
-                    throw new ArgumentException("Debe seleccionar una persona vinculada");
+                if (dto.FkidEmpresaSis <= 0)
+                    throw new ArgumentException("Debe seleccionar una empresa");
 
                 // Preparar DTO
                 dto.PkIdUsuario = id;
                 dto.FechaModificacion = DateTime.Now;
                 dto.UsuarioModificacion = usuarioActual;
-                dto.Email = dto.Email.ToLower().Trim();
+                dto.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.ToLower().Trim();
+                dto.FkidPersonaNom = dto.FkidPersonaNom.GetValueOrDefault() > 0 ? dto.FkidPersonaNom : null;
 
                 // Validar todas las reglas de negocio (con ID)
                 if (!await _service.CanUpdateAsync(id, dto))
                 {
                     // Validar email único
-                    var emailExists = await _service.GetQueryWithIncludes()
+                    var emailExists = !string.IsNullOrWhiteSpace(dto.Email) && await _service.GetQueryWithIncludes()
                         .AnyAsync(u => u.FkidPersonaNomNavigation != null &&
                                        u.FkidPersonaNomNavigation.CorreoElectronico != null &&
                                        u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == dto.Email.ToLower() &&
@@ -346,7 +341,7 @@ namespace EG.Application.Services.General
                             throw new InvalidOperationException($"El Payroll ID '{dto.PayrollId}' ya está registrado para otro usuario activo en esta empresa");
                     }
 
-                    throw new InvalidOperationException("El email o payroll ID ya existe para un usuario activo");
+                    throw new InvalidOperationException("No se pudo actualizar el usuario con los datos capturados");
                 }
 
                 // Actualizar usuario

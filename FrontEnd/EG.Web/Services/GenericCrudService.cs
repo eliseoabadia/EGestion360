@@ -177,6 +177,62 @@ namespace EG.Web.Services
             };
         }
 
+        public async Task<ApiResponse<TResponse>> GetActionAsync(string action)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<TResponse>();
+
+            var cleanAction = (action ?? string.Empty).Trim('/');
+            if (string.IsNullOrWhiteSpace(cleanAction))
+            {
+                return new ApiResponse<TResponse>
+                {
+                    Success = false,
+                    Message = "Accion no valida",
+                    Code = "INVALID_ACTION"
+                };
+            }
+
+            var response = await GetAsync<ApiResponse<TResponse>>(
+                $"{_endpoint}/{cleanAction}",
+                useBaseUrl: false);
+
+            return response ?? new ApiResponse<TResponse>
+            {
+                Success = false,
+                Message = "Error al ejecutar accion",
+                Code = "ERROR"
+            };
+        }
+
+        public async Task<ApiResponse<TResponse>> DeleteActionAsync(string action)
+        {
+            if (!IsClientSide())
+                return new ApiResponse<TResponse>();
+
+            var cleanAction = (action ?? string.Empty).Trim('/');
+            if (string.IsNullOrWhiteSpace(cleanAction))
+            {
+                return new ApiResponse<TResponse>
+                {
+                    Success = false,
+                    Message = "Accion no valida",
+                    Code = "INVALID_ACTION"
+                };
+            }
+
+            var response = await DeleteAsync<ApiResponse<TResponse>>(
+                $"{_endpoint}/{cleanAction}",
+                useBaseUrl: false);
+
+            return response ?? new ApiResponse<TResponse>
+            {
+                Success = false,
+                Message = "Error al ejecutar accion",
+                Code = "ERROR"
+            };
+        }
+
         private static string GetDeleteFallbackMessage(string? code)
         {
             return code?.Trim().ToUpperInvariant() switch

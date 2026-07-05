@@ -5,8 +5,8 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.General;
-using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.General
 {
@@ -14,16 +14,16 @@ namespace EG.Application.Services.General
     {
         private readonly GenericService<Departamento, DepartamentoDto, DepartamentoResponse> _service;
         private readonly GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> _serviceView;
-        private readonly IRepository<Departamento> _repository;
+        private readonly EGestionContext _context;
 
         public DepartamentoAppService(
             GenericService<Departamento, DepartamentoDto, DepartamentoResponse> service,
             GenericService<VwEmpresaDepartamanto, DepartamentoDto, DepartamentoResponse> serviceView,
-            IRepository<Departamento> repository)
+            EGestionContext context)
         {
             _service = service;
             _serviceView = serviceView;
-            _repository = repository;
+            _context = context;
             ConfigureService();
         }
 
@@ -152,11 +152,49 @@ namespace EG.Application.Services.General
         {
             if (id <= 0) throw new ArgumentException("ID debe ser mayor a 0");
 
-            var hasChildren = await _repository.HasActiveChildrenAsync<UsuarioDepartamento>("FkidDepartamentoSis", id);
-            if (hasChildren)
-                throw new InvalidOperationException("No se puede eliminar el departamento porque tiene usuarios asignados activos");
+            var departamento = await _context.Departamentos
+                .AsNoTracking()
+                .Where(d => d.PkidDepartamento == id)
+                .Select(d => new
+                {
+                    d.PkidDepartamento,
+                    d.Nombre,
+                    d.Activo
+                })
+                .FirstOrDefaultAsync();
 
-            await _repository.SoftDeleteAsync(id);
+            if (departamento == null)
+                throw new KeyNotFoundException($"Departamento con ID {id} no encontrado");
+
+            if (!departamento.Activo)
+                throw new InvalidOperationException($"El departamento \"{departamento.Nombre}\" ya se encuentra inactivo");
+
+            var usuariosActivos = await _context.UsuarioDepartamentos
+                .AsNoTracking()
+                .CountAsync(ud => ud.FkidDepartamentoSis == id && ud.Activo);
+
+            if (usuariosActivos > 0)
+            {
+                throw new InvalidOperationException(
+                    $"No se puede eliminar el departamento \"{departamento.Nombre}\" porque tiene {usuariosActivos} usuario(s) asignado(s) activos.");
+            }
+
+            var fechaModificacion = DateTime.Now;
+            var affectedRows = await _context.Departamentos
+                .Where(d => d.PkidDepartamento == id && d.Activo)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(d => d.Activo, false)
+                    .SetProperty(d => d.FechaModificacion, fechaModificacion));
+
+            if (affectedRows <= 0)
+                throw new InvalidOperationException($"No se pudo eliminar el departamento \"{departamento.Nombre}\" porque no se actualizo ningun registro");
+
+            var stillActive = await _context.Departamentos
+                .AsNoTracking()
+                .AnyAsync(d => d.PkidDepartamento == id && d.Activo);
+
+            if (stillActive)
+                throw new InvalidOperationException($"No fue posible dar de baja el departamento \"{departamento.Nombre}\"; el registro sigue activo en la base de datos");
         }
     }
 }

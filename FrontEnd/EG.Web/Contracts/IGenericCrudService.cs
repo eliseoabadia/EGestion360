@@ -17,6 +17,8 @@ namespace EG.Web.Contracts
         Task<ApiResponse<TResponse>> CreateAsync(TResponse entity);
         Task<ApiResponse<TResponse>> UpdateAsync(TResponse entity, int id);
         Task<ApiResponse<TResponse>> DeleteAsync(int id);
+        Task<ApiResponse<TResponse>> GetActionAsync(string action);
+        Task<ApiResponse<TResponse>> DeleteActionAsync(string action);
         Task<ApiResponse<TResponse>> PostActionAsync(string action, object? body = null);
 
         Task<ApiResponse<TResponse>> GetAllByEmpresaAsync(int empresaId);
