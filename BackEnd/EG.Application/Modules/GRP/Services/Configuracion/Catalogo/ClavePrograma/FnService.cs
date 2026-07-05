@@ -13,13 +13,16 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     {
         private readonly GenericService<Fn, FnDto, FnResponse> _service;
         private readonly GenericService<VwFn, FnDto, FnResponse> _serviceView;
+        private readonly EGestionContext _context;
 
         public FnService(
             GenericService<Fn, FnDto, FnResponse> service,
-            GenericService<VwFn, FnDto, FnResponse> serviceView)
+            GenericService<VwFn, FnDto, FnResponse> serviceView,
+            EGestionContext context)
         {
             _service = service;
             _serviceView = serviceView;
+            _context = context;
             ConfigureService();
             ConfigureValidations();
         }
@@ -77,21 +80,38 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task DeleteAsync(int id)
         {
-            var existing = await _serviceView.GetByIdAsync(id);
-            if (existing == null) throw new KeyNotFoundException($"Fn con ID {id} no encontrado");
-
-            var dto = new FnDto
+            var blockReason = await GetDeleteBlockReasonAsync(id);
+            if (!string.IsNullOrWhiteSpace(blockReason))
             {
-                PkidFn = existing.PkidFn,
-                Clave = existing.Clave,
-                Descripcion = existing.Descripcion,
-                Activo = false,
-                FkidGfPres = existing.FkidGfPres,
-                UsuarioCreacion = existing.UsuarioCreacion,
-                FechaCreacion = existing.FechaCreacion
-            };
+                throw new InvalidOperationException(blockReason);
+            }
 
-            await _service.UpdateAsync(id, dto);
+            var affectedRows = await _context.Fns
+                .Where(e => e.PkidFn == id && e.Activo)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(e => e.Activo, false)
+                    .SetProperty(e => e.FechaModificacion, DateTime.UtcNow));
+
+            if (affectedRows <= 0)
+            {
+                var exists = await _context.Fns
+                    .AsNoTracking()
+                    .AnyAsync(e => e.PkidFn == id);
+
+                if (!exists)
+                {
+                    throw new KeyNotFoundException($"Fn con ID {id} no encontrado");
+                }
+            }
+
+            var stillActive = await _context.Fns
+                .AsNoTracking()
+                .AnyAsync(e => e.PkidFn == id && e.Activo);
+
+            if (stillActive)
+            {
+                throw new InvalidOperationException($"No fue posible eliminar la funcion con ID {id}; el registro sigue activo en la base de datos.");
+            }
         }
 
         public async Task<string?> GetDeleteBlockReasonAsync(int id)

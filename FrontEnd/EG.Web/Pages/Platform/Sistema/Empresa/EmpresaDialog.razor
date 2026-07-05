@@ -423,11 +423,29 @@
             yield return "El correo administrador no tiene un formato válido";
     }
 
+    private string GetValidationSummary()
+    {
+        var errors = new List<string>();
+
+        errors.AddRange(ValidarNombre(empresa.EmpresaNombre));
+        errors.AddRange(ValidarRFC(empresa.Rfc));
+        errors.AddRange(ValidarNombreCorto(empresa.NombreCorto));
+
+        if (!estadoSeleccionado.HasValue)
+        {
+            errors.Add("debe seleccionar un estado");
+        }
+
+        return errors.Count == 0
+            ? "Por favor, completa todos los campos requeridos correctamente."
+            : $"No se puede guardar: {string.Join("; ", errors.Distinct())}.";
+    }
+
     private async Task GuardarCambiosAsync(bool _)
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
+            Snackbar.Add(GetValidationSummary(), Severity.Warning);
             return;
         }
 

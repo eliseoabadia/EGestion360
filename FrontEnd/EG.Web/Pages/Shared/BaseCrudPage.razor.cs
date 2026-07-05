@@ -419,29 +419,29 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         try
         {
             Loading = true;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
 
             var response = await Service.DeleteAsync(id);
             if (response?.Success == true)
             {
-                Snackbar.Add(response.Message ?? "Elemento eliminado correctamente", Severity.Success);
+                await InvokeAsync(() => Snackbar.Add(response.Message ?? "Elemento eliminado correctamente", Severity.Success));
                 return true;
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al eliminar", Severity.Error);
+                await InvokeAsync(() => Snackbar.Add(response?.Message ?? "Error al eliminar", Severity.Error));
                 return false;
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            await InvokeAsync(() => Snackbar.Add($"Error: {ex.Message}", Severity.Error));
             return false;
         }
         finally
         {
             Loading = false;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 

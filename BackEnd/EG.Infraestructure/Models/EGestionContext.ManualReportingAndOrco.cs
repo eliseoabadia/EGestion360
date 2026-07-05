@@ -14,6 +14,11 @@ public partial class EGestionContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Empresa>(entity =>
+        {
+            entity.Property(e => e.PkidEmpresa).ValueGeneratedOnAdd();
+        });
+
         modelBuilder.Entity<Nivel1>(entity =>
         {
             entity.HasOne(d => d.FkidUniversoNomNavigation)

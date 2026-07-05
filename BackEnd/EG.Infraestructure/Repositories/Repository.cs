@@ -1,6 +1,7 @@
 ﻿using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -32,7 +33,10 @@ namespace EG.Infrastructure
         public async Task SoftDeleteAsync(int id, string? activePropertyName = "Activo")
         {
             var entity = await GetByIdAsync(id);
-            if (entity == null) return;
+            if (entity == null)
+            {
+                throw new KeyNotFoundException($"Entidad {typeof(T).Name} con ID {id} no encontrada.");
+            }
 
             var prop = typeof(T).GetProperty(activePropertyName ?? "Activo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
             if (prop == null || !IsBooleanProperty(prop.PropertyType))
@@ -42,14 +46,17 @@ namespace EG.Infrastructure
 
             if (IsInactive(entity, prop))
             {
-                return;
+                throw new InvalidOperationException($"La entidad {typeof(T).Name} con ID {id} ya se encuentra inactiva.");
             }
 
             await EnsureNoActiveDependentsAsync(id);
 
             prop.SetValue(entity, false);
-            _dbSet.Update(entity);
-            await _context.SaveChangesAsync();
+            var entry = _context.Entry(entity);
+            MarkOnlyActivePropertyModified(entry);
+            await SaveChangesOrThrowAsync(
+                $"No fue posible dar de baja {typeof(T).Name} con ID {id} porque la base de datos no confirmo el cambio.");
+            await EnsureEntityIsInactiveAsync(id, activePropertyName ?? "Activo");
         }
 
         public async Task<bool> HasActiveChildrenAsync<TChild>(string childForeignKeyProperty, int parentId, string? childActiveProperty = "Activo") where TChild : class
@@ -120,6 +127,11 @@ namespace EG.Infrastructure
             if (TryGetInactiveEntityId(entity, out var id))
             {
                 await EnsureNoActiveDependentsAsync(id);
+                MarkOnlyActivePropertyModified(entry);
+                await SaveChangesOrThrowAsync(
+                    $"No fue posible dar de baja {typeof(T).Name} con ID {id} porque la base de datos no confirmo el cambio.");
+                await EnsureEntityIsInactiveAsync(id, "Activo");
+                return;
             }
 
             await _context.SaveChangesAsync();
@@ -193,6 +205,69 @@ namespace EG.Infrastructure
         {
             var value = activeProperty.GetValue(entity);
             return value is bool active && !active;
+        }
+
+        private static void MarkOnlyActivePropertyModified(EntityEntry entry)
+        {
+            foreach (var property in entry.Properties)
+            {
+                property.IsModified = false;
+            }
+
+            var activeProperty = entry.Properties.FirstOrDefault(property =>
+                string.Equals(property.Metadata.Name, "Activo", StringComparison.OrdinalIgnoreCase));
+
+            if (activeProperty != null)
+            {
+                activeProperty.IsModified = true;
+            }
+        }
+
+        private async Task SaveChangesOrThrowAsync(string message)
+        {
+            var affectedRows = await _context.SaveChangesAsync();
+            if (affectedRows <= 0)
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        private async Task EnsureEntityIsInactiveAsync(int id, string activePropertyName)
+        {
+            var entityType = _context.Model.FindEntityType(typeof(T));
+            var primaryKeyProperty = entityType?.FindPrimaryKey()?.Properties.SingleOrDefault();
+            var activeProperty = entityType?.FindProperty(activePropertyName);
+            if (primaryKeyProperty == null || activeProperty == null || !IsBooleanProperty(activeProperty.ClrType))
+            {
+                return;
+            }
+
+            var parameter = Expression.Parameter(typeof(T), "entity");
+            var keyAccess = CreatePropertyAccess(parameter, primaryKeyProperty);
+            var keyConstant = Expression.Constant(ConvertToPropertyType(id, primaryKeyProperty.ClrType), Nullable.GetUnderlyingType(primaryKeyProperty.ClrType) ?? primaryKeyProperty.ClrType);
+            Expression comparableKeyValue = keyConstant;
+            if (keyAccess.Type != keyConstant.Type)
+            {
+                comparableKeyValue = Expression.Convert(keyConstant, keyAccess.Type);
+            }
+
+            var activeAccess = CreatePropertyAccess(parameter, activeProperty);
+            var activeConstant = Expression.Constant(true, typeof(bool));
+            Expression comparableActiveValue = activeAccess.Type == typeof(bool)
+                ? activeConstant
+                : Expression.Convert(activeConstant, activeAccess.Type);
+
+            var predicate = Expression.AndAlso(
+                Expression.Equal(keyAccess, comparableKeyValue),
+                Expression.Equal(activeAccess, comparableActiveValue));
+
+            var lambda = Expression.Lambda<Func<T, bool>>(predicate, parameter);
+            var stillActive = await _dbSet.AsNoTracking().AnyAsync(lambda);
+            if (stillActive)
+            {
+                throw new InvalidOperationException(
+                    $"No fue posible dar de baja {typeof(T).Name} con ID {id}; el registro sigue activo en la base de datos.");
+            }
         }
 
         private bool TryGetInactiveEntityId(T entity, out int id)

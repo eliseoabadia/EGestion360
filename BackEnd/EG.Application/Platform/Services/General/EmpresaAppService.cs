@@ -224,6 +224,7 @@ namespace EG.Application.Services.General
                 dto.FechaCreacion = DateTime.Now;
                 dto.UsuarioCreacion = usuarioActual;
                 dto.Activo = true;
+                dto.PkidEmpresa = 0;
                 dto.Rfc = dto.Rfc.Trim().ToUpper();
                 dto.NombreCorto = NormalizeNombreCorto(dto.NombreCorto, dto.Nombre);
                 NormalizeDatosPatronales(dto);

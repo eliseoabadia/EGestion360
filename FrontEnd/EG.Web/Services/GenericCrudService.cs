@@ -146,7 +146,7 @@ namespace EG.Web.Services
             if (!IsClientSide())
                 return new ApiResponse<TResponse>();
 
-            var response = await DeleteAsync<ApiResponse<bool>>(
+            var response = await DeleteAsync<DeleteResponseContract>(
                 $"{_endpoint}/{id}",
                 useBaseUrl: false);
 
@@ -155,18 +155,46 @@ namespace EG.Web.Services
                 return new ApiResponse<TResponse>
                 {
                     Success = false,
-                    Message = "Error al eliminar",
+                    Message = "No se pudo leer la respuesta del servidor al eliminar. Intenta de nuevo o revisa la conexión.",
                     Code = "ERROR"
                 };
             }
 
+            var responseCode = string.IsNullOrWhiteSpace(response.Code)
+                ? "ERROR"
+                : response.Code;
+
+            var message = string.IsNullOrWhiteSpace(response.Message)
+                ? GetDeleteFallbackMessage(responseCode)
+                : response.Message;
+
             return new ApiResponse<TResponse>
             {
                 Success = response.Success,
-                Message = response.Message,
-                Code = response.Code,
+                Message = message,
+                Code = responseCode,
                 TotalCount = response.TotalCount
             };
+        }
+
+        private static string GetDeleteFallbackMessage(string? code)
+        {
+            return code?.Trim().ToUpperInvariant() switch
+            {
+                "BUSINESS_RULE" => "No se puede eliminar el registro porque tiene información relacionada.",
+                "NOT_FOUND" => "El registro ya no existe o no está disponible.",
+                "UNAUTHORIZED" => "Tu sesión no tiene permisos para eliminar este registro.",
+                "FORBIDDEN" => "No tienes permisos para eliminar este registro.",
+                _ => "No fue posible eliminar el registro. El servidor no devolvió un detalle específico."
+            };
+        }
+
+        public sealed class DeleteResponseContract
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; } = string.Empty;
+            public string Code { get; set; } = string.Empty;
+            public int TotalCount { get; set; }
         }
 
         public async Task<ApiResponse<TResponse>> PostActionAsync(string action, object? body = null)

@@ -13,13 +13,16 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     {
         private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
         private readonly GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> _serviceView;
+        private readonly EGestionContext _context;
 
         public SfService(
             GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
-            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView)
+            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView,
+            EGestionContext context)
         {
             _service = service;
             _serviceView = serviceView;
+            _context = context;
             ConfigureService();
             ConfigureValidations();
         }
@@ -77,19 +80,57 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
         public async Task DeleteAsync(int id)
         {
-            var existingView = await _serviceView.GetByIdAsync(id);
-            if (existingView == null) throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
-
-            var dto = new SubFuncionDto
+            var blockReason = await GetDeleteBlockReasonAsync(id);
+            if (!string.IsNullOrWhiteSpace(blockReason))
             {
-                PkidSf = existingView.PkidSf,
-                Clave = existingView.SubFuncionClave,
-                Descripcion = existingView.SubFuncionDescripcion,
-                Activo = false,
-                FkidFnPres = existingView.FkidFnPres
-            };
+                throw new InvalidOperationException(blockReason);
+            }
 
-            await _service.UpdateAsync(id, dto);
+            var affectedRows = await _context.Sfs
+                .Where(e => e.PkidSf == id && e.Activo)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(e => e.Activo, false)
+                    .SetProperty(e => e.FechaModificacion, DateTime.UtcNow));
+
+            if (affectedRows <= 0)
+            {
+                var exists = await _context.Sfs
+                    .AsNoTracking()
+                    .AnyAsync(e => e.PkidSf == id);
+
+                if (!exists)
+                {
+                    throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
+                }
+            }
+
+            var stillActive = await _context.Sfs
+                .AsNoTracking()
+                .AnyAsync(e => e.PkidSf == id && e.Activo);
+
+            if (stillActive)
+            {
+                throw new InvalidOperationException($"No fue posible eliminar la subfuncion con ID {id}; el registro sigue activo en la base de datos.");
+            }
+        }
+
+        public async Task<string?> GetDeleteBlockReasonAsync(int id)
+        {
+            var usage = await _service.GetQueryWithIncludes(e => e.PkidSf == id)
+                .Select(e => new
+                {
+                    HasProgramas = e.Programas.Any(programa => programa.Activo)
+                })
+                .FirstOrDefaultAsync();
+
+            if (usage == null)
+            {
+                throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
+            }
+
+            return usage.HasProgramas
+                ? "No se puede eliminar la subfuncion porque tiene programas activos asociados."
+                : null;
         }
 
         public async Task<PagedResult<SubFuncionResponse>> GetAllPaginadoAsync(PagedRequest request)
